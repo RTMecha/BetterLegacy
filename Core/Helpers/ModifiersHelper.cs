@@ -56,6 +56,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (!trigger.elseIf && !innerResult)
                     result = false;
+
+                trigger.triggered = innerResult;
             }
             return result;
         }
@@ -231,6 +233,7 @@ namespace BetterLegacy.Core.Helpers
                         if (!modifier.elseIf && !innerResult)
                             result = false;
 
+                        modifier.triggered = innerResult;
                         previousType = modifier.type;
                     }
 

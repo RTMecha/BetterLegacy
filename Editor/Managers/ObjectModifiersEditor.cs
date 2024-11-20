@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Components;
+using BetterLegacy.Components.Editor;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
@@ -171,10 +172,8 @@ namespace BetterLegacy.Editor.Managers
 
             scrollView.gameObject.SetActive(showModifiers);
 
-            modifierCardPrefab = new GameObject("Modifier Prefab");
-            modifierCardPrefab.transform.SetParent(transform);
-            var mcpRT = modifierCardPrefab.AddComponent<RectTransform>();
-            mcpRT.sizeDelta = new Vector2(336f, 128f);
+            modifierCardPrefab = Creator.NewUIObject("Modifier Prefab", transform);
+            modifierCardPrefab.transform.AsRT().sizeDelta = new Vector2(336f, 128f);
 
             var mcpImage = modifierCardPrefab.AddComponent<Image>();
             mcpImage.color = new Color(1f, 1f, 1f, 0.03f);
@@ -186,27 +185,14 @@ namespace BetterLegacy.Editor.Managers
             var mcpCSF = modifierCardPrefab.AddComponent<ContentSizeFitter>();
             mcpCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-            var mcpSpacerTop = new GameObject("Spacer Top");
-            mcpSpacerTop.transform.SetParent(mcpRT);
-            mcpSpacerTop.transform.localScale = Vector3.one;
-            var mcpSpacerTopRT = mcpSpacerTop.AddComponent<RectTransform>();
-            mcpSpacerTopRT.sizeDelta = new Vector2(350f, 8f);
+            var mcpSpacerTop = Creator.NewUIObject("Spacer Top", modifierCardPrefab.transform);
+            mcpSpacerTop.transform.AsRT().sizeDelta = new Vector2(350f, 8f);
 
-            var mcpLabel = new GameObject("Label");
-            mcpLabel.transform.SetParent(mcpRT);
-            mcpLabel.transform.localScale = Vector3.one;
+            var mcpLabel = Creator.NewUIObject("Label", modifierCardPrefab.transform);
+            UIManager.SetRectTransform(mcpLabel.transform.AsRT(), new Vector2(0f, -8f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(352f, 32f));
 
-            var mcpLabelRT = mcpLabel.AddComponent<RectTransform>();
-            mcpLabelRT.anchorMax = new Vector2(0f, 1f);
-            mcpLabelRT.anchorMin = new Vector2(0f, 1f);
-            mcpLabelRT.pivot = new Vector2(0f, 1f);
-            mcpLabelRT.sizeDelta = new Vector2(187f, 32f);
-
-            var mcpText = new GameObject("Text");
-            mcpText.transform.SetParent(mcpLabelRT);
-            mcpText.transform.localScale = Vector3.one;
-            var mcpTextRT = mcpText.AddComponent<RectTransform>();
-            UIManager.SetRectTransform(mcpTextRT, Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(300f, 32f));
+            var mcpText = Creator.NewUIObject("Text", mcpLabel.transform);
+            UIManager.SetRectTransform(mcpText.transform.AsRT(), Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(300f, 32f));
 
             var mcpTextText = mcpText.AddComponent<Text>();
             mcpTextText.alignment = TextAnchor.MiddleLeft;
@@ -215,34 +201,31 @@ namespace BetterLegacy.Editor.Managers
             mcpTextText.fontSize = 19;
             mcpTextText.color = new Color(0.9373f, 0.9216f, 0.9373f);
 
-            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabelRT, "Delete");
+            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Delete");
             delete.transform.localScale = Vector3.one;
             var deleteLayoutElement = delete.GetComponent<LayoutElement>() ?? delete.AddComponent<LayoutElement>();
             deleteLayoutElement.minWidth = 32f;
 
-            UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(150f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+            UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(140f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
 
-            var duplicate = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabelRT, "Copy");
+            var duplicate = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Copy");
             duplicate.transform.localScale = Vector3.one;
             var duplicateLayoutElement = duplicate.GetComponent<LayoutElement>() ?? duplicate.AddComponent<LayoutElement>();
             duplicateLayoutElement.minWidth = 32f;
 
-            UIManager.SetRectTransform(duplicate.transform.AsRT(), new Vector2(116f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+            UIManager.SetRectTransform(duplicate.transform.AsRT(), new Vector2(106f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
 
             duplicate.GetComponent<DeleteButtonStorage>().image.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}copy.png");
 
-            var mcpSpacerMid = new GameObject("Spacer Middle");
-            mcpSpacerMid.transform.SetParent(mcpRT);
-            mcpSpacerMid.transform.localScale = Vector3.one;
-            var mcpSpacerMidRT = mcpSpacerMid.AddComponent<RectTransform>();
-            mcpSpacerMidRT.sizeDelta = new Vector2(350f, 8f);
+            var notifier = Creator.NewUIObject("Notifier", mcpLabel.transform);
+            var notifierImage = notifier.AddComponent<Image>();
 
-            var layout = new GameObject("Layout");
-            layout.transform.SetParent(mcpRT);
-            layout.transform.localScale = Vector3.one;
+            UIManager.SetRectTransform(notifierImage.rectTransform, new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(8f, 32f));
 
-            var layoutRT = layout.AddComponent<RectTransform>();
+            var mcpSpacerMid = Creator.NewUIObject("Spacer Middle", modifierCardPrefab.transform);
+            mcpSpacerMid.transform.AsRT().sizeDelta = new Vector2(350f, 8f);
 
+            var layout = Creator.NewUIObject("Layout", modifierCardPrefab.transform);
             var layoutVLG = layout.AddComponent<VerticalLayoutGroup>();
             layoutVLG.childControlHeight = false;
             layoutVLG.childForceExpandHeight = false;
@@ -251,11 +234,8 @@ namespace BetterLegacy.Editor.Managers
             var layoutCSF = layout.AddComponent<ContentSizeFitter>();
             layoutCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-            var mcpSpacerBot = new GameObject("Spacer Botom");
-            mcpSpacerBot.transform.SetParent(mcpRT);
-            mcpSpacerBot.transform.localScale = Vector3.one;
-            var mcpSpacerBotRT = mcpSpacerBot.AddComponent<RectTransform>();
-            mcpSpacerBotRT.sizeDelta = new Vector2(350f, 8f);
+            var mcpSpacerBot = Creator.NewUIObject("Spacer Bottom", modifierCardPrefab.transform);
+            mcpSpacerBot.transform.AsRT().sizeDelta = new Vector2(350f, 8f);
 
             modifierAddPrefab = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "add modifier");
 
@@ -335,6 +315,11 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
                 EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
+
+                var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
+                notifier.modifierBase = modifier;
+                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject;
+                EditorThemeManager.ApplyGraphic(notifier.notifier.GetComponent<Image>(), ThemeGroup.Warning_Confirm, true);
 
                 var layout = gameObject.transform.Find("Layout");
 

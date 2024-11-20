@@ -6,28 +6,73 @@ namespace BetterLegacy.Core.Data
     {
         public ModifierBase() { }
 
-        public bool verified = false;
+        /// <summary>
+        /// Name of the modifier.
+        /// </summary>
+        public string Name => commands != null && commands.Count > 0 ? commands[0] : "Null";
 
-        public bool constant = true;
-
-        public bool prefabInstanceOnly = false;
-
+        /// <summary>
+        /// Function type.
+        /// </summary>
         public enum Type { Trigger, Action }
 
+        #region Modifier Values
+
+        /// <summary>
+        /// If the modifier has been verified yet.
+        /// </summary>
+        public bool verified = false;
+
+        /// <summary>
+        /// If true, the modifier will run per-frame, otherwise it will only run once.
+        /// </summary>
+        public bool constant = true;
+
+        /// <summary>
+        /// If the modifier group functions should only target objects in the prefab the object was spawned from, if it is from a prefab.
+        /// </summary>
+        public bool prefabInstanceOnly = false;
+
+        /// <summary>
+        /// Function type of the modifier.
+        /// </summary>
         public Type type = Type.Action;
+        /// <summary>
+        /// Main value of the modifier.
+        /// </summary>
         public string value;
-        public bool running = false;
-        public bool active = false;
+        /// <summary>
+        /// Extra values.
+        /// </summary>
         public List<string> commands = new List<string> { "" };
-        public string Name => commands != null && commands.Count > 0 ? commands[0] : "Null";
+
+        #endregion
+
+        #region Trigger Settings
 
         public bool not = false;
 
+        public bool elseIf;
+
+        #endregion
+
+        #region Run States
+
+        /// <summary>
+        /// Result of the modifier.
+        /// </summary>
         public object Result { get; set; }
+        /// <summary>
+        /// Timer result of the modifier.
+        /// </summary>
         public float ResultTimer { get; set; }
 
         public bool hasChanged;
-        public bool elseIf;
+        public bool running = false;
+        public bool triggered = false;
+        public bool active = false;
+
+        #endregion
 
         #region Methods
 
