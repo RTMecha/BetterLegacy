@@ -1,3 +1,14 @@
+snapshot-2024.11.18 - (pre-1.7.0) > [Nov 22, 2024]
+- Added Story File config to Config Manager > Core > File. This is just for testing the story mode.
+- Added Limit Player settings to the Global tab of the Player Editor. Limit Player is on by default, so if you made a level that has a custom player with specific speeds, please change this once the update releases.
+- Updated Editor Documentation.
+- Added "Show Intro" to the Metadata editor. Turning this off will stop the intro from showing when you play the level in the arcade.
+- Object Modifiers editor now shows a modifier being active by enabling / disabling a little bar based on the modifiers' active state.
+- Made the Modifier editors consistent. Background Modifiers now have copy / paste functionality and context menus.
+- Modifier context menus now have "Add Above", "Add Below", "Paste Above" and "Paste Below" functions.
+- Fixed textSequence modifier.
+- Added a ton of values to textSequence modifier so it can be used with the new "Order Matters" toggle.
+- Music time triggers now have a Start Time relative setting.
 snapshot-2024.11.17 - (pre-1.7.0) > [Nov 19, 2024]
 - Added staff logs.
 - Fixed Main Menu having the wrong name.
