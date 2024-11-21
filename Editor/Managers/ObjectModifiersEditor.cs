@@ -404,6 +404,26 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(beatmapObject);
                         }),
+                        new RTEditor.ButtonFunction("Add Above", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            RefreshDefaultModifiersList(beatmapObject, index);
+                        }),
+                        new RTEditor.ButtonFunction("Add Below", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            RefreshDefaultModifiersList(beatmapObject, index + 1);
+                        }),
+                        new RTEditor.ButtonFunction("Delete", () =>
+                        {
+                            beatmapObject.modifiers.RemoveAt(index);
+                            beatmapObject.reactivePositionOffset = Vector3.zero;
+                            beatmapObject.reactiveScaleOffset = Vector3.zero;
+                            beatmapObject.reactiveRotationOffset = 0f;
+                            Updater.UpdateObject(beatmapObject);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Copy", () =>
                         {
                             copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
@@ -419,14 +439,23 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Delete", () =>
+                        new RTEditor.ButtonFunction("Paste Above", () =>
                         {
-                            beatmapObject.modifiers.RemoveAt(index);
-                            beatmapObject.reactivePositionOffset = Vector3.zero;
-                            beatmapObject.reactiveScaleOffset = Vector3.zero;
-                            beatmapObject.reactiveRotationOffset = 0f;
-                            Updater.UpdateObject(beatmapObject);
+                            if (copiedModifier == null)
+                                return;
+
+                            beatmapObject.modifiers.Insert(index, Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                             StartCoroutine(RenderModifiers(beatmapObject));
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Paste Below", () =>
+                        {
+                            if (copiedModifier == null)
+                                return;
+
+                            beatmapObject.modifiers.Insert(index + 1, Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Sort Modifiers", () =>
@@ -2930,7 +2959,7 @@ namespace BetterLegacy.Editor.Managers
         #region Default Modifiers
 
         public string searchTerm;
-        public void RefreshDefaultModifiersList(BeatmapObject beatmapObject)
+        public void RefreshDefaultModifiersList(BeatmapObject beatmapObject, int addIndex = -1)
         {
             defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
 
@@ -2947,10 +2976,6 @@ namespace BetterLegacy.Editor.Managers
                     int tmpIndex = i;
 
                     var name = defaultModifiers[i].commands[0] + " (" + defaultModifiers[i].type.ToString() + ")";
-                    //if (name.Contains("DEVONLY"))
-                    //{
-                    //    continue;
-                    //}
 
                     var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(contentM, name);
 
@@ -2977,7 +3002,10 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         var modifier = Modifier<BeatmapObject>.DeepCopy(defaultModifiers[tmpIndex], beatmapObject);
-                        beatmapObject.modifiers.Add(modifier);
+                        if (addIndex == -1)
+                            beatmapObject.modifiers.Add(modifier);
+                        else
+                            beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
                         RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(beatmapObject));
                         EditorManager.inst.HideDialog("Default Modifiers Popup");
                     });

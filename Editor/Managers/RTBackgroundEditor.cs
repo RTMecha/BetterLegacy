@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Components;
+using BetterLegacy.Components.Editor;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
@@ -1888,6 +1889,20 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(140f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
 
+            var duplicate = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Copy");
+            duplicate.transform.localScale = Vector3.one;
+            var duplicateLayoutElement = duplicate.GetComponent<LayoutElement>() ?? duplicate.AddComponent<LayoutElement>();
+            duplicateLayoutElement.minWidth = 32f;
+
+            UIManager.SetRectTransform(duplicate.transform.AsRT(), new Vector2(106f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+
+            duplicate.GetComponent<DeleteButtonStorage>().image.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}copy.png");
+
+            var notifier = Creator.NewUIObject("Notifier", mcpLabel.transform);
+            var notifierImage = notifier.AddComponent<Image>();
+
+            UIManager.SetRectTransform(notifierImage.rectTransform, new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(8f, 32f));
+
             var mcpSpacerMid = Creator.NewUIObject("Spacer Middle", modifierCardPrefab.transform);
             mcpSpacerMid.transform.AsRT().sizeDelta = new Vector2(350f, 8f);
 
@@ -1919,6 +1934,7 @@ namespace BetterLegacy.Editor.Managers
             dropdownBar = Dropdown();
         }
 
+        public static Modifier<BackgroundObject> copiedModifier;
         public IEnumerator RenderModifiers(BackgroundObject backgroundObject)
         {
             LSHelpers.DeleteChildren(content);
@@ -2017,8 +2033,25 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(RenderModifiers(backgroundObject));
                 });
 
+                var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
+                copy.button.onClick.ClearAll();
+                copy.button.onClick.AddListener(() =>
+                {
+                    copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
+                    StartCoroutine(RenderModifiers(backgroundObject));
+                    EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                });
+
+                EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
+
                 EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
                 EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+                var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
+                notifier.modifierBase = modifier;
+                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject;
+                EditorThemeManager.ApplyGraphic(notifier.notifier.GetComponent<Image>(), ThemeGroup.Warning_Confirm, true);
 
                 var layout = gameObject.transform.Find("Layout");
 
@@ -2087,6 +2120,127 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
                     continue;
                 }
+
+                gameObject.AddComponent<Button>();
+                var modifierContextMenu = gameObject.AddComponent<ContextClickable>();
+                modifierContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    var buttonFunctions = new List<RTEditor.ButtonFunction>()
+                    {
+                        new RTEditor.ButtonFunction("Add", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            RefreshDefaultModifiersList(backgroundObject);
+                        }),
+                        new RTEditor.ButtonFunction("Add Above", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            RefreshDefaultModifiersList(backgroundObject, index);
+                        }),
+                        new RTEditor.ButtonFunction("Add Below", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            RefreshDefaultModifiersList(backgroundObject, index + 1);
+                        }),
+                        new RTEditor.ButtonFunction("Delete", () =>
+                        {
+                            backgroundObject.modifiers[currentPage].RemoveAt(index);
+                            backgroundObject.positionOffset = Vector3.zero;
+                            backgroundObject.scaleOffset = Vector3.zero;
+                            backgroundObject.rotationOffset = Vector3.zero;
+
+                            Destroy(backgroundObject.BaseObject);
+                            Updater.CreateBackgroundObject(backgroundObject);
+
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                        }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Copy", () =>
+                        {
+                            copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                            EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Paste", () =>
+                        {
+                            if (copiedModifier == null)
+                                return;
+
+                            backgroundObject.modifiers[currentPage].Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Paste Above", () =>
+                        {
+                            if (copiedModifier == null)
+                                return;
+
+                            backgroundObject.modifiers[currentPage].Insert(index, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Paste Below", () =>
+                        {
+                            if (copiedModifier == null)
+                                return;
+
+                            backgroundObject.modifiers[currentPage].Insert(index + 1, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Sort Modifiers", () =>
+                        {
+                            backgroundObject.modifiers[currentPage] = backgroundObject.modifiers[currentPage].OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move Up", () =>
+                        {
+                            if (index <= 0)
+                            {
+                                EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            backgroundObject.modifiers[currentPage].Move(index, index - 1);
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move Down", () =>
+                        {
+                            if (index >= backgroundObject.modifiers[currentPage].Count - 1)
+                            {
+                                EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            backgroundObject.modifiers[currentPage].Move(index, index + 1);
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move to Start", () =>
+                        {
+                            backgroundObject.modifiers[currentPage].Move(index, 0);
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move to End", () =>
+                        {
+                            backgroundObject.modifiers[currentPage].Move(index, backgroundObject.modifiers[currentPage].Count - 1);
+                            StartCoroutine(RenderModifiers(backgroundObject));
+                        }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Update Modifier", () =>
+                        {
+                            modifier.active = false;
+                            modifier.Inactive?.Invoke(modifier);
+                        })
+                    };
+                    if (ModCompatibility.UnityExplorerInstalled)
+                        buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => { ModCompatibility.Inspect(modifier); }));
+
+                    RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
+                };
 
                 var cmd = modifier.commands[0];
                 switch (cmd)
@@ -2167,6 +2321,25 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(button.transform.GetChild(0).GetComponent<Text>());
             }
 
+            // Paste Modifier
+            if (copiedModifier != null)
+            {
+                var gameObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
+                gameObject.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
+                var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                buttonStorage.text.text = "Paste";
+                buttonStorage.button.onClick.ClearAll();
+                buttonStorage.button.onClick.AddListener(() =>
+                {
+                    backgroundObject.modifiers[currentPage].Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                    StartCoroutine(RenderModifiers(backgroundObject));
+                    EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                });
+
+                EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Paste, true);
+                EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Paste_Text);
+            }
+
             yield break;
         }
 
@@ -2216,7 +2389,7 @@ namespace BetterLegacy.Editor.Managers
         public int currentPage;
 
         public string searchTerm;
-        public void RefreshDefaultModifiersList(BackgroundObject backgroundObject)
+        public void RefreshDefaultModifiersList(BackgroundObject backgroundObject, int addIndex = -1)
         {
             defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
@@ -2245,7 +2418,10 @@ namespace BetterLegacy.Editor.Managers
                         var cmd = defaultModifiers[tmpIndex].commands[0];
 
                         var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifiers[tmpIndex], backgroundObject);
-                        backgroundObject.modifiers[currentPage].Add(modifier);
+                        if (addIndex == -1)
+                            backgroundObject.modifiers[currentPage].Add(modifier);
+                        else
+                            backgroundObject.modifiers[currentPage].Insert(Mathf.Clamp(addIndex, 0, backgroundObject.modifiers[currentPage].Count), modifier);
                         StartCoroutine(RenderModifiers(backgroundObject));
                         EditorManager.inst.HideDialog("Default Background Modifiers Popup");
                     });
