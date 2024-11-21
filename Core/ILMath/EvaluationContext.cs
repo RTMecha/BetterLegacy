@@ -247,13 +247,14 @@ namespace ILMath
 
                             var type = parameters[0];
                             var axis = parameters[1];
-                            var time = parameters.Length < 3 ? Updater.CurrentTime - bm.StartTime : (float)parameters[2];
+                            var hasValues = parameters.Length < 3;
+                            var time = hasValues ? Updater.CurrentTime - bm.StartTime : (float)parameters[2];
 
                             result = type switch
                             {
-                                0 => bm.InterpolateChainPosition((float)time, parameters[3] == 1, parameters[4] == 1, parameters[5] == 1)[(int)axis],
-                                1 => bm.InterpolateChainScale((float)time, parameters[3] == 1, parameters[4] == 1)[(int)axis],
-                                2 => bm.InterpolateChainRotation((float)time, parameters[3] == 1, parameters[4] == 1),
+                                0 => bm.InterpolateChainPosition((float)time, hasValues && parameters[3] == 1, !hasValues || parameters[4] == 1, !hasValues || parameters[5] == 1)[(int)axis],
+                                1 => bm.InterpolateChainScale((float)time, !hasValues || parameters[3] == 1, !hasValues || parameters[4] == 1)[(int)axis],
+                                2 => bm.InterpolateChainRotation((float)time, !hasValues || parameters[3] == 1, !hasValues || parameters[4] == 1),
                                 _ => 0,
                             };
                             return true;

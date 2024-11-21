@@ -169,6 +169,21 @@ namespace BetterLegacy.Core
                     6 => Vector3.Distance(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])),
                     _ => 0
                 });
+                context.RegisterFunction("worldToViewportPointX", parameters =>
+                {
+                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], (float)parameters[1], parameters.Length > 2 ? (float)parameters[2] : 0f));
+                    return position.x;
+                });
+                context.RegisterFunction("worldToViewportPointY", parameters =>
+                {
+                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], (float)parameters[1], parameters.Length > 2 ? (float)parameters[2] : 0f));
+                    return position.y;
+                });
+                context.RegisterFunction("worldToViewportPointZ", parameters =>
+                {
+                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], (float)parameters[1], parameters.Length > 2 ? (float)parameters[2] : 0f));
+                    return position.z;
+                });
 
                 if (functions != null)
                     foreach (var function in functions)
