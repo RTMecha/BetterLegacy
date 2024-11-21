@@ -68,6 +68,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> CreateObjectsatCameraCenter { get; set; }
         public Setting<bool> SpawnPrefabsAtCameraCenter { get; set; }
         public Setting<bool> CreateObjectsScaleParentDefault { get; set; }
+        public Setting<bool> CreateObjectModifierOrderDefault { get; set; }
         public Setting<bool> AllowEditorKeybindsWithEditorCam { get; set; }
         public Setting<bool> RotationEventKeyframeResets { get; set; }
         public Setting<bool> RememberLastKeyframeType { get; set; }
@@ -1263,6 +1264,7 @@ namespace BetterLegacy.Configs
             CreateObjectsatCameraCenter = Bind(this, "General", "Create Objects at Camera Center", true, "When an object is created, its position will be set to that of the camera's.");
             SpawnPrefabsAtCameraCenter = Bind(this, "General", "Spawn Prefabs at Camera Center", true, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
             CreateObjectsScaleParentDefault = Bind(this, "General", "Create Objects Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
+            CreateObjectModifierOrderDefault = Bind(this, "General", "Create Object Modifier Order Default", false, "The default value for new objects' Order Matters toggle.");
             AllowEditorKeybindsWithEditorCam = Bind(this, "General", "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
             RotationEventKeyframeResets = Bind(this, "General", "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
             RememberLastKeyframeType = Bind(this, "General", "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");

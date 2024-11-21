@@ -1267,6 +1267,7 @@ namespace BetterLegacy.Editor.Managers
             beatmapObject.id = LSText.randomString(16);
             beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 5f;
+            beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
             if (!CoreHelper.AprilFools)
                 beatmapObject.editorData.layer = RTEditor.inst.Layer;
