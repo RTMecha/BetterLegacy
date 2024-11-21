@@ -61,6 +61,7 @@
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - PrefabOnObject implementation?
 - Think about maybe replacing the Editor Popup Animation system with a fully customizable one where animations can be more in-depth.
+- Change the Settings menu to a dropdown to be more consistent with the other title bar buttons.
 - Possible multi object editor rework???
 
 ### Internal
