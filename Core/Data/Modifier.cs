@@ -42,6 +42,7 @@ namespace BetterLegacy.Core.Data
             value = orig.value,
             reference = reference ?? orig.reference,
             not = orig.not,
+            elseIf = orig.elseIf,
             constant = orig.constant,
             prefabInstanceOnly = orig.prefabInstanceOnly,
         };
