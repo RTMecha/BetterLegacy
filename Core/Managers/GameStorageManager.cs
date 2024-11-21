@@ -194,7 +194,13 @@ namespace BetterLegacy.Core.Managers
                             }, SetIntroArtistPosition),
                         }
                     };
-                    introAnimation.onComplete = () => AnimationManager.inst.Remove(introAnimation.id);
+                    introAnimation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(introAnimation.id);
+                        SetIntroBGOpacity(0f);
+                        SetIntroTitlePosition(new Vector2(-1000f, 80f));
+                        SetIntroArtistPosition(new Vector2(-1000f, 32f));
+                    };
                 }
                 return introAnimation;
 
