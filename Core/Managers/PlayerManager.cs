@@ -521,7 +521,7 @@ namespace BetterLegacy.Core.Managers
 
                 for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
                 {
-                    if (GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
+                    if (GameManager.inst.PlayerPrefabs[i] && GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
                         Destroy(GameManager.inst.PlayerPrefabs[i]);
                 }
 
