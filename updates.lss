@@ -1,3 +1,8 @@
+snapshot-2024.11.19 - (pre-1.7.0) > [Nov 22, 2024]
+- Fixed Prefab Group modifiers checking for both spawned and expanded objects from prefabs.
+- Fixed variableOther trigger modifiers not using the prefab instance group toggle.
+- Added some math functions.
+- Added default Order Matters toggle config.
 snapshot-2024.11.18 - (pre-1.7.0) > [Nov 22, 2024]
 - Added Story File config to Config Manager > Core > File. This is just for testing the story mode.
 - Added Limit Player settings to the Global tab of the Player Editor. Limit Player is on by default, so if you made a level that has a custom player with specific speeds, please change this once the update releases.
