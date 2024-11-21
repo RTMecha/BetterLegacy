@@ -71,6 +71,7 @@ namespace BetterLegacy.Core.Data
         public bool running = false;
         public bool triggered = false;
         public bool active = false;
+        public bool setTimer = false;
 
         #endregion
 

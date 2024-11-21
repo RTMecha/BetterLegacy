@@ -844,11 +844,11 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "musicTimeGreater":
                     {
-                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time > x;
+                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) > x;
                     }
                 case "musicTimeLesser":
                     {
-                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time < x;
+                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) < x;
                     }
                 case "musicPlaying":
                     {
@@ -4348,174 +4348,83 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference.shape != 4 || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                                 break;
 
-                            var text = modifier.reference.text;
+                            var text = !string.IsNullOrEmpty(modifier.GetString(9, "")) ? modifier.GetString(9, "") : modifier.reference.text;
 
-                            var time = AudioManager.inst.CurrentAudioSource.time - modifier.reference.StartTime;
+                            if (!modifier.setTimer)
+                            {
+                                modifier.setTimer = true;
+                                modifier.ResultTimer = AudioManager.inst.CurrentAudioSource.time;
+                            }
+
+                            var offsetTime = modifier.ResultTimer;
+                            if (!modifier.GetBool(11, false))
+                                offsetTime = modifier.reference.StartTime;
+
+                            var time = AudioManager.inst.CurrentAudioSource.time - offsetTime + modifier.GetFloat(10, 0f);
                             var length = Parser.TryParse(modifier.value, 1f);
+                            var glitch = Parser.TryParse(modifier.commands[1], true);
 
                             var p = time / length;
 
-                            if (!Parser.TryParse(modifier.commands[1], true))
+                            var textWithoutFormatting = text;
+                            var tagLocations = new List<Vector2Int>();
+                            RTString.RegexMatches(text, new Regex(@"<(.*?)>"), match =>
                             {
-                                var textWithoutFormatting = text;
-                                var matches = Regex.Matches(text, "<(.*?)>");
-                                foreach (var obj in matches)
+                                textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                                tagLocations.Add(new Vector2Int(match.Index, match.Length - 1));
+                            });
+
+                            var stringLength2 = (int)Mathf.Lerp(0, textWithoutFormatting.Length, p);
+                            textObject.textMeshPro.maxVisibleCharacters = stringLength2;
+
+                            if (glitch && (int)RTMath.Lerp(0, textWithoutFormatting.Length, p) <= textWithoutFormatting.Length)
+                            {
+                                int insert = Mathf.Clamp(stringLength2 - 1, 0, text.Length);
+                                for (int i = 0; i < tagLocations.Count; i++)
                                 {
-                                    var match = (Match)obj;
-                                    textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                                    var tagLocation = tagLocations[i];
+                                    if (insert >= tagLocation.x)
+                                        insert += tagLocation.y + 1;
                                 }
 
-                                var stringLength2 = (int)Mathf.Lerp(0, textWithoutFormatting.Length, p);
-                                textObject.textMeshPro.maxVisibleCharacters = stringLength2;
+                                text = text.Insert(insert, LSText.randomString(1));
 
-                                if (modifier.Result is not int result || result != stringLength2)
+                                if (modifier.constant)
+                                    textObject.SetText(text);
+                                else
+                                    textObject.text = text;
+                            }
+                            else
+                            {
+                                if (modifier.constant)
+                                    textObject.SetText(text);
+                                else
+                                    textObject.text = text;
+                            }
+
+                            if ((modifier.Result is not int result || result != stringLength2) && textWithoutFormatting[Mathf.Clamp(stringLength2 - 1, 0, textWithoutFormatting.Length - 1)] != ' ')
+                            {
+                                modifier.Result = stringLength2;
+                                float pitch = modifier.GetFloat(6, 1f);
+                                float volume = modifier.GetFloat(7, 1f);
+                                float pitchVary = modifier.GetFloat(8, 0f);
+
+                                if (pitchVary != 0f)
+                                    pitch += UnityEngine.Random.Range(-pitchVary, pitchVary);
+
+                                // Don't play custom sound.
+                                if (!modifier.GetBool(3, false))
                                 {
-                                    modifier.Result = stringLength2;
-                                    if (!Parser.TryParse(modifier.commands[3], false))
-                                    {
-                                        AudioManager.inst.PlaySound("Click");
-                                        break;
-                                    }
-
-                                    if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
-                                    {
-                                        if (SoundManager.inst.TryGetSound(modifier.commands[4], out AudioClip audioClip))
-                                            SoundManager.inst.PlaySound(audioClip, vol, pitch);
-                                        else
-                                            ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
-                                    }
-
+                                    SoundManager.inst.PlaySound(DefaultSounds.Click, volume, volume);
                                     break;
                                 }
+
+                                if (SoundManager.inst.TryGetSound(modifier.GetString(4, ""), out AudioClip audioClip))
+                                    SoundManager.inst.PlaySound(audioClip, volume, pitch);
+                                else
+                                    ModifiersManager.GetSoundPath(modifier.reference.id, modifier.GetString(4, ""), modifier.GetBool(5, false), pitch, volume, false);
 
                                 break;
-                            }
-
-                            // new code that i can't figure out
-
-                            //var textWithoutFormatting = text;
-                            //var matches = Regex.Matches(text, "<(.*?)>");
-                            //foreach (var obj in matches)
-                            //{
-                            //    var match = (Match)obj;
-                            //    textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
-                            //}
-
-                            //var stringLength = (int)Mathf.Lerp(0, textWithoutFormatting.Length + 1, p);
-
-                            //if (textObject.TextMeshPro.maxVisibleCharacters != stringLength)
-                            //{
-                            //    if (Parser.TryParse(modifier.commands[2], true))
-                            //    {
-                            //        if (!Parser.TryParse(modifier.commands[3], false))
-                            //            AudioManager.inst.PlaySound("Click");
-                            //        else if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
-                            //            ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
-                            //    }
-                            //}
-
-                            //var stringLength2 = (int)Mathf.Lerp(0, text.Length - 1, p);
-                            ////int num = stringLength2;
-                            ////bool hasChanged = false;
-                            ////while (text[stringLength2] == '<' && text[num] != '>')
-                            ////{
-                            ////    hasChanged = true;
-                            ////    num++;
-                            ////}
-
-                            ////if (hasChanged)
-                            ////    stringLength2 = num + 1;
-
-                            //foreach (var obj in matches)
-                            //{
-                            //    var match = (Match)obj;
-                            //    if (stringLength2 >= match.Index && stringLength2 < match.Index + match.Groups[0].ToString().Length - 1)
-                            //    {
-                            //        stringLength2 = match.Groups[0].ToString().Length;
-                            //    }
-                            //}
-
-                            //if (stringLength2 > 0 && stringLength2 < textObject.TextMeshPro.text.Length - 1)
-                            //{
-                            //    var t = textObject.TextMeshPro.text.Insert(stringLength2, LSText.randomString(1));
-
-                            //    if (modifier.constant)
-                            //        ((TextObject)modifier.reference.levelObject.visualObject).SetText(t);
-                            //    else
-                            //        ((TextObject)modifier.reference.levelObject.visualObject).Text = t;
-                            //}
-
-                            //textObject.TextMeshPro.maxVisibleCharacters = stringLength;
-
-                            // old code
-
-                            var stringLength = (int)Mathf.Lerp(0, text.Length, p);
-                            var sequencedText = text.Substring(0, stringLength);
-                            int firstFormat = -1;
-                            int lastFormat = -1;
-                            int firstFormatCount = 0;
-                            int lastFormatCount = 0;
-                            int lastFormatBeforeCount = 0;
-                            var firstFormatTotal = text.Substring(0, stringLength).AsEnumerable().Where(x => x == '<').Count();
-                            var lastFormatTotal = text.Substring(0, stringLength).AsEnumerable().Where(x => x == '>').Count();
-                            for (int i = 0; i < text.Length; i++)
-                            {
-                                if (i < stringLength && sequencedText[i] == '<')
-                                {
-                                    firstFormat = i;
-                                    firstFormatCount++;
-                                }
-
-                                if (text[i] == '>')
-                                {
-                                    lastFormatCount++;
-                                }
-
-                                if (firstFormat != -1 && text[i] == '>' && firstFormatTotal == firstFormatCount)
-                                {
-                                    lastFormat = i;
-                                    break;
-                                }
-                                lastFormatBeforeCount++;
-                            }
-
-                            if (firstFormatCount == firstFormatTotal && lastFormatCount == lastFormatTotal)
-                            {
-                                firstFormat = -1;
-                                lastFormat = -1;
-                            }
-
-                            stringLength = (int)Mathf.Lerp(0, firstFormat < 0 ? text.Length : lastFormat - firstFormat + 2, p);
-                            text = stringLength <= 0 ? "" : stringLength >= text.Length ? text :
-                                                        text.Substring(0, firstFormat < 0 && lastFormat < 0 ? stringLength : Mathf.Clamp(lastFormat + 1, 0, text.Length - 1));
-
-                            string textWithoutGlitch = text;
-
-                            if ((text.Length == 0 || text[text.Length - 1] != ' ') && text.Length != modifier.reference.text.Length && Parser.TryParse(modifier.commands[1], true))
-                                text += LSText.randomString(1);
-
-                            if (modifier.constant)
-                                textObject.SetText(text);
-                            else
-                                textObject.text = text;
-
-                            if (Parser.TryParse(modifier.commands[2], true) && (modifier.Result is not string || (string)modifier.Result != textWithoutGlitch))
-                            {
-                                modifier.Result = textWithoutGlitch;
-
-                                if (!Parser.TryParse(modifier.commands[3], false))
-                                {
-                                    AudioManager.inst.PlaySound("Click");
-                                    break;
-                                }
-
-                                if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
-                                {
-                                    if (SoundManager.inst.TryGetSound(modifier.commands[4], out AudioClip audioClip))
-                                        SoundManager.inst.PlaySound(audioClip, vol, pitch);
-                                    else
-                                        ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
-                                }
                             }
 
                             break;
@@ -7093,6 +7002,11 @@ namespace BetterLegacy.Core.Helpers
                                     if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
                                         bm.levelObject.visualObject is TextObject textObject)
                                         textObject.text = bm.text;
+                            break;
+                        }
+                    case "textSequence":
+                        {
+                            modifier.setTimer = false;
                             break;
                         }
                     case "copyAxis":
