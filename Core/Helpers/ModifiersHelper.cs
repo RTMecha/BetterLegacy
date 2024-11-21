@@ -782,43 +782,48 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "variableOtherEquals":
                     {
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
                         return
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
-                            !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable == num);
+                            beatmapObjects.Any(x => x.integerVariable == num);
                     }
                 case "variableOtherLesserEquals":
                     {
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
                         return
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
-                            !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable <= num);
+                            beatmapObjects.Any(x => x.integerVariable <= num);
                     }
                 case "variableOtherGreaterEquals":
                     {
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
                         return
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
-                            !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable >= num);
+                            beatmapObjects.Any(x => x.integerVariable >= num);
                     }
                 case "variableOtherLesser":
                     {
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
                         return
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
-                            !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable < num);
+                            beatmapObjects.Any(x => x.integerVariable < num);
                     }
                 case "variableOtherGreater":
                     {
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
                         return
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
-                            !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable > num);
+                            beatmapObjects.Any(x => x.integerVariable > num);
                     }
                 #endregion
                 #region Audio
