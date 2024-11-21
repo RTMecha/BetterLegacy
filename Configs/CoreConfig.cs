@@ -22,19 +22,10 @@ namespace BetterLegacy.Configs
             Instance = this;
             BindSettings();
 
-            defaultSettings.Add("FullScreen", Fullscreen);
-            defaultSettings.Add("Resolution", Resolution);
-            defaultSettings.Add("MasterVolume", MasterVol);
-            defaultSettings.Add("MusicVolume", MusicVol);
-            defaultSettings.Add("EffectsVolume", SFXVol);
-            defaultSettings.Add("ControllerVibrate", ControllerRumble);
-
             Updater.UseNewUpdateMethod = UseNewUpdateMethod.Value;
 
             SetupSettingChanged();
         }
-
-        public Dictionary<string, BaseSetting> defaultSettings = new Dictionary<string, BaseSetting>();
 
         #region Settings
 
