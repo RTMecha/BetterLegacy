@@ -35,6 +35,12 @@ namespace BetterLegacy.Core.Managers
 
         void Awake()
         {
+            if (inst)
+            {
+                Debug.LogWarning($"{className}Init was already called!");
+                return;
+            }    
+
             inst = this;
 
             videoPlayer = gameObject.AddComponent<VideoPlayer>();
@@ -73,30 +79,6 @@ namespace BetterLegacy.Core.Managers
             Play(currentURL, currentAlpha);
         }
 
-        //public static YieldType yieldType = YieldType.FixedUpdate;
-
-        //public bool stopped = false;
-
-        //IEnumerator IUpdateVideo()
-        //{
-        //    float delay = 0f;
-        //    while (true)
-        //    {
-        //        if (stopped)
-        //        {
-        //            stopped = false;
-        //            yield break;
-        //        }
-
-        //        UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
-
-        //        if (yieldType != YieldType.None)
-        //            yield return CoreHelper.GetYieldInstruction(yieldType, ref delay);
-        //        else
-        //            yield return null; // not having it yield return will freeze the game indefinitely.
-        //    }
-        //}
-
         public void UpdateVideo()
         {
             UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
@@ -127,24 +109,21 @@ namespace BetterLegacy.Core.Managers
 
         public IEnumerator Setup(string fullPath)
         {
-            if (fullPath[fullPath.Length - 1] != '/' || fullPath[fullPath.Length - 1] != '\\')
-                fullPath += "/";
-
-            if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(fullPath + "bg.mp4") && !RTFile.FileExists(fullPath + "bg.mov"))
+            if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mp4")) && !RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mov")))
             {
                 Stop();
                 yield break;
             }
 
-            if (RTFile.FileExists(fullPath + "bg.mp4"))
+            if (RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mp4")))
             {
-                Play(fullPath + "bg.mp4", 1f);
+                Play(RTFile.CombinePaths(fullPath, "bg.mp4"), 1f);
                 while (!videoPlayer.isPrepared)
                     yield return null;
             }
-            else if (RTFile.FileExists(fullPath + "bg.mov"))
+            else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mov")))
             {
-                Play(fullPath + "bg.mov", 1f);
+                Play(RTFile.CombinePaths(fullPath, "bg.mov"), 1f);
                 while (!videoPlayer.isPrepared)
                     yield return null;
             }
@@ -167,9 +146,9 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            if (!videoTexture && GameObject.Find("ExtraBG") && GameObject.Find("ExtraBG").transform.childCount > 0)
+            if (!videoTexture && CoreHelper.TryFind("ExtraBG", out GameObject extraBG) && extraBG.transform.childCount > 0)
             {
-                videoTexture = GameObject.Find("ExtraBG").transform.GetChild(0).gameObject;
+                videoTexture = extraBG.transform.GetChild(0).gameObject;
                 videoPlayer.targetMaterialRenderer = videoTexture.GetComponent<MeshRenderer>();
             }
 
@@ -181,8 +160,6 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.clip = videoClip;
             videoPlayer.Prepare();
             didntPlay = false;
-
-            //CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Play(string url, float alpha)
@@ -204,9 +181,9 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            if (!videoTexture && GameObject.Find("ExtraBG") && GameObject.Find("ExtraBG").transform.childCount > 0)
+            if (!videoTexture && CoreHelper.TryFind("ExtraBG", out GameObject extraBG) && extraBG.transform.childCount > 0)
             {
-                videoTexture = GameObject.Find("ExtraBG").transform.GetChild(0).gameObject;
+                videoTexture = extraBG.transform.GetChild(0).gameObject;
                 videoPlayer.targetMaterialRenderer = videoTexture.GetComponent<MeshRenderer>();
             }
 
@@ -218,8 +195,6 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.url = url;
             videoPlayer.Prepare();
             didntPlay = false;
-
-            //CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Stop()
@@ -232,8 +207,6 @@ namespace BetterLegacy.Core.Managers
                 Debug.LogError($"{className}VideoPlayer does not exist so it wasn't disabled. Continuing...");
 
             videoTexture?.SetActive(false);
-
-            //stopped = true;
         }
     }
 }
