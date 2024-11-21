@@ -318,22 +318,6 @@ namespace BetterLegacy.Menus.UI.Elements
                 enableWordWrapping = jnElement["word_wrap"].AsBool;
             if (jnElement["overflow_mode"] != null)
                 overflowMode = Parser.TryParse(jnElement["overflow_mode"], TextOverflowModes.Masking);
-            if (jnElement["text_sound"] != null)
-                textSound = jnElement["text_sound"];
-            if (jnElement["text_sound_volume"] != null)
-                textSoundVolume = jnElement["text_sound_volume"].AsFloat;
-            if (jnElement["text_sound_pitch"] != null)
-                textSoundPitch = jnElement["text_sound_pitch"].AsFloat;
-            if (jnElement["text_sound_pitch_vary"] != null)
-                textSoundPitchVary = jnElement["text_sound_pitch_vary"].AsFloat;
-            if (jnElement["text_sound_repeat"] != null)
-                textSoundRepeat = jnElement["text_sound_repeat"].AsInt;
-            if (jnElement["text_sound_ranges"] != null)
-            {
-                textSoundRanges = new List<Vector2Int>();
-                for (int i = 0; i < jnElement["text_sound_ranges"].Count; i++)
-                    textSoundRanges.Add(Parser.TryParse(jnElement["text_sound_ranges"][i], Vector2Int.zero));
-            }
 
             #endregion
 
@@ -376,6 +360,22 @@ namespace BetterLegacy.Menus.UI.Elements
                 length = jnElement["anim_length"].AsFloat;
             else if (!parsed)
                 length = 0f;
+            if (jnElement["text_sound"] != null)
+                textSound = jnElement["text_sound"];
+            if (jnElement["text_sound_volume"] != null)
+                textSoundVolume = jnElement["text_sound_volume"].AsFloat;
+            if (jnElement["text_sound_pitch"] != null)
+                textSoundPitch = jnElement["text_sound_pitch"].AsFloat;
+            if (jnElement["text_sound_pitch_vary"] != null)
+                textSoundPitchVary = jnElement["text_sound_pitch_vary"].AsFloat;
+            if (jnElement["text_sound_repeat"] != null)
+                textSoundRepeat = jnElement["text_sound_repeat"].AsInt;
+            if (jnElement["text_sound_ranges"] != null)
+            {
+                textSoundRanges = new List<Vector2Int>();
+                for (int i = 0; i < jnElement["text_sound_ranges"].Count; i++)
+                    textSoundRanges.Add(Parser.TryParse(jnElement["text_sound_ranges"][i], Vector2Int.zero));
+            }
 
             #endregion
 
