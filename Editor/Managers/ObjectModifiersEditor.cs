@@ -41,7 +41,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 searchTerm = _val;
                 if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-                    RefreshDefaultModifiersList(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+                    RefreshDefaultModifiersList(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), addIndex);
             }, placeholderText: "Search for default Modifier...");
         }
 
@@ -526,8 +526,6 @@ namespace BetterLegacy.Editor.Managers
                     case "setAlpha":
                     case "setAlphaOther":
                     case "blackHole":
-                    case "musicTimeGreater":
-                    case "musicTimeLesser":
                     case "playerSpeed":
                         {
                             if (cmd.Contains("Other"))
@@ -547,6 +545,14 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
 
+                    case "musicTimeGreater":
+                    case "musicTimeLesser":
+                        {
+                            SingleGenerator(modifier, layout, "Time", 0, 0f);
+                            BoolGenerator(modifier, layout, "Offset From Start Time", 1, false);
+
+                            break;
+                        }
                     #endregion
 
                     #region Sound
@@ -797,6 +803,11 @@ namespace BetterLegacy.Editor.Managers
 
                             SingleGenerator(modifier, layout, "Pitch", 6, 1f);
                             SingleGenerator(modifier, layout, "Volume", 7, 1f);
+                            SingleGenerator(modifier, layout, "Pitch Vary", 8, 0f);
+                            var str = StringGenerator(modifier, layout, "Custom Text", 9);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            SingleGenerator(modifier, layout, "Time Offset", 10, 0f);
+                            BoolGenerator(modifier, layout, "Time Relative", 11, false);
 
                             break;
                         }
@@ -2959,8 +2970,10 @@ namespace BetterLegacy.Editor.Managers
         #region Default Modifiers
 
         public string searchTerm;
+        public int addIndex = -1;
         public void RefreshDefaultModifiersList(BeatmapObject beatmapObject, int addIndex = -1)
         {
+            this.addIndex = addIndex;
             defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
 
             var dialog = EditorManager.inst.GetDialog("Default Modifiers Popup").Dialog.gameObject;

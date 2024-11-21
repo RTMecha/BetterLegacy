@@ -1146,7 +1146,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     searchTerm = _val;
                     if (CurrentSelectedBG)
-                        RefreshDefaultModifiersList(RTBackgroundEditor.CurrentSelectedBG);
+                        RefreshDefaultModifiersList(CurrentSelectedBG, addIndex);
                 }, placeholderText: "Search for default Modifier...");
 
                 EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("block").gameObject, true, "Background Editor Reactive");
@@ -2389,8 +2389,10 @@ namespace BetterLegacy.Editor.Managers
         public int currentPage;
 
         public string searchTerm;
+        public int addIndex = -1;
         public void RefreshDefaultModifiersList(BackgroundObject backgroundObject, int addIndex = -1)
         {
+            this.addIndex = addIndex;
             defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
             var dialog = EditorManager.inst.GetDialog("Default Background Modifiers Popup").Dialog.gameObject;
