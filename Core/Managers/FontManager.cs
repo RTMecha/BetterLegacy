@@ -69,9 +69,6 @@ namespace BetterLegacy.Core.Managers
 
             var beatmapObjects = GameData.Current.beatmapObjects;
 
-            var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
-            var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
-
             for (int i = 0; i < beatmapObjects.Count; i++)
             {
                 var beatmapObject = beatmapObjects[i];
