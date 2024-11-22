@@ -821,7 +821,7 @@ namespace BetterLegacy.Editor.Managers
                 if (duplicate)
                 {
                     var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
-                    var str = FontManager.TextTranslater.ArrayToString(array);
+                    var str = RTString.ArrayToString(array);
 
                     EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
                     return;
@@ -850,7 +850,7 @@ namespace BetterLegacy.Editor.Managers
                         if (duplicate)
                         {
                             var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
-                            var str = FontManager.TextTranslater.ArrayToString(array);
+                            var str = RTString.ArrayToString(array);
 
                             EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
                             return;
@@ -1150,7 +1150,7 @@ namespace BetterLegacy.Editor.Managers
                 if (duplicate)
                 {
                     var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
-                    var str = FontManager.TextTranslater.ArrayToString(array);
+                    var str = RTString.ArrayToString(array);
 
                     EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
                     return;

@@ -178,9 +178,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (line == 11)
                         text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You boosted a total of {LevelManager.BoostCount} times</b></color>";
                     if (line == 12)
-                        text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>Song length is {FontManager.TextTranslater.SecondsToTime(AudioManager.inst.CurrentAudioSource.clip.length)}</b></color>";
+                        text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>Song length is {RTString.SecondsToTime(AudioManager.inst.CurrentAudioSource.clip.length)}</b></color>";
                     if (line == 13)
-                        text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You spent {FontManager.TextTranslater.SecondsToTime(LevelManager.timeInLevel)} in the level.</b></color>";
+                        text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You spent {RTString.SecondsToTime(LevelManager.timeInLevel)} in the level.</b></color>";
 
                     elements.Add(new MenuText
                     {

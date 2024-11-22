@@ -291,9 +291,9 @@ namespace BetterLegacy.Patchers
                     SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
                     SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
                     SetText("Objects Alive Count", GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString());
-                    SetText("Time in Editor", FontManager.TextTranslater.SecondsToTime(RTEditor.inst.timeEditing));
+                    SetText("Time in Editor", RTString.SecondsToTime(RTEditor.inst.timeEditing));
                     SetText("Level opened amount", RTEditor.inst.openAmount.ToString());
-                    SetText("Song Progress", $"{FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
+                    SetText("Song Progress", $"{RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
                     SetText("Camera Position", $"X: {Camera.main.transform.position.x}, Y: {Camera.main.transform.position.y}");
                     SetText("Camera Zoom", Camera.main.orthographicSize.ToString());
                     SetText("Camera Rotation", Camera.main.transform.rotation.eulerAngles.z.ToString());

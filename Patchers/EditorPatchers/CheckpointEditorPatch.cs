@@ -405,7 +405,7 @@ namespace BetterLegacy.Patchers
                 var time = gameObject.transform.Find("time").GetComponent<Text>();
 
                 name.text = checkpoint.name;
-                time.text = FontManager.TextTranslater.SecondsToTime(checkpoint.time);
+                time.text = RTString.SecondsToTime(checkpoint.time);
                 selected.enabled = num == __1;
 
                 var button = gameObject.GetComponent<Button>();

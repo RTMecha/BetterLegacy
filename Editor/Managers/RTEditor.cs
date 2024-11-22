@@ -9678,7 +9678,7 @@ namespace BetterLegacy.Editor.Managers
         void OpenLevelPopup(bool anyFailed, List<string> failedLevels)
         {
             if (anyFailed && EditorConfig.Instance.ShowLevelsWithoutCoverNotification.Value)
-                EditorManager.inst.DisplayNotification($"Levels {FontManager.TextTranslater.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification($"Levels {RTString.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
 
             if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || EditorManager.inst.loadedLevels.Count > 0)
             {
@@ -10246,9 +10246,9 @@ namespace BetterLegacy.Editor.Managers
                 if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(orig.id)))
                 {
                     var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == orig.id).Select(x => x.name).ToArray();
-                    var str = FontManager.TextTranslater.ArrayToString(array);
+                    var str = RTString.ArrayToString(array);
 
-                    if (EditorManager.inst != null)
+                    if (CoreHelper.InEditor)
                         EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] due to conflicting themes: {str}", 2f * array.Length, EditorManager.NotificationType.Error);
 
                     RTThemeEditor.inst.SetupThemePanel(orig, false, true);

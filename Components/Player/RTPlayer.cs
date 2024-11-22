@@ -979,7 +979,7 @@ namespace BetterLegacy.Components.Player
 
                 if (act && textMesh != null)
                 {
-                    textMesh.text = "<#" + LSColors.ColorToHex(GameManager.inst.LiveTheme.playerColors[playerIndex % 4]) + ">Player " + (playerIndex + 1).ToString() + " " + FontManager.TextTranslater.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
+                    textMesh.text = "<#" + LSColors.ColorToHex(GameManager.inst.LiveTheme.playerColors[playerIndex % 4]) + ">Player " + (playerIndex + 1).ToString() + " " + RTString.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
                     healthBase.material.color = LSColors.fadeColor(GameManager.inst.LiveTheme.playerColors[playerIndex % 4], 0.3f);
                     healthBase.transform.localScale = new Vector3((float)initialHealthCount * 2.25f, 1.5f, 1f);
                 }
@@ -2907,7 +2907,7 @@ namespace BetterLegacy.Components.Player
                 if (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text)
                     text.text = _health.ToString();
                 else
-                    text.text = FontManager.TextTranslater.ConvertHealthToEquals(_health, initialHealthCount);
+                    text.text = RTString.ConvertHealthToEquals(_health, initialHealthCount);
             }
             else
                 text.enabled = false;

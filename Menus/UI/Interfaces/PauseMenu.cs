@@ -293,7 +293,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "738347853",
                 name = "Info Text",
-                text = $"<align=right>Level completed: {FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
+                text = $"<align=right>Level completed: {RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,

@@ -411,12 +411,12 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.CombinerOutputFormat.Value == FileType.LS)
                 combinedGameData.SaveData(save, () =>
                 {
-                    EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
                 }, true);
             else
                 combinedGameData.SaveDataVG(save.Replace(".lsb", ".vgd"), () =>
                 {
-                    EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
                 });
         }
     }

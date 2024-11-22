@@ -181,7 +181,7 @@ namespace BetterLegacy.Arcade
                 id = "4624859539",
                 name = "Tags",
                 rect = RectValues.Default.AnchoredPosition(160f, -350f).SizeDelta(800f, 100f),
-                text = "<size=22><b>Tags</b>: " + FontManager.TextTranslater.ArrayToString(CurrentCollection.tags),
+                text = "<size=22><b>Tags</b>: " + RTString.ArrayToString(CurrentCollection.tags),
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,

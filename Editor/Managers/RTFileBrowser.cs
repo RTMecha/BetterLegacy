@@ -63,7 +63,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
             };
 
-            title.text = $"<b>File Browser</b> ({FontManager.TextTranslater.ArrayToString(fileExtensions).ToLower()})";
+            title.text = $"<b>File Browser</b> ({RTString.ArrayToString(fileExtensions).ToLower()})";
 
             var dir = transform.Find("folder-bar").GetComponent<InputField>();
             dir.onValueChanged.ClearAll();

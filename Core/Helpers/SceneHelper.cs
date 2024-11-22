@@ -148,14 +148,14 @@ namespace BetterLegacy.Core.Helpers
                         {
                             loadingImage?.gameObject?.SetActive(false);
                             if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {FontManager.TextTranslater.ConvertBar("▓", progress)} ]</b>";
+                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("▓", progress)} ]</b>";
                             break;
                         }
                     case LoadingDisplayType.EqualsBar:
                         {
                             loadingImage?.gameObject?.SetActive(false);
                             if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {FontManager.TextTranslater.ConvertBar("=", progress)} ]</b>";
+                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("=", progress)} ]</b>";
                             break;
                         }
                     case LoadingDisplayType.Percentage:
