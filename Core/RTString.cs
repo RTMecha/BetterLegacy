@@ -264,7 +264,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="levelRank">Level Rank to format.</param>
         /// <returns>Returns a formatted Level Rank.</returns>
-        public static string FormatLevelRank(DataManager.LevelRank levelRank) => $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
+        public static string FormatLevelRank(DataManager.LevelRank levelRank) => $"<#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
 
         /// <summary>
         /// Custom text formatting.
