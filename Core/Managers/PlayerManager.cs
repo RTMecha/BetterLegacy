@@ -96,47 +96,62 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="vector2">Position to check closeness to.</param>
         /// <returns>Returns a CustomPlayer closest to the Vector2 parameter.</returns>
-        public static CustomPlayer GetClosestPlayer(Vector2 vector2)
+        public static CustomPlayer GetClosestPlayer(Vector2 pos)
         {
+            var players = Players;
+            var index = GetClosestPlayerIndex(pos);
+            return index >= 0 && index < players.Count ? players[index] : null;
+        }
+
+        public static int GetClosestPlayerIndex(Vector2 pos)
+        {
+            var players = Players;
             if (IsSingleplayer)
             {
-                var singleplayer = Players[0];
-                return singleplayer && singleplayer.Player ? singleplayer : null;
+                var singleplayer = players[0];
+                return singleplayer && singleplayer.Player ? 0 : -1;
             }
 
-            if (Players.Count < 1)
-                return null;
+            if (players.Count < 1)
+                return -1;
 
-            var orderedList = Players
-                .Where(x => x.Player && x.Player.transform.Find("Player"))
-                .OrderBy(x => Vector2.Distance(x.Player.transform.Find("Player").localPosition, vector2));
+            var orderedList = players
+                .Where(x => x.Player && x.Player.rb)
+                .OrderBy(x => Vector2.Distance(x.Player.rb.position, pos));
 
             if (orderedList.Count() < 1)
-                return null;
+                return -1;
 
             var player = orderedList.ElementAt(0);
 
-            return player && player.Player ? player : null;
+            return player ? player.index : -1;
         }
 
         public static Vector2 CenterOfPlayers()
         {
+            var players = Players;
             if (IsSingleplayer)
             {
-                var customPlayer = Players[0];
-                if (customPlayer.Player && customPlayer.Player.rb)
-                    return customPlayer.Player.rb.transform.position;
-
-                return Vector2.zero;
+                var customPlayer = players[0];
+                return customPlayer.Player && customPlayer.Player.rb ? customPlayer.Player.rb.transform.position : Vector2.zero;
             }
 
-            var list = new List<Vector3>();
+            if (players.Count == 0)
+                return Vector2.zero;
 
-            for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
-                if (GameManager.inst.players.transform.TryFind("Player " + (i + 1).ToString(), out Transform result))
-                    list.Add(result.Find("Player").position);
+            int count = 0;
+            var result = Vector2.zero;
+            for (int i = 0; i < players.Count; i++)
+            {
+                var player = players[i];
+                if (player && player.Player && player.Player.rb)
+                {
+                    result += player.Player.rb.position;
+                    count++;
+                }
+            }
 
-            return RTMath.CenterOfVectors(list);
+            return result / count;
         }
 
         #region Level Difficulties
@@ -151,11 +166,11 @@ namespace BetterLegacy.Core.Managers
         public static bool IsNoHit => ChallengeMode == ChallengeMode.OneHit;
         public static bool IsPractice => ChallengeMode == ChallengeMode.Practice;
 
-        public static List<string> ChallengeModeNames => new List<string> { "ZEN", "NORMAL", "ONE LIFE", "ONE HIT", "PRACTICE" };
+        public static string[] ChallengeModeNames => new string[] { "ZEN", "NORMAL", "ONE LIFE", "ONE HIT", "PRACTICE" };
 
         public static bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : IsZenMode;
 
-        public static List<float> GameSpeeds => new List<float> { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
+        public static float[] GameSpeeds => new float[] { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
 
         public static int ArcadeGameSpeed => DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2);
 
@@ -249,7 +264,7 @@ namespace BetterLegacy.Core.Managers
                 };
             }
 
-            if ((IncludeOtherPlayersInRank || player.playerIndex == 0))
+            if (IncludeOtherPlayersInRank || player.playerIndex == 0)
             {
                 player.playerDeathEvent += _val =>
                 {
@@ -299,49 +314,61 @@ namespace BetterLegacy.Core.Managers
 
             foreach (var path in player.path)
             {
-                if (path.transform != null)
-                {
-                    path.pos = new Vector3(pos.x, pos.y);
-                }
+                path.pos = new Vector3(pos.x, pos.y, 0f);
+                path.lastPos = new Vector3(pos.x, pos.y, 0f);
+
+                if (path.transform)
+                    path.transform.position = path.pos;
             }
 
             return gameObject;
         }
 
-        public static void RespawnPlayers()
+        public static void RespawnPlayers() => RespawnPlayers(GetSpawnPosition());
+
+        public static void RespawnPlayers(Vector2 pos)
         {
-            foreach (var player in Players.Where(x => x.Player).Select(x => x.Player))
+            foreach (var player in Players)
             {
-                DestroyImmediate(player.health);
-                DestroyImmediate(player.gameObject);
+                if (!player.Player)
+                    continue;
+                DestroyImmediate(player.Player.health);
+                DestroyImmediate(player.Player.gameObject);
             }
 
             AssignPlayerModels();
-
-            var nextIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
-            var prevIndex = nextIndex - 1;
-            if (prevIndex < 0)
-                prevIndex = 0;
-
-            GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints.Count > prevIndex && GameData.Current.beatmapData.checkpoints[prevIndex] != null ?
-                GameData.Current.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position);
+            GameManager.inst.SpawnPlayers(pos);
         }
 
-        public static void RespawnPlayer(int index)
+        public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPosition());
+
+        public static void RespawnPlayer(int index, Vector2 pos)
         {
-            DestroyImmediate(Players.Where(x => x.Player).Select(x => x.Player).ToList()[index].health);
-            DestroyImmediate(Players.Where(x => x.Player).Select(x => x.Player).ToList()[index].gameObject);
+            if (index < 0 || index >= Players.Count)
+                return;
 
-            if (PlayerModelsIndex.Count > index && PlayerModels.ContainsKey(PlayerModelsIndex[index]))
-                Players[index].CurrentPlayerModel = PlayerModelsIndex[index];
+            var player = Players[index];
+            if (player.Player)
+            {
+                DestroyImmediate(player.Player.health);
+                DestroyImmediate(player.Player.gameObject);
+            }
 
+            if (PlayerModelsIndex.TryGetValue(index, out string id) && PlayerModels.ContainsKey(id))
+                player.CurrentPlayerModel = id;
+
+            GameManager.inst.SpawnPlayers(pos);
+        }
+
+        public static Vector2 GetSpawnPosition()
+        {
             var nextIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
             var prevIndex = nextIndex - 1;
             if (prevIndex < 0)
                 prevIndex = 0;
 
-            GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints.Count > prevIndex && GameData.Current.beatmapData.checkpoints[prevIndex] != null ?
-                GameData.Current.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position);
+            return GameData.IsValid && GameData.Current.beatmapData.checkpoints.Count > prevIndex && GameData.Current.beatmapData.checkpoints[prevIndex] != null ?
+                GameData.Current.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position;
         }
 
         #endregion
