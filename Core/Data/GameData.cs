@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
 using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
@@ -20,15 +21,21 @@ using BaseGameData = DataManager.GameData;
 
 namespace BetterLegacy.Core.Data
 {
+    /// <summary>
+    /// Represents a Project Arrhythmia level.
+    /// </summary>
     public class GameData : BaseGameData
     {
-        public GameData()
-        {
+        public GameData() { }
 
-        }
-
+        /// <summary>
+        /// Checks if the current GameData is of the correct type.
+        /// </summary>
         public static bool IsValid => DataManager.inst.gameData is GameData;
-        public static GameData Current { get => (GameData)DataManager.inst.gameData; set => DataManager.inst.gameData = value; }
+        /// <summary>
+        /// The current GameData that is being used by the game.
+        /// </summary>
+        public static GameData Current { get => DataManager.inst.gameData as GameData; set => DataManager.inst.gameData = value; }
 
         public Dictionary<string, BaseBeatmapTheme> beatmapThemes = new Dictionary<string, BaseBeatmapTheme>();
 
@@ -43,7 +50,6 @@ namespace BetterLegacy.Core.Data
             public Modifier<GameData> ActionModifier { get; set; }
 
             public int retriggerAmount = -1;
-            [NonSerialized]
             public int current;
 
             public void AssignModifier(ModifierBase.Type type, int i)
@@ -1999,8 +2005,8 @@ namespace BetterLegacy.Core.Data
 
         public new List<Data.BackgroundObject> backgroundObjects = new List<Data.BackgroundObject>();
 
-        [NonSerialized]
-        public new List<GameObject> backgroundGameObjects = new List<GameObject>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameData operator +(GameData a, GameData b) => Combiner.Combine(a, b);
 
         public static class Combiner
         {
@@ -2155,6 +2161,5 @@ namespace BetterLegacy.Core.Data
                 return baseData;
             }
         }
-
     }
 }

@@ -30,14 +30,14 @@ namespace BetterLegacy.Core.Data
         }
 
         /// <summary>
-        /// Checks if the current metadata is of the correct type.
+        /// Checks if the current MetaData is of the correct type.
         /// </summary>
         public static bool IsValid => DataManager.inst.metaData is MetaData;
 
         /// <summary>
-        /// The current metadata.
+        /// The current MetaData that is being used by the game.
         /// </summary>
-        public static MetaData Current { get => (MetaData)DataManager.inst.metaData; set => DataManager.inst.metaData = value; }
+        public static MetaData Current { get => DataManager.inst.metaData as MetaData; set => DataManager.inst.metaData = value; }
 
         public string collectionID;
         public int index;
