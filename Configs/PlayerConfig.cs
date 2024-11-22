@@ -57,16 +57,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> ZenEditorIncludesSolid { get; set; }
 
         /// <summary>
-        /// Controller button to press to shoot. Requires restart if changed.
-        /// </summary>
-        public Setting<InputControlType> PlayerShootControl { get; set; }
-
-        /// <summary>
-        /// Keyboard key to press to shoot. Requires restart if changed.
-        /// </summary>
-        public Setting<Key> PlayerShootKey { get; set; }
-
-        /// <summary>
         /// Plays a little sound when you shoot.
         /// </summary>
         public Setting<bool> PlayerShootSound { get; set; }
@@ -97,6 +87,22 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Controls
+
+        /// <summary>
+        /// Controller button to press to shoot. Requires restart if changed.
+        /// </summary>
+        public Setting<InputControlType> PlayerShootControl { get; set; }
+
+        /// <summary>
+        /// Keyboard key to press to shoot. Requires restart if changed.
+        /// </summary>
+        public Setting<Key> PlayerShootKey { get; set; }
+
+        public Setting<bool> AllowControlerIfSinglePlayer { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -117,8 +123,6 @@ namespace BetterLegacy.Configs
 
             ZenEditorIncludesSolid = Bind(this, "General", "Editor Zen Mode includes Solid", false, "Makes Player ignore solid objects in editor.");
 
-            PlayerShootControl = BindEnum(this, "General", "Shoot Control", InputControlType.Action3, "Controller button to press to shoot. Requires restart if changed.");
-            PlayerShootKey = BindEnum(this, "General", "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
             PlayerShootSound = Bind(this, "General", "Play Shoot Sound", true, "Plays a little sound when you shoot.");
             AllowPlayersToTakeBulletDamage = Bind(this, "General", "Shots hurt other players", false, "Disable this if you don't want players to kill each other.");
 
@@ -135,6 +139,14 @@ namespace BetterLegacy.Configs
             PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 2 Model", "0", "The player uses this specific model ID."));
             PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 3 Model", "0", "The player uses this specific model ID."));
             PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 4 Model", "0", "The player uses this specific model ID."));
+
+            #endregion
+
+            #region Controls
+
+            AllowControlerIfSinglePlayer = Bind(this, "Controls", "Allow Controler If Single Player", true, "If controller should be usable on singleplayer.");
+            PlayerShootControl = BindEnum(this, "Controls", "Shoot Control", InputControlType.Action3, "Controller button to press to shoot. Requires restart if changed.");
+            PlayerShootKey = BindEnum(this, "Controls", "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
 
             #endregion
 

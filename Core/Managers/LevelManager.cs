@@ -308,7 +308,7 @@ namespace BetterLegacy.Core.Managers
                     DestroyImmediate(PlayerManager.Players[i].GameObject);
             }
 
-            PlayerManager.allowController = InputDataManager.inst.players.Count == 0;
+            PlayerManager.allowController = PlayerConfig.Instance.AllowControlerIfSinglePlayer.Value && InputDataManager.inst.players.Count == 1;
 
             PlayerManager.LoadLocalModels();
 
@@ -316,7 +316,6 @@ namespace BetterLegacy.Core.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
-            //GameManager.inst.introAnimator.SetTrigger("play");
             GameStorageManager.inst.PlayIntro();
             GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
 
@@ -338,13 +337,7 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = false;
 
             CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
-            if (PlayerManager.Players.Count > 1)
-                AchievementManager.inst.UnlockAchievement("friendship");
-            var tags = CurrentLevel.metadata.song.tags;
-            if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
-                AchievementManager.inst.UnlockAchievement("youve_been_trolled");
-            if (tags.Contains("high_detail") || tags.Contains("lag"))
-                AchievementManager.inst.UnlockAchievement("no_fps");
+            AchievementManager.inst.CheckLevelBeginAchievements();
         }
 
         /// <summary>
