@@ -677,6 +677,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 layout.gameObject.AddComponent<Image>();
                 layout.gameObject.AddComponent<Mask>().showMaskGraphic = false;
             }
+
+            SetupLayoutTriggers(layout);
         }
 
         /// <summary>
@@ -721,6 +723,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 layout.gameObject.AddComponent<Image>();
                 layout.gameObject.AddComponent<Mask>().showMaskGraphic = false;
             }
+
+            SetupLayoutTriggers(layout);
         }
 
         /// <summary>
@@ -764,6 +768,32 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 layout.gameObject.AddComponent<Image>();
                 layout.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+            }
+
+            SetupLayoutTriggers(layout);
+        }
+
+        void SetupLayoutTriggers(MenuLayoutBase layout)
+        {
+            if (layout.onScrollUpFunc != null || layout.onScrollDownFunc != null || layout.onScrollUpFuncJSON != null || layout.onScrollDownFuncJSON != null)
+            {
+                var eventTrigger = layout.gameObject.AddComponent<EventTrigger>();
+                eventTrigger.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                {
+                    var pointerData = (PointerEventData)eventData;
+                    if (pointerData.scrollDelta.y > 0f)
+                    {
+                        if (layout.onScrollUpFuncJSON != null)
+                            new MenuImage().ParseFunction(layout.onScrollUpFuncJSON);
+                        layout.onScrollUpFunc?.Invoke();
+                    }
+                    if (pointerData.scrollDelta.y < 0f)
+                    {
+                        if (layout.onScrollDownFuncJSON != null)
+                            new MenuImage().ParseFunction(layout.onScrollDownFuncJSON);
+                        layout.onScrollDownFunc?.Invoke();
+                    }
+                }));
             }
         }
 

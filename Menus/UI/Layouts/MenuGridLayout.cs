@@ -45,6 +45,9 @@ namespace BetterLegacy.Menus.UI.Layouts
             maxHorizontalScroll = jn["max_horizontal_scroll"] == null ? 100f : jn["max_horizontal_scroll"].AsFloat,
             minVerticalScroll = jn["min_vertical_scroll"] == null ? -100f : jn["min_vertical_scroll"].AsFloat,
             maxVerticalScroll = jn["max_vertical_scroll"] == null ? 100f : jn["max_vertical_scroll"].AsFloat,
+
+            onScrollUpFuncJSON = jn["on_scroll_up_func"],
+            onScrollDownFuncJSON = jn["on_scroll_down_func"],
         };
 
         public void Scroll(float x, float y, bool xAdditive, bool yAdditive)

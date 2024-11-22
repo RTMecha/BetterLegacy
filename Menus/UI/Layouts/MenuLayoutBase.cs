@@ -29,5 +29,11 @@ namespace BetterLegacy.Menus.UI.Layouts
         public bool scrollable;
 
         public RectValues contentRect = RectValues.FullAnchored;
+
+        public JSONNode onScrollUpFuncJSON;
+        public JSONNode onScrollDownFuncJSON;
+
+        public Action onScrollUpFunc;
+        public Action onScrollDownFunc;
     }
 }
