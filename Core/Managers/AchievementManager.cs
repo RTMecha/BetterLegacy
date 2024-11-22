@@ -205,6 +205,36 @@ namespace BetterLegacy.Core.Managers
             yield break;
         }
 
+        public void CheckLevelBeginAchievements()
+        {
+            if (PlayerManager.Players.Count > 1)
+                UnlockAchievement("friendship");
+            var tags = LevelManager.CurrentLevel.metadata.song.tags;
+            if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
+                UnlockAchievement("youve_been_trolled");
+            if (tags.Contains("high_detail") || tags.Contains("lag"))
+                UnlockAchievement("no_fps");
+        }
+
+        public void CheckLevelEndAchievements(MetaData metadata, DataManager.LevelRank levelRank)
+        {
+            if (metadata.song.difficulty == 6)
+                UnlockAchievement("complete_animation");
+            if (metadata.song.difficulty != 6 && LevelManager.BoostCount == 0)
+                UnlockAchievement("no_boost");
+            if (levelRank.name == "F")
+                UnlockAchievement("f_rank");
+            if (metadata.song.difficulty == 4 && levelRank.name == "SS")
+                UnlockAchievement("expert_plus_ss_rank");
+            if (metadata.song.difficulty == 5 && levelRank.name == "SS")
+                UnlockAchievement("master_ss_rank");
+            if (LevelManager.CurrentMusicVolume == 0)
+                UnlockAchievement("no_volume");
+
+            if (LevelManager.currentQueueIndex >= 9)
+                UnlockAchievement("queue_ten");
+        }
+
         /// <summary>
         /// Locks the achievement, marking it incomplete.
         /// </summary>
