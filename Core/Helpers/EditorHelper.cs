@@ -442,5 +442,31 @@ namespace BetterLegacy.Core.Helpers
 
             ObjectEditor.inst.UpdateTransformIndex();
         }
+
+        /// <summary>
+        /// Finds if any BeatmapObjects share an ID.
+        /// </summary>
+        /// <param name="onDuplicateFound"></param>
+        /// <returns>Returns a list of duplicate objects.</returns>
+        public static List<BeatmapObject> FindDuplicateObjectIDs(System.Action<BeatmapObject> onDuplicateFound)
+        {
+            var list = new Dictionary<string, BeatmapObject>();
+            var result = new List<BeatmapObject>();
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            for (int i = 0; i < beatmapObjects.Count; i++)
+            {
+                var beatmapObject = beatmapObjects[i];
+                if (list.TryGetValue(beatmapObject.id, out BeatmapObject original))
+                {
+                    result.Add(beatmapObject);
+                    if (!result.Has(x => x.UniqueID == original.UniqueID))
+                        result.Add(original);
+
+                    onDuplicateFound?.Invoke(beatmapObject);
+                }
+                list[beatmapObject.id] = beatmapObject;
+            }
+            return result;
+        }
     }
 }

@@ -35,6 +35,17 @@ namespace BetterLegacy.Core.Data
             editorData = new ObjectEditorData();
         }
 
+        string uniqueID;
+        public string UniqueID
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(uniqueID))
+                    uniqueID = LSText.randomNumString(16);
+                return uniqueID;
+            }
+        }
+
         /// <summary>
         /// If true, object does not render when the user has the <see cref="Configs.CoreConfig.LDM"/> setting on.
         /// </summary>
