@@ -58,29 +58,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                 CoreHelper.Log($"Setting Level Ranks");
                 var levelRank = DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
-                var newLevelRank = DataManager.inst.levelRanks.Find(x => prevHits >= x.minHits && prevHits <= x.maxHits);
+                var prevLevelRank = DataManager.inst.levelRanks.Find(x => prevHits >= x.minHits && prevHits <= x.maxHits);
 
                 if (PlayerManager.IsZenMode)
                 {
                     levelRank = DataManager.inst.levelRanks.Find(x => x.name == "-");
-                    newLevelRank = null;
+                    prevLevelRank = null;
                 }
 
-                if (metadata.song.difficulty == 6)
-                    AchievementManager.inst.UnlockAchievement("complete_animation");
-                if (metadata.song.difficulty != 6 && LevelManager.BoostCount == 0)
-                    AchievementManager.inst.UnlockAchievement("no_boost");
-                if (levelRank.name == "F")
-                    AchievementManager.inst.UnlockAchievement("f_rank");
-                if (metadata.song.difficulty == 4 && levelRank.name == "SS")
-                    AchievementManager.inst.UnlockAchievement("expert_plus_ss_rank");
-                if (metadata.song.difficulty == 5 && levelRank.name == "SS")
-                    AchievementManager.inst.UnlockAchievement("master_ss_rank");
-                if (LevelManager.CurrentMusicVolume == 0)
-                    AchievementManager.inst.UnlockAchievement("no_volume");
-
-                if (LevelManager.currentQueueIndex >= 9)
-                    AchievementManager.inst.UnlockAchievement("queue_ten");
+                AchievementManager.inst.CheckLevelEndAchievements(metadata, levelRank);
 
                 CoreHelper.Log($"Setting End UI");
                 string easy = LSColors.GetThemeColorHex("easy");
@@ -88,16 +74,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 string hard = LSColors.GetThemeColorHex("hard");
                 string expert = LSColors.GetThemeColorHex("expert");
 
-                if (CoreConfig.Instance.ReplayLevel.Value)
-                {
-                    AudioManager.inst.SetMusicTime(0f);
-                    AudioManager.inst.CurrentAudioSource.Play();
-                }
-                else
-                {
-                    AudioManager.inst.SetMusicTime(AudioManager.inst.CurrentAudioSource.clip.length - 0.01f);
-                    AudioManager.inst.CurrentAudioSource.Pause();
-                }
+                AudioManager.inst.SetMusicTime(CoreConfig.Instance.ReplayLevel.Value ? 0f : AudioManager.inst.CurrentAudioSource.clip.length - 0.01f);
+                SoundManager.inst.SetPlaying(CoreConfig.Instance.ReplayLevel.Value);
 
                 layouts.Add("results", new MenuVerticalLayout
                 {
@@ -159,14 +137,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     {
                         text = "<voffset=0.6em>" + text;
 
-                        if (prevHits > GameManager.inst.hits.Count && newLevelRank != null)
-                        {
-                            text += $"       <voffset=0em><size=300%><#{LSColors.ColorToHex(newLevelRank.color)}><b>{newLevelRank.name}</b></color><size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%><#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
-                        }
+                        if (prevHits > GameManager.inst.hits.Count && prevLevelRank != null)
+                            text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(prevLevelRank)}<size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%>{RTString.FormatLevelRank(levelRank)}";
                         else
-                        {
-                            text += $"       <voffset=0em><size=300%><#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
-                        }
+                            text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(levelRank)}";
                     }
 
                     if (line == 7)

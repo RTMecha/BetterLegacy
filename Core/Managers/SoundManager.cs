@@ -22,6 +22,10 @@ namespace BetterLegacy.Core.Managers
 
         void Awake() => inst = this;
 
+        public void SetPlaying(bool playing) => (playing ? (System.Action)BaseManager.CurrentAudioSource.Play : BaseManager.CurrentAudioSource.Pause).Invoke();
+
+        public void TogglePlaying() => SetPlaying(!BaseManager.CurrentAudioSource.isPlaying);
+
         public void PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1) => PlaySound(defaultSound.ToString(), volume, pitch);
 
         public void PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop);
