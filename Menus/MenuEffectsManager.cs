@@ -231,6 +231,9 @@ namespace BetterLegacy.Menus
         {
             //postProcessResourcesAssetBundle?.Unload(true);
             //postProcessResourcesAssetBundle = null;
+
+            if (ppvolume && ppvolume.gameObject)
+                Destroy(ppvolume.gameObject);
         }
 
         public void ResetEffects()
