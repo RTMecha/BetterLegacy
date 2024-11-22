@@ -334,10 +334,6 @@ namespace BetterLegacy.Patchers
 
         static IEnumerator GoToNextLevelLoop(GameManager __instance)
         {
-            // TODO: Implement custom achievements.
-            //if (AudioManager.inst.masterVol <= 0f)
-            //    SteamWrapper.inst.achievements.SetAchievement("NO_AUDIO");
-
             __instance.gameState = GameManager.State.Finish;
             Time.timeScale = 1f;
             DG.Tweening.DOTween.Clear();
@@ -402,7 +398,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateTimelinePrefix()
         {
-            RTEditor.inst?.UpdateTimeline();
+            if (RTEditor.inst)
+                RTEditor.inst.UpdateTimeline();
 
             if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.beatmapData == null)
                 return false;
@@ -410,7 +407,7 @@ namespace BetterLegacy.Patchers
             if (GameStorageManager.inst)
                 GameStorageManager.inst.checkpointImages.Clear();
             var parent = Instance.timeline.transform.Find("elements");
-            LSHelpers.DeleteChildren(parent, true);
+            LSHelpers.DeleteChildren(parent);
             foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
             {
                 if (checkpoint.time <= 0.5f)
