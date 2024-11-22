@@ -2554,6 +2554,32 @@ namespace BetterLegacy.Core.Helpers
                             }
                             break;
                         }
+
+                    case "playerRespawn":
+                        {
+                            if (!modifier.reference || modifier.constant)
+                                break;
+
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var playerIndex = PlayerManager.GetClosestPlayerIndex(pos);
+
+                            if (playerIndex >= 0)
+                                PlayerManager.RespawnPlayer(playerIndex);
+
+                            break;
+                        }
+
+                    case "playerRespawnAll":
+                        {
+                            if (!modifier.reference || modifier.constant)
+                                break;
+
+                            PlayerManager.RespawnPlayers();
+                            break;
+                        }
+
+
                     case "playerMove":
                         {
                             if (!modifier.reference)
