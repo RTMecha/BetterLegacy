@@ -471,11 +471,11 @@ namespace BetterLegacy.Arcade
                     var speed = PlayerManager.ArcadeGameSpeed - 1;
                     if (speed < 0)
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
                         return;
                     }
-                    AudioManager.inst.PlaySound("blip");
 
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     PlayerManager.SetGameSpeed(speed);
                     AudioManager.inst.SetPitch(CoreHelper.Pitch);
                     speedText.text = $"<align=center>{CoreHelper.Pitch.ToString("0.0")}x SPEED";
@@ -504,13 +504,13 @@ namespace BetterLegacy.Arcade
                 func = () =>
                 {
                     var speed = PlayerManager.ArcadeGameSpeed + 1;
-                    if (speed >= PlayerManager.GameSpeeds.Count)
+                    if (speed >= PlayerManager.GameSpeeds.Length)
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
                         return;
                     }
 
-                    AudioManager.inst.PlaySound("blip");
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     PlayerManager.SetGameSpeed(speed);
                     AudioManager.inst.SetPitch(CoreHelper.Pitch);
                     speedText.text = $"<align=center>{CoreHelper.Pitch.ToString("0.0")}x SPEED";
@@ -563,11 +563,11 @@ namespace BetterLegacy.Arcade
                     var challenge = (int)PlayerManager.ChallengeMode - 1;
                     if (challenge < 0)
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
                         return;
                     }
 
-                    AudioManager.inst.PlaySound("blip");
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     PlayerManager.SetChallengeMode(challenge);
                     challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}";
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
@@ -597,11 +597,11 @@ namespace BetterLegacy.Arcade
                     var challenge = (int)PlayerManager.ChallengeMode + 1;
                     if (challenge >= 5)
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
                         return;
                     }
 
-                    AudioManager.inst.PlaySound("blip");
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     PlayerManager.SetChallengeMode(challenge);
                     challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}";
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
