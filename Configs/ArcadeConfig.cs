@@ -206,7 +206,7 @@ namespace BetterLegacy.Configs
             if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam && !ArcadeMenu.ViewOnline)
             {
                 ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Steam] = 0;
-                ArcadeMenu.Current.RefreshSubscribedSteamLevels(true);
+                ArcadeMenu.Current.RefreshSubscribedSteamLevels(true, true);
             }
         }
 
@@ -214,10 +214,10 @@ namespace BetterLegacy.Configs
         {
             LevelManager.Sort(LocalLevelOrderby.Value, LocalLevelAscend.Value);
 
-            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam && !ArcadeMenu.ViewOnline)
+            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Local)
             {
                 ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Local] = 0;
-                ArcadeMenu.Current.RefreshLocalLevels(true);
+                ArcadeMenu.Current.RefreshLocalLevels(true, true);
             }
         }
 

@@ -160,7 +160,7 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "local settings",
-                            rect = RectValues.Default.SizeDelta(1168f, 64f),
+                            rect = RectValues.Default.SizeDelta(704f, 64f),
                             text = currentSearch,
                             valueChangedFunc = SearchLocalLevels,
                             placeholder = "Search levels...",
@@ -181,10 +181,7 @@ namespace BetterLegacy.Arcade
                             parentLayout = "local settings",
                             selectionPosition = new Vector2Int(0, 1),
                             rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = () =>
-                            {
-                                new GameObject("Load Level System").AddComponent<LoadLevelsManager>();
-                            },
+                            func = () => new GameObject("Load Level System").AddComponent<LoadLevelsManager>(),
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -194,6 +191,68 @@ namespace BetterLegacy.Arcade
                             length = 0.1f,
                             regenerate = false,
                         });
+
+                        var sortButton = new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Sort Button",
+                            text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.LocalLevelOrderby.Value} ]",
+                            parentLayout = "local settings",
+                            selectionPosition = new Vector2Int(1, 1),
+                            rect = RectValues.Default.SizeDelta(400f, 64f),
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        };
+                        sortButton.func = () =>
+                        {
+                            var num = (int)ArcadeConfig.Instance.LocalLevelOrderby.Value;
+                            num++;
+                            if (num >= Enum.GetNames(typeof(LevelSort)).Length)
+                                num = 0;
+                            ArcadeConfig.Instance.LocalLevelOrderby.Value = (LevelSort)num;
+                            sortButton.text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.LocalLevelOrderby.Value} ]";
+                            if (sortButton.textUI)
+                            {
+                                sortButton.textUI.maxVisibleCharacters = 9999;
+                                sortButton.textUI.text = sortButton.text;
+                            }
+                        };
+                        elements.Add(sortButton);
+
+                        var ascendButton = new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Sort Button",
+                            text = $"<align=center><b><rotate={(ArcadeConfig.Instance.LocalLevelAscend.Value ? "90" : "-90")}>>",
+                            parentLayout = "local settings",
+                            selectionPosition = new Vector2Int(2, 1),
+                            rect = RectValues.Default.SizeDelta(64f, 64f),
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        };
+                        ascendButton.func = () =>
+                        {
+                            ArcadeConfig.Instance.LocalLevelAscend.Value = !ArcadeConfig.Instance.LocalLevelAscend.Value;
+                            ascendButton.text = $"<align=center><b><rotate={(ArcadeConfig.Instance.LocalLevelAscend.Value ? "90" : "-90")}>>";
+                            if (ascendButton.textUI)
+                            {
+                                ascendButton.textUI.maxVisibleCharacters = 9999;
+                                ascendButton.textUI.text = ascendButton.text;
+                            }
+                        };
+                        elements.Add(ascendButton);
 
                         var pageField = new MenuInputField
                         {
@@ -247,14 +306,14 @@ namespace BetterLegacy.Arcade
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(3, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -274,14 +333,14 @@ namespace BetterLegacy.Arcade
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(2, 1),
+                            selectionPosition = new Vector2Int(4, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != LocalLevelPageCount)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -821,7 +880,7 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "steam settings",
-                            rect = RectValues.Default.SizeDelta(868f, 64f),
+                            rect = RectValues.Default.SizeDelta(!ViewOnline ? 404f : 868f, 64f),
                             text = currentSearch,
                             valueChangedFunc = ViewOnline ? SearchOnlineSteamLevels : SearchSubscribedSteamLevels,
                             placeholder = "Search levels...",
@@ -875,6 +934,68 @@ namespace BetterLegacy.Arcade
                                 length = 0.1f,
                                 regenerate = false,
                             });
+
+                            var sortButton = new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Sort Button",
+                                text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamLevelOrderby.Value} ]",
+                                parentLayout = "steam settings",
+                                selectionPosition = new Vector2Int(1, 1),
+                                rect = RectValues.Default.SizeDelta(400f, 64f),
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            };
+                            sortButton.func = () =>
+                            {
+                                var num = (int)ArcadeConfig.Instance.SteamLevelOrderby.Value;
+                                num++;
+                                if (num >= Enum.GetNames(typeof(LevelSort)).Length)
+                                    num = 0;
+                                ArcadeConfig.Instance.SteamLevelOrderby.Value = (LevelSort)num;
+                                sortButton.text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamLevelOrderby.Value} ]";
+                                if (sortButton.textUI)
+                                {
+                                    sortButton.textUI.maxVisibleCharacters = 9999;
+                                    sortButton.textUI.text = sortButton.text;
+                                }
+                            };
+                            elements.Add(sortButton);
+
+                            var ascendButton = new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Sort Button",
+                                text = $"<align=center><b><rotate={(ArcadeConfig.Instance.SteamLevelAscend.Value ? "90" : "-90")}>>",
+                                parentLayout = "steam settings",
+                                selectionPosition = new Vector2Int(2, 1),
+                                rect = RectValues.Default.SizeDelta(64f, 64f),
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            };
+                            ascendButton.func = () =>
+                            {
+                                ArcadeConfig.Instance.SteamLevelAscend.Value = !ArcadeConfig.Instance.SteamLevelAscend.Value;
+                                ascendButton.text = $"<align=center><b><rotate={(ArcadeConfig.Instance.SteamLevelAscend.Value ? "90" : "-90")}>>";
+                                if (ascendButton.textUI)
+                                {
+                                    ascendButton.textUI.maxVisibleCharacters = 9999;
+                                    ascendButton.textUI.text = ascendButton.text;
+                                }
+                            };
+                            elements.Add(ascendButton);
                         }
 
                         var pageField = new MenuInputField
@@ -935,14 +1056,14 @@ namespace BetterLegacy.Arcade
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 3 : 1, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -962,14 +1083,14 @@ namespace BetterLegacy.Arcade
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(2, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 4 : 2, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
                                 if (ViewOnline || Pages[(int)CurrentTab] != SubscribedSteamLevelPageCount)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -984,10 +1105,10 @@ namespace BetterLegacy.Arcade
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
-                            name = "Next Page",
+                            name = "Switch Steam View",
                             text = $"<align=center><b>[ {(ViewOnline ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(3, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 4 : 3, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
@@ -1052,22 +1173,19 @@ namespace BetterLegacy.Arcade
             Searches[0] = search;
             Pages[0] = 0;
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-            RefreshLocalLevels(true);
+            RefreshLocalLevels(true, true);
         }
 
         public void SetLocalLevelsPage(int page)
         {
             Pages[0] = Mathf.Clamp(page, 0, LocalLevelPageCount);
 
+            RefreshLocalLevels(true, true);
+        }
+
+
+        void ClearLocalLevelButtons()
+        {
             var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
             for (int i = 0; i < levelButtons.Count; i++)
@@ -1077,11 +1195,13 @@ namespace BetterLegacy.Arcade
                 CoreHelper.Destroy(levelButton.gameObject);
             }
             elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
-            RefreshLocalLevels(true);
         }
 
-        public void RefreshLocalLevels(bool regenerateUI)
+        public void RefreshLocalLevels(bool regenerateUI, bool clear = false)
         {
+            if (clear)
+                ClearLocalLevelButtons();
+
             var currentPage = Pages[(int)CurrentTab] + 1;
             int max = currentPage * MAX_LEVELS_PER_PAGE;
             var currentSearch = Searches[(int)CurrentTab];
@@ -1230,7 +1350,7 @@ namespace BetterLegacy.Arcade
                 {
                     if (levelIsLocked)
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                         var animation = new RTAnimation($"Blocked Level in Arcade {level.id}")
                         {
@@ -1267,7 +1387,7 @@ namespace BetterLegacy.Arcade
                         return;
                     }
 
-                    AudioManager.inst.PlaySound("blip");
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     CoreHelper.StartCoroutine(SelectLocalLevel(level));
                 };
                 elements.Add(button);
@@ -2072,22 +2192,18 @@ namespace BetterLegacy.Arcade
             Searches[4] = search;
             Pages[4] = 0;
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-            RefreshSubscribedSteamLevels(true);
+            RefreshSubscribedSteamLevels(true, true);
         }
 
         public void SetSubscribedSteamLevelsPage(int page)
         {
             Pages[4] = Mathf.Clamp(page, 0, SubscribedSteamLevelPageCount);
 
+            RefreshSubscribedSteamLevels(true, true);
+        }
+
+        void ClearSubscribedSteamLevelButtons()
+        {
             var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
             for (int i = 0; i < levelButtons.Count; i++)
@@ -2097,11 +2213,13 @@ namespace BetterLegacy.Arcade
                 CoreHelper.Destroy(levelButton.gameObject);
             }
             elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-            RefreshSubscribedSteamLevels(true);
         }
 
-        public void RefreshSubscribedSteamLevels(bool regenerateUI)
+        public void RefreshSubscribedSteamLevels(bool regenerateUI, bool clear = false)
         {
+            if (clear)
+                ClearSubscribedSteamLevelButtons();
+
             var currentPage = Pages[(int)CurrentTab] + 1;
             int max = currentPage * MAX_STEAM_LEVELS_PER_PAGE;
             var currentSearch = Searches[(int)CurrentTab];
