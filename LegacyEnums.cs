@@ -116,6 +116,7 @@
         DateEdited,
         DateCreated,
         DatePublished,
+        Ranking,
     }
 
     public enum MenuMusicLoadMode

@@ -445,50 +445,24 @@ namespace BetterLegacy.Core.Managers
         /// <param name="sort">How the Level list should be ordered by.</param>
         /// <param name="ascend">Whether the list should ascend of descend.</param>
         /// <returns>Returns a sorted Level list.</returns>
-        public static List<Level> SortLevels(List<Level> levels, LevelSort sort, bool ascend)
+        public static List<Level> SortLevels(List<Level> levels, LevelSort sort, bool ascend) => sort switch
         {
-            switch (sort)
+            LevelSort.Cover => levels.Order(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite, !ascend),
+            LevelSort.Artist => levels.Order(x => x.metadata.artist.Name, !ascend),
+            LevelSort.Creator => levels.Order(x => x.metadata.creator.steam_name, !ascend),
+            LevelSort.File => levels.Order(x => System.IO.Path.GetFileName(x.path), !ascend),
+            LevelSort.Title => levels.Order(x => x.metadata.song.title, !ascend),
+            LevelSort.Difficulty => levels.Order(x => x.metadata.song.difficulty, !ascend),
+            LevelSort.DateEdited => levels.Order(x => x.metadata.beatmap.date_edited, !ascend),
+            LevelSort.DateCreated => levels.Order(x => x.metadata.beatmap.date_created, !ascend),
+            LevelSort.DatePublished => levels.Order(x => x.metadata.beatmap.date_published, !ascend),
+            LevelSort.Ranking => levels.Order(x =>
             {
-                case LevelSort.Cover:
-                    return
-                        (ascend ? levels.OrderBy(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite) :
-                        levels.OrderByDescending(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite)).ToList();
-                case LevelSort.Artist:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.artist.Name) :
-                        levels.OrderByDescending(x => x.metadata.artist.Name)).ToList();
-                case LevelSort.Creator:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.creator.steam_name) :
-                        levels.OrderByDescending(x => x.metadata.creator.steam_name)).ToList();
-                case LevelSort.File:
-                    return
-                        (ascend ? levels.OrderBy(x => System.IO.Path.GetFileName(x.path)) :
-                        levels.OrderByDescending(x => System.IO.Path.GetFileName(x.path))).ToList();
-                case LevelSort.Title:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.song.title) :
-                        levels.OrderByDescending(x => x.metadata.song.title)).ToList();
-                case LevelSort.Difficulty:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.song.difficulty) :
-                        levels.OrderByDescending(x => x.metadata.song.difficulty)).ToList();
-                case LevelSort.DateEdited:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_edited) :
-                        levels.OrderByDescending(x => x.metadata.beatmap.date_edited)).ToList();
-                case LevelSort.DateCreated:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_created) :
-                        levels.OrderByDescending(x => x.metadata.beatmap.date_created)).ToList();
-                case LevelSort.DatePublished:
-                    return
-                        (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_published) :
-                        levels.OrderByDescending(x => x.metadata.beatmap.date_published)).ToList();
-            }
-
-            return levels;
-        }
+                var playerData = GetPlayerData(x.id);
+                return playerData != null ? playerData.Hits : int.MaxValue;
+            }, !ascend),
+            _ => levels,
+        };
 
         /// <summary>
         /// Sorts <see cref="Levels"/> by a specific order and ascending / descending.
