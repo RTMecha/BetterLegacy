@@ -31,6 +31,7 @@
 - Editor online backups?
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 - Transition time for applyAnimation modifiers.
+- Collapse toggle for modifiers in editor.
 - New modifiers
 > prizeObject
 > setParent
