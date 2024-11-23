@@ -95,28 +95,35 @@ namespace BetterLegacy.Patchers
             var content = scrollView.transform.Find("Viewport/Content");
             LSHelpers.DeleteChildren(content);
 
-            string[] array = new string[]
+            var array = new string[]
             {
+                "FPS",
+                "Time in Editor",
+                "Song Progress",
+                "Level opened amount",
+
                 "Object Count",
                 "Total Object Count",
-                "Event Count",
-                "Theme Count",
-                "Prefab External Count",
-                "Prefab Internal Count",
-                "Prefab Objects Count",
+                "Objects Alive Count",
                 "No Autokill Count",
                 "Keyframe Offsets > Song Length Count",
                 "Text Object Count",
                 "Text Symbol Total Count",
-                "Timeline Objects in Current Layer Count",
-                "Markers Count",
-                "Objects Alive Count",
-                "Time in Editor",
-                "Level opened amount",
-                "Song Progress",
+
+                "BG Object Count",
+
                 "Camera Position",
                 "Camera Zoom",
                 "Camera Rotation",
+                "Event Count",
+                "Theme Count",
+
+                "Prefab External Count",
+                "Prefab Internal Count",
+                "Prefab Objects Count",
+
+                "Timeline Objects in Current Layer Count",
+                "Markers Count",
             };
 
             for (int i = 0; i < array.Length; i++)
@@ -270,33 +277,33 @@ namespace BetterLegacy.Patchers
 
                 try
                 {
+                    SetText("FPS", LegacyPlugin.FPSCounter.Text);
+                    SetText("Time in Editor", RTString.SecondsToTime(RTEditor.inst.timeEditing));
+                    SetText("Song Progress", $"{RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
+                    SetText("Level opened amount", RTEditor.inst.openAmount.ToString());
+
                     SetText("Object Count", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
                     SetText("Total Object Count", GameData.Current.beatmapObjects.Count.ToString());
-
-                    SetText("Event Count", GameData.Current.eventObjects.allEvents.Sum(x => x.Count).ToString());
-
-                    SetText("Theme Count", DataManager.inst.AllThemes.Count.ToString());
-                    SetText("Prefab External Count", RTPrefabEditor.inst.PrefabPanels.Count.ToString());
-                    SetText("Prefab Internal Count", GameData.Current.prefabs.Count.ToString());
-                    SetText("Prefab Objects Count", GameData.Current.prefabObjects.Count.ToString());
+                    SetText("Objects Alive Count", GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString());
                     SetText("No Autokill Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == DataManager.GameData.BeatmapObject.AutoKillType.OldStyleNoAutokill).Count.ToString());
                     SetText("Keyframe Offsets > Song Length Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString());
                     SetText("Text Object Count", GameData.Current.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Count.ToString());
+                    SetText("Text Symbol Total Count", GameData.Current.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Sum(x => x.text.Length).ToString());
 
-                    int num = 0;
-                    foreach (var bm in GameData.Current.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty))
-                        num += bm.text.Length;
-                    SetText("Text Symbol Total Count", num.ToString());
+                    SetText("BG Object Count", GameData.Current.backgroundObjects.Count.ToString());
 
-                    SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
-                    SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
-                    SetText("Objects Alive Count", GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString());
-                    SetText("Time in Editor", RTString.SecondsToTime(RTEditor.inst.timeEditing));
-                    SetText("Level opened amount", RTEditor.inst.openAmount.ToString());
-                    SetText("Song Progress", $"{RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
                     SetText("Camera Position", $"X: {Camera.main.transform.position.x}, Y: {Camera.main.transform.position.y}");
                     SetText("Camera Zoom", Camera.main.orthographicSize.ToString());
                     SetText("Camera Rotation", Camera.main.transform.rotation.eulerAngles.z.ToString());
+                    SetText("Event Count", GameData.Current.eventObjects.allEvents.Sum(x => x.Count).ToString());
+                    SetText("Theme Count", DataManager.inst.AllThemes.Count.ToString());
+
+                    SetText("Prefab External Count", RTPrefabEditor.inst.PrefabPanels.Count.ToString());
+                    SetText("Prefab Internal Count", GameData.Current.prefabs.Count.ToString());
+                    SetText("Prefab Objects Count", GameData.Current.prefabObjects.Count.ToString());
+
+                    SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
+                    SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
 
                     if (doggo)
                         doggo.sprite = EditorManager.inst.loadingImage.sprite;
