@@ -756,32 +756,24 @@ namespace BetterLegacy.Components.Player
             health = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}");
 
             for (int i = 0; i < 3; i++)
-            {
                 healthObjects.Add(new HealthObject(health.transform.GetChild(i).gameObject, health.transform.GetChild(i).GetComponent<Image>()));
-            }
 
-            var barBase = new GameObject("Bar Base");
-            barBase.transform.SetParent(health.transform);
-            barBase.transform.localScale = Vector3.one;
+            var barBase = Creator.NewUIObject("Bar Base", health.transform);
 
-            var barBaseRT = barBase.AddComponent<RectTransform>();
             var barBaseLE = barBase.AddComponent<LayoutElement>();
             barBaseIm = barBase.AddComponent<Image>();
 
             barBaseLE.ignoreLayout = true;
-            barBaseRT.anchoredPosition = new Vector2(-100f, 0f);
-            barBaseRT.pivot = new Vector2(0f, 0.5f);
-            barBaseRT.sizeDelta = new Vector2(200f, 32f);
+            barBase.transform.AsRT().anchoredPosition = new Vector2(-100f, 0f);
+            barBase.transform.AsRT().pivot = new Vector2(0f, 0.5f);
+            barBase.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
 
-            var bar = new GameObject("Bar");
-            bar.transform.SetParent(barBase.transform);
-            bar.transform.localScale = Vector3.one;
+            var bar = Creator.NewUIObject("Bar", barBase.transform);
 
-            barRT = bar.AddComponent<RectTransform>();
             barIm = bar.AddComponent<Image>();
 
-            barRT.pivot = new Vector2(0f, 0.5f);
-            barRT.anchoredPosition = new Vector2(-100f, 0f);
+            bar.transform.AsRT().pivot = new Vector2(0f, 0.5f);
+            bar.transform.AsRT().anchoredPosition = new Vector2(-100f, 0f);
 
             health.SetActive(false);
 
@@ -940,8 +932,8 @@ namespace BetterLegacy.Components.Player
 
             try
             {
-                path[0].pos = ((Transform)playerObjects["RB Parent"].values["Transform"]).position;
-                path[0].rot = ((Transform)playerObjects["RB Parent"].values["Transform"]).rotation;
+                path[0].pos = rb.transform.position;
+                path[0].rot = rb.transform.rotation;
                 var pos = path[0].pos;
                 var rot = path[0].rot;
                 for (int i = 1; i < path.Count; i++)
@@ -1102,8 +1094,8 @@ namespace BetterLegacy.Components.Player
 
         void UpdateTailDistance()
         {
-            path[0].pos = ((Transform)playerObjects["RB Parent"].values["Transform"]).position;
-            path[0].rot = ((Transform)playerObjects["RB Parent"].values["Transform"]).rotation;
+            path[0].pos = rb.transform.position;
+            path[0].rot = rb.transform.rotation;
             for (int i = 1; i < path.Count; i++)
             {
                 int num = i - 1;
@@ -1145,14 +1137,6 @@ namespace BetterLegacy.Components.Player
             {
                 if (path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
                 {
-                    //if (isSpawning)
-                    //{
-                    //    path[i].pos = path[0].pos;
-                    //    path[i].lastPos = path[0].pos;
-                    //    path[i].rot = path[0].rot;
-                    //    continue;
-                    //}
-
                     num *= Vector3.Distance(path[i].lastPos, path[i].pos);
                     path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
                     path[i].lastPos = path[i].transform.position;
@@ -1253,7 +1237,7 @@ namespace BetterLegacy.Components.Player
                     if (JumpMode)
                     {
                         if (PlayBoostSound && CanBoost)
-                            AudioManager.inst.PlaySound("boost_recover");
+                            SoundManager.inst.PlaySound(DefaultSounds.boost_recover);
 
                         currentJumpCount++;
                         currentJumpBoostCount++;
@@ -1272,7 +1256,7 @@ namespace BetterLegacy.Components.Player
                     PlayerModel.bulletPart.constant && faceController.Shoot.IsPressed && canShoot))
                 CreateBullet();
 
-            var player = playerObjects["RB Parent"].gameObject;
+            var player = rb.gameObject;
 
             if (JumpMode)
             {
@@ -1299,7 +1283,7 @@ namespace BetterLegacy.Components.Player
                     velocity.y = jumpIntensity * JumpIntensity;
 
                     if (PlayBoostSound)
-                        AudioManager.inst.PlaySound("boost");
+                        SoundManager.inst.PlaySound(DefaultSounds.boost);
 
                     if (colliding)
                     {
@@ -1365,7 +1349,7 @@ namespace BetterLegacy.Components.Player
                     if (vector.magnitude > 1f)
                         vector = vector.normalized;
 
-                    var sp = (bool)PlayerModel.basePart.sprintSneakActive ? faceController.Sprint.IsPressed ? 1.3f : faceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+                    var sp = PlayerModel.basePart.sprintSneakActive ? faceController.Sprint.IsPressed ? 1.3f : faceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
 
                     rb.velocity = PlayerForce + vector * idleSpeed * pitch * sp * SpeedMultiplier;
                     if (stretch && rb.velocity.magnitude > 0f)
@@ -1473,7 +1457,7 @@ namespace BetterLegacy.Components.Player
 
         void UpdateRotation()
         {
-            var player = playerObjects["RB Parent"].gameObject;
+            var player = rb.gameObject;
 
             if (CanRotate)
             {
@@ -1486,7 +1470,7 @@ namespace BetterLegacy.Components.Player
                             player.transform.rotation = c;
 
                             playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.identity;
-
+                            
                             break;
                         }
                     case RotateMode.None:
@@ -1924,8 +1908,6 @@ namespace BetterLegacy.Components.Player
 
         public void Hit()
         {
-            var player = playerObjects["RB Parent"].gameObject;
-
             if (!CanTakeDamage || !PlayerAlive)
                 return;
 
@@ -1944,7 +1926,6 @@ namespace BetterLegacy.Components.Player
 
         IEnumerator BoostCooldownLoop()
         {
-            var player = playerObjects["RB Parent"].gameObject;
             var headTrail = (TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"];
             if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
                 headTrail.emitting = false;
@@ -1964,7 +1945,7 @@ namespace BetterLegacy.Components.Player
             yield return new WaitForSeconds(boostCooldown / CoreHelper.ForwardPitch);
             CanBoost = true;
             if (PlayBoostRecoverSound && (!PlayerConfig.Instance.PlaySoundRBoostTail.Value || showBoostTail))
-                AudioManager.inst.PlaySound("boost_recover");
+                SoundManager.inst.PlaySound(DefaultSounds.boost_recover);
 
             if (showBoostTail)
             {
@@ -2026,7 +2007,7 @@ namespace BetterLegacy.Components.Player
                 headTrail.emitting = true;
 
             if (PlayBoostSound)
-                AudioManager.inst.PlaySound("boost");
+                SoundManager.inst.PlaySound(DefaultSounds.boost);
 
             CreatePulse();
 
@@ -2113,7 +2094,7 @@ namespace BetterLegacy.Components.Player
             isTakingHit = true;
             CanTakeDamage = false;
 
-            AudioManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? "pirate_KillPlayer" : "HurtPlayer");
+            SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.HurtPlayer);
         }
 
         // Empty method for animation controller (todo: see if animation controller can live without this or am I misunderstanding how this works?)
@@ -2674,7 +2655,7 @@ namespace BetterLegacy.Components.Player
                 {
                     case 0:
                         {
-                            PlayerDelayTracker.leader = playerObjects["RB Parent"].gameObject.transform;
+                            PlayerDelayTracker.leader = rb.transform;
                             break;
                         }
                     case 1:
