@@ -182,7 +182,7 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = true;
             LevelEnded = false;
 
-            if (level.playerData == null && (level is StoryLevel ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out PlayerData playerData))
+            if (level.playerData == null && (level.isStory ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out PlayerData playerData))
                 level.playerData = playerData;
 
             PreviousLevel = CurrentLevel;
