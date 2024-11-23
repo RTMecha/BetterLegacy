@@ -10272,7 +10272,7 @@ namespace BetterLegacy.Editor.Managers
                 if (jn["id"] == null)
                 {
                     var beatmapTheme = BeatmapTheme.DeepCopy(orig);
-                    beatmapTheme.id = LSText.randomNumString(BeatmapTheme.IDLength);
+                    beatmapTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
                     DataManager.inst.CustomBeatmapThemes.Remove(orig);
                     FileManager.inst.DeleteFileRaw(file);
                     RTThemeEditor.inst.SaveTheme(beatmapTheme);

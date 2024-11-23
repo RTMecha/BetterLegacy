@@ -1014,7 +1014,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", () =>
                     {
-                        PreviewTheme.id = LSText.randomNumString(BeatmapTheme.IDLength);
+                        PreviewTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
                         RTEditor.inst.HideWarningPopup();
                     }, RTEditor.inst.HideWarningPopup);
                 });
@@ -1319,7 +1319,7 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.DisableThemeWatcher();
 
             if (string.IsNullOrEmpty(theme.id))
-                theme.id = LSText.randomNumString(BeatmapTheme.IDLength);
+                theme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
 
             var config = EditorConfig.Instance;
 
