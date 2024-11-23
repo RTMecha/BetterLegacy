@@ -18,6 +18,97 @@ namespace BetterLegacy.Core.Data
 
         public string VGID { get; set; }
 
+        #region Consts
+
+        public const int ID_LENGTH = 9;
+        public const string PLAYER_1_COLOR = "E57373";
+        public const string PLAYER_2_COLOR = "64B5F6";
+        public const string PLAYER_3_COLOR = "81C784";
+        public const string PLAYER_4_COLOR = "FFB74D";
+
+        #endregion
+
+        #region Default Properties
+
+        public static string DefaultName { get; set; } = "New Theme";
+
+        public static Color DefaultBGColor { get; set; } = LSColors.gray900;
+        public static Color DefaultGUIColor { get; set; } = LSColors.white;
+        public static Color DefaultTailColor { get; set; } = LSColors.white;
+
+        public static List<Color> DefaultPlayerColors { get; set; } = new List<Color>
+        {
+            LSColors.HexToColor("E57373"),
+            LSColors.HexToColor("64B5F6"),
+            LSColors.HexToColor("81C784"),
+            LSColors.HexToColor("FFB74D"),
+        };
+        public static List<Color> DefaultObjectColors { get; set; } = new List<Color>
+        {
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+        };
+        public static List<Color> DefaulBackgroundColors { get; set; } = new List<Color>
+        {
+            LSColors.pink100,
+            LSColors.pink200,
+            LSColors.pink300,
+            LSColors.pink400,
+            LSColors.pink500,
+            LSColors.pink600,
+            LSColors.pink700,
+            LSColors.pink800,
+            LSColors.pink900,
+            LSColors.pink100,
+            LSColors.pink200,
+            LSColors.pink300,
+            LSColors.pink400,
+            LSColors.pink500,
+            LSColors.pink600,
+            LSColors.pink700,
+            LSColors.pink800,
+            LSColors.pink900,
+        };
+        public static List<Color> DefaultEffectColors { get; set; } = new List<Color>
+        {
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+        };
+
+        #endregion
+
         #region Methods
 
         public static BeatmapTheme DeepCopy(BeatmapTheme orig, bool _copyID = false)
@@ -58,10 +149,10 @@ namespace BetterLegacy.Core.Data
         {
             var beatmapTheme = new BeatmapTheme();
 
-            beatmapTheme.id = LSText.randomNumString(IDLength);
-            beatmapTheme.VGID = jn["id"] != null ? jn["id"] : "";
+            beatmapTheme.id = LSText.randomNumString(ID_LENGTH);
+            beatmapTheme.VGID = jn["id"] ?? "";
 
-            beatmapTheme.name = jn["name"] != null ? jn["name"] : "name your themes!";
+            beatmapTheme.name = jn["name"] ?? "name your themes!";
 
             beatmapTheme.guiColor = jn["base_gui"] != null ? LSColors.HexToColor(jn["base_gui"]) : LSColors.gray800;
 
@@ -121,9 +212,9 @@ namespace BetterLegacy.Core.Data
         {
             var beatmapTheme = new BeatmapTheme();
 
-            beatmapTheme.id = jn["id"] != null ? jn["id"] : DataManager.inst.AllThemes.Count.ToString();
+            beatmapTheme.id = jn["id"] ?? DataManager.inst.AllThemes.Count.ToString();
 
-            beatmapTheme.name = jn["name"] != null ? jn["name"] : "name your themes!";
+            beatmapTheme.name = jn["name"] ?? "name your themes!";
 
             beatmapTheme.guiColor = jn["gui"] != null ? ((string)jn["gui"]).Length == 8 ? LSColors.HexToColorAlpha(jn["gui"]) : LSColors.HexToColor(jn["gui"]) : LSColors.gray800;
 
@@ -252,90 +343,12 @@ namespace BetterLegacy.Core.Data
             return colors;
         }
 
-        public static int IDLength => 7;
-        public static string DefaultName { get; set; } = "New Theme";
-
-        public static Color DefaultBGColor { get; set; } = LSColors.gray900;
-        public static Color DefaultGUIColor { get; set; } = LSColors.white;
-        public static Color DefaultTailColor { get; set; } = LSColors.white;
-
-        public static List<Color> DefaultPlayerColors { get; set; } = new List<Color>
-        {
-            LSColors.HexToColor("E57373"),
-            LSColors.HexToColor("64B5F6"),
-            LSColors.HexToColor("81C784"),
-            LSColors.HexToColor("FFB74D"),
-        };
-        public static List<Color> DefaultObjectColors { get; set; } = new List<Color>
-        {
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-        };
-        public static List<Color> DefaulBackgroundColors { get; set; } = new List<Color>
-        {
-            LSColors.pink100,
-            LSColors.pink200,
-            LSColors.pink300,
-            LSColors.pink400,
-            LSColors.pink500,
-            LSColors.pink600,
-            LSColors.pink700,
-            LSColors.pink800,
-            LSColors.pink900,
-            LSColors.pink100,
-            LSColors.pink200,
-            LSColors.pink300,
-            LSColors.pink400,
-            LSColors.pink500,
-            LSColors.pink600,
-            LSColors.pink700,
-            LSColors.pink800,
-            LSColors.pink900,
-        };
-        public static List<Color> DefaultEffectColors { get; set; } = new List<Color>
-        {
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-        };
-
         public new void ClearBeatmap()
         {
             playerColors.Clear();
             objectColors.Clear();
             backgroundColors.Clear();
-            id = LSText.randomNumString(IDLength);
+            id = LSText.randomNumString(ID_LENGTH);
             name = DefaultName;
             backgroundColor = new Color(DefaultBGColor.r, DefaultBGColor.g, DefaultBGColor.b, DefaultBGColor.a);
             guiColor = new Color(DefaultGUIColor.r, DefaultGUIColor.g, DefaultGUIColor.b, DefaultGUIColor.a);
