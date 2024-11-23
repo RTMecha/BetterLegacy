@@ -27,7 +27,12 @@ namespace BetterLegacy.Example
             if (!requirePhrase && input == name)
                 response?.Invoke(input);
             else if (phrases != null && phrases.TryFind(x => x.CheckPhrase(input), out Phrase phrase))
-                response?.Invoke(input.Replace(phrase.match.Groups[0].ToString(), phrase.match.Groups[1].ToString()));
+            {
+                if (phrase.isRegex)
+                    response?.Invoke(input.Replace(phrase.match.Groups[0].ToString(), phrase.match.Groups[1].ToString()));
+                else
+                    response?.Invoke(phrase.text);
+            }
         }
 
         public static ExampleCommand Parse(JSONNode jn)
@@ -45,7 +50,7 @@ namespace BetterLegacy.Example
                 }
             }
 
-            command.response = delegate (string _val)
+            command.response = _val =>
             {
                 if (jn["response"] != null)
                     RTCode.Evaluate($"var input = \"{_val}\";" + jn["response"]);
