@@ -265,9 +265,7 @@ namespace BetterLegacy
 
             try
             {
-                var info = new GameObject("FPS Counter");
-                DontDestroyOnLoad(info);
-                FPSCounter = info.AddComponent<FPSCounter>();
+                FPSCounter = Creator.NewPersistentGameObject("FPS Counter").AddComponent<FPSCounter>();
             }
             catch (Exception ex)
             {

@@ -20,6 +20,13 @@ namespace BetterLegacy.Core
             return gameObject;
         }
 
+        public static GameObject NewPersistentGameObject(string name)
+        {
+            var gameObject = new GameObject(name);
+            UnityEngine.Object.DontDestroyOnLoad(gameObject);
+            return gameObject;
+        }
+
         public static GameObject NewUIObject(string name, Transform parent, int siblingIndex = -1)
         {
             var gameObject = NewGameObject(name, parent, siblingIndex);
