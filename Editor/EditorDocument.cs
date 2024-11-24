@@ -77,6 +77,7 @@ namespace BetterLegacy.Editor
 
             public string Data { get; set; }
 
+            public void RunFunction() => Function();
             public Action Function { get; set; }
 
             public Type type;

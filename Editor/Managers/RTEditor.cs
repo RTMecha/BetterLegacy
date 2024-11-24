@@ -8536,14 +8536,12 @@ namespace BetterLegacy.Editor.Managers
                                     "StartTime\n" +
                                     "Depth\n" +
                                     "IntVariable\n" +
-                                    "<b>findInterpolateChain#object_group(float time, int type int axis, int includeDepth [0 = false 1 = true], int includeOffsets [0 = false 1 = true], int includeSelf [0 = false 1 = true]) - Finds an object with the matching tag and interpolates its full animation value. If type is not position aka type = 0, then don't have includeDepth in the parameters.\n" +
+                                    "<b>findInterpolateChain#object_group(float time, int type int axis, int includeDepth [0 = false 1 = true], int includeOffsets [0 = false 1 = true], int includeSelf [0 = false 1 = true])</b> - Finds an object with the matching tag and interpolates its full animation value. If type is not position aka type = 0, then don't have includeDepth in the parameters.\n" +
                                     "<b>easing#curveType(t)</b> - Calculates an easing from the easing list. \"curveType\" is easings such as \"Linear\", \"Instant\", etc.\n" +
                                     "<b>int(value)</b> - Casts floating point numbers (non-whole numbers) into integers (whole numbers).\n" +
                                     "<b>sampleAudio(int sample, float intensity)</b> - Takes a sample of the currently playing audio.\n" +
                                     "<b>vectorAngle(float firstX, float firstY, float firstZ, float secondX, float secondY, float secondZ)</b> - Calculates rotation where first would be looking at second.\n" +
-                                    "<b>distance(float first, float second)</b> - Calculates the distance between first and second.\n" +
-                                    "<b>distance(float firstX, float firstY, float secondX, float secondY)</b> - Calculates the distance between first and second.\n" +
-                                    "<b>distance(float firstX, float firstY, float firstZ, float secondX, float secondY, float secondZ)</b> - Calculates the distance between first and second.\n" +
+                                    "<b>distance(float firstX, [optional] float firstY, float [optional] firstZ, float secondX, [optional] float secondY, [optional] float secondZ)</b> - Calculates the distance between first and second. Y and Z values are optional.\n" +
                                     "<b>date#format()</b> - Takes a specific part of the current date and uses it.\n" +
                                     "Acceptable formats:\n" +
                                     "yyyy = full year (e.g. 2019)\n" +
@@ -8553,7 +8551,12 @@ namespace BetterLegacy.Editor.Managers
                                     "HH = 24 hour (e.g. 13)\n" +
                                     "hh = 12 hour (e.g. 1)\n" +
                                     "mm = minute (e.g. 59)\n" +
-                                    "ss = second (e.g. 12)", EditorDocument.Element.Type.Text),
+                                    "ss = second (e.g. 12)\n" +
+                                    "<b>mirrorNegative(float value)</b> - ensures the value is always a positive number. If it's lesser than 0, then it will reverse the number to positive. E.G: -4.2 to 4.2.\n" +
+                                    "<b>mirrorPositive(float value)</b> - ensures the value is always a negative number. If it's greater than 0, then it will reverse the number to negative. E.G: 4.2 to -4.2.\n" +
+                                    "<b>worldToViewportPointX(float x, [optional] float y, [optional] float z)</b> translates a position to the camera viewport and gets the X value. Y and Z values are optional.\n" +
+                                    "<b>worldToViewportPointY(float x, [optional] float y, [optional] float z)</b> translates a position to the camera viewport and gets the Y value. Y and Z values are optional.\n" +
+                                    "<b>worldToViewportPointZ(float x, [optional] float y, [optional] float z)</b> translates a position to the camera viewport and gets the Z value. Y and Z values are optional.\n", EditorDocument.Element.Type.Text),
             });
 
             //DateTime.Now.ToString("ff"); // yes
@@ -11330,7 +11333,6 @@ namespace BetterLegacy.Editor.Managers
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
 
-                            {
                                 var gameObject = Creator.NewUIObject("element", documentationContent, RectValues.Default
                                     .AnchoredPosition(1f, 0f)
                                     .AnchorMax(0f, 1f)
@@ -11370,7 +11372,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (element.Function != null)
                                 {
                                     var button = gameObject.AddComponent<Button>();
-                                    button.onClick.AddListener(() => element.Function.Invoke());
+                                    button.onClick.AddListener(element.RunFunction);
                                     button.image = image;
                                     EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                                 }
@@ -11382,43 +11384,6 @@ namespace BetterLegacy.Editor.Managers
                                     .AnchorMin(0f, 1f)
                                     .Pivot(0f, 1f)
                                     .SizeDelta(722f, 22f).AssignToRectTransform(label.transform.AsRT());
-                            }
-
-                            //var bar = singleInput.Duplicate(documentationContent, "element");
-                            //DestroyImmediate(bar.GetComponent<InputField>());
-                            //DestroyImmediate(bar.GetComponent<EventInfo>());
-                            //DestroyImmediate(bar.GetComponent<EventTrigger>());
-
-                            //LSHelpers.DeleteChildren(bar.transform);
-                            //bar.transform.localScale = Vector3.one;
-                            //bar.transform.AsRT().sizeDelta = new Vector2(722f, 22f * LSText.WordWrap(element.Data, 67).Count);
-
-                            //var l = label.Duplicate(bar.transform, "label");
-                            //l.transform.localScale = Vector3.one;
-                            //var text = l.transform.GetChild(0).GetComponent<Text>();
-                            //text.text = element.Data;
-                            //text.alignment = TextAnchor.UpperLeft;
-                            //EditorThemeManager.ApplyLightText(text);
-
-                            //l.transform.AsRT().sizeDelta = new Vector2(722f, 22f);
-                            //l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                            //l.transform.GetChild(0).AsRT().sizeDelta = new Vector2(722f, 22f);
-
-                            //var barImage = bar.GetComponent<Image>();
-                            //barImage.enabled = true;
-                            //barImage.fillCenter = true;
-
-                            //if (element.Function != null)
-                            //{
-                            //    var button = bar.AddComponent<Button>();
-                            //    button.onClick.AddListener(() => element.Function.Invoke());
-                            //    button.image = barImage;
-                            //    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                            //}
-                            //else
-                            //{
-                            //    EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
-                            //}
 
                             break;
                         }
@@ -11427,85 +11392,41 @@ namespace BetterLegacy.Editor.Managers
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
 
+                            var gameObject = Creator.NewUIObject("element", documentationContent, RectValues.Default
+                                .AnchoredPosition(1f, -48f)
+                                .AnchorMax(0f, 1f)
+                                .AnchorMin(0f, 1f)
+                                .Pivot(0f, 1f)
+                                .SizeDelta(720f, 432f));
+
+                            var baseImage = gameObject.AddComponent<Image>();
+                            var mask = gameObject.AddComponent<Mask>();
+
+                            EditorThemeManager.ApplyGraphic(baseImage, ThemeGroup.List_Button_1_Normal, true);
+
+                            var imageObject = Creator.NewUIObject("image", gameObject.transform, RectValues.Default
+                                .AnchorMax(0f, 1f)
+                                .AnchorMin(0f, 1f)
+                                .Pivot(0f, 1f)
+                                .SizeDelta(632f, 432f));
+
+                            var image = imageObject.AddComponent<Image>();
+                            image.color = new Color(1f, 1f, 1f, 1f);
+
+                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
+                                image.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
+                            else
+                                image.enabled = false;
+
+                            if (image.sprite && image.sprite.texture)
                             {
-                                var gameObject = Creator.NewUIObject("element", documentationContent, RectValues.Default
-                                    .AnchoredPosition(1f, -48f)
-                                    .AnchorMax(0f, 1f)
-                                    .AnchorMin(0f, 1f)
-                                    .Pivot(0f, 1f)
-                                    .SizeDelta(720f, 432f));
-
-                                var baseImage = gameObject.AddComponent<Image>();
-                                var mask = gameObject.AddComponent<Mask>();
-
-                                EditorThemeManager.ApplyGraphic(baseImage, ThemeGroup.List_Button_1_Normal, true);
-
-                                var imageObject = Creator.NewUIObject("image", gameObject.transform, RectValues.Default
-                                    .AnchorMax(0f, 1f)
-                                    .AnchorMin(0f, 1f)
-                                    .Pivot(0f, 1f)
-                                    .SizeDelta(632f, 432f));
-
-                                var image = imageObject.AddComponent<Image>();
-                                image.color = new Color(1f, 1f, 1f, 1f);
-
-                                if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
-                                    image.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
-                                else
-                                    image.enabled = false;
-
-                                if (image.sprite && image.sprite.texture)
-                                {
-                                    var width = Mathf.Clamp(image.sprite.texture.width, 0, 718);
-                                    gameObject.transform.AsRT().sizeDelta = new Vector2(width, image.sprite.texture.height);
-                                    imageObject.transform.AsRT().sizeDelta = new Vector2(width, image.sprite.texture.height);
-                                }
-
-                                if (element.Function != null)
-                                    imageObject.AddComponent<Button>().onClick.AddListener(() => element.Function.Invoke());
+                                var width = Mathf.Clamp(image.sprite.texture.width, 0, 718);
+                                gameObject.transform.AsRT().sizeDelta = new Vector2(width, image.sprite.texture.height);
+                                imageObject.transform.AsRT().sizeDelta = new Vector2(width, image.sprite.texture.height);
                             }
 
-                            //var bar = singleInput.Duplicate(documentationContent, "element");
-                            //LSHelpers.DeleteChildren(bar.transform);
-                            //DestroyImmediate(bar.GetComponent<InputField>());
-                            //DestroyImmediate(bar.GetComponent<EventInfo>());
-                            //DestroyImmediate(bar.GetComponent<EventTrigger>());
-                            //DestroyImmediate(bar.GetComponent<HorizontalLayoutGroup>());
-
-                            //bar.transform.localScale = Vector3.one;
-
-                            //var imageObj = bar.Duplicate(bar.transform, "image");
-                            //imageObj.transform.AsRT().anchoredPosition = Vector2.zero;
-
-                            //LSHelpers.DeleteChildren(imageObj.transform);
-
-                            //var barImage = bar.GetComponent<Image>();
-                            //barImage.enabled = true;
-                            //barImage.fillCenter = true;
-                            //var barMask = bar.AddComponent<Mask>();
-
-                            //EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
-
-                            //var imageObjImage = imageObj.GetComponent<Image>();
-                            //imageObjImage.enabled = true;
-                            //imageObjImage.color = new Color(1f, 1f, 1f, 1f);
-
-                            //if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
-                            //    imageObjImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
-                            //else
-                            //    imageObjImage.enabled = false;
-
-                            //if (imageObjImage.sprite && imageObjImage.sprite.texture)
-                            //{
-                            //    var width = Mathf.Clamp(imageObjImage.sprite.texture.width, 0, 718);
-                            //    bar.transform.AsRT().sizeDelta = new Vector2(width, imageObjImage.sprite.texture.height);
-                            //    imageObj.transform.AsRT().sizeDelta = new Vector2(width, imageObjImage.sprite.texture.height);
-                            //}
-
-                            //if (element.Function != null)
-                            //{
-                            //    bar.AddComponent<Button>().onClick.AddListener(() => element.Function.Invoke());
-                            //}
+                            if (element.Function != null)
+                                imageObject.AddComponent<Button>().onClick.AddListener(element.RunFunction);
 
                             break;
                         }
