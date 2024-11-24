@@ -57,7 +57,6 @@
 - Ignore start time object spawn?
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
-- Modifier blocks have something that tell the user that the modifier is running.
 - Figure out how player shooting fits in-game.
 - Update dev+ player to have current properties.
 - Documentation & tooltips.
@@ -82,7 +81,6 @@
 
 ### Bugs
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
-- Fix up menu themes. > 1.8.0
 - Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
 - Fix parent desync not working for specific parent chains.
 - Fix some issues with Player Models and extra tail parts.
