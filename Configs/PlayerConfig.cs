@@ -99,7 +99,7 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<Key> PlayerShootKey { get; set; }
 
-        public Setting<bool> AllowControlerIfSinglePlayer { get; set; }
+        public Setting<bool> AllowControllerIfSinglePlayer { get; set; }
 
         #endregion
 
@@ -144,7 +144,7 @@ namespace BetterLegacy.Configs
 
             #region Controls
 
-            AllowControlerIfSinglePlayer = Bind(this, "Controls", "Allow Controler If Single Player", true, "If controller should be usable on singleplayer.");
+            AllowControllerIfSinglePlayer = Bind(this, "Controls", "Allow Controller If Single Player", true, "If controller should be usable on singleplayer.");
             PlayerShootControl = BindEnum(this, "Controls", "Shoot Control", InputControlType.Action3, "Controller button to press to shoot. Requires restart if changed.");
             PlayerShootKey = BindEnum(this, "Controls", "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
 

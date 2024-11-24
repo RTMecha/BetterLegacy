@@ -308,7 +308,7 @@ namespace BetterLegacy.Core.Managers
                     DestroyImmediate(PlayerManager.Players[i].GameObject);
             }
 
-            PlayerManager.allowController = PlayerConfig.Instance.AllowControlerIfSinglePlayer.Value && InputDataManager.inst.players.Count == 1;
+            PlayerManager.allowController = PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value && InputDataManager.inst.players.Count == 1;
 
             PlayerManager.LoadLocalModels();
 
