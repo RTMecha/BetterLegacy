@@ -77,6 +77,8 @@
 - Make CursorManager a main manager that can properly manage cursor states.
 - Clean up UIManager.
 - Clean up PlayerManager.
+- Move Level, LevelCollection and PlayerData to BetterLegacy.Core.Data.Level namespace.
+- Move Exists, Shape and Version to BetterLegacy.Core.Data namespace.
 - Summary and note as much as I can (or need to).
 
 ### Bugs
