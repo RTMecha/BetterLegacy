@@ -49,6 +49,7 @@
 - Add difficulty and artist name to the level creator popup.
 - Improve profile menu. > 1.8.0
 - Improve changelog menu.
+- Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers)
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
 - Implement custom menu list, where it acts like the old menu system with branches.
 - Glow object that acts like bloom.
