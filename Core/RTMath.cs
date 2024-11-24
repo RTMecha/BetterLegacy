@@ -67,6 +67,7 @@ namespace BetterLegacy.Core
             try
             {
                 input = input.Replace(";", ""); // replaces ; due to really old math evaluator
+                input = input.Replace("True", "1").Replace("true", "1").Replace("False", "0").Replace("false", "0"); // replaces true / false syntax with their number equivalents.
                 var context = EvaluationContext.CreateDefault();
 
                 if (variables != null)
@@ -171,19 +172,21 @@ namespace BetterLegacy.Core
                 });
                 context.RegisterFunction("worldToViewportPointX", parameters =>
                 {
-                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], (float)parameters[1], parameters.Length > 2 ? (float)parameters[2] : 0f));
+                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
                     return position.x;
                 });
                 context.RegisterFunction("worldToViewportPointY", parameters =>
                 {
-                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], (float)parameters[1], parameters.Length > 2 ? (float)parameters[2] : 0f));
+                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
                     return position.y;
                 });
                 context.RegisterFunction("worldToViewportPointZ", parameters =>
                 {
-                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], (float)parameters[1], parameters.Length > 2 ? (float)parameters[2] : 0f));
+                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
                     return position.z;
                 });
+                context.RegisterFunction("mirrorNegative", parameters => parameters[0] < 0 ? -parameters[0] : parameters[0]);
+                context.RegisterFunction("mirrorPositive", parameters => parameters[0] > 0 ? -parameters[0] : parameters[0]);
 
                 if (functions != null)
                     foreach (var function in functions)
