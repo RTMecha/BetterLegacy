@@ -1,3 +1,17 @@
+snapshot-2024.11.20 - (pre-1.7.0) > [Nov 24, 2024]
+- Added Allow Controler If Single Player under Config Manager > Players > Controls.
+- Added playerRespawn modifiers.
+- Optimized and increased some player functionality.
+- Fixed checkpoints not being removed from the game timeline.
+- Increased the Beatmap Theme ID default length.
+- Fixed Example commands not working in some cases.
+- Added FPS and BG Object Count to the Editor Information section.
+- Added Rank to Arcade level sorting.
+- Fixed Arcade level sorting duplicating levels and not working with local levels.
+- Arcade menu now has level sort buttons.
+- Added some more fun splash text.
+- Added mirrorPositive and mirrorNegative math functions.
+- Updated Editor Documentation to include new math functions.
 snapshot-2024.11.19 - (pre-1.7.0) > [Nov 22, 2024]
 - Fixed Prefab Group modifiers checking for both spawned and expanded objects from prefabs.
 - Fixed variableOther trigger modifiers not using the prefab instance group toggle.
