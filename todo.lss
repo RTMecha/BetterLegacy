@@ -59,6 +59,7 @@
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
 - Update dev+ player to have current properties.
+- Update the sprite asset.
 - Documentation & tooltips.
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
