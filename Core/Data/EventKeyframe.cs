@@ -48,15 +48,24 @@ namespace BetterLegacy.Core.Data
 
         public void SetCurve(string ease) => curveType = DataManager.inst.AnimationList.TryFind(x => x.Name == ease, out DataManager.LSAnimation anim) ? anim : DataManager.inst.AnimationList[0];
         public void SetCurve(int ease) => curveType = DataManager.inst.AnimationList[Mathf.Clamp(ease, 0, DataManager.inst.AnimationList.Count - 1)];
+        public new void SetEventValues(params float[] _vals)
+        {
+            if (_vals == null)
+                return;
+
+            eventValues = new float[_vals.Length];
+            for (int i = 0; i < _vals.Length; i++)
+                eventValues[i] = _vals[i];
+        }
+
         public new void SetEventRandomValues(params float[] _vals)
         {
-            if (_vals != null)
-            {
-                if (_vals.Length > eventRandomValues.Length)
-                    eventRandomValues = new float[_vals.Length];
-                for (int i = 0; i < _vals.Length; i++)
-                    eventRandomValues[i] = _vals[i];
-            }
+            if (_vals == null)
+                return;
+
+            eventRandomValues = new float[_vals.Length];
+            for (int i = 0; i < _vals.Length; i++)
+                eventRandomValues[i] = _vals[i];
         }
 
         #region Methods
