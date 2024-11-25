@@ -78,6 +78,7 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
+        public const string DEFAULT_ID = "0";
         static PlayerModel defaultPlayer;
         public static PlayerModel DefaultPlayer
         {
@@ -86,14 +87,15 @@ namespace BetterLegacy.Core.Data.Player
                 if (!defaultPlayer)
                 {
                     defaultPlayer = new PlayerModel();
-                    defaultPlayer.basePart.id = "0";
+                    defaultPlayer.basePart.id = DEFAULT_ID;
                     defaultPlayer.basePart.name = "Regular";
                 }
 
                 return defaultPlayer;
             }
         }
-        
+
+        public const string CIRCLE_ID = "1";
         static PlayerModel circlePlayer;
         public static PlayerModel CirclePlayer
         {
@@ -103,7 +105,7 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     circlePlayer = new PlayerModel();
                     var circle = new Shape("Circle", 1, 0);
-                    circlePlayer.basePart.id = "1";
+                    circlePlayer.basePart.id = CIRCLE_ID;
                     circlePlayer.basePart.name = "Circle";
                     circlePlayer.headPart.shape = circle;
                     circlePlayer.boostPart.shape = circle;
@@ -120,7 +122,8 @@ namespace BetterLegacy.Core.Data.Player
                 return circlePlayer;
             }
         }
-        
+
+        public const string ALPHA_ID = "2";
         static PlayerModel alphaPlayer;
         public static PlayerModel AlphaPlayer
         {
@@ -129,7 +132,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!alphaPlayer)
                 {
                     alphaPlayer = new PlayerModel();
-                    alphaPlayer.basePart.id = "2";
+                    alphaPlayer.basePart.id = ALPHA_ID;
                     alphaPlayer.basePart.name = "Alpha";
                     alphaPlayer.guiPart.active = true;
                     alphaPlayer.guiPart.mode = GUI.GUIHealthMode.Images;
@@ -150,6 +153,7 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
+        public const string BETA_ID = "3";
         static PlayerModel betaPlayer;
         public static PlayerModel BetaPlayer
         {
@@ -158,7 +162,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!betaPlayer)
                 {
                     betaPlayer = new PlayerModel();
-                    betaPlayer.basePart.id = "3";
+                    betaPlayer.basePart.id = BETA_ID;
                     betaPlayer.basePart.name = "Beta";
                     betaPlayer.boostTailPart.active = true;
                     betaPlayer.boostTailPart.color = 4;
@@ -175,7 +179,8 @@ namespace BetterLegacy.Core.Data.Player
                 return betaPlayer;
             }
         }
-        
+
+        public const string DEV_ID = "4";
         static PlayerModel devPlayer;
         public static PlayerModel DevPlayer
         {
@@ -184,7 +189,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!devPlayer)
                 {
                     devPlayer = new PlayerModel();
-                    devPlayer.basePart.id = "4";
+                    devPlayer.basePart.id = DEV_ID;
                     devPlayer.basePart.name = "DevPlus";
                     devPlayer.tailBase.mode = TailBase.TailMode.DevPlus;
                     devPlayer.basePart.boostCooldown = 0f;
