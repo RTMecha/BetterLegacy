@@ -136,6 +136,7 @@ namespace BetterLegacy.Patchers
                     __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] &&
                     CoreHelper.InEditorPreview)
                 {
+                    CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
                     __instance.playingCheckpointAnimation = true;
                     __instance.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
                     __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
@@ -200,14 +201,11 @@ namespace BetterLegacy.Patchers
                 }),
             };
 
-            animation.onComplete = () =>
-            {
-                AnimationManager.inst.Remove(animation.id);
-            };
+            animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
 
             AnimationManager.inst.Play(animation);
 
-            AudioManager.inst.PlaySound("rewind");
+            SoundManager.inst.PlaySound(DefaultSounds.rewind);
 
             yield return new WaitForSeconds(2f);
 
@@ -242,8 +240,9 @@ namespace BetterLegacy.Patchers
             {
                 if (!CoreHelper.Reversing)
                 {
-                    Instance.UpcomingCheckpoint = Instance.GetClosestIndex(GameData.Current.beatmapData.checkpoints, AudioManager.inst.CurrentAudioSource.time);
-                    Instance.UpcomingCheckpointIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x == Instance.UpcomingCheckpoint);
+                    Instance.UpcomingCheckpointIndex = GameData.Current.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+                    if (Instance.UpcomingCheckpointIndex > 0)
+                        Instance.UpcomingCheckpoint = GameData.Current.beatmapData.checkpoints[Instance.UpcomingCheckpointIndex];
                 }
                 if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null)
                 {
@@ -421,6 +420,48 @@ namespace BetterLegacy.Patchers
             }
 
             return false;
+        }
+
+        [HarmonyPatch(nameof(GameManager.ResetCheckpoints))]
+        [HarmonyPrefix]
+        static bool ResetCheckpointsPrefix(bool __0)
+        {
+            if (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
+                return false;
+
+            CoreHelper.Log($"Reset Checkpoints | Based on time: {__0}");
+            Instance.checkpointsActivated = new bool[GameData.Current.beatmapData.checkpoints.Count];
+            if (Instance.checkpointsActivated.Length != 0)
+                Instance.checkpointsActivated[0] = true;
+
+            if (__0)
+                for (int i = 0; i < Instance.checkpointsActivated.Length - 1; i++)
+                    if (AudioManager.inst.CurrentAudioSource.time >= GameData.Current.beatmapData.checkpoints[i].time)
+                        Instance.checkpointsActivated[i] = true;
+
+            return false;
+        }
+
+        [HarmonyPatch(nameof(GameManager.PlayCheckpointAnimation))]
+        [HarmonyPrefix]
+        static bool PlayCheckpointAnimationPrefix(ref IEnumerator __result, int __0)
+        {
+            __result = PlayCheckpointAnimation(__0);
+            return false;
+        }
+
+        // todo: make checkpoints triggerable via modifiers.
+        static IEnumerator PlayCheckpointAnimation(int _index = 0)
+        {
+            if (_index > 0)
+            {
+                Instance.checkpointsActivated[_index] = true;
+                SoundManager.inst.PlaySound(DefaultSounds.checkpoint);
+                Instance.CheckpointAnimator.SetTrigger("GotCheckpoint");
+                yield return new WaitForSecondsRealtime(0.1f);
+                Instance.playingCheckpointAnimation = false;
+            }
+            yield break;
         }
     }
 }
