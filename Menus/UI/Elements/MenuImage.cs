@@ -2219,7 +2219,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (CoreHelper.InGame || !MenuEffectsManager.inst)
                             break;
 
-                        MenuEffectsManager.inst.UpdateChroma(0.1f);
+                        MenuEffectsManager.inst.SetDefaultEffects();
 
                         break;
                     }

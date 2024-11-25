@@ -290,6 +290,11 @@ namespace BetterLegacy.Menus
             tubeDistortion.mode.Override(TubeDistortion.DistortionMode.Buldged);
         }
 
+        public void SetDefaultEffects()
+        {
+            UpdateChroma(0.1f);
+        }
+
         public void MoveCameraX(float x)
         {
             var cam = Camera.main.transform;
