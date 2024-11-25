@@ -535,10 +535,11 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">The type of the list and item.</typeparam>
         /// <param name="count">The amount to fill.</param>
         /// <param name="obj">The item to fill the list with.</param>
-        public static void Fill<T>(this List<T> list, int count, T obj)
+        public static List<T> Fill<T>(this List<T> list, int count, T obj)
         {
             for (int i = 0; i < count; i++)
                 list.Add(obj);
+            return list;
         }
         
         /// <summary>
