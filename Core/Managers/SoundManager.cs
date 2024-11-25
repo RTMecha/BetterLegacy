@@ -27,8 +27,10 @@ namespace BetterLegacy.Core.Managers
         public void TogglePlaying() => SetPlaying(!BaseManager.CurrentAudioSource.isPlaying);
 
         public void PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1) => PlaySound(defaultSound.ToString(), volume, pitch);
+        public void PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch);
 
         public void PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop);
+        public void PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop);
 
         public void PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop);
 
