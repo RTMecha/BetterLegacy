@@ -33,12 +33,13 @@ namespace BetterLegacy.Arcade
         public DownloadLevelMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
+            this.name = "Arcade";
 
             elements.Add(new MenuEvent
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
             });
 
@@ -88,7 +89,7 @@ namespace BetterLegacy.Arcade
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = () => { LSText.CopyToClipboard(jn["id"]); },
+                func = () => LSText.CopyToClipboard(jn["id"]),
             });
 
             elements.Add(new MenuImage
@@ -276,7 +277,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                    func = () => CoreHelper.StartCoroutine(SelectLocalLevel(level)),
                 });
             }
             else

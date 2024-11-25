@@ -35,12 +35,13 @@ namespace BetterLegacy.Arcade
         public SteamLevelMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
+            this.name = "Arcade";
 
             elements.Add(new MenuEvent
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
             });
 

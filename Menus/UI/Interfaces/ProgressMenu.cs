@@ -20,13 +20,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentMenu = this;
+            name = "Progress";
 
             if (!CoreHelper.InGame)
                 elements.Add(new MenuEvent
                 {
                     id = "09",
                     name = "Effects",
-                    func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                    func = MenuEffectsManager.inst.SetDefaultEffects,
                     length = 0f,
                 });
 

@@ -19,6 +19,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentMenu = this;
+            name = "Confirm";
 
             layouts.Add("buttons", new MenuHorizontalLayout
             {

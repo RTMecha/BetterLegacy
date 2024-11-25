@@ -28,12 +28,13 @@ namespace BetterLegacy.Arcade
         public LevelCollectionMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
+            this.name = CurrentCollection.name;
 
             elements.Add(new MenuEvent
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
             });
 

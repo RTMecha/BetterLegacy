@@ -41,6 +41,7 @@ namespace BetterLegacy.Arcade
         public LevelListMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
+            name = "Level List";
 
             regenerate = false;
 
@@ -48,7 +49,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
                 regenerate = false,
             });

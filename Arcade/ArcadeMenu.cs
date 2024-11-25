@@ -72,6 +72,7 @@ namespace BetterLegacy.Arcade
         public ArcadeMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
+            name = "Arcade";
 
             regenerate = false;
 
@@ -79,7 +80,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
                 regenerate = false,
             });

@@ -25,12 +25,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
             id = InterfaceManager.PROFILE_MENU_ID;
 
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
+            name = "Profile";
 
             elements.Add(new MenuEvent
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
             });
 
@@ -121,7 +122,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 elements.Add(delete);
             }
 
-            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
+            exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID);
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 

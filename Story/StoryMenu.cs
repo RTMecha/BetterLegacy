@@ -26,6 +26,7 @@ namespace BetterLegacy.Story
         public StoryMenu() : base()
         {
             id = InterfaceManager.STORY_SAVES_MENU_ID;
+            name = "Story";
 
             layouts.Add("buttons", new MenuVerticalLayout
             {
@@ -57,7 +58,7 @@ namespace BetterLegacy.Story
             {
                 id = "09",
                 name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
             });
 
