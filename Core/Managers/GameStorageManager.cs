@@ -169,8 +169,8 @@ namespace BetterLegacy.Core.Managers
                             {
                                 // Fade In
                                 new FloatKeyframe(0f, 1f, Ease.Linear),
-                                new FloatKeyframe(0.41666666f * INTRO_SPEED, 1f, Ease.Linear),
-                                new FloatKeyframe(1.5f * INTRO_SPEED, 0f, Ease.SineIn),
+                                new FloatKeyframe(4f * INTRO_SPEED, 0f, Ease.SineIn),
+                                new FloatKeyframe(15.6666667f * INTRO_SPEED, 0f, Ease.Linear),
                             }, SetIntroBGOpacity),
 
                             new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
