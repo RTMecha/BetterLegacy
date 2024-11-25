@@ -64,7 +64,7 @@ namespace BetterLegacy.Editor.Managers
                         keybind.Activate();
                     else
                     {
-                        var watch = WatchKeyCode();
+                        var watch = CoreHelper.GetKeyCodeDown();
                         if (watch != KeyCode.None)
                             keybind.keys[Mathf.Clamp(currentKey, 0, keybind.keys.Count - 1)].KeyCode = watch;
                     }
@@ -2109,19 +2109,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Functions
-
-        public static KeyCode WatchKeyCode()
-        {
-            var keyCodes = Enum.GetValues(typeof(KeyCode));
-            for (int i = 0; i < keyCodes.Length; i++)
-            {
-                var name = Enum.GetName(typeof(KeyCode), i);
-                if (!string.IsNullOrEmpty(name) && name.ToLower() != "none" && Input.GetKeyDown((KeyCode)i))
-                    return (KeyCode)i;
-            }
-
-            return KeyCode.None;
-        }
 
         public void SetValues(int type)
         {

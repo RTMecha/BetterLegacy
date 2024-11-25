@@ -344,7 +344,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (selectingKey)
             {
-                var key = KeybindManager.WatchKeyCode();
+                var key = CoreHelper.GetKeyCodeDown();
 
                 if (key != KeyCode.None)
                 {

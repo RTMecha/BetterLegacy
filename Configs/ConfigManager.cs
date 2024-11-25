@@ -365,7 +365,7 @@ namespace BetterLegacy.Configs
             if (!watchingKeybind)
                 return;
 
-            var key = KeybindManager.WatchKeyCode();
+            var key = CoreHelper.GetKeyCodeDown();
 
             if (key == KeyCode.None)
                 return;
