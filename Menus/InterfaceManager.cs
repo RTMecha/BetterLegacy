@@ -124,8 +124,6 @@ namespace BetterLegacy.Menus
             if (CoreHelper.InEditor)
                 return;
 
-            var directory = RTFile.ApplicationDirectory + "settings/menus/";
-
             if (!MenuConfig.Instance.PlayCustomMusic.Value)
             {
                 CoreHelper.LogWarning("PlayCustomMusic setting is off, so play default music.");
@@ -140,24 +138,15 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            switch (MenuConfig.Instance.MusicLoadMode.Value)
+            var directory = MenuConfig.Instance.MusicLoadMode.Value switch
             {
-                case MenuMusicLoadMode.StoryFolder:
-                    {
-                        directory = RTFile.ApplicationDirectory + "beatmaps/story";
-                        break;
-                    }
-                case MenuMusicLoadMode.EditorFolder:
-                    {
-                        directory = RTFile.ApplicationDirectory + "beatmaps/editor";
-                        break;
-                    }
-                case MenuMusicLoadMode.GlobalFolder:
-                    {
-                        directory = MenuConfig.Instance.MusicGlobalPath.Value;
-                        break;
-                    }
-            }
+                MenuMusicLoadMode.ArcadeFolder => $"{RTFile.ApplicationDirectory}{LevelManager.ListPath}",
+                MenuMusicLoadMode.StoryFolder => $"{RTFile.ApplicationDirectory}beatmaps/story",
+                MenuMusicLoadMode.EditorFolder => $"{RTFile.ApplicationDirectory}beatmaps/editor",
+                MenuMusicLoadMode.InterfacesFolder => $"{RTFile.ApplicationDirectory}beatmaps/interfaces/music",
+                MenuMusicLoadMode.GlobalFolder => MenuConfig.Instance.MusicGlobalPath.Value,
+                _ => RTFile.ApplicationDirectory + "settings/menus",
+            };
 
             if (!RTFile.DirectoryExists(directory))
             {

@@ -126,17 +126,25 @@
         /// </summary>
         Settings,
         /// <summary>
-        /// Takes from story folder.
+        /// Takes from the story folder.
+        /// </summary>
+        ArcadeFolder,
+        /// <summary>
+        /// Takes from the story folder.
         /// </summary>
         StoryFolder,
         /// <summary>
-        /// Takes from editor folder.
+        /// Takes from the editor folder.
         /// </summary>
         EditorFolder,
         /// <summary>
-        /// Takes from global folder.
+        /// Takes from the interfaces/music folder.
         /// </summary>
-        GlobalFolder
+        InterfacesFolder,
+        /// <summary>
+        /// Takes from the global folder.
+        /// </summary>
+        GlobalFolder,
     }
 
     public enum ServerVisibility
