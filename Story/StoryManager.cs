@@ -68,6 +68,96 @@ namespace BetterLegacy.Story
             Load();
         }
 
+        List<SecretSequence> secretSequences = new List<SecretSequence>()
+        {
+            new SecretSequence(new Dictionary<int, KeyCode>
+            {
+                { 0, KeyCode.B },
+                { 1, KeyCode.E },
+                { 2, KeyCode.L },
+                { 3, KeyCode.U },
+                { 4, KeyCode.G },
+                { 5, KeyCode.A },
+            }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        CoreHelper.LoadResourceLevel(0);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                CoreHelper.LoadResourceLevel(0);
+            }), // load save
+            new SecretSequence(new Dictionary<int, KeyCode>
+            {
+                { 0, KeyCode.D },
+                { 1, KeyCode.E },
+                { 2, KeyCode.M },
+                { 3, KeyCode.O },
+            }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        CoreHelper.LoadResourceLevel(1);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                CoreHelper.LoadResourceLevel(1);
+            }), // load old demo
+        };
+
+        public class SecretSequence
+        {
+            public SecretSequence(Dictionary<int, KeyCode> keys, Action onSequenceEnd)
+            {
+                this.keys = keys;
+                this.onSequenceEnd = onSequenceEnd;
+            }
+
+            public int counter;
+            public Dictionary<int, KeyCode> keys;
+            public Action onSequenceEnd;
+        }
+
+        void Update()
+        {
+            if (CoreHelper.IsUsingInputField)
+                return;
+
+            var key = CoreHelper.GetKeyCodeDown();
+
+            if (key == KeyCode.None)
+                return;
+
+            for (int i = 0; i < secretSequences.Count; i++)
+            {
+                var sequence = secretSequences[i];
+
+                sequence.keys.TryGetValue(sequence.counter, out KeyCode keyCompare);
+
+                if (key == keyCompare)
+                    sequence.counter++;
+                else
+                    sequence.counter = 0;
+
+                if (sequence.counter == sequence.keys.Count)
+                {
+                    sequence.onSequenceEnd?.Invoke();
+                    sequence.counter = 0;
+                }
+            }
+        }
+
         #region Save File
 
         public int currentPlayingChapterIndex;
