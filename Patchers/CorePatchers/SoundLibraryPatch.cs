@@ -11,6 +11,7 @@ namespace BetterLegacy.Patchers
     public class SoundLibraryPatch
     {
         public static SoundLibrary Instance => AudioManager.inst.library;
+        static SoundLibrary inst;
 
         public static string SFXPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}SFX/";
 
@@ -20,6 +21,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AwakePrefix(SoundLibrary __instance)
         {
+            inst = __instance;
             if (ran)
                 return false; // only run once due to Awake being run every time a scene is loaded.
             ran = true;
@@ -61,6 +63,9 @@ namespace BetterLegacy.Patchers
             AddSound($"{SFXPath}t speak.ogg", "t_speak");
             AddSound($"{SFXPath}menuflip.ogg", "menuflip");
             AddSound($"{SFXPath}Record Scratch.ogg", "record_scratch");
+            AddSound($"{SFXPath}hit2.ogg", "HurtPlayer2");
+            AddSound($"{SFXPath}hit3.ogg", "HurtPlayer3");
+            AddSound($"{SFXPath}HealPlayer.ogg", "HealPlayer");
 
             foreach (var musicGroup in __instance.musicGroups)
             {
@@ -69,17 +74,20 @@ namespace BetterLegacy.Patchers
                 __instance.musicClips[musicGroup.musicID] = musicGroup.music;
             }
 
-            __instance.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SFXPath}click cut.ogg", AudioType.OGGVORBIS, audioClip =>
-            {
-                __instance.soundClips["UpDown"][0] = audioClip;
-                __instance.soundClips["LeftRight"][0] = audioClip;
-            }));
-            __instance.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SFXPath}optionexit.ogg", AudioType.OGGVORBIS, audioClip =>
-            {
-                __instance.soundClips["Block"][0] = audioClip;
-            }));
+            SetSound($"{SFXPath}click cut.ogg", DefaultSounds.UpDown, DefaultSounds.LeftRight);
+            SetSound($"{SFXPath}optionexit.ogg", DefaultSounds.Block);
+            SetSound($"{SFXPath}SpawnPlayer.ogg", DefaultSounds.SpawnPlayer);
 
             return false;
+        }
+
+        static void SetSound(string path, params DefaultSounds[] defaultSounds)
+        {
+            inst.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{path}", AudioType.OGGVORBIS, audioClip =>
+            {
+                foreach (var defaultSound in defaultSounds)
+                    inst.soundClips[defaultSound.ToString()][0] = audioClip;
+            }));
         }
 
         static void AddSound(string path, string id)
