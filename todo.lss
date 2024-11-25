@@ -79,6 +79,7 @@
 - Clean up PlayerManager.
 - Move Level, LevelCollection and PlayerData to BetterLegacy.Core.Data.Level namespace.
 - Move Exists, Shape and Version to BetterLegacy.Core.Data namespace.
+- Rework Editor Dialogs to have custom ones under the BetterLegacy.Editor.Dialogs namespace.
 - Summary and note as much as I can (or need to).
 
 ### Bugs
