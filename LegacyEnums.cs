@@ -817,6 +817,12 @@
         pirate_KillPlayer,
         blip,
         loadsound,
-        example_speak
+        menuflip,
+        record_scratch,
+        example_speak,
+        hal_speak,
+        anna_speak,
+        para_speak,
+        t_speak,
     }
 }
