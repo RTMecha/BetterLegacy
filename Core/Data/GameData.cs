@@ -921,7 +921,7 @@ namespace BetterLegacy.Core.Data
 
             if (parseOptimizations)
                 for (int i = 0; i < gameData.beatmapObjects.Count; i++)
-                    ((Data.BeatmapObject)gameData.beatmapObjects[i]).SetAutokillToScale(gameData.beatmapObjects);
+                    gameData.beatmapObjects[i].SetAutokillToScale(gameData.beatmapObjects);
             
             AssetManager.SpriteAssets.Clear();
             if (jn["assets"] != null && jn["assets"]["spr"] != null)
