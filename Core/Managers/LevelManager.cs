@@ -177,7 +177,7 @@ namespace BetterLegacy.Core.Managers
         /// <returns></returns>
         public static IEnumerator Play(Level level)
         {
-            Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level is StoryLevel}");
+            Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level.isStory}");
 
             LoadingFromHere = true;
             LevelEnded = false;
@@ -362,8 +362,14 @@ namespace BetterLegacy.Core.Managers
                     SceneHelper.LoadScene(SceneName.Main_Menu);
                 };
 
+            if (path.EndsWith(".asset"))
+            {
+                CoreHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel => { CoreHelper.StartCoroutine(Play(storyLevel)); }));
+                return;
+            }
+
             var level = new Level(path.Replace("level.lsb", "").Replace("level.vgd", ""));
-            inst.StartCoroutine(Play(level));
+            CoreHelper.StartCoroutine(Play(level));
         }
 
         public static void UpdateCurrentLevelProgress()
