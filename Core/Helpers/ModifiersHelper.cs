@@ -71,9 +71,9 @@ namespace BetterLegacy.Core.Helpers
         {
             if (modifier is Modifier<BeatmapObject> objectModifier)
                 AssignModifierAction(objectModifier, ObjectAction, ObjectTrigger, ObjectInactive);
-            if (modifier is Modifier<BackgroundObject> backgroundModifier)
+            else if (modifier is Modifier<BackgroundObject> backgroundModifier)
                 AssignModifierAction(backgroundModifier, BGAction, BGTrigger, BGInactive);
-            if (modifier is Modifier<CustomPlayer> playerModifier)
+            else if (modifier is Modifier<CustomPlayer> playerModifier)
                 AssignModifierAction(playerModifier, PlayerAction, PlayerTrigger, PlayerInactive);
         }
 
@@ -2508,25 +2508,49 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHeal":
                         {
-                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant || !int.TryParse(modifier.value, out int hit))
+                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                                 break;
+
+                            int hit = modifier.GetInt(0, 1);
+                            hit = Mathf.Clamp(hit, 0, int.MaxValue);
 
                             var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                             var player = PlayerManager.GetClosestPlayer(pos);
 
                             if (player)
+                            {
+                                int oldHealth = player.Health;
                                 player.Health += hit;
+
+                                if (player.Health != oldHealth)
+                                    SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
+                            }
 
                             break;
                         }
                     case "playerHealAll":
                         {
-                            if (!PlayerManager.Invincible && !modifier.constant && int.TryParse(modifier.value, out int hit))
-                                foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                            if (!PlayerManager.Invincible && !modifier.constant)
+                            {
+                                int hit = modifier.GetInt(0, 1);
+                                hit = Mathf.Clamp(hit, 0, int.MaxValue);
+                                bool healed = false;
+                                foreach (var player in PlayerManager.Players)
                                 {
-                                    player.Health += hit;
+                                    if (player.Player)
+                                    {
+                                        int oldHealth = player.Health;
+                                        player.Health += hit;
+
+                                        if (player.Health != oldHealth)
+                                            healed = true;
+                                    }
                                 }
+
+                                if (healed)
+                                    SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
+                            }
                             break;
                         }
                     case "playerKill":
@@ -2547,9 +2571,10 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (!PlayerManager.Invincible && !modifier.constant)
                             {
-                                foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                                foreach (var player in PlayerManager.Players)
                                 {
-                                    player.Health = 0;
+                                    if (player.Player)
+                                        player.Health = 0;
                                 }
                             }
                             break;
