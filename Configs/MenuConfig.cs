@@ -119,7 +119,7 @@ namespace BetterLegacy.Configs
             ShowChangelog = Bind(this, "General", "Show Changelog", true, "If the changelog screen should show on game startup.");
             ShowFX = Bind(this, "General", "Show Effects", true, "If menu effects should be enabled.");
             RegularSpeedMultiplier = Bind(this, "General", "Regular Speed", 1f, "How fast the interface should load normally.");
-            SpeedUpSpeedMultiplier = Bind(this, "General", "Speed Up Speed", 0.3f, "How fast the interface should load while a submit button is being held.");
+            SpeedUpSpeedMultiplier = Bind(this, "General", "Speed Up Speed", 4f, "How fast the interface should load while a submit button is being held.");
 
             PlayCustomMusic = Bind(this, "Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
             MusicLoadMode = BindEnum(this, "Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
