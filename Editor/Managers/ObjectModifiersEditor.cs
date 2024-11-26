@@ -653,16 +653,25 @@ namespace BetterLegacy.Editor.Managers
                             var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
                             d.onValueChanged.ClearAll();
                             d.options.Clear();
+                            var sounds = Enum.GetNames(typeof(DefaultSounds));
+                            d.options = CoreHelper.StringToOptionData(sounds);
 
-                            d.options = AudioManager.inst.library.soundGroups.Select(x => new Dropdown.OptionData(x.soundID)).ToList();
+                            int soundIndex = -1;
+                            for (int i = 0; i < sounds.Length; i++)
+                            {
+                                if (sounds[i] == modifier.value)
+                                {
+                                    soundIndex = i;
+                                    break;
+                                }
+                            }
 
-                            var soundIndex = AudioManager.inst.library.soundGroups.ToList().FindIndex(x => x.soundID == modifier.value);
                             if (soundIndex >= 0)
                                 d.value = soundIndex;
 
                             d.onValueChanged.AddListener(_val =>
                             {
-                                modifier.value = AudioManager.inst.library.soundGroups[_val].soundID;
+                                modifier.value = sounds[_val];
                                 modifier.active = false;
                             });
 
