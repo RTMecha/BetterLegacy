@@ -315,6 +315,16 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ParseOptimizations { get; set; }
 
+        /// <summary>
+        /// If the checkpoint sound should play.
+        /// </summary>
+        public Setting<bool> PlayCheckpointSound { get; set; }
+        
+        /// <summary>
+        /// If the checkpoint animation should play.
+        /// </summary>
+        public Setting<bool> PlayCheckpointAnimation { get; set; }
+
         #endregion
 
         #region Discord
@@ -433,6 +443,8 @@ namespace BetterLegacy.Configs
             ReplayLevel = Bind(this, "Level", "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
             PrioritizeVG = Bind(this, "Level", "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
             ParseOptimizations = Bind(this, "Level", "Parse Optimizations", false, "When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.");
+            PlayCheckpointSound = Bind(this, "Level", "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
+            PlayCheckpointAnimation = Bind(this, "Level", "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
 
             #endregion
 
@@ -467,6 +479,9 @@ namespace BetterLegacy.Configs
             DisplayName.SettingChanged += DisplayNameChanged;
             Fullscreen.SettingChanged += DefaultSettingsChanged;
             Resolution.SettingChanged += DefaultSettingsChanged;
+            MasterVol.SettingChanged += SFXVolumeChanged;
+            MusicVol.SettingChanged += MusicVolumeChanged;
+            SFXVol.SettingChanged += SFXVolumeChanged;
             MasterVol.SettingChanged += DefaultSettingsChanged;
             MusicVol.SettingChanged += DefaultSettingsChanged;
             SFXVol.SettingChanged += DefaultSettingsChanged;
@@ -546,6 +561,10 @@ namespace BetterLegacy.Configs
         }
 
         void UseNewUpdateMethodChanged() => Updater.UseNewUpdateMethod = UseNewUpdateMethod.Value;
+        
+        void MusicVolumeChanged() => SoundManager.inst.PlaySound(DefaultSounds.UpDown, (MusicVol.Value / 9f) * (MasterVol.Value / 9f));
+
+        void SFXVolumeChanged() => SoundManager.inst.PlaySound(DefaultSounds.UpDown);
 
         static void UpdateSettings()
         {
