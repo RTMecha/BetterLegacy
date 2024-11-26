@@ -37,29 +37,9 @@ namespace BetterLegacy.Configs
         public Setting<bool> QueueBoost { get; set; }
         
         /// <summary>
-        /// Plays a little sound when you boost.
-        /// </summary>
-        public Setting<bool> PlaySoundB { get; set; }
-
-        /// <summary>
-        /// Plays a little sound when you can boost again.
-        /// </summary>
-        public Setting<bool> PlaySoundR { get; set; }
-
-        /// <summary>
-        /// If the boost recovery sound should only play if the player has the boost tail.
-        /// </summary>
-        public Setting<bool> PlaySoundRBoostTail { get; set; }
-
-        /// <summary>
         /// Makes Player ignore solid objects in editor.
         /// </summary>
         public Setting<bool> ZenEditorIncludesSolid { get; set; }
-
-        /// <summary>
-        /// Plays a little sound when you shoot.
-        /// </summary>
-        public Setting<bool> PlayerShootSound { get; set; }
 
         /// <summary>
         /// Disable this if you don't want players to kill each other.
@@ -84,6 +64,35 @@ namespace BetterLegacy.Configs
         /// Makes the player models always load from beatmaps/players for entering an arcade level. If disabled, players will be loaded from the local players.lspl file.
         /// </summary>
         public Setting<bool> LoadFromGlobalPlayersInArcade { get; set; }
+
+        #endregion
+
+        #region Sounds
+
+        /// <summary>
+        /// Plays a little sound when you boost.
+        /// </summary>
+        public Setting<bool> PlaySoundB { get; set; }
+
+        /// <summary>
+        /// Plays a little sound when you can boost again.
+        /// </summary>
+        public Setting<bool> PlaySoundR { get; set; }
+
+        /// <summary>
+        /// If the boost recovery sound should only play if the player has the boost tail.
+        /// </summary>
+        public Setting<bool> PlaySoundRBoostTail { get; set; }
+
+        /// <summary>
+        /// Plays a little sound when you shoot.
+        /// </summary>
+        public Setting<bool> PlayerShootSound { get; set; }
+
+        /// <summary>
+        /// Plays the spawn sound when players spawn / respawn.
+        /// </summary>
+        public Setting<bool> PlaySpawnSound { get; set; }
 
         #endregion
 
@@ -117,13 +126,8 @@ namespace BetterLegacy.Configs
             TailUpdateMode = BindEnum(this, "General", "Tail Update Mode", RTPlayer.TailUpdateMode.FixedUpdate, "Changes the way the tail updates movement. FixedUpdate is recommended if the game gets laggy, but otherwise Update / LateUpdate is good for a smooth tail.");
             QueueBoost = Bind(this, "General", "Queue Boost", true, "If boosting should be queued when you press it during boost cooldown.");
 
-            PlaySoundB = Bind(this, "General", "Play Boost Sound", true, "Plays a little sound when you boost.");
-            PlaySoundR = Bind(this, "General", "Play Boost Recover Sound", false, "Plays a little sound when you can boost again.");
-            PlaySoundRBoostTail = Bind(this, "General", "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
-
             ZenEditorIncludesSolid = Bind(this, "General", "Editor Zen Mode includes Solid", false, "Makes Player ignore solid objects in editor.");
 
-            PlayerShootSound = Bind(this, "General", "Play Shoot Sound", true, "Plays a little sound when you shoot.");
             AllowPlayersToTakeBulletDamage = Bind(this, "General", "Shots hurt other players", false, "Disable this if you don't want players to kill each other.");
 
             PlayerNameTags = Bind(this, "General", "Multiplayer NameTags", true, "If enabled and there's more than one person playing, nametags will show which player is which.");
@@ -139,6 +143,16 @@ namespace BetterLegacy.Configs
             PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 2 Model", "0", "The player uses this specific model ID."));
             PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 3 Model", "0", "The player uses this specific model ID."));
             PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 4 Model", "0", "The player uses this specific model ID."));
+
+            #endregion
+
+            #region Sounds
+
+            PlaySoundB = Bind(this, "Sounds", "Play Boost Sound", true, "Plays a little sound when you boost.");
+            PlaySoundR = Bind(this, "Sounds", "Play Boost Recover Sound", true, "Plays a little sound when you can boost again.");
+            PlaySoundRBoostTail = Bind(this, "Sounds", "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
+            PlayerShootSound = Bind(this, "Sounds", "Play Shoot Sound", true, "Plays a little sound when you shoot.");
+            PlaySpawnSound = Bind(this, "Sounds", "Play Spawn Sound", false, "");
 
             #endregion
 
