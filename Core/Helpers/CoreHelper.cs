@@ -1368,9 +1368,8 @@ namespace BetterLegacy.Core.Helpers
                     },
                 },
                 music = audio,
-                
             };
-            storyLevel.metadata.beatmap.name = jsonPath;
+
             if (!string.IsNullOrEmpty(videoClipPath))
                 storyLevel.videoClip = Resources.Load<UnityEngine.Video.VideoClip>($"beatmaps/{videoClipPath}");
 
