@@ -452,6 +452,7 @@ namespace BetterLegacy.Story
                     level++;
                     if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
                     {
+                        UnlockChapterAchievement(chapter);
                         chapter++;
                         level = 0;
                     }
@@ -566,6 +567,7 @@ namespace BetterLegacy.Story
                     level++;
                     if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
                     {
+                        UnlockChapterAchievement(chapter);
                         chapter++;
                         level = 0;
                     }
@@ -643,6 +645,8 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        void UnlockChapterAchievement(int chapter) => AchievementManager.inst.UnlockAchievement($"story_doc{(chapter + 1).ToString("00")}_complete");
+
         void SetLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
         {
             LevelManager.OnLevelEnd = () =>
@@ -680,6 +684,7 @@ namespace BetterLegacy.Story
                 SaveInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", levelIndex);
                 if (levelIndex >= StoryMode.Instance.chapters[chapterIndex].levels.Count)
                 {
+                    UnlockChapterAchievement(chapterIndex);
                     chapterIndex++;
                     levelIndex = 0;
                 }
