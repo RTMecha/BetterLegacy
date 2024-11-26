@@ -82,11 +82,13 @@ namespace BetterLegacy.Story
                 {
                     Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
                     {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                         CoreHelper.LoadResourceLevel(0);
                     }, Editor.Managers.RTEditor.inst.HideWarningPopup);
                     return;
                 }
 
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                 CoreHelper.LoadResourceLevel(0);
             }), // load save
             new SecretSequence(new Dictionary<int, KeyCode>
@@ -103,11 +105,13 @@ namespace BetterLegacy.Story
                 {
                     Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
                     {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                         CoreHelper.LoadResourceLevel(1);
                     }, Editor.Managers.RTEditor.inst.HideWarningPopup);
                     return;
                 }
 
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                 CoreHelper.LoadResourceLevel(1);
             }), // load old demo
         };

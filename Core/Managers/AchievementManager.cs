@@ -94,6 +94,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("select_player", "This is not a clicker game!", "Select the player in the editor preview window.", 4, "select_player");
             CreateGlobalAchievement("time_machine", "Time Machine", "Convert a VG file to an LS file, or the other way around.", 4, "time_machine");
             CreateGlobalAchievement("time_traveler", "Time Traveler", "Play a level made in the modern (alpha / public) editor.", 2, "time_traveler");
+            CreateGlobalAchievement("discover_hidden_levels", "Still in Alpha", "Discover a secret.", 4, "discover_hidden_levels");
 
             // Story related
             CreateGlobalAchievement("story_doc01_complete", "The Purpose", "Complete Story Mode chapter 1.", 1, "story_doc01_complete");
