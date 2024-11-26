@@ -29,7 +29,9 @@ namespace BetterLegacy.Core.Animation
 
         public void Update()
         {
-            Time = useRealTime ? UnityEngine.Time.time - timeOffset : AudioManager.inst.CurrentAudioSource.time - timeOffset;
+            Time += (useRealTime ? UnityEngine.Time.time - timeOffset : AudioManager.inst.CurrentAudioSource.time - timeOffset) * speed;
+
+            timeOffset = useRealTime ? UnityEngine.Time.time : AudioManager.inst.CurrentAudioSource.time;
 
             if (animationHandlers == null || animationHandlers.Count < 1)
                 return;
@@ -45,6 +47,9 @@ namespace BetterLegacy.Core.Animation
                 }
                 else if (!anim.completed)
                 {
+                    if (anim.interpolateOnComplete)
+                        anim.Interpolate(time);
+
                     anim.completed = true;
                     anim.Completed();
                 }
@@ -100,6 +105,8 @@ namespace BetterLegacy.Core.Animation
             get => time;
             private set => time = value;
         }
+
+        public float speed = 1f;
 
         float timeOffset;
 
@@ -160,6 +167,8 @@ namespace BetterLegacy.Core.Animation
         public Action onComplete;
 
         public bool completed = false;
+
+        public bool interpolateOnComplete;
 
         public abstract void SetKeyframeTime(int index, float t);
 
