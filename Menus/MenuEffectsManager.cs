@@ -16,7 +16,7 @@ namespace BetterLegacy.Menus
     {
         public static MenuEffectsManager inst;
 
-        public static bool ShowEffects => EventsConfig.Instance.ShowFX.Value;
+        public static bool ShowEffects => MenuConfig.Instance.ShowFX.Value;
 
         void Awake()
         {
@@ -212,26 +212,17 @@ namespace BetterLegacy.Menus
 		}
 
         bool prevShowEffects;
-        void Update()
+        void Update() => CoreHelper.UpdateValue(prevShowEffects, ShowEffects, x =>
         {
-            CoreHelper.UpdateValue(prevShowEffects, ShowEffects, x =>
-            {
-                prevShowEffects = ShowEffects;
+            prevShowEffects = ShowEffects;
 
-                if (!ShowEffects)
-                {
-                    analogGlitch.enabled = false;
-                    digitalGlitch.enabled = false;
-                    ppvolume.enabled = false;
-                }
-            });
-        }
+            analogGlitch.enabled = ShowEffects;
+            digitalGlitch.enabled = ShowEffects;
+            ppvolume.enabled = ShowEffects;
+        });
 
         void OnDestroy()
         {
-            //postProcessResourcesAssetBundle?.Unload(true);
-            //postProcessResourcesAssetBundle = null;
-
             if (ppvolume && ppvolume.gameObject)
                 Destroy(ppvolume.gameObject);
         }
@@ -295,6 +286,39 @@ namespace BetterLegacy.Menus
             UpdateChroma(0.1f);
         }
 
+        public Dictionary<string, Action<float>> effectMethods = new Dictionary<string, Action<float>>()
+        {
+            { "MoveCameraX", inst.MoveCameraX },
+            { "MoveCameraY", inst.MoveCameraY },
+            { "ZoomCamera", inst.ZoomCamera },
+            { "RotateCamera", inst.RotateCamera },
+            { "UpdateAnalogGlitchEnabled", x => inst.UpdateAnalogGlitchEnabled(x == 1f) },
+            { "UpdateAnalogGlitchScanLineJitter", inst.UpdateAnalogGlitchScanLineJitter },
+            { "UpdateAnalogGlitchVerticalJump", inst.UpdateAnalogGlitchVerticalJump },
+            { "UpdateAnalogGlitchHorizontalShake", inst.UpdateAnalogGlitchHorizontalShake },
+            { "UpdateAnalogGlitchColorDrift", inst.UpdateAnalogGlitchColorDrift },
+            { "UpdateDigitalGlitch", inst.UpdateDigitalGlitch },
+            { "UpdateChroma", inst.UpdateChroma },
+            { "UpdateBloomIntensity", inst.UpdateBloomIntensity },
+            { "UpdateBloomDiffusion", inst.UpdateBloomDiffusion },
+            { "UpdateBloomThreshold", inst.UpdateBloomThreshold },
+            { "UpdateBloomAnamorphicRatio", inst.UpdateBloomAnamorphicRatio },
+            { "UpdateBloomColor", x => inst.UpdateBloomColor((int)x) },
+            { "UpdateVignetteIntensity", inst.UpdateVignetteIntensity },
+            { "UpdateVignetteSmoothness", inst.UpdateVignetteSmoothness },
+            { "UpdateVignetteRounded", x => inst.UpdateVignetteRounded(x == 1f) },
+            { "UpdateVignetteRoundness", inst.UpdateVignetteRoundness },
+            { "UpdateVignetteCenterX", inst.UpdateVignetteCenterX },
+            { "UpdateVignetteCenterY", inst.UpdateVignetteCenterY },
+            { "UpdateVignetteColor", x => inst.UpdateVignetteColor((int)x) },
+            { "UpdateLensDistortIntensity", inst.UpdateLensDistortIntensity },
+            { "UpdateLensDistortCenterX", inst.UpdateLensDistortCenterX },
+            { "UpdateLensDistortCenterY", inst.UpdateLensDistortCenterY },
+            { "UpdateLensDistortIntensityX", inst.UpdateLensDistortIntensityX },
+            { "UpdateLensDistortIntensityY", inst.UpdateLensDistortIntensityY },
+            { "UpdateLensDistortScale", inst.UpdateLensDistortScale },
+        };
+
         public void MoveCameraX(float x)
         {
             var cam = Camera.main.transform;
@@ -338,6 +362,12 @@ namespace BetterLegacy.Menus
         public void UpdateBloomDiffusion(float diffusion) => bloom?.diffusion?.Override(diffusion);
         public void UpdateBloomThreshold(float threshold) => bloom?.threshold?.Override(threshold);
         public void UpdateBloomAnamorphicRatio(float anamorphicRatio) => bloom?.anamorphicRatio?.Override(anamorphicRatio);
+        public void UpdateBloomColor(int colorSlot)
+        {
+            if (!InterfaceManager.inst || InterfaceManager.inst.CurrentMenu == null)
+                return;
+            UpdateBloomColor(colorSlot == InterfaceManager.inst.CurrentMenu.Theme.effectColors.Count ? Color.white : InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(colorSlot));
+        }
         public void UpdateBloomColor(Color color) => bloom?.color?.Override(color);
 
 		public void UpdateBloom(float intensity, float diffusion, float threshold, float anamorphicRatio, Color color)
@@ -355,6 +385,12 @@ namespace BetterLegacy.Menus
         public void UpdateVignetteRoundness(float roundness) => vignette?.roundness?.Override(roundness);
         public void UpdateVignetteCenterX(float x) => vignette?.center?.Override(new Vector2(x, vignette?.center?.value.y ?? 0f));
         public void UpdateVignetteCenterY(float y) => vignette?.center?.Override(new Vector2(vignette?.center?.value.x ?? 0f, y));
+        public void UpdateVignetteColor(int colorSlot)
+        {
+            if (!InterfaceManager.inst || InterfaceManager.inst.CurrentMenu == null)
+                return;
+            UpdateVignetteColor(colorSlot == InterfaceManager.inst.CurrentMenu.Theme.effectColors.Count ? Color.black : InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(colorSlot));
+        }
         public void UpdateVignetteColor(Color color) => vignette?.color?.Override(color);
 
         public void UpdateVignette(float intensity, float smoothness, bool rounded, float roundness, Vector2 center, Color color)

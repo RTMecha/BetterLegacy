@@ -58,6 +58,9 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ShowChangelog { get; set; }
 
+        /// <summary>
+        /// If menu effects should be enabled.
+        /// </summary>
         public Setting<bool> ShowFX { get; set; }
 
         /// <summary>
