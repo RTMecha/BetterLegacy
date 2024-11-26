@@ -29,7 +29,6 @@ using SteamworksFacepunch.Ugc;
 
 namespace BetterLegacy.Arcade
 {
-    // Probably not gonna use this
     public class ArcadeMenu : MenuBase
     {
         public static ArcadeMenu Current { get; set; }
