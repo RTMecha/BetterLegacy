@@ -286,39 +286,6 @@ namespace BetterLegacy.Menus
             UpdateChroma(0.1f);
         }
 
-        public Dictionary<string, Action<float>> effectMethods = new Dictionary<string, Action<float>>()
-        {
-            { "MoveCameraX", inst.MoveCameraX },
-            { "MoveCameraY", inst.MoveCameraY },
-            { "ZoomCamera", inst.ZoomCamera },
-            { "RotateCamera", inst.RotateCamera },
-            { "UpdateAnalogGlitchEnabled", x => inst.UpdateAnalogGlitchEnabled(x == 1f) },
-            { "UpdateAnalogGlitchScanLineJitter", inst.UpdateAnalogGlitchScanLineJitter },
-            { "UpdateAnalogGlitchVerticalJump", inst.UpdateAnalogGlitchVerticalJump },
-            { "UpdateAnalogGlitchHorizontalShake", inst.UpdateAnalogGlitchHorizontalShake },
-            { "UpdateAnalogGlitchColorDrift", inst.UpdateAnalogGlitchColorDrift },
-            { "UpdateDigitalGlitch", inst.UpdateDigitalGlitch },
-            { "UpdateChroma", inst.UpdateChroma },
-            { "UpdateBloomIntensity", inst.UpdateBloomIntensity },
-            { "UpdateBloomDiffusion", inst.UpdateBloomDiffusion },
-            { "UpdateBloomThreshold", inst.UpdateBloomThreshold },
-            { "UpdateBloomAnamorphicRatio", inst.UpdateBloomAnamorphicRatio },
-            { "UpdateBloomColor", x => inst.UpdateBloomColor((int)x) },
-            { "UpdateVignetteIntensity", inst.UpdateVignetteIntensity },
-            { "UpdateVignetteSmoothness", inst.UpdateVignetteSmoothness },
-            { "UpdateVignetteRounded", x => inst.UpdateVignetteRounded(x == 1f) },
-            { "UpdateVignetteRoundness", inst.UpdateVignetteRoundness },
-            { "UpdateVignetteCenterX", inst.UpdateVignetteCenterX },
-            { "UpdateVignetteCenterY", inst.UpdateVignetteCenterY },
-            { "UpdateVignetteColor", x => inst.UpdateVignetteColor((int)x) },
-            { "UpdateLensDistortIntensity", inst.UpdateLensDistortIntensity },
-            { "UpdateLensDistortCenterX", inst.UpdateLensDistortCenterX },
-            { "UpdateLensDistortCenterY", inst.UpdateLensDistortCenterY },
-            { "UpdateLensDistortIntensityX", inst.UpdateLensDistortIntensityX },
-            { "UpdateLensDistortIntensityY", inst.UpdateLensDistortIntensityY },
-            { "UpdateLensDistortScale", inst.UpdateLensDistortScale },
-        };
-
         public void MoveCameraX(float x)
         {
             var cam = Camera.main.transform;
