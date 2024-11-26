@@ -30,6 +30,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public static PauseMenu Current { get; set; }
 
         static bool currentCursorVisibility;
+        public bool shouldRespawn;
 
         public PauseMenu() : base()
         {
@@ -108,7 +109,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             Action[] actions = new Action[6]
             {
                 UnPause, // 0
-                () => ArcadeHelper.RestartLevel(UnPause), // 1
+                () => ArcadeHelper.RestartLevel(false, () =>
+                {
+                    shouldRespawn = true;
+                    UnPause();
+                }), // 1
                 SceneHelper.LoadEditorWithProgress, // 2
                 ConfigManager.inst.Show, // 3
                 ArcadeHelper.QuitToArcade, // 4
@@ -361,6 +366,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
             elements.RemoveAll(x => x.id != "321" && x.id != "35255236785");
 
+            int pitch = 0;
             for (int i = 3; i > 0; i--)
             {
                 if (countdown == null || !countdown.textUI)
@@ -369,16 +375,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 countdown.gameObject.transform.AsRT().localPosition = Vector3.zero;
 
                 if (i != 3)
-                    AudioManager.inst.PlaySound("blip");
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
 
                 var num = $"<align=center><size=120><b><font=Fredoka One>{i}";
                 countdown.text = num;
                 countdown.textUI.text = num;
                 countdown.textUI.maxVisibleCharacters = 9999;
                 yield return new WaitForSeconds(0.5f);
+                pitch++;
             }
 
-            AudioManager.inst.PlaySound("blip");
+            SoundManager.inst.PlaySound(DefaultSounds.blip);
 
             countdown.text = "<align=center><size=120><b><font=Fredoka One>GO!";
             countdown.textUI.text = "<align=center><size=120><b><font=Fredoka One>GO!";
@@ -388,6 +395,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!currentCursorVisibility)
                 LSHelpers.HideCursor();
             AudioManager.inst.CurrentAudioSource.UnPause();
+            if (shouldRespawn)
+                PlayerManager.RespawnPlayers();
             GameManager.inst.gameState = GameManager.State.Playing;
 
             yield break;

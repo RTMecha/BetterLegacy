@@ -316,7 +316,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     length = 0.3f,
                     playBlipSound = true,
                     rect = RectValues.Default.SizeDelta(100f, 64f),
-                    func = () => ArcadeHelper.RestartLevel(Close),
+                    func = () => ArcadeHelper.RestartLevel(true, Close),
                 });
 
                 elements.AddRange(GenerateBottomBar());
