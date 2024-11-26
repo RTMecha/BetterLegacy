@@ -1,7 +1,7 @@
-﻿
-using HarmonyLib;
+﻿using HarmonyLib;
 using System.Linq;
 using UnityEngine;
+using BetterLegacy.Core.Helpers;
 
 using SoundGroup = SoundLibrary.SoundGroup;
 using MusicGroup = SoundLibrary.MusicGroup;
@@ -26,27 +26,35 @@ namespace BetterLegacy.Core.Managers
 
         public void TogglePlaying() => SetPlaying(!BaseManager.CurrentAudioSource.isPlaying);
 
-        public void PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1) => PlaySound(defaultSound.ToString(), volume, pitch);
-        public void PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch);
+        public void PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
+        public void PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, bool loop = false, float pitch = 1, System.Action onSoundComplete = null) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
 
-        public void PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop);
-        public void PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop);
+        public void PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
+        public void PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
 
-        public void PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop);
+        public void PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop, onSoundComplete);
 
-        public void PlaySound(GameObject gameObject, AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false)
+        public void PlaySound(GameObject gameObject, AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null)
         {
             if (!clip)
                 return;
 
+            pitch = pitch < 0f ? -pitch : pitch == 0f ? 0.001f : pitch;
             var audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.clip = clip;
             audioSource.playOnAwake = true;
             audioSource.loop = loop;
             audioSource.volume = BaseManager.sfxVol * volume;
-            audioSource.pitch = pitch < 0f ? -pitch : pitch == 0f ? 0.001f : pitch;
+            audioSource.pitch = pitch;
             audioSource.Play();
-            BaseManager.StartCoroutine(BaseManager.DestroyWithDelay(audioSource, clip.length * (pitch < 0f ? -pitch : pitch == 0f ? 0.001f : pitch)));
+            float length = clip.length / pitch;
+            //BaseManager.StartCoroutine(BaseManager.DestroyWithDelay(audioSource, length));
+
+            CoreHelper.PerformActionAfterSeconds(length, () =>
+            {
+                CoreHelper.Destroy(audioSource);
+                onSoundComplete?.Invoke();
+            });
         }
 
         public bool TryGetSound(string name, out AudioClip audioClip)
