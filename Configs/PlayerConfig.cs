@@ -152,7 +152,7 @@ namespace BetterLegacy.Configs
             PlaySoundR = Bind(this, "Sounds", "Play Boost Recover Sound", true, "Plays a little sound when you can boost again.");
             PlaySoundRBoostTail = Bind(this, "Sounds", "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
             PlayerShootSound = Bind(this, "Sounds", "Play Shoot Sound", true, "Plays a little sound when you shoot.");
-            PlaySpawnSound = Bind(this, "Sounds", "Play Spawn Sound", false, "");
+            PlaySpawnSound = Bind(this, "Sounds", "Play Spawn Sound", false, "Plays the spawn sound when players spawn / respawn.");
 
             #endregion
 
