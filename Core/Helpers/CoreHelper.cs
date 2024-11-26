@@ -1307,12 +1307,23 @@ namespace BetterLegacy.Core.Helpers
                 gameData.eventObjects.allEvents[4][0].eventValues[0] = 3051;
             }
 
+            var id = jsonPath switch
+            {
+                "demo/level" => "1",
+                "demo_new/level" => "2",
+                "new/level" => "3",
+                "node/level" => "4",
+                "video_test/video_test" => "5",
+                _ => "0"
+            };
             var storyLevel = new Story.StoryLevel
             {
+                id = id,
                 json = gameData.ToJSON(true).ToString(),
                 jsonPlayers = jnPlayers.ToString(),
                 metadata = new MetaData
                 {
+                    arcadeID = id,
                     uploaderName = "Vitamin Games",
                     creator = new LevelCreator
                     {
