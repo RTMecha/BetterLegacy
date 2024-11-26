@@ -450,15 +450,11 @@ namespace BetterLegacy.Menus.UI.Elements
         public override void UpdateSpawnCondition()
         {
             if (textSpeeds != null && textSpeeds.TryFindLast(x => x.position <= ((int)(length * TEXT_LENGTH_DIVISION) == 0 ? 0 : (int)(textInterpolation.Time / length * TEXT_LENGTH_DIVISION)), out Speed speed))
-            {
-                if (currentSpeed != speed.speed)
-                    CoreHelper.Log($"Set {nameof(currentSpeed)} to {speed.speed}");
-
                 currentSpeed = speed.speed;
-            }
 
             // Speeds up the text interpolation if a Submit key is being held.
-            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (textWithoutFormatting.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed);
+            if (textInterpolation != null)
+                textInterpolation.speed = InterfaceManager.InterfaceSpeed * currentSpeed;
         }
 
         /// <summary>
@@ -507,7 +503,11 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public void UpdateText()
         {
-            time = (Time.time - timeOffset) * length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed;
+            //time = (Time.time - timeOffset) * length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed;
+            if (textInterpolation != null)
+                time = textInterpolation.Time;
+            else
+                time = (Time.time - timeOffset) * length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed;
             
             if (cachedQuickElements == null)
                 return;

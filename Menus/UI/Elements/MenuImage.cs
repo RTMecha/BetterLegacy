@@ -323,7 +323,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public virtual void UpdateSpawnCondition()
         {
-            time = (Time.time - timeOffset) * length * InterfaceManager.InterfaceSpeed;
+            time += (Time.time - timeOffset) * length * InterfaceManager.InterfaceSpeed;
+
+            timeOffset = Time.time;
 
             if (time > length * InterfaceManager.InterfaceSpeed)
                 isSpawning = false;
