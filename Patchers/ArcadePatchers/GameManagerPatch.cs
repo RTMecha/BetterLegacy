@@ -110,25 +110,23 @@ namespace BetterLegacy.Patchers
             if (!LevelManager.LevelEnded)
                 LevelManager.timeInLevel = Time.time - LevelManager.timeInLevelOffset;
 
-            //if (!CoreHelper.IsUsingInputField && CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
-            //{
-            //    PauseMenu.UnPause();
-            //}
+            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current != null && !PauseMenu.Current.generating)
+                PauseMenu.UnPause();
 
             if (CoreHelper.Playing)
             {
                 for (int i = 0; i < GameData.Current.levelModifiers.Count; i++)
-                {
                     GameData.Current.levelModifiers[i].Activate();
-                }
 
                 if (!CoreHelper.IsUsingInputField && !CoreHelper.InEditor)
                 {
+                    bool shouldPause = false;
                     foreach (var player in PlayerManager.Players)
-                    {
                         if (player.Player && player.Player.Actions.Pause.WasPressed)
-                            PauseMenu.Pause();
-                    }
+                            shouldPause = true;
+
+                    if (shouldPause)
+                        PauseMenu.Pause();
                 }
 
                 if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
@@ -144,9 +142,7 @@ namespace BetterLegacy.Patchers
             }
 
             if (CoreHelper.Reversing && !__instance.isReversing)
-            {
                 __instance.StartCoroutine(ReverseToCheckpointLoop(__instance));
-            }
             else if (CoreHelper.Playing)
             {
                 if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor
@@ -165,8 +161,7 @@ namespace BetterLegacy.Patchers
             if (CoreHelper.Playing || CoreHelper.Reversing)
                 __instance.UpdateEventSequenceTime();
 
-            if (AudioManager.inst.CurrentAudioSource.clip)
-                __instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
+            __instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
 
             return false;
         }
@@ -462,8 +457,12 @@ namespace BetterLegacy.Patchers
             if (_index > 0)
             {
                 Instance.checkpointsActivated[_index] = true;
-                SoundManager.inst.PlaySound(DefaultSounds.checkpoint);
-                Instance.CheckpointAnimator.SetTrigger("GotCheckpoint");
+
+                if (CoreConfig.Instance.PlayCheckpointSound.Value)
+                    SoundManager.inst.PlaySound(DefaultSounds.checkpoint);
+                if (CoreConfig.Instance.PlayCheckpointAnimation.Value)
+                    Instance.CheckpointAnimator.SetTrigger("GotCheckpoint");
+
                 yield return new WaitForSecondsRealtime(0.1f);
                 Instance.playingCheckpointAnimation = false;
             }
