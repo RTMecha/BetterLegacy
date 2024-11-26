@@ -25,11 +25,7 @@ namespace BetterLegacy.Story
 
         public static string StoryAssetsPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/";
 
-        public AssetBundle assets;
-
         public bool Loaded { get; set; }
-
-        public bool AssetBundlesLoaded => assets != null;
 
         public bool ContinueStory { get; set; } = true;
 
@@ -344,15 +340,6 @@ namespace BetterLegacy.Story
 
         #region Play
 
-        public void Clear(bool unloadAllLoadedObjects = true)
-        {
-            if (assets)
-                assets.Unload(unloadAllLoadedObjects);
-            assets = null;
-
-            Loaded = false;
-        }
-
         public void Play(string path) => StartCoroutine(IPlay(path));
 
         public void Play(int chapter, int level, bool bonus = false, bool skipCutscenes = false)
@@ -367,9 +354,6 @@ namespace BetterLegacy.Story
 
         public IEnumerator IPlay(StoryMode.LevelSequence level, int cutsceneIndex = 0, bool skipCutscenes = false)
         {
-            if (AssetBundlesLoaded)
-                Clear();
-
             var path = level.filePath;
             bool isCutscene = false;
 
@@ -404,41 +388,35 @@ namespace BetterLegacy.Story
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
             {
-                assets = assetBundle;
+                Loaded = true;
+
+                CoreHelper.InStory = true;
+
+                if (storyLevel == null)
+                {
+                    LevelManager.OnLevelEnd = null;
+                    SceneHelper.LoadInterfaceScene();
+                    return;
+                }
+
+                SetLevelEnd(level, isCutscene, cutsceneIndex);
+
+                if (!storyLevel.music)
+                {
+                    CoreHelper.LogError($"Music is null for some reason wtf");
+                    return;
+                }
+
+                StartCoroutine(LevelManager.Play(storyLevel));
             }));
-
-            Loaded = true;
-
-            CoreHelper.InStory = true;
-            StoryLevel storyLevel = LoadCurrentLevel();
-
-            if (storyLevel == null)
-            {
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadInterfaceScene();
-                yield break;
-            }
-
-            SetLevelEnd(level, isCutscene, cutsceneIndex);
-
-            if (!storyLevel.music)
-            {
-                CoreHelper.LogError($"Music is null for some reason wtf");
-                yield break;
-            }
-
-            StartCoroutine(LevelManager.Play(storyLevel));
 
             yield break;
         }
 
         public IEnumerator IPlay(string path)
         {
-            if (AssetBundlesLoaded)
-                Clear();
-
             if (!RTFile.FileExists(path))
             {
                 CoreHelper.LogError($"File \'{path}\' does not exist.");
@@ -488,78 +466,71 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadInterfaceScene();
                 };
 
-
                 StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
             {
-                assets = assetBundle;
-            }));
+                Loaded = true;
 
-            Loaded = true;
+                CoreHelper.InStory = true;
 
-            CoreHelper.InStory = true;
-            StoryLevel storyLevel = LoadCurrentLevel();
-
-            if (storyLevel == null)
-            {
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadInterfaceScene();
-                yield break;
-            }
-
-            LevelManager.OnLevelEnd = () =>
-            {
-                LevelManager.Clear();
-                Updater.OnLevelEnd();
-                UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-                int chapter = LoadInt("Chapter", 0);
-                int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
-                level++;
-                if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                if (storyLevel == null)
                 {
-                    chapter++;
-                    level = 0;
-                }
-
-                chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
-
-                SaveInt("Chapter", chapter);
-                SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                if (!ContinueStory)
-                {
-                    CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
-                    ContinueStory = true;
                     SceneHelper.LoadInterfaceScene();
                     return;
                 }
 
-                CoreHelper.InStory = true;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadInterfaceScene();
-            };
+                LevelManager.OnLevelEnd = () =>
+                {
+                    LevelManager.Clear();
+                    Updater.OnLevelEnd();
+                    UpdateCurrentLevelProgress(); // allow players to get a better rank
 
-            if (!storyLevel.music)
-            {
-                CoreHelper.LogError($"Music is null for some reason wtf");
-                yield break;
-            }
+                    int chapter = LoadInt("Chapter", 0);
+                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                    level++;
+                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                    {
+                        chapter++;
+                        level = 0;
+                    }
 
-            StartCoroutine(LevelManager.Play(storyLevel));
+                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+
+                    SaveInt("Chapter", chapter);
+                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+
+                    if (!ContinueStory)
+                    {
+                        CoreHelper.InStory = true;
+                        LevelManager.OnLevelEnd = null;
+                        ContinueStory = true;
+                        SceneHelper.LoadInterfaceScene();
+                        return;
+                    }
+
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    SceneHelper.LoadInterfaceScene();
+                };
+
+                if (!storyLevel.music)
+                {
+                    CoreHelper.LogError($"Music is null for some reason wtf");
+                    return;
+                }
+
+                StartCoroutine(LevelManager.Play(storyLevel));
+            }));
 
             yield break;
         }
 
         public IEnumerator IPlayOnce(string path)
         {
-            if (AssetBundlesLoaded)
-                Clear();
-
             if (!RTFile.FileExists(path))
             {
                 CoreHelper.LogError($"File \'{path}\' does not exist.");
@@ -609,69 +580,65 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadInterfaceScene();
                 };
 
-
                 StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
             {
-                assets = assetBundle;
-            }));
+                Loaded = true;
 
-            Loaded = true;
+                CoreHelper.InStory = true;
 
-            CoreHelper.InStory = true;
-            StoryLevel storyLevel = LoadCurrentLevel();
-
-            if (storyLevel == null)
-            {
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadInterfaceScene();
-                yield break;
-            }
-
-            LevelManager.OnLevelEnd = () =>
-            {
-                LevelManager.Clear();
-                Updater.OnLevelEnd();
-                UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-                int chapter = LoadInt("Chapter", 0);
-                int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
-                level++;
-                if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                if (storyLevel == null)
                 {
-                    chapter++;
-                    level = 0;
-                }
-
-                chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
-
-                SaveInt("Chapter", chapter);
-                SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                if (!ContinueStory)
-                {
-                    CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
-                    ContinueStory = true;
                     SceneHelper.LoadInterfaceScene();
                     return;
                 }
 
-                CoreHelper.InStory = true;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadInterfaceScene();
-            };
+                LevelManager.OnLevelEnd = () =>
+                {
+                    LevelManager.Clear();
+                    Updater.OnLevelEnd();
+                    UpdateCurrentLevelProgress(); // allow players to get a better rank
 
-            if (!storyLevel.music)
-            {
-                CoreHelper.LogError($"Music is null for some reason wtf");
-                yield break;
-            }
+                    int chapter = LoadInt("Chapter", 0);
+                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                    level++;
+                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                    {
+                        chapter++;
+                        level = 0;
+                    }
 
-            StartCoroutine(LevelManager.Play(storyLevel));
+                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+
+                    SaveInt("Chapter", chapter);
+                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+
+                    if (!ContinueStory)
+                    {
+                        CoreHelper.InStory = true;
+                        LevelManager.OnLevelEnd = null;
+                        ContinueStory = true;
+                        SceneHelper.LoadInterfaceScene();
+                        return;
+                    }
+
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    SceneHelper.LoadInterfaceScene();
+                };
+
+                if (!storyLevel.music)
+                {
+                    CoreHelper.LogError($"Music is null for some reason wtf");
+                    return;
+                }
+
+                StartCoroutine(LevelManager.Play(storyLevel));
+            }));
 
             yield break;
         }
@@ -736,58 +703,6 @@ namespace BetterLegacy.Story
                 InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.Parse(level.returnInterface);
                 SceneHelper.LoadInterfaceScene();
             };
-        }
-
-        public StoryLevel LoadCurrentLevel()
-        {
-            var icon = assets.LoadAsset<Sprite>($"cover.jpg");
-            var song = assets.LoadAsset<AudioClip>($"song.ogg");
-            var levelJSON = assets.LoadAsset<TextAsset>($"level.json");
-            var metadataJSON = assets.LoadAsset<TextAsset>($"metadata.json");
-            var players = assets.LoadAsset<TextAsset>($"players.json");
-
-            if (!song)
-                return null;
-
-            var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text), false);
-            var storyLevel = new StoryLevel
-            {
-                id = metadata?.arcadeID,
-                name = metadata?.beatmap?.name,
-                icon = icon,
-                music = song,
-                json = levelJSON.text,
-                metadata = metadata,
-                jsonPlayers = players.text,
-                videoClip = assets.Contains($"bg.mp4") ? assets.LoadAsset<VideoClip>($"bg.mp4") : null,
-            };
-            
-            return storyLevel;
-        }
-
-        public void Load(int chapter, int level)
-        {
-            StartCoroutine(ILoad(chapter, level));
-        }
-
-        public IEnumerator ILoad(int chapter, int level)
-        {
-            if (AssetBundlesLoaded)
-                Clear();
-
-            var path = $"{StoryAssetsPath}doc{(chapter + 1).ToString("00")}_{(level + 1).ToString("00")}.asset";
-            if (!RTFile.FileExists(path))
-            {
-                Loaded = false;
-                yield break;
-            }
-
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
-            {
-                assets = assetBundle;
-            }));
-
-            Loaded = true;
         }
 
         #endregion
