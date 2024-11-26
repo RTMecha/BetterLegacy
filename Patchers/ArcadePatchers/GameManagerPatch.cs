@@ -347,16 +347,22 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SpawnPlayersPrefix(Vector3 __0)
         {
+            bool spawned = false;
             foreach (var customPlayer in InputDataManager.inst.players.Select(x => x as CustomPlayer))
             {
                 if (customPlayer.Player == null)
                 {
+                    spawned = true;
                     PlayerManager.SpawnPlayer(customPlayer, __0);
                     continue;
                 }
 
                 CoreHelper.Log($"Player {customPlayer.index} already exists!");
             }
+
+            if (spawned && PlayerConfig.Instance.PlaySpawnSound.Value)
+                SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
+
             return false;
         }
 
