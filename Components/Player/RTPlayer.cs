@@ -3026,20 +3026,6 @@ namespace BetterLegacy.Components.Player
 
         public List<PlayerObject> boosts = new List<PlayerObject>();
 
-        void PlaySound(AudioClip _clip, float pitch = 1f)
-        {
-            float p = pitch * CoreHelper.ForwardPitch;
-
-            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-            audioSource.clip = _clip;
-            audioSource.playOnAwake = true;
-            audioSource.loop = false;
-            audioSource.volume = AudioManager.inst.sfxVol;
-            audioSource.pitch = pitch;
-            audioSource.Play();
-            StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, _clip.length / p));
-        }
-
         // to do: aiming so you don't need to be facing the direction of the bullet
         void CreateBullet()
         {
@@ -3049,7 +3035,7 @@ namespace BetterLegacy.Components.Player
                 return;
 
             if (PlayShootSound)
-                PlaySound(AudioManager.inst.GetSound("boost"), 0.7f);
+                SoundManager.inst.PlaySound(gameObject, DefaultSounds.shoot, pitch: CoreHelper.ForwardPitch);
 
             canShoot = false;
 

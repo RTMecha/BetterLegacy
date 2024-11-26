@@ -66,6 +66,7 @@ namespace BetterLegacy.Patchers
             AddSound($"{SFXPath}hit2.ogg", "HurtPlayer2");
             AddSound($"{SFXPath}hit3.ogg", "HurtPlayer3");
             AddSound($"{SFXPath}HealPlayer.ogg", "HealPlayer");
+            AddSound($"{SFXPath}shoot.ogg", "shoot");
 
             foreach (var musicGroup in __instance.musicGroups)
             {

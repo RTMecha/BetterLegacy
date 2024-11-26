@@ -812,6 +812,7 @@
         checkpoint,
         boost,
         boost_recover,
+        shoot,
         pirate_KillPlayer,
 
         KillPlayer,
