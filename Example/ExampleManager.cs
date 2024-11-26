@@ -126,8 +126,6 @@ namespace BetterLegacy.Example
 
         public string lastDialogue;
 
-        public AudioClip speakSound;
-
         public Text dialogueText;
         public Image dialogueImage;
         public Transform dialogueBase;
@@ -521,6 +519,7 @@ namespace BetterLegacy.Example
                 LoadTutorials();
                 LoadDialogue();
                 LoadCommands();
+                animationController = gameObject.AddComponent<AnimationController>();
             }
             catch (Exception ex)
             {
@@ -538,7 +537,7 @@ namespace BetterLegacy.Example
             if (Input.GetKeyDown(ExampleConfig.Instance.ExampleVisiblityToggle.Value) && !CoreHelper.IsUsingInputField)
                 ExampleConfig.Instance.ExampleVisible.Value = !ExampleConfig.Instance.ExampleVisible.Value;
 
-            if (ProjectPlannerManager.inst && animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)
+            if (ProjectPlannerManager.inst && animationController.animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)
                 foreach (var schedule in ProjectPlannerManager.inst.planners.Where(x => x.PlannerType == ProjectPlannerManager.PlannerItem.Type.Schedule).Select(x => x as ProjectPlannerManager.ScheduleItem))
                 {
                     if (!schedule.hasBeenChecked && schedule.IsActive)
@@ -566,14 +565,8 @@ namespace BetterLegacy.Example
             if (autocomplete && chatter)
                 autocomplete.SetActive(!string.IsNullOrEmpty(chatter.text));
 
-            if (animations == null || !Visible || dying)
+            if (!Visible || dying)
                 return;
-
-            for (int i = 0; i < animations.Count; i++)
-            {
-                if (animations[i].playing)
-                    animations[i].Update();
-            }
 
             if (!spawning && allowBlinking && !dragging && !draggingLeftHand && !draggingRightHand && !pokingEyes && !dancing)
             {
@@ -809,7 +802,7 @@ namespace BetterLegacy.Example
                     lookAt = true;
                 };
 
-                animations.Add(waveAnimation);
+                animationController.animations.Add(waveAnimation);
             }
 
             //Anger
@@ -829,7 +822,7 @@ namespace BetterLegacy.Example
                     }, x => { browRightRotation = x; }),
                 };
 
-                animations.Add(animation);
+                animationController.animations.Add(animation);
             }
 
             //Get Out
@@ -867,7 +860,7 @@ namespace BetterLegacy.Example
                     }, x => { parentY.localScale = new Vector3(x.x, x.y, 1f); }),
                 };
 
-                animations.Add(animation);
+                animationController.animations.Add(animation);
             }
 
             //Reset
@@ -898,7 +891,7 @@ namespace BetterLegacy.Example
                     }, x => { parentY.localPosition = x; }),
                 };
 
-                animations.Add(animation);
+                animationController.animations.Add(animation);
             }
 
             // Dancing
@@ -956,7 +949,7 @@ namespace BetterLegacy.Example
                     },
                     loop = true,
                 };
-                animations.Add(animation);
+                animationController.animations.Add(animation);
 
             }
 
@@ -971,9 +964,6 @@ namespace BetterLegacy.Example
 
             if (RTFile.FileExists(RTFile.ApplicationDirectory + "settings/ExampleHooks.cs"))
                 yield return StartCoroutine(RTCode.IEvaluate(RTFile.ReadFromFile(RTFile.ApplicationDirectory + "settings/ExampleHooks.cs")));
-
-            var p = SpeakPath;
-            StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SpeakPath}", RTFile.GetAudioType(SpeakPath), audioClip => { speakSound = audioClip; }));
 
             #region Canvas
 
@@ -1061,8 +1051,11 @@ namespace BetterLegacy.Example
 
                     faceCanLook = false;
 
-                    if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.6f, 0.7f));
-                    else AudioManager.inst.PlaySound("Click");
+                    //if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.6f, 0.7f));
+                    //else AudioManager.inst.PlaySound("Click");
+
+                    if (SoundManager.inst)
+                        SoundManager.inst.PlaySound(gameObject, DefaultSounds.example_speak, UnityEngine.Random.Range(0.6f, 0.7f), UnityEngine.Random.Range(1.1f, 1.3f));
 
                     var animation = new RTAnimation("Drag Example");
                     animation.animationHandlers = new List<AnimationHandlerBase>
@@ -1612,8 +1605,12 @@ namespace BetterLegacy.Example
                     startDragPos = new Vector2(handLeft.localPosition.x, handLeft.localPosition.y);
                     draggingLeftHand = true;
 
-                    if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.08f, 0.12f));
-                    else AudioManager.inst.PlaySound("Click");
+                    //if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.08f, 0.12f));
+                    //else AudioManager.inst.PlaySound("Click");
+
+                    if (SoundManager.inst)
+                        SoundManager.inst.PlaySound(gameObject, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
+
                 };
                 clickable.onUp = pointerEventData =>
                 {
@@ -1675,8 +1672,11 @@ namespace BetterLegacy.Example
                     startDragPos = new Vector2(handRight.localPosition.x, handRight.localPosition.y);
                     draggingRightHand = true;
 
-                    if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.08f, 0.12f));
-                    else AudioManager.inst.PlaySound("Click");
+                    //if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.08f, 0.12f));
+                    //else AudioManager.inst.PlaySound("Click");
+
+                    if (SoundManager.inst)
+                        SoundManager.inst.PlaySound(gameObject, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
                 };
                 clickable.onUp = pointerEventData =>
                 {
@@ -2018,16 +2018,16 @@ namespace BetterLegacy.Example
 
         public void Play(string anim, bool stopOthers = true, Action onComplete = null)
         {
-            if (animations.Find(x => x.name == anim) == null)
+            if (animationController.animations.Find(x => x.name == anim) == null)
                 return;
 
             if (DebugsOn)
                 Debug.LogFormat("{0}Playing Example Animation: {1}", className, anim);
 
             if (stopOthers)
-                animations.FindAll(x => x.playing).ForEach(anim => { anim.Stop(); });
+                animationController.animations.FindAll(x => x.playing).ForEach(anim => { anim.Stop(); });
 
-            var animation = animations.Find(x => x.name == anim);
+            var animation = animationController.animations.Find(x => x.name == anim);
 
             animation.ResetTime();
 
@@ -2055,10 +2055,10 @@ namespace BetterLegacy.Example
             }
 
             if (stopOthers)
-                animations.FindAll(x => x.name.Contains("DIALOGUE: ")).ForEach(anim =>
+                animationController.animations.FindAll(x => x.name.Contains("DIALOGUE: ")).ForEach(anim =>
                  {
                      anim.Stop();
-                     animations.Remove(anim);
+                     animationController.animations.Remove(anim);
                  });
 
             lastDialogue = dialogue;
@@ -2121,8 +2121,11 @@ namespace BetterLegacy.Example
                     if (prevLetterNum != (int)x)
                     {
                         prevLetterNum = (int)x;
-                        if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(0.97f, 1.03f), UnityEngine.Random.Range(0.2f, 0.3f));
-                        else AudioManager.inst.PlaySound("Click");
+                        //if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(0.97f, 1.03f), UnityEngine.Random.Range(0.2f, 0.3f));
+                        //else AudioManager.inst.PlaySound("Click");
+
+                        if (SoundManager.inst)
+                            SoundManager.inst.PlaySound(gameObject, DefaultSounds.example_speak, UnityEngine.Random.Range(0.2f, 0.3f), UnityEngine.Random.Range(0.97f, 1.03f));
                     }
 
                     try
@@ -2161,7 +2164,7 @@ namespace BetterLegacy.Example
 
             animation.onComplete = () =>
             {
-                animations.Remove(animation);
+                animationController.animations.Remove(animation);
                 onComplete?.Invoke();
 
                 animation = null;
@@ -2175,7 +2178,7 @@ namespace BetterLegacy.Example
                     Debug.Log($"{className}Say onComplete");
             };
 
-            animations.Add(animation);
+            animationController.animations.Add(animation);
 
             animation.ResetTime();
 
@@ -2185,10 +2188,10 @@ namespace BetterLegacy.Example
         public void Move(List<IKeyframe<float>> x, List<IKeyframe<float>> y, bool stopOthers = true, Action onComplete = null)
         {
             if (stopOthers)
-                animations.FindAll(x => x.playing && x.name == "MOVEMENT").ForEach(anim =>
+                animationController.animations.FindAll(x => x.playing && x.name == "MOVEMENT").ForEach(anim =>
                 {
                     anim.Stop();
-                    animations.Remove(anim);
+                    animationController.animations.Remove(anim);
                 });
 
             var animation = new RTAnimation("MOVEMENT");
@@ -2213,11 +2216,11 @@ namespace BetterLegacy.Example
 
             animation.onComplete = () =>
             {
-                animations.Remove(animation);
+                animationController.animations.Remove(animation);
                 onComplete?.Invoke();
             };
 
-            animations.Add(animation);
+            animationController.animations.Add(animation);
 
             animation.ResetTime();
 
@@ -2227,7 +2230,7 @@ namespace BetterLegacy.Example
         public void FaceLook(List<IKeyframe<float>> x, List<IKeyframe<float>> y, bool stopOthers = true, Action onComplete = null)
         {
             if (stopOthers)
-                animations.FindAll(x => x.playing && x.name == "FACE MOVEMENT").ForEach(anim =>
+                animationController.animations.FindAll(x => x.playing && x.name == "FACE MOVEMENT").ForEach(anim =>
                 {
                     anim.Stop();
                 });
@@ -2254,11 +2257,11 @@ namespace BetterLegacy.Example
 
             animation.onComplete = () =>
             {
-                animations.Remove(animation);
+                animationController.animations.Remove(animation);
                 onComplete?.Invoke();
             };
 
-            animations.Add(animation);
+            animationController.animations.Add(animation);
 
             animation.ResetTime();
 
@@ -2268,7 +2271,7 @@ namespace BetterLegacy.Example
         public void PupilsLook(List<IKeyframe<float>> x, List<IKeyframe<float>> y, bool stopOthers = true, Action onComplete = null)
         {
             if (stopOthers)
-                animations.FindAll(x => x.playing && x.name == "PUPILS MOVEMENT").ForEach(anim =>
+                animationController.animations.FindAll(x => x.playing && x.name == "PUPILS MOVEMENT").ForEach(anim =>
                 {
                     anim.Stop();
                 });
@@ -2296,12 +2299,12 @@ namespace BetterLegacy.Example
             animation.onComplete = () =>
             {
                 lookAt = true;
-                animations.Remove(animation);
+                animationController.animations.Remove(animation);
                 onComplete?.Invoke();
             };
 
             lookAt = false;
-            animations.Add(animation);
+            animationController.animations.Add(animation);
 
             animation.ResetTime();
 
@@ -2348,7 +2351,7 @@ namespace BetterLegacy.Example
         public void ResetPositions(float speed, bool stopOthers = true, Action onComplete = null, bool resetPos = false)
         {
             if (stopOthers)
-                animations.FindAll(x => x.playing && !x.name.Contains("DIALOGUE: ")).ForEach(anim => { anim.Stop(); });
+                animationController.animations.FindAll(x => x.playing && !x.name.Contains("DIALOGUE: ")).ForEach(anim => { anim.Stop(); });
 
             var animation = new RTAnimation("RESET");
 
@@ -2406,11 +2409,11 @@ namespace BetterLegacy.Example
 
             animation.onComplete = () =>
             {
-                animations.Remove(animation);
+                animationController.animations.Remove(animation);
                 onComplete?.Invoke();
             };
 
-            animations.Add(animation);
+            animationController.animations.Add(animation);
 
             animation.ResetTime();
 
@@ -2420,15 +2423,15 @@ namespace BetterLegacy.Example
         public void PlayOnce(RTAnimation animation, bool stopOthers = true, Predicate<RTAnimation> predicate = null, Action onComplete = null)
         {
             if (stopOthers && predicate != null)
-                animations.FindAll(predicate).ForEach(anim => { anim.Stop(); });
+                animationController.animations.FindAll(predicate).ForEach(anim => { anim.Stop(); });
 
             animation.onComplete += () =>
             {
-                animations.RemoveAll(x => x.id == animation.id);
+                animationController.animations.RemoveAll(x => x.id == animation.id);
                 onComplete?.Invoke();
             };
 
-            animations.Add(animation);
+            animationController.animations.Add(animation);
 
             animation.ResetTime();
 
@@ -2439,16 +2442,16 @@ namespace BetterLegacy.Example
         {
             Predicate<RTAnimation> match = x => x.playing;
             if (predicate != null)
-                animations.FindAll(predicate).ForEach(anim =>
+                animationController.animations.FindAll(predicate).ForEach(anim =>
                 {
                     anim.Stop();
-                    animations.Remove(anim);
+                    animationController.animations.Remove(anim);
                 });
             else
-                animations.FindAll(match).ForEach(anim =>
+                animationController.animations.FindAll(match).ForEach(anim =>
                 {
                     anim.Stop();
-                    animations.Remove(anim);
+                    animationController.animations.Remove(anim);
                 });
         }
 
@@ -2457,7 +2460,8 @@ namespace BetterLegacy.Example
             dying = true;
 
             StopAnimations();
-            animations = null;
+            animationController.animations = null;
+            animationController = null;
 
             if (parentX)
                 Destroy(parentX.gameObject);
@@ -2508,7 +2512,7 @@ namespace BetterLegacy.Example
 
         public List<string> defaultAnimations = new List<string>();
 
-        public List<RTAnimation> animations = new List<RTAnimation>();
+        public AnimationController animationController;
 
         #endregion
     }
