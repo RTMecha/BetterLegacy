@@ -114,6 +114,29 @@ namespace BetterLegacy.Story
                 AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                 CoreHelper.LoadResourceLevel(1);
             }), // load old demo
+            new SecretSequence(new Dictionary<int, KeyCode>
+            {
+                { 0, KeyCode.M },
+                { 1, KeyCode.I },
+                { 2, KeyCode.K },
+                { 3, KeyCode.U },
+            }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                        CoreHelper.LoadResourceLevel(4);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                CoreHelper.LoadResourceLevel(4);
+            }), // load old demo
         };
 
         public class SecretSequence
