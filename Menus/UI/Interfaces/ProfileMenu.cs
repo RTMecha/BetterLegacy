@@ -20,6 +20,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 {
     public class ProfileMenu : MenuBase
     {
+        // todo: make this display both achievements and level data properly.
         public ProfileMenu() : base()
         {
             id = InterfaceManager.PROFILE_MENU_ID;
@@ -43,30 +44,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 childForceExpandWidth = true,
                 rect = RectValues.Default.SizeDelta(800f, 100f),
             });
-
-            var elementA = new MenuButton
-            {
-                id = id,
-                name = "Element Base",
-                parentLayout = "buttons",
-                rect = RectValues.Default.SizeDelta(400f, 64f),
-                text = $" <b>RESET STORY",
-                selectionPosition = new Vector2Int(0, 0),
-                opacity = 0.1f,
-                selectedOpacity = 1f,
-                color = 6,
-                selectedColor = 6,
-                textColor = 6,
-                allowOriginalHoverMethods = true,
-                func = () =>
-                {
-                    StoryManager.inst.SaveInt("Chapter", 0);
-                    for (int i = 0; i < StoryMode.Instance.chapters.Count; i++)
-                        StoryManager.inst.SaveInt($"DOC{(i + 1).ToString("00")}Progress", 0);
-
-                }
-            };
-            elementA.enterFunc = () => { MenuEffectsManager.inst.MoveCameraY(elementA.gameObject.transform.position.y); };
 
             for (int i = 0; i < LevelManager.Saves.Count; i++)
             {
