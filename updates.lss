@@ -1,3 +1,15 @@
+snapshot-2024.11.21 - (pre-1.7.0) > [Nov 27, 2024]
+- Fixed typo on Allow Controller If Single Player.
+- Added Arcade Folder and Interfaces Folder to custom menu music options.
+- Fixed level intro fade not working in some cases.
+- Added some new default sounds.
+- Changed SpawnPlayer default sound to be its own sound.
+- Reordered Default Sounds list.
+- Player healing now plays a sound.
+- Added some secrets ;)
+- Fixed checkpoints not properly playing the animation & sound when you reach one.
+- Added setting for toggling the checkpoint sound / animation in Config Manager > Core > Level > Play Checkpoint Sound and Play Checkpoint Animation.
+- Fixed players respawning instantly when restarting a level from the pause menu, sometimes causing the player to get hit.
 snapshot-2024.11.20 - (pre-1.7.0) > [Nov 24, 2024]
 - Added Allow Controler If Single Player under Config Manager > Players > Controls.
 - Added playerRespawn modifiers.
