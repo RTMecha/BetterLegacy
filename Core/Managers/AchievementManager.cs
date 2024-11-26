@@ -97,7 +97,7 @@ namespace BetterLegacy.Core.Managers
 
             // Story related
             CreateGlobalAchievement("story_doc01_complete", "The Purpose", "Complete Story Mode chapter 1.", 1, "story_doc01_complete");
-            CreateGlobalAchievement("story_doc01_secret", "Fall into the Night", "Discover the 1st secret...", 1, "story_doc01_secret");
+            CreateGlobalAchievement("story_doc01_secret", "Fall into the Night", "Discover the first secret...", 2, "story_doc01_secret");
 
             // todo:
             // story_doc01_full
