@@ -256,7 +256,7 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Updating states...");
 
-            if (IsArcade)
+            if (IsArcade || !CoreHelper.InStory)
                 CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}", "In Arcade", "arcade");
             else
             {
