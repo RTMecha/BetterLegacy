@@ -1209,19 +1209,19 @@ namespace BetterLegacy.Editor.Managers
                 speed.contentType = InputField.ContentType.Standard;
                 speed.characterLimit = 0;
                 speed.onValueChanged.ClearAll();
-                speed.text = Mathf.Clamp(prefabObject.speed, 0.1f, Updater.MaxFastSpeed).ToString();
+                speed.text = Mathf.Clamp(prefabObject.speed, 0.1f, Updater.MAX_PREFAB_OBJECT_SPEED).ToString();
                 speed.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        num = Mathf.Clamp(num, 0.1f, Updater.MaxFastSpeed);
+                        num = Mathf.Clamp(num, 0.1f, Updater.MAX_PREFAB_OBJECT_SPEED);
                         prefabObject.speed = num;
                         Updater.UpdatePrefab(prefabObject, "Speed");
                     }
                 });
 
-                TriggerHelper.IncreaseDecreaseButtons(speed, min: 0.1f, max: Updater.MaxFastSpeed);
-                TriggerHelper.AddEventTriggers(speed.gameObject, TriggerHelper.ScrollDelta(speed, min: 0.1f, max: Updater.MaxFastSpeed));
+                TriggerHelper.IncreaseDecreaseButtons(speed, min: 0.1f, max: Updater.MAX_PREFAB_OBJECT_SPEED);
+                TriggerHelper.AddEventTriggers(speed.gameObject, TriggerHelper.ScrollDelta(speed, min: 0.1f, max: Updater.MAX_PREFAB_OBJECT_SPEED));
             }
 
             //Global Settings

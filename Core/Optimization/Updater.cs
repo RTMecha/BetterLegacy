@@ -527,7 +527,7 @@ namespace BetterLegacy.Core.Optimization
         /// <summary>
         /// The max speed of a prefab object.
         /// </summary>
-        public static float MaxFastSpeed => 1000f;
+        public static float MAX_PREFAB_OBJECT_SPEED => 1000f;
 
         /// <summary>
         /// Updates a Prefab Object.
@@ -633,7 +633,7 @@ namespace BetterLegacy.Core.Optimization
                             {
                                 if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
-                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
+                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED));
 
                                     if (lower == "speed")
                                     {
@@ -641,7 +641,7 @@ namespace BetterLegacy.Core.Optimization
                                         {
                                             for (int k = 0; k < beatmapObject.events[j].Count; k++)
                                             {
-                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed);
+                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED);
                                             }
                                         }
 
@@ -698,7 +698,7 @@ namespace BetterLegacy.Core.Optimization
                             {
                                 if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
-                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
+                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED));
 
                                     if (lower == "speed")
                                     {
@@ -706,7 +706,7 @@ namespace BetterLegacy.Core.Optimization
                                         {
                                             for (int k = 0; k < beatmapObject.events[j].Count; k++)
                                             {
-                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed);
+                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED);
                                             }
                                         }
 
@@ -827,13 +827,13 @@ namespace BetterLegacy.Core.Optimization
                         beatmapObjectCopy.fromPrefab = true;
                         beatmapObjectCopy.prefabInstanceID = prefabObjectID;
 
-                        beatmapObjectCopy.StartTime = prefabObject.StartTime + prefab.Offset + ((beatmapObjectCopy.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
+                        beatmapObjectCopy.StartTime = prefabObject.StartTime + prefab.Offset + ((beatmapObjectCopy.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED));
 
                         try
                         {
                             if (beatmapObjectCopy.events.Count > 0 && prefabObject.speed != 1f)
                                 for (int j = 0; j < beatmapObjectCopy.events.Count; j++)
-                                    beatmapObjectCopy.events[j].ForEach(x => x.eventTime /= Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
+                                    beatmapObjectCopy.events[j].ForEach(x => x.eventTime /= Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED));
                         }
                         catch (System.Exception ex)
                         {
