@@ -198,6 +198,7 @@ namespace BetterLegacy.Core.Managers
 
         float previousAudioTime;
         float audioTimeVelocity;
+        float shakeTime;
 
         void Interpolate()
         {
@@ -209,7 +210,9 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < shakeSequence.keyframes.Length; i++)
                     shakeSequence.keyframes[i].SetEase(ShakeEase);
                 var speed = shakeSpeed < 0.001f ? 1f : shakeSpeed;
-                EventManager.inst.shakeVector = shakeSequence.Interpolate((time * speed) % shakeLength);
+                shakeTime += (time - previousAudioTime) * speed;
+                shakeTime = Mathf.Clamp(shakeTime, 0f, !AudioManager.inst.CurrentAudioSource.clip ? 0f : AudioManager.inst.CurrentAudioSource.clip.length);
+                EventManager.inst.shakeVector = shakeSequence.Interpolate(shakeTime % shakeLength);
             }
 
             for (int i = 0; i < allEvents.Count; i++)
@@ -417,7 +420,6 @@ namespace BetterLegacy.Core.Managers
         public static void OnLevelTick()
         {
             inst.EditorCameraHandler();
-            GameManager.inst.timeline.SetActive(inst.timelineActive);
 
             if (GameManager.inst.introMain != null && AudioManager.inst.CurrentAudioSource.time < 15f)
                 GameManager.inst.introMain.SetActive(EventsConfig.Instance.ShowIntro.Value);
@@ -685,6 +687,7 @@ namespace BetterLegacy.Core.Managers
                 #endregion
             }
 
+            GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && inst.timelineActive && EventsConfig.Instance.ShowGUI.Value);
             EventManager.inst.prevCamZoom = EventManager.inst.camZoom;
         }
 
@@ -1248,12 +1251,7 @@ namespace BetterLegacy.Core.Managers
         #region Timeline - 22
 
         // 22 - 0
-        public static void updateTimelineActive(float x)
-        {
-            var active = (int)x == 0;
-
-            inst.timelineActive = !EventsConfig.Instance.HideTimeline.Value && active && EventsConfig.Instance.ShowGUI.Value;
-        }
+        public static void updateTimelineActive(float x) => inst.timelineActive = (int)x == 0;
 
         // 22 - 1
         public static void updateTimelinePosX(float x) => inst.timelinePos.x = x;
@@ -1302,6 +1300,7 @@ namespace BetterLegacy.Core.Managers
                 a = false;
 
             GameManager.inst.players.SetActive(a);
+            inst.playersActive = a;
         }
 
         // 23 - 1
