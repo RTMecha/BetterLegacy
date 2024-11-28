@@ -114,6 +114,7 @@ namespace BetterLegacy.Story
                     {
                         StoryManager.inst.SaveSlot = index;
                         LevelManager.IsArcade = false;
+                        StoryManager.inst.SaveString("LastPlayedModVersion", LegacyPlugin.ModVersion.ToString());
                         SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
                     },
                 });
