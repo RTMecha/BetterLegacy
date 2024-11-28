@@ -355,7 +355,7 @@ namespace BetterLegacy.Patchers
                 CoreHelper.Log($"Player {customPlayer.index} already exists!");
             }
 
-            if (spawned && Instance.players && Instance.players.activeInHierarchy && PlayerConfig.Instance.PlaySpawnSound.Value)
+            if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
 
             return false;
