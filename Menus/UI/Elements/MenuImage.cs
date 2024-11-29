@@ -1965,7 +1965,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             if (stop)
                                 animation.onComplete?.Invoke();
 
-                            animation.Stop();
+                            animation.Pause();
                             AnimationManager.inst.Remove(animation.id);
                         }
 

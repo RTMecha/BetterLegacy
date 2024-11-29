@@ -34,8 +34,7 @@ namespace BetterLegacy.Components
         {
             if (!animations.Has(x => x.id == animation.id))
                 animations.Add(animation);
-            animation.ResetTime();
-            animation.Play();
+            animation.Start();
         }
 
         #region Remove

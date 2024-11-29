@@ -516,7 +516,7 @@ namespace BetterLegacy.Arcade
 
                         AnimationManager.inst.FindAnimationsByName(animation.name).ForEach(x =>
                         {
-                            x.Stop();
+                            x.Pause();
                             AnimationManager.inst.Remove(x.id);
                         });
                         AnimationManager.inst.Play(animation);

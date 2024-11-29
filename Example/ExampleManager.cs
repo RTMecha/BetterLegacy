@@ -2025,7 +2025,7 @@ namespace BetterLegacy.Example
                 Debug.LogFormat("{0}Playing Example Animation: {1}", className, anim);
 
             if (stopOthers)
-                animationController.animations.FindAll(x => x.playing).ForEach(anim => { anim.Stop(); });
+                animationController.animations.FindAll(x => x.playing).ForEach(anim => { anim.Pause(); });
 
             var animation = animationController.animations.Find(x => x.name == anim);
 
@@ -2057,7 +2057,7 @@ namespace BetterLegacy.Example
             if (stopOthers)
                 animationController.animations.FindAll(x => x.name.Contains("DIALOGUE: ")).ForEach(anim =>
                  {
-                     anim.Stop();
+                     anim.Pause();
                      animationController.animations.Remove(anim);
                  });
 
@@ -2190,7 +2190,7 @@ namespace BetterLegacy.Example
             if (stopOthers)
                 animationController.animations.FindAll(x => x.playing && x.name == "MOVEMENT").ForEach(anim =>
                 {
-                    anim.Stop();
+                    anim.Pause();
                     animationController.animations.Remove(anim);
                 });
 
@@ -2232,7 +2232,7 @@ namespace BetterLegacy.Example
             if (stopOthers)
                 animationController.animations.FindAll(x => x.playing && x.name == "FACE MOVEMENT").ForEach(anim =>
                 {
-                    anim.Stop();
+                    anim.Pause();
                 });
 
             var animation = new RTAnimation("FACE MOVEMENT");
@@ -2273,7 +2273,7 @@ namespace BetterLegacy.Example
             if (stopOthers)
                 animationController.animations.FindAll(x => x.playing && x.name == "PUPILS MOVEMENT").ForEach(anim =>
                 {
-                    anim.Stop();
+                    anim.Pause();
                 });
 
             var animation = new RTAnimation("PUPILS MOVEMENT");
@@ -2351,7 +2351,7 @@ namespace BetterLegacy.Example
         public void ResetPositions(float speed, bool stopOthers = true, Action onComplete = null, bool resetPos = false)
         {
             if (stopOthers)
-                animationController.animations.FindAll(x => x.playing && !x.name.Contains("DIALOGUE: ")).ForEach(anim => { anim.Stop(); });
+                animationController.animations.FindAll(x => x.playing && !x.name.Contains("DIALOGUE: ")).ForEach(anim => { anim.Pause(); });
 
             var animation = new RTAnimation("RESET");
 
@@ -2423,7 +2423,7 @@ namespace BetterLegacy.Example
         public void PlayOnce(RTAnimation animation, bool stopOthers = true, Predicate<RTAnimation> predicate = null, Action onComplete = null)
         {
             if (stopOthers && predicate != null)
-                animationController.animations.FindAll(predicate).ForEach(anim => { anim.Stop(); });
+                animationController.animations.FindAll(predicate).ForEach(anim => { anim.Pause(); });
 
             animation.onComplete += () =>
             {
@@ -2444,13 +2444,13 @@ namespace BetterLegacy.Example
             if (predicate != null)
                 animationController.animations.FindAll(predicate).ForEach(anim =>
                 {
-                    anim.Stop();
+                    anim.Pause();
                     animationController.animations.Remove(anim);
                 });
             else
                 animationController.animations.FindAll(match).ForEach(anim =>
                 {
-                    anim.Stop();
+                    anim.Pause();
                     animationController.animations.Remove(anim);
                 });
         }
