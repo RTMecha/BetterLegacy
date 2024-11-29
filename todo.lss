@@ -42,6 +42,7 @@
 
 ### Misc
 - Add rank display to level buttons. (Idk why they don't have them already...)
+- Rework controller shake to be properly toggleable and have a separate variable.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.
 - Undo / redo everything. > 1.13.0
 - A way to detect duplicate object IDs.
