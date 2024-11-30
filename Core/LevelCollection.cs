@@ -126,21 +126,38 @@ namespace BetterLegacy.Core
 
                     var level = new Level(levelFolder) { fromCollection = true };
 
+                    if (level.metadata)
+                        level.metadata.arcadeID = jn["levels"][i]["id"];
+                    level.id = jn["levels"][i]["id"];
+
                     if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
                         level.playerData = playerData;
 
                     collection.levels.Add(level);
                 }
                 else if (jn["levels"][i]["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level arcadeLevel))
+                {
+                    arcadeLevel = new Level(arcadeLevel.path);
+                    if (arcadeLevel.metadata)
+                        arcadeLevel.metadata.arcadeID = jn["levels"][i]["id"];
+                    arcadeLevel.id = jn["levels"][i]["id"];
                     collection.levels.Add(arcadeLevel);
+                }
                 else if (jn["levels"][i]["arcade_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level steamLevel))
+                {
+                    steamLevel = new Level(steamLevel.path);
+                    if (steamLevel.metadata)
+                        steamLevel.metadata.arcadeID = jn["levels"][i]["id"];
+                    steamLevel.id = jn["levels"][i]["id"];
                     collection.levels.Add(steamLevel);
+                }
                 else
                 {
                     collection.levels.Add(null);
                     collection.nullLevels.Add(new NullLevel
                     {
                         index = i,
+                        id = jn["levels"][i]["id"],
                         path = jn["levels"][i]["path"],
                         name = jn["levels"][i]["name"],
                         songTitle = jn["levels"][i]["song_title"],
@@ -165,6 +182,7 @@ namespace BetterLegacy.Core
         public class NullLevel
         {
             public int index;
+            public string id;
             public string path;
             public string songTitle;
             public string name;
