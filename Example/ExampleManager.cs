@@ -552,13 +552,7 @@ namespace BetterLegacy.Example
 
             if (baseCanvas && canvas)
             {
-                if (EditorManager.inst && EditorManager.inst.isEditing)
-                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInEditor.Value);
-                else if (GameManager.inst)
-                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInGame.Value);
-                else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic || Menus.InterfaceManager.inst && Menus.InterfaceManager.inst.CurrentMenu != null)
-                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
-
+                UpdateActive();
                 canvas.scaleFactor = CoreHelper.ScreenScale;
             }
 
@@ -705,6 +699,28 @@ namespace BetterLegacy.Example
                 m.y = Mathf.Clamp(m.y, 0f, 1f);
                 mouthLower.localScale = m;
             }
+        }
+
+        public bool Active { get; set; }
+
+        public void SetActive(bool active)
+        {
+            Active = active;
+            UpdateActive();
+        }
+
+        public void UpdateActive()
+        {
+            if (!baseCanvas)
+                return;
+
+            if (EditorManager.inst && EditorManager.inst.isEditing)
+                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInEditor.Value);
+            else if (GameManager.inst)
+                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInGame.Value);
+            else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic || Menus.InterfaceManager.inst && Menus.InterfaceManager.inst.CurrentMenu != null)
+                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInMenus.Value);
+            else baseCanvas.SetActive(Active);
         }
 
         public void SetLastInteracted()

@@ -6729,6 +6729,14 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
 
+                    case "enableExampleDEVONLY":
+                        {
+                            if (Example.ExampleManager.inst)
+                                Example.ExampleManager.inst.SetActive(modifier.GetBool(0, false));
+
+                            break;
+                        }
+
                         #endregion
                 }
 
