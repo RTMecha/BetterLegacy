@@ -180,7 +180,8 @@ namespace BetterLegacy.Editor.Managers
             }
 
             // Dropdown
-            EditorHelper.AddEditorDropdown("Level Combiner", "", "File", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_combine_t.png"), OpenDialog, 4);
+            var levelCombinerDropdown = EditorHelper.AddEditorDropdown("Level Combiner", "", "File", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_combine_t.png"), OpenDialog, 4);
+            EditorHelper.SetComplexity(levelCombinerDropdown, Complexity.Normal);
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddLightText(infoText);

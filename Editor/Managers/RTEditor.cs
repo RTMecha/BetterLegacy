@@ -3031,12 +3031,13 @@ namespace BetterLegacy.Editor.Managers
             GameObject.Find("Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
             GameObject.Find("Editor GUI/sizer/main/EditorDialogs/PrefabDialog/data/name/input").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
 
-            EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var quitToArcade = EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
+            EditorHelper.SetComplexity(quitToArcade, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Copy Level to Arcade", "", "File", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
+            var copyLevelToArcade = EditorHelper.AddEditorDropdown("Copy Level to Arcade", "", "File", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3080,8 +3081,9 @@ namespace BetterLegacy.Editor.Managers
                     HideWarningPopup();
                 }, HideWarningPopup);
             }, 7);
+            EditorHelper.SetComplexity(copyLevelToArcade, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Restart Editor", "", "File", ReloadSprite, () =>
+            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", "File", ReloadSprite, () =>
             {
                 DG.Tweening.DOTween.Clear();
                 Updater.UpdateObjects(false);
@@ -3090,14 +3092,16 @@ namespace BetterLegacy.Editor.Managers
                 TooltipHelper.InitTooltips();
                 SceneHelper.LoadEditorWithProgress();
             }, 7);
+            EditorHelper.SetComplexity(restartEditor, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
+            var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
                 RefreshFileBrowserLevels();
             }, 3);
+            EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, () =>
+            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
                 RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: _val =>
@@ -3293,6 +3297,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.HideDialog("Browser Popup");
                 });
             }, 4);
+            EditorHelper.SetComplexity(convertVGToLS, Complexity.Normal);
 
             var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", "File", SearchSprite, () =>
             {
@@ -3339,13 +3344,36 @@ namespace BetterLegacy.Editor.Managers
             }, 5);
             EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
 
+            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", "", "File", ReloadSprite, () =>
+            {
+                if (!EditorManager.inst.hasLoadedLevel)
+                {
+                    EditorManager.inst.DisplayNotification("Cannot reload a level without one already loaded.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                ShowWarningPopup("Are you sure you want to reload the level?", () =>
+                {
+                    var path = GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.LastIndexOf('/'));
+                    if (RTFile.DirectoryExists(path))
+                    {
+                        if (GameData.IsValid)
+                            GameData.Current.SaveData(RTFile.CombinePaths(path, "reload-level-backup.lsb"));
+                        StartCoroutine(LoadLevel(path));
+                    }
+                    else
+                        EditorManager.inst.DisplayNotification("Level does not exist.", 2f, EditorManager.NotificationType.Error);
+                }, HideWarningPopup);
+            }, 4);
+            EditorHelper.SetComplexity(reloadLevel, Complexity.Normal);
+
             EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
             {
                 ConfigManager.inst.SetTab(2);
                 ConfigManager.inst.Show();
             });
 
-            EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
@@ -3353,8 +3381,9 @@ namespace BetterLegacy.Editor.Managers
                     HideWarningPopup();
                 }, HideWarningPopup);
             });
-            
-            EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            EditorHelper.SetComplexity(clearSpriteData, Complexity.Advanced);
+
+            var clearModifierPrefabs = EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to remove all Prefab Objects spawned from modifiers?", () =>
                 {
@@ -3372,15 +3401,17 @@ namespace BetterLegacy.Editor.Managers
                     HideWarningPopup();
                 }, HideWarningPopup);
             });
+            EditorHelper.SetComplexity(clearModifierPrefabs, Complexity.Advanced);
 
-            EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", CloseSprite, () =>
+            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", CloseSprite, () =>
             {
                 RTEventManager.inst?.SetResetOffsets();
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
+            EditorHelper.SetComplexity(resetEventOffsets, Complexity.Advanced);
 
-            EditorHelper.AddEditorDropdown("Render Waveform", "", "Edit", ReloadSprite, () =>
+            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", "Edit", ReloadSprite, () =>
             {
                 if (EditorConfig.Instance.WaveformGenerate.Value)
                 {
@@ -3390,6 +3421,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     SetTimelineSprite(null);
             });
+            EditorHelper.SetComplexity(renderWaveform, Complexity.Normal);
 
             var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", CloseSprite, () =>
             {
@@ -3466,7 +3498,9 @@ namespace BetterLegacy.Editor.Managers
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").GetComponent<Text>().text = "Watch Mod Showcases";
             titleBar.Find("Help/Help Dropdown/Community Guides").gameObject.SetActive(false);
             titleBar.Find("Help/Help Dropdown/Which songs can I use?").gameObject.SetActive(false);
-            titleBar.Find("File/File Dropdown/Save As").gameObject.SetActive(true);
+            var saveAsDropdown = titleBar.Find("File/File Dropdown/Save As").gameObject;
+            saveAsDropdown.SetActive(true);
+            EditorHelper.SetComplexity(saveAsDropdown, Complexity.Normal);
         }
 
         void SetupDoggo()
@@ -3534,6 +3568,7 @@ namespace BetterLegacy.Editor.Managers
                 StartCoroutine(RefreshLevelList());
                 SaveGlobalSettings();
             });
+            EditorHelper.SetComplexity(sortList, Complexity.Normal);
 
             var checkDes = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle")
                 .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog);
@@ -3557,6 +3592,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddToggle(levelAscendToggle);
 
             TooltipHelper.AddHoverTooltip(levelAscendToggle.gameObject, new List<HoverTooltip.Tooltip> { sortListTip.tooltipLangauges[0] });
+            EditorHelper.SetComplexity(checkDes, Complexity.Normal);
 
             var contextClickable = EditorManager.inst.GetDialog("Open File Popup").Dialog.gameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = eventData =>
@@ -3626,6 +3662,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
             };
+            EditorHelper.SetComplexity(levelPathGameObject, Complexity.Advanced);
 
             var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
                 .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "reload");
@@ -3702,6 +3739,8 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Open List in File Explorer", OpenThemeListFolder));
             };
+
+            EditorHelper.SetComplexity(themePathGameObject, Complexity.Advanced);
 
             var themeListReload = GameObject.Find("TimelineBar/GameObject/play").Duplicate(themePathBase.transform, "reload themes");
             themeListReload.transform.AsRT().anchoredPosition = new Vector2(166f, 35f);
@@ -3826,6 +3865,8 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Open List in File Explorer", OpenPrefabListFolder));
             };
+
+            EditorHelper.SetComplexity(prefabPathGameObject, Complexity.Advanced);
 
             var prefabListReload = GameObject.Find("TimelineBar/GameObject/play")
                 .Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "reload prefabs");
@@ -4387,11 +4428,13 @@ namespace BetterLegacy.Editor.Managers
                 RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             }, placeholderText: "Search for object...");
 
-            EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", SearchSprite, () =>
+            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Object Search Popup");
                 RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             });
+
+            EditorHelper.SetComplexity(dropdown, Complexity.Normal);
         }
 
         void CreateWarningPopup()
@@ -9707,7 +9750,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
-            string code = $"{fullPath}/EditorLoad.cs";
+            string code = RTFile.CombinePaths(fullPath, "EditorLoad.cs");
             if (RTFile.FileExists(code))
             {
                 var str = RTFile.ReadFromFile(code);
