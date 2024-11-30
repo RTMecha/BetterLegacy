@@ -127,7 +127,12 @@ namespace BetterLegacy.Core
                     var level = new Level(levelFolder) { fromCollection = true };
 
                     if (level.metadata)
+                    {
+                        level.metadata = MetaData.DeepCopy(level.metadata);
                         level.metadata.arcadeID = jn["levels"][i]["id"];
+                        if (jn["levels"][i]["require_unlock"] != null)
+                            level.metadata.requireUnlock = jn["levels"][i]["require_unlock"];
+                    }
                     level.id = jn["levels"][i]["id"];
 
                     if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
@@ -139,7 +144,12 @@ namespace BetterLegacy.Core
                 {
                     arcadeLevel = new Level(arcadeLevel.path);
                     if (arcadeLevel.metadata)
+                    {
+                        arcadeLevel.metadata = MetaData.DeepCopy(arcadeLevel.metadata);
                         arcadeLevel.metadata.arcadeID = jn["levels"][i]["id"];
+                        if (jn["levels"][i]["require_unlock"] != null)
+                            arcadeLevel.metadata.requireUnlock = jn["levels"][i]["require_unlock"];
+                    }
                     arcadeLevel.id = jn["levels"][i]["id"];
                     collection.levels.Add(arcadeLevel);
                 }
@@ -147,7 +157,12 @@ namespace BetterLegacy.Core
                 {
                     steamLevel = new Level(steamLevel.path);
                     if (steamLevel.metadata)
+                    {
+                        steamLevel.metadata = MetaData.DeepCopy(steamLevel.metadata);
                         steamLevel.metadata.arcadeID = jn["levels"][i]["id"];
+                        if (jn["levels"][i]["require_unlock"] != null)
+                            steamLevel.metadata.requireUnlock = jn["levels"][i]["require_unlock"];
+                    }
                     steamLevel.id = jn["levels"][i]["id"];
                     collection.levels.Add(steamLevel);
                 }
