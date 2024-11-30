@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 using HarmonyLib;
 using UnityEngine;
 
@@ -57,6 +58,18 @@ namespace BetterLegacy.Patchers
         {
             __instance.presence.details = _details;
             DiscordRpc.UpdatePresence(__instance.presence);
+            return false;
+        }
+
+        [HarmonyPatch(nameof(DiscordController.ReadyCallback))]
+        [HarmonyPrefix]
+        static bool ReadyCallbackPrefix(DiscordController __instance)
+        {
+            __instance.callbackCalls++;
+            __instance.Initialized = true;
+            Debug.Log($"{__instance.className}Discord: ready");
+            CoreHelper.UpdateDiscordStatus(CoreHelper.discordLevel, CoreHelper.discordDetails, CoreHelper.discordIcon, CoreHelper.discordArt);
+            __instance.onConnect.Invoke();
             return false;
         }
     }
