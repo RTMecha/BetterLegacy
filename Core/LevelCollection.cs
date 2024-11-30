@@ -89,6 +89,7 @@ namespace BetterLegacy.Core
         {
             var collection = new LevelCollection();
             collection.id = jn["id"];
+            collection.serverID = jn["server_id"];
             collection.name = jn["name"];
             collection.creator = jn["creator"];
             collection.description = jn["desc"];
@@ -167,21 +168,9 @@ namespace BetterLegacy.Core
                     collection.levels.Add(steamLevel);
                 }
                 else
-                {
                     collection.levels.Add(null);
-                    collection.nullLevels.Add(new NullLevel
-                    {
-                        index = i,
-                        id = jn["levels"][i]["id"],
-                        path = jn["levels"][i]["path"],
-                        name = jn["levels"][i]["name"],
-                        creator = jn["levels"][i]["creator"],
-                        songTitle = jn["levels"][i]["song_title"],
-                        arcadeID = jn["levels"][i]["arcade_id"],
-                        serverID = jn["levels"][i]["server_id"],
-                        workshopID = jn["levels"][i]["workshop_id"],
-                    }); // somehow this needs to be used to notify the users that the level is null.
-                }
+
+                collection.levelInformation.Add(LevelInfo.Parse(jn["levels"][i], i));
             }
 
             collection.icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
@@ -191,60 +180,140 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// A list of levels that exist in the level collection file, but do not exist in neither the direct folder of the collection nor the level list.
+        /// A list of levels that exist in the level collection file, regardless of whether a level was loaded or not.
         /// </summary>
-        public List<NullLevel> nullLevels = new List<NullLevel>();
+        public List<LevelInfo> levelInformation = new List<LevelInfo>();
 
-        public class NullLevel
+        public class LevelInfo
         {
             public int index;
             public string id;
+
             public string path;
+            public string editorPath;
+
             public string songTitle;
             public string name;
             public string creator;
+
             public string arcadeID;
             public string serverID;
             public string workshopID;
+
+            public bool hidden;
+            public bool requireUnlock;
+
+            public static LevelInfo Parse(JSONNode jn, int index) => new LevelInfo
+            {
+                index = index,
+                id = jn["id"],
+
+                path = jn["path"],
+                editorPath = jn["editor_path"],
+
+                name = jn["name"],
+                creator = jn["creator"],
+                songTitle = jn["song_title"],
+
+                arcadeID = jn["arcade_id"],
+                serverID = jn["server_id"],
+                workshopID = jn["workshop_id"],
+
+                hidden = jn["hidden"].AsBool,
+                requireUnlock = jn["require_unlock"].AsBool,
+            };
+
+            public JSONNode ToJSON()
+            {
+                var jn = JSON.Parse("{}");
+
+                jn["id"] = id;
+
+                if (!string.IsNullOrEmpty(path))
+                    jn["path"] = path;
+                if (!string.IsNullOrEmpty(editorPath))
+                    jn["editor_path"] = editorPath;
+
+                if (!string.IsNullOrEmpty(name))
+                    jn["name"] = name;
+                if (!string.IsNullOrEmpty(creator))
+                    jn["creator"] = creator;
+                if (!string.IsNullOrEmpty(songTitle))
+                    jn["song_title"] = songTitle;
+
+                if (!string.IsNullOrEmpty(arcadeID))
+                    jn["arcade_id"] = arcadeID;
+                if (!string.IsNullOrEmpty(serverID))
+                    jn["server_id"] = serverID;
+                if (!string.IsNullOrEmpty(workshopID))
+                    jn["workshop_id"] = workshopID;
+
+                if (hidden)
+                    jn["hidden"] = hidden.ToString();
+                if (requireUnlock)
+                    jn["require_unlock"] = requireUnlock.ToString();
+
+                return jn;
+            }
+
+            public static LevelInfo FromLevel(Level level) => new LevelInfo
+            {
+                id = LSText.randomNumString(16),
+
+                name = level.metadata?.beatmap?.name,
+                creator = level.metadata?.creator?.steam_name,
+                songTitle = level.metadata?.song?.title,
+
+                arcadeID = level.metadata?.arcadeID,
+                serverID = level.metadata?.serverID,
+                workshopID = level.metadata?.beatmap?.beatmap_id,
+
+                hidden = false,
+                requireUnlock = level.metadata.requireUnlock,
+            };
         }
 
         public static void Test()
         {
-            var collection = new LevelCollection();
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/arcade/Collection Test";
+            //var collection = new LevelCollection();
+            //var path = $"{RTFile.ApplicationDirectory}beatmaps/arcade/Collection Test";
 
-            if (!RTFile.DirectoryExists(path))
-                Directory.CreateDirectory(path);
+            //if (!RTFile.DirectoryExists(path))
+            //    Directory.CreateDirectory(path);
 
-            collection.path = $"{path}/";
+            //collection.path = $"{path}/";
 
-            collection.AddLevel(new Level($"{RTFile.ApplicationDirectory}beatmaps/arcade/2581783822/"));
+            //collection.AddLevel(new Level($"{RTFile.ApplicationDirectory}beatmaps/arcade/2581783822/"));
 
-            collection.Save();
+            //collection.Save();
         }
 
         public Level EntryLevel => EntryLevelIndex >= 0 ? this[EntryLevelIndex] : this[0];
 
         public int EntryLevelIndex => levels.FindIndex(x => x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
 
-        public void Move(string id, int moveTo) => levels.Move(x => x.id == id, moveTo);
+        public void Move(string id, int moveTo)
+        {
+            levels.Move(x => x.id == id, moveTo);
+            levelInformation.Move(x => x.id == id, moveTo);
+            levelInformation[moveTo].index = moveTo;
+        }
 
         public void Save()
         {
             var jn = JSON.Parse("{}");
 
             jn["id"] = id;
+            jn["server_id"] = serverID;
             jn["name"] = name;
             jn["creator"] = creator;
             jn["desc"] = name;
             if (tags != null)
-            {
                 for (int i = 0; i < tags.Length; i++)
                     jn["tags"][i] = tags[i];
-            }
 
-            for (int i = 0; i < Count; i++)
-                jn["levels"][i] = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(this[i].path));
+            for (int i = 0; i < levelInformation.Count; i++)
+                jn["levels"][i] = levelInformation[i].ToJSON();
 
             if (icon)
                 SpriteHelper.SaveSprite(icon, $"{path}icon.png");
@@ -253,21 +322,21 @@ namespace BetterLegacy.Core
             RTFile.WriteToFile($"{path}collection.lsco", jn.ToString(3));
         }
 
-        public void AddLevel(Level level)
+        public void AddLevelToFolder(Level level)
         {
             if (levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
                 return;
 
-            var path = System.IO.Path.GetDirectoryName(level.path);
-            var folderName = System.IO.Path.GetFileName(path);
+            var path = Path.GetDirectoryName(level.path);
+            var folderName = Path.GetFileName(path);
 
             var files = Directory.GetFiles(level.path, "*", SearchOption.AllDirectories);
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
                 var copyToPath = file.Replace("\\", "/").Replace(level.path, $"{this.path}{folderName}/");
-                if (!RTFile.DirectoryExists(System.IO.Path.GetDirectoryName(copyToPath)))
-                    Directory.CreateDirectory(System.IO.Path.GetDirectoryName(copyToPath));
+                if (!RTFile.DirectoryExists(Path.GetDirectoryName(copyToPath)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(copyToPath));
 
                 File.Copy(file, copyToPath, RTFile.FileExists(copyToPath));
             }
@@ -275,18 +344,20 @@ namespace BetterLegacy.Core
             var actualLevel = new Level($"{this.path}{folderName}/");
 
             levels.Add(actualLevel);
+            levelInformation.Add(LevelInfo.FromLevel(actualLevel));
         }
 
-        public void RemoveLevel(Level level)
+        public void RemoveLevelFromFolder(Level level)
         {
             if (!levels.Any(x => x.id == level.id))
                 return;
 
             var actualLevel = levels.Find(x => x.id == level.id);
 
-            Directory.Delete(System.IO.Path.GetDirectoryName(actualLevel.path), true);
+            Directory.Delete(Path.GetDirectoryName(actualLevel.path), true);
 
             levels.RemoveAll(x => x.id == level.id);
+            levelInformation.RemoveAll(x => x.id == level.id);
         }
     }
 }

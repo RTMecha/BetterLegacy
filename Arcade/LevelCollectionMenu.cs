@@ -220,15 +220,15 @@ namespace BetterLegacy.Arcade
                     if (!LevelManager.CurrentLevel)
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.Block);
-                        if (CurrentCollection.nullLevels.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.NullLevel nullLevel))
+                        if (CurrentCollection.levelInformation.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.LevelInfo levelInfo))
                         {
                             CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
-                                $"Level Name: {nullLevel.name}\n" +
-                                $"Song Title: {nullLevel.songTitle}\n" +
-                                $"Creator: {nullLevel.creator}\n" +
-                                $"Arcade ID: {nullLevel.arcadeID}\n" +
-                                $"Server ID: {nullLevel.serverID}\n" +
-                                $"Workshop ID: {nullLevel.workshopID}");
+                                $"Level Name: {levelInfo.name}\n" +
+                                $"Song Title: {levelInfo.songTitle}\n" +
+                                $"Creator: {levelInfo.creator}\n" +
+                                $"Arcade ID: {levelInfo.arcadeID}\n" +
+                                $"Server ID: {levelInfo.serverID}\n" +
+                                $"Workshop ID: {levelInfo.workshopID}");
                         }
                         else
                             CoreHelper.Log($"Level was not found.");

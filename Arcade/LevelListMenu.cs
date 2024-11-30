@@ -401,25 +401,25 @@ namespace BetterLegacy.Arcade
 
                 if (level == null)
                 {
-                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.nullLevels.TryFind(x => x.index == index, out LevelCollection.NullLevel nullLevel))
+                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelCollection.LevelInfo levelInfo))
                     {
                         CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
-                            $"Level Name: {nullLevel.name}\n" +
-                            $"Song Title: {nullLevel.songTitle}\n" +
-                            $"Creator: {nullLevel.creator}\n" +
-                            $"Arcade ID: {nullLevel.arcadeID}\n" +
-                            $"Server ID: {nullLevel.serverID}\n" +
-                            $"Workshop ID: {nullLevel.workshopID}");
+                            $"Level Name: {levelInfo.name}\n" +
+                            $"Song Title: {levelInfo.songTitle}\n" +
+                            $"Creator: {levelInfo.creator}\n" +
+                            $"Arcade ID: {levelInfo.arcadeID}\n" +
+                            $"Server ID: {levelInfo.serverID}\n" +
+                            $"Workshop ID: {levelInfo.workshopID}");
 
                         elements.Add(new MenuButton
                         {
-                            id = nullLevel.id,
+                            id = levelInfo.id,
                             name = "Level Button",
                             parentLayout = "levels",
                             selectionPosition = new Vector2Int(column, row),
                             icon = level.icon,
                             iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
-                            text = "<size=24><#FF000045>" + nullLevel.name,
+                            text = "<size=24><#FF000045>" + levelInfo.name,
                             textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
                             enableWordWrapping = true,
                             color = 6,
@@ -436,12 +436,12 @@ namespace BetterLegacy.Arcade
                             {
                                 SoundManager.inst.PlaySound(DefaultSounds.Block);
                                 CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
-                                    $"Level Name: {nullLevel.name}\n" +
-                                    $"Song Title: {nullLevel.songTitle}\n" +
-                                    $"Creator: {nullLevel.creator}\n" +
-                                    $"Arcade ID: {nullLevel.arcadeID}\n" +
-                                    $"Server ID: {nullLevel.serverID}\n" +
-                                    $"Workshop ID: {nullLevel.workshopID}");
+                                    $"Level Name: {levelInfo.name}\n" +
+                                    $"Song Title: {levelInfo.songTitle}\n" +
+                                    $"Creator: {levelInfo.creator}\n" +
+                                    $"Arcade ID: {levelInfo.arcadeID}\n" +
+                                    $"Server ID: {levelInfo.serverID}\n" +
+                                    $"Workshop ID: {levelInfo.workshopID}");
                             }
                         });
                     }
