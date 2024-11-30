@@ -2547,8 +2547,13 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "enableExampleDEVONLY":
+                        {
+                            BoolGenerator(modifier, layout, "Active", 0, false);
+                            break;
+                        }
 
-                    #endregion
+                        #endregion
                 }
 
                 num++;
