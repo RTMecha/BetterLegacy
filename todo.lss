@@ -41,6 +41,7 @@
 > particleSystemColored > 1.8.0
 
 ### Misc
+- Multi language support.
 - Add rank display to level buttons. (Idk why they don't have them already...)
 - Rework controller shake to be properly toggleable and have a separate variable.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.
