@@ -222,6 +222,8 @@ namespace BetterLegacy.Arcade
                         if (CurrentCollection.nullLevels.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.NullLevel nullLevel))
                         {
                             CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
+                                $"Level Name: {nullLevel.name}\n" +
+                                $"Song Title: {nullLevel.songTitle}\n" +
                                 $"Arcade ID: {nullLevel.arcadeID}\n" +
                                 $"Server ID: {nullLevel.serverID}\n" +
                                 $"Workshop ID: {nullLevel.workshopID}");

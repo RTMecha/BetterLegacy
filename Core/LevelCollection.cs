@@ -141,6 +141,9 @@ namespace BetterLegacy.Core
                     collection.nullLevels.Add(new NullLevel
                     {
                         index = i,
+                        path = jn["levels"][i]["path"],
+                        name = jn["levels"][i]["name"],
+                        songTitle = jn["levels"][i]["song_title"],
                         arcadeID = jn["levels"][i]["arcade_id"],
                         serverID = jn["levels"][i]["server_id"],
                         workshopID = jn["levels"][i]["workshop_id"],
@@ -162,6 +165,9 @@ namespace BetterLegacy.Core
         public class NullLevel
         {
             public int index;
+            public string path;
+            public string songTitle;
+            public string name;
             public string arcadeID;
             public string serverID;
             public string workshopID;
