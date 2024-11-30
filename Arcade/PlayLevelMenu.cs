@@ -36,6 +36,7 @@ namespace BetterLegacy.Arcade
                 name = "Effects",
                 func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -47,6 +48,7 @@ namespace BetterLegacy.Arcade
                 color = 17,
                 opacity = 1f,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuButton
@@ -84,7 +86,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => { LSText.CopyToClipboard(CurrentLevel.metadata?.serverID); },
+                    func = () => LSText.CopyToClipboard(CurrentLevel.metadata?.serverID),
                 });
             }
             
@@ -103,7 +105,7 @@ namespace BetterLegacy.Arcade
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = () => { LSText.CopyToClipboard(CurrentLevel.metadata?.arcadeID); },
+                func = () => LSText.CopyToClipboard(CurrentLevel.metadata?.arcadeID),
             });
 
             elements.Add(new MenuImage
@@ -113,7 +115,8 @@ namespace BetterLegacy.Arcade
                 rect = RectValues.Default.AnchoredPosition(250f, 100f).SizeDelta(900f, 600f),
                 opacity = 0.1f,
                 color = 6,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -126,6 +129,7 @@ namespace BetterLegacy.Arcade
                 opacity = 1f,
                 length = 0f,
                 icon = CurrentLevel.IsVG ? LegacyPlugin.PAVGLogoSprite : LegacyPlugin.PALogoSprite,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -136,7 +140,8 @@ namespace BetterLegacy.Arcade
                 icon = CurrentLevel.icon,
                 opacity = 1f,
                 val = 40f,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
 
             var name = RTString.ReplaceFormatting(CurrentLevel.metadata.beatmap.name);
