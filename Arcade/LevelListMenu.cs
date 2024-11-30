@@ -410,6 +410,40 @@ namespace BetterLegacy.Arcade
                             $"Arcade ID: {nullLevel.arcadeID}\n" +
                             $"Server ID: {nullLevel.serverID}\n" +
                             $"Workshop ID: {nullLevel.workshopID}");
+
+                        elements.Add(new MenuButton
+                        {
+                            id = nullLevel.id,
+                            name = "Level Button",
+                            parentLayout = "levels",
+                            selectionPosition = new Vector2Int(column, row),
+                            icon = level.icon,
+                            iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
+                            text = "<size=24><#FF000045>" + nullLevel.name,
+                            textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                            enableWordWrapping = true,
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = regenerateUI ? 0f : 0.01f,
+                            wait = !regenerateUI,
+                            mask = true,
+                            playBlipSound = false,
+                            func = () =>
+                            {
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
+                                CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
+                                    $"Level Name: {nullLevel.name}\n" +
+                                    $"Song Title: {nullLevel.songTitle}\n" +
+                                    $"Creator: {nullLevel.creator}\n" +
+                                    $"Arcade ID: {nullLevel.arcadeID}\n" +
+                                    $"Server ID: {nullLevel.serverID}\n" +
+                                    $"Workshop ID: {nullLevel.workshopID}");
+                            }
+                        });
                     }
                     else
                         CoreHelper.Log($"Level was not found.");
@@ -505,7 +539,7 @@ namespace BetterLegacy.Arcade
                 {
                     if (levelIsLocked)
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                         var animation = new RTAnimation($"Blocked Level in Arcade {level.id}")
                         {
@@ -542,7 +576,7 @@ namespace BetterLegacy.Arcade
                         return;
                     }
 
-                    AudioManager.inst.PlaySound("blip");
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     LevelManager.currentLevelIndex = index;
                     CoreHelper.StartCoroutine(SelectLocalLevel(level));
                 };

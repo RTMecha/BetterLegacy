@@ -208,7 +208,7 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
                 selectedTextColor = 7,
                 length = 0.5f,
-                playBlipSound = true,
+                playBlipSound = false,
                 func = () =>
                 {
                     LevelManager.currentLevelIndex = CurrentCollection.EntryLevelIndex;
@@ -219,6 +219,7 @@ namespace BetterLegacy.Arcade
 
                     if (!LevelManager.CurrentLevel)
                     {
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
                         if (CurrentCollection.nullLevels.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.NullLevel nullLevel))
                         {
                             CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
@@ -235,6 +236,7 @@ namespace BetterLegacy.Arcade
                         return;
                     }
 
+                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     CoreHelper.StartCoroutine(SelectLocalLevel(LevelManager.CurrentLevel));
                 },
             });
