@@ -143,7 +143,7 @@ namespace BetterLegacy.Core
                     arcadeLevel.id = jn["levels"][i]["id"];
                     collection.levels.Add(arcadeLevel);
                 }
-                else if (jn["levels"][i]["arcade_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level steamLevel))
+                else if (jn["levels"][i]["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.metadata.beatmap.beatmap_id == jn["levels"][i]["workshop_id"], out Level steamLevel))
                 {
                     steamLevel = new Level(steamLevel.path);
                     if (steamLevel.metadata)
