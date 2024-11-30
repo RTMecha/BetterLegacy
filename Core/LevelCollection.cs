@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
@@ -102,16 +103,16 @@ namespace BetterLegacy.Core
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
-                var levelFolder = $"{path}{jn["levels"][i].Value}/";
-
-                if (RTFile.FileExists($"{levelFolder}level.lsb") || RTFile.FileExists($"{levelFolder}level.vgd"))
+                if (jn["levels"][i]["path"] != null && (RTFile.FileExists(RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/", Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/", Level.LEVEL_VGD))))
                 {
+                    var levelFolder = RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/");
+
                     MetaData metadata = null;
 
-                    if (RTFile.FileExists($"{levelFolder}metadata.vgm"))
-                        metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{levelFolder}metadata.vgm")));
-                    else if (RTFile.FileExists($"{levelFolder}metadata.lsb"))
-                        metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{levelFolder}metadata.lsb")), false);
+                    if (RTFile.FileExists(RTFile.CombinePaths(levelFolder, Level.METADATA_VGM)))
+                        metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(levelFolder, Level.METADATA_VGM))));
+                    else if (RTFile.FileExists(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB)))
+                        metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB))), false);
 
                     if (!metadata)
                         continue;
@@ -120,7 +121,7 @@ namespace BetterLegacy.Core
                     {
                         metadata.arcadeID = LSText.randomNumString(16);
                         var metadataJN = metadata.ToJSON();
-                        RTFile.WriteToFile($"{levelFolder}metadata.lsb", metadataJN.ToString(3));
+                        RTFile.WriteToFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB), metadataJN.ToString(3));
                     }
 
                     var level = new Level(levelFolder) { fromCollection = true };
@@ -130,12 +131,40 @@ namespace BetterLegacy.Core
 
                     collection.levels.Add(level);
                 }
+                else if (jn["levels"][i]["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level arcadeLevel))
+                    collection.levels.Add(arcadeLevel);
+                else if (jn["levels"][i]["arcade_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level steamLevel))
+                    collection.levels.Add(steamLevel);
+                else
+                {
+                    collection.levels.Add(null);
+                    collection.nullLevels.Add(new NullLevel
+                    {
+                        index = i,
+                        arcadeID = jn["levels"][i]["arcade_id"],
+                        serverID = jn["levels"][i]["server_id"],
+                        workshopID = jn["levels"][i]["workshop_id"],
+                    }); // somehow this needs to be used to notify the users that the level is null.
+                }
             }
 
             collection.icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
             collection.banner = RTFile.FileExists($"{path}banner.png") ? SpriteHelper.LoadSprite($"{path}banner.png") : SpriteHelper.LoadSprite($"{path}banner.jpg");
 
             return collection;
+        }
+
+        /// <summary>
+        /// A list of levels that exist in the level collection file, but do not exist in neither the direct folder of the collection nor the level list.
+        /// </summary>
+        public List<NullLevel> nullLevels = new List<NullLevel>();
+
+        public class NullLevel
+        {
+            public int index;
+            public string arcadeID;
+            public string serverID;
+            public string workshopID;
         }
 
         public static void Test()

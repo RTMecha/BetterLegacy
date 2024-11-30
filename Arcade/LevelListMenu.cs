@@ -340,7 +340,7 @@ namespace BetterLegacy.Arcade
 
         public static List<Level> Levels { get; set; }
         public static int LocalLevelPageCount => LocalLevels.Count / ArcadeMenu.MAX_LEVELS_PER_PAGE;
-        public static List<Level> LocalLevels => Levels.FindAll(level => string.IsNullOrEmpty(Search)
+        public static List<Level> LocalLevels => Levels.FindAll(level => !level || string.IsNullOrEmpty(Search)
                         || level.id == Search
                         || level.metadata.song.tags.Contains(Search.ToLower())
                         || level.metadata.artist.Name.ToLower().Contains(Search.ToLower())
@@ -398,6 +398,21 @@ namespace BetterLegacy.Arcade
                 int row = (int)((index % ArcadeMenu.MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[index];
+
+                if (level == null)
+                {
+                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.nullLevels.TryFind(x => x.index == index, out LevelCollection.NullLevel nullLevel))
+                    {
+                        CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
+                            $"Arcade ID: {nullLevel.arcadeID}\n" +
+                            $"Server ID: {nullLevel.serverID}\n" +
+                            $"Workshop ID: {nullLevel.workshopID}");
+                    }
+                    else
+                        CoreHelper.Log($"Level was not found.");
+
+                    continue;
+                }
 
                 var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
 

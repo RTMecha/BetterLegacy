@@ -36,6 +36,7 @@ namespace BetterLegacy.Arcade
                 name = "Effects",
                 func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -47,6 +48,7 @@ namespace BetterLegacy.Arcade
                 color = 17,
                 opacity = 1f,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuButton
@@ -84,7 +86,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => { LSText.CopyToClipboard(CurrentCollection.serverID); },
+                    func = () => LSText.CopyToClipboard(CurrentCollection.serverID),
                 });
             }
 
@@ -103,7 +105,7 @@ namespace BetterLegacy.Arcade
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = () => { LSText.CopyToClipboard(CurrentCollection.id); },
+                func = () => LSText.CopyToClipboard(CurrentCollection.id),
             });
 
             elements.Add(new MenuImage
@@ -113,7 +115,8 @@ namespace BetterLegacy.Arcade
                 rect = RectValues.Default.AnchoredPosition(200f, 0f).SizeDelta(900f, 685f),
                 opacity = 0.1f,
                 color = 6,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -124,7 +127,8 @@ namespace BetterLegacy.Arcade
                 icon = CurrentCollection.icon,
                 opacity = 1f,
                 val = 40f,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
             
             elements.Add(new MenuImage
@@ -135,7 +139,8 @@ namespace BetterLegacy.Arcade
                 icon = CurrentCollection.banner,
                 opacity = 1f,
                 val = 40f,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
 
             var name = RTString.ReplaceFormatting(CurrentCollection.name);
@@ -212,6 +217,21 @@ namespace BetterLegacy.Arcade
                     if (CurrentCollection.Count > 1)
                         LevelManager.CurrentLevel = CurrentCollection[LevelManager.currentLevelIndex];
 
+                    if (!LevelManager.CurrentLevel)
+                    {
+                        if (CurrentCollection.nullLevels.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.NullLevel nullLevel))
+                        {
+                            CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
+                                $"Arcade ID: {nullLevel.arcadeID}\n" +
+                                $"Server ID: {nullLevel.serverID}\n" +
+                                $"Workshop ID: {nullLevel.workshopID}");
+                        }
+                        else
+                            CoreHelper.Log($"Level was not found.");
+
+                        return;
+                    }
+
                     CoreHelper.StartCoroutine(SelectLocalLevel(LevelManager.CurrentLevel));
                 },
             });
@@ -234,7 +254,7 @@ namespace BetterLegacy.Arcade
                 func = () =>
                 {
                     var currentCollection = CurrentCollection;
-                    LevelListMenu.close = () => { Init(currentCollection); };
+                    LevelListMenu.close = () => Init(currentCollection);
                     LevelListMenu.Init(currentCollection.levels);
                 },
             });
@@ -259,7 +279,7 @@ namespace BetterLegacy.Arcade
         IEnumerator SelectLocalLevel(Level level)
         {
             if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
             else
                 OpenPlayLevelMenu(level);
         }
