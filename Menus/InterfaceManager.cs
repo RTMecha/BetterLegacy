@@ -314,6 +314,8 @@ namespace BetterLegacy.Menus
         {
             Clear(false, false);
             CoreHelper.InStory = true;
+            if (Example.ExampleManager.inst)
+                Example.ExampleManager.inst.SetActive(true); // if Example was disabled
 
             var storyStarted = StoryManager.inst.LoadBool("StoryModeStarted", false);
             var chapter = StoryMode.Instance.chapters[chapterIndex];
@@ -350,6 +352,8 @@ namespace BetterLegacy.Menus
         {
             Clear(false, false);
             CoreHelper.InStory = false;
+            if (Example.ExampleManager.inst)
+                Example.ExampleManager.inst.SetActive(true); // if Example was disabled
 
             Parse($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi");
 

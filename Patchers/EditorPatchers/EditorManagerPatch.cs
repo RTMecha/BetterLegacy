@@ -94,6 +94,8 @@ namespace BetterLegacy.Patchers
             Menus.InterfaceManager.inst.CloseMenus();
             Menus.InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
+            if (ExampleManager.inst)
+                ExampleManager.inst.SetActive(true); // if Example was disabled
 
             #region Editor Theme Setup
 
@@ -679,6 +681,8 @@ namespace BetterLegacy.Patchers
             GameManager.inst.ResetCheckpoints();
 
             ExampleManager.onEditorToggle?.Invoke(Instance.isEditing);
+            if (ExampleManager.inst)
+                ExampleManager.inst.UpdateActive();
         }
 
         [HarmonyPatch(nameof(EditorManager.CloseOpenBeatmapPopup))]
