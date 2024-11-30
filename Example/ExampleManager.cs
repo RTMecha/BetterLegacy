@@ -600,7 +600,7 @@ namespace BetterLegacy.Example
             if (spawning)
                 return;
 
-            if (canDance && !dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && RandomHelper.PercentChanceSingle(0.7f))
+            if (canDance && !dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && RandomHelper.PercentChanceSingle(0.2f))
                 StartDancing();
             if (!MusicPlaying && dancing)
                 StopDancing();
@@ -714,6 +714,8 @@ namespace BetterLegacy.Example
         }
 
         #region Spawning
+
+        RTAnimation danceAnimLoop;
 
         IEnumerator SetupAnimations()
         {
@@ -950,7 +952,7 @@ namespace BetterLegacy.Example
                     loop = true,
                 };
                 animationController.animations.Add(animation);
-
+                danceAnimLoop = animation;
             }
 
             yield break;
@@ -2330,6 +2332,8 @@ namespace BetterLegacy.Example
         {
             Debug.Log($"{className}Example has started dancing!");
             dancing = true;
+            if (danceAnimLoop != null)
+                danceAnimLoop.speed = UnityEngine.Random.Range(0.5f, 2f);
 
             browLeftRotation = -15f;
             browRightRotation = 15f;
@@ -2470,19 +2474,6 @@ namespace BetterLegacy.Example
 
             Destroy(baseCanvas);
             Destroy(gameObject);
-        }
-
-        public void PlaySound(AudioClip clip, float pitch = 1f, float volume = 1f, bool loop = false)
-        {
-            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-            audioSource.clip = clip;
-            audioSource.playOnAwake = true;
-            audioSource.loop = loop;
-            audioSource.pitch = pitch;
-            audioSource.volume = Mathf.Clamp(volume, 0f, 2f) * AudioManager.inst.sfxVol;
-            audioSource.Play();
-
-            inst.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length));
         }
 
         public void BrowsRaise()
