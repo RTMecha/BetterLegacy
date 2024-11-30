@@ -224,6 +224,7 @@ namespace BetterLegacy.Arcade
                             CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
                                 $"Level Name: {nullLevel.name}\n" +
                                 $"Song Title: {nullLevel.songTitle}\n" +
+                                $"Creator: {nullLevel.creator}\n" +
                                 $"Arcade ID: {nullLevel.arcadeID}\n" +
                                 $"Server ID: {nullLevel.serverID}\n" +
                                 $"Workshop ID: {nullLevel.workshopID}");

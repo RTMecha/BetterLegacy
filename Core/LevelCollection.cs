@@ -175,6 +175,7 @@ namespace BetterLegacy.Core
                         id = jn["levels"][i]["id"],
                         path = jn["levels"][i]["path"],
                         name = jn["levels"][i]["name"],
+                        creator = jn["levels"][i]["creator"],
                         songTitle = jn["levels"][i]["song_title"],
                         arcadeID = jn["levels"][i]["arcade_id"],
                         serverID = jn["levels"][i]["server_id"],
@@ -201,6 +202,7 @@ namespace BetterLegacy.Core
             public string path;
             public string songTitle;
             public string name;
+            public string creator;
             public string arcadeID;
             public string serverID;
             public string workshopID;
