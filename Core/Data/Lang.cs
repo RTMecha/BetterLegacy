@@ -24,6 +24,12 @@ namespace BetterLegacy.Core.Data
             set => languages[Parser.TryParse(language, Language.English)] = value;
         }
 
+        public string this[int language]
+        {
+            get => languages[(Language)language];
+            set => languages[(Language)language] = value;
+        }
+
         public string this[Language language]
         {
             get => languages[language];
@@ -79,7 +85,7 @@ namespace BetterLegacy.Core.Data
             else if (jn.IsArray) // parses array.
             {
                 for (int i = 0; i < jn.Count; i++)
-                    lang[(Language)i] = jn[i];
+                    lang[i] = jn[i];
             }
             else if (jn.IsObject) // parses an object. example: { "english": "a", "spanish": "b" }
             {
