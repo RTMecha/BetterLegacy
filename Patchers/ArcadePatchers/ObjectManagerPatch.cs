@@ -15,7 +15,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(ObjectManager))]
     public class ObjectManagerPatch : MonoBehaviour
     {
-        public static bool debugOpacity = false;
+        public static event LevelTickEventHandler LevelTick;
 
         [HarmonyPatch(nameof(ObjectManager.Awake))]
         [HarmonyPostfix]
@@ -23,35 +23,17 @@ namespace BetterLegacy.Patchers
         {
             ShapeManager.inst.SetupShapes();
 
-            // This is here for debug purposes.
-            if (debugOpacity)
-                for (int i = 0; i < __instance.objectPrefabs.Count; i++)
-                {
-                    foreach (var option in __instance.objectPrefabs[i].options)
-                        if (option.transform.childCount > 0 && option.transform.GetChild(0).gameObject.TryGetComponent(out Renderer renderer))
-                            renderer.material.color = new Color(1f, 1f, 1f, 1f);
-                }
-
             // Fixes Text being red.
             __instance.objectPrefabs[4].options[0].GetComponentInChildren<TextMeshPro>().color = new Color(0f, 0f, 0f, 0f);
 
             // Fixes Hexagons being solid.
             foreach (var option in __instance.objectPrefabs[5].options)
-            {
                 option.GetComponentInChildren<Collider2D>().isTrigger = true;
-            }
         }
 
         [HarmonyPatch(nameof(ObjectManager.AddPrefabToLevel))]
         [HarmonyPrefix]
-        static bool AddPrefabToLevelPrefix(DataManager.GameData.PrefabObject __0)
-        {
-            Updater.AddPrefabToLevel((PrefabObject)__0);
-
-            return false;
-        }
-
-        public static event LevelTickEventHandler LevelTick;
+        static bool AddPrefabToLevelPrefix(DataManager.GameData.PrefabObject __0) => false;
 
         [HarmonyPatch(nameof(ObjectManager.Update))]
         [HarmonyPrefix]
