@@ -39,6 +39,8 @@ namespace BetterLegacy.Arcade
         public static Vector2 ZeroFive => new Vector2(0.5f, 0.5f);
         public static Color ShadeColor => new Color(0f, 0f, 0f, 0.3f);
 
+        public static void Init() => new GameObject("Load Level System").AddComponent<LoadLevelsManager>();
+
         void Awake()
         {
             inst = this;
