@@ -528,7 +528,11 @@ namespace BetterLegacy.Editor.Managers
 
             var openArtistURL = content.Find("artist/link/inputs/openurl").GetComponent<Button>();
             openArtistURL.onClick.ClearAll();
-            openArtistURL.onClick.AddListener(() => { Application.OpenURL(metadata.artist.getUrl()); });
+            openArtistURL.onClick.AddListener(() =>
+            {
+                if (!string.IsNullOrEmpty(metadata.artist.URL))
+                    Application.OpenURL(metadata.artist.URL);
+            });
 
             var artistName = content.Find("artist/name/input").GetComponent<InputField>();
             artistName.onEndEdit.ClearAll();
@@ -588,22 +592,22 @@ namespace BetterLegacy.Editor.Managers
             var uploaderName = content.Find("creator/uploader_name/input").GetComponent<InputField>();
             uploaderName.onValueChanged.ClearAll();
             uploaderName.text = metadata.uploaderName;
-            uploaderName.onValueChanged.AddListener(_val => { metadata.uploaderName = _val; });
+            uploaderName.onValueChanged.AddListener(_val => metadata.uploaderName = _val);
 
             var creatorName = content.Find("creator/name/input").GetComponent<InputField>();
             creatorName.onValueChanged.ClearAll();
             creatorName.text = metadata.creator.steam_name;
-            creatorName.onValueChanged.AddListener(_val => { metadata.creator.steam_name = _val; });
+            creatorName.onValueChanged.AddListener(_val => metadata.creator.steam_name = _val);
 
             var levelName = content.Find("creator/level_name/input").GetComponent<InputField>();
             levelName.onValueChanged.ClearAll();
             levelName.text = metadata.beatmap.name;
-            levelName.onValueChanged.AddListener(_val => { metadata.beatmap.name = _val; });
+            levelName.onValueChanged.AddListener(_val => metadata.beatmap.name = _val);
 
             var songTitle = content.Find("song/title/input").GetComponent<InputField>();
             songTitle.onValueChanged.ClearAll();
             songTitle.text = metadata.song.title;
-            songTitle.onValueChanged.AddListener(_val => { metadata.song.title = _val; });
+            songTitle.onValueChanged.AddListener(_val => metadata.song.title = _val);
 
             var openCreatorURL = content.Find("creator/link/inputs/openurl").GetComponent<Button>();
             openCreatorURL.onClick.ClearAll();
@@ -698,7 +702,7 @@ namespace BetterLegacy.Editor.Managers
             var creatorDescription = content.Find("creator/description/input").GetComponent<InputField>();
             creatorDescription.onValueChanged.ClearAll();
             creatorDescription.text = metadata.song.description;
-            creatorDescription.onValueChanged.AddListener(_val => { metadata.song.description = _val; });
+            creatorDescription.onValueChanged.AddListener(_val => metadata.song.description = _val);
 
             RenderDifficultyToggles();
             RenderTags();
@@ -706,17 +710,17 @@ namespace BetterLegacy.Editor.Managers
             var isHubLevel = content.Find("is hub level/toggle").GetComponent<Toggle>();
             isHubLevel.onValueChanged.ClearAll();
             isHubLevel.isOn = metadata.isHubLevel;
-            isHubLevel.onValueChanged.AddListener(_val => { metadata.isHubLevel = _val; });
+            isHubLevel.onValueChanged.AddListener(_val => metadata.isHubLevel = _val);
 
             var requireUnlock = content.Find("unlock required/toggle").GetComponent<Toggle>();
             requireUnlock.onValueChanged.ClearAll();
             requireUnlock.isOn = metadata.requireUnlock;
-            requireUnlock.onValueChanged.AddListener(_val => { metadata.requireUnlock = _val; });
+            requireUnlock.onValueChanged.AddListener(_val => metadata.requireUnlock = _val);
             
             var unlockComplete = content.Find("unlock complete/toggle").GetComponent<Toggle>();
             unlockComplete.onValueChanged.ClearAll();
             unlockComplete.isOn = metadata.unlockAfterCompletion;
-            unlockComplete.onValueChanged.AddListener(_val => { metadata.unlockAfterCompletion = _val; });
+            unlockComplete.onValueChanged.AddListener(_val => metadata.unlockAfterCompletion = _val);
             
             var showIntro = content.Find("show intro/toggle").GetComponent<Toggle>();
             showIntro.onValueChanged.ClearAll();
