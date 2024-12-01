@@ -334,6 +334,7 @@ namespace BetterLegacy.Arcade
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.PlayMusic();
         }
 
         #region Local
