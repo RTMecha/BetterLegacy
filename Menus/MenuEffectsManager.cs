@@ -59,6 +59,13 @@ namespace BetterLegacy.Menus
 			digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
             analogGlitch.enabled = false; // disabled by default due to there still being a slight effect when it is enabled.
 
+            RegisterFunction(UpdateAnalogGlitchEnabled);
+            RegisterFunction(UpdateAnalogGlitchScanLineJitter);
+            RegisterFunction(UpdateAnalogGlitchVerticalJump);
+            RegisterFunction(UpdateAnalogGlitchHorizontalShake);
+            RegisterFunction(UpdateAnalogGlitchColorDrift);
+            RegisterFunction(UpdateDigitalGlitch);
+
             var camera = Camera.main;
 
             try
@@ -80,32 +87,55 @@ namespace BetterLegacy.Menus
 			chroma.enabled.Override(true);
 			chroma.intensity.Override(0f);
 			chroma.fastMode.Override(true);
+            RegisterFunction(UpdateChroma);
 
             // Bloom
             bloom = ScriptableObject.CreateInstance<Bloom>();
 			bloom.enabled.Override(true);
 			bloom.intensity.Override(0f);
 			bloom.fastMode.Override(true);
+            RegisterFunction(UpdateBloomIntensity);
+            RegisterFunction(UpdateBloomDiffusion);
+            RegisterFunction(UpdateBloomThreshold);
+            RegisterFunction(UpdateBloomAnamorphicRatio);
+            RegisterFunction(UpdateBloomColor);
 
             // Vignette
-			vignette = ScriptableObject.CreateInstance<Vignette>();
+            vignette = ScriptableObject.CreateInstance<Vignette>();
 			vignette.enabled.Override(true);
 			vignette.intensity.Override(0f);
+            RegisterFunction(UpdateVignetteIntensity);
+            RegisterFunction(UpdateVignetteSmoothness);
+            RegisterFunction(UpdateVignetteRounded);
+            RegisterFunction(UpdateVignetteRoundness);
+            RegisterFunction(UpdateVignetteCenterX);
+            RegisterFunction(UpdateVignetteCenterY);
+            RegisterFunction(UpdateVignetteColor);
 
             // Lens Distort
-			lensDistort = ScriptableObject.CreateInstance<LensDistortion>();
+            lensDistort = ScriptableObject.CreateInstance<LensDistortion>();
 			lensDistort.enabled.Override(true);
 			lensDistort.intensity.Override(0f);
+            RegisterFunction(UpdateLensDistortIntensity);
+            RegisterFunction(UpdateLensDistortCenterX);
+            RegisterFunction(UpdateLensDistortCenterY);
+            RegisterFunction(UpdateLensDistortIntensityX);
+            RegisterFunction(UpdateLensDistortIntensityY);
+            RegisterFunction(UpdateLensDistortScale);
 
             // Grain
-			grain = ScriptableObject.CreateInstance<Grain>();
+            grain = ScriptableObject.CreateInstance<Grain>();
 			grain.enabled.Override(true);
 			grain.intensity.Override(0f);
+            RegisterFunction(UpdateGrainIntensity);
+            RegisterFunction(UpdateGrainScale);
+            RegisterFunction(UpdateGrainColored);
 
             // Pixelize
-			pixelize = ScriptableObject.CreateInstance<Pixelize>();
+            pixelize = ScriptableObject.CreateInstance<Pixelize>();
 			pixelize.enabled.Override(true);
 			pixelize.amount.Override(0f);
+            RegisterFunction(UpdatePixelize);
 
             // ColorGrading
             colorGrading = ScriptableObject.CreateInstance<ColorGrading>();
@@ -144,6 +174,9 @@ namespace BetterLegacy.Menus
             scanlines.intensity.Override(0f);
             scanlines.amountHorizontal.Override(10f);
             scanlines.speed.Override(1f);
+            RegisterFunction(UpdateScanlinesIntensity);
+            RegisterFunction(UpdateScanlinesAmount);
+            RegisterFunction(UpdateScanlinesSpeed);
 
             // Sharpen
             sharpen = ScriptableObject.CreateInstance<Sharpen>();
@@ -238,7 +271,7 @@ namespace BetterLegacy.Menus
         {
             prevShowEffects = ShowEffects;
 
-            analogGlitch.enabled = ShowEffects;
+            analogGlitch.enabled = ShowEffects && analogGlitchEnabled;
             digitalGlitch.enabled = ShowEffects;
             ppvolume.enabled = ShowEffects;
         });
@@ -308,6 +341,8 @@ namespace BetterLegacy.Menus
             UpdateChroma(0.1f);
         }
 
+        #region Transform
+
         public void MoveCameraX(float x)
         {
             var cam = Camera.main.transform;
@@ -328,7 +363,16 @@ namespace BetterLegacy.Menus
 
 		public void RotateCamera(float rotate) => Camera.main.transform.SetLocalRotationEulerZ(rotate);
 
-        public void UpdateAnalogGlitchEnabled(bool enabled) => analogGlitch.enabled = enabled;
+        #endregion
+
+        #region Glitch
+
+        public void UpdateAnalogGlitchEnabled(float enabled) => UpdateAnalogGlitchEnabled(enabled == 1f);
+        public void UpdateAnalogGlitchEnabled(bool enabled)
+        {
+            analogGlitch.enabled = enabled;
+            analogGlitchEnabled = enabled;
+        }
         public void UpdateAnalogGlitchScanLineJitter(float scanLineJitter) => analogGlitch.scanLineJitter = scanLineJitter;
         public void UpdateAnalogGlitchVerticalJump(float verticalJump) => analogGlitch.verticalJump = verticalJump;
         public void UpdateAnalogGlitchHorizontalShake(float horizontalShake) => analogGlitch.horizontalShake = horizontalShake;
@@ -345,17 +389,26 @@ namespace BetterLegacy.Menus
 
 		public void UpdateDigitalGlitch(float intensity) => digitalGlitch.intensity = intensity;
 
-		public void UpdateChroma(float intensity) => chroma?.intensity?.Override(intensity);
+        #endregion
+
+        #region Chroma
+
+        public void UpdateChroma(float intensity) => chroma?.intensity?.Override(intensity);
+
+        #endregion
+
+        #region Bloom
 
         public void UpdateBloomIntensity(float intensity) => bloom?.intensity?.Override(intensity);
         public void UpdateBloomDiffusion(float diffusion) => bloom?.diffusion?.Override(diffusion);
         public void UpdateBloomThreshold(float threshold) => bloom?.threshold?.Override(threshold);
         public void UpdateBloomAnamorphicRatio(float anamorphicRatio) => bloom?.anamorphicRatio?.Override(anamorphicRatio);
-        public void UpdateBloomColor(int colorSlot)
+        public void UpdateBloomColor(float colorSlot)
         {
             if (!InterfaceManager.inst || InterfaceManager.inst.CurrentMenu == null)
                 return;
-            UpdateBloomColor(colorSlot == InterfaceManager.inst.CurrentMenu.Theme.effectColors.Count ? Color.white : InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(colorSlot));
+            int slot = (int)colorSlot;
+            UpdateBloomColor(slot == InterfaceManager.inst.CurrentMenu.Theme.effectColors.Count ? Color.white : InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(slot));
         }
         public void UpdateBloomColor(Color color) => bloom?.color?.Override(color);
 
@@ -368,17 +421,23 @@ namespace BetterLegacy.Menus
 			bloom?.color?.Override(color);
         }
 
+        #endregion
+
+        #region Vignette
+
         public void UpdateVignetteIntensity(float intensity) => vignette?.intensity?.Override(intensity);
         public void UpdateVignetteSmoothness(float smoothness) => vignette?.smoothness?.Override(smoothness);
+        public void UpdateVignetteRounded(float rounded) => vignette?.rounded?.Override(rounded == 1f);
         public void UpdateVignetteRounded(bool rounded) => vignette?.rounded?.Override(rounded);
         public void UpdateVignetteRoundness(float roundness) => vignette?.roundness?.Override(roundness);
         public void UpdateVignetteCenterX(float x) => vignette?.center?.Override(new Vector2(x, vignette?.center?.value.y ?? 0f));
         public void UpdateVignetteCenterY(float y) => vignette?.center?.Override(new Vector2(vignette?.center?.value.x ?? 0f, y));
-        public void UpdateVignetteColor(int colorSlot)
+        public void UpdateVignetteColor(float colorSlot)
         {
             if (!InterfaceManager.inst || InterfaceManager.inst.CurrentMenu == null)
                 return;
-            UpdateVignetteColor(colorSlot == InterfaceManager.inst.CurrentMenu.Theme.effectColors.Count ? Color.black : InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(colorSlot));
+            int slot = (int)colorSlot;
+            UpdateVignetteColor(slot == InterfaceManager.inst.CurrentMenu.Theme.effectColors.Count ? Color.black : InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(slot));
         }
         public void UpdateVignetteColor(Color color) => vignette?.color?.Override(color);
 
@@ -392,12 +451,59 @@ namespace BetterLegacy.Menus
             vignette?.color?.Override(color);
         }
 
+        #endregion
+
+        #region Lens Distort
+
         public void UpdateLensDistortIntensity(float intensity) => lensDistort?.intensity?.Override(intensity);
         public void UpdateLensDistortCenterX(float x) => lensDistort?.centerX?.Override(x);
         public void UpdateLensDistortCenterY(float y) => lensDistort?.centerY?.Override(y);
         public void UpdateLensDistortIntensityX(float x) => lensDistort?.intensityX?.Override(x);
         public void UpdateLensDistortIntensityY(float y) => lensDistort?.intensityY?.Override(y);
         public void UpdateLensDistortScale(float scale) => lensDistort?.scale?.Override(scale);
+
+        #endregion
+
+        #region Grain
+
+        public void UpdateGrainIntensity(float intensity) => grain?.intensity?.Override(intensity);
+        public void UpdateGrainScale(float size) => grain?.size?.Override(size);
+        public void UpdateGrainColored(float colored) => grain?.colored?.Override(colored == 1f);
+        public void UpdateGrainColored(bool colored) => grain?.colored?.Override(colored);
+
+        #endregion
+
+        #region Pixelize
+
+        public void UpdatePixelize(float amount) => pixelize?.amount?.Override(amount);
+
+        #endregion
+
+        #region Scan Lines
+
+        public void UpdateScanlinesIntensity(float intensity) => scanlines?.intensity?.Override(intensity);
+
+        public void UpdateScanlinesAmount(float amountHorizontal) => scanlines?.amountHorizontal?.Override(amountHorizontal);
+
+        public void UpdateScanlinesSpeed(float speed) => scanlines?.speed?.Override(speed);
+
+        #endregion
+
+        void RegisterFunction(Action<float> action)
+        {
+            try
+            {
+                functions[action.Method.Name.Remove("Update")] = action;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        public Dictionary<string, Action<float>> functions = new Dictionary<string, Action<float>>();
+
+        public bool analogGlitchEnabled;
 
         PostProcessVolume ppvolume;
 

@@ -2733,18 +2733,32 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region UpdateEvent
+
+                case "UpdateEvent":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["effect"] == null || !MenuEffectsManager.inst || !MenuEffectsManager.inst.functions.TryGetValue(parameters.IsArray ? parameters[0] : parameters["effect"], out Action<float> action))
+                            break;
+
+                        action?.Invoke(parameters.IsArray ? parameters[1].AsFloat : parameters["amount"].AsFloat);
+
+                        break;
+                    }
+
+                #endregion
+
                 #region SetEvent
 
                 case "SetEvent":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null)
-                            return;
+                            break;
 
                         var isArray = parameters.IsArray;
                         var type = isArray ? parameters[0] : parameters["type"];
 
                         if (type.IsNumber)
-                            return;
+                            break;
 
                         var values = isArray ? parameters[1] : parameters["values"];
 
