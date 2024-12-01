@@ -251,7 +251,7 @@ namespace BetterLegacy.Core.Managers
             });
             defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
             {
-                type = ModifierBase.Type.Trigger,
+                type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string>
                 {
