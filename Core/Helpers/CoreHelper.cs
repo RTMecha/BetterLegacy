@@ -851,48 +851,20 @@ namespace BetterLegacy.Core.Helpers
 
             SoundManager.inst.PlaySound(DefaultSounds.glitch);
 
-            var inter = new GameObject("Canvas");
-            inter.transform.localScale = Vector3.one * ScreenScale;
-            var interfaceRT = inter.AddComponent<RectTransform>();
-            interfaceRT.anchoredPosition = new Vector2(960f, 540f);
-            interfaceRT.sizeDelta = new Vector2(1920f, 1080f);
-            interfaceRT.pivot = new Vector2(0.5f, 0.5f);
-            interfaceRT.anchorMin = Vector2.zero;
-            interfaceRT.anchorMax = Vector2.zero;
+            var uiCanvas = UIManager.GenerateUICanvas("Screenshot Canvas", null, true);
 
-            var canvas = inter.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = ScreenScale;
+            var imageObj = Creator.NewUIObject("image", uiCanvas.GameObject.transform);
 
-            var canvasScaler = inter.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-
-            inter.AddComponent<GraphicRaycaster>();
-
-            var imageObj = new GameObject("image");
-            imageObj.transform.SetParent(inter.transform);
-            imageObj.transform.localScale = Vector3.one;
-
-
-            var imageRT = imageObj.AddComponent<RectTransform>();
-            imageRT.anchoredPosition = new Vector2(850f, -480f);
-            imageRT.sizeDelta = new Vector2(scr.width / 10f, scr.height / 10f);
+            imageObj.transform.AsRT().anchoredPosition = new Vector2(850f, -480f);
+            imageObj.transform.AsRT().sizeDelta = new Vector2(scr.width / 10f, scr.height / 10f);
 
             var im = imageObj.AddComponent<Image>();
             im.sprite = Sprite.Create(scr, new Rect(0f, 0f, scr.width, scr.height), Vector2.zero);
 
-            var textObj = new GameObject("text");
-            textObj.transform.SetParent(imageObj.transform);
-            textObj.transform.localScale = Vector3.one;
+            var textObj = Creator.NewUIObject("text", imageObj.transform);
 
-            var textRT = textObj.AddComponent<RectTransform>();
-            textRT.anchoredPosition = new Vector2(0f, 20f);
-            textRT.sizeDelta = new Vector2(200f, 100f);
+            textObj.transform.AsRT().anchoredPosition = new Vector2(0f, 20f);
+            textObj.transform.AsRT().sizeDelta = new Vector2(200f, 100f);
 
             var text = textObj.AddComponent<Text>();
             text.font = FontManager.inst.DefaultFont;
@@ -905,34 +877,29 @@ namespace BetterLegacy.Core.Helpers
                 {
                     new ColorKeyframe(0f, Color.white, Ease.Linear),
                     new ColorKeyframe(1.5f, new Color(1f, 1f, 1f, 0f), Ease.SineIn),
-                }, delegate (Color x)
+                }, color =>
                 {
                     if (im)
-                        im.color = x;
+                        im.color = color;
                     if (text)
-                        text.color = x;
+                        text.color = color;
                 }),
                 new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                 {
                     new Vector2Keyframe(0f, new Vector2(850f, -480f), Ease.Linear),
                     new Vector2Keyframe(1.5f, new Vector2(850f, -600f), Ease.BackIn)
-                }, delegate (Vector2 x)
-                {
-                    imageRT.anchoredPosition = x;
-                }, delegate ()
-                {
-                    scr = null;
-
-                    Destroy(inter);
-
-                    AnimationManager.inst?.Remove(animation.id);
-                }),
+                }, vector => imageObj.transform.AsRT().anchoredPosition = vector),
             };
 
-            animation.onComplete = delegate ()
+            animation.onComplete = () =>
             {
-                if (inter)
-                    Destroy(inter);
+                scr = null;
+
+                if (uiCanvas.GameObject)
+                    Destroy(uiCanvas.GameObject);
+                uiCanvas = null;
+
+                AnimationManager.inst?.Remove(animation.id);
             };
 
             AnimationManager.inst?.Play(animation);
