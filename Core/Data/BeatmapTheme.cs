@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data
 
         #region Consts
 
-        public const int ID_LENGTH = 9;
+        public const int ID_LENGTH = 7;
         public const string PLAYER_1_COLOR = "E57373";
         public const string PLAYER_2_COLOR = "64B5F6";
         public const string PLAYER_3_COLOR = "81C784";
