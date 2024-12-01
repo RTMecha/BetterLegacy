@@ -39,7 +39,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void AwakePrefix(GameManager __instance)
         {
-            CoreHelper.Log($"Current scene type: {SceneHelper.CurrentSceneType}\nCurrent scene name: {__instance.gameObject.scene.name}");
+            CoreHelper.Log($"Current scene type: {SceneHelper.CurrentSceneType}\nCurrent scene name: {SceneHelper.CurrentScene}");
             CoreHelper.LogInit(__instance.className);
 
             if (!GameObject.Find("Game Systems/EffectsManager").GetComponent<RTEffectsManager>())
@@ -69,8 +69,6 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.playersCanJoin = false;
             Instance.playerGUI.SetActive(true);
             Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
-            if (!CoreHelper.InEditor)
-                Instance.LoadLevelCurrent();
             Instance.initialPlayerCount = InputDataManager.inst.players.Count;
             InputDataManager.playerDisconnectedEvent += Instance.PlayerDisconnected;
             InputDataManager.playerReconnectedEvent += Instance.PlayerReconnected;
@@ -257,15 +255,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(GameManager.LoadLevelCurrent))]
         [HarmonyPrefix]
-        static bool LoadLevelCurrentPrefix()
-        {
-            if (!LevelManager.LoadingFromHere && LevelManager.CurrentLevel)
-            {
-                LevelManager.LevelEnded = false;
-                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevel));
-            }
-            return false;
-        }
+        static bool LoadLevelCurrentPrefix() => false;
 
         [HarmonyPatch(nameof(GameManager.getPitch))]
         [HarmonyPrefix]
