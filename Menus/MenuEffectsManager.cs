@@ -32,12 +32,34 @@ namespace BetterLegacy.Menus
 
 		void Start()
 		{
-			var camera = Camera.main;
-			analogGlitch = camera.gameObject.GetComponent<AnalogGlitch>() ?? camera.gameObject.AddComponent<AnalogGlitch>();
+            // Create a new camera since putting the glitch effects on the Main Camera make the objects disappear.
+            var glitchCamera = Creator.NewGameObject("Glitch Camera", transform);
+            glitchCamera.transform.localPosition = Vector3.zero;
+
+            glitchCam = glitchCamera.AddComponent<Camera>();
+            glitchCam.allowMSAA = false;
+            glitchCam.clearFlags = CameraClearFlags.Depth;
+            glitchCam.cullingMask = 310;
+            glitchCam.depth = 2f;
+            glitchCam.farClipPlane = 10000f;
+            glitchCam.forceIntoRenderTexture = true;
+            glitchCam.nearClipPlane = 9999.9f;
+            glitchCam.orthographic = true;
+            glitchCam.rect = new Rect(0.001f, 0.001f, 0.999f, 0.999f);
+
+            digitalGlitch = glitchCamera.AddComponent<DigitalGlitch>();
+            digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
+
+            analogGlitch = glitchCamera.AddComponent<AnalogGlitch>();
+            analogGlitch._shader = LegacyPlugin.analogGlitchShader;
+
+            analogGlitch = glitchCamera.GetComponent<AnalogGlitch>() ?? glitchCamera.AddComponent<AnalogGlitch>();
 			analogGlitch._shader = LegacyPlugin.analogGlitchShader;
-			digitalGlitch = camera.gameObject.GetComponent<DigitalGlitch>() ?? camera.gameObject.AddComponent<DigitalGlitch>();
+			digitalGlitch = glitchCamera.GetComponent<DigitalGlitch>() ?? glitchCamera.AddComponent<DigitalGlitch>();
 			digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
             analogGlitch.enabled = false; // disabled by default due to there still being a slight effect when it is enabled.
+
+            var camera = Camera.main;
 
             try
             {
@@ -381,6 +403,8 @@ namespace BetterLegacy.Menus
 
         static AssetBundle postProcessResourcesAssetBundle;
         static PostProcessResources postProcessResources;
+
+        public Camera glitchCam;
 
         public AnalogGlitch analogGlitch;
 		public DigitalGlitch digitalGlitch;
