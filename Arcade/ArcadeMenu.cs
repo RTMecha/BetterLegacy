@@ -1143,6 +1143,7 @@ namespace BetterLegacy.Arcade
                     }
             }
 
+            defaultSelection = new Vector2Int(1, 0);
             exitFunc = Exit;
             if (CurrentTab != Tab.Steam || !ViewOnline)
                 InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
