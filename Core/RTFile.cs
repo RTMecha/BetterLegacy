@@ -87,6 +87,8 @@ namespace BetterLegacy.Core
         public static string CombinePaths(string path1, string path2) => Path.Combine(path1, path2).Replace("\\", "/");
         public static string CombinePaths(params string[] paths) => Path.Combine(paths).Replace("\\", "/");
 
+        public static string RemoveEndSlash(string path) => path == null || path.Length == 0 ? path : path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
+
         public static AudioType GetAudioType(string str)
         {
             var l = str.LastIndexOf('.');
