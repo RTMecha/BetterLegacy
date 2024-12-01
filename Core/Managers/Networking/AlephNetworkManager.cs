@@ -372,10 +372,7 @@ namespace BetterLegacy.Core.Managers.Networking
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
-            {
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
                 onError?.Invoke(www.error);
-            }
             else
                 callback?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
         }
