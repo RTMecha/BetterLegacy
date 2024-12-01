@@ -1479,9 +1479,9 @@ namespace BetterLegacy.Arcade
 
         #region Online
 
-        public static string SearchURL => $"{AlephNetworkManager.ArcadeServerURL}api/level/search";
-        public static string CoverURL => $"{AlephNetworkManager.ArcadeServerURL}api/level/cover/";
-        public static string DownloadURL => $"{AlephNetworkManager.ArcadeServerURL}api/level/zip/";
+        public static string SearchURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/search";
+        public static string CoverURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/cover/";
+        public static string DownloadURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/zip/";
 
         public static string OnlineSearch => Searches[1];
 

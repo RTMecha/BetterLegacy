@@ -673,7 +673,7 @@ namespace BetterLegacy.Arcade
 
         #region Online
 
-        public static string SearchURL { get; set; } = $"{AlephNetworkManager.ArcadeServerURL}api/level/search";
+        public static string SearchURL { get; set; } = $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/search";
 
         public static int OnlineLevelCount { get; set; }
 
