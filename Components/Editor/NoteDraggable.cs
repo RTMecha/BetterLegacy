@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 using System;
 using UnityEngine;
@@ -45,7 +46,7 @@ namespace BetterLegacy.Components.Editor
             if (!Free)
                 return;
 
-            AudioManager.inst.PlaySound("blip");
+            SoundManager.inst.PlaySound(DefaultSounds.blip);
             if (part == DragPart.Base)
             {
                 transform.localScale = new Vector3(note.Scale.x, note.Scale.y, 1f);
@@ -61,7 +62,7 @@ namespace BetterLegacy.Components.Editor
         {
             if (Free)
             {
-                AudioManager.inst.PlaySound("Click");
+                SoundManager.inst.PlaySound(DefaultSounds.Click);
                 dragging = true;
 
                 if (part == DragPart.Base)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BetterLegacy.Core.Managers;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -33,7 +34,7 @@ namespace BetterLegacy.Components
             if (!CanDrag || eventData.button == PointerEventData.InputButton.Right)
                 return;
 
-            AudioManager.inst.PlaySound("blip");
+            SoundManager.inst.PlaySound(DefaultSounds.blip);
             target.localScale = new Vector3(1f, 1f, 1f);
             dragging = false;
         }
@@ -45,7 +46,7 @@ namespace BetterLegacy.Components
 
             if (eventData.button == PointerEventData.InputButton.Left)
             {
-                AudioManager.inst.PlaySound("Click");
+                SoundManager.inst.PlaySound(DefaultSounds.Click);
                 target.localScale = new Vector3(scale, scale, 1f);
                 dragging = true;
                 startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
@@ -53,7 +54,7 @@ namespace BetterLegacy.Components
             }
             else
             {
-                AudioManager.inst.PlaySound("Click");
+                SoundManager.inst.PlaySound(DefaultSounds.Click);
                 target.position = ogPos;
                 startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
                 startPos = target.position;

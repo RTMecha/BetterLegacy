@@ -849,7 +849,7 @@ namespace BetterLegacy.Core.Helpers
 
             var scr = ScreenCapture.CaptureScreenshotAsTexture();
 
-            AudioManager.inst.PlaySound("glitch");
+            SoundManager.inst.PlaySound(DefaultSounds.glitch);
 
             var inter = new GameObject("Canvas");
             inter.transform.localScale = Vector3.one * ScreenScale;

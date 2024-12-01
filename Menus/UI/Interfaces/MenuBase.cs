@@ -512,7 +512,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         menuButton.clickable.onClick = p =>
                         {
                             if (menuButton.playBlipSound)
-                                AudioManager.inst.PlaySound("blip");
+                                SoundManager.inst.PlaySound(DefaultSounds.blip);
 
                             if (menuButton.funcJSON != null)
                                 menuButton.ParseFunction(menuButton.funcJSON);
@@ -591,7 +591,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     element.clickable.onClick = p =>
                     {
                         if (element.playBlipSound)
-                            AudioManager.inst.PlaySound("blip");
+                            SoundManager.inst.PlaySound(DefaultSounds.blip);
                         if (element.funcJSON != null)
                             element.ParseFunction(element.funcJSON);
                         element.func?.Invoke();
@@ -937,7 +937,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (!isOpen)
                     return;
 
-                AudioManager.inst.PlaySound("LeftRight");
+                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                 selected = menuButton.selectionPosition;
             };
 
@@ -1145,7 +1145,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 if (selected.x > elements.Where(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Min(x => x.selectionPosition.x))
                 {
-                    AudioManager.inst.PlaySound("LeftRight");
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
 
                     int num = 1;
                     while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x - num))
@@ -1155,14 +1155,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     selected.x -= num;
                 }
                 else
-                    AudioManager.inst.PlaySound("Block");
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
             }
 
             if (actions.Right.WasPressed)
             {
                 if (selected.x < elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x))
                 {
-                    AudioManager.inst.PlaySound("LeftRight");
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
 
                     int num = 1;
                     while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x + num))
@@ -1172,31 +1172,31 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     selected.x += num;
                 }
                 else
-                    AudioManager.inst.PlaySound("Block");
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
             }
 
             if (actions.Up.WasPressed)
             {
                 if (selected.y > 0)
                 {
-                    AudioManager.inst.PlaySound("LeftRight");
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                     selected.y--;
                     selected.x = Mathf.Clamp(selected.x, 0, elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x));
                 }
                 else
-                    AudioManager.inst.PlaySound("Block");
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
             }
 
             if (actions.Down.WasPressed)
             {
                 if (selected.y < elements.FindAll(x => x is MenuButton).Select(x => x as MenuButton).Max(x => x.selectionPosition.y))
                 {
-                    AudioManager.inst.PlaySound("LeftRight");
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                     selected.y++;
                     selected.x = Mathf.Clamp(selected.x, 0, elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x));
                 }
                 else
-                    AudioManager.inst.PlaySound("Block");
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
             }
 
             for (int i = 0; i < elements.Count; i++)

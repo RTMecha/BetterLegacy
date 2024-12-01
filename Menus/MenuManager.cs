@@ -349,7 +349,7 @@ namespace BetterLegacy.Menus
                     break;
                 case "replaceline":
                     {
-                        AudioManager.inst.PlaySound("Click");
+                        SoundManager.inst.PlaySound(DefaultSounds.Click);
                         string dataText = data[2];
                         int childCount = ((data.Length > 3) ? (ic.MainPanel.childCount - 1 + int.Parse(data[1])) : int.Parse(data[1]));
                         dataText = ic.RunTextTransformations(dataText, childCount);
@@ -491,12 +491,12 @@ namespace BetterLegacy.Menus
                             num2 -= buttonSetting.value;
                             if (num2 < buttonSetting.min)
                             {
-                                AudioManager.inst.PlaySound("Block");
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
                                 num2 = buttonSetting.min;
                             }
                             else
                             {
-                                AudioManager.inst.PlaySound("LeftRight");
+                                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                 Debug.Log(string.Concat(new object[]
                                 {
                                     "Subtract : ",
@@ -512,12 +512,12 @@ namespace BetterLegacy.Menus
                             num2 += buttonSetting.value;
                             if (num2 > buttonSetting.max)
                             {
-                                AudioManager.inst.PlaySound("Block");
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
                                 num2 = buttonSetting.max;
                             }
                             else
                             {
-                                AudioManager.inst.PlaySound("LeftRight");
+                                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                 Debug.Log(string.Concat(new object[]
                                 {
                                     "Add : ",
@@ -537,7 +537,7 @@ namespace BetterLegacy.Menus
                         if (decrease || increase)
                         {
                             enabled = !enabled;
-                            AudioManager.inst.PlaySound("LeftRight");
+                            SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                             DataManager.inst.UpdateSettingBool(buttonSetting.setting, enabled);
                         }
                         break;
@@ -550,12 +550,12 @@ namespace BetterLegacy.Menus
                             vector2Index -= buttonSetting.value;
                             if (vector2Index < buttonSetting.min)
                             {
-                                AudioManager.inst.PlaySound("Block");
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
                                 vector2Index = buttonSetting.min;
                             }
                             else
                             {
-                                AudioManager.inst.PlaySound("LeftRight");
+                                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                 DataManager.inst.UpdateSettingVector2D(buttonSetting.setting, vector2Index, DataManager.inst.resolutions.ToArray());
                             }
                         }
@@ -564,12 +564,12 @@ namespace BetterLegacy.Menus
                             vector2Index += buttonSetting.value;
                             if (vector2Index > buttonSetting.max)
                             {
-                                AudioManager.inst.PlaySound("Block");
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
                                 vector2Index = buttonSetting.max;
                             }
                             else
                             {
-                                AudioManager.inst.PlaySound("LeftRight");
+                                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                 DataManager.inst.UpdateSettingVector2D(buttonSetting.setting, vector2Index, DataManager.inst.resolutions.ToArray());
                             }
                         }
@@ -590,12 +590,12 @@ namespace BetterLegacy.Menus
                                 enumIndex -= buttonSetting.value;
                                 if (enumIndex < buttonSetting.min)
                                 {
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                                     enumIndex = buttonSetting.min;
                                 }
                                 else
                                 {
-                                    AudioManager.inst.PlaySound("LeftRight");
+                                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                     DataManager.inst.UpdateSettingInt(buttonSetting.setting + "_i", enumIndex);
                                 }
                                 break;
@@ -604,11 +604,11 @@ namespace BetterLegacy.Menus
                             enumIndex--;
                             if (enumIndex < 0)
                             {
-                                AudioManager.inst.PlaySound("Block");
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
                             }
                             else
                             {
-                                AudioManager.inst.PlaySound("LeftRight");
+                                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                 DataManager.inst.UpdateSettingEnum(buttonSetting.setting, enumIndex);
                                 string settingEnumFunctionCall = DataManager.inst.GetSettingEnumFunctionCall(buttonSetting.setting, enumIndex);
                                 if (!string.IsNullOrEmpty(settingEnumFunctionCall))
@@ -624,12 +624,12 @@ namespace BetterLegacy.Menus
                                 enumIndex += buttonSetting.value;
                                 if (enumIndex > buttonSetting.max)
                                 {
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                                     enumIndex = buttonSetting.max;
                                 }
                                 else
                                 {
-                                    AudioManager.inst.PlaySound("LeftRight");
+                                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                     DataManager.inst.UpdateSettingInt(buttonSetting.setting + "_i", enumIndex);
                                 }
                                 break;
@@ -638,11 +638,11 @@ namespace BetterLegacy.Menus
                             enumIndex++;
                             if (enumIndex >= DataManager.inst.GetSettingEnumCount(buttonSetting.setting))
                             {
-                                AudioManager.inst.PlaySound("Block");
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
                             }
                             else
                             {
-                                AudioManager.inst.PlaySound("LeftRight");
+                                SoundManager.inst.PlaySound(DefaultSounds.LeftRight);
                                 DataManager.inst.UpdateSettingEnum(buttonSetting.setting, enumIndex);
                                 string settingEnumFunctionCall2 = DataManager.inst.GetSettingEnumFunctionCall(buttonSetting.setting, enumIndex);
                                 if (!string.IsNullOrEmpty(settingEnumFunctionCall2))
@@ -664,7 +664,7 @@ namespace BetterLegacy.Menus
             ic.StartCoroutine(ic.ScrollBottom());
             float totalTime = ((!ic.SpeedUp) ? UnityEngine.Random.Range(ic.interfaceSettings.times.x, ic.interfaceSettings.times.y) : (UnityEngine.Random.Range(ic.interfaceSettings.times.x, ic.interfaceSettings.times.y) / ic.FastSpeed));
             if (!_immediate)
-                AudioManager.inst.PlaySound("Click");
+                SoundManager.inst.PlaySound(DefaultSounds.Click);
 
             int childCount = ic.MainPanel.childCount;
             switch (_element.type)

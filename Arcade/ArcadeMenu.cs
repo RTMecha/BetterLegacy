@@ -403,7 +403,7 @@ namespace BetterLegacy.Arcade
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(0, 1),
                             rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = () => { CoreHelper.StartCoroutine(RefreshOnlineLevels()); },
+                            func = RefreshOnlineLevels().Start,
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -427,7 +427,7 @@ namespace BetterLegacy.Arcade
                                 if (Pages[(int)CurrentTab] != 0)
                                     SetOnlineLevelsPage(Pages[(int)CurrentTab] - 1);
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -447,10 +447,7 @@ namespace BetterLegacy.Arcade
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(2, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
-                            func = () =>
-                            {
-                                SetOnlineLevelsPage(Pages[(int)CurrentTab] + 1);
-                            },
+                            func = () => SetOnlineLevelsPage(Pages[(int)CurrentTab] + 1),
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -467,7 +464,7 @@ namespace BetterLegacy.Arcade
                             rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
                             cellSize = new Vector2(350f, 180f),
                             spacing = new Vector2(12f, 12f),
-                            constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                            constraint = GridLayoutGroup.Constraint.FixedColumnCount,
                             constraintCount = 5,
                             regenerate = false,
                         });
@@ -561,7 +558,7 @@ namespace BetterLegacy.Arcade
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -588,7 +585,7 @@ namespace BetterLegacy.Arcade
                                 if (Pages[(int)CurrentTab] != BrowserPageCount)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -652,7 +649,7 @@ namespace BetterLegacy.Arcade
                             parentLayout = "queue settings",
                             selectionPosition = new Vector2Int(0, 1),
                             rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = () => { ShuffleQueue(false); },
+                            func = () => ShuffleQueue(false),
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -802,7 +799,7 @@ namespace BetterLegacy.Arcade
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -829,7 +826,7 @@ namespace BetterLegacy.Arcade
                                 if (Pages[(int)CurrentTab] != QueuePageCount)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
-                                    AudioManager.inst.PlaySound("Block");
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -924,7 +921,7 @@ namespace BetterLegacy.Arcade
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(0, 1),
                                 rect = RectValues.Default.SizeDelta(200f, 64f),
-                                func = () => { new GameObject("Load Level System").AddComponent<LoadLevelsManager>(); },
+                                func = () => new GameObject("Load Level System").AddComponent<LoadLevelsManager>(),
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -2466,9 +2463,9 @@ namespace BetterLegacy.Arcade
         {
             if (CurrentTab == Tab.Queue && !CoreHelper.IsUsingInputField && isOpen && !generating)
             {
-                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.C))
+                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.C))
                     ArcadeHelper.CopyArcadeQueue();
-                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.V))
+                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.V))
                     ArcadeHelper.PasteArcadeQueue();
             }
 

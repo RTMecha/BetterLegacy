@@ -423,7 +423,7 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator OnLoadingEnd()
         {
             yield return new WaitForSeconds(0.1f);
-            AudioManager.inst.PlaySound("loadsound");
+            SoundManager.inst.PlaySound(DefaultSounds.loadsound);
             ArcadeMenu.Init();
             yield break;
         }

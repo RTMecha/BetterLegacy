@@ -365,7 +365,7 @@ namespace BetterLegacy.Core.Managers
                 animation.onComplete = () => { CoreHelper.Destroy(achievement); };
                 AnimationManager.inst.Play(animation);
 
-                AudioManager.inst.PlaySound("loadsound");
+                SoundManager.inst.PlaySound(DefaultSounds.loadsound);
                 CoreHelper.Log($"{CoreConfig.Instance.DisplayName.Value} Achieved - {name}");
             }
             catch (Exception ex)

@@ -168,7 +168,7 @@ namespace BetterLegacy.Patchers
                     }
                     else
                     {
-                        AudioManager.inst.PlaySound("Block");
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
                     }
                 }
                 else if (__instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.MainMenu && !string.IsNullOrEmpty(__instance.interfaceSettings.returnBranch))
@@ -317,8 +317,8 @@ namespace BetterLegacy.Patchers
             if (EventSystem.current.currentSelectedGameObject == null && __instance.buttonsActive)
                 EventSystem.current.SetSelectedGameObject(__instance.lastSelectedObj);
 
-            if (__instance.lastSelectedObj != EventSystem.current.currentSelectedGameObject && __instance.screenDone)
-                AudioManager.inst.PlaySound("UpDown");
+            //if (__instance.lastSelectedObj != EventSystem.current.currentSelectedGameObject && __instance.screenDone)
+            //    SoundManager.inst.PlaySound(DefaultSounds.UpDown);
 
             __instance.lastSelectedObj = EventSystem.current.currentSelectedGameObject;
             return false;

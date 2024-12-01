@@ -175,7 +175,7 @@ namespace BetterLegacy.Arcade
                         if (Page != 0 && pageField.inputField)
                             pageField.inputField.text = (Page - 1).ToString();
                         else
-                            AudioManager.inst.PlaySound("Block");
+                            SoundManager.inst.PlaySound(DefaultSounds.Block);
                     },
                     color = 6,
                     opacity = 0.1f,
@@ -202,7 +202,7 @@ namespace BetterLegacy.Arcade
                         if (Page != LocalLevelPageCount)
                             pageField.inputField.text = (Page + 1).ToString();
                         else
-                            AudioManager.inst.PlaySound("Block");
+                            SoundManager.inst.PlaySound(DefaultSounds.Block);
                     },
                     color = 6,
                     opacity = 0.1f,
@@ -262,7 +262,7 @@ namespace BetterLegacy.Arcade
                     parentLayout = "online settings",
                     selectionPosition = new Vector2Int(0, 1),
                     rect = RectValues.Default.SizeDelta(200f, 64f),
-                    func = () => { CoreHelper.StartCoroutine(RefreshOnlineLevels()); },
+                    func = RefreshOnlineLevels().Start,
                     color = 6,
                     opacity = 0.1f,
                     textColor = 6,
@@ -286,7 +286,7 @@ namespace BetterLegacy.Arcade
                         if (Page != 0)
                             SetOnlineLevelsPage(Page - 1);
                         else
-                            AudioManager.inst.PlaySound("Block");
+                            SoundManager.inst.PlaySound(DefaultSounds.Block);
                     },
                     color = 6,
                     opacity = 0.1f,
@@ -306,7 +306,7 @@ namespace BetterLegacy.Arcade
                     parentLayout = "online settings",
                     selectionPosition = new Vector2Int(2, 1),
                     rect = RectValues.Default.SizeDelta(132f, 64f),
-                    func = () => { SetOnlineLevelsPage(Page + 1); },
+                    func = () => SetOnlineLevelsPage(Page + 1),
                     color = 6,
                     opacity = 0.1f,
                     textColor = 6,

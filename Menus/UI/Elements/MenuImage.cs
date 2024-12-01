@@ -1377,9 +1377,9 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         string sound = parameters.IsArray ? parameters[0] : parameters["sound"];
 
-                        if (AudioManager.inst.library.soundClips.ContainsKey(sound))
+                        if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
                         {
-                            AudioManager.inst.PlaySound(sound);
+                            AudioManager.inst.PlaySound(audioClip);
                             break;
                         }
 
