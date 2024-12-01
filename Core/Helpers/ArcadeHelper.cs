@@ -11,6 +11,7 @@ using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -183,7 +184,6 @@ namespace BetterLegacy.Core.Helpers
             EndLevelMenu.Init();
         }
 
-
         public static bool fromLevel = false;
 
         public static void DeleteComponents()
@@ -200,23 +200,23 @@ namespace BetterLegacy.Core.Helpers
 
         public static void ReloadMenu()
         {
-            if (fromLevel)
+            if (!fromLevel)
             {
-                DeleteComponents();
-                if (LevelManager.CurrentLevelCollection)
-                {
-                    var currentCollection = LevelManager.CurrentLevelCollection;
-                    LevelListMenu.close = () => { LevelCollectionMenu.Init(currentCollection); };
-                    LevelListMenu.Init(currentCollection.levels);
-                }
-                else
-                    ArcadeMenu.Init();
+                LoadLevelsManager.Init();
+                return;
             }
-            else
+
+            DeleteComponents();
+
+            var currentCollection = LevelManager.CurrentLevelCollection;
+            if (!currentCollection)
             {
-                var menu = new GameObject("Load Level System");
-                menu.AddComponent<LoadLevelsManager>();
+                ArcadeMenu.Init();
+                return;
             }
+
+            LevelListMenu.close = () => LevelCollectionMenu.Init(currentCollection);
+            LevelListMenu.Init(currentCollection.levels);
         }
 
         public static bool currentlyLoading = false;
@@ -237,10 +237,12 @@ namespace BetterLegacy.Core.Helpers
             ArcadeManager.inst.forcedSkip = false;
             LevelManager.IsArcade = true;
 
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + LevelManager.ListPath))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + LevelManager.ListPath);
+            var levelsDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath);
 
-            var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + LevelManager.ListPath, "*", SearchOption.TopDirectoryOnly);
+            if (!RTFile.DirectoryExists(levelsDirectory))
+                Directory.CreateDirectory(levelsDirectory);
+
+            var directories = Directory.GetDirectories(levelsDirectory, "*", SearchOption.TopDirectoryOnly);
 
             if (LoadLevelsManager.inst != null)
                 LoadLevelsManager.totalLevelCount = directories.Length;
@@ -251,6 +253,8 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.CurrentLevel = null;
             LevelManager.CurrentLevelCollection = null;
             LevelManager.LoadProgress();
+
+            var levelCollections = new Queue<string>();
 
             var loadYieldMode = ArcadeConfig.Instance.LoadYieldMode.Value;
 
@@ -271,21 +275,18 @@ namespace BetterLegacy.Core.Helpers
                 if (loadYieldMode != YieldType.None)
                     yield return CoreHelper.GetYieldInstruction(loadYieldMode, ref delay);
 
-                if (RTFile.FileExists($"{path}/collection.lsco"))
+                if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
                 {
-                    var levelCollection = LevelCollection.Parse($"{path}/", JSON.Parse(RTFile.ReadFromFile($"{path}/collection.lsco")));
-                    LevelManager.LevelCollections.Add(levelCollection);
-                    if (LoadLevelsManager.inst)
-                        LoadLevelsManager.inst.UpdateInfo(levelCollection.icon, $"Loading {name}", i);
+                    levelCollections.Enqueue(path);
                     continue;
                 }
 
                 MetaData metadata = null;
 
-                if (RTFile.FileExists($"{path}/metadata.vgm"))
-                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}/metadata.vgm")));
-                else if (RTFile.FileExists($"{path}/metadata.lsb"))
-                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}/metadata.lsb")), false);
+                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)))
+                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM))));
+                else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
+                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))), false);
 
                 if (metadata == null)
                 {
@@ -295,8 +296,8 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                if (!RTFile.FileExists($"{path}/level.ogg") && !RTFile.FileExists($"{path}/level.wav") && !RTFile.FileExists($"{path}/level.mp3")
-                    && !RTFile.FileExists($"{path}/audio.ogg") && !RTFile.FileExists($"{path}/audio.wav") && !RTFile.FileExists($"{path}/audio.mp3"))
+                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3))
+                    && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
                 {
                     if (LoadLevelsManager.inst)
                         LoadLevelsManager.inst.UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No song in {name}</color>", i, true);
@@ -304,7 +305,7 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                if (!RTFile.FileExists($"{path}/level.lsb") && !RTFile.FileExists($"{path}/level.vgd"))
+                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_VGD)))
                 {
                     if (LoadLevelsManager.inst)
                         LoadLevelsManager.inst.UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No song in {name}</color>", i, true);
@@ -318,7 +319,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     metadata.arcadeID = LSText.randomNumString(16);
                     var metadataJN = metadata.ToJSON();
-                    RTFile.WriteToFile($"{path}/metadata.lsb", metadataJN.ToString(3));
+                    RTFile.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_LSB), metadataJN.ToString(3));
                 }
 
                 var level = new Level(path + "/", metadata);
@@ -347,6 +348,21 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Sort(ArcadeConfig.Instance.LocalLevelOrderby.Value, ArcadeConfig.Instance.LocalLevelAscend.Value);
 
             SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
+
+            int collectionIndex = 0;
+            LoadLevelsManager.totalLevelCount = levelCollections.Count;
+            while (levelCollections.Count > 0)
+            {
+                var path = levelCollections.Dequeue();
+                var name = Path.GetFileName(path);
+
+                var levelCollection = LevelCollection.Parse($"{path}/", JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
+                LevelManager.LevelCollections.Add(levelCollection);
+                if (LoadLevelsManager.inst)
+                    LoadLevelsManager.inst.UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
+                collectionIndex++;
+            }
+            
             sw.Stop();
             CoreHelper.Log($"Total levels: {LevelManager.Levels.Union(SteamWorkshopManager.inst.Levels).Count()}\nTime taken: {sw.Elapsed}");
 
@@ -407,7 +423,9 @@ namespace BetterLegacy.Core.Helpers
                         LevelManager.ArcadeQueue.Add(currentLevel);
                     }
                     else if (!hasLocal && !hasSteam)
-                        CoreHelper.LogError($"Level with ID {jnQueue["id"]} (Name: {jnQueue["name"]}) does not currently exist in your Local folder / Steam subscribed items.");
+                        CoreHelper.LogError($"Level with ID {jnQueue["id"]} (Name: {jnQueue["name"]}) does not currently exist in your Local folder / Steam subscribed items.\n" +
+                            $"Find the level on the server: {jnQueue["server_id"]}\n" +
+                            $"or find the level on the Steam Workshop: {jnQueue["workhsop_id"]}");
                 }
 
                 if (ArcadeMenu.Current != null)

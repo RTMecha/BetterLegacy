@@ -63,6 +63,11 @@ namespace BetterLegacy.Core
         public Sprite banner;
 
         /// <summary>
+        /// Audio to play when viewing the collection.
+        /// </summary>
+        public AudioClip previewAudio;
+
+        /// <summary>
         /// All levels the collection contains.
         /// </summary>
         public List<Level> levels = new List<Level>();
@@ -125,48 +130,12 @@ namespace BetterLegacy.Core
                         RTFile.WriteToFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB), metadataJN.ToString(3));
                     }
 
-                    var level = new Level(levelFolder) { fromCollection = true };
-
-                    if (level.metadata)
-                    {
-                        level.metadata = MetaData.DeepCopy(level.metadata);
-                        level.metadata.arcadeID = jn["levels"][i]["id"];
-                        if (jn["levels"][i]["require_unlock"] != null)
-                            level.metadata.requireUnlock = jn["levels"][i]["require_unlock"];
-                    }
-                    level.id = jn["levels"][i]["id"];
-
-                    if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
-                        level.playerData = playerData;
-
-                    collection.levels.Add(level);
+                    collection.AddJSON(jn["levels"][i], new Level(levelFolder) { fromCollection = true });
                 }
                 else if (jn["levels"][i]["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level arcadeLevel))
-                {
-                    arcadeLevel = new Level(arcadeLevel.path);
-                    if (arcadeLevel.metadata)
-                    {
-                        arcadeLevel.metadata = MetaData.DeepCopy(arcadeLevel.metadata);
-                        arcadeLevel.metadata.arcadeID = jn["levels"][i]["id"];
-                        if (jn["levels"][i]["require_unlock"] != null)
-                            arcadeLevel.metadata.requireUnlock = jn["levels"][i]["require_unlock"];
-                    }
-                    arcadeLevel.id = jn["levels"][i]["id"];
-                    collection.levels.Add(arcadeLevel);
-                }
-                else if (jn["levels"][i]["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.metadata.beatmap.beatmap_id == jn["levels"][i]["workshop_id"], out Level steamLevel))
-                {
-                    steamLevel = new Level(steamLevel.path);
-                    if (steamLevel.metadata)
-                    {
-                        steamLevel.metadata = MetaData.DeepCopy(steamLevel.metadata);
-                        steamLevel.metadata.arcadeID = jn["levels"][i]["id"];
-                        if (jn["levels"][i]["require_unlock"] != null)
-                            steamLevel.metadata.requireUnlock = jn["levels"][i]["require_unlock"];
-                    }
-                    steamLevel.id = jn["levels"][i]["id"];
-                    collection.levels.Add(steamLevel);
-                }
+                    collection.AddJSON(jn["levels"][i], new Level(arcadeLevel.path) { fromCollection = true });
+                else if (jn["levels"][i]["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jn["levels"][i]["workshop_id"], out Level steamLevel))
+                    collection.AddJSON(jn["levels"][i], new Level(steamLevel.path) { fromCollection = true });
                 else
                     collection.levels.Add(null);
 
@@ -177,6 +146,23 @@ namespace BetterLegacy.Core
             collection.banner = RTFile.FileExists($"{path}banner.png") ? SpriteHelper.LoadSprite($"{path}banner.png") : SpriteHelper.LoadSprite($"{path}banner.jpg");
 
             return collection;
+        }
+
+        void AddJSON(JSONNode jn, Level level)
+        {
+            if (level.metadata)
+            {
+                level.metadata = MetaData.DeepCopy(level.metadata);
+                level.metadata.arcadeID = jn["id"];
+                if (jn["require_unlock"] != null)
+                    level.metadata.requireUnlock = jn["require_unlock"];
+            }
+            level.id = jn["id"];
+
+            if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
+                level.playerData = playerData;
+
+            levels.Add(level);
         }
 
         /// <summary>
@@ -288,9 +274,29 @@ namespace BetterLegacy.Core
             //collection.Save();
         }
 
-        public Level EntryLevel => EntryLevelIndex >= 0 ? this[EntryLevelIndex] : this[0];
+        public Level EntryLevel => this[EntryLevelIndex];
 
-        public int EntryLevelIndex => levels.FindIndex(x => x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
+        public int EntryLevelIndex
+        {
+            get
+            {
+                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
+
+                if (entryLevelIndex < 0)
+                    entryLevelIndex = 0;
+
+                return entryLevelIndex;
+            }
+        }
+
+        /// <summary>
+        /// The collection file.
+        /// </summary>
+        public const string COLLECTION_LSCO = "collection.lsco";
+        /// <summary>
+        /// The collection preview audio file.
+        /// </summary>
+        public const string PREVIEW_OGG = "preview.ogg";
 
         public void Move(string id, int moveTo)
         {
