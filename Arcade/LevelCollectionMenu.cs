@@ -17,6 +17,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
 using LSFunctions;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Arcade
 {
@@ -305,6 +306,30 @@ namespace BetterLegacy.Arcade
 
         public static void Init(LevelCollection collection)
         {
+            if (!collection.previewAudio && RTFile.FileExists(RTFile.CombinePaths(collection.path, LevelCollection.PREVIEW_OGG)))
+            {
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + RTFile.CombinePaths(collection.path, LevelCollection.PREVIEW_OGG), AudioType.OGGVORBIS, audioClip =>
+                {
+                    collection.previewAudio = audioClip;
+                    InternalInit(collection);
+                }));
+                return;
+            }
+
+            InternalInit(collection);
+        }
+
+        static void InternalInit(LevelCollection collection)
+        {
+            if (collection.previewAudio)
+            {
+                AudioManager.inst.StopMusic();
+                AudioManager.inst.PlayMusic(collection.name, collection.previewAudio);
+                AudioManager.inst.SetPitch(1f);
+            }
+            else
+                InterfaceManager.inst.PlayMusic();
+
             InterfaceManager.inst.CloseMenus();
             CurrentCollection = collection;
             Current = new LevelCollectionMenu();
