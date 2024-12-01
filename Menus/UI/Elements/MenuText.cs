@@ -293,7 +293,7 @@ namespace BetterLegacy.Menus.UI.Elements
             }
 
             if (!string.IsNullOrEmpty(jnElement["text"]))
-                text = ParseText(RTString.ReplaceProperties(jnElement["text"]));
+                text = ParseText(RTString.ReplaceProperties(Lang.Parse(jnElement["text"])));
             if (!string.IsNullOrEmpty(jnElement["icon"]))
                 icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
             if (!string.IsNullOrEmpty(jnElement["icon_path"]))

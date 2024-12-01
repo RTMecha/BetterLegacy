@@ -273,7 +273,7 @@ namespace BetterLegacy.Menus.UI.Elements
             #region UI
 
             if (!string.IsNullOrEmpty(jnElement["text"]))
-                text = ParseText(RTString.ReplaceProperties(jnElement["text"]));
+                text = ParseText(RTString.ReplaceProperties(Lang.Parse(jnElement["text"])));
             if (jnElement["select"] != null)
                 selectionPosition = Parser.TryParse(jnElement["select"], Vector2Int.zero);
             if (jnElement["align_select"] != null)

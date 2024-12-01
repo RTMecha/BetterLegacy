@@ -16,6 +16,12 @@ namespace BetterLegacy.Core.Data
 
         public Lang(string text) => languages[Language.English] = text;
 
+        public Lang(string[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+                this[i] = array[i];
+        }
+
         public Lang(Dictionary<Language, string> languages) => this.languages = languages;
 
         public string this[string language]

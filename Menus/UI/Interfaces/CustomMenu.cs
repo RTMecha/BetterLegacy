@@ -183,7 +183,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 {
                                     case "TopBar":
                                         {
-                                            collection = GenerateTopBar(jnElement["title"] == null ? "Custom Menu" : jnElement["title"], jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
+                                            collection = GenerateTopBar(jnElement["title"] == null ? "Custom Menu" : Lang.Parse(jnElement["title"]), jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
                                             break;
                                         }
                                     case "BottomBar":
