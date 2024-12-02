@@ -97,14 +97,14 @@ namespace BetterLegacy.Patchers
 
                 __instance.levelRanks = new List<DataManager.LevelRank>
                 {
-                    new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, sayings[0].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, sayings[1].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, sayings[2].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, sayings[3].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, sayings[4].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, sayings[5].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, sayings[6].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, sayings[7].Children.Select(x => x.Value).ToArray())
+                    new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, sayings["null"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, sayings["ss"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, sayings["s"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, sayings["a"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, sayings["b"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, sayings["c"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, sayings["d"].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, sayings["f"].Children.Select(x => x.Value).ToArray())
                 };
             }
             catch (Exception ex)
