@@ -30,7 +30,10 @@ namespace BetterLegacy.Core
                 metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
 
             if (loadIcon)
-                icon = RTFile.FileExists(GetFile("level.jpg")) ? SpriteHelper.LoadSprite(GetFile("level.jpg")) : RTFile.FileExists(GetFile("cover.jpg")) ? SpriteHelper.LoadSprite(GetFile("cover.jpg")) : SteamWorkshop.inst.defaultSteamImageSprite;
+                icon =
+                    RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
+                    RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
+                    SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
@@ -41,7 +44,10 @@ namespace BetterLegacy.Core
 
             this.metadata = metadata;
 
-            icon = RTFile.FileExists(GetFile("level.jpg")) ? SpriteHelper.LoadSprite(GetFile("level.jpg")) : RTFile.FileExists(GetFile("cover.jpg")) ? SpriteHelper.LoadSprite(GetFile("cover.jpg")) : SteamWorkshop.inst.defaultSteamImageSprite;
+            icon =
+                RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
+                RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
+                SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
