@@ -90,7 +90,7 @@ namespace BetterLegacy.Core
             }
         }
 
-        public static LevelCollection Parse(string path, JSONNode jn)
+        public static LevelCollection Parse(string path, JSONNode jn, bool loadLevels = true)
         {
             var collection = new LevelCollection();
             collection.id = jn["id"];
@@ -109,6 +109,11 @@ namespace BetterLegacy.Core
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
+                collection.levelInformation.Add(LevelInfo.Parse(jn["levels"][i], i));
+
+                if (!loadLevels)
+                    continue;
+
                 if (jn["levels"][i]["path"] != null && (RTFile.FileExists(RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/", Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/", Level.LEVEL_VGD))))
                 {
                     var levelFolder = RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/");
@@ -138,8 +143,6 @@ namespace BetterLegacy.Core
                     collection.AddJSON(jn["levels"][i], new Level(steamLevel.path) { fromCollection = true });
                 else
                     collection.levels.Add(null);
-
-                collection.levelInformation.Add(LevelInfo.Parse(jn["levels"][i], i));
             }
 
             collection.icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
