@@ -279,7 +279,7 @@ namespace BetterLegacy.Editor.Managers
                 if (RTEditor.inst.dragBinOffset != binOffset && !SelectedObjects.All(x => x.Locked))
                 {
                     if (hasChanged && RTEditor.DraggingPlaysSound)
-                        SoundManager.inst.PlaySound("UpDown", 0.4f, 0.6f);
+                        SoundManager.inst.PlaySound(DefaultSounds.UpDown, 0.4f, 0.6f);
 
                     RTEditor.inst.dragBinOffset = binOffset;
                 }
@@ -293,7 +293,7 @@ namespace BetterLegacy.Editor.Managers
             if (RTEditor.inst.dragOffset != timeOffset && !SelectedObjects.All(x => x.Locked))
             {
                 if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive || !RTEditor.DraggingPlaysSoundBPM))
-                    SoundManager.inst.PlaySound("LeftRight", SettingEditor.inst.SnapActive ? 0.6f : 0.1f, 0.7f);
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, SettingEditor.inst.SnapActive ? 0.6f : 0.1f, 0.7f);
 
                 RTEditor.inst.dragOffset = timeOffset;
             }
@@ -394,7 +394,7 @@ namespace BetterLegacy.Editor.Managers
             if (!selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
             {
                 if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive && snap || !RTEditor.DraggingPlaysSoundBPM))
-                    SoundManager.inst.PlaySound("LeftRight", SettingEditor.inst.SnapActive && snap ? 0.6f : 0.1f, 0.8f);
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, SettingEditor.inst.SnapActive && snap ? 0.6f : 0.1f, 0.8f);
 
                 RTEditor.inst.dragOffset = timelineCalc + ObjEditor.inst.mouseOffsetXForDrag;
             }

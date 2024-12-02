@@ -1951,8 +1951,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTEditor.DraggingPlaysSound)
             {
-                SoundManager.inst.PlaySound("LeftRight", 0.7f, 0.6f);
-                SoundManager.inst.PlaySound("LeftRight", 0.8f, 0.1f);
+                SoundManager.inst.PlaySound(DefaultSounds.LeftRight, 0.7f, 0.6f);
+                SoundManager.inst.PlaySound(DefaultSounds.LeftRight, 0.8f, 0.1f);
             }
         }
 

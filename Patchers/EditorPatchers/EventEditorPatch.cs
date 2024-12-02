@@ -121,7 +121,7 @@ namespace BetterLegacy.Patchers
                 if (!RTEventEditor.inst.SelectedKeyframes.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineTime + Instance.mouseOffsetXForDrag)
                 {
                     if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive || !RTEditor.DraggingPlaysSoundBPM))
-                        SoundManager.inst.PlaySound("LeftRight", SettingEditor.inst.SnapActive ? 0.6f : 0.1f, 0.8f);
+                        SoundManager.inst.PlaySound(DefaultSounds.LeftRight, SettingEditor.inst.SnapActive ? 0.6f : 0.1f, 0.8f);
 
                     RTEditor.inst.dragOffset = timelineTime + Instance.mouseOffsetXForDrag;
 
