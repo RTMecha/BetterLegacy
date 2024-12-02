@@ -922,6 +922,8 @@ namespace BetterLegacy.Core
 
         #region Misc
 
+        public static Rank GetEnum(this DataManager.LevelRank levelRank) => Enum.TryParse(levelRank.name, out Rank rank) ? rank : Rank.Null;
+
         public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
         {
             if (meshFilter.mesh == null)
