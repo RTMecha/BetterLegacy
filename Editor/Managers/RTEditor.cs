@@ -10347,8 +10347,15 @@ namespace BetterLegacy.Editor.Managers
             while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
                 yield return null;
 
-            RTPrefabEditor.inst.PrefabPanels.FindAll(x => x.Dialog == PrefabDialog.External).ForEach(x => Destroy(x.GameObject));
-            RTPrefabEditor.inst.PrefabPanels.RemoveAll(x => x.Dialog == PrefabDialog.External);
+            for (int i = RTPrefabEditor.inst.PrefabPanels.Count - 1; i >= 0; i--)
+            {
+                var prefabPanel = RTPrefabEditor.inst.PrefabPanels[i];
+                if (prefabPanel.Dialog == PrefabDialog.External)
+                {
+                    Destroy(prefabPanel.GameObject);
+                    RTPrefabEditor.inst.PrefabPanels.RemoveAt(i);
+                }
+            }
 
             var config = EditorConfig.Instance;
 
@@ -10482,8 +10489,11 @@ namespace BetterLegacy.Editor.Managers
 
             prefabExternalUpAFolderButton.SetActive(Path.GetDirectoryName(RTFile.ApplicationDirectory + prefabListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps");
 
-            foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + prefabListPath, "*", SearchOption.TopDirectoryOnly))
+            var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + prefabListPath, "*", SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < directories.Length; i++)
             {
+                var directory = directories[i];
                 var path = directory.Replace("\\", "/");
                 var fileName = Path.GetFileName(directory);
 
@@ -10551,21 +10561,21 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            int num = 0;
-            foreach (var file in Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, "*.lsp", SearchOption.TopDirectoryOnly))
+            var files = Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, "*.lsp", SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < files.Length; i++)
             {
+                var file = files[i];
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
                 var prefab = Prefab.Parse(jn);
                 prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
                 prefab.filePath = file.Replace("\\", "/");
 
-                RTPrefabEditor.inst.CreatePrefabButton(prefab, num, PrefabDialog.External, file, false, hoverSize,
+                RTPrefabEditor.inst.CreatePrefabButton(prefab, i, PrefabDialog.External, file, false, hoverSize,
                          nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
                          typeHorizontalOverflow, typeVerticalOverflow, typeFontSize,
                          deleteAnchoredPosition, deleteSizeDelta);
-
-                num++;
             }
 
             prefabsLoading = false;
