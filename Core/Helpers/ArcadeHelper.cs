@@ -229,8 +229,7 @@ namespace BetterLegacy.Core.Helpers
                 yield break;
             }
 
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
+            var sw = CoreHelper.StartNewStopwatch();
             currentlyLoading = true;
             fromLevel = false;
             ArcadeManager.inst.skippedLoad = false;
