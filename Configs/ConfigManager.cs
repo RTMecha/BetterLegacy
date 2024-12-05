@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Components;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -129,7 +130,7 @@ namespace BetterLegacy.Configs
                 "Players", // 5
                 "Modifiers", // 6
                 "Menus", // 7
-                "Example", // 8
+                "Companion", // 8
             };
 
             var tabColors = new Color[]
@@ -168,9 +169,22 @@ namespace BetterLegacy.Configs
 
                 var tabButton = tabBase.AddComponent<Button>();
                 tabButton.image = tabBaseImage;
-                tabButton.onClick.AddListener(() => { SetTab(index); });
+                tabButton.onClick.AddListener(() => SetTab(index));
 
                 EditorThemeManager.ApplyGraphic(tabBaseImage, ThemeGroup.Null, true);
+
+                tab.AddComponent<HoverConfig>().Init(i switch
+                {
+                    0 => "The main systems of PA Legacy.",
+                    1 => "The Arcade menus and levels.",
+                    2 => "The PA level editor.",
+                    3 => "The effects of PA.",
+                    4 => "The Players settings.",
+                    5 => "The modifiers that objects in a level can have.",
+                    6 => "The interfaces of PA.",
+                    7 => "The Example Companion.",
+                    _ => ""
+                });
             }
 
             var subTabs = Creator.NewUIObject("Tabs", configBase.transform);
@@ -222,7 +236,7 @@ namespace BetterLegacy.Configs
 
                 var pageInputPlaceholder = Creator.NewUIObject("Placeholder", pageInput.transform);
                 var pageInputPlaceholderText = pageInputPlaceholder.AddComponent<Text>();
-                pageInputPlaceholderText.alignment = TextAnchor.MiddleCenter;
+                pageInputPlaceholderText.alignment = TextAnchor.MiddleLeft;
                 pageInputPlaceholderText.font = Font.GetDefault();
                 pageInputPlaceholderText.fontSize = 20;
                 pageInputPlaceholderText.fontStyle = FontStyle.Italic;
@@ -299,7 +313,6 @@ namespace BetterLegacy.Configs
                 fieldStorage.leftButton = leftButton;
                 fieldStorage.rightButton = rightButton;
                 fieldStorage.rightGreaterButton = rightGreaterButton;
-
             }
 
             var searchField = numberFieldStorage.transform.Find("input").gameObject.Duplicate(configBase.transform);
@@ -314,12 +327,29 @@ namespace BetterLegacy.Configs
                 currentSubTabPage = 0;
                 RefreshSettings();
             });
+            searchFieldInput.GetPlaceholderText().text = "Search setting...";
             EditorThemeManager.ApplyInputField(searchFieldInput, ThemeGroup.Search_Field_1);
+
+            // Page Label
+            {
+                var pageLabel = Creator.NewUIObject("Text", pagePanel.transform);
+                var pageLabelText = pageLabel.AddComponent<Text>();
+                pageLabelText.alignment = TextAnchor.MiddleCenter;
+                pageLabelText.font = Font.GetDefault();
+                pageLabelText.fontSize = 20;
+                pageLabelText.fontStyle = FontStyle.Normal;
+                pageLabelText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                pageLabelText.verticalOverflow = VerticalWrapMode.Overflow;
+                pageLabelText.text = "Page";
+                EditorThemeManager.ApplyLightText(pageLabelText);
+                RectValues.Default.AnchoredPosition(100f, 0f).SizeDelta(64f, 32f).AssignToRectTransform(pageLabelText.rectTransform);
+            }
 
             var pageObject = numberFieldStorage.Duplicate(pagePanel.transform, "Page");
             UIManager.SetRectTransform(pageObject.transform.AsRT(), new Vector2(580f, 32f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
 
             pageFieldStorage = pageObject.GetComponent<InputFieldStorage>();
+            pageFieldStorage.inputField.GetPlaceholderText().text = "Go to page...";
             EditorThemeManager.ApplyInputField(pageFieldStorage.inputField);
             EditorThemeManager.ApplySelectable(pageFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
             EditorThemeManager.ApplySelectable(pageFieldStorage.leftButton, ThemeGroup.Function_2, false);
@@ -473,8 +503,6 @@ namespace BetterLegacy.Configs
 
                 if (num >= max - MAX_SETTINGS_PER_PAGE && num < max)
                 {
-                    CoreHelper.Log($"Setting: {setting.Key}");
-
                     var gameObject = Creator.NewUIObject("Setting", content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
 
@@ -888,10 +916,12 @@ namespace BetterLegacy.Configs
 
     public class HoverConfig : MonoBehaviour, IPointerEnterHandler
     {
-        public BaseSetting Setting { get; set; }
+        public string tooltip;
 
-        public void Init(BaseSetting baseSetting) => Setting = baseSetting;
+        public void Init(BaseSetting baseSetting) => tooltip = baseSetting.Description;
 
-        public void OnPointerEnter(PointerEventData pointerEventData) => ConfigManager.inst.descriptionText.text = Setting.Description;
+        public void Init(string text) => tooltip = text;
+
+        public void OnPointerEnter(PointerEventData pointerEventData) => ConfigManager.inst.descriptionText.text = tooltip;
     }
 }
