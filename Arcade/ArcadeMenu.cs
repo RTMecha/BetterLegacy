@@ -1105,7 +1105,7 @@ namespace BetterLegacy.Arcade
                             name = "Switch Steam View",
                             text = $"<align=center><b>[ {(ViewOnline ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 4 : 3, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 5 : 3, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
