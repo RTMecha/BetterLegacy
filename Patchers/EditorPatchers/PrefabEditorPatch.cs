@@ -236,7 +236,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadExternalPrefabsPrefix(PrefabEditor __instance, ref IEnumerator __result)
         {
-            __result = RTEditor.inst.LoadPrefabs(__instance);
+            __result = RTEditor.inst.LoadPrefabs();
             return false;
         }
 

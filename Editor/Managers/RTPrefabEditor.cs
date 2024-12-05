@@ -87,7 +87,7 @@ namespace BetterLegacy.Editor.Managers
             // A
             {
                 loadingPrefabTypes = true;
-                PrefabEditor.inst.StartCoroutine(RTEditor.inst.LoadPrefabs(PrefabEditor.inst));
+                PrefabEditor.inst.StartCoroutine(RTEditor.inst.LoadPrefabs());
                 PrefabEditor.inst.OffsetLine = PrefabEditor.inst.OffsetLinePrefab.Duplicate(EditorManager.inst.timeline.transform, "offset line");
                 PrefabEditor.inst.OffsetLine.transform.AsRT().pivot = Vector2.one;
 
