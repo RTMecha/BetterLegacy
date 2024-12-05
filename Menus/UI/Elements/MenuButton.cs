@@ -211,6 +211,13 @@ namespace BetterLegacy.Menus.UI.Elements
 
             length = orig.length,
             wait = orig.wait,
+            playSound = orig.playSound,
+            textSound = orig.textSound,
+            textSoundVolume = orig.textSoundVolume,
+            textSoundPitch = orig.textSoundPitch,
+            textSoundPitchVary = orig.textSoundPitchVary,
+            textSoundRepeat = orig.textSoundRepeat,
+            textSoundRanges = orig.textSoundRanges != null ? new List<Vector2Int>(orig.textSoundRanges) : null,
 
             #endregion
 

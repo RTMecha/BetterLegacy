@@ -150,6 +150,8 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         AudioClip cachedTextSound;
 
+        public bool playSound = true;
+
         #endregion
 
         #region Private Fields
@@ -231,6 +233,13 @@ namespace BetterLegacy.Menus.UI.Elements
 
             length = orig.length,
             wait = orig.wait,
+            playSound = orig.playSound,
+            textSound = orig.textSound,
+            textSoundVolume = orig.textSoundVolume,
+            textSoundPitch = orig.textSoundPitch,
+            textSoundPitchVary = orig.textSoundPitchVary,
+            textSoundRepeat = orig.textSoundRepeat,
+            textSoundRanges = orig.textSoundRanges != null ? new List<Vector2Int>(orig.textSoundRanges) : null,
 
             #endregion
 
@@ -360,6 +369,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 length = jnElement["anim_length"].AsFloat;
             else if (!parsed)
                 length = 0f;
+            if (jnElement["play_sound"] != null)
+                playSound = jnElement["play_sound"].AsBool;
             if (jnElement["text_sound"] != null)
                 textSound = jnElement["text_sound"];
             if (jnElement["text_sound_volume"] != null)
@@ -465,7 +476,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             var val = (int)x;
 
-            if (textUI.maxVisibleCharacters != val && (textSoundRepeat == 0 || val % textSoundRepeat == textSoundRepeat - 1) && textWithoutFormatting[Mathf.Clamp(val, 0, textWithoutFormatting.Length - 1)] != ' ')
+            if (playSound && textUI.maxVisibleCharacters != val && (textSoundRepeat == 0 || val % textSoundRepeat == textSoundRepeat - 1) && textWithoutFormatting[Mathf.Clamp(val, 0, textWithoutFormatting.Length - 1)] != ' ')
             {
                 // x is min
                 // y is max
