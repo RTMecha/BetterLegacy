@@ -10337,7 +10337,7 @@ namespace BetterLegacy.Editor.Managers
         }
 
         GameObject prefabExternalUpAFolderButton;
-        public IEnumerator LoadPrefabs(PrefabEditor __instance)
+        public IEnumerator LoadPrefabs()
         {
             if (prefabsLoading)
                 yield break;
@@ -10585,7 +10585,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator UpdatePrefabs()
         {
-            yield return inst.StartCoroutine(LoadPrefabs(PrefabEditor.inst));
+            yield return inst.StartCoroutine(LoadPrefabs());
             PrefabEditor.inst.ReloadExternalPrefabsInPopup();
             EditorManager.inst.DisplayNotification("Updated external prefabs!", 2f, EditorManager.NotificationType.Success);
             yield break;
@@ -10593,22 +10593,18 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetAutoSave()
         {
-            if (!RTFile.DirectoryExists(GameManager.inst.basePath + "autosaves"))
-                Directory.CreateDirectory(GameManager.inst.basePath + "autosaves");
+            var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
+            if (!RTFile.DirectoryExists(autosavesDirectory))
+                Directory.CreateDirectory(autosavesDirectory);
 
-            string[] files = Directory.GetFiles(GameManager.inst.basePath + "autosaves", "autosave_*.lsb", SearchOption.TopDirectoryOnly);
-            files.ToList().Sort();
+            var files = Directory.GetFiles(autosavesDirectory, "autosave_*.lsb", SearchOption.TopDirectoryOnly);
 
             EditorManager.inst.autosaves.Clear();
+            EditorManager.inst.autosaves.AddRange(files);
 
-            foreach (var file in files)
-            {
-                EditorManager.inst.autosaves.Add(file);
-            }
-
-            EditorManager.inst.CancelInvoke("AutoSaveLevel");
-            CancelInvoke("AutoSaveLevel");
-            InvokeRepeating("AutoSaveLevel", EditorConfig.Instance.AutosaveLoopTime.Value, EditorConfig.Instance.AutosaveLoopTime.Value);
+            EditorManager.inst.CancelInvoke(nameof(AutoSaveLevel));
+            CancelInvoke(nameof(AutoSaveLevel));
+            InvokeRepeating(nameof(AutoSaveLevel), EditorConfig.Instance.AutosaveLoopTime.Value, EditorConfig.Instance.AutosaveLoopTime.Value);
         }
 
         public void AutoSaveLevel()
@@ -10621,19 +10617,22 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorManager.inst.hasLoadedLevel)
             {
                 EditorManager.inst.DisplayNotification("Beatmap can't autosave until you load a level.", 3f, EditorManager.NotificationType.Error);
+                autoSaving = false;
                 return;
             }
 
             if (EditorManager.inst.savingBeatmap)
             {
                 EditorManager.inst.DisplayNotification("Already attempting to save the beatmap!", 2f, EditorManager.NotificationType.Error);
+                autoSaving = false;
                 return;
             }
 
-            string autosavePath = $"{GameManager.inst.basePath}autosaves/autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}.lsb";
+            var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}.lsb");
 
-            if (!RTFile.DirectoryExists(GameManager.inst.basePath + "autosaves"))
-                Directory.CreateDirectory(GameManager.inst.basePath + "autosaves");
+            if (!RTFile.DirectoryExists(autosavesDirectory))
+                Directory.CreateDirectory(autosavesDirectory);
 
             EditorManager.inst.DisplayNotification("Autosaving backup!", 2f, EditorManager.NotificationType.Warning);
 
