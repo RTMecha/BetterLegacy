@@ -295,7 +295,10 @@ namespace BetterLegacy.Arcade
                                         result = Mathf.Clamp(result, 0, LocalLevelPageCount);
 
                                     if (inputField.text != result.ToString())
+                                    {
                                         inputField.text = result.ToString();
+                                        SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                    }
                                 }
                             }),
                         };
@@ -311,7 +314,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -323,6 +329,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         elements.Add(pageField);
@@ -338,7 +345,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != LocalLevelPageCount)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -350,6 +360,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         layouts.Add("levels", new MenuGridLayout
@@ -391,7 +402,8 @@ namespace BetterLegacy.Arcade
                             opacity = 0.1f,
                             textColor = 6,
                             placeholderColor = 6,
-                            length = 0.1f,
+                            length = 0f,
+                            wait = false,
                             regenerate = false,
                         });
 
@@ -540,7 +552,10 @@ namespace BetterLegacy.Arcade
                                         result = Mathf.Clamp(result, 0, BrowserPageCount);
 
                                     if (inputField.text != result.ToString())
+                                    {
                                         inputField.text = result.ToString();
+                                        SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                    }
                                 }
                             }),
                         };
@@ -556,7 +571,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -568,6 +586,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         elements.Add(pageField);
@@ -583,7 +602,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != BrowserPageCount)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -595,6 +617,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         layouts.Add("levels", new MenuGridLayout
@@ -781,7 +804,10 @@ namespace BetterLegacy.Arcade
                                         result = Mathf.Clamp(result, 0, QueuePageCount);
 
                                     if (inputField.text != result.ToString())
+                                    {
                                         inputField.text = result.ToString();
+                                        SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                    }
                                 }
                             }),
                         };
@@ -797,7 +823,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -809,6 +838,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         elements.Add(pageField);
@@ -824,7 +854,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != QueuePageCount)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -836,6 +869,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         layouts.Add("levels", new MenuVerticalLayout
@@ -1042,7 +1076,10 @@ namespace BetterLegacy.Arcade
                                         result = Mathf.Clamp(result, 0, SubscribedSteamLevelPageCount);
 
                                     if (inputField.text != result.ToString())
+                                    {
                                         inputField.text = result.ToString();
+                                        SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                    }
                                 }
                             }),
                         };
@@ -1058,7 +1095,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -1070,6 +1110,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
 
                         elements.Add(pageField);
@@ -1085,7 +1126,10 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (ViewOnline || Pages[(int)CurrentTab] != SubscribedSteamLevelPageCount)
+                                {
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                }
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -1097,6 +1141,7 @@ namespace BetterLegacy.Arcade
                             selectedTextColor = 7,
                             length = 0.1f,
                             regenerate = false,
+                            playBlipSound = false,
                         });
                         
                         elements.Add(new MenuButton
@@ -1243,6 +1288,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = regenerateUI ? 0f : 0.01f,
                     wait = !regenerateUI,
+                    playSound = !regenerateUI,
                     mask = true,
                 });
 
@@ -1283,6 +1329,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = regenerateUI ? 0f : 0.01f,
                     wait = !regenerateUI,
+                    playSound = !regenerateUI,
                     mask = true,
                     playBlipSound = false,
 
@@ -1570,7 +1617,7 @@ namespace BetterLegacy.Arcade
                                 name = "Level Button",
                                 parentLayout = "levels",
                                 selectionPosition = new Vector2Int(column, row),
-                                func = () => { SelectOnlineLevel(item.AsObject); },
+                                func = () => SelectOnlineLevel(item.AsObject),
                                 iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                                 text = "<size=24>" + name,
                                 textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -1729,6 +1776,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = regenerateUI ? 0f : 0.01f,
                     wait = !regenerateUI,
+                    playSound = !regenerateUI,
                     mask = true,
                 });
             }
@@ -1758,7 +1806,7 @@ namespace BetterLegacy.Arcade
                         name = "Level Button",
                         parentLayout = "levels",
                         selectionPosition = new Vector2Int(column, row),
-                        func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                        func = SelectLocalLevel(level).Start,
                         icon = level.icon,
                         iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                         text = "<size=24>" + level.metadata?.beatmap?.name,
@@ -1772,6 +1820,7 @@ namespace BetterLegacy.Arcade
                         selectedTextColor = 7,
                         length = regenerateUI ? 0f : 0.01f,
                         wait = !regenerateUI,
+                        playSound = !regenerateUI,
                         mask = true,
 
                         allowOriginalHoverMethods = true,
@@ -1891,6 +1940,7 @@ namespace BetterLegacy.Arcade
                         selectedTextColor = 7,
                         length = regenerateUI ? 0f : 0.01f,
                         wait = !regenerateUI,
+                        playSound = !regenerateUI,
                         mask = true,
                     });
                 }
@@ -1968,7 +2018,7 @@ namespace BetterLegacy.Arcade
                     parentLayout = "levels",
                     rect = RectValues.Default.SizeDelta(800f, 120f),
                     selectionPosition = new Vector2Int(0, index + 2),
-                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                    func = SelectLocalLevel(level).Start,
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-320f, 0f).SizeDelta(100f, 100f),
                     text = "<size=32>" + i.ToString() + " - " + level.metadata?.beatmap?.name,
@@ -1982,6 +2032,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = regenerateUI ? 0f : 0.01f,
                     wait = !regenerateUI,
+                    playSound = !regenerateUI,
                     mask = true,
 
                     allowOriginalHoverMethods = true,
@@ -2104,6 +2155,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 0,
 
                     length = regenerateUI ? 0f : 0.01f,
+                    playSound = !regenerateUI,
                     wait = !regenerateUI,
                 };
 
@@ -2244,7 +2296,7 @@ namespace BetterLegacy.Arcade
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                    func = SelectLocalLevel(level).Start,
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
                     text = "<size=24>" + level.metadata?.beatmap?.name,
@@ -2258,6 +2310,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = regenerateUI ? 0f : 0.01f,
                     wait = !regenerateUI,
+                    playSound = !regenerateUI,
                     mask = true,
 
                     allowOriginalHoverMethods = true,
