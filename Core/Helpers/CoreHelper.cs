@@ -912,7 +912,7 @@ namespace BetterLegacy.Core.Helpers
         #region Misc
 
         /// <summary>
-        /// Compares a singular object agianst an array of objects.
+        /// Compares a singular object against an array of objects.
         /// </summary>
         /// <typeparam name="T">Type of the object.</typeparam>
         /// <param name="obj">Object to compare.</param>
