@@ -3196,13 +3196,18 @@ namespace BetterLegacy.Editor.Managers
 
                             var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
+                            bool copied = false;
                             foreach (var file in files)
                             {
                                 var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.ApplicationDirectory + editorListPath);
-                                File.Copy(file, copyTo, RTFile.FileExists(copyTo));
+                                if (RTFile.CopyFile(file, copyTo))
+                                    copied = true;
                             }
 
-                            EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({editorListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                            if (copied)
+                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({editorListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                            else
+                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(path)}.", 3f, EditorManager.NotificationType.Error);
 
                             HideWarningPopup();
                         }, () =>
@@ -3225,6 +3230,59 @@ namespace BetterLegacy.Editor.Managers
                                 if (!RTFile.DirectoryExists(copyTo))
                                     Directory.CreateDirectory(copyTo);
 
+                                #region Audio
+
+                                bool copiedAudioFile = false;
+                                bool audioFileExists = false;
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)))
+                                {
+                                    audioFileExists = true;
+                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_OGG), RTFile.CombinePaths(copyTo, Level.LEVEL_OGG));
+                                }
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)))
+                                {
+                                    audioFileExists = true;
+                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_WAV), RTFile.CombinePaths(copyTo, Level.LEVEL_WAV));
+                                }
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
+                                {
+                                    audioFileExists = true;
+                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_MP3), RTFile.CombinePaths(copyTo, Level.LEVEL_MP3));
+                                }
+
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)))
+                                {
+                                    audioFileExists = true;
+                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_OGG), RTFile.CombinePaths(copyTo, Level.LEVEL_OGG));
+                                }
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)))
+                                {
+                                    audioFileExists = true;
+                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_WAV), RTFile.CombinePaths(copyTo, Level.LEVEL_WAV));
+                                }
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3)))
+                                {
+                                    audioFileExists = true;
+                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_MP3), RTFile.CombinePaths(copyTo, Level.LEVEL_MP3));
+                                }
+
+                                if (!copiedAudioFile)
+                                {
+                                    if (!audioFileExists)
+                                        EditorManager.inst.DisplayNotification("No audio file exists.", 3f, EditorManager.NotificationType.Error);
+                                    else
+                                        EditorManager.inst.DisplayNotification("Cannot overwrite the same file. Please rename the VG level folder you want to convert.", 6f, EditorManager.NotificationType.Error);
+
+                                    return;
+                                }
+
+                                #endregion
+
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "cover.jpg")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "cover.jpg"), RTFile.CombinePaths(copyTo, "level.jpg"));
+
+                                #region Data
+
                                 var metadataVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "metadata.vgm"));
 
                                 var metadataVGJN = JSON.Parse(metadataVGJSON);
@@ -3234,23 +3292,6 @@ namespace BetterLegacy.Editor.Managers
                                 var metadataJN = metadata.ToJSON();
 
                                 RTFile.WriteToFile(RTFile.CombinePaths(copyTo, "metadata.lsb"), metadataJN.ToString());
-
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "audio.ogg")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "audio.ogg"), RTFile.CombinePaths(copyTo, "level.ogg"));
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "audio.wav")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "audio.wav"), RTFile.CombinePaths(copyTo, "level.wav"));
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "audio.mp3")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "audio.mp3"), RTFile.CombinePaths(copyTo, "level.mp3"));
-
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "level.ogg")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "level.ogg"), RTFile.CombinePaths(copyTo, "level.ogg"));
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "level.wav")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "level.wav"), RTFile.CombinePaths(copyTo, "level.wav"));
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "level.mp3")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "level.mp3"), RTFile.CombinePaths(copyTo, "level.mp3"));
-
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "cover.jpg")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "cover.jpg"), RTFile.CombinePaths(copyTo, "level.jpg"));
 
                                 var levelVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "level.vgd"));
 
@@ -3273,6 +3314,8 @@ namespace BetterLegacy.Editor.Managers
 
                                     AchievementManager.inst.UnlockAchievement("time_machine");
                                 }, true);
+
+                                #endregion
                             }
                             else
                             {
