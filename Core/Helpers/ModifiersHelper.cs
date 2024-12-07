@@ -6320,6 +6320,87 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     #endregion
+                    #region Ranking
+
+                    case "saveLevelRank":
+                        {
+                            if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
+                                break;
+
+                            LevelManager.UpdateCurrentLevelProgress();
+
+                            break;
+                        }
+                    case "clearHits":
+                        {
+                            if (!CoreHelper.InEditor) // hit and death counters are not supported in the editor yet.
+                                GameManager.inst.hits.Clear();
+                            break;
+                        }
+                    case "addHit":
+                        {
+                            if (CoreHelper.InEditor)
+                                return;
+
+                            var vector = Vector3.zero;
+                            if (modifier.GetBool(0, true))
+                                vector = modifier.reference.InterpolateChainPosition();
+                            else
+                            {
+                                var player = PlayerManager.GetClosestPlayer(modifier.reference.InterpolateChainPosition());
+                                if (player && player.Player)
+                                    vector = player.Player.rb.position;
+                            }
+
+                            float time = AudioManager.inst.CurrentAudioSource.time;
+                            if (!string.IsNullOrEmpty(modifier.GetString(1, "")))
+                                time = RTMath.Parse(modifier.GetString(1, ""), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
+
+                            GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
+                            break;
+                        }
+                    case "subHit":
+                        {
+                            if (!CoreHelper.InEditor && GameManager.inst.hits.Count > 0)
+                                GameManager.inst.hits.RemoveAt(GameManager.inst.hits.Count - 1);
+                            break;
+                        }
+                    case "clearDeaths":
+                        {
+                            if (!CoreHelper.InEditor)
+                                GameManager.inst.deaths.Clear();
+                            break;
+                        }
+                    case "addDeath":
+                        {
+                            if (CoreHelper.InEditor)
+                                return;
+
+                            var vector = Vector3.zero;
+                            if (modifier.GetBool(0, true))
+                                vector = modifier.reference.InterpolateChainPosition();
+                            else
+                            {
+                                var player = PlayerManager.GetClosestPlayer(modifier.reference.InterpolateChainPosition());
+                                if (player && player.Player)
+                                    vector = player.Player.rb.position;
+                            }
+
+                            float time = AudioManager.inst.CurrentAudioSource.time;
+                            if (!string.IsNullOrEmpty(modifier.GetString(1, "")))
+                                time = RTMath.Parse(modifier.GetString(1, ""), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
+
+                            GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
+                            break;
+                        }
+                    case "subDeath":
+                        {
+                            if (!CoreHelper.InEditor && GameManager.inst.deaths.Count > 0)
+                                GameManager.inst.deaths.RemoveAt(GameManager.inst.deaths.Count - 1);
+                            break;
+                        }
+
+                    #endregion
                     #region Misc
 
                     case "quitToMenu":
@@ -6548,15 +6629,6 @@ namespace BetterLegacy.Core.Helpers
                                     string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                                     string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                                     discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
-
-                            break;
-                        }
-                    case "saveLevelRank":
-                        {
-                            if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
-                                break;
-
-                            LevelManager.UpdateCurrentLevelProgress();
 
                             break;
                         }

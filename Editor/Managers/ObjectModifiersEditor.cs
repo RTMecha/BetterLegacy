@@ -2270,6 +2270,15 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
 
+                    case "addHit":
+                    case "addDeath":
+                        {
+                            BoolGenerator(modifier, layout, "Use Self Position", 0, true);
+                            StringGenerator(modifier, layout, "Time", 1);
+
+                            break;
+                        }
+
                     #endregion
 
                     #region Discord
