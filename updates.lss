@@ -1,3 +1,22 @@
+snapshot-2024.12.1 - (pre-1.7.0) > [Dec 8, 2024]
+- Reworked how BetterLegacy's custom animations' time is updated. This allows for a proper speed functionality with interface text.
+- Due to the above change, shake speed works as intended now.
+- Added one more secret. Hint: Japanese music.
+- Added "shoot" to default sounds. This plays when the player shoots.
+- Fixed Discord status just being "In Main Menu" when you restart Discord, now it properly sets back to what you currently have.
+- Decreased Example's dance chance from 0.7% to 0.2% per frame.
+- Some more editor elements are considered for the Editor Complexity setting.
+- Added a "Reload Level" button to the File dropdown.
+- Did some internal work on Level Collections. It'll hopefully be fully implemented in the 1.8.0 update.
+- Fixed the Play Level Menu being slow to load.
+- Started working on multi language support for stuff outside of tooltips.
+- Default Arcade Menu selection is now the "Local" tab.
+- Decreased theme default ID max length from 9 to 7 due to number inaccuracies.
+- Renamed Example config tab to Companion.
+- Added a label for the Config Manager UI page field.
+- Added a custom menu flip sound for changing Arcade menu pages.
+- Hopefully fixed VG convert case where the path was the same as the destination.
+- Added some hit / death counter modifiers.
 snapshot-2024.11.21 - (pre-1.7.0) > [Nov 27, 2024]
 - Fixed typo on Allow Controller If Single Player.
 - Added Arcade Folder and Interfaces Folder to custom menu music options.
