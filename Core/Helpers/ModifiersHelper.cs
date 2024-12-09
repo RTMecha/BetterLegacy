@@ -5555,8 +5555,8 @@ namespace BetterLegacy.Core.Helpers
                                     var fromType = Parser.TryParse(modifier.commands[i + 2], 0);
                                     var fromAxis = Parser.TryParse(modifier.commands[i + 3], 0);
                                     var delay = Parser.TryParse(modifier.commands[i + 4], 0f);
-                                    var min = Parser.TryParse(modifier.commands[i + 5], 0);
-                                    var max = Parser.TryParse(modifier.commands[i + 6], 0);
+                                    var min = Parser.TryParse(modifier.commands[i + 5], 0f);
+                                    var max = Parser.TryParse(modifier.commands[i + 6], 0f);
                                     var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
 
                                     var beatmapObject = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectWithTag(group) : CoreHelper.FindObjectWithTag(beatmapObjects, prefabObjects, modifier.reference, group);
