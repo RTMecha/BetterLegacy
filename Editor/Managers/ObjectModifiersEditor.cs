@@ -2025,9 +2025,7 @@ namespace BetterLegacy.Editor.Managers
                                 deleteGroupButton.button.onClick.AddListener(() =>
                                 {
                                     for (int j = 0; j < 8; j++)
-                                    {
                                         modifier.commands.RemoveAt(groupIndex);
-                                    }
 
                                     Updater.UpdateObject(beatmapObject);
                                     StartCoroutine(RenderModifiers(beatmapObject));
@@ -2036,7 +2034,8 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
-                                StringGenerator(modifier, layout, "Name", i);
+                                var groupName = StringGenerator(modifier, layout, "Name", i);
+                                EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
                                 var str = StringGenerator(modifier, layout, "Object Group", i + 1);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                                 DropdownGenerator(modifier, layout, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color", "Variable"));
