@@ -18,13 +18,17 @@ namespace BetterLegacy.Core.Managers
         public AudioManager BaseManager => AudioManager.inst;
         public SoundLibrary Library => AudioManager.inst.library;
 
+        public bool Playing => BaseManager.CurrentAudioSource.isPlaying;
+
         public static float musicVolume = 1f;
 
         void Awake() => inst = this;
 
         public void SetPlaying(bool playing) => (playing ? (System.Action)BaseManager.CurrentAudioSource.Play : BaseManager.CurrentAudioSource.Pause).Invoke();
 
-        public void TogglePlaying() => SetPlaying(!BaseManager.CurrentAudioSource.isPlaying);
+        public void TogglePlaying() => SetPlaying(!Playing);
+
+        #region Sound
 
         public void PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
         public void PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
@@ -69,6 +73,25 @@ namespace BetterLegacy.Core.Managers
             return false;
         }
 
+        public void AddSound(string id, AudioClip[] audioClips)
+        {
+            if (Library == null)
+                return;
+
+            var soundGroup = new SoundGroup
+            {
+                soundID = id,
+                group = audioClips,
+            };
+
+            Library.soundGroups = Library.soundGroups.AddItem(soundGroup).ToArray();
+            Library.soundClips[id] = audioClips;
+        }
+
+        #endregion
+
+        #region Music
+
         public void PlayMusic(DefaultMusic defaultMusic, float volume = 1f, float pitch = 1f, float fadeDuration = 0.5f, bool loop = true, bool allowSame = false) => PlayMusic(defaultMusic.ToString(), volume, pitch, fadeDuration, loop, allowSame);
 
         public void PlayMusic(string musicName, float volume = 1f, float pitch = 1f, float fadeDuration = 0.5f, bool loop = true, bool allowSame = false) => PlayMusic(Library.GetMusicFromName(musicName), volume, pitch, fadeDuration, loop, allowSame);
@@ -97,21 +120,6 @@ namespace BetterLegacy.Core.Managers
             return true;
         }
 
-        public void AddSound(string id, AudioClip[] audioClips)
-        {
-            if (Library == null)
-                return;
-
-            var soundGroup = new SoundGroup
-            {
-                soundID = id,
-                group = audioClips,
-            };
-
-            Library.soundGroups = Library.soundGroups.AddItem(soundGroup).ToArray();
-            Library.soundClips.Add(id, audioClips);
-        }
-
         public void AddMusic(string id, AudioClip[] audioClips)
         {
             if (Library == null)
@@ -127,5 +135,7 @@ namespace BetterLegacy.Core.Managers
                 Library.musicClipsRandomIndex[musicGroup.musicID] = Random.Range(0, musicGroup.music.Length);
             Library.musicClips[musicGroup.musicID] = musicGroup.music;
         }
+
+        #endregion
     }
 }
