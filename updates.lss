@@ -1,3 +1,8 @@
+snapshot-2024.12.2 - (pre-1.7.0) > [Dec 10, 2024]
+- Fixed copyAxisGroup min and max values not allowing for decimal points.
+- Added "File Browser Remembers Location" to Config Manager > Editor > Data.
+- Actually fixed VG to LS conversion.
+- Reworked how some file format related things work.
 snapshot-2024.12.1 - (pre-1.7.0) > [Dec 8, 2024]
 - Reworked how BetterLegacy's custom animations' time is updated. This allows for a proper speed functionality with interface text.
 - Due to the above change, shake speed works as intended now.
