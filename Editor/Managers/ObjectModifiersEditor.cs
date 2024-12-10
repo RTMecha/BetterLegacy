@@ -608,7 +608,7 @@ namespace BetterLegacy.Editor.Managers
                                             return;
                                         }
 
-                                        RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
+                                        RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
                                         {
                                             var global = Parser.TryParse(modifier.commands[1], false);
 
@@ -734,7 +734,7 @@ namespace BetterLegacy.Editor.Managers
                                             return;
                                         }
 
-                                        RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
+                                        RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
                                         {
                                             var global = Parser.TryParse(modifier.commands[1], false);
 
