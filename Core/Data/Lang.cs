@@ -16,11 +16,7 @@ namespace BetterLegacy.Core.Data
 
         public Lang(string text) => languages[Language.English] = text;
 
-        public Lang(string[] array)
-        {
-            for (int i = 0; i < array.Length; i++)
-                this[i] = array[i];
-        }
+        public Lang(string[] array) => Read(array);
 
         public Lang(Dictionary<Language, string> languages) => this.languages = languages;
 
@@ -85,28 +81,45 @@ namespace BetterLegacy.Core.Data
         public static Lang Parse(JSONNode jn)
         {
             var lang = new Lang();
+            lang.Read(jn);
+            return lang;
+        }
 
+        /// <summary>
+        /// Reads from a JSON and applies it to the language dictionary.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        public void Read(JSONNode jn)
+        {
             if (jn.IsString) // default string. example: { "text": "jn" } with "jn" being the jn parameter.
-                lang[Language.English] = jn;
+                this[Language.English] = jn;
             else if (jn.IsArray) // parses array.
             {
                 for (int i = 0; i < jn.Count; i++)
-                    lang[i] = jn[i];
+                    this[i] = jn[i];
             }
             else if (jn.IsObject) // parses an object. example: { "english": "a", "spanish": "b" }
             {
                 if (jn["text"] != null)
                 {
-                    lang[Language.English] = jn["text"];
-                    return lang;
+                    this[Language.English] = jn["text"];
+                    return;
                 }
 
                 foreach (var pair in jn.Linq)
                     if (Enum.TryParse(pair.Key, true, out Language language))
-                        lang[language] = pair.Value;
+                        this[language] = pair.Value;
             }
+        }
 
-            return lang;
+        /// <summary>
+        /// Reads from a string array and applies it to the language dictionary.
+        /// </summary>
+        /// <param name="array">String array to read from.</param>
+        public void Read(string[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+                this[i] = array[i];
         }
 
         /// <summary>
