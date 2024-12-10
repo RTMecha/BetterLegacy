@@ -141,6 +141,7 @@ namespace BetterLegacy.Configs
         public Setting<string> ConvertThemeLSToVGExportPath { get; set; }
         public Setting<float> FileBrowserAudioPreviewLength { get; set; }
         public Setting<bool> ThemeSavesIndents { get; set; }
+        public Setting<bool> FileBrowserRemembersLocation { get; set; }
 
         #endregion
 
@@ -1337,6 +1338,7 @@ namespace BetterLegacy.Configs
             ConvertThemeLSToVGExportPath = Bind(this, "Data", "Convert Theme LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
             FileBrowserAudioPreviewLength = Bind(this, "Data", "File Browser Audio Preview Length", 3f, "How long the file browser audio preview should be.");
             ThemeSavesIndents = Bind(this, "Data", "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
+            FileBrowserRemembersLocation = Bind(this, "Data", "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");
 
             #endregion
 

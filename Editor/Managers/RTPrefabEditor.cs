@@ -1877,7 +1877,7 @@ namespace BetterLegacy.Editor.Managers
                     setImageStorage.button.onClick.AddListener(() =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
+                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { ".png" }, onSelectFile: _val =>
                         {
                             prefabType.icon = SpriteHelper.LoadSprite(_val);
                             icon.sprite = prefabType.icon;
