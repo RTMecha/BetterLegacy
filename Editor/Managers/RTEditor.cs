@@ -11926,7 +11926,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
 
-                                string fileName = FileFormat.LSP.AppendTo($"{prefab.Name.ToLower().Replace(" ", "_")}");
+                                string fileName = $"{RTFile.FormatLegacyFileName(prefab.Name)}{FileFormat.LSP.Dot()}";
                                 RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListSlash, fileName), jn.ToString());
 
                                 file = null;
@@ -11975,7 +11975,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
 
-                                var fileName = FileFormat.LST.AppendTo($"{theme.name.ToLower().Replace(" ", "_")}");
+                                var fileName = $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}";
                                 RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListSlash, fileName), jn.ToString());
 
                                 file = null;

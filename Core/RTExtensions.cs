@@ -923,12 +923,6 @@ namespace BetterLegacy.Core
         #region Misc
 
         /// <summary>
-        /// Extension that runs <see cref="RTFile.AppendFormat(string, FileFormat)"/>.
-        /// </summary>
-        /// <param name="path">Path to append to.</param>
-        /// <returns>Returns a path with the file format appended.</returns>
-        public static string AppendTo(this FileFormat fileFormat, string path) => RTFile.AppendFormat(path, fileFormat);
-        /// <summary>
         /// Converts the file format to a string and appends a . to the start, to make it a proper file extension.
         /// </summary>
         /// <returns>Returns a file extension.</returns>
