@@ -1534,12 +1534,13 @@ namespace BetterLegacy.Editor.Managers
             if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || editorListPath[editorListPath.Length - 1] == '/')
                 return;
 
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + editorListPath))
+            var editorPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath);
+            if (!RTFile.DirectoryExists(editorPath))
             {
                 editorPathField.interactable = false;
                 ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + editorListPath);
+                    RTFile.CreateDirectory(editorPath);
 
                     SaveGlobalSettings();
 
@@ -1576,17 +1577,20 @@ namespace BetterLegacy.Editor.Managers
         public static string themeListPath = "beatmaps/themes";
         public static string themeListSlash = "beatmaps/themes/";
 
+        public const string DEFAULT_EXPORTS_PATH = "beatmaps/exports";
+
         public void UpdateThemePath(bool forceReload)
         {
             if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || themeListPath[themeListPath.Length - 1] == '/')
                 return;
 
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
+            var themePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath);
+            if (!RTFile.DirectoryExists(themePath))
             {
                 themePathField.interactable = false;
                 ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
+                    RTFile.CreateDirectory(themePath);
 
                     SaveGlobalSettings();
 
@@ -1630,12 +1634,13 @@ namespace BetterLegacy.Editor.Managers
             if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || prefabListPath[prefabListPath.Length - 1] == '/')
                 return;
 
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
+            var prefabPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath);
+            if (!RTFile.DirectoryExists(prefabPath))
             {
                 prefabPathField.interactable = false;
                 ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
+                    RTFile.CreateDirectory(prefabPath);
 
                     SaveGlobalSettings();
 
@@ -1738,12 +1743,9 @@ namespace BetterLegacy.Editor.Managers
             if (!string.IsNullOrEmpty(jn["paths"]["prefabs"]))
                 PrefabPath = jn["paths"]["prefabs"];
 
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + editorListPath))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + editorListPath);
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
+            RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath));
+            RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
+            RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
 
             SetWatcherPaths();
 
@@ -1790,14 +1792,10 @@ namespace BetterLegacy.Editor.Managers
             SetWatcherPaths();
 
             for (int i = 0; i < MarkerEditor.inst.markerColors.Count; i++)
-            {
                 jn["marker_colors"][i] = LSColors.ColorToHex(MarkerEditor.inst.markerColors[i]);
-            }
 
             for (int i = 0; i < EditorManager.inst.layerColors.Count; i++)
-            {
                 jn["layer_colors"][i] = LSColors.ColorToHex(EditorManager.inst.layerColors[i]);
-            }
 
             RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
         }
@@ -8988,16 +8986,17 @@ namespace BetterLegacy.Editor.Managers
 
             var folderName = Path.GetFileName(copiedLevelPath);
             var directory = Path.GetDirectoryName(copiedLevelPath).Replace("\\", "/");
+            var editorPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath);
 
             if (shouldCutLevel)
             {
-                if (RTFile.DirectoryExists(copiedLevelPath.Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}")))
+                if (RTFile.DirectoryExists(copiedLevelPath.Replace(directory, editorPath)))
                 {
                     EditorManager.inst.DisplayNotification($"Level with the name \"{folderName}\" already exists in this location.", 2f, EditorManager.NotificationType.Warning);
                     return;
                 }
 
-                Directory.Move(copiedLevelPath, copiedLevelPath.Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}"));
+                Directory.Move(copiedLevelPath, copiedLevelPath.Replace(directory, editorPath));
                 UpdateEditorPath(true);
                 EditorManager.inst.DisplayNotification($"Succesfully moved {folderName}!", 2f, EditorManager.NotificationType.Success);
 
@@ -9006,7 +9005,7 @@ namespace BetterLegacy.Editor.Managers
 
             var result = copiedLevelPath;
             int num = 0;
-            while (Directory.Exists(result.Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}")))
+            while (Directory.Exists(result.Replace(directory, editorPath)))
             {
                 result = $"{copiedLevelPath} [{num}]";
                 num++;
@@ -9015,10 +9014,9 @@ namespace BetterLegacy.Editor.Managers
             var files = Directory.GetFiles(copiedLevelPath, "*", SearchOption.AllDirectories);
             for (int i = 0; i < files.Length; i++)
             {
-                var file = files[i].Replace("\\", "/").Replace(copiedLevelPath, result).Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}");
+                var file = files[i].Replace("\\", "/").Replace(copiedLevelPath, result).Replace(directory, editorPath);
                 var copyToDirectory = Path.GetDirectoryName(file);
-                if (!RTFile.DirectoryExists(copyToDirectory))
-                    Directory.CreateDirectory(copyToDirectory);
+                RTFile.CreateDirectory(copyToDirectory);
 
                 File.Copy(files[i], file, true);
             }
@@ -9558,6 +9556,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.OpenNewLevelPopup();
         }
 
+        public IEnumerator LoadLevel(Level level)
+        {
+            yield return LoadLevel(RTFile.RemoveEndSlash(level.path));
+        }
+
         /// <summary>
         /// Loads a level in the editor from a full path. For example: E:/4.1.16/beatmaps/editor/New Awesome Beatmap.
         /// </summary>
@@ -9646,20 +9649,18 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.timelineScrollRectBar.value = 0f;
             GameManager.inst.gameState = GameManager.State.Loading;
-            string rawJSON = null;
-            string rawMetadataJSON = null;
-            AudioClip song = null;
 
             EditorManager.inst.ClearDialogs();
             EditorManager.inst.ShowDialog("File Info Popup");
 
-            if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.DirectoryExists(GameManager.inst.path.Replace("/level.lsb", "")))
+            var previousLevel = GameManager.inst.path.Replace("/" + Level.LEVEL_LSB, "");
+            if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.DirectoryExists(previousLevel))
             {
                 CoreHelper.Log("Backing up previous level...");
 
-                SetFileInfo($"Backing up previous level [ {Path.GetFileName(GameManager.inst.path.Replace("/level.lsb", ""))} ]");
+                SetFileInfo($"Backing up previous level [ {Path.GetFileName(previousLevel)} ]");
 
-                GameData.Current.SaveData(GameManager.inst.path.Replace("level.lsb", "level-open-backup.lsb"));
+                GameData.Current.SaveData(GameManager.inst.path.Replace(Level.LEVEL_LSB, "level-open-backup.lsb"));
 
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
@@ -9668,35 +9669,40 @@ namespace BetterLegacy.Editor.Managers
 
             SetFileInfo($"Loading Level Data for [ {name} ]");
 
-            CoreHelper.Log($"Loading {(string.IsNullOrEmpty(autosave) ? "level.lsb" : autosave)}...");
-            rawJSON = RTFile.ReadFromFile(fullPath + "/" + (string.IsNullOrEmpty(autosave) ? "level.lsb" : autosave));
-            rawMetadataJSON = RTFile.ReadFromFile(fullPath + "/metadata.lsb");
+            string rawJSON = null;
+            string rawMetadataJSON = null;
+            AudioClip song = null;
+
+            var fromFile = (string.IsNullOrEmpty(autosave) ? Level.LEVEL_LSB : autosave);
+            CoreHelper.Log($"Loading {fromFile}...");
+            rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, fromFile));
+            rawMetadataJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, Level.METADATA_LSB));
 
             if (string.IsNullOrEmpty(rawMetadataJSON))
             {
-                DataManager.inst.SaveMetadata(fullPath + "/metadata.lsb");
-                rawMetadataJSON = RTFile.ReadFromFile(fullPath + "/metadata.lsb");
+                DataManager.inst.SaveMetadata(RTFile.CombinePaths(fullPath, Level.METADATA_LSB));
+                rawMetadataJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, Level.METADATA_LSB));
             }
 
-            GameManager.inst.path = fullPath + "/level.lsb";
-            GameManager.inst.basePath = fullPath + "/";
+            GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
+            GameManager.inst.basePath = RTFile.AppendEndSlash(fullPath);
             GameManager.inst.levelName = name;
             SetFileInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
 
             string errorMessage = "";
             bool hadError = false;
-            if (RTFile.FileExists(fullPath + "/level.ogg"))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.ogg", AudioType.OGGVORBIS, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
-            else if (RTFile.FileExists(fullPath + "/level.wav"))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.wav", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
-            else if (RTFile.FileExists(fullPath + "/level.mp3"))
+            if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)))
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)}", AudioType.OGGVORBIS, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
+            else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)))
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)}", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
+            else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3)))
             {
                 Exception e = null;
                 yield return this.StartCoroutineAsync(CoreHelper.DoAction(() =>
                 {
                     try
                     {
-                        song = LSAudio.CreateAudioClipUsingMP3File(RTFile.CombinePaths(fullPath, "level.mp3"));
+                        song = LSAudio.CreateAudioClipUsingMP3File(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3));
                     }
                     catch (Exception ex)
                     {
@@ -9710,13 +9716,13 @@ namespace BetterLegacy.Editor.Managers
                     if (e != null)
                         CoreHelper.LogException(e);
 
-                    if (!RTFile.FileExists(fullPath + "/level.mp3"))
+                    if (!RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3)))
                         SetFileInfo("Song does not exist.");
                     else
                     {
                         try
                         {
-                            var file = new FileInfo(RTFile.CombinePaths(fullPath, "level.mp3"));
+                            var file = new FileInfo(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3));
                             SetFileInfo($"There was a problem with loading the MP3 file. Could it be due to the filesize of [{file.Length}]?");
                         }
                         catch (Exception ex)
@@ -9731,7 +9737,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (hadError)
             {
-                bool audioExists = RTFile.FileExists(fullPath + "/level.ogg") || RTFile.FileExists(fullPath + "/level.wav") || RTFile.FileExists(fullPath + "/level.mp3");
+                bool audioExists = RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)) || RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)) || RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3));
 
                 if (audioExists)
                     SetFileInfo($"Something went wrong when loading the song file. Either the file is corrupt or something went wrong internally.");
@@ -9741,9 +9747,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Song file could not load due to {errorMessage}", 3f, EditorManager.NotificationType.Error);
 
                 CoreHelper.LogError($"Level loading caught an error: {errorMessage}\n" +
-                    $"level.ogg exists: {RTFile.FileExists(fullPath + "/level.ogg")}\n" +
-                    $"level.wav exists: {RTFile.FileExists(fullPath + "/level.wav")}\n" +
-                    $"level.mp3 exists: {RTFile.FileExists(fullPath + "/level.mp3")}\n");
+                    $"level.ogg exists: {RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG))}\n" +
+                    $"level.wav exists: {RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV))}\n" +
+                    $"level.mp3 exists: {RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3))}\n");
 
                 yield break;
             }
@@ -9850,10 +9856,12 @@ namespace BetterLegacy.Editor.Managers
             EventEditor.inst.CreateEventObjects();
             BackgroundManager.inst.UpdateBackgrounds();
             GameManager.inst.UpdateTheme();
+
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;
             RTMarkerEditor.inst.markerLoopBegin = null;
             RTMarkerEditor.inst.markerLoopEnd = null;
+
             EventManager.inst.updateEvents();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
@@ -9892,9 +9900,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (ExampleManager.inst && ExampleManager.inst.Visible)
-            {
                 ExampleManager.inst.SayDialogue(fromNewLevel ? "LoadedNewLevel" : "LoadedLevel");
-            }
 
             EditorManager.inst.loading = false;
             fromNewLevel = false;
@@ -10044,11 +10050,8 @@ namespace BetterLegacy.Editor.Managers
                                     themePathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                     UpdateThemePath(false);
                                 }),
-                                new ButtonFunction("Create folder", () =>
-                                {
-                                    ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); });
-                                }),
-                                new ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
+                                new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); })),
+                                new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
                                 new ButtonFunction(true),
                                 new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
                                 new ButtonFunction("Delete", () =>
@@ -10417,9 +10420,7 @@ namespace BetterLegacy.Editor.Managers
         public void SetAutoSave()
         {
             var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
-            if (!RTFile.DirectoryExists(autosavesDirectory))
-                Directory.CreateDirectory(autosavesDirectory);
-
+            RTFile.CreateDirectory(autosavesDirectory);
             var files = Directory.GetFiles(autosavesDirectory, "autosave_*.lsb", SearchOption.TopDirectoryOnly);
 
             EditorManager.inst.autosaves.Clear();
@@ -10454,10 +10455,9 @@ namespace BetterLegacy.Editor.Managers
             var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
             var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}.lsb");
 
-            if (!RTFile.DirectoryExists(autosavesDirectory))
-                Directory.CreateDirectory(autosavesDirectory);
+            RTFile.CreateDirectory(autosavesDirectory);
 
-            EditorManager.inst.DisplayNotification("Autosaving backup!", 2f, EditorManager.NotificationType.Warning);
+            EditorManager.inst.DisplayNotification("Autosaving backup...", 2f, EditorManager.NotificationType.Warning);
 
             EditorManager.inst.autosaves.Add(autosavePath);
 
@@ -10469,6 +10469,41 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.autosaves.RemoveAt(0);
             }
+
+            GameData.Current.SaveData(autosavePath);
+
+            EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
+
+            autoSaving = false;
+        }
+
+        public void SaveBackup()
+        {
+            if (EditorManager.inst.loading)
+                return;
+
+            autoSaving = true;
+
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Beatmap can't autosave until you load a level.", 3f, EditorManager.NotificationType.Error);
+                autoSaving = false;
+                return;
+            }
+
+            if (EditorManager.inst.savingBeatmap)
+            {
+                EditorManager.inst.DisplayNotification("Already attempting to save the beatmap!", 2f, EditorManager.NotificationType.Error);
+                autoSaving = false;
+                return;
+            }
+
+            var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}.lsb");
+
+            RTFile.CreateDirectory(autosavesDirectory);
+
+            EditorManager.inst.DisplayNotification("Saving backup...", 2f, EditorManager.NotificationType.Warning);
 
             GameData.Current.SaveData(autosavePath);
 
@@ -11710,8 +11745,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 var zipPath = currentPath + ".zip";
-                if (RTFile.FileExists(zipPath))
-                    File.Delete(zipPath);
+                RTFile.DeleteFile(zipPath);
 
                 System.IO.Compression.ZipFile.CreateFromDirectory(currentPath, zipPath);
 
@@ -11742,14 +11776,12 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(exportPath))
             {
-                var output = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/exports");
-                if (!RTFile.DirectoryExists(output))
-                    Directory.CreateDirectory(output);
+                var output = RTFile.CombinePaths(RTFile.ApplicationDirectory, DEFAULT_EXPORTS_PATH);
+                RTFile.CreateDirectory(output);
                 exportPath = output + "/";
             }
 
-            if (exportPath[exportPath.Length - 1] != '/')
-                exportPath += "/";
+            exportPath = RTFile.AppendEndSlash(exportPath);
 
             if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
             {
@@ -11757,8 +11789,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var gamedata = GameData.ReadFromFile(RTFile.CombinePaths(currentPath, "level.lsb"), FileType.LS);
-            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, "metadata.lsb"), FileType.LS, false);
+            var gamedata = GameData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.LEVEL_LSB), FileType.LS);
+            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.METADATA_LSB), FileType.LS, false);
 
             var vgd = gamedata.ToJSONVG();
 
@@ -11766,18 +11798,21 @@ namespace BetterLegacy.Editor.Managers
 
             var path = exportPath + fileName;
 
-            if (!RTFile.DirectoryExists(path))
-                Directory.CreateDirectory(path);
+            RTFile.CreateDirectory(path);
 
-            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, "level.ogg")))
-                File.Copy(RTFile.CombinePaths(currentPath, "level.ogg"), RTFile.CombinePaths(path, "audio.ogg"), true);
+            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_OGG)))
+                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_OGG), RTFile.CombinePaths(path, Level.AUDIO_OGG));
+            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_WAV)))
+                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_WAV), RTFile.CombinePaths(path, Level.AUDIO_WAV));
+            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_MP3)))
+                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_MP3), RTFile.CombinePaths(path, Level.AUDIO_MP3));
 
-            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, "level.jpg")))
-                File.Copy(RTFile.CombinePaths(currentPath, "level.jpg"), RTFile.CombinePaths(path, "cover.jpg"), true);
+            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_JPG)))
+                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_JPG), RTFile.CombinePaths(path, Level.COVER_JPG));
 
             try
             {
-                RTFile.WriteToFile(RTFile.CombinePaths(path, "metadata.vgm"), vgm.ToString());
+                RTFile.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_VGM), vgm.ToString());
             }
             catch (Exception ex)
             {
@@ -11787,7 +11822,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 
-                RTFile.WriteToFile(RTFile.CombinePaths(path, "level.vgd"), vgd.ToString());
+                RTFile.WriteToFile(RTFile.CombinePaths(path, Level.LEVEL_VGD), vgd.ToString());
             }
             catch (Exception ex)
             {
@@ -11838,10 +11873,9 @@ namespace BetterLegacy.Editor.Managers
 
         public static void DeleteLevelFunction(string level)
         {
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "recycling"))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + "recycling");
-
-            Directory.Move(RTFile.ApplicationDirectory + editorListSlash + level, RTFile.ApplicationDirectory + "recycling/" + level);
+            var recyclingPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "recycling");
+            RTFile.CreateDirectory(recyclingPath);
+            Directory.Move(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash, level), RTFile.CombinePaths(recyclingPath, level));
         }
 
         public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value) - inst.bpmOffset;

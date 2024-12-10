@@ -751,6 +751,8 @@ namespace BetterLegacy.Core
             return result;
         }
 
+        public static string ReplaceSpace(string input) => input?.Replace(" ", "_");
+
         #region Code Encryptions
 
         public static string ByteEncrypt(string input, string seperator = " ")

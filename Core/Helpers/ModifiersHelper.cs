@@ -1814,10 +1814,11 @@ namespace BetterLegacy.Core.Helpers
                             if (CoreHelper.InEditor)
                                 break;
 
-                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb"))
-                                LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb");
-                            else if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd"))
-                                LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd");
+                            var levelPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{modifier.value}");
+                            if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_LSB)))
+                                LevelManager.Load(RTFile.CombinePaths(levelPath, Level.LEVEL_LSB));
+                            else if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_VGD)))
+                                LevelManager.Load(RTFile.CombinePaths(levelPath, Level.LEVEL_VGD));
                             else
                                 SoundManager.inst.PlaySound(DefaultSounds.Block);
 

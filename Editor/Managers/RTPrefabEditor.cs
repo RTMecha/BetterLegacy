@@ -1601,10 +1601,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddScrollbar(scrollRectSR.verticalScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
             // Prefab Type Prefab
-            prefabTypePrefab = new GameObject("Prefab Type");
-            prefabTypePrefab.transform.localScale = Vector3.one;
-            var rectTransform = prefabTypePrefab.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(400f, 32f);
+            prefabTypePrefab = Creator.NewUIObject("Prefab Type", transform);
+            prefabTypePrefab.transform.AsRT().sizeDelta = new Vector2(400f, 32f);
             var image = prefabTypePrefab.AddComponent<Image>();
             image.color = new Color(0.2f, 0.2f, 0.2f, 0.1f);
 
@@ -1613,57 +1611,52 @@ namespace BetterLegacy.Editor.Managers
             horizontalLayoutGroup.childForceExpandWidth = false;
             horizontalLayoutGroup.spacing = 4;
 
-            var toggleType = prefabTypeTogglePrefab.Duplicate(rectTransform, "Toggle");
+            var toggleType = prefabTypeTogglePrefab.Duplicate(prefabTypePrefab.transform, "Toggle");
             toggleType.transform.localScale = Vector3.one;
-            var toggleTypeRT = (RectTransform)toggleType.transform;
-            toggleTypeRT.sizeDelta = new Vector2(32f, 32f);
-            Destroy(toggleTypeRT.Find("text").gameObject);
-            toggleTypeRT.Find("Background/Checkmark").GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f);
+            toggleType.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+            Destroy(toggleType.transform.Find("text").gameObject);
+            toggleType.transform.Find("Background/Checkmark").GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f);
 
             var toggleTog = toggleType.GetComponent<Toggle>();
             toggleTog.enabled = true;
             toggleTog.group = null;
 
-            var icon = new GameObject("Icon");
-            icon.transform.localScale = Vector3.one;
-            icon.transform.SetParent(toggleTypeRT);
-            icon.transform.localScale = Vector3.one;
-            var iconRT = icon.AddComponent<RectTransform>();
-            iconRT.anchoredPosition = Vector2.zero;
-            iconRT.sizeDelta = new Vector2(32f, 32f);
+            var icon = Creator.NewUIObject("Icon", toggleType.transform);
+            icon.transform.AsRT().anchoredPosition = Vector2.zero;
+            icon.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
             var iconImage = icon.AddComponent<Image>();
 
-            var nameGO = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Name");
+            var nameGO = RTEditor.inst.defaultIF.Duplicate(prefabTypePrefab.transform, "Name");
             nameGO.transform.localScale = Vector3.one;
             var nameRT = nameGO.GetComponent<RectTransform>();
             nameRT.sizeDelta = new Vector2(132f, 32f);
 
-            var nameTextRT = (RectTransform)nameRT.Find("Text");
+            var nameTextRT = nameRT.Find("Text").AsRT();
             nameTextRT.anchoredPosition = new Vector2(0f, 0f);
             nameTextRT.sizeDelta = new Vector2(0f, 0f);
 
             nameTextRT.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
 
-            var colorGO = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Color");
+            var colorGO = RTEditor.inst.defaultIF.Duplicate(prefabTypePrefab.transform, "Color");
             colorGO.transform.localScale = Vector3.one;
             var colorRT = colorGO.GetComponent<RectTransform>();
             colorRT.sizeDelta = new Vector2(90f, 32f);
 
-            var colorTextRT = (RectTransform)colorRT.Find("Text");
+            var colorTextRT = colorRT.Find("Text").AsRT();
             colorTextRT.anchoredPosition = new Vector2(0f, 0f);
             colorTextRT.sizeDelta = new Vector2(0f, 0f);
 
             colorTextRT.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
 
-            var setIcon = EditorPrefabHolder.Instance.Function1Button.Duplicate(rectTransform, "Set Icon");
-            ((RectTransform)setIcon.transform).sizeDelta = new Vector2(95f, 32f);
+            var setIcon = EditorPrefabHolder.Instance.Function1Button.Duplicate(prefabTypePrefab.transform, "Set Icon");
+            setIcon.transform.AsRT().sizeDelta = new Vector2(95f, 32f);
 
             Destroy(setIcon.GetComponent<LayoutElement>());
 
-            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(rectTransform, "Delete");
+            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabTypePrefab.transform, "Delete");
             delete.transform.localScale = Vector3.one;
-            ((RectTransform)delete.transform).anchoredPosition = Vector2.zero;
+            delete.transform.AsRT().anchoredPosition = Vector2.zero;
 
             Destroy(delete.GetComponent<LayoutElement>());
 
@@ -1687,10 +1680,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void SavePrefabTypes()
         {
+            var prefabTypesPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/prefabtypes");
             foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType).Where(x => !x.isDefault))
             {
                 var jn = prefabType.ToJSON();
-                prefabType.filePath = RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + prefabType.Name.ToLower().Replace(" ", "_") + ".lspt";
+                prefabType.filePath = RTFile.CombinePaths(prefabTypesPath, prefabType.Name.ToLower().Replace(" ", "_") + FileFormat.LSPT.Dot());
                 RTFile.WriteToFile(prefabType.filePath, jn.ToString(3));
             }
         }
@@ -1705,10 +1699,10 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < defaultPrefabTypesJN["prefab_types"].Count; i++)
                 DataManager.inst.PrefabTypes.Add(PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i], true));
 
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes"))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/prefabtypes");
+            var prefabTypesPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/prefabtypes");
+            RTFile.CreateDirectory(prefabTypesPath);
 
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/prefabtypes", "*.lspt", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(prefabTypesPath, "*.lspt", SearchOption.TopDirectoryOnly);
             for (int i = 0; i < files.Length; i++)
             {
                 var jn = JSON.Parse(RTFile.ReadFromFile(files[i]));
@@ -2094,13 +2088,12 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(exportPath))
             {
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
-                exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
+                var output = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
+                RTFile.CreateDirectory(output);
+                exportPath = output + "/";
             }
 
-            if (!string.IsNullOrEmpty(exportPath) && exportPath[exportPath.Length - 1] != '/')
-                exportPath += "/";
+            exportPath = RTFile.AppendEndSlash(exportPath);
 
             if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
             {
@@ -2110,9 +2103,10 @@ namespace BetterLegacy.Editor.Managers
 
             var vgjn = prefab.ToJSONVG();
 
-            RTFile.WriteToFile($"{exportPath}{prefab.Name.ToLower()}.vgp", vgjn.ToString());
+            var fileName = $"{prefab.Name.ToLower()}{FileFormat.VGP.Dot()}";
+            RTFile.WriteToFile(RTFile.CombinePaths(exportPath, fileName), vgjn.ToString());
 
-            EditorManager.inst.DisplayNotification($"Converted Prefab {prefab.Name.ToLower()}.lsp from LS format to VG format and saved to {prefab.Name.ToLower()}.vgp!", 4f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"Converted Prefab {prefab.Name} from LS format to VG format and saved to {fileName}!", 4f, EditorManager.NotificationType.Success);
 
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
@@ -2145,15 +2139,15 @@ namespace BetterLegacy.Editor.Managers
             });
 
             importPrefab.onClick.ClearAll();
-            importPrefab.onClick.AddListener(() => { ImportPrefabIntoLevel(prefab); });
+            importPrefab.onClick.AddListener(() => ImportPrefabIntoLevel(prefab));
 
             exportToVG.onClick.ClearAll();
-            exportToVG.onClick.AddListener(() => { ConvertPrefab(prefab); });
+            exportToVG.onClick.AddListener(() => ConvertPrefab(prefab));
 
             externalDescriptionField.onValueChanged.ClearAll();
             externalDescriptionField.onEndEdit.ClearAll();
             externalDescriptionField.text = prefab.description;
-            externalDescriptionField.onValueChanged.AddListener(_val => { prefab.description = _val; });
+            externalDescriptionField.onValueChanged.AddListener(_val => prefab.description = _val);
             externalDescriptionField.onEndEdit.AddListener(_val =>
             {
                 RTEditor.inst.DisablePrefabWatcher();
@@ -2167,15 +2161,14 @@ namespace BetterLegacy.Editor.Managers
             externalNameField.onValueChanged.ClearAll();
             externalNameField.onEndEdit.ClearAll();
             externalNameField.text = prefab.Name;
-            externalNameField.onValueChanged.AddListener(_val => { prefab.Name = _val; });
+            externalNameField.onValueChanged.AddListener(_val => prefab.Name = _val);
             externalNameField.onEndEdit.AddListener(_val =>
             {
                 RTEditor.inst.DisablePrefabWatcher();
 
-                if (RTFile.FileExists(prefab.filePath))
-                    File.Delete(prefab.filePath);
+                RTFile.DeleteFile(prefab.filePath);
 
-                var file = $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp";
+                var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath, $"{RTFile.FormatLegacyFileName(prefab.Name)}{FileFormat.LSP.Dot()}");
                 prefab.filePath = file;
                 RTFile.WriteToFile(file, prefab.ToJSON().ToString());
 
@@ -2236,7 +2229,7 @@ namespace BetterLegacy.Editor.Managers
 
             prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
             int count = PrefabPanels.Count;
-            var file = $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp";
+            var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath, $"{RTFile.FormatLegacyFileName(prefab.Name)}{FileFormat.LSP.Dot()}");
             prefab.filePath = file;
 
             var config = EditorConfig.Instance;
@@ -2258,7 +2251,7 @@ namespace BetterLegacy.Editor.Managers
             var deleteAnchoredPosition = config.PrefabExternalDeleteButtonPos.Value;
             var deleteSizeDelta = config.PrefabExternalDeleteButtonSca.Value;
 
-            CreatePrefabButton(prefab, count, PrefabDialog.External, $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp",
+            CreatePrefabButton(prefab, count, PrefabDialog.External, file,
                 false, hoverSize, nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
                 typeHorizontalOverflow, typeVerticalOverflow, typeFontSize, deleteAnchoredPosition, deleteSizeDelta);
 
@@ -2385,7 +2378,7 @@ namespace BetterLegacy.Editor.Managers
 
             var component = PrefabEditor.inst.dialog.Find("data/name/input").GetComponent<InputField>();
             component.onValueChanged.ClearAll();
-            component.onValueChanged.AddListener(_val => { PrefabEditor.inst.NewPrefabName = _val; });
+            component.onValueChanged.AddListener(_val => PrefabEditor.inst.NewPrefabName = _val);
 
             var offsetSlider = PrefabEditor.inst.dialog.Find("data/offset/slider").GetComponent<Slider>();
             var offsetInput = PrefabEditor.inst.dialog.Find("data/offset/input").GetComponent<InputField>();
@@ -2479,13 +2472,14 @@ namespace BetterLegacy.Editor.Managers
             var copiedPrefabsFolder = Path.GetDirectoryName(copiedPrefabPath).Replace("\\", "/");
             CoreHelper.Log($"Copied Folder: {copiedPrefabsFolder}");
 
-            if (copiedPrefabsFolder == $"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}")
+            var prefabsPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath);
+            if (copiedPrefabsFolder == prefabsPath)
             {
                 EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);
                 return;
             }
 
-            var destination = copiedPrefabPath.Replace(copiedPrefabsFolder, $"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}");
+            var destination = copiedPrefabPath.Replace(copiedPrefabsFolder, prefabsPath);
             CoreHelper.Log($"Destination: {destination}");
             if (RTFile.FileExists(destination))
             {
@@ -2496,14 +2490,12 @@ namespace BetterLegacy.Editor.Managers
             if (shouldCutPrefab)
             {
                 File.Move(copiedPrefabPath, destination);
-                var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
-                EditorManager.inst.DisplayNotification($"Succesfully moved {prefab.Name}!", 2f, EditorManager.NotificationType.Success);
+                EditorManager.inst.DisplayNotification($"Succesfully moved {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
             else
             {
                 File.Copy(copiedPrefabPath, destination, true);
-                var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
-                EditorManager.inst.DisplayNotification($"Succesfully pasted {prefab.Name}!", 2f, EditorManager.NotificationType.Success);
+                EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
 
             RTEditor.inst.UpdatePrefabPath(true);
@@ -2885,7 +2877,8 @@ namespace BetterLegacy.Editor.Managers
             string str = _d == PrefabDialog.External ?
                 string.IsNullOrEmpty(PrefabEditor.inst.externalSearchStr) ? "" : PrefabEditor.inst.externalSearchStr.ToLower() :
                 string.IsNullOrEmpty(PrefabEditor.inst.internalSearchStr) ? "" : PrefabEditor.inst.internalSearchStr.ToLower();
-            return string.IsNullOrEmpty(str) || _p.Name.ToLower().Contains(str) || _p.PrefabType.Name.ToLower().Contains(str);
+
+            return RTString.SearchString(str, _p.Name, _p.PrefabType.Name);
         }
 
         public void ImportPrefabIntoLevel(BasePrefab _prefab)

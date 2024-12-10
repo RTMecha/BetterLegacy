@@ -375,16 +375,16 @@ namespace BetterLegacy.Core.Managers
 
         #region Models
 
+        public const string PLAYERS_PATH = "beatmaps/players";
+
         public static void SaveLocalModels()
         {
-            string location = RTFile.BasePath + "players.lsb";
+            string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
 
             var jn = JSON.Parse("{}");
 
             for (int i = 0; i < 4; i++)
-            {
                 jn["indexes"][i] = PlayerModelsIndex[i];
-            }
 
             if (PlayerModels.Count > 5)
                 for (int i = 5; i < PlayerModels.Count; i++)
@@ -413,13 +413,11 @@ namespace BetterLegacy.Core.Managers
                 yield break;
             }
 
-            string location = RTFile.BasePath + "players.lsb";
+            string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
             if (!RTFile.FileExists(location))
             {
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
-                {
                     PlayerModelsIndex[i] = CoreHelper.InEditor ? "0" : LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.IsVG ? "4" : "0";
-                }
                 yield break;
             }
 
@@ -431,26 +429,17 @@ namespace BetterLegacy.Core.Managers
         public static void ClearModels()
         {
             var list = new List<string>();
-            for (int i = 0; i < PlayerModels.Count; i++)
-            {
-                if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == PlayerModels.ElementAt(i).Key))
-                {
-                    list.Add(PlayerModels.ElementAt(i).Key);
-                }
-            }
+
+            foreach (var modelPair in PlayerModels)
+                if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == modelPair.Key))
+                    list.Add(modelPair.Key);
 
             foreach (var str in list)
-            {
                 PlayerModels.Remove(str);
-            }
 
             for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
-            {
                 if (GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
-                {
                     Destroy(GameManager.inst.PlayerPrefabs[i]);
-                }
-            }
         }
 
         static void LoadPlayerJSON(string json)
@@ -460,9 +449,7 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(json);
 
             for (int i = 0; i < jn["indexes"].Count; i++)
-            {
                 PlayerModelsIndex[i] = jn["indexes"][i];
-            }
 
             for (int i = 0; i < jn["models"].Count; i++)
             {
@@ -505,11 +492,12 @@ namespace BetterLegacy.Core.Managers
                 {
                     try
                     {
-                        RTFile.WriteToFile(RTFile.ApplicationDirectory + "beatmaps/players/" + RTFile.ValidateFileName(model.Value.basePart.name).ToLower().Replace(" ", "_") + ".lspl", model.Value.ToJSON().ToString(3));
+                        RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(model.Value.basePart.name)}{FileFormat.LSPL.Dot()}"), model.Value.ToJSON().ToString(3));
                     }
                     catch (System.Exception ex)
                     {
                         success = false;
+                        CoreHelper.LogException(ex);
                     }
                 }
             }
@@ -525,53 +513,32 @@ namespace BetterLegacy.Core.Managers
 
         public static IEnumerator ILoadGlobalModels()
         {
-            var fullPath = RTFile.ApplicationDirectory + "beatmaps/players";
-            if (!RTFile.DirectoryExists(fullPath))
-                Directory.CreateDirectory(fullPath);
+            var fullPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, PLAYERS_PATH);
+            RTFile.CreateDirectory(fullPath);
 
             var files = Directory.GetFiles(fullPath);
 
             if (files.Length > 0)
             {
-                var list = new List<string>();
-                for (int i = 0; i < PlayerModels.Count; i++)
-                {
-                    if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == PlayerModels.ElementAt(i).Key))
-                        list.Add(PlayerModels.ElementAt(i).Key);
-                }
-
-                foreach (var str in list)
-                {
-                    PlayerModels[str] = null;
-                    PlayerModels.Remove(str);
-                }
-
-                for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
-                {
-                    if (GameManager.inst.PlayerPrefabs[i] && GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
-                        Destroy(GameManager.inst.PlayerPrefabs[i]);
-                }
+                ClearModels();
 
                 foreach (var file in files)
                 {
-                    if (!Path.GetFileName(file).Contains(".lspl") || Path.GetFileName(file) == "regular.lspl" || Path.GetFileName(file) == "circle.lspl")
+                    if (!Path.GetFileName(file).EndsWith(FileFormat.LSPL.Dot()))
                         continue;
 
                     var model = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
                     string id = model.basePart.id;
-                    if (!PlayerModels.ContainsKey(id))
-                        PlayerModels.Add(id, model);
+
+                    if (id != "0")
+                    PlayerModels[id] = model;
                 }
 
                 if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                     LoadIndexes();
                 else if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
-                {
                     for (int i = 0; i < PlayerModelsIndex.Count; i++)
-                    {
                         PlayerModelsIndex[i] = PlayerIndexes[i].Value;
-                    }
-                }
             }
 
             if (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
@@ -582,7 +549,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void LoadIndexes()
         {
-            string location = RTFile.BasePath + "players.lsb";
+            string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
 
             if (RTFile.FileExists(location))
             {
@@ -597,18 +564,14 @@ namespace BetterLegacy.Core.Managers
                         CoreHelper.Log($"Loaded PlayerModel Index: {jn["indexes"][i]}");
                     }
                     else
-                    {
                         CoreHelper.LogError($"Failed to load PlayerModel Index: {jn["indexes"][i]}\nPlayer with that ID does not exist");
-                    }
                 }
             }
             else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels))
             {
-                CoreHelper.LogError("player.lspl file does not exist, setting to default player");
+                CoreHelper.LogError("player.lsb file does not exist, setting to default player");
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
-                {
                     PlayerModelsIndex[i] = CoreHelper.InEditor ? "0" : LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.IsVG ? "4" : "0";
-                }
             }
 
             AssignPlayerModels();

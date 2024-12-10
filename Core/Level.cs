@@ -146,6 +146,11 @@ namespace BetterLegacy.Core
         /// </summary>
         public const string LEVEL_MP3 = "level.mp3";
 
+        /// <summary>
+        /// The Players file in BetterLegacy.
+        /// </summary>
+        public const string PLAYERS_LSB = "players.lsb";
+
         #endregion
 
         #region Methods

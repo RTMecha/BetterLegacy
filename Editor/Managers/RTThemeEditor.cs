@@ -235,14 +235,12 @@ namespace BetterLegacy.Editor.Managers
             if (shouldCutTheme)
             {
                 File.Move(copiedThemePath, destination);
-                var theme = BeatmapTheme.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
-                EditorManager.inst.DisplayNotification($"Succesfully moved {theme.name}!", 2f, EditorManager.NotificationType.Success);
+                EditorManager.inst.DisplayNotification($"Succesfully moved {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
             else
             {
-                File.Copy(copiedThemePath, destination, true);
-                var theme = BeatmapTheme.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
-                EditorManager.inst.DisplayNotification($"Succesfully pasted {theme.name}!", 2f, EditorManager.NotificationType.Success);
+                RTFile.CopyFile(copiedThemePath, destination);
+                EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
 
             RTEditor.inst.UpdateThemePath(true);
@@ -1327,7 +1325,7 @@ namespace BetterLegacy.Editor.Managers
 
             var str = config.ThemeSavesIndents.Value ? theme.ToJSON().ToString(3) : theme.ToJSON().ToString();
 
-            var path = $"{RTFile.ApplicationDirectory}{RTEditor.themeListSlash}{theme.name.ToLower().Replace(" ", "_")}.lst";
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.themeListSlash, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
 
             theme.filePath = path;
 

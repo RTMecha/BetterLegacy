@@ -114,9 +114,10 @@ namespace BetterLegacy.Core
                 if (!loadLevels)
                     continue;
 
-                if (jn["levels"][i]["path"] != null && (RTFile.FileExists(RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/", Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/", Level.LEVEL_VGD))))
+                var jnPath = jn["levels"][i]["path"];
+                if (jnPath != null && (RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_VGD))))
                 {
-                    var levelFolder = RTFile.CombinePaths(path, $"{jn["levels"][i]["path"].Value}/");
+                    var levelFolder = RTFile.CombinePaths(path, jnPath);
 
                     MetaData metadata = null;
 

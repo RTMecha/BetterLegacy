@@ -49,11 +49,24 @@ namespace BetterLegacy.Core
 
         public static bool DirectoryExists(string _directoryPath) => !string.IsNullOrEmpty(_directoryPath) && Directory.Exists(_directoryPath);
 
+        public static void DeleteFile(string path)
+        {
+            if (FileExists(path))
+                File.Delete(path);
+        }
+
         public static string ValidateFileName(string name)
             => Regex.Replace(name, string.Format("([{0}]*\\.+$)|([{0}]+)", Regex.Escape(new string(Path.GetInvalidFileNameChars())) + "+?#!"), string.Empty);
 
         public static string ValidateDirectory(string name)
             => Regex.Replace(name, string.Format("([{0}]*\\.+$)|([{0}]+)", Regex.Escape(new string(Path.GetInvalidPathChars())) + "+?#!"), string.Empty);
+
+        /// <summary>
+        /// Used for setting the file name of a Legacy file. E.G. "Para Template" > "para_template".
+        /// </summary>
+        /// <param name="name">Name to format.</param>
+        /// <returns>Returns a Legacy file name.</returns>
+        public static string FormatLegacyFileName(string name) => ValidateFileName(RTString.ReplaceSpace(name.ToLower()));
 
         public static string ParsePaths(string str) => string.IsNullOrEmpty(str) ? str : str
             .Replace("{{AppDirectory}}", ApplicationDirectory)
@@ -111,6 +124,8 @@ namespace BetterLegacy.Core
 
         public static string CombinePaths(string path1, string path2) => Path.Combine(path1, path2).Replace("\\", "/");
         public static string CombinePaths(params string[] paths) => Path.Combine(paths).Replace("\\", "/");
+
+        public static string AppendEndSlash(string path) => string.IsNullOrEmpty(path) ? path : path[path.Length - 1] != '/' ? path + "/" : path;
 
         public static string RemoveEndSlash(string path) => path == null || path.Length == 0 ? path : path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
 

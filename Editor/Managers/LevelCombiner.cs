@@ -348,13 +348,14 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var editorWrapper in selected)
             {
-                if (!RTFile.FileExists(editorWrapper.folder + "/level.lsb"))
+                var levelPath = RTFile.CombinePaths(editorWrapper.folder, Level.LEVEL_LSB);
+                if (!RTFile.FileExists(levelPath))
                     continue;
 
                 Debug.Log($"{EditorManager.inst.className}Parsing GameData from {Path.GetFileName(editorWrapper.folder)}");
-                paths.Add(editorWrapper.folder + "/level.lsb");
+                paths.Add(levelPath);
                 list.Add(Path.GetFileName(editorWrapper.folder));
-                combineList.Add(GameData.Parse(SimpleJSON.JSON.Parse(RTFile.ReadFromFile(editorWrapper.folder + "/level.lsb"))));
+                combineList.Add(GameData.Parse(SimpleJSON.JSON.Parse(RTFile.ReadFromFile(levelPath))));
             }
 
             Debug.Log($"{EditorManager.inst.className}Can Combine: {combineList.Count > 0 && !string.IsNullOrEmpty(savePath)}" +
@@ -377,10 +378,10 @@ namespace BetterLegacy.Editor.Managers
             this.combinedGameData = combinedGameData;
 
             string save = savePath;
-            if (!save.Contains("level.lsb") && save.LastIndexOf('/') == save.Length - 1)
-                save += "level.lsb";
-            else if (!save.Contains("/level.lsb"))
-                save += "/level.lsb";
+            if (!save.Contains(Level.LEVEL_LSB) && save.LastIndexOf('/') == save.Length - 1)
+                save += Level.LEVEL_LSB;
+            else if (!save.Contains("/" + Level.LEVEL_LSB))
+                save += "/" + Level.LEVEL_LSB;
 
             if (!save.Contains(RTFile.ApplicationDirectory) && !save.Contains(RTEditor.editorListSlash))
                 save = RTFile.ApplicationDirectory + RTEditor.editorListSlash + save;
@@ -393,18 +394,16 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 var directory = Path.GetDirectoryName(save);
-                if (!RTFile.DirectoryExists(directory))
-                    Directory.CreateDirectory(directory);
+                RTFile.CreateDirectory(directory);
 
                 var files1 = Directory.GetFiles(Path.GetDirectoryName(file));
 
                 foreach (var file2 in files1)
                 {
                     string dir = Path.GetDirectoryName(file2);
-                    if (!RTFile.DirectoryExists(dir))
-                        Directory.CreateDirectory(dir);
+                    RTFile.CreateDirectory(dir);
 
-                    if (Path.GetFileName(file2) != "level.lsb" && !RTFile.FileExists(file2.Replace(Path.GetDirectoryName(file), directory)))
+                    if (Path.GetFileName(file2) != Level.LEVEL_LSB && !RTFile.FileExists(file2.Replace(Path.GetDirectoryName(file), directory)))
                         File.Copy(file2, file2.Replace(Path.GetDirectoryName(file), directory));
                 }
             }
@@ -415,7 +414,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
                 }, true);
             else
-                combinedGameData.SaveDataVG(save.Replace(".lsb", ".vgd"), () =>
+                combinedGameData.SaveDataVG(save.Replace(FileFormat.LSB.Dot(), FileFormat.VGD.Dot()), () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
                 });
