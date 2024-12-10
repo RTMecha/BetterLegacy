@@ -65,6 +65,21 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Tries to parse a string into an enum.
+        /// </summary>
+        /// <typeparam name="T">Enum to return.</typeparam>
+        /// <param name="input">String to parse.</param>
+        /// <param name="ignoreCase">If case should be ignored or not.</param>
+        /// <param name="defaultValue">Default value.</param>
+        /// <returns>If parse was successful, return the parsed enum. Otherwise, return assigned default value.</returns>
+        public static T TryParse<T>(string input, bool ignoreCase, T defaultValue) where T : struct
+        {
+            if (Enum.TryParse(input, ignoreCase, out T result))
+                return result;
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Tries to parse a string into a Version.
         /// </summary>
         /// <param name="input">String to parse.</param>
