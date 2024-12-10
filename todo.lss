@@ -67,6 +67,7 @@
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - PrefabOnObject implementation?
+- Sprites list popup that show images in the game data and level folder.
 - Think about maybe replacing the Editor Popup Animation system with a fully customizable one where animations can be more in-depth.
 - Change the Settings menu to a dropdown to be more consistent with the other title bar buttons.
 - Possible multi object editor rework???
@@ -76,6 +77,7 @@
 - Rework shapes to read from a singular json file. > 1.8.0
 - Add support for VG text object origin offset. > 1.7.0+
 - Move all string related stuff to a StringHelper class. > 1.8.0
+- Update the file browser UI to include more info / functions.
 - Make Example's animations read from a file.
 - Change how modifiers are saved for better consistency.
 - Make CursorManager a main manager that can properly manage cursor states.
