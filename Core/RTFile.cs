@@ -32,8 +32,15 @@ namespace BetterLegacy.Core
         {
             if (!string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(destination) && filePath.ToLower() != destination.ToLower())
             {
-                File.Copy(filePath, destination, true);
-                return true;
+                try
+                {
+                    File.Copy(filePath, destination, true);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
             }
             return false;
         }
@@ -52,6 +59,16 @@ namespace BetterLegacy.Core
             .Replace("{{AppDirectory}}", ApplicationDirectory)
             .Replace("{{BepInExAssetsDirectory}}", BepInExAssetsPath)
             .Replace("{{LevelPath}}", GameManager.inst ? BasePath : ApplicationDirectory);
+
+        /// <summary>
+        /// Checks if a directory doesn't exist and if it doesn't, creates a directory.
+        /// </summary>
+        /// <param name="path">Directory to create.</param>
+        public static void CreateDirectory(string path)
+        {
+            if (!DirectoryExists(path))
+                Directory.CreateDirectory(path);
+        }
 
         public static void WriteToFile(string path, string json)
         {
@@ -97,30 +114,13 @@ namespace BetterLegacy.Core
 
         public static string RemoveEndSlash(string path) => path == null || path.Length == 0 ? path : path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
 
-        public static AudioType GetAudioType(string str)
+        public static AudioType GetAudioType(string path) => GetFileFormat(path) switch
         {
-            var l = str.LastIndexOf('.');
-
-            var fileType = str.Substring(l, -(l - str.Length)).ToLower();
-
-            switch (fileType)
-            {
-                case ".wav":
-                    {
-                        return AudioType.WAV;
-                    }
-                case ".ogg":
-                    {
-                        return AudioType.OGGVORBIS;
-                    }
-                case ".mp3":
-                    {
-                        return AudioType.MPEG;
-                    }
-            }
-
-            return AudioType.UNKNOWN;
-        }
+            FileFormat.WAV => AudioType.WAV,
+            FileFormat.OGG => AudioType.OGGVORBIS,
+            FileFormat.MP3 => AudioType.MPEG,
+            _ => AudioType.UNKNOWN,
+        };
 
         public static byte[] ReadBytes(Stream input)
         {
@@ -135,6 +135,39 @@ namespace BetterLegacy.Core
         }
 
         public static string BytesToString(byte[] bytes) => Encoding.UTF8.GetString(bytes);
+
+        #region File Formats
+
+        public static string[] AudioDotFormats => DotFormats(FileFormat.OGG, FileFormat.WAV, FileFormat.MP3);
+
+        public static string[] DotFormats(params FileFormat[] fileFormats)
+        {
+            var array = new string[fileFormats.Length];
+            for (int i = 0; i < array.Length; i++)
+                array[i] = fileFormats[i].Dot();
+            return array;
+        }
+
+        /// <summary>
+        /// Ensures a path ends with the specified file format.
+        /// </summary>
+        /// <param name="path">Path to append a file format to.</param>
+        /// <param name="fileFormats">The file format.</param>
+        /// <returns>Returns a path with an appended file format.</returns>
+        public static string AppendFormat(string path, FileFormat fileFormats) => string.IsNullOrEmpty(path) ? path : AppendDotFormat(path, fileFormats.ToString().ToLower());
+
+        public static string AppendDotFormat(string path, string format) => path.Contains("." + format) ? path : path.EndsWith(".") ? path + format : path + "." + format;
+
+        /// <summary>
+        /// Gets a <see cref="FileFormat"/> from a path.
+        /// </summary>
+        /// <param name="path">Path to get a file format from.</param>
+        /// <returns>Returns a parsed <see cref="FileFormat"/>.</returns>
+        public static FileFormat GetFileFormat(string path) => string.IsNullOrEmpty(path) || !path.Contains(".") ? FileFormat.NULL : Parser.TryParse(Path.GetExtension(path).Remove("."), true, FileFormat.NULL);
+
+        public static bool FileIsAudio(string path) => GetAudioType(path) != AudioType.UNKNOWN;
+
+        #endregion
 
         public static class OpenInFileBrowser
         {

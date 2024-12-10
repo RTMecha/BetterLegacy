@@ -1,5 +1,131 @@
 ﻿namespace BetterLegacy
 {
+
+    /// <summary>
+    /// File formats enum.
+    /// </summary>
+    public enum FileFormat
+    {
+        #region Main
+
+        NULL,
+
+        OGG,
+        WAV,
+        MP3,
+
+        PNG,
+        JPG,
+
+        MP4,
+        MOV,
+
+        ZIP,
+
+        JSON,
+        TXT,
+        CS,
+        /// <summary>
+        /// System Error Profile file format.
+        /// </summary>
+        SEP,
+        /// <summary>
+        /// Unity compiled asset file format.
+        /// </summary>
+        ASSET,
+
+        DLL,
+        EXE,
+
+        #endregion
+
+        #region LS
+
+        /// <summary>
+        /// Level / metadata file format.
+        /// </summary>
+        LSB,
+        /// <summary>
+        /// Theme file format.
+        /// </summary>
+        LST,
+        /// <summary>
+        /// Prefab file format.
+        /// </summary>
+        LSP,
+        /// <summary>
+        /// Config file format.
+        /// </summary>
+        LSC,
+        /// <summary>
+        /// Level Collection file format.
+        /// </summary>
+        LSCO,
+        /// <summary>
+        /// Editor file format.
+        /// </summary>
+        LSE,
+        /// <summary>
+        /// Player model file format.
+        /// </summary>
+        LSPL,
+        /// <summary>
+        /// Settings / saves file format.
+        /// </summary>
+        LSS,
+        /// <summary>
+        /// Interface file format.
+        /// </summary>
+        LSI,
+        /// <summary>
+        /// Old interface file format.
+        /// </summary>
+        LSM,
+        /// <summary>
+        /// Prefab Type file format.
+        /// </summary>
+        LSPT,
+        /// <summary>
+        /// Shape file format.
+        /// </summary>
+        LSSH,
+        /// <summary>
+        /// Project Planner file format.
+        /// </summary>
+        LSN,
+        /// <summary>
+        /// QuickElement file format.
+        /// </summary>
+        LSQE,
+
+        #endregion
+
+        #region VG
+
+        /// <summary>
+        /// Level file format.
+        /// </summary>
+        VGD,
+        /// <summary>
+        /// Metadata file format.
+        /// </summary>
+        VGM,
+        /// <summary>
+        /// Theme file format.
+        /// </summary>
+        VGT,
+        /// <summary>
+        /// Prefab file format.
+        /// </summary>
+        VGP,
+        /// <summary>
+        /// Settings / saves file format.
+        /// </summary>
+        VGS,
+
+        #endregion
+    }
+
     public enum EditorTheme
     {
         Legacy,
