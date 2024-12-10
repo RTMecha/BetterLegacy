@@ -3101,288 +3101,68 @@ namespace BetterLegacy.Editor.Managers
             }, 3);
             EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
 
-            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, () =>
-            {
-                EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: _val =>
-                {
-                    bool failed = false;
-                    var selectedFile = _val.Replace("\\", "/");
-                    if (selectedFile.Contains(".lsp"))
-                    {
-                        var file = RTFile.ApplicationDirectory + prefabListSlash + Path.GetFileName(selectedFile);
-                        RTFile.CopyFile(selectedFile, file);
-                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to prefab ({prefabListPath}) folder.", 2f, EditorManager.NotificationType.Success);
-                    }
-                    else if (selectedFile.Contains(".vgp"))
-                    {
-                        try
-                        {
-                            var file = RTFile.ReadFromFile(selectedFile);
-
-                            var vgjn = JSON.Parse(file);
-
-                            var prefab = Prefab.ParseVG(vgjn);
-
-                            var jn = prefab.ToJSON();
-
-                            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
-                                Directory.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
-
-                            string fileName = $"{prefab.Name.ToLower().Replace(" ", "_")}.lsp";
-                            RTFile.WriteToFile(RTFile.ApplicationDirectory + prefabListSlash + fileName, jn.ToString());
-
-                            file = null;
-                            vgjn = null;
-                            prefab = null;
-                            jn = null;
-
-                            EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your prefab ({prefabListPath}) folder.", 2f,
-                                EditorManager.NotificationType.Success);
-
-                            AchievementManager.inst.UnlockAchievement("time_machine");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError(ex);
-                            failed = true;
-                        }
-                    }
-                    else if (selectedFile.Contains(".lst"))
-                    {
-                        var file = RTFile.ApplicationDirectory + themeListSlash + Path.GetFileName(selectedFile);
-                        File.Copy(selectedFile, file, RTFile.FileExists(file));
-                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to theme ({themeListPath}) folder.", 2f, EditorManager.NotificationType.Success);
-                    }
-                    else if (selectedFile.Contains(".vgt"))
-                    {
-                        try
-                        {
-                            var file = RTFile.ReadFromFile(selectedFile);
-
-                            var vgjn = JSON.Parse(file);
-
-                            var theme = BeatmapTheme.ParseVG(vgjn);
-
-                            var jn = theme.ToJSON();
-
-                            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
-                                Directory.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
-
-                            var fileName = $"{theme.name.ToLower().Replace(" ", "_")}.lst";
-                            RTFile.WriteToFile(RTFile.ApplicationDirectory + themeListSlash + fileName, jn.ToString());
-
-                            file = null;
-                            vgjn = null;
-                            theme = null;
-                            jn = null;
-
-                            EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your theme ({themeListPath}) folder.", 2f,
-                                EditorManager.NotificationType.Success);
-
-                            AchievementManager.inst.UnlockAchievement("time_machine");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError(ex);
-                            failed = true;
-                        }
-                    }
-                    else if (selectedFile.Contains("/level.lsb"))
-                    {
-                        ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
-                        {
-                            var path = selectedFile.Replace("/level.lsb", "");
-
-                            var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-
-                            bool copied = false;
-                            foreach (var file in files)
-                            {
-                                var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.ApplicationDirectory + editorListPath);
-                                if (RTFile.CopyFile(file, copyTo))
-                                    copied = true;
-                            }
-
-                            if (copied)
-                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({editorListPath}) folder.", 2f, EditorManager.NotificationType.Success);
-                            else
-                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(path)}.", 3f, EditorManager.NotificationType.Error);
-
-                            HideWarningPopup();
-                        }, () =>
-                        {
-                            HideWarningPopup();
-                            EditorManager.inst.ShowDialog("Browser Popup");
-                        });
-                    }
-                    else if (selectedFile.Contains("/level.vgd"))
-                    {
-                        try
-                        {
-                            var path = selectedFile.Replace("/level.vgd", "");
-
-                            if (RTFile.FileExists(RTFile.CombinePaths(path, "metadata.vgm")) &&
-                                (RTFile.FileExists(RTFile.CombinePaths(path, "audio.ogg")) || RTFile.FileExists(RTFile.CombinePaths(path, "audio.wav")) || RTFile.FileExists(RTFile.CombinePaths(path, "audio.wav")) || RTFile.FileExists(RTFile.CombinePaths(path, "level.ogg")) || RTFile.FileExists(RTFile.CombinePaths(path, "level.wav")) || RTFile.FileExists(RTFile.CombinePaths(path, "level.mp3"))))
-                            {
-                                var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/") + " Convert", RTFile.ApplicationDirectory + editorListSlash);
-
-                                if (!RTFile.DirectoryExists(copyTo))
-                                    Directory.CreateDirectory(copyTo);
-
-                                #region Audio
-
-                                bool copiedAudioFile = false;
-                                bool audioFileExists = false;
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)))
-                                {
-                                    audioFileExists = true;
-                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_OGG), RTFile.CombinePaths(copyTo, Level.LEVEL_OGG));
-                                }
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)))
-                                {
-                                    audioFileExists = true;
-                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_WAV), RTFile.CombinePaths(copyTo, Level.LEVEL_WAV));
-                                }
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
-                                {
-                                    audioFileExists = true;
-                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_MP3), RTFile.CombinePaths(copyTo, Level.LEVEL_MP3));
-                                }
-
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)))
-                                {
-                                    audioFileExists = true;
-                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_OGG), RTFile.CombinePaths(copyTo, Level.LEVEL_OGG));
-                                }
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)))
-                                {
-                                    audioFileExists = true;
-                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_WAV), RTFile.CombinePaths(copyTo, Level.LEVEL_WAV));
-                                }
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3)))
-                                {
-                                    audioFileExists = true;
-                                    copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_MP3), RTFile.CombinePaths(copyTo, Level.LEVEL_MP3));
-                                }
-
-                                if (!copiedAudioFile)
-                                {
-                                    if (!audioFileExists)
-                                        EditorManager.inst.DisplayNotification("No audio file exists.", 3f, EditorManager.NotificationType.Error);
-                                    else
-                                        EditorManager.inst.DisplayNotification("Cannot overwrite the same file. Please rename the VG level folder you want to convert.", 6f, EditorManager.NotificationType.Error);
-
-                                    return;
-                                }
-
-                                #endregion
-
-                                if (RTFile.FileExists(RTFile.CombinePaths(path, "cover.jpg")))
-                                    RTFile.CopyFile(RTFile.CombinePaths(path, "cover.jpg"), RTFile.CombinePaths(copyTo, "level.jpg"));
-
-                                #region Data
-
-                                var metadataVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "metadata.vgm"));
-
-                                var metadataVGJN = JSON.Parse(metadataVGJSON);
-
-                                var metadata = MetaData.ParseVG(metadataVGJN);
-
-                                var metadataJN = metadata.ToJSON();
-
-                                RTFile.WriteToFile(RTFile.CombinePaths(copyTo, "metadata.lsb"), metadataJN.ToString());
-
-                                var levelVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "level.vgd"));
-
-                                var levelVGJN = JSON.Parse(levelVGJSON);
-
-                                var level = GameData.ParseVG(levelVGJN, false, metadata.Version);
-
-                                level.SaveData(RTFile.CombinePaths(copyTo, "level.lsb"), () =>
-                                {
-                                    EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({editorListPath}) folder.", 2f,
-                                        EditorManager.NotificationType.Success);
-
-                                    metadataVGJSON = null;
-                                    metadataVGJN = null;
-                                    metadata = null;
-                                    metadataJN = null;
-                                    levelVGJSON = null;
-                                    levelVGJN = null;
-                                    level = null;
-
-                                    AchievementManager.inst.UnlockAchievement("time_machine");
-                                }, true);
-
-                                #endregion
-                            }
-                            else
-                            {
-                                EditorManager.inst.DisplayNotification("Could not convert since some needed files are missing!", 2f, EditorManager.NotificationType.Error);
-                                failed = true;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            EditorManager.inst.DisplayNotification($"There was an error in converting the VG level. Press {CoreConfig.Instance.OpenPAPersistentFolder.Value} to open the log folder and send the Player.log file to @rtmecha.", 5f, EditorManager.NotificationType.Error);
-                            Debug.LogError(ex);
-                            failed = true;
-                        }
-                    }
-                    else if (selectedFile.Contains("/autosave_") && selectedFile.Contains(".vgd"))
-                    {
-                        EditorManager.inst.DisplayNotification("Cannot select autosave.", 2f, EditorManager.NotificationType.Warning);
-                        failed = true;
-                    }
-
-                    if (!failed)
-                        EditorManager.inst.HideDialog("Browser Popup");
-                });
-            }, 4);
+            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, ConvertVGToLS, 4);
             EditorHelper.SetComplexity(convertVGToLS, Complexity.Normal);
 
             var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", "File", SearchSprite, () =>
             {
-                EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov", ".lsp", ".vgp" }, onSelectFile: _val =>
+                if (!EditorManager.inst.hasLoadedLevel)
                 {
-                    if (_val.Contains(".mp4") || _val.Contains(".mov"))
+                    EditorManager.inst.DisplayNotification("Cannot add a file to level until a level has been loaded.", 4f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                EditorManager.inst.ShowDialog("Browser Popup");
+                RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.OGG, FileFormat.WAV, FileFormat.PNG, FileFormat.JPG, FileFormat.MP4, FileFormat.LSP, FileFormat.VGP), onSelectFile: _val =>
+                {
+                    var selectedFile = _val.Replace("\\", "/");
+                    var fileFormat = RTFile.GetFileFormat(selectedFile);
+
+                    switch (fileFormat)
                     {
-                        var copyTo = _val.Replace("\\", "/").Replace((Path.GetDirectoryName(_val) + "/").Replace("\\", "/"), RTFile.BasePath).Replace(Path.GetFileName(_val),
-                            _val.Contains(".mp4") ? "bg.mp4" : "bg.mov");
-                        File.Copy(_val, copyTo, RTFile.FileExists(copyTo));
+                        case FileFormat.MP4:
+                        case FileFormat.MOV:
+                            {
+                                var copyTo = selectedFile.Replace((Path.GetDirectoryName(_val) + "/").Replace("\\", "/"), RTFile.BasePath).Replace(Path.GetFileName(_val),
+                                    _val.Contains(".mp4") ? "bg.mp4" : "bg.mov");
 
-                        if (RTFile.FileExists(copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
-                            RTVideoManager.inst.Play(copyTo, 1f);
-                        else
-                            RTVideoManager.inst.Stop();
+                                if (RTFile.CopyFile(selectedFile, copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
+                                {
+                                    RTVideoManager.inst.Play(copyTo, 1f);
+                                    EditorManager.inst.DisplayNotification($"Copied file {Path.GetFileName(selectedFile)} and started Video BG!", 2f, EditorManager.NotificationType.Success);
+                                }
+                                else
+                                    RTVideoManager.inst.Stop();
 
-                        return;
-                    }
+                                return;
+                            }
+                        case FileFormat.LSP:
+                            {
+                                var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(selectedFile)));
 
-                    if (_val.Contains(".lsp"))
-                    {
-                        var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(_val)));
+                                RTPrefabEditor.inst.OpenPopup();
+                                RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+                                EditorManager.inst.DisplayNotification($"Imported prefab {Path.GetFileName(selectedFile)} into level!", 2f, EditorManager.NotificationType.Success);
 
-                        RTPrefabEditor.inst.OpenPopup();
-                        RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+                                return;
+                            }
+                        case FileFormat.VGP:
+                            {
+                                var prefab = Prefab.ParseVG(JSON.Parse(RTFile.ReadFromFile(selectedFile)));
 
-                        return;
-                    }
-                    
-                    if (_val.Contains(".vgp"))
-                    {
-                        var prefab = Prefab.ParseVG(JSON.Parse(RTFile.ReadFromFile(_val)));
+                                RTPrefabEditor.inst.OpenPopup();
+                                RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+                                EditorManager.inst.DisplayNotification($"Converted & imported prefab {Path.GetFileName(selectedFile)} into level!", 2f, EditorManager.NotificationType.Success);
 
-                        RTPrefabEditor.inst.OpenPopup();
-                        RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
-
-                        return;
+                                return;
+                            }
                     }
 
                     var destination = _val.Replace("\\", "/").Replace((Path.GetDirectoryName(_val) + "/").Replace("\\", "/"), RTFile.BasePath);
-                    File.Copy(_val, destination, RTFile.FileExists(destination));
+                    if (RTFile.CopyFile(_val, destination))
+                        EditorManager.inst.DisplayNotification($"Copied file {Path.GetFileName(selectedFile)}!", 2f, EditorManager.NotificationType.Success);
+                    else
+                        EditorManager.inst.DisplayNotification($"Could not copy file {Path.GetFileName(selectedFile)}.", 2f, EditorManager.NotificationType.Error);
                 });
             }, 5);
             EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
@@ -3505,7 +3285,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                var beatmapObjects = GameData.Current.beatmapObjects.FindAll(x => x.integerVariable != 0);
+                var beatmapObjects = GameData.Current.beatmapObjects;
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var beatmapObject = beatmapObjects[i];
@@ -3689,7 +3469,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Set Level folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                             {
@@ -3766,7 +3546,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Set Theme folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                             {
@@ -3892,7 +3672,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Set Prefab folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                             {
@@ -4195,7 +3975,7 @@ namespace BetterLegacy.Editor.Managers
             browseInternalButton.onClick.AddListener(() =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".mp3" }, onSelectFile: _val =>
+                RTFileBrowser.inst.UpdateBrowserFile(RTFile.AudioDotFormats, onSelectFile: _val =>
                 {
                     if (!string.IsNullOrEmpty(_val))
                     {
@@ -4425,7 +4205,7 @@ namespace BetterLegacy.Editor.Managers
                 }, () =>
                 {
                     EditorManager.inst.ShowDialog("Browser Popup");
-                    RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
+                    RTFileBrowser.inst.UpdateBrowserFile(new string[] { ".png" }, onSelectFile: _val =>
                     {
                         if (string.IsNullOrEmpty(_val))
                             return;
@@ -11386,7 +11166,7 @@ namespace BetterLegacy.Editor.Managers
             listToDelete = null;
         }
 
-        public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowser(RTFile.ApplicationDirectory, ".lsb", "level", x => StartCoroutine(LoadLevel(x.Replace("\\", "/").Replace("/level.lsb", ""))));
+        public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowserFile(".lsb", "level", x => StartCoroutine(LoadLevel(x.Replace("\\", "/").Replace("/level.lsb", ""))));
 
         public void RefreshDocumentation()
         {
@@ -12072,6 +11852,284 @@ namespace BetterLegacy.Editor.Managers
         {
             gameObject.SetActive(active);
             gameObject.transform.parent.GetChild(gameObject.transform.GetSiblingIndex() - 1).gameObject.SetActive(active);
+        }
+
+        public void ConvertVGToLS()
+        {
+            EditorManager.inst.ShowDialog("Browser Popup");
+            RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.LSP, FileFormat.VGP, FileFormat.LST, FileFormat.VGT, FileFormat.LSB, FileFormat.VGD), onSelectFile: _val =>
+            {
+                bool failed = false;
+                var selectedFile = _val.Replace("\\", "/");
+
+                var fileFormat = RTFile.GetFileFormat(selectedFile);
+                switch (fileFormat)
+                {
+                    case FileFormat.LSP:
+                        {
+                            var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListSlash, Path.GetFileName(selectedFile));
+                            if (RTFile.CopyFile(selectedFile, file))
+                            {
+                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to prefab ({prefabListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                StartCoroutine(UpdatePrefabPath());
+                            }
+                            else
+                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(selectedFile)} as it already exists in the prefab ({prefabListPath}) folder.", 3f, EditorManager.NotificationType.Error);
+
+                            break;
+                        }
+                    case FileFormat.VGP:
+                        {
+                            try
+                            {
+                                var file = RTFile.ReadFromFile(selectedFile);
+
+                                var vgjn = JSON.Parse(file);
+
+                                var prefab = Prefab.ParseVG(vgjn);
+
+                                var jn = prefab.ToJSON();
+
+                                RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
+
+                                string fileName = FileFormat.LSP.AppendTo($"{prefab.Name.ToLower().Replace(" ", "_")}");
+                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListSlash, fileName), jn.ToString());
+
+                                file = null;
+                                vgjn = null;
+                                prefab = null;
+                                jn = null;
+
+                                EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your prefab ({prefabListPath}) folder.", 2f,
+                                    EditorManager.NotificationType.Success);
+
+                                AchievementManager.inst.UnlockAchievement("time_machine");
+                                StartCoroutine(UpdatePrefabPath());
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogError(ex);
+                                failed = true;
+                            }
+
+                            break;
+                        }
+                    case FileFormat.LST:
+                        {
+                            var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListSlash, Path.GetFileName(selectedFile));
+                            if (RTFile.CopyFile(selectedFile, file))
+                            {
+                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to theme ({themeListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                StartCoroutine(UpdateThemePath());
+                            }
+                            else
+                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(selectedFile)} as it already exists in the theme ({themeListPath}) folder.", 3f, EditorManager.NotificationType.Error);
+
+                            break;
+                        }
+                    case FileFormat.VGT:
+                        {
+                            try
+                            {
+                                var file = RTFile.ReadFromFile(selectedFile);
+
+                                var vgjn = JSON.Parse(file);
+
+                                var theme = BeatmapTheme.ParseVG(vgjn);
+
+                                var jn = theme.ToJSON();
+
+                                RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
+
+                                var fileName = FileFormat.LST.AppendTo($"{theme.name.ToLower().Replace(" ", "_")}");
+                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListSlash, fileName), jn.ToString());
+
+                                file = null;
+                                vgjn = null;
+                                theme = null;
+                                jn = null;
+
+                                EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your theme ({themeListPath}) folder.", 2f,
+                                    EditorManager.NotificationType.Success);
+
+                                AchievementManager.inst.UnlockAchievement("time_machine");
+                                StartCoroutine(UpdateThemePath());
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogError(ex);
+                                failed = true;
+                            }
+
+                            break;
+                        }
+                    case FileFormat.LSB:
+                        {
+                            if (Path.GetFileName(selectedFile) != "level.lsb")
+                            {
+                                EditorManager.inst.DisplayNotification("Cannot select non-level.", 2f, EditorManager.NotificationType.Warning);
+                                failed = true;
+                                break;
+                            }
+
+                            ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
+                            {
+                                var path = selectedFile.Replace("/level.lsb", "");
+
+                                var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+
+                                bool copied = false;
+                                foreach (var file in files)
+                                {
+                                    var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath));
+                                    if (RTFile.CopyFile(file, copyTo))
+                                        copied = true;
+                                }
+
+                                if (copied)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({editorListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                    UpdateEditorPath(true);
+                                }
+                                else
+                                    EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(path)}.", 3f, EditorManager.NotificationType.Error);
+
+                                HideWarningPopup();
+                            }, () =>
+                            {
+                                HideWarningPopup();
+                                EditorManager.inst.ShowDialog("Browser Popup");
+                            });
+
+                            break;
+                        }
+                    case FileFormat.VGD:
+                        {
+                            if (selectedFile.Contains("/autosave_"))
+                            {
+                                EditorManager.inst.DisplayNotification("Cannot select autosave.", 2f, EditorManager.NotificationType.Warning);
+                                failed = true;
+                                break;
+                            }
+
+                            try
+                            {
+                                var path = selectedFile.Replace("/level.vgd", "");
+
+                                if (Level.Verify(path))
+                                {
+                                    var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/"), RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash)) + " Convert";
+
+                                    RTFile.CreateDirectory(copyTo);
+
+                                    #region Audio
+
+                                    bool copiedAudioFile = false;
+                                    bool audioFileExists = false;
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)))
+                                    {
+                                        audioFileExists = true;
+                                        copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_OGG), RTFile.CombinePaths(copyTo, Level.LEVEL_OGG));
+                                    }
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)))
+                                    {
+                                        audioFileExists = true;
+                                        copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_WAV), RTFile.CombinePaths(copyTo, Level.LEVEL_WAV));
+                                    }
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
+                                    {
+                                        audioFileExists = true;
+                                        copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.AUDIO_MP3), RTFile.CombinePaths(copyTo, Level.LEVEL_MP3));
+                                    }
+
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)))
+                                    {
+                                        audioFileExists = true;
+                                        copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_OGG), RTFile.CombinePaths(copyTo, Level.LEVEL_OGG));
+                                    }
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)))
+                                    {
+                                        audioFileExists = true;
+                                        copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_WAV), RTFile.CombinePaths(copyTo, Level.LEVEL_WAV));
+                                    }
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3)))
+                                    {
+                                        audioFileExists = true;
+                                        copiedAudioFile = RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_MP3), RTFile.CombinePaths(copyTo, Level.LEVEL_MP3));
+                                    }
+
+                                    if (!copiedAudioFile)
+                                    {
+                                        if (!audioFileExists)
+                                            EditorManager.inst.DisplayNotification("No audio file exists.", 3f, EditorManager.NotificationType.Error);
+                                        else
+                                            EditorManager.inst.DisplayNotification("Cannot overwrite the same file. Please rename the VG level folder you want to convert.", 6f, EditorManager.NotificationType.Error);
+
+                                        return;
+                                    }
+
+                                    #endregion
+
+                                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
+                                        RTFile.CopyFile(RTFile.CombinePaths(path, Level.COVER_JPG), RTFile.CombinePaths(copyTo, Level.LEVEL_JPG));
+
+                                    #region Data
+
+                                    var metadataVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM));
+
+                                    var metadataVGJN = JSON.Parse(metadataVGJSON);
+
+                                    var metadata = MetaData.ParseVG(metadataVGJN);
+
+                                    var metadataJN = metadata.ToJSON();
+
+                                    RTFile.WriteToFile(RTFile.CombinePaths(copyTo, Level.METADATA_LSB), metadataJN.ToString());
+
+                                    var levelVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.LEVEL_VGD));
+
+                                    var levelVGJN = JSON.Parse(levelVGJSON);
+
+                                    var level = GameData.ParseVG(levelVGJN, false, metadata.Version);
+
+                                    level.SaveData(RTFile.CombinePaths(copyTo, Level.LEVEL_LSB), () =>
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({editorListPath}) folder.", 2f,
+                                            EditorManager.NotificationType.Success);
+
+                                        metadataVGJSON = null;
+                                        metadataVGJN = null;
+                                        metadata = null;
+                                        metadataJN = null;
+                                        levelVGJSON = null;
+                                        levelVGJN = null;
+                                        level = null;
+
+                                        AchievementManager.inst.UnlockAchievement("time_machine");
+                                        UpdateEditorPath(true);
+                                    }, true);
+
+                                    #endregion
+                                }
+                                else
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not convert since some needed files are missing!", 2f, EditorManager.NotificationType.Error);
+                                    failed = true;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                EditorManager.inst.DisplayNotification($"There was an error in converting the VG level. Press {CoreConfig.Instance.OpenPAPersistentFolder.Value} to open the log folder and send the Player.log file to @rtmecha.", 5f, EditorManager.NotificationType.Error);
+                                Debug.LogError(ex);
+                                failed = true;
+                            }
+
+                            break;
+                        }
+                }
+
+                if (!failed)
+                    EditorManager.inst.HideDialog("Browser Popup");
+            });
         }
 
         #endregion
