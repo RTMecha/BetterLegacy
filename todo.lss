@@ -4,6 +4,7 @@
 - Story mode. > 1.7.0
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button) > 1.11.0
 - Online multiplayer. > 1.10.0
+- Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 
 ### Minor feature
 - Seed-based random. > 1.8.0
@@ -13,47 +14,50 @@
 - Level modifiers (supports VG triggers). > 1.8.0
 - Global Player toggle for if the players should have their movement speed multiplied by the pitch or not. > 1.8.0
 - 2D option for BG objects (VG parallax support?)
-- Camera Jiggle event keyframe? (instead of a single thing that doesn't change throughout the entire level)
-- Add feedback (KinoFeedback) effect to event keyframes.
-- Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
-- Color picker rework.
-- Somehow figure out mutli BG object editing.
-- Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
-- Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
+- Collapse toggle for modifiers in editor. > 1.8.0
+- Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers)
+- Spawn players on level start toggle? With if off, players will not spawn when the level begins. Players can be spawned after the fact using a respawn players modifier or a checkpoint.
+- Level preview song.
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers [custom end function (same as above), song transition].
+- Transition time for applyAnimation modifiers.
 - Add Set Data to image shape for Custom Player objects.
-- More player model limits (move speed, boost speed, etc).
-- Controller Preferences metadata.
+- Controller Preferences metadata. [Keyboard, Controller, Mouse]
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)
-- Collab sharing via server?
-- Editor online backups?
-- Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
-- Transition time for applyAnimation modifiers.
-- Collapse toggle for modifiers in editor.
-- New modifiers
-> prizeObject
-> setParent
-> playerAction trigger (allows for multiple different keybinds and buttons)
-> trailRendererGradient > 1.8.0
-> trailRendererColored > 1.8.0
-> particleSystemColored > 1.8.0
-> clearHits (clears GameManager.inst.hits and GameManager.inst.deaths)
+- Collab sharing via server
+- Editor online backups
+- Sprites list popup that show images in the game data and level folder.
+
+### Effects
+- Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)
+- Add feedback (KinoFeedback) effect to event keyframes.
+- Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
+
+### Modifiers
+- prizeObject
+- setParent
+- playerAction trigger (allows for multiple different keybinds and buttons)
+- trailRendererGradient > 1.8.0
+- trailRendererColored > 1.8.0
+- particleSystemColored > 1.8.0
+- clearHits (clears GameManager.inst.hits and GameManager.inst.deaths)
 
 ### Misc
+- Color picker rework. > 1.8.0
 - Multi language support.
 - Add rank display to level buttons. (Idk why they don't have them already...)
 - Rework controller shake to be properly toggleable and have a separate variable.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.
 - Undo / redo everything. > 1.13.0
+- Somehow figure out mutli BG object editing.
 - Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level) > 1.8.0
+- Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
+- Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
 - Possibly update input select scene to use new interface system.
 - Add difficulty and artist name to the level creator popup.
-- Spawn players on level start toggle? With if off, players will not spawn. Players can be spawned after the fact using a respawn players modifier or a checkpoint.
 - Improve profile menu. > 1.8.0
 - Improve changelog menu.
-- Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers)
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
 - Implement custom menu list, where it acts like the old menu system with branches.
 - Glow object that acts like bloom.
@@ -67,7 +71,6 @@
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - PrefabOnObject implementation?
-- Sprites list popup that show images in the game data and level folder.
 - Think about maybe replacing the Editor Popup Animation system with a fully customizable one where animations can be more in-depth.
 - Change the Settings menu to a dropdown to be more consistent with the other title bar buttons.
 - Possible multi object editor rework???
