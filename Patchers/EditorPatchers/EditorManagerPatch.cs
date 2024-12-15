@@ -314,16 +314,11 @@ namespace BetterLegacy.Patchers
             {
                 if (Instance.canEdit)
                 {
-                    if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !Instance.IsUsingInputField() || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
+                    if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !CoreHelper.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
                         Instance.ToggleEditor();
 
-                    if (Instance.isEditing)
-                    {
-                        if (!Instance.IsUsingInputField())
-                        {
-                            Instance.handleViewShortcuts();
-                        }
-                    }
+                    if (Instance.isEditing && !CoreHelper.IsUsingInputField)
+                        Instance.handleViewShortcuts();
 
                     if (Instance.OpenedEditor)
                     {
