@@ -341,10 +341,18 @@ namespace BetterLegacy
                 return;
 
             if (CoreHelper.InEditor && Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value))
+            {
                 EventsConfig.Instance.EditorCamEnabled.Value = !EventsConfig.Instance.EditorCamEnabled.Value; // Enables / disables editor camera via the custom keybind.
+                if (CoreHelper.InEditor)
+                    EditorManager.inst.DisplayNotification($"{(EventsConfig.Instance.EditorCamEnabled.Value ? "Enabled" : "Disabled")} editor freecam.", 2f);
+            }
 
             if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value))
+            {
                 EventsConfig.Instance.ShowGUI.Value = !EventsConfig.Instance.ShowGUI.Value; // Enabled / disables the Players / GUI via the custom keybind.
+                if (CoreHelper.InEditor)
+                    EditorManager.inst.DisplayNotification($"{(EventsConfig.Instance.ShowGUI.Value ? "Show" : "Hide")} GUI & Players", 2f);
+            }
 
             if (Input.GetKeyDown(CoreConfig.Instance.OpenPAFolder.Value))
                 RTFile.OpenInFileBrowser.Open(RTFile.ApplicationDirectory); // Opens the PA Application folder via the custom keybind.
