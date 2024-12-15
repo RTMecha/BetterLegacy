@@ -923,6 +923,18 @@ namespace BetterLegacy.Core
         #region Misc
 
         /// <summary>
+        /// Gets the <see cref="Animation.EaseFunction"/> in the easing dictionary.
+        /// </summary>
+        /// <returns>Returns an <see cref="Animation.EaseFunction"/>.</returns>
+        public static Animation.EaseFunction GetFunction(this Easings easing) => Animation.Ease.GetEaseFunction(easing.ToString());
+
+        /// <summary>
+        /// Gets the actual registered scene name.
+        /// </summary>
+        /// <returns>Returns a scene name string from <see cref="SceneName"/>.</returns>
+        public static string ToName(this SceneName sceneName) => sceneName == SceneName.post_level ? sceneName.ToString() : sceneName.ToString().Replace("_", " ");
+
+        /// <summary>
         /// Converts the file format to a string and appends a . to the start, to make it a proper file extension.
         /// </summary>
         /// <returns>Returns a file extension.</returns>
