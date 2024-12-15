@@ -147,21 +147,15 @@ namespace BetterLegacy.Core.Helpers
         public static void LogIsNull<T>(string message, object obj) => Debug.Log($"{message}{typeof(T)} is null: {obj == null}");
 
         //EditorHelper.LoadLevel("C:/Users/Mecha/Desktop/Project Launcher/instances/Mod Testing/beatmaps/editor/RhythmTech/Apocrypha but Platformer")
-        public static void LoadLevel(string fullPath)
-        {
-            SceneHelper.LoadScene(SceneName.Editor, scene =>
-            {
-                CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath));
-            });
-        }
+        public static void LoadLevel(string fullPath) => SceneHelper.LoadScene(SceneName.Editor, scene => CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath)));
 
-        static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
+        public static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
         {
-            SceneHelper.LoadEditor();
-            while (!CoreHelper.InEditor || !RTEditor.inst || EditorManager.inst.loading)
-                yield return null;
+            if (!CoreHelper.InEditor)
+                yield return SceneHelper.ILoadScene(SceneName.Editor);
 
-            yield return new WaitForSeconds(delay);
+            if (delay != 0.0)
+                yield return new WaitForSeconds(delay);
 
             CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath));
         }

@@ -106,7 +106,13 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="sceneName">Scene to load.</param>
         /// <param name="showLoading">If the progress screen should display.</param>
-        public static void LoadScene(SceneName sceneName, bool showLoading = true) => SceneManager.inst.LoadScene(sceneName == SceneName.post_level ? sceneName.ToString() : sceneName.ToString().Replace("_", " "), showLoading);
+        public static void LoadScene(SceneName sceneName, bool showLoading = true) => SceneManager.inst.LoadScene(sceneName.ToName(), showLoading);
+
+        public static IEnumerator ILoadScene(SceneName sceneName, bool showLoading = true)
+        {
+            SceneManager.inst.currentLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            yield return CoreHelper.StartCoroutine(ILoadScene(sceneName.ToName(), showLoading));
+        }
 
         #endregion
 
