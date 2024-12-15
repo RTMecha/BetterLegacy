@@ -293,8 +293,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Anim
 
-            length = orig.length,
             wait = orig.wait,
+            length = orig.length,
 
             #endregion
 
@@ -302,9 +302,15 @@ namespace BetterLegacy.Menus.UI.Elements
 
             playBlipSound = orig.playBlipSound,
             funcJSON = orig.funcJSON, // function to run when the element is clicked.
+            onScrollUpFuncJSON = orig.onScrollUpFuncJSON,
+            onScrollDownFuncJSON = orig.onScrollDownFuncJSON,
             spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+            onWaitEndFuncJSON = orig.onWaitEndFuncJSON,
             func = orig.func,
+            onScrollUpFunc = orig.onScrollUpFunc,
+            onScrollDownFunc = orig.onScrollDownFunc,
             spawnFunc = orig.spawnFunc,
+            onWaitEndFunc = orig.onWaitEndFunc,
 
             #endregion
         };
@@ -3432,6 +3438,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 onScrollDownFuncJSON = jnElement["on_scroll_down_func"]; // function to run when the element is scrolled on.
             if (jnElement["spawn_func"] != null)
                 spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+            if (jnElement["on_wait_end_func"] != null)
+                onWaitEndFuncJSON = jnElement["on_wait_end_func"];
 
             #endregion
         }
