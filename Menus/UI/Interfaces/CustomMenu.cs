@@ -312,7 +312,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                             break;
                                         }
-                                    case "story_json":
+                                    case "storyjson":
                                         {
                                             var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
 
@@ -335,6 +335,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                 }
                                             }
 
+                                            break;
+                                        }
+                                    case "text":
+                                        {
+                                            var element = MenuText.Parse(jnElement["default"], j, loop, spriteAssets);
+
+                                            for (int k = 0; k < jnElement["to"].Count; k++)
+                                            {
+                                                var copy = MenuText.DeepCopy(element);
+                                                copy.text = jnElement["to"][k];
+                                                yield return copy;
+                                            }
                                             break;
                                         }
                                 }
