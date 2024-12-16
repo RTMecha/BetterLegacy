@@ -30,6 +30,10 @@
         /// </summary>
         SEP,
         /// <summary>
+        /// System Error Save file format.
+        /// </summary>
+        SES,
+        /// <summary>
         /// Unity compiled asset file format.
         /// </summary>
         ASSET,
