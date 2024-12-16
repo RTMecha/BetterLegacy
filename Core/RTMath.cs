@@ -225,7 +225,7 @@ namespace BetterLegacy.Core
         public static float ClampZero(float value, float min, float max)
             => min != 0f || max != 0f ? Clamp(value, min, max) : value;
         
-        public static float ClampZero(int value, int min, int max)
+        public static int ClampZero(int value, int min, int max)
             => min != 0 || max != 0 ? Clamp(value, min, max) : value;
 
         public static Vector3 CenterOfVectors(IEnumerable<Vector3> vectors)
