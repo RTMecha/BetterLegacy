@@ -10770,9 +10770,9 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.ShowDialog("Warning Popup");
             RefreshWarningPopup(warning, confirmDelegate, cancelDelegate, confirm, cancel);
 
-            if (ExampleManager.inst && ExampleManager.inst.Visible)
+            var warningPopup = EditorManager.inst.GetDialog("Warning Popup").Dialog.GetChild(0);
+            if (ExampleManager.inst && ExampleManager.inst.Visible && Vector2.Distance(ExampleManager.inst.TotalPosition, warningPopup.localPosition + new Vector3(140f, 200f)) > 20f)
             {
-                var warningPopup = EditorManager.inst.GetDialog("Warning Popup").Dialog.GetChild(0);
                 ExampleManager.inst.Move(
                     new List<IKeyframe<float>>
                     {
@@ -10792,7 +10792,7 @@ namespace BetterLegacy.Editor.Managers
 
             var close = warningPopup.Find("Panel/x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(() => { cancelDelegate?.Invoke(); });
+            close.onClick.AddListener(() => cancelDelegate?.Invoke());
 
             warningPopup.Find("Level Name").GetComponent<Text>().text = warning;
 

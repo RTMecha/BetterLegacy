@@ -2214,35 +2214,24 @@ namespace BetterLegacy.Example
 
             var animation = new RTAnimation("MOVEMENT");
 
-            //var listX = new List<IKeyframe<float>>();
-            //listX.Add(new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear));
-
-            //var listY = new List<IKeyframe<float>>();
-            //listY.Add(new FloatKeyframe(0f, parentY.localPosition.y, Ease.Linear));
-
-            //x.ForEach(d => { listX.Add(d); });
-            //y.ForEach(d => { listY.Add(d); });
-
             x.Insert(0, new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear));
             y.Insert(0, new FloatKeyframe(0f, parentY.localPosition.y, Ease.Linear));
 
             animation.animationHandlers = new List<AnimationHandlerBase>
             {
-                new AnimationHandler<float>(x, x => { parentX.localPosition = new Vector3(x, 0f, 0f); }),
-                new AnimationHandler<float>(y, x => { parentY.localPosition = new Vector3(0f, x, 0f); }),
+                new AnimationHandler<float>(x, x => parentX.localPosition = new Vector3(x, 0f)),
+                new AnimationHandler<float>(y, x => parentY.localPosition = new Vector3(0f, x)),
             };
 
             animation.onComplete = () =>
             {
                 animationController.animations.Remove(animation);
+                parentX.localPosition = new Vector3(((FloatKeyframe)x[x.Count - 1]).Value, 0f);
+                parentY.localPosition = new Vector3(0f, ((FloatKeyframe)y[y.Count - 1]).Value);
                 onComplete?.Invoke();
             };
 
-            animationController.animations.Add(animation);
-
-            animation.ResetTime();
-
-            animation.Play();
+            animationController.Play(animation);
         }
 
         public void FaceLook(List<IKeyframe<float>> x, List<IKeyframe<float>> y, bool stopOthers = true, Action onComplete = null)
