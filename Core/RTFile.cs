@@ -10,12 +10,26 @@ using UnityEngine;
 
 namespace BetterLegacy.Core
 {
+    /// <summary>
+    /// File system wrapper class based on <see cref="LSFunctions.LSFile"/>.
+    /// </summary>
     public static class RTFile
     {
+        #region Properties
+
+        /// <summary>
+        /// The full path to the Project Arrhythmia folder.
+        /// </summary>
         public static string ApplicationDirectory => Application.dataPath.Substring(0, Application.dataPath.LastIndexOf("/")) + "/";
 
+        /// <summary>
+        /// Full path to Project Arrhythmia's global data folder.
+        /// </summary>
         public static string PersistentApplicationDirectory => Application.persistentDataPath;
 
+        /// <summary>
+        /// The main level path.
+        /// </summary>
         public static string BasePath => GameManager.inst.basePath;
 
         /// <summary>
@@ -28,13 +42,49 @@ namespace BetterLegacy.Core
         /// </summary>
         public static string BepInExAssetsPath => $"{BepInExPluginsPath}Assets/";
 
-        public static bool CopyFile(string filePath, string destination)
+        /// <summary>
+        /// If the user is using the Mac Operating System.
+        /// </summary>
+        public static bool IsInMacOS => SystemInfo.operatingSystemFamily == OperatingSystemFamily.MacOSX;
+
+        /// <summary>
+        /// If the user is using the Windows Operating System.
+        /// </summary>
+        public static bool IsInWinOS => SystemInfo.operatingSystemFamily == OperatingSystemFamily.Windows;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Checks if the file path is not null or empty and if it exists.
+        /// </summary>
+        /// <param name="path">File to check.</param>
+        /// <returns>Returns true if the file exists, otherwise returns false.</returns>
+        public static bool FileExists(string path) => !string.IsNullOrEmpty(path) && File.Exists(path);
+
+        /// <summary>
+        /// Checks if the directory path is not null or empty and if it exists.
+        /// </summary>
+        /// <param name="path">Directory to check.</param>
+        /// <returns>Returns true if the directory exists, otherwise returns false.</returns>
+        public static bool DirectoryExists(string path) => !string.IsNullOrEmpty(path) && Directory.Exists(path);
+
+        #region Copying / Moving
+
+        /// <summary>
+        /// Copies a file to a new destination.
+        /// </summary>
+        /// <param name="path">File to copy.</param>
+        /// <param name="destination">Copy destination.</param>
+        /// <returns>Returns true if the file was successfully copied, otherwise returns false.</returns>
+        public static bool CopyFile(string path, string destination)
         {
-            if (!string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(destination) && filePath.ToLower() != destination.ToLower())
+            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
             {
                 try
                 {
-                    File.Copy(filePath, destination, true);
+                    File.Copy(path, destination, true);
                     return true;
                 }
                 catch (Exception ex)
@@ -45,21 +95,114 @@ namespace BetterLegacy.Core
             return false;
         }
 
-        public static bool FileExists(string _filePath) => !string.IsNullOrEmpty(_filePath) && File.Exists(_filePath);
-
-        public static bool DirectoryExists(string _directoryPath) => !string.IsNullOrEmpty(_directoryPath) && Directory.Exists(_directoryPath);
-
-        public static void DeleteFile(string path)
+        /// <summary>
+        /// Copies a directory and all of its contents to a new destination.
+        /// </summary>
+        /// <param name="path">Directory to copy.</param>
+        /// <param name="destination">Copy destination.</param>
+        /// <returns>Returns true if the directory was successfully copied, otherwise returns false.</returns>
+        public static bool CopyDirectory(string path, string destination)
         {
-            if (FileExists(path))
-                File.Delete(path);
+            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            {
+                try
+                {
+                    path = ReplaceSlash(path);
+                    destination = ReplaceSlash(destination);
+                    var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+                    var result = false;
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        var file = ReplaceSlash(files[i]);
+                        var fileDestination = file.Replace(path, destination);
+                        CreateDirectory(GetDirectory(fileDestination));
+                        if (CopyFile(file, fileDestination))
+                            result = true;
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+            return false;
         }
 
+        /// <summary>
+        /// Moves a file to a new destination.
+        /// </summary>
+        /// <param name="path">File to move.</param>
+        /// <param name="destination">Move destination.</param>
+        /// <returns>Returns true if the file was successfully moved, otherwise returns false.</returns>
+        public static bool MoveFile(string path, string destination)
+        {
+            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            {
+                try
+                {
+                    DeleteFile(destination);
+                    File.Move(path, destination);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Moves a directory to a new destination.
+        /// </summary>
+        /// <param name="path">Directory to move.</param>
+        /// <param name="destination">Move destination.</param>
+        /// <returns>Returns true if the directory was successfully moved.</returns>
+        public static bool MoveDirectory(string path, string destination)
+        {
+            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            {
+                try
+                {
+                    DeleteDirectory(destination);
+                    Directory.Move(path, destination);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Path Validation / Parsing
+
+        /// <summary>
+        /// Ensures the file name is acceptible.
+        /// </summary>
+        /// <param name="name">File name to validate.</param>
+        /// <returns>Returns a validated file name.</returns>
         public static string ValidateFileName(string name)
             => Regex.Replace(name, string.Format("([{0}]*\\.+$)|([{0}]+)", Regex.Escape(new string(Path.GetInvalidFileNameChars())) + "+?#!"), string.Empty);
 
+        /// <summary>
+        /// Ensures a directory path if acceptible.
+        /// </summary>
+        /// <param name="name">Directory path to validate.</param>
+        /// <returns>Returns a validated directory path.</returns>
         public static string ValidateDirectory(string name)
             => Regex.Replace(name, string.Format("([{0}]*\\.+$)|([{0}]+)", Regex.Escape(new string(Path.GetInvalidPathChars())) + "+?#!"), string.Empty);
+
+        /// <summary>
+        /// Replaces the "\" with "/".
+        /// </summary>
+        /// <param name="path">Path to format.</param>
+        /// <returns>Returns a replaced path. Example: Path\To\File.txt > Path/To/File.txt</returns>
+        public static string ReplaceSlash(string path) => path.Replace("\\", "/");
 
         /// <summary>
         /// Used for setting the file name of a Legacy file. E.G. "Para Template" > "para_template".
@@ -68,34 +211,155 @@ namespace BetterLegacy.Core
         /// <returns>Returns a Legacy file name.</returns>
         public static string FormatLegacyFileName(string name) => ValidateFileName(RTString.ReplaceSpace(name.ToLower()));
 
+        /// <summary>
+        /// Used for setting the file name of a Alpha file. E.G. "Para Template" > "para template".
+        /// </summary>
+        /// <param name="name">Name to format.</param>
+        /// <returns>Returns a Alpha file name.</returns>
+        public static string FormatAlphaFileName(string name) => ValidateFileName(name.ToLower());
+
+        /// <summary>
+        /// Gets the parent directory of the path.
+        /// </summary>
+        /// <param name="path">Path to get the parent directory of.</param>
+        /// <returns>Returns the paths' parent.</returns>
+        public static string GetDirectory(string path) => ReplaceSlash(Path.GetDirectoryName(path));
+
+        /// <summary>
+        /// Parses specific properties with the proper paths.
+        /// </summary>
+        /// <param name="str">String to parse.</param>
+        /// <returns>Returns a file parsed string.</returns>
         public static string ParsePaths(string str) => string.IsNullOrEmpty(str) ? str : str
             .Replace("{{AppDirectory}}", ApplicationDirectory)
             .Replace("{{BepInExAssetsDirectory}}", BepInExAssetsPath)
             .Replace("{{LevelPath}}", GameManager.inst ? BasePath : ApplicationDirectory);
 
         /// <summary>
+        /// Combines two paths together and ensures a correct set of slashes.
+        /// </summary>
+        /// <param name="path1">First path to combine.</param>
+        /// <param name="path2">Second path to combine.</param>
+        /// <returns>Returns a proper path.<br></br>Example:<br></br>path1: beatmaps/editor<br></br>path2: Node<br>Result: beatmaps/editor/Node</br></returns>
+        public static string CombinePaths(string path1, string path2) => ReplaceSlash(Path.Combine(path1, path2));
+
+        /// <summary>
+        /// Combines multiple paths together and ensures a correct set of slashes.
+        /// </summary>
+        /// <param name="paths">The paths to combine.</param>
+        /// <returns>Returns a proper path.<br></br>Example:<br></br>path1: beatmaps/editor<br></br>path2: Node<br>Result: beatmaps/editor/Node</br></returns>
+        public static string CombinePaths(params string[] paths) => ReplaceSlash(Path.Combine(paths));
+
+        /// <summary>
+        /// Ensures the path ends with a /.
+        /// </summary>
+        /// <param name="path">Path to append.</param>
+        /// <returns>If the path doesn't end with a /, returns the path with a / appeneded, otherwise returns the path.</returns>
+        public static string AppendEndSlash(string path) => string.IsNullOrEmpty(path) ? path : path[path.Length - 1] != '/' ? path + "/" : path;
+
+        /// <summary>
+        /// Ensures the path doesn't end with a /.
+        /// </summary>
+        /// <param name="path">Path to remove a / from.</param>
+        /// <returns>If the path ends with a /, returns the path without the / at the end, otherwise returns the path.</returns>
+        public static string RemoveEndSlash(string path) => string.IsNullOrEmpty(path) ? path : path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
+
+        #endregion
+
+        #region Reading / Writing
+
+        /// <summary>
+        /// Deletes a file, if it exists.
+        /// </summary>
+        /// <param name="path">File to delete.</param>
+        /// <returns>Returns true if the file was successfully deleted, otherwise returns false.</returns>
+        public static bool DeleteFile(string path)
+        {
+            var delete = FileExists(path);
+            try
+            {
+                if (delete)
+                    File.Delete(path);
+            }
+            catch
+            {
+                delete = false;
+            }
+            return delete;
+        }
+
+        /// <summary>
+        /// Deletes a directory recursively, if it exists.
+        /// </summary>
+        /// <param name="path">Directory to delete.</param>
+        /// <returns>Returns true if the directory was successfully deleted, otherwise returns false.</returns>
+        public static bool DeleteDirectory(string path)
+        {
+            var delete = DirectoryExists(path);
+            try
+            {
+                if (delete)
+                    Directory.Delete(path, true);
+            }
+            catch
+            {
+                delete = false;
+            }
+            return delete;
+        }
+
+        /// <summary>
         /// Checks if a directory doesn't exist and if it doesn't, creates a directory.
         /// </summary>
         /// <param name="path">Directory to create.</param>
-        public static void CreateDirectory(string path)
+        public static bool CreateDirectory(string path)
         {
-            if (!DirectoryExists(path))
+            var create = !DirectoryExists(path);
+            if (create)
                 Directory.CreateDirectory(path);
+            return create;
         }
 
+        /// <summary>
+        /// Writes text to a file.
+        /// </summary>
+        /// <param name="path">The file to write to.</param>
+        /// <param name="json">The text to write.</param>
         public static void WriteToFile(string path, string json)
         {
             using var streamWriter = new StreamWriter(path);
             streamWriter.Write(json);
         }
 
-        public static void WriteToFile<T>(string path, T obj)
+        /// <summary>
+        /// Serializes an object and writes it to a file.
+        /// </summary>
+        /// <typeparam name="T">Type of <typeparamref name="T"/>. Must be serializable.</typeparam>
+        /// <param name="path">The file to write to.</param>
+        /// <param name="obj">The object to serialize and write.</param>
+        /// 
+        /// <returns>Returns true if the object was successfully serialized and the file was properly written to.</returns>
+        public static bool WriteToFile<T>(string path, T obj)
         {
-            var binaryFormatter = new BinaryFormatter();
-            using var fileStream = File.Create(path);
-            binaryFormatter.Serialize(fileStream, obj);
+            try
+            {
+                var binaryFormatter = new BinaryFormatter();
+                using var fileStream = File.Create(path);
+                binaryFormatter.Serialize(fileStream, obj);
+                return true;
+            }
+            catch
+            {
+                DeleteFile(path);
+                return false;
+            }
         }
 
+        /// <summary>
+        /// Reads text from a file.
+        /// </summary>
+        /// <param name="path">The file to read from.</param>
+        /// <returns>If the file exists, returns the text from the file, otherwise returns null.</returns>
         public static string ReadFromFile(string path)
         {
             if (!FileExists(path))
@@ -109,6 +373,12 @@ namespace BetterLegacy.Core
             return result;
         }
 
+        /// <summary>
+        /// Deserializes a file into an object.
+        /// </summary>
+        /// <typeparam name="T">Type of <typeparamref name="T"/>. Must be serializable.</typeparam>
+        /// <param name="path">The file to deserialize.</param>
+        /// <returns>If the object is serializable, returns the object deserialized from the file, otherwise returns the default.</returns>
         public static T ReadFromFile<T>(string path)
         {
             if (!FileExists(path))
@@ -117,26 +387,23 @@ namespace BetterLegacy.Core
                 return default;
             }
 
-            var binaryFormatter = new BinaryFormatter();
-            using var fileStream = File.Open(path, FileMode.Open);
-            return (T)binaryFormatter.Deserialize(fileStream);
+            try
+            {
+                var binaryFormatter = new BinaryFormatter();
+                using var fileStream = File.Open(path, FileMode.Open);
+                return (T)binaryFormatter.Deserialize(fileStream);
+            }
+            catch
+            {
+                return default;
+            }
         }
 
-        public static string CombinePaths(string path1, string path2) => Path.Combine(path1, path2).Replace("\\", "/");
-        public static string CombinePaths(params string[] paths) => Path.Combine(paths).Replace("\\", "/");
-
-        public static string AppendEndSlash(string path) => string.IsNullOrEmpty(path) ? path : path[path.Length - 1] != '/' ? path + "/" : path;
-
-        public static string RemoveEndSlash(string path) => path == null || path.Length == 0 ? path : path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
-
-        public static AudioType GetAudioType(string path) => GetFileFormat(path) switch
-        {
-            FileFormat.WAV => AudioType.WAV,
-            FileFormat.OGG => AudioType.OGGVORBIS,
-            FileFormat.MP3 => AudioType.MPEG,
-            _ => AudioType.UNKNOWN,
-        };
-
+        /// <summary>
+        /// Reads bytes from a Stream.
+        /// </summary>
+        /// <param name="input">The input stream.</param>
+        /// <returns>Returns an array of bytes from the <see cref="Stream"/>.</returns>
         public static byte[] ReadBytes(Stream input)
         {
             byte[] buffer = new byte[16 * 1024];
@@ -151,10 +418,42 @@ namespace BetterLegacy.Core
 
         public static string BytesToString(byte[] bytes) => Encoding.UTF8.GetString(bytes);
 
+        #endregion
+
+        #endregion
+
         #region File Formats
+
+        /// <summary>
+        /// Gets a files' <see cref="AudioType"/>.
+        /// </summary>
+        /// <param name="path">Path to get the audio type from.</param>
+        /// <returns>Returns a <see cref="AudioType"/> from the file.</returns>
+        public static AudioType GetAudioType(string path) => GetFileFormat(path).ToAudioType();
+
+        /// <summary>
+        /// Checks if a <see cref="FileFormat"/> is a valid <see cref="AudioType"/>.
+        /// </summary>
+        /// <param name="fileFormat">File format to check.</param>
+        /// <returns>Returns true if the file format is a valid <see cref="AudioType"/>, otherwise returns false.</returns>
+        public static bool ValidAudio(FileFormat fileFormat) => ValidAudioType(fileFormat.ToAudioType());
+
+        /// <summary>
+        /// Checks if an <see cref="AudioType"/> is a valid type to be used by PA.
+        /// </summary>
+        /// <param name="audioType">Audio type to check.</param>
+        /// <returns>Returns true if the audio type is usable in PA.</returns>
+        public static bool ValidAudioType(AudioType audioType) => audioType == AudioType.OGGVORBIS || audioType == AudioType.WAV || audioType == AudioType.MPEG;
+
+        public static FileFormat[] AudioFormats => new FileFormat[] { FileFormat.OGG, FileFormat.WAV, FileFormat.MP3 };
 
         public static string[] AudioDotFormats => DotFormats(FileFormat.OGG, FileFormat.WAV, FileFormat.MP3);
 
+        /// <summary>
+        /// Adds a . to the beginning of all specified file formats.
+        /// </summary>
+        /// <param name="fileFormats">File formats to dot.</param>
+        /// <returns>Returns an array of dot formats. Example: .json, .txt, .lsb</returns>
         public static string[] DotFormats(params FileFormat[] fileFormats)
         {
             var array = new string[fileFormats.Length];
@@ -164,35 +463,29 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Ensures a path ends with the specified file format.
-        /// </summary>
-        /// <param name="path">Path to append a file format to.</param>
-        /// <param name="fileFormats">The file format.</param>
-        /// <returns>Returns a path with an appended file format.</returns>
-        public static string AppendFormat(string path, FileFormat fileFormats) => string.IsNullOrEmpty(path) ? path : AppendDotFormat(path, fileFormats.ToString().ToLower());
-
-        public static string AppendDotFormat(string path, string format) => path.Contains("." + format) ? path : path.EndsWith(".") ? path + format : path + "." + format;
-
-        /// <summary>
         /// Gets a <see cref="FileFormat"/> from a path.
         /// </summary>
         /// <param name="path">Path to get a file format from.</param>
         /// <returns>Returns a parsed <see cref="FileFormat"/>.</returns>
         public static FileFormat GetFileFormat(string path) => string.IsNullOrEmpty(path) || !path.Contains(".") ? FileFormat.NULL : Parser.TryParse(Path.GetExtension(path).Remove("."), true, FileFormat.NULL);
 
-        public static bool FileIsAudio(string path) => GetAudioType(path) != AudioType.UNKNOWN;
+        /// <summary>
+        /// Checks if the file is of an audio type.
+        /// </summary>
+        /// <param name="path">File to check.</param>
+        /// <returns>Returns true if the file is an audio (.ogg, .wav, .mp3), otherwise returns false.</returns>
+        public static bool FileIsAudio(string path) => ValidAudioType(GetAudioType(path));
 
         #endregion
 
+        /// <summary>
+        /// Wrapper for opening a file in the file explorer.
+        /// </summary>
         public static class OpenInFileBrowser
         {
-            public static bool IsInMacOS => SystemInfo.operatingSystem.IndexOf("Mac OS") != -1;
-
-            public static bool IsInWinOS => SystemInfo.operatingSystem.IndexOf("Windows") != -1;
-
-            public static void OpenInMac(string path)
+            static void OpenInMac(string path)
             {
-                string text = path.Replace("\\", "/");
+                string text = ReplaceSlash(path);
                 bool exists = DirectoryExists(text);
 
                 if (!text.StartsWith("\""))
@@ -212,7 +505,7 @@ namespace BetterLegacy.Core
                 }
             }
 
-            public static void OpenInWin(string path)
+            static void OpenInWin(string path)
             {
                 string text = path.Replace("/", "\\");
                 bool exists = DirectoryExists(text);
@@ -227,6 +520,10 @@ namespace BetterLegacy.Core
                 }
             }
 
+            /// <summary>
+            /// Opens a directory in the OS' local file explorer.
+            /// </summary>
+            /// <param name="path">Directory to open.</param>
             public static void Open(string path)
             {
                 if (IsInWinOS)
@@ -245,6 +542,10 @@ namespace BetterLegacy.Core
                 OpenInMac(path);
             }
 
+            /// <summary>
+            /// Opens a file with the associated file format.
+            /// </summary>
+            /// <param name="path">File to open.</param>
             public static void OpenFile(string path) => Process.Start(path);
         }
     }
