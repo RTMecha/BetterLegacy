@@ -1,3 +1,11 @@
+snapshot-2024.12.3 - (pre-1.7.0) > [Dec 17, 2024]
+- Cleaned up some file path related code.
+- Added a notification that informs you about editor freecam and show GUI & Players being toggled.
+- Removed the "Show Levels Without Cover Notification" setting. This setting wasn't really useful.
+- Added "Copy Path" to the File Browser context menus.
+- Added "Shuffle ID" to theme context menus.
+- Made gradient objects work with editor highlighting and layer opacity.
+- Fixed textSequence Play Sound toggle not actually doing anything.
 snapshot-2024.12.2 - (pre-1.7.0) > [Dec 10, 2024]
 - Fixed copyAxisGroup min and max values not allowing for decimal points.
 - Added "File Browser Remembers Location" to Config Manager > Editor > Data.
