@@ -13,39 +13,6 @@ namespace BetterLegacy.Core
 {
     public static class RTMath
     {
-        // from https://stackoverflow.com/questions/355062/is-there-a-string-math-evaluator-in-net
-        public static double Evaluate(string str)
-        {
-            try
-            {
-                return Convert.ToDouble(new DataTable().Compute(str, null));
-            }
-            catch (Exception ex)
-            {
-                if (logException)
-                    CoreHelper.LogError($"Error!\nMath: {str}\nException: {ex}");
-                return 0;
-            }
-        }
-
-        public static bool TryEvaluate(string str, out double result)
-        {
-            try
-            {
-                result = Convert.ToDouble(new DataTable().Compute(str, null));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (logException)
-                    CoreHelper.LogError($"Error!\nMath: {str}\nException: {ex}");
-                result = 0;
-                return false;
-            }
-        }
-
-        public static bool logException = false;
-
         public static bool TryParse(string input, float defaultValue, Dictionary<string, float> variables, out float result)
         {
             try
@@ -315,25 +282,9 @@ namespace BetterLegacy.Core
 
         public static float Percentage(float t, float length) => t / length * 100f;
 
-        static float VectorAngle90(Vector2 vector2) => vector2 == Vector2.zero ? 0f : ((vector2.normalized.x - vector2.normalized.y) + 1f) * 45f;
+        public static Vector2 Multiply(Vector2 a, Vector2 b) => new Vector2(a.x * b.x, a.y * b.y);
 
-        public static Vector2 Multiply(Vector2 a, Vector2 b) => new Vector2
-        {
-            x = a.x * b.x,
-            y = a.y * b.y,
-        };
-        
-        public static Vector3 Multiply(Vector3 a, Vector3 b) => new Vector3
-        {
-            x = a.x * b.x,
-            y = a.y * b.y,
-            z = a.z * b.z,
-        };
-
-        public static float RecursiveLerp(float t, float count)
-        {
-            return 0f;
-        }
+        public static Vector3 Multiply(Vector3 a, Vector3 b) => new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
 
         public static float Recursive(float t, int count)
         {
