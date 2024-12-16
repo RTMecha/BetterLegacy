@@ -494,9 +494,8 @@ namespace BetterLegacy.Components.Editor
 
         void SetHoverColor(LevelObject levelObject, Renderer renderer)
         {
-            if (!HighlightObjects || !hovered)
+            if (!HighlightObjects || !hovered || !levelObject || levelObject.visualObject == null)
                 return;
-
 
             var currentColor = levelObject.visualObject.GetPrimaryColor();
             currentColor += Highlight(currentColor);
@@ -528,7 +527,7 @@ namespace BetterLegacy.Components.Editor
                 if (renderer.material.color != color)
                     renderer.material.color = color;
 
-                if (levelObject.isGradient)
+                if (levelObject && levelObject.isGradient && levelObject.gradientObject != null)
                 {
                     var secondaryColor = levelObject.gradientObject.GetSecondaryColor();
                     var layerSecondaryColor = LSColors.fadeColor(secondaryColor, secondaryColor.a * LayerOpacity);
