@@ -428,7 +428,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             yield break;
         }
 
-        public void CacheSequence(BeatmapObject beatmapObject) => cachedSequences[beatmapObject.id] = CreateSequence(beatmapObject);
+        public CachedSequences CacheSequence(BeatmapObject beatmapObject) => cachedSequences[beatmapObject.id] = CreateSequence(beatmapObject);
 
         public CachedSequences CreateSequence(BeatmapObject beatmapObject)
         {
