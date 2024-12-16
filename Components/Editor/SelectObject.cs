@@ -3,6 +3,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
@@ -457,18 +458,18 @@ namespace BetterLegacy.Components.Editor
                         if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
                             continue;
 
-                        SetHoverColor(renderer);
-                        SetLayerColor(renderer, prefabObject.editorData.layer);
+                        SetHoverColor(levelObject, renderer);
+                        SetLayerColor(levelObject, renderer, prefabObject.editorData.layer);
                     }
                 }
 
                 return;
             }
 
-            if (beatmapObject.editorData == null)
+            if (beatmapObject.editorData == null || !Updater.TryGetObject(beatmapObject, out LevelObject selfLevelObject))
                 return;
 
-            SetColor(renderer, beatmapObject.editorData.layer);
+            SetColor(selfLevelObject, renderer, beatmapObject.editorData.layer);
         }
 
         void FixedUpdate()
@@ -482,22 +483,34 @@ namespace BetterLegacy.Components.Editor
                 RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObjectToDrag);
         }
 
-        void SetColor(Renderer renderer, int layer)
+        void SetColor(LevelObject levelObject, Renderer renderer, int layer)
         {
             if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
                 return;
 
-            SetHoverColor(renderer);
-            SetLayerColor(renderer, layer);
+            SetHoverColor(levelObject, renderer);
+            SetLayerColor(levelObject, renderer, layer);
         }
 
-        void SetHoverColor(Renderer renderer)
+        void SetHoverColor(LevelObject levelObject, Renderer renderer)
         {
             if (!HighlightObjects || !hovered)
                 return;
 
-            var currentColor = renderer.material.color;
-            var color = Input.GetKey(KeyCode.LeftShift) ? new Color(
+
+            var currentColor = levelObject.visualObject.GetPrimaryColor();
+            currentColor += Highlight(currentColor);
+            renderer.material.color = LSColors.fadeColor(currentColor, 1f);
+
+            if (levelObject.isGradient)
+            {
+                var secondaryColor = levelObject.gradientObject.GetSecondaryColor();
+                secondaryColor += Highlight(secondaryColor);
+                renderer.material.SetColor("_ColorSecondary", LSColors.fadeColor(secondaryColor, 1f));
+            }
+        }
+
+        Color Highlight(Color currentColor) => Input.GetKey(KeyCode.LeftShift) ? new Color(
                 currentColor.r > 0.9f ? -HighlightDoubleColor.r : HighlightDoubleColor.r,
                 currentColor.g > 0.9f ? -HighlightDoubleColor.g : HighlightDoubleColor.g,
                 currentColor.b > 0.9f ? -HighlightDoubleColor.b : HighlightDoubleColor.b,
@@ -507,17 +520,21 @@ namespace BetterLegacy.Components.Editor
                 currentColor.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
                 0f);
 
-            renderer.material.color += color;
-            renderer.material.color = LSColors.fadeColor(renderer.material.color, 1f);
-        }
-
-        void SetLayerColor(Renderer renderer, int layer)
+        void SetLayerColor(LevelObject levelObject, Renderer renderer, int layer)
         {
             if (ShowObjectsOnlyOnLayer && layer != EditorManager.inst.layer)
             {
                 var color = LSColors.fadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
                 if (renderer.material.color != color)
                     renderer.material.color = color;
+
+                if (levelObject.isGradient)
+                {
+                    var secondaryColor = levelObject.gradientObject.GetSecondaryColor();
+                    var layerSecondaryColor = LSColors.fadeColor(secondaryColor, secondaryColor.a * LayerOpacity);
+                    if (secondaryColor != layerSecondaryColor)
+                        renderer.material.SetColor("_ColorSecondary", layerSecondaryColor);
+                }
             }
         }
 

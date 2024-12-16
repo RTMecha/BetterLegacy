@@ -42,6 +42,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void SetColor(Color color) => textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
 
+        public override Color GetPrimaryColor() => textMeshPro.color;
+
         public override void Clear()
         {
             GameObject = null;

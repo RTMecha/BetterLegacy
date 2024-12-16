@@ -15,6 +15,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void SetColor(Color color) { }
 
+        public override Color GetPrimaryColor() => Color.white;
+
         public override void Clear()
         {
             GameObject = null;

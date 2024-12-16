@@ -76,6 +76,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             if (opacityCollision)
                 Collider.enabled = color.a + color2.a > 1.99f;
         }
+
+        public override Color GetPrimaryColor() => material.color;
+
+        public Color GetSecondaryColor() => material.GetColor("_ColorSecondary");
         
         public override void Clear()
         {

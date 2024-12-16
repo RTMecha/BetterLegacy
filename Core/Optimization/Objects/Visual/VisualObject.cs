@@ -15,6 +15,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public abstract void SetColor(Color color);
 
+        public abstract Color GetPrimaryColor();
+
         public void SetOrigin(Vector3 origin)
         {
             if (!GameObject)

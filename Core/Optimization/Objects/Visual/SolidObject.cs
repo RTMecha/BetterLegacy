@@ -53,6 +53,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                 Collider.enabled = a > 0.99f;
         }
 
+        public override Color GetPrimaryColor() => material.color;
+
         public override void Clear()
         {
             GameObject = null;
