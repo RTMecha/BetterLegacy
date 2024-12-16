@@ -940,6 +940,36 @@ namespace BetterLegacy.Core
         /// <returns>Returns a file extension.</returns>
         public static string Dot(this FileFormat fileFormat) => "." + fileFormat.ToString().ToLower();
 
+        /// <summary>
+        /// Converts the file format to a string pattern, used for getting files from a directory.
+        /// </summary>
+        /// <returns>Returns a pattern. Example: *.json</returns>
+        public static string ToPattern(this FileFormat fileFormat) => "*" + fileFormat.Dot();
+
+        /// <summary>
+        /// Converts Unity's <see cref="AudioType"/> to the BetterLegacy <see cref="FileFormat"/> enum.
+        /// </summary>
+        /// <returns>Returns an <see cref="AudioType"/>.</returns>
+        public static AudioType ToAudioType(this FileFormat fileFormat) => fileFormat switch
+        {
+            FileFormat.OGG => AudioType.OGGVORBIS,
+            FileFormat.WAV => AudioType.WAV,
+            FileFormat.MP3 => AudioType.MPEG,
+            _ => AudioType.UNKNOWN,
+        };
+
+        /// <summary>
+        /// Converts the BetterLegacy <see cref="FileFormat"/> to Unity's <see cref="AudioType"/> enum.
+        /// </summary>
+        /// <returns>Returns a <see cref="FileFormat"/>.</returns>
+        public static FileFormat ToFileFormat(this AudioType audioType) => audioType switch
+        {
+            AudioType.OGGVORBIS => FileFormat.OGG,
+            AudioType.WAV => FileFormat.WAV,
+            AudioType.MPEG => FileFormat.MP3,
+            _ => FileFormat.NULL,
+        };
+
         public static Rank GetEnum(this DataManager.LevelRank levelRank) => Enum.TryParse(levelRank.name, out Rank rank) ? rank : Rank.Null;
 
         public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
