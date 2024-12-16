@@ -10492,7 +10492,7 @@ namespace BetterLegacy.Editor.Managers
             if (gameData.eventObjects.allEvents == null)
                 gameData.eventObjects.allEvents = new List<List<BaseEventKeyframe>>();
             gameData.eventObjects.allEvents.Clear();
-            GameData.ClampEventListValues(gameData.eventObjects.allEvents, GameData.EventCount);
+            GameData.ClampEventListValues(gameData.eventObjects.allEvents);
 
             for (int i = 0; i < (CoreHelper.AprilFools ? 45 : 25); i++)
             {
@@ -11668,8 +11668,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var gamedata = GameData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.LEVEL_LSB), FileType.LS);
-            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.METADATA_LSB), FileType.LS, false);
+            var gamedata = GameData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.LEVEL_LSB), ArrhythmiaType.LS);
+            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.METADATA_LSB), ArrhythmiaType.LS, false);
 
             var vgd = gamedata.ToJSONVG();
 

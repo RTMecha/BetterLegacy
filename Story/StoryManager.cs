@@ -828,7 +828,7 @@ namespace BetterLegacy.Story
             gameData.eventObjects = new DataManager.GameData.EventObjects();
             gameData.eventObjects.allEvents = allEvents;
 
-            GameData.ClampEventListValues(gameData.eventObjects.allEvents, GameData.EventCount);
+            GameData.ClampEventListValues(gameData.eventObjects.allEvents);
 
             return gameData;
         }
