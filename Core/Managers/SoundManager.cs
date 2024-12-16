@@ -30,18 +30,18 @@ namespace BetterLegacy.Core.Managers
 
         #region Sound
 
-        public void PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
-        public void PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
 
-        public void PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
-        public void PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
 
-        public void PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop, onSoundComplete);
 
-        public void PlaySound(GameObject gameObject, AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null)
+        public AudioSource PlaySound(GameObject gameObject, AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null)
         {
             if (!clip)
-                return;
+                return null;
 
             pitch = pitch < 0f ? -pitch : pitch == 0f ? 0.001f : pitch;
             var audioSource = gameObject.AddComponent<AudioSource>();
@@ -54,11 +54,14 @@ namespace BetterLegacy.Core.Managers
             float length = clip.length / pitch;
             //BaseManager.StartCoroutine(BaseManager.DestroyWithDelay(audioSource, length));
 
-            CoreHelper.PerformActionAfterSeconds(length, () =>
-            {
-                CoreHelper.Destroy(audioSource);
-                onSoundComplete?.Invoke();
-            });
+            if (!loop)
+                CoreHelper.PerformActionAfterSeconds(length, () =>
+                {
+                    CoreHelper.Destroy(audioSource);
+                    onSoundComplete?.Invoke();
+                });
+
+            return audioSource;
         }
 
         public bool TryGetSound(string name, out AudioClip audioClip)
