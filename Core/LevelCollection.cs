@@ -10,12 +10,14 @@ using UnityEngine;
 
 namespace BetterLegacy.Core
 {
+    /// <summary>
+    /// Stores multiple levels in a specific order. Good for stories.
+    /// </summary>
     public class LevelCollection : Exists
     {
-        public LevelCollection()
-        {
-            id = LSText.randomNumString(16);
-        }
+        public LevelCollection() { id = LSText.randomNumString(16); }
+
+        #region Fields
 
         /// <summary>
         /// Identification number of the collection.
@@ -72,7 +74,75 @@ namespace BetterLegacy.Core
         /// </summary>
         public List<Level> levels = new List<Level>();
 
+        /// <summary>
+        /// A list of levels that exist in the level collection file, regardless of whether a level was loaded or not.
+        /// </summary>
+        public List<LevelInfo> levelInformation = new List<LevelInfo>();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the level that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
+        /// </summary>
+        public Level EntryLevel => this[EntryLevelIndex];
+
+        /// <summary>
+        /// Gets the levels' index that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
+        /// </summary>
+        public int EntryLevelIndex
+        {
+            get
+            {
+                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
+
+                if (entryLevelIndex < 0)
+                    entryLevelIndex = 0;
+
+                return entryLevelIndex;
+            }
+        }
+
+        /// <summary>
+        /// Total amount of levels in the collection.
+        /// </summary>
         public int Count => levels.Count;
+
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// The collection icon file.
+        /// </summary>
+        public const string ICON_PNG = "icon.png";
+        /// <summary>
+        /// The collection icon file.
+        /// </summary>
+        public const string ICON_JPG = "icon.jpg";
+
+        /// <summary>
+        /// The collection banner file.
+        /// </summary>
+        public const string BANNER_PNG = "banner.png";
+        /// <summary>
+        /// The collection banner file.
+        /// </summary>
+        public const string BANNER_JPG = "banner.jpg";
+
+        /// <summary>
+        /// The collection file.
+        /// </summary>
+        public const string COLLECTION_LSCO = "collection.lsco";
+        /// <summary>
+        /// The collection preview audio file.
+        /// </summary>
+        public const string PREVIEW_OGG = "preview.ogg";
+
+        #endregion
+
+        #region Indexers
 
         public Level this[int index]
         {
@@ -90,6 +160,17 @@ namespace BetterLegacy.Core
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Parses a level collection. Levels can be loaded either via path, arcade ID or workshop ID. Ensure this runs after Arcade and/or Steam levels have loaded.
+        /// </summary>
+        /// <param name="path">Path to the level collection.</param>
+        /// <param name="jn">JSON to parse.</param>
+        /// <param name="loadLevels">If actual levels should be loaded.</param>
+        /// <returns>Returns a parsed level collection.</returns>
         public static LevelCollection Parse(string path, JSONNode jn, bool loadLevels = true)
         {
             var collection = new LevelCollection();
@@ -109,12 +190,15 @@ namespace BetterLegacy.Core
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
-                collection.levelInformation.Add(LevelInfo.Parse(jn["levels"][i], i));
+                var jnLevel = jn["levels"][i];
+                collection.levelInformation.Add(LevelInfo.Parse(jnLevel, i));
 
                 if (!loadLevels)
                     continue;
 
-                var jnPath = jn["levels"][i]["path"];
+                var jnPath = jnLevel["path"];
+
+                // parse via path
                 if (jnPath != null && (RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_VGD))))
                 {
                     var levelFolder = RTFile.CombinePaths(path, jnPath);
@@ -136,18 +220,23 @@ namespace BetterLegacy.Core
                         RTFile.WriteToFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB), metadataJN.ToString(3));
                     }
 
-                    collection.AddJSON(jn["levels"][i], new Level(levelFolder) { fromCollection = true });
+                    collection.AddJSON(jnLevel, NewCollectionLevel(levelFolder));
                 }
-                else if (jn["levels"][i]["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jn["levels"][i]["arcade_id"], out Level arcadeLevel))
-                    collection.AddJSON(jn["levels"][i], new Level(arcadeLevel.path) { fromCollection = true });
-                else if (jn["levels"][i]["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jn["levels"][i]["workshop_id"], out Level steamLevel))
-                    collection.AddJSON(jn["levels"][i], new Level(steamLevel.path) { fromCollection = true });
+
+                // load via arcade ID
+                else if (jnLevel["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jnLevel["arcade_id"], out Level arcadeLevel))
+                    collection.AddJSON(jnLevel, NewCollectionLevel(arcadeLevel.path));
+
+                // load via workshop ID
+                else if (jnLevel["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jnLevel["workshop_id"], out Level steamLevel))
+                    collection.AddJSON(jnLevel, NewCollectionLevel(steamLevel.path));
+
+                // no level was found, so add null
                 else
                     collection.levels.Add(null);
             }
 
-            collection.icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
-            collection.banner = RTFile.FileExists($"{path}banner.png") ? SpriteHelper.LoadSprite($"{path}banner.png") : SpriteHelper.LoadSprite($"{path}banner.jpg");
+            collection.UpdateIcons();
 
             return collection;
         }
@@ -161,6 +250,9 @@ namespace BetterLegacy.Core
                 if (jn["require_unlock"] != null)
                     level.metadata.requireUnlock = jn["require_unlock"];
             }
+
+            // overwrites the original level ID so it doesn't conflict with the same level outside the collection.
+            // So when the player plays the level inside the collection, it isn't already ranked.
             level.id = jn["id"];
 
             if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
@@ -169,29 +261,177 @@ namespace BetterLegacy.Core
             levels.Add(level);
         }
 
-        /// <summary>
-        /// A list of levels that exist in the level collection file, regardless of whether a level was loaded or not.
-        /// </summary>
-        public List<LevelInfo> levelInformation = new List<LevelInfo>();
+        static Level NewCollectionLevel(string path) => new Level(path) { fromCollection = true };
 
+        /// <summary>
+        /// Updates the icons of the collection.
+        /// </summary>
+        public void UpdateIcons()
+        {
+            icon = RTFile.FileExists(RTFile.CombinePaths(path, ICON_PNG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, ICON_PNG)) : SpriteHelper.LoadSprite(RTFile.CombinePaths(path, ICON_JPG));
+            banner = RTFile.FileExists(RTFile.CombinePaths(path, BANNER_PNG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, BANNER_PNG)) : SpriteHelper.LoadSprite(RTFile.CombinePaths(path, BANNER_JPG));
+        }
+
+        /// <summary>
+        /// Moves a levels' order.
+        /// </summary>
+        /// <param name="id">ID of a level to move.</param>
+        /// <param name="moveTo">Index to move to.</param>
+        public void Move(string id, int moveTo)
+        {
+            levels.Move(x => x.id == id, moveTo);
+            levelInformation.Move(x => x.id == id, moveTo);
+            levelInformation[moveTo].index = moveTo;
+        }
+
+        /// <summary>
+        /// Saves the level collection.
+        /// </summary>
+        /// <param name="saveIcons">If icons should be saved.</param>
+        /// <param name="jpg">If icons should be saved as JPG.</param>
+        public void Save(bool saveIcons = true, bool jpg = true)
+        {
+            var jn = JSON.Parse("{}");
+
+            jn["id"] = id;
+            jn["server_id"] = serverID;
+            jn["name"] = name;
+            jn["creator"] = creator;
+            jn["desc"] = name;
+
+            if (tags != null)
+                for (int i = 0; i < tags.Length; i++)
+                    jn["tags"][i] = tags[i];
+
+            for (int i = 0; i < levelInformation.Count; i++)
+                jn["levels"][i] = levelInformation[i].ToJSON();
+
+            if (saveIcons)
+                SaveIcons(jpg);
+
+            RTFile.WriteToFile(RTFile.CombinePaths(path, COLLECTION_LSCO), jn.ToString(3));
+        }
+
+        /// <summary>
+        /// Saves the level collections images.
+        /// </summary>
+        /// <param name="jpg">If icons should be saved as JPG.</param>
+        public void SaveIcons(bool jpg = true)
+        {
+            if (icon)
+                SpriteHelper.SaveSprite(icon, RTFile.CombinePaths(path, jpg ? ICON_JPG : ICON_PNG));
+            if (banner)
+                SpriteHelper.SaveSprite(banner, RTFile.CombinePaths(path, jpg ? BANNER_JPG : BANNER_PNG));
+        }
+
+        /// <summary>
+        /// Adds a <see cref="Level"/> to the level collection and copies its folder to the level collection folder.
+        /// </summary>
+        /// <param name="level">Level to add.</param>
+        public void AddLevelToFolder(Level level)
+        {
+            if (levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
+                return;
+
+            var path = RTFile.RemoveEndSlash(level.path);
+            var folderName = Path.GetFileName(path);
+            var levelPath = $"{RTFile.CombinePaths(this.path, folderName)}/";
+
+            var files = Directory.GetFiles(level.path, "*", SearchOption.AllDirectories);
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                var copyToPath = file.Replace("\\", "/").Replace(level.path, levelPath);
+                RTFile.CreateDirectory(Path.GetDirectoryName(copyToPath));
+                RTFile.CopyFile(file, copyToPath);
+            }
+
+            var actualLevel = new Level(levelPath);
+
+            levels.Add(actualLevel);
+            levelInformation.Add(LevelInfo.FromLevel(actualLevel));
+        }
+
+        /// <summary>
+        /// Removes a <see cref="Level"/> from the level collection and deletes its folder.
+        /// </summary>
+        /// <param name="level">Level to remove.</param>
+        public void RemoveLevelFromFolder(Level level)
+        {
+            if (!levels.TryFind(x => x.id == level.id, out Level actualLevel))
+                return;
+
+            Directory.Delete(RTFile.RemoveEndSlash(actualLevel.path), true);
+
+            levels.RemoveAll(x => x.id == level.id);
+            levelInformation.RemoveAll(x => x.id == level.id);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Class used for obtaining info about a level even if the player doesn't have the level loaded in their arcade.
+        /// </summary>
         public class LevelInfo
         {
+            #region Fields
+
+            /// <summary>
+            /// Index of the level in the <see cref="LevelCollection.levels"/>.
+            /// </summary>
             public int index;
+            /// <summary>
+            /// Unique ID of the level. Changes <see cref="arcadeID"/> to this when loading the level from the collection, so it does not conflict with the same level outside the collection.
+            /// </summary>
             public string id;
 
+            /// <summary>
+            /// Path to the level in the level collection folder, if it's located there.
+            /// </summary>
             public string path;
+            /// <summary>
+            /// Path to the level in the editor. Used for editing the level collection.
+            /// </summary>
             public string editorPath;
 
+            /// <summary>
+            /// Title of the song the level uses.
+            /// </summary>
             public string songTitle;
+            /// <summary>
+            /// Human-readable name of the level.
+            /// </summary>
             public string name;
+            /// <summary>
+            /// Creator of the level.
+            /// </summary>
             public string creator;
 
+            /// <summary>
+            /// Arcade ID reference.
+            /// </summary>
             public string arcadeID;
+            /// <summary>
+            /// Server ID reference. Used for downloading the level off the Arcade server. if the player does not have it.
+            /// </summary>
             public string serverID;
+            /// <summary>
+            /// Steam Workshop ID reference. Used for subscribing to and downloading the level off the Steam Workshop if the player does not have it.
+            /// </summary>
             public string workshopID;
 
+            /// <summary>
+            /// If the level should be hidden in the level collection list.
+            /// </summary>
             public bool hidden;
+            /// <summary>
+            /// If the level requires unlocking / completion in order to access the level in the level collection list.
+            /// </summary>
             public bool requireUnlock;
+
+            #endregion
+
+            #region Methods
 
             public static LevelInfo Parse(JSONNode jn, int index) => new LevelInfo
             {
@@ -261,113 +501,8 @@ namespace BetterLegacy.Core
                 hidden = false,
                 requireUnlock = level.metadata.requireUnlock,
             };
-        }
 
-        public static void Test()
-        {
-            //var collection = new LevelCollection();
-            //var path = $"{RTFile.ApplicationDirectory}beatmaps/arcade/Collection Test";
-
-            //if (!RTFile.DirectoryExists(path))
-            //    Directory.CreateDirectory(path);
-
-            //collection.path = $"{path}/";
-
-            //collection.AddLevel(new Level($"{RTFile.ApplicationDirectory}beatmaps/arcade/2581783822/"));
-
-            //collection.Save();
-        }
-
-        public Level EntryLevel => this[EntryLevelIndex];
-
-        public int EntryLevelIndex
-        {
-            get
-            {
-                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
-
-                if (entryLevelIndex < 0)
-                    entryLevelIndex = 0;
-
-                return entryLevelIndex;
-            }
-        }
-
-        /// <summary>
-        /// The collection file.
-        /// </summary>
-        public const string COLLECTION_LSCO = "collection.lsco";
-        /// <summary>
-        /// The collection preview audio file.
-        /// </summary>
-        public const string PREVIEW_OGG = "preview.ogg";
-
-        public void Move(string id, int moveTo)
-        {
-            levels.Move(x => x.id == id, moveTo);
-            levelInformation.Move(x => x.id == id, moveTo);
-            levelInformation[moveTo].index = moveTo;
-        }
-
-        public void Save()
-        {
-            var jn = JSON.Parse("{}");
-
-            jn["id"] = id;
-            jn["server_id"] = serverID;
-            jn["name"] = name;
-            jn["creator"] = creator;
-            jn["desc"] = name;
-            if (tags != null)
-                for (int i = 0; i < tags.Length; i++)
-                    jn["tags"][i] = tags[i];
-
-            for (int i = 0; i < levelInformation.Count; i++)
-                jn["levels"][i] = levelInformation[i].ToJSON();
-
-            if (icon)
-                SpriteHelper.SaveSprite(icon, $"{path}icon.png");
-            if (banner)
-                SpriteHelper.SaveSprite(banner, $"{path}banner.png");
-            RTFile.WriteToFile($"{path}collection.lsco", jn.ToString(3));
-        }
-
-        public void AddLevelToFolder(Level level)
-        {
-            if (levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
-                return;
-
-            var path = Path.GetDirectoryName(level.path);
-            var folderName = Path.GetFileName(path);
-
-            var files = Directory.GetFiles(level.path, "*", SearchOption.AllDirectories);
-            for (int i = 0; i < files.Length; i++)
-            {
-                var file = files[i];
-                var copyToPath = file.Replace("\\", "/").Replace(level.path, $"{this.path}{folderName}/");
-                if (!RTFile.DirectoryExists(Path.GetDirectoryName(copyToPath)))
-                    Directory.CreateDirectory(Path.GetDirectoryName(copyToPath));
-
-                File.Copy(file, copyToPath, RTFile.FileExists(copyToPath));
-            }
-
-            var actualLevel = new Level($"{this.path}{folderName}/");
-
-            levels.Add(actualLevel);
-            levelInformation.Add(LevelInfo.FromLevel(actualLevel));
-        }
-
-        public void RemoveLevelFromFolder(Level level)
-        {
-            if (!levels.Any(x => x.id == level.id))
-                return;
-
-            var actualLevel = levels.Find(x => x.id == level.id);
-
-            Directory.Delete(Path.GetDirectoryName(actualLevel.path), true);
-
-            levels.RemoveAll(x => x.id == level.id);
-            levelInformation.RemoveAll(x => x.id == level.id);
+            #endregion
         }
     }
 }
