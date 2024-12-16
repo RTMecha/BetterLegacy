@@ -651,7 +651,7 @@ namespace BetterLegacy.Arcade
         public IEnumerator SelectLocalLevel(Level level)
         {
             if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
             else
                 OpenPlayLevelMenu(level);
         }
