@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(ObjectManager.AddPrefabToLevel))]
         [HarmonyPrefix]
-        static bool AddPrefabToLevelPrefix(DataManager.GameData.PrefabObject __0) => false;
+        static bool AddPrefabToLevelPrefix() => false;
 
         [HarmonyPatch(nameof(ObjectManager.Update))]
         [HarmonyPrefix]
