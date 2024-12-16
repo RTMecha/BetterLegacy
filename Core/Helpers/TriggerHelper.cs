@@ -31,183 +31,143 @@ namespace BetterLegacy.Core.Helpers
             return entry;
         }
 
-        public static EventTrigger.Entry ScrollDelta(InputField inputField, float amount = 0.1f, float mutliply = 10f, float min = 0f, float max = 0f, bool multi = false)
+        public static EventTrigger.Entry ScrollDelta(InputField inputField, float amount = 0.1f, float mutliply = 10f, float min = 0f, float max = 0f, bool multi = false) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(eventData =>
-            {
-                var pointerEventData = (PointerEventData)eventData;
+            if (!float.TryParse(inputField.text, out float result))
+                return;
 
-                if (float.TryParse(inputField.text, out float result))
-                {
-                    if (!multi || !Input.GetKey(KeyCode.LeftShift))
-                    {
-                        var config = EditorConfig.Instance;
+            var pointerEventData = (PointerEventData)eventData;
 
-                        var largeKey = !multi ? config.ScrollwheelLargeAmountKey.Value : config.ScrollwheelVector2LargeAmountKey.Value;
-                        var smallKey = !multi ? config.ScrollwheelSmallAmountKey.Value : config.ScrollwheelVector2SmallAmountKey.Value;
-                        var regularKey = !multi ? config.ScrollwheelRegularAmountKey.Value : config.ScrollwheelVector2RegularAmountKey.Value;
+            if (!(!multi || !Input.GetKey(KeyCode.LeftShift)))
+                return;
 
-                        // Large Amount
-                        bool large = largeKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(regularKey) || Input.GetKey(largeKey);
+            var largeKey = !multi ? EditorConfig.Instance.ScrollwheelLargeAmountKey.Value : EditorConfig.Instance.ScrollwheelVector2LargeAmountKey.Value;
+            var smallKey = !multi ? EditorConfig.Instance.ScrollwheelSmallAmountKey.Value : EditorConfig.Instance.ScrollwheelVector2SmallAmountKey.Value;
+            var regularKey = !multi ? EditorConfig.Instance.ScrollwheelRegularAmountKey.Value : EditorConfig.Instance.ScrollwheelVector2RegularAmountKey.Value;
 
-                        // Small Amount
-                        bool small = smallKey == KeyCode.None && !Input.GetKey(largeKey) && !Input.GetKey(regularKey) || Input.GetKey(smallKey);
+            bool large = largeKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(regularKey) || Input.GetKey(largeKey);
+            bool small = smallKey == KeyCode.None && !Input.GetKey(largeKey) && !Input.GetKey(regularKey) || Input.GetKey(smallKey);
+            bool regular = regularKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(largeKey) || Input.GetKey(regularKey);
 
-                        // Regular Amount
-                        bool regular = regularKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(largeKey) || Input.GetKey(regularKey);
+            if (pointerEventData.scrollDelta.y < 0f)
+                result -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+            if (pointerEventData.scrollDelta.y > 0f)
+                result += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
 
-                        if (pointerEventData.scrollDelta.y < 0f)
-                            result -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                        if (pointerEventData.scrollDelta.y > 0f)
-                            result += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+            result = RTMath.ClampZero(result, min, max);
+            inputField.text = result.ToString("f2");
+        });
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
-
-                        inputField.text = result.ToString("f2");
-                    }
-                }
-            });
-            return entry;
-        }
-
-        public static EventTrigger.Entry ScrollDeltaInt(InputField inputField, int amount = 1, int min = 0, int max = 0, bool multi = false)
+        public static EventTrigger.Entry ScrollDeltaInt(InputField inputField, int amount = 1, int min = 0, int max = 0, bool multi = false) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(eventData =>
-            {
-                var pointerEventData = (PointerEventData)eventData;
+            if (!int.TryParse(inputField.text, out int result))
+                return;
 
-                if (int.TryParse(inputField.text, out int result))
-                {
-                    if (!multi || !Input.GetKey(KeyCode.LeftShift))
-                    {
-                        bool large = Input.GetKey(KeyCode.LeftControl);
+            var pointerEventData = (PointerEventData)eventData;
 
-                        if (pointerEventData.scrollDelta.y < 0f)
-                            result -= amount * (large ? 10 : 1);
-                        if (pointerEventData.scrollDelta.y > 0f)
-                            result += amount * (large ? 10 : 1);
+            if (!(!multi || !Input.GetKey(KeyCode.LeftShift)))
+                return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+            if (pointerEventData.scrollDelta.y < 0f)
+                result -= amount * (Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10 : 1);
+            if (pointerEventData.scrollDelta.y > 0f)
+                result += amount * (Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10 : 1);
 
-                        if (inputField.text != result.ToString())
-                            inputField.text = result.ToString();
-                    }
-                }
-            });
-            return entry;
-        }
+            result = RTMath.ClampZero(result, min, max);
+            if (inputField.text != result.ToString())
+                inputField.text = result.ToString();
+        });
 
-        public static EventTrigger.Entry ScrollDeltaVector2(InputField ifx, InputField ify, float amount, float mutliply, List<float> clamp = null)
+        public static EventTrigger.Entry ScrollDeltaVector2(InputField ifx, InputField ify, float amount, float mutliply, List<float> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(eventData =>
+            if (!Input.GetKey(KeyCode.LeftShift) || !float.TryParse(ifx.text, out float x) || !float.TryParse(ify.text, out float y))
+                return;
+
+            var pointerEventData = (PointerEventData)eventData;
+
+            var largeKey = EditorConfig.Instance.ScrollwheelVector2LargeAmountKey.Value;
+            var smallKey = EditorConfig.Instance.ScrollwheelVector2SmallAmountKey.Value;
+            var regularKey = EditorConfig.Instance.ScrollwheelVector2RegularAmountKey.Value;
+
+            // Large Amount
+            bool large = largeKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(regularKey) || Input.GetKey(largeKey);
+
+            // Small Amount
+            bool small = smallKey == KeyCode.None && !Input.GetKey(largeKey) && !Input.GetKey(regularKey) || Input.GetKey(smallKey);
+
+            // Regular Amount
+            bool regular = regularKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(largeKey) || Input.GetKey(regularKey);
+
+            if (pointerEventData.scrollDelta.y < 0f)
             {
-                var pointerEventData = (PointerEventData)eventData;
-                if (Input.GetKey(KeyCode.LeftShift) && float.TryParse(ifx.text, out float x) && float.TryParse(ify.text, out float y))
-                {
-                    var config = EditorConfig.Instance;
+                x -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+                y -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+            }
 
-                    var largeKey = config.ScrollwheelVector2LargeAmountKey.Value;
-                    var smallKey = config.ScrollwheelVector2SmallAmountKey.Value;
-                    var regularKey = config.ScrollwheelVector2RegularAmountKey.Value;
+            if (pointerEventData.scrollDelta.y > 0f)
+            {
+                x += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+                y += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+            }
 
-                    // Large Amount
-                    bool large = largeKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(regularKey) || Input.GetKey(largeKey);
+            if (clamp != null && clamp.Count > 1)
+            {
+                x = Mathf.Clamp(x, clamp[0], clamp[1]);
+                if (clamp.Count == 2)
+                    y = Mathf.Clamp(y, clamp[0], clamp[1]);
+                else
+                    y = Mathf.Clamp(y, clamp[2], clamp[3]);
+            }
 
-                    // Small Amount
-                    bool small = smallKey == KeyCode.None && !Input.GetKey(largeKey) && !Input.GetKey(regularKey) || Input.GetKey(smallKey);
+            ifx.text = x.ToString("f2");
+            ify.text = y.ToString("f2");
+        });
 
-                    // Regular Amount
-                    bool regular = regularKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(largeKey) || Input.GetKey(regularKey);
-
-                    if (pointerEventData.scrollDelta.y < 0f)
-                    {
-                        x -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                        y -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                    }
-
-                    if (pointerEventData.scrollDelta.y > 0f)
-                    {
-                        x += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                        y += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                    }
-
-                    if (clamp != null && clamp.Count > 1)
-                    {
-                        x = Mathf.Clamp(x, clamp[0], clamp[1]);
-                        if (clamp.Count == 2)
-                            y = Mathf.Clamp(y, clamp[0], clamp[1]);
-                        else
-                            y = Mathf.Clamp(y, clamp[2], clamp[3]);
-                    }
-
-                    ifx.text = x.ToString("f2");
-                    ify.text = y.ToString("f2");
-                }
-            });
-            return entry;
-        }
-
-        public static EventTrigger.Entry ScrollDeltaVector2Int(InputField ifx, InputField ify, int amount, List<int> clamp = null)
+        public static EventTrigger.Entry ScrollDeltaVector2Int(InputField ifx, InputField ify, int amount, List<int> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(eventData =>
+            if (!Input.GetKey(KeyCode.LeftShift) || !int.TryParse(ifx.text, out int x) || !int.TryParse(ify.text, out int y))
+                return;
+
+            var pointerEventData = (PointerEventData)eventData;
+
+            bool large = Input.GetKey(KeyCode.LeftControl);
+
+            if (pointerEventData.scrollDelta.y < 0f)
             {
-                var pointerEventData = (PointerEventData)eventData;
-                if (Input.GetKey(KeyCode.LeftShift) && int.TryParse(ifx.text, out int x) && int.TryParse(ify.text, out int y))
-                {
-                    bool large = Input.GetKey(KeyCode.LeftControl);
+                x -= large ? amount * 10 : amount;
+                y -= large ? amount * 10 : amount;
+            }
 
-                    if (pointerEventData.scrollDelta.y < 0f)
-                    {
-                        x -= large ? amount * 10 : amount;
-                        y -= large ? amount * 10 : amount;
-                    }
+            if (pointerEventData.scrollDelta.y > 0f)
+            {
+                x += large ? amount * 10 : amount;
+                y += large ? amount * 10 : amount;
+            }
 
-                    if (pointerEventData.scrollDelta.y > 0f)
-                    {
-                        x += large ? amount * 10 : amount;
-                        y += large ? amount * 10 : amount;
-                    }
+            if (clamp != null)
+            {
+                x = Mathf.Clamp(x, clamp[0], clamp[1]);
+                if (clamp.Count == 2)
+                    y = Mathf.Clamp(y, clamp[0], clamp[1]);
+                else
+                    y = Mathf.Clamp(y, clamp[2], clamp[3]);
+            }
 
-                    if (clamp != null)
-                    {
-                        x = Mathf.Clamp(x, clamp[0], clamp[1]);
-                        if (clamp.Count == 2)
-                            y = Mathf.Clamp(y, clamp[0], clamp[1]);
-                        else
-                            y = Mathf.Clamp(y, clamp[2], clamp[3]);
-                    }
+            ifx.text = x.ToString();
+            ify.text = y.ToString();
+        });
 
-                    ifx.text = x.ToString();
-                    ify.text = y.ToString();
-                }
-            });
-            return entry;
-        }
-
-        public static EventTrigger.Entry ScrollDelta(Dropdown dropdown)
+        public static EventTrigger.Entry ScrollDelta(Dropdown dropdown) => CreateEntry(EventTriggerType.Scroll, baseEventData =>
         {
-            return CreateEntry(EventTriggerType.Scroll, baseEventData =>
-            {
-                if (!EditorConfig.Instance.ScrollOnEasing.Value)
-                    return;
+            if (!EditorConfig.Instance.ScrollOnEasing.Value)
+                return;
 
-                var pointerEventData = (PointerEventData)baseEventData;
-                if (pointerEventData.scrollDelta.y > 0f)
-                    dropdown.value = dropdown.value == 0 ? dropdown.options.Count - 1 : dropdown.value - 1;
-                if (pointerEventData.scrollDelta.y < 0f)
-                    dropdown.value = dropdown.value == dropdown.options.Count - 1 ? 0 : dropdown.value + 1;
-            });
-        }
+            var pointerEventData = (PointerEventData)baseEventData;
+            if (pointerEventData.scrollDelta.y > 0f)
+                dropdown.value = dropdown.value == 0 ? dropdown.options.Count - 1 : dropdown.value - 1;
+            if (pointerEventData.scrollDelta.y < 0f)
+                dropdown.value = dropdown.value == dropdown.options.Count - 1 ? 0 : dropdown.value + 1;
+        });
 
         public static void IncreaseDecreaseButtons(InputField inputField, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, Transform t = null)
         {
@@ -222,28 +182,14 @@ namespace BetterLegacy.Core.Helpers
             btR.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
-                {
-                    result -= Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount;
-
-                    if (min != 0f || max != 0f)
-                        result = Mathf.Clamp(result, min, max);
-
-                    inputField.text = result.ToString();
-                }
+                    inputField.text = RTMath.ClampZero(result - (Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount), min, max).ToString();
             });
 
             btL.onClick.ClearAll();
             btL.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
-                {
-                    result += Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount;
-
-                    if (min != 0f || max != 0f)
-                        result = Mathf.Clamp(result, min, max);
-
-                    inputField.text = result.ToString();
-                }
+                    inputField.text = RTMath.ClampZero(result + (Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount), min, max).ToString();
             });
 
             if (tf.TryFind("<<", out Transform btLargeRTF) && btLargeRTF.gameObject.TryGetComponent(out Button btLargeR))
@@ -252,14 +198,7 @@ namespace BetterLegacy.Core.Helpers
                 btLargeR.onClick.AddListener(() =>
                 {
                     if (float.TryParse(inputField.text, out float result))
-                    {
-                        result -= (Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount) * 10f;
-
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
-
-                        inputField.text = result.ToString();
-                    }
+                        inputField.text = RTMath.ClampZero(result - ((Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount) * 10f), min, max).ToString();
                 });
             }
 
@@ -269,14 +208,7 @@ namespace BetterLegacy.Core.Helpers
                 btLargeL.onClick.AddListener(() =>
                 {
                     if (float.TryParse(inputField.text, out float result))
-                    {
-                        result += (Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount) * 10f;
-
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
-
-                        inputField.text = result.ToString();
-                    }
+                        inputField.text = RTMath.ClampZero(result + ((Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount) * 10f), min, max).ToString();
                 });
             }
         }
@@ -294,28 +226,14 @@ namespace BetterLegacy.Core.Helpers
             btR.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
-                {
-                    result -= Input.GetKey(KeyCode.LeftControl) ? amount * 10 : amount;
-
-                    if (min != 0f || max != 0f)
-                        result = Mathf.Clamp(result, min, max);
-
-                    inputField.text = result.ToString();
-                }
+                    inputField.text = RTMath.ClampZero(result - (Input.GetKey(KeyCode.LeftControl) ? amount * 10 : amount), min, max).ToString();
             });
 
             btL.onClick.ClearAll();
             btL.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
-                {
-                    result += Input.GetKey(KeyCode.LeftControl) ? amount * 10 : amount;
-
-                    if (min != 0f || max != 0f)
-                        result = Mathf.Clamp(result, min, max);
-
-                    inputField.text = result.ToString();
-                }
+                    inputField.text = RTMath.ClampZero(result + (Input.GetKey(KeyCode.LeftControl) ? amount * 10 : amount), min, max).ToString();
             });
         }
 
