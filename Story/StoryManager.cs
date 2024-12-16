@@ -19,42 +19,20 @@ using BetterLegacy.Menus;
 
 namespace BetterLegacy.Story
 {
+    /// <summary>
+    /// Manager class for handling the BetterLegacy (Classic Arrhythmia) story mode.
+    /// </summary>
     public class StoryManager : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="StoryManager"/> global instance reference.
+        /// </summary>
         public static StoryManager inst;
 
-        public static string StoryAssetsPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/";
-
-        public bool Loaded { get; set; }
-
-        public bool ContinueStory { get; set; } = true;
-
-        public static StoryMode StoryModeDebugRef => StoryMode.Instance;
-
         /// <summary>
-        /// The default chapter rank requirement for "bonuses" to be unlocked. In this case, the player needs to get higher than an A rank (S / SS rank).
-        /// </summary>
-        public const int CHAPTER_RANK_REQUIREMENT = 3;
-
-        //public List<List<string>> levelIDs = new List<List<string>>
-        //{
-        //    new List<string>
-        //    {
-        //        "0603661088835365", // Granite
-        //        "7376679616786413", // Ahead of the Curve
-        //        "9784345755418661", // Super Gamer Girl 3D
-        //        "9454675971710439", // Slime Boy Color
-        //        "6698982684586290", // Node (Para)
-        //        "4462948827770399", // ???
-        //    },
-        //    new List<string>
-        //    {
-        //        "3434489214197233", // RPM
-        //    },
-        //};
-
-        /// <summary>
-        /// Inits StoryManager.
+        /// Inits <see cref="StoryManager"/>.
         /// </summary>
         public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
 
@@ -64,136 +42,67 @@ namespace BetterLegacy.Story
             Load();
         }
 
-        List<SecretSequence> secretSequences = new List<SecretSequence>()
-        {
-            new SecretSequence(new Dictionary<int, KeyCode>
-            {
-                { 0, KeyCode.B },
-                { 1, KeyCode.E },
-                { 2, KeyCode.L },
-                { 3, KeyCode.U },
-                { 4, KeyCode.G },
-                { 5, KeyCode.A },
-            }, () =>
-            {
-                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+        /// <summary>
+        /// Path to the story assets folder.
+        /// </summary>
+        public static string StoryAssetsPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/";
 
-                if (Editor.Managers.RTEditor.inst)
-                {
-                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
-                    {
-                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
-                        LoadResourceLevel(0, SAVE_RESOURCE, SAVE_RESOURCE);
-                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
-                    return;
-                }
+        /// <summary>
+        /// If a story level was loaded.
+        /// </summary>
+        public bool Loaded { get; set; }
 
-                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
-                LoadResourceLevel(0, SAVE_RESOURCE, SAVE_RESOURCE);
-            }), // load save
-            new SecretSequence(new Dictionary<int, KeyCode>
-            {
-                { 0, KeyCode.D },
-                { 1, KeyCode.E },
-                { 2, KeyCode.M },
-                { 3, KeyCode.O },
-            }, () =>
-            {
-                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+        /// <summary>
+        /// If story should continue when a level is completed.
+        /// </summary>
+        public bool ContinueStory { get; set; } = true;
 
-                if (Editor.Managers.RTEditor.inst)
-                {
-                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
-                    {
-                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
-                        LoadResourceLevel(1, AOTC_RESOURCE, AOTC_RESOURCE);
-                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
-                    return;
-                }
+        /// <summary>
+        /// Story mode reference for debugging
+        /// </summary>
+        public static StoryMode StoryModeDebugRef => StoryMode.Instance;
 
-                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
-                LoadResourceLevel(1, AOTC_RESOURCE, AOTC_RESOURCE);
-            }), // load old demo
-            new SecretSequence(new Dictionary<int, KeyCode>
-            {
-                { 0, KeyCode.M },
-                { 1, KeyCode.I },
-                { 2, KeyCode.K },
-                { 3, KeyCode.U },
-            }, () =>
-            {
-                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
-
-                if (Editor.Managers.RTEditor.inst)
-                {
-                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
-                    {
-                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
-                        LoadResourceLevel(1, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
-                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
-                    return;
-                }
-
-                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
-                LoadResourceLevel(1, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
-            }), // load old demo
-        };
-
-        public class SecretSequence
-        {
-            public SecretSequence(Dictionary<int, KeyCode> keys, Action onSequenceEnd)
-            {
-                this.keys = keys;
-                this.onSequenceEnd = onSequenceEnd;
-            }
-
-            public int counter;
-            public Dictionary<int, KeyCode> keys;
-            public Action onSequenceEnd;
-        }
-
-        void Update()
-        {
-            if (CoreHelper.IsUsingInputField)
-                return;
-
-            var key = CoreHelper.GetKeyCodeDown();
-
-            if (key == KeyCode.None)
-                return;
-
-            for (int i = 0; i < secretSequences.Count; i++)
-            {
-                var sequence = secretSequences[i];
-
-                sequence.keys.TryGetValue(sequence.counter, out KeyCode keyCompare);
-
-                if (key == keyCompare)
-                    sequence.counter++;
-                else
-                    sequence.counter = 0;
-
-                if (sequence.counter == sequence.keys.Count)
-                {
-                    sequence.onSequenceEnd?.Invoke();
-                    sequence.counter = 0;
-                }
-            }
-        }
+        #endregion
 
         #region Save File
 
+        #region Data
+
+        /// <summary>
+        /// The default chapter rank requirement for "bonuses" to be unlocked. In this case, the player needs to get higher than a B rank (S / SS / A rank).
+        /// </summary>
+        public const int CHAPTER_RANK_REQUIREMENT = 3;
+
         public int currentPlayingChapterIndex;
         public int currentPlayingLevelSequenceIndex;
+
+        /// <summary>
+        /// The story mode chapter that is currently open.
+        /// </summary>
         public StoryMode.Chapter CurrentChapter => StoryMode.Instance.chapters[currentPlayingChapterIndex];
+        /// <summary>
+        /// The story mode level that is selected.
+        /// </summary>
         public StoryMode.LevelSequence CurrentLevelSequence => CurrentChapter[currentPlayingLevelSequenceIndex];
 
+        /// <summary>
+        /// The currently saved chapter.
+        /// </summary>
         public int ChapterIndex => LoadInt("Chapter", 0);
+        /// <summary>
+        /// The currently saved level index.
+        /// </summary>
         public int LevelSequenceIndex => LoadInt($"DOC{(ChapterIndex + 1).ToString("00")}Progress", 0);
 
-        public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}.lss";
+        /// <summary>
+        /// Path to the current save slot file.
+        /// </summary>
+        public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}{FileFormat.LSS.Dot()}";
         public JSONNode storySavesJSON;
         int saveSlot;
+        /// <summary>
+        /// The current story save slot.
+        /// </summary>
         public int SaveSlot
         {
             get => saveSlot;
@@ -204,19 +113,18 @@ namespace BetterLegacy.Story
             }
         }
 
+        /// <summary>
+        /// All level saves in the current story save slot.
+        /// </summary>
         public List<LevelManager.PlayerData> Saves { get; set; } = new List<LevelManager.PlayerData>();
 
-        public void Load()
-        {
-            StoryMode.Init();
-            storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
+        #endregion
 
-            Saves.Clear();
-            if (storySavesJSON["lvl"] != null)
-                for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
-                    Saves.Add(LevelManager.PlayerData.Parse(storySavesJSON["lvl"][i]));
-        }
+        #region Saving
 
+        /// <summary>
+        /// Updates the current story levels' player data.
+        /// </summary>
         public void UpdateCurrentLevelProgress()
         {
             if (LevelManager.CurrentLevel == null)
@@ -226,12 +134,7 @@ namespace BetterLegacy.Story
 
             CoreHelper.Log($"Setting Player Data");
 
-            // TODO: Implement achievement system (not the Steam one, the custom one)
-            //if (Saves.Where(x => x.Completed).Count() >= 100)
-            //{
-            //    SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
-            //}
-
+            // will zen / practice ever be implemented to the story?
             //if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
             //    return;
 
@@ -255,17 +158,21 @@ namespace BetterLegacy.Story
             SaveProgress();
         }
 
+        /// <summary>
+        /// Saves all story level player data.
+        /// </summary>
         public void SaveProgress()
         {
             storySavesJSON["lvl"] = new JSONArray();
             for (int i = 0; i < Saves.Count; i++)
-            {
                 storySavesJSON["lvl"][i] = Saves[i].ToJSON();
-            }
 
             Save();
         }
 
+        /// <summary>
+        /// Writes to the current story save slot file.
+        /// </summary>
         public void Save()
         {
             try
@@ -278,20 +185,35 @@ namespace BetterLegacy.Story
             }
         }
 
+        /// <summary>
+        /// Saves a <see cref="bool"/> value to the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to save.</param>
+        /// <param name="value">Value to save.</param>
         public void SaveBool(string name, bool value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
             storySavesJSON["saves"][name]["bool"] = value;
             Save();
         }
-        
+
+        /// <summary>
+        /// Saves a <see cref="int"/> value to the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to save.</param>
+        /// <param name="value">Value to save.</param>
         public void SaveInt(string name, int value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
             storySavesJSON["saves"][name]["int"] = value;
             Save();
         }
-        
+
+        /// <summary>
+        /// Saves a <see cref="float"/> value to the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to save.</param>
+        /// <param name="value">Value to save.</param>
         public void SaveFloat(string name, float value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
@@ -299,6 +221,11 @@ namespace BetterLegacy.Story
             Save();
         }
 
+        /// <summary>
+        /// Saves a <see cref="string"/> value to the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to save.</param>
+        /// <param name="value">Value to save.</param>
         public void SaveString(string name, string value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
@@ -308,6 +235,11 @@ namespace BetterLegacy.Story
             Save();
         }
 
+        /// <summary>
+        /// Saves a <see cref="JSONNode"/> value to the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to save.</param>
+        /// <param name="value">Value to save.</param>
         public void SaveNode(string name, JSONNode value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
@@ -317,13 +249,71 @@ namespace BetterLegacy.Story
             Save();
         }
 
-        public bool LoadBool(string name, bool defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["bool"] == null ? defaultValue : storySavesJSON["saves"][name]["bool"].AsBool;
-        public int LoadInt(string name, int defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["int"] == null ? defaultValue : storySavesJSON["saves"][name]["int"].AsInt;
-        public float LoadFloat(string name, float defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["float"] == null ? defaultValue : storySavesJSON["saves"][name]["float"].AsFloat;
-        public string LoadString(string name, string defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["string"] == null ? defaultValue : storySavesJSON["saves"][name]["string"].Value;
-        public JSONNode LoadJSON(string name) => storySavesJSON["saves"][name] == null ? null : storySavesJSON["saves"][name]["array"] != null ? storySavesJSON["saves"][name]["array"] : storySavesJSON["saves"][name]["object"] != null ? storySavesJSON["saves"][name]["object"] : null;
+        #endregion
 
+        #region Loading
+
+        /// <summary>
+        /// Loads the current story save slot file.
+        /// </summary>
+        public void Load()
+        {
+            StoryMode.Init();
+            storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
+
+            Saves.Clear();
+            if (storySavesJSON["lvl"] != null)
+                for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
+                    Saves.Add(LevelManager.PlayerData.Parse(storySavesJSON["lvl"][i]));
+        }
+
+        /// <summary>
+        /// Loads a <see cref="bool"/> value from the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to load.</param>
+        /// <param name="defaultValue">Default value if no value exists.</param>
+        /// <returns>Returns the found value.</returns>
+        public bool LoadBool(string name, bool defaultValue) => !HasSave(name) || storySavesJSON["saves"][name]["bool"] == null ? defaultValue : storySavesJSON["saves"][name]["bool"].AsBool;
+
+        /// <summary>
+        /// Loads a <see cref="int"/> value from the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to load.</param>
+        /// <param name="defaultValue">Default value if no value exists.</param>
+        /// <returns>Returns the found value.</returns>
+        public int LoadInt(string name, int defaultValue) => !HasSave(name) || storySavesJSON["saves"][name]["int"] == null ? defaultValue : storySavesJSON["saves"][name]["int"].AsInt;
+
+        /// <summary>
+        /// Loads a <see cref="float"/> value from the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to load.</param>
+        /// <param name="defaultValue">Default value if no value exists.</param>
+        /// <returns>Returns the found value.</returns>
+        public float LoadFloat(string name, float defaultValue) => !HasSave(name) || storySavesJSON["saves"][name]["float"] == null ? defaultValue : storySavesJSON["saves"][name]["float"].AsFloat;
+
+        /// <summary>
+        /// Loads a <see cref="string"/> value from the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to load.</param>
+        /// <param name="defaultValue">Default value if no value exists.</param>
+        /// <returns>Returns the found value.</returns>
+        public string LoadString(string name, string defaultValue) => !HasSave(name) || storySavesJSON["saves"][name]["string"] == null ? defaultValue : storySavesJSON["saves"][name]["string"].Value;
+
+        /// <summary>
+        /// Loads a <see cref="JSON"/> value from the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to load.</param>
+        /// <returns>Returns the found value.</returns>
+        public JSONNode LoadJSON(string name) => !HasSave(name) ? null : storySavesJSON["saves"][name]["array"] != null ? storySavesJSON["saves"][name]["array"] : storySavesJSON["saves"][name]["object"] != null ? storySavesJSON["saves"][name]["object"] : null;
+
+        /// <summary>
+        /// Checks if a value exists in the current story save slot.
+        /// </summary>
+        /// <param name="name">Name of the value to check.</param>
+        /// <returns>Returns true if the value exists, otherwise returns false.</returns>
         public bool HasSave(string name) => storySavesJSON["saves"][name] != null;
+
+        #endregion
 
         #region PAChat
 
@@ -369,33 +359,132 @@ namespace BetterLegacy.Story
 
         #region Resource
 
+        void Update()
+        {
+            if (CoreHelper.IsUsingInputField)
+                return;
+
+            var key = CoreHelper.GetKeyCodeDown();
+
+            if (key == KeyCode.None)
+                return;
+
+            for (int i = 0; i < secretSequences.Count; i++)
+            {
+                var sequence = secretSequences[i];
+
+                KeyCode keyCompare = KeyCode.None;
+                if (sequence.counter < sequence.keys.Count)
+                    keyCompare = sequence.keys[sequence.counter];
+
+                if (key == keyCompare)
+                    sequence.counter++;
+                else
+                    sequence.counter = 0;
+
+                if (sequence.counter == sequence.keys.Count)
+                {
+                    sequence.onSequenceEnd?.Invoke();
+                    sequence.counter = 0;
+                }
+            }
+        }
+
+        List<SecretSequence> secretSequences = new List<SecretSequence>()
+        {
+            new SecretSequence(new List<KeyCode> { KeyCode.B, KeyCode.E, KeyCode.L, KeyCode.U, KeyCode.G, KeyCode.A, }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                        LoadResourceLevel(true, SAVE_RESOURCE, SAVE_RESOURCE);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                LoadResourceLevel(true, SAVE_RESOURCE, SAVE_RESOURCE);
+            }), // load save
+            new SecretSequence(new List<KeyCode> { KeyCode.D, KeyCode.E, KeyCode.M, KeyCode.O, }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                        LoadResourceLevel(false, AOTC_RESOURCE, AOTC_RESOURCE);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                LoadResourceLevel(false, AOTC_RESOURCE, AOTC_RESOURCE);
+            }), // load old demo
+            new SecretSequence(new List<KeyCode> { KeyCode.M, KeyCode.I, KeyCode.K, KeyCode.U, }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                        LoadResourceLevel(false, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                LoadResourceLevel(false, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
+            }), // load old demo
+        };
+
+        public class SecretSequence
+        {
+            public SecretSequence(List<KeyCode> keys, Action onSequenceEnd)
+            {
+                this.keys = keys;
+                this.onSequenceEnd = onSequenceEnd;
+            }
+
+            public int counter;
+            public List<KeyCode> keys;
+            public Action onSequenceEnd;
+        }
+
         public static void LoadResourceLevel(int type)
         {
             switch (type)
             {
                 case 0: // save
                     {
-                        LoadResourceLevel(0, SAVE_RESOURCE, SAVE_RESOURCE);
+                        LoadResourceLevel(true, SAVE_RESOURCE, SAVE_RESOURCE);
                         break;
                     }
                 case 1: // ahead of the curve
                     {
-                        LoadResourceLevel(1, AOTC_RESOURCE, AOTC_RESOURCE);
+                        LoadResourceLevel(false, AOTC_RESOURCE, AOTC_RESOURCE);
                         break;
                     }
                 case 2: // new
                     {
-                        LoadResourceLevel(1, NEW_RESOURCE, NEW_RESOURCE);
+                        LoadResourceLevel(false, NEW_RESOURCE, NEW_RESOURCE);
                         break;
                     }
                 case 3: // node
                     {
-                        LoadResourceLevel(0, NODE_RESOURCE, NODE_RESOURCE);
+                        LoadResourceLevel(true, NODE_RESOURCE, NODE_RESOURCE);
                         break;
                     }
                 case 4: // video test
                     {
-                        LoadResourceLevel(1, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
+                        LoadResourceLevel(false, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
                         break;
                     }
             }
@@ -410,7 +499,7 @@ namespace BetterLegacy.Story
         const string VIDEO_TEST_VIDEO = "video_test/video_test_bg";
 
         // StoryManager.LoadResourceLevel(0, "demo/level", "demo/level")
-        public static void LoadResourceLevel(int time, string jsonPath, string audioPath, string videoClipPath = null)
+        public static void LoadResourceLevel(bool old, string jsonPath, string audioPath, string videoClipPath = null)
         {
             var json = Resources.Load<TextAsset>($"beatmaps/{jsonPath}");
             var audio = Resources.Load<AudioClip>($"beatmaps/{audioPath}");
@@ -418,11 +507,7 @@ namespace BetterLegacy.Story
             for (int i = 0; i < 4; i++)
                 jnPlayers["indexes"][i] = PlayerModel.BETA_ID;
 
-            GameData gameData = time switch
-            {
-                0 => ParseSave(JSON.Parse(json.text)),
-                _ => GameData.Parse(JSON.Parse(LevelManager.UpdateBeatmap(json.text, "1.0.0"))),
-            };
+            GameData gameData = old ? ParseSave(JSON.Parse(json.text)) : GameData.Parse(JSON.Parse(LevelManager.UpdateBeatmap(json.text, "1.0.0")));
 
             if (jsonPath == "demo_new/level")
             {
@@ -835,8 +920,19 @@ namespace BetterLegacy.Story
 
         #endregion
 
+        /// <summary>
+        /// Plays a story level directly from a path.
+        /// </summary>
+        /// <param name="path">Path to a story level.</param>
         public void Play(string path) => StartCoroutine(IPlay(path));
 
+        /// <summary>
+        /// Gets a story level from the <see cref="StoryMode"/> and plays it.
+        /// </summary>
+        /// <param name="chapter">Chapter index of the story level.</param>
+        /// <param name="level">Index of the story level.</param>
+        /// <param name="bonus">If the story level is from a bonus chapter.</param>
+        /// <param name="skipCutscenes">If cutscenes should be skipped.</param>
         public void Play(int chapter, int level, bool bonus = false, bool skipCutscenes = false)
         {
             var storyLevel = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter].levels[level];
@@ -847,6 +943,12 @@ namespace BetterLegacy.Story
             StartCoroutine(IPlay(storyLevel, skipCutscenes: skipCutscenes));
         }
 
+        /// <summary>
+        /// Plays a story level.
+        /// </summary>
+        /// <param name="level">The current level sequence.</param>
+        /// <param name="cutsceneIndex">The current index of the level sequence.</param>
+        /// <param name="skipCutscenes">If cutscenes should be skipped.</param>
         public IEnumerator IPlay(StoryMode.LevelSequence level, int cutsceneIndex = 0, bool skipCutscenes = false)
         {
             var path = level.filePath;
@@ -909,6 +1011,10 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        /// <summary>
+        /// Plays a story level directly from a path.
+        /// </summary>
+        /// <param name="path">Path to a story level.</param>
         public IEnumerator IPlay(string path)
         {
             if (!RTFile.FileExists(path))
@@ -1023,6 +1129,10 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        /// <summary>
+        /// Plays a story level directly from a path.
+        /// </summary>
+        /// <param name="path">Path to a story level.</param>
         public IEnumerator IPlayOnce(string path)
         {
             if (!RTFile.FileExists(path))
