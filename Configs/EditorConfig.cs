@@ -133,7 +133,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> SavingSavesThemeOpacity { get; set; }
         public Setting<bool> UpdatePrefabListOnFilesChanged { get; set; }
         public Setting<bool> UpdateThemeListOnFilesChanged { get; set; }
-        public Setting<bool> ShowLevelsWithoutCoverNotification { get; set; }
         public Setting<bool> ShowFoldersInLevelList { get; set; }
         public Setting<string> ZIPLevelExportPath { get; set; }
         public Setting<string> ConvertLevelLSToVGExportPath { get; set; }
@@ -1330,7 +1329,6 @@ namespace BetterLegacy.Configs
             SavingSavesThemeOpacity = Bind(this, "Data", "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
             UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
             UpdateThemeListOnFilesChanged = Bind(this, "Data", "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");
-            ShowLevelsWithoutCoverNotification = Bind(this, "Data", "Show Levels Without Cover Notification", false, "Sends an error notification for what levels don't have covers.");
             ShowFoldersInLevelList = Bind(this, "Data", "Show Folders In Level List", true, "If folders should appear in the level list UI. This allows you to quickly navigate level folders.");
             ZIPLevelExportPath = Bind(this, "Data", "ZIP Level Export Path", "", "The custom path to export a zipped level to. If no path is set then it will export to beatmaps/exports.");
             ConvertLevelLSToVGExportPath = Bind(this, "Data", "Convert Level LS to VG Export Path", "", "The custom path to export a level to. If no path is set then it will export to beatmaps/exports.");
