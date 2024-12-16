@@ -123,14 +123,66 @@ namespace BetterLegacy.Core.Optimization
 
         #region Initialization
 
+        #region Sequences
+
+        /// <summary>
+        /// Recalculate object states.
+        /// </summary>
         public static void RecalculateObjectStates() => levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
 
+        /// <summary>
+        /// Sets the game's current seed and updates all animations accordingly.
+        /// </summary>
+        /// <param name="seed">The seed to set.</param>
+        public static void InitSeed(int seed) => InitSeed(seed.ToString());
+
+        /// <summary>
+        /// Sets the game's current seed and updates all animations accordingly.
+        /// </summary>
+        /// <param name="seed">The seed to set.</param>
+        public static void InitSeed(string seed)
+        {
+            RandomHelper.SetSeed(seed);
+            RecacheAllSequences();
+        }
+
+        /// <summary>
+        /// Updates every objects' animations.
+        /// </summary>
+        public static void RecacheAllSequences()
+        {
+            if (!levelProcessor || levelProcessor.converter == null || levelProcessor.converter.cachedSequences == null || !GameData.IsValid)
+                return;
+
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            for (int i = 0; i < beatmapObjects.Count; i++)
+                UpdateCachedSequence(beatmapObjects[i]);
+        }
+
+        /// <summary>
+        /// Updates objects' cached sequences without reinitialization.
+        /// </summary>
+        /// <param name="beatmapObject">Object to update.</param>
+        public static void UpdateCachedSequence(BeatmapObject beatmapObject)
+        {
+            if (levelProcessor.converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences collection))
+                levelProcessor.converter.UpdateCachedSequence(beatmapObject, collection);
+        }
+
+        /// <summary>
+        /// Removes or updates an objects' sequences.
+        /// </summary>
+        /// <param name="beatmapObject">Object to update.</param>
+        /// <param name="converter"><see cref="ObjectConverter"/> reference.</param>
+        /// <param name="reinsert">If the sequence should be reinserted or not.</param>
+        /// <param name="updateParents">If the LevelObjects' parents should be updated.</param>
+        /// <param name="recursive">If the method should run recursively.</param>
         public static void RecacheSequences(BeatmapObject beatmapObject, ObjectConverter converter, bool reinsert = true, bool updateParents = true, bool recursive = true)
         {
-            converter.cachedSequences.Remove(beatmapObject.id);
-
             if (!reinsert)
             {
+                converter.cachedSequences.Remove(beatmapObject.id);
+
                 // Recursive recaching.
                 if (recursive)
                 {
@@ -146,7 +198,7 @@ namespace BetterLegacy.Core.Optimization
                 return;
             }
 
-            converter.CacheSequence(beatmapObject);
+            var collection = converter.CacheSequence(beatmapObject);
 
             // Recursive recaching.
             if (recursive)
@@ -163,11 +215,8 @@ namespace BetterLegacy.Core.Optimization
             if (!TryGetObject(beatmapObject, out LevelObject levelObject))
                 return;
 
-            if (converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences colorSequences))
-            {
-                levelObject.colorSequence = colorSequences.ColorSequence;
-                levelObject.secondaryColorSequence = colorSequences.SecondaryColorSequence;
-            }
+            levelObject.colorSequence = collection.ColorSequence;
+            levelObject.secondaryColorSequence = collection.SecondaryColorSequence;
 
             if (updateParents)
                 foreach (var levelParent in levelObject.parentObjects)
@@ -180,6 +229,24 @@ namespace BetterLegacy.Core.Optimization
                     }
                 }
         }
+
+        /// <summary>
+        /// Stops all homing keyframes and resets them to their base values.
+        /// </summary>
+        public static void UpdateHomingKeyframes()
+        {
+            foreach (var cachedSequence in levelProcessor.converter.cachedSequences.Values)
+            {
+                for (int i = 0; i < cachedSequence.Position3DSequence.keyframes.Length; i++)
+                    cachedSequence.Position3DSequence.keyframes[i].Stop();
+                for (int i = 0; i < cachedSequence.RotationSequence.keyframes.Length; i++)
+                    cachedSequence.RotationSequence.keyframes[i].Stop();
+                for (int i = 0; i < cachedSequence.ColorSequence.keyframes.Length; i++)
+                    cachedSequence.ColorSequence.keyframes[i].Stop();
+            }
+        }
+
+        #endregion
 
         #region Objects
 
@@ -914,6 +981,9 @@ namespace BetterLegacy.Core.Optimization
 
         #region Misc
 
+        /// <summary>
+        /// Sorts all the spawnable objects by start and kill time.
+        /// </summary>
         public static void Sort()
         {
             if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
@@ -926,6 +996,9 @@ namespace BetterLegacy.Core.Optimization
             RecalculateObjectStates();
         }
 
+        /// <summary>
+        /// Resets the transform offsets of all the objects.
+        /// </summary>
         static void ResetOffsets()
         {
             if (!GameData.IsValid)
@@ -995,35 +1068,6 @@ namespace BetterLegacy.Core.Optimization
             backgroundObject.SetShape(backgroundObject.shape.Type, backgroundObject.shape.Option);
 
             return gameObject;
-        }
-
-        public static void UpdateHomingKeyframes()
-        {
-            foreach (var cachedSequence in levelProcessor.converter.cachedSequences.Values)
-            {
-                for (int i = 0; i < cachedSequence.Position3DSequence.keyframes.Length; i++)
-                    cachedSequence.Position3DSequence.keyframes[i].Stop();
-                for (int i = 0; i < cachedSequence.RotationSequence.keyframes.Length; i++)
-                    cachedSequence.RotationSequence.keyframes[i].Stop();
-                for (int i = 0; i < cachedSequence.ColorSequence.keyframes.Length; i++)
-                    cachedSequence.ColorSequence.keyframes[i].Stop();
-            }
-        }
-
-        public static void UpdateCachedSequences()
-        {
-            var beatmapObjects = GameData.Current.beatmapObjects;
-            foreach (var cachedSequences in levelProcessor.converter.cachedSequences)
-            {
-                if (beatmapObjects.TryFind(x => x.id == cachedSequences.Key, out BeatmapObject beatmapObject))
-                    levelProcessor.converter.UpdateCachedSequence(beatmapObject, cachedSequences.Value);
-            }
-        }
-
-        public static void UpdateCachedSequence(BeatmapObject beatmapObject)
-        {
-            if (levelProcessor.converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences collection))
-                levelProcessor.converter.UpdateCachedSequence(beatmapObject, collection);
         }
 
         #endregion
