@@ -8985,7 +8985,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var folderName = Path.GetFileName(copiedLevelPath);
-            var directory = Path.GetDirectoryName(copiedLevelPath).Replace("\\", "/");
+            var directory = RTFile.GetDirectory(copiedLevelPath);
             var editorPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath);
 
             if (shouldCutLevel)
@@ -9018,7 +9018,7 @@ namespace BetterLegacy.Editor.Managers
                 var copyToDirectory = Path.GetDirectoryName(file);
                 RTFile.CreateDirectory(copyToDirectory);
 
-                File.Copy(files[i], file, true);
+                RTFile.CopyFile(files[i], file);
             }
 
             UpdateEditorPath(true);
@@ -9061,9 +9061,6 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(transform);
 
-            bool anyFailed = false;
-            var failedLevels = new List<string>();
-
             var list = new List<Coroutine>();
             var files = Directory.GetDirectories(RTFile.ApplicationDirectory + editorListPath);
             var showLevelFolders = config.ShowFoldersInLevelList.Value;
@@ -9093,10 +9090,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         ShowContextMenu(300f,
-                            new ButtonFunction("Create folder", () =>
-                            {
-                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
-                            }),
+                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction("Paste", PasteLevel),
                             new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
@@ -9117,10 +9111,10 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var file in files)
             {
-                var path = file.Replace("\\", "/");
+                var path = RTFile.ReplaceSlash(file);
                 var name = Path.GetFileName(path);
 
-                if (!RTFile.FileExists(file + "/level.lsb"))
+                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)))
                 {
                     if (!showLevelFolders)
                         continue;
@@ -9160,30 +9154,22 @@ namespace BetterLegacy.Editor.Managers
                                     editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                     UpdateEditorPath(false);
                                 }),
-                                new ButtonFunction("Create folder", () =>
-                                {
-                                    ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
-                                }),
+                                new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
                                 new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                                 new ButtonFunction(true),
-                                new ButtonFunction("Rename", () =>
-                                {
-                                    ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                                new ButtonFunction("Rename", () => ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
                                     {
-                                        var destination = path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/");
-                                        if (path != destination)
-                                            Directory.Move(path, destination);
+                                        RTFile.MoveDirectory(path, path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/"));
 
                                         UpdateEditorPath(true);
                                         HideNameEditor();
-                                    });
-                                }),
+                                    })),
                                 new ButtonFunction("Paste", PasteLevel),
                                 new ButtonFunction("Delete", () =>
                                 {
                                     ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                                     {
-                                        Directory.Delete(file, true);
+                                        RTFile.DeleteDirectory(path);
                                         UpdateEditorPath(true);
                                         EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                                         HideWarningPopup();
@@ -9191,8 +9177,8 @@ namespace BetterLegacy.Editor.Managers
                                 }),
                                 new ButtonFunction(true),
                                 new ButtonFunction("ZIP Folder", () => ZIPLevel(path, name)),
-                                new ButtonFunction("Copy Path", () => { LSText.CopyToClipboard(path); }),
-                                new ButtonFunction("Open in File Explorer", () => { RTFile.OpenInFileBrowser.Open(path); }),
+                                new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
+                                new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
                                 new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
 
                             return;
@@ -9210,15 +9196,15 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                var metadataStr = RTFile.ReadFromFile(file + "/metadata.lsb");
+                var metadataJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_LSB));
 
-                if (metadataStr == null)
+                if (string.IsNullOrEmpty(metadataJSON))
                 {
                     Debug.LogError($"{EditorManager.inst.className}Could not load metadata for [{name}]!");
                     continue;
                 }
 
-                var metadata = MetaData.Parse(JSON.Parse(metadataStr));
+                var metadata = MetaData.Parse(JSON.Parse(metadataJSON));
 
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
@@ -9261,50 +9247,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (choosingLevelTemplate)
                     {
-                        if (string.IsNullOrEmpty(nameInput.text))
-                        {
-                            EditorManager.inst.DisplayNotification($"Level template name is empty. Name it something unique via the input field in the Level Template editor.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        if (nameInput.text[nameInput.text.Length - 1] == '/' || nameInput.text[nameInput.text.Length - 1] == '\\')
-                        {
-                            EditorManager.inst.DisplayNotification($"Name cannot end with a / or a \\.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        if (RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}beatmaps/templates/{nameInput.text}"))
-                        {
-                            EditorManager.inst.DisplayNotification($"Level template with the name \"{nameInput.text}\" already exists! Set the name to something else.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        EditorManager.inst.HideDialog("Open File Popup");
-
-                        ShowWarningPopup("Are you sure you want to make a new level template?", () =>
-                        {
-                            choosingLevelTemplate = false;
-
-                            var copyTo = $"{RTFile.ApplicationDirectory}beatmaps/templates/{RTFile.ValidateDirectory(nameInput.text)}";
-                            if (RTFile.DirectoryExists(copyTo))
-                            {
-                                EditorManager.inst.DisplayNotification($"Level template with the name \"{nameInput.text}\" already exists!", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            Directory.CreateDirectory(copyTo);
-                            File.Copy(file + "/level.lsb", copyTo + "/level.lsb");
-
-                            if (currentTemplateSprite)
-                                currentTemplateSprite.Save(copyTo + "/preview.png");
-
-                            RefreshNewLevelTemplates();
-                            HideWarningPopup();
-                        }, () =>
-                        {
-                            EditorManager.inst.ShowDialog("Open File Popup");
-                            HideWarningPopup();
-                        });
+                        CreateTemplate(path);
 
                         return;
                     }
@@ -9322,75 +9265,22 @@ namespace BetterLegacy.Editor.Managers
                                 EditorManager.inst.ShowDialog("Autosave Popup");
                                 RefreshAutosaveList(editorWrapper);
                             }),
-                            new ButtonFunction("Convert to VG", () => { ConvertLevel(path, name); }),
+                            new ButtonFunction("Convert to VG", () => ConvertLevel(path, name)),
                             new ButtonFunction(true),
-                            new ButtonFunction("Create folder", () =>
-                            {
-                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
-                            }),
-                            new ButtonFunction("Create template", () =>
-                            {
-                                if (string.IsNullOrEmpty(nameInput.text))
-                                {
-                                    EditorManager.inst.DisplayNotification($"Level template name is empty. Name it something unique via the input field in the Level Template editor.", 3f, EditorManager.NotificationType.Error);
-                                    return;
-                                }
-
-                                if (nameInput.text[nameInput.text.Length - 1] == '/' || nameInput.text[nameInput.text.Length - 1] == '\\')
-                                {
-                                    EditorManager.inst.DisplayNotification($"Name cannot end with a / or a \\.", 3f, EditorManager.NotificationType.Error);
-                                    return;
-                                }
-
-                                if (RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}beatmaps/templates/{nameInput.text}"))
-                                {
-                                    EditorManager.inst.DisplayNotification($"Level template with the name \"{nameInput.text}\" already exists! Set the name to something else.", 3f, EditorManager.NotificationType.Error);
-                                    return;
-                                }
-
-                                EditorManager.inst.HideDialog("Open File Popup");
-
-                                ShowWarningPopup("Are you sure you want to make a new level template?", () =>
-                                {
-                                    choosingLevelTemplate = false;
-
-                                    var copyTo = $"{RTFile.ApplicationDirectory}beatmaps/templates/{RTFile.ValidateDirectory(nameInput.text)}";
-                                    if (RTFile.DirectoryExists(copyTo))
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Level template with the name \"{nameInput.text}\" already exists!", 3f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    Directory.CreateDirectory(copyTo);
-                                    File.Copy(file + "/level.lsb", copyTo + "/level.lsb");
-
-                                    if (currentTemplateSprite)
-                                        currentTemplateSprite.Save(copyTo + "/preview.png");
-
-                                    RefreshNewLevelTemplates();
-                                    HideWarningPopup();
-                                }, () =>
-                                {
-                                    EditorManager.inst.ShowDialog("Open File Popup");
-                                    HideWarningPopup();
-                                });
-                            }),
+                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
+                            new ButtonFunction("Create template", () => CreateTemplate(path)),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction(true),
-                            new ButtonFunction("Rename", () =>
-                            {
-                                ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                            new ButtonFunction("Rename", () => ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
                                 {
-                                    var destination = path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/");
-                                    if (path != destination)
-                                        Directory.Move(path, destination);
+                                    var destination = RTFile.ReplaceSlash(path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)));
+                                    RTFile.MoveDirectory(path, destination);
                                     metadata.beatmap.name = folderCreatorName.text;
-                                    RTFile.WriteToFile(Path.Combine(destination, "metadata.lsb"), metadata.ToJSON().ToString());
+                                    RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), metadata.ToJSON().ToString());
 
                                     UpdateEditorPath(true);
                                     HideNameEditor();
-                                });
-                            }),
+                                })),
                             new ButtonFunction("Cut", () =>
                             {
                                 shouldCutLevel = true;
@@ -9410,7 +9300,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
                                 {
-                                    Directory.Delete(editorWrapper.folder, true);
+                                    RTFile.DeleteDirectory(editorWrapper.folder);
                                     UpdateEditorPath(true);
                                     EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
                                     HideWarningPopup();
@@ -9447,8 +9337,8 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new ButtonFunction(true),
                             new ButtonFunction("ZIP Level", () => ZIPLevel(path, name)),
-                            new ButtonFunction("Copy Path", () => { LSText.CopyToClipboard(path); }),
-                            new ButtonFunction("Open in File Explorer", () => { RTFile.OpenInFileBrowser.Open(path); }),
+                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
+                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
                             new ButtonFunction("Open List in File Explorer", OpenLevelListFolder)
                         );
 
@@ -9504,12 +9394,10 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
                 
-                list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{file}/level.jpg", cover =>
+                list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.CombinePaths(path, Level.LEVEL_JPG)}", cover =>
                 {
                     if (!cover)
                     {
-                        anyFailed = true;
-                        failedLevels.Add(Path.GetFileName(path));
                         iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                         editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
                         EditorManager.inst.loadedLevels.Add(editorWrapper);
@@ -9523,8 +9411,6 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.loadedLevels.Add(editorWrapper);
                 }, (errorMsg, handlerText) =>
                 {
-                    anyFailed = true;
-                    failedLevels.Add(Path.GetFileName(path));
                     iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                     editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
                     EditorManager.inst.loadedLevels.Add(editorWrapper);
@@ -9532,21 +9418,47 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (list.Count >= 1)
-                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, () => { OpenLevelPopup(anyFailed, failedLevels); }));
+                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, OpenLevelPopup));
             else
-                OpenLevelPopup(anyFailed, failedLevels);
-
-            failedLevels.Clear();
-            failedLevels = null;
+                OpenLevelPopup();
 
             yield break;
         }
 
-        void OpenLevelPopup(bool anyFailed, List<string> failedLevels)
+        void CreateTemplate(string file)
         {
-            if (anyFailed && EditorConfig.Instance.ShowLevelsWithoutCoverNotification.Value)
-                EditorManager.inst.DisplayNotification($"Levels {RTString.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
+            if (string.IsNullOrEmpty(nameInput.text))
+            {
+                EditorManager.inst.DisplayNotification($"Level template name is empty. Name it something unique via the input field in the Level Template editor.", 3f, EditorManager.NotificationType.Error);
+                return;
+            }
 
+            EditorManager.inst.HideDialog("Open File Popup");
+
+            ShowWarningPopup("Are you sure you want to make a new level template?", () =>
+            {
+                choosingLevelTemplate = false;
+
+                var copyTo = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/templates", RTFile.ValidateDirectory(nameInput.text));
+
+                RTFile.CreateDirectory(copyTo);
+                RTFile.CopyFile(RTFile.CombinePaths(file, Level.LEVEL_LSB), RTFile.CombinePaths(copyTo, Level.LEVEL_LSB));
+
+                if (currentTemplateSprite)
+                    currentTemplateSprite.Save(RTFile.CombinePaths(copyTo, "preview.png"));
+
+                RefreshNewLevelTemplates();
+                HideWarningPopup();
+            }, () =>
+            {
+                EditorManager.inst.ShowDialog("Open File Popup");
+                HideWarningPopup();
+            });
+
+        }
+
+        void OpenLevelPopup()
+        {
             if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || EditorManager.inst.loadedLevels.Count > 0)
             {
                 EditorManager.inst.ShowDialog("Open File Popup");
@@ -9947,7 +9859,7 @@ namespace BetterLegacy.Editor.Managers
                 themeAddButton.SetActive(true);
                 tf.localScale = Vector2.one;
                 var button = themeAddButton.GetComponent<Button>();
-                button.onClick.AddListener(() => { RTThemeEditor.inst.RenderThemeEditor(); });
+                button.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor());
 
                 var contextClickable = themeAddButton.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -9956,11 +9868,8 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     ShowContextMenu(300f,
-                        new ButtonFunction("Create folder", () =>
-                        {
-                            ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); });
-                        }),
-                        new ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
+                        new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); })),
+                        new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
                         new ButtonFunction(true),
                         new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
                 };
@@ -9994,11 +9903,8 @@ namespace BetterLegacy.Editor.Managers
                         if (eventData.button == PointerEventData.InputButton.Right)
                         {
                             ShowContextMenu(300f,
-                                new ButtonFunction("Create folder", () =>
-                                {
-                                    ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); });
-                                }),
-                                new ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
+                                new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); })),
+                                new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
                                 new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
 
                             return;
@@ -10006,7 +9912,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (themePathField.text == themePath)
                         {
-                            themePathField.text = Path.GetDirectoryName(RTFile.ApplicationDirectory + themeListPath).Replace("\\", "/").Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                            themePathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + themeListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
                             UpdateThemePath(false);
                         }
                     };
@@ -10015,11 +9921,11 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.text, ThemeGroup.List_Button_2_Text);
                 }
 
-                themeUpFolderButton.SetActive(Path.GetDirectoryName(RTFile.ApplicationDirectory + themeListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps");
+                themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + themeListPath) != RTFile.ApplicationDirectory + "beatmaps");
 
                 foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + themeListPath, "*", SearchOption.TopDirectoryOnly))
                 {
-                    var path = directory.Replace("\\", "/");
+                    var path = RTFile.ReplaceSlash(directory);
                     var fileName = Path.GetFileName(directory);
 
                     var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, $"Folder [{fileName}]");
@@ -10058,7 +9964,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                                     {
-                                        Directory.Delete(path, true);
+                                        RTFile.DeleteDirectory(path);
                                         UpdateThemePath(true);
                                         EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                                         HideWarningPopup();
@@ -10104,7 +10010,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var search = EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text;
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + themeListPath, "*.lst");
+            var files = Directory.GetFiles(RTFile.ApplicationDirectory + themeListPath, FileFormat.LST.ToPattern());
             foreach (var file in files)
             {
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
@@ -10209,16 +10115,13 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         ShowContextMenu(300f,
-                            new ButtonFunction("Create folder", () =>
-                            {
-                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); });
-                            }),
+                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); })),
                             new ButtonFunction("Create prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
                                 RTPrefabEditor.inst.createInternal = false;
                             }),
-                            new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab)
+                            new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab)
                             );
 
                         return;
@@ -10293,18 +10196,15 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         ShowContextMenu(300f,
-                            new ButtonFunction("Create folder", () =>
-                            {
-                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); });
-                            }),
-                            new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab));
+                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); })),
+                            new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab));
 
                         return;
                     }
 
                     if (prefabPathField.text == prefabPath)
                     {
-                        prefabPathField.text = Path.GetDirectoryName(RTFile.ApplicationDirectory + prefabListPath).Replace("\\", "/").Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        prefabPathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + prefabListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
                         UpdatePrefabPath(false);
                     }
                 };
@@ -10313,14 +10213,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
             }
 
-            prefabExternalUpAFolderButton.SetActive(Path.GetDirectoryName(RTFile.ApplicationDirectory + prefabListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps");
+            prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + prefabListPath) != RTFile.ApplicationDirectory + "beatmaps");
 
             var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + prefabListPath, "*", SearchOption.TopDirectoryOnly);
 
             for (int i = 0; i < directories.Length; i++)
             {
                 var directory = directories[i];
-                var path = directory.Replace("\\", "/");
+                var path = RTFile.ReplaceSlash(directory);
                 var fileName = Path.GetFileName(directory);
 
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
@@ -10351,22 +10251,17 @@ namespace BetterLegacy.Editor.Managers
                                 prefabPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                 UpdatePrefabPath(false);
                             }),
-                            new ButtonFunction("Create folder", () =>
-                            {
-                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); });
-                            }),
+                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); })),
                             new ButtonFunction(true),
-                            new ButtonFunction("Paste", () => { }),
-                            new ButtonFunction("Delete", () =>
-                            {
-                                ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+                            new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
+                            new ButtonFunction("Delete", () => ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                                 {
                                     Directory.Delete(path, true);
                                     UpdatePrefabPath(true);
                                     EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                                     HideWarningPopup();
-                                }, HideWarningPopup);
-                            }));
+                                }, HideWarningPopup))
+                            );
 
                         return;
                     }
@@ -10387,7 +10282,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, "*.lsp", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
 
             for (int i = 0; i < files.Length; i++)
             {
@@ -10396,7 +10291,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var prefab = Prefab.Parse(jn);
                 prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
-                prefab.filePath = file.Replace("\\", "/");
+                prefab.filePath = RTFile.ReplaceSlash(file);
 
                 RTPrefabEditor.inst.CreatePrefabButton(prefab, i, PrefabDialog.External, file, false, hoverSize,
                          nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
@@ -10421,7 +10316,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
             RTFile.CreateDirectory(autosavesDirectory);
-            var files = Directory.GetFiles(autosavesDirectory, "autosave_*.lsb", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(autosavesDirectory, $"autosave_*{FileFormat.LSB.Dot()}", SearchOption.TopDirectoryOnly);
 
             EditorManager.inst.autosaves.Clear();
             EditorManager.inst.autosaves.AddRange(files);
@@ -10453,7 +10348,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
-            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}.lsb");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
 
@@ -10499,7 +10394,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
-            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}.lsb");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
 
@@ -10520,15 +10415,16 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (!EditorManager.inst.newAudioFile.ToLower().Contains(".ogg") && !EditorManager.inst.newAudioFile.ToLower().Contains(".wav") && !EditorManager.inst.newAudioFile.ToLower().Contains(".mp3"))
-            {
-                EditorManager.inst.DisplayNotification("The file you are trying to load doesn't appear to be a song file.", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
             if (!RTFile.FileExists(EditorManager.inst.newAudioFile))
             {
                 EditorManager.inst.DisplayNotification("The file you are trying to load doesn't appear to exist.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var audioFormat = RTFile.GetFileFormat(EditorManager.inst.newAudioFile);
+            if (!RTFile.ValidAudio(audioFormat))
+            {
+                EditorManager.inst.DisplayNotification($"The file you are trying to load doesn't appear to be a song file.\nDetected format: {audioFormat}", 6f, EditorManager.NotificationType.Error);
                 return;
             }
 
@@ -10549,34 +10445,22 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTFile.DirectoryExists(path))
             {
-                EditorManager.inst.DisplayNotification("The level you are trying to create already exists.", 2f, EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification($"The level you are trying to create already exists.\nName: {Path.GetFileName(path)}", 4f, EditorManager.NotificationType.Error);
                 return;
             }
             Directory.CreateDirectory(path);
 
-            if (EditorManager.inst.newAudioFile.ToLower().Contains(".ogg"))
-            {
-                string destFileName = $"{path}/level.ogg";
-                File.Copy(EditorManager.inst.newAudioFile, destFileName, true);
-            }
-            if (EditorManager.inst.newAudioFile.ToLower().Contains(".wav"))
-            {
-                string destFileName = $"{path}/level.wav";
-                File.Copy(EditorManager.inst.newAudioFile, destFileName, true);
-            }
-            if (EditorManager.inst.newAudioFile.ToLower().Contains(".mp3"))
-            {
-                string destFileName = $"{path}/level.mp3";
-                File.Copy(EditorManager.inst.newAudioFile, destFileName, true);
-            }
+            RTFile.CopyFile(EditorManager.inst.newAudioFile, RTFile.CombinePaths(path, $"level{audioFormat.Dot()}"));
 
-            var json = currentLevelTemplate >= 0 && currentLevelTemplate < NewLevelTemplates.Count && RTFile.FileExists(NewLevelTemplates[currentLevelTemplate]) ? RTFile.ReadFromFile(NewLevelTemplates[currentLevelTemplate]) : null;
+            var json =
+                currentLevelTemplate >= 0 && currentLevelTemplate < NewLevelTemplates.Count && RTFile.FileExists(NewLevelTemplates[currentLevelTemplate]) ?
+                    RTFile.ReadFromFile(NewLevelTemplates[currentLevelTemplate]) : null;
 
             var gameData = !string.IsNullOrEmpty(json) ? GameData.Parse(JSON.Parse(json), false) : CreateBaseBeatmap();
 
-            gameData.SaveData($"{path}/level.lsb");
+            gameData.SaveData(RTFile.CombinePaths(path, Level.LEVEL_LSB));
             var metaData = new MetaData();
-            metaData.beatmap.game_version = "4.1.16";
+            metaData.beatmap.game_version = ProjectArrhythmia.GameVersion.ToString();
             metaData.arcadeID = LSText.randomNumString(16);
             metaData.song.title = newLevelSongTitle;
             metaData.uploaderName = SteamWrapper.inst.user.displayName;
@@ -10587,7 +10471,7 @@ namespace BetterLegacy.Editor.Managers
             DataManager.inst.metaData = metaData;
 
             fromNewLevel = true;
-            DataManager.inst.SaveMetadata($"{path}/metadata.lsb");
+            DataManager.inst.SaveMetadata(RTFile.CombinePaths(path, Level.METADATA_LSB));
             StartCoroutine(LoadLevel(path));
             EditorManager.inst.HideDialog("New File Popup");
         }
@@ -10725,18 +10609,13 @@ namespace BetterLegacy.Editor.Managers
             RefreshFolderCreator(path, onSubmit);
         }
 
-        public void RefreshFolderCreator(string path, Action onSubmit)
+        public void RefreshFolderCreator(string path, Action onSubmit) => RefreshNameEditor("Folder Creator", "New folder name", "Create Folder", () =>
         {
-            RefreshNameEditor("Folder Creator", "New folder name", "Create Folder", () =>
-            {
-                var directory = Path.Combine(path, RTFile.ValidateDirectory(folderCreatorName.text));
-                if (RTFile.DirectoryExists(directory))
-                    return;
+            var directory = RTFile.CombinePaths(path, RTFile.ValidateDirectory(folderCreatorName.text));
 
-                Directory.CreateDirectory(directory);
+            if (RTFile.CreateDirectory(directory))
                 onSubmit?.Invoke();
-            });
-        }
+        });
 
         public void HideNameEditor() => EditorManager.inst.HideDialog("Folder Creator Popup");
 
@@ -10753,7 +10632,7 @@ namespace BetterLegacy.Editor.Managers
             folderCreatorSubmitText.text = submitText;
 
             folderCreatorSubmit.onClick.ClearAll();
-            folderCreatorSubmit.onClick.AddListener(() => { onSubmit?.Invoke(); });
+            folderCreatorSubmit.onClick.AddListener(() => onSubmit?.Invoke());
 
         }
 

@@ -61,10 +61,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 RTEditor.inst.ShowContextMenu(300f,
-                    new RTEditor.ButtonFunction("Create folder", () =>
-                    {
-                        RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile));
-                    }));
+                    new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))));
             };
 
             title.text = $"<b>File Browser</b> ({RTString.ArrayToString(fileExtensions).ToLower()})";
@@ -114,7 +111,9 @@ namespace BetterLegacy.Editor.Managers
                         new RTEditor.ButtonFunction("Open", () => UpdateBrowserFile(folder, fileExtensions, onSelectFile)),
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))),
-                        new RTEditor.ButtonFunction("Create folder inside", () => RTEditor.inst.ShowFolderCreator(folder, () => UpdateBrowserFile(folder, fileExtensions, onSelectFile)))
+                        new RTEditor.ButtonFunction("Create folder inside", () => RTEditor.inst.ShowFolderCreator(folder, () => UpdateBrowserFile(folder, fileExtensions, onSelectFile))),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(folder)))
                         );
                 };
 
@@ -135,7 +134,7 @@ namespace BetterLegacy.Editor.Managers
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
                 folderPrefabStorage.text.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
-                folderPrefabStorage.button.onClick.AddListener(() => { onSelectFile?.Invoke(fileInfoFolder.FullName); });
+                folderPrefabStorage.button.onClick.AddListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -147,12 +146,16 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.inst.ShowContextMenu(300f,
                             new RTEditor.ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
                             new RTEditor.ButtonFunction("Preview", () => PreviewAudio(fileInfoFolder.FullName)),
-                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile)))
+                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))),
+                            new RTEditor.ButtonFunction(true),
+                            new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(fileName)))
                             );
                     else
                         RTEditor.inst.ShowContextMenu(300f,
                             new RTEditor.ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
-                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile)))
+                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))),
+                            new RTEditor.ButtonFunction(true),
+                            new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(fileName)))
                             );
                 };
 
@@ -232,7 +235,9 @@ namespace BetterLegacy.Editor.Managers
                         new RTEditor.ButtonFunction("Open", () => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile)),
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))),
-                        new RTEditor.ButtonFunction("Create folder inside", () => RTEditor.inst.ShowFolderCreator(folder, () => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile)))
+                        new RTEditor.ButtonFunction("Create folder inside", () => RTEditor.inst.ShowFolderCreator(folder, () => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile))),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(folder)))
                         );
                 };
 
@@ -253,7 +258,7 @@ namespace BetterLegacy.Editor.Managers
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
                 folderPrefabStorage.text.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
-                folderPrefabStorage.button.onClick.AddListener(() => { onSelectFile?.Invoke(fileInfoFolder.FullName); });
+                folderPrefabStorage.button.onClick.AddListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -261,16 +266,21 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    if (fileExtension.ToLower() == ".wav" || fileExtension.ToLower() == ".ogg" || fileExtension.ToLower() == ".mp3")
+                    var fileFormat = RTFile.GetFileFormat(fileName);
+                    if (RTFile.ValidAudio(fileFormat))
                         RTEditor.inst.ShowContextMenu(300f,
                             new RTEditor.ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
                             new RTEditor.ButtonFunction("Preview", () => PreviewAudio(fileInfoFolder.FullName)),
-                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile)))
+                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))),
+                            new RTEditor.ButtonFunction(true),
+                            new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(fileName)))
                             );
                     else
                         RTEditor.inst.ShowContextMenu(300f,
                             new RTEditor.ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
-                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile)))
+                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))),
+                            new RTEditor.ButtonFunction(true),
+                            new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(fileName)))
                             );
                 };
 
@@ -350,7 +360,9 @@ namespace BetterLegacy.Editor.Managers
                         new RTEditor.ButtonFunction("Open", () => UpdateBrowserFolder(folder, specificName, onSelectFolder)),
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFolder(selectedPath, specificName, onSelectFolder))),
-                        new RTEditor.ButtonFunction("Create folder inside", () => RTEditor.inst.ShowFolderCreator(folder, () => UpdateBrowserFolder(folder, specificName, onSelectFolder)))
+                        new RTEditor.ButtonFunction("Create folder inside", () => RTEditor.inst.ShowFolderCreator(folder, () => UpdateBrowserFolder(folder, specificName, onSelectFolder))),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(folder)))
                         );
                 };
 

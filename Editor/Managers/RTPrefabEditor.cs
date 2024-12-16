@@ -2088,14 +2088,13 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(exportPath))
             {
-                var output = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
-                RTFile.CreateDirectory(output);
-                exportPath = output + "/";
+                exportPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
+                RTFile.CreateDirectory(exportPath);
             }
 
             exportPath = RTFile.AppendEndSlash(exportPath);
 
-            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+            if (!RTFile.DirectoryExists(RTFile.RemoveEndSlash(exportPath)))
             {
                 EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -2103,7 +2102,7 @@ namespace BetterLegacy.Editor.Managers
 
             var vgjn = prefab.ToJSONVG();
 
-            var fileName = $"{prefab.Name.ToLower()}{FileFormat.VGP.Dot()}";
+            var fileName = $"{RTFile.FormatAlphaFileName(prefab.Name)}{FileFormat.VGP.Dot()}";
             RTFile.WriteToFile(RTFile.CombinePaths(exportPath, fileName), vgjn.ToString());
 
             EditorManager.inst.DisplayNotification($"Converted Prefab {prefab.Name} from LS format to VG format and saved to {fileName}!", 4f, EditorManager.NotificationType.Success);
@@ -2265,8 +2264,7 @@ namespace BetterLegacy.Editor.Managers
         {
             RTEditor.inst.DisablePrefabWatcher();
 
-            if (RTFile.FileExists(prefabPanel.FilePath))
-                FileManager.inst.DeleteFileRaw(prefabPanel.FilePath);
+            RTFile.DeleteFile(prefabPanel.FilePath);
 
             Destroy(prefabPanel.GameObject);
             PrefabPanels.RemoveAt(prefabPanel.Index);
@@ -2469,7 +2467,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var copiedPrefabsFolder = Path.GetDirectoryName(copiedPrefabPath).Replace("\\", "/");
+            var copiedPrefabsFolder = RTFile.GetDirectory(copiedPrefabPath);
             CoreHelper.Log($"Copied Folder: {copiedPrefabsFolder}");
 
             var prefabsPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath);
@@ -2489,13 +2487,13 @@ namespace BetterLegacy.Editor.Managers
 
             if (shouldCutPrefab)
             {
-                File.Move(copiedPrefabPath, destination);
-                EditorManager.inst.DisplayNotification($"Succesfully moved {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
+                if (RTFile.MoveFile(copiedPrefabPath, destination))
+                    EditorManager.inst.DisplayNotification($"Succesfully moved {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
             else
             {
-                File.Copy(copiedPrefabPath, destination, true);
-                EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
+                if (RTFile.CopyFile(copiedPrefabPath, destination))
+                    EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
 
             RTEditor.inst.UpdatePrefabPath(true);
@@ -2659,14 +2657,11 @@ namespace BetterLegacy.Editor.Managers
 
             if (!isExternal)
             {
-                delete.onClick.AddListener(() =>
-                {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                delete.onClick.AddListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                     {
                         PrefabEditor.inst.DeleteInternalPrefab(index);
                         RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup);
-                });
+                    }, RTEditor.inst.HideWarningPopup));
 
                 var clickable = gameObject.AddComponent<ContextClickable>();
                 clickable.onClick = eventData =>
@@ -2725,14 +2720,11 @@ namespace BetterLegacy.Editor.Managers
                                 UpdateCurrentPrefab(prefab);
                                 PrefabEditor.inst.ReloadInternalPrefabsInPopup();
                             }),
-                            new RTEditor.ButtonFunction("Delete", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                            new RTEditor.ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                 {
                                     PrefabEditor.inst.DeleteInternalPrefab(index);
                                     RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            })
+                                }, RTEditor.inst.HideWarningPopup))
                             );
                         return;
                     }
@@ -2759,14 +2751,11 @@ namespace BetterLegacy.Editor.Managers
                 };
                 PrefabPanels.Add(prefabPanel);
 
-                delete.onClick.AddListener(() =>
-                {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                delete.onClick.AddListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                     {
                         DeleteExternalPrefab(prefabPanel);
                         RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup);
-                });
+                    }, RTEditor.inst.HideWarningPopup));
 
                 var clickable = gameObject.AddComponent<ContextClickable>();
                 clickable.onClick = eventData =>
@@ -2821,10 +2810,7 @@ namespace BetterLegacy.Editor.Managers
                                 RenderPrefabExternalDialog(prefabPanel);
                             }),
                             new RTEditor.ButtonFunction(true),
-                            new RTEditor.ButtonFunction("Create folder", () =>
-                            {
-                                RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
-                            }),
+                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                             new RTEditor.ButtonFunction("Create Prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
@@ -2846,14 +2832,11 @@ namespace BetterLegacy.Editor.Managers
                                 CoreHelper.Log($"Copied prefab: {copiedPrefabPath}");
                             }),
                             new RTEditor.ButtonFunction("Paste", PastePrefab),
-                            new RTEditor.ButtonFunction("Delete", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                            new RTEditor.ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                 {
                                     DeleteExternalPrefab(prefabPanel);
                                     RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            })
+                                }, RTEditor.inst.HideWarningPopup))
                             );
 
                         return;
