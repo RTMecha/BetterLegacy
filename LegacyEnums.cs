@@ -763,14 +763,18 @@
     /// <summary>
     /// Which era of Project Arrhythmia a file is from.
     /// </summary>
-    public enum FileType
+    public enum ArrhythmiaType
     {
         /// <summary>
-        /// Lime Studios / Lilscript format.
+        /// Unknown format.
+        /// </summary>
+        NULL,
+        /// <summary>
+        /// Lime Studios / Lilscript format used in old dev and Legacy versions.
         /// </summary>
         LS,
         /// <summary>
-        /// Vitamin Games format.
+        /// Vitamin Games format used in the modern versions.
         /// </summary>
         VG
     }

@@ -129,10 +129,10 @@ namespace BetterLegacy.Core.Data
             changelog = orig.changelog,
         };
 
-        public static MetaData ReadFromFile(string path, FileType fileType, bool setDefaultValues = true) => fileType switch
+        public static MetaData ReadFromFile(string path, ArrhythmiaType fileType, bool setDefaultValues = true) => fileType switch
         {
-            FileType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), setDefaultValues),
-            FileType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path))),
+            ArrhythmiaType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), setDefaultValues),
+            ArrhythmiaType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path))),
             _ => null,
         };
 

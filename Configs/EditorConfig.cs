@@ -129,7 +129,7 @@ namespace BetterLegacy.Configs
         public Setting<YieldType> UpdateExpandedObjectsYieldMode { get; set; }
         public Setting<YieldType> PasteObjectsYieldMode { get; set; }
         public Setting<YieldType> UpdatePastedObjectsYieldMode { get; set; }
-        public Setting<FileType> CombinerOutputFormat { get; set; }
+        public Setting<ArrhythmiaType> CombinerOutputFormat { get; set; }
         public Setting<bool> SavingSavesThemeOpacity { get; set; }
         public Setting<bool> UpdatePrefabListOnFilesChanged { get; set; }
         public Setting<bool> UpdateThemeListOnFilesChanged { get; set; }
@@ -1325,7 +1325,7 @@ namespace BetterLegacy.Configs
             UpdateExpandedObjectsYieldMode = BindEnum(this, "Data", "Update Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating the expanded objects of a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
             PasteObjectsYieldMode = BindEnum(this, "Data", "Paste Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out pasting objects. {CoreHelper.DefaultYieldInstructionDescription}");
             UpdatePastedObjectsYieldMode = BindEnum(this, "Data", "Update Pasted Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating pasted objects. {CoreHelper.DefaultYieldInstructionDescription}");
-            CombinerOutputFormat = BindEnum(this, "Data", "Combiner Output Format", FileType.LS, "Which PA file type the level combiner outputs.");
+            CombinerOutputFormat = BindEnum(this, "Data", "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
             SavingSavesThemeOpacity = Bind(this, "Data", "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
             UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
             UpdateThemeListOnFilesChanged = Bind(this, "Data", "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");

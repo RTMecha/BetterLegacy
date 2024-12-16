@@ -408,7 +408,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (EditorConfig.Instance.CombinerOutputFormat.Value == FileType.LS)
+            if (EditorConfig.Instance.CombinerOutputFormat.Value == ArrhythmiaType.LS)
                 combinedGameData.SaveData(save, () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
