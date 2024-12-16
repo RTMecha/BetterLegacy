@@ -1738,38 +1738,37 @@ namespace BetterLegacy.Core.Helpers
                                 !levelObject.visualObject.GameObject)
                                 break;
 
-                            string text = RTFile.ApplicationDirectory + "beatmaps/soundlibrary/" + modifier.value;
+                            string fullPath =
+                                !bool.TryParse(modifier.commands[1], out bool global) || !global ?
+                                RTFile.CombinePaths(RTFile.BasePath, modifier.value) :
+                                RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, modifier.value);
 
-                            if (!bool.TryParse(modifier.commands[1], out bool global) || !global)
-                                text = RTFile.BasePath + modifier.value;
-
-                            if (!modifier.value.Contains(".ogg") && RTFile.FileExists(text + ".ogg"))
-                                text += ".ogg";
-
-                            if (!modifier.value.Contains(".wav") && RTFile.FileExists(text + ".wav"))
-                                text += ".wav";
-
-                            if (!modifier.value.Contains(".mp3") && RTFile.FileExists(text + ".mp3"))
-                                text += ".mp3";
-
-                            if (!RTFile.FileExists(text))
+                            var audioDotFormats = RTFile.AudioDotFormats;
+                            for (int i = 0; i < audioDotFormats.Length; i++)
                             {
-                                CoreHelper.LogError($"File does not exist {text}");
+                                var audioDotFormat = audioDotFormats[i];
+                                if (!modifier.value.EndsWith(audioDotFormat) && RTFile.FileExists(fullPath + audioDotFormat))
+                                    fullPath += audioDotFormat;
+                            }
+
+                            if (!RTFile.FileExists(fullPath))
+                            {
+                                CoreHelper.LogError($"File does not exist {fullPath}");
                                 break;
                             }
 
-                            if (text.Contains(".mp3"))
+                            if (fullPath.EndsWith(FileFormat.MP3.Dot()))
                             {
                                 modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
-                                ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(text), modifier.reference, modifier);
+                                ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(fullPath), modifier.reference, modifier);
                                 break;
                             }
 
-                            CoreHelper.StartCoroutine(ModifiersManager.LoadMusicFileRaw(text, audioClip =>
+                            CoreHelper.StartCoroutine(ModifiersManager.LoadMusicFileRaw(fullPath, audioClip =>
                             {
                                 if (!audioClip)
                                 {
-                                    CoreHelper.LogError($"Failed to load audio {text}");
+                                    CoreHelper.LogError($"Failed to load audio {fullPath}");
                                     return;
                                 }
 
@@ -4468,6 +4467,10 @@ namespace BetterLegacy.Core.Helpers
 
                                 if (pitchVary != 0f)
                                     pitch += UnityEngine.Random.Range(-pitchVary, pitchVary);
+
+                                // Don't play any sounds.
+                                if (!modifier.GetBool(2, true))
+                                    break;
 
                                 // Don't play custom sound.
                                 if (!modifier.GetBool(3, false))

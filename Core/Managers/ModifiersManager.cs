@@ -21,6 +21,10 @@ namespace BetterLegacy.Core.Managers
     {
         static System.Diagnostics.Stopwatch sw;
 
+        public const string SOUNDLIBRARY_PATH = "beatmaps/soundlibrary";
+
+        public static ModifiersManager inst;
+
         /// <summary>
         /// Updates modifiers on level tick.
         /// </summary>
@@ -97,9 +101,10 @@ namespace BetterLegacy.Core.Managers
 
         void Awake()
         {
+            inst = this;
             defaultBeatmapObjectModifiers.Clear();
 
-            var path = RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "default_modifiers.lsb";
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.lsb");
 
             if (!RTFile.FileExists(path))
                 return;
@@ -271,31 +276,23 @@ namespace BetterLegacy.Core.Managers
 
         public static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false)
         {
-            string text = RTFile.ApplicationDirectory + "beatmaps/soundlibrary/" + path;
+            string fullPath = !fromSoundLibrary ? RTFile.CombinePaths(RTFile.BasePath, path) : RTFile.CombinePaths(RTFile.ApplicationDirectory, SOUNDLIBRARY_PATH, path);
 
-            if (!fromSoundLibrary)
-                text = RTFile.BasePath + path;
-
-            if (!path.Contains(".ogg") && RTFile.FileExists(text + ".ogg"))
-                text += ".ogg";
-
-            if (!path.Contains(".wav") && RTFile.FileExists(text + ".wav"))
-                text += ".wav";
-
-            if (!path.Contains(".mp3") && RTFile.FileExists(text + ".mp3"))
-                text += ".mp3";
-
-            if (RTFile.FileExists(text))
+            var audioDotFormats = RTFile.AudioDotFormats;
+            for (int i = 0; i < audioDotFormats.Length; i++)
             {
-                if (!text.Contains(".mp3"))
-                    CoreHelper.StartCoroutine(LoadMusicFileRaw(text, delegate (AudioClip _newSound)
-                    {
-                        _newSound.name = path;
-                        PlaySound(id, _newSound, pitch, volume, loop);
-                    }));
-                else
-                    PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(text), pitch, volume, loop);
+                var audioDotFormat = audioDotFormats[i];
+                if (!path.Contains(audioDotFormat) && RTFile.FileExists(fullPath + audioDotFormat))
+                    fullPath += audioDotFormat;
             }
+
+            if (!RTFile.FileExists(fullPath))
+                return;
+
+            if (!fullPath.EndsWith(FileFormat.MP3.Dot()))
+                CoreHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop)));
+            else
+                PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop);
         }
 
         public static void DownloadSoundAndPlay(string id, string path, float pitch = 1f, float volume = 1f, bool loop = false)
@@ -305,13 +302,7 @@ namespace BetterLegacy.Core.Managers
                 var audioType = RTFile.GetAudioType(path);
 
                 if (audioType != AudioType.UNKNOWN)
-                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip(path, audioType, delegate (AudioClip audioClip)
-                    {
-                        PlaySound(id, audioClip, pitch, volume, loop);
-                    }, delegate (string onError)
-                    {
-                        CoreHelper.Log($"Error! Could not download audioclip.\n{onError}");
-                    }));
+                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
             }
             catch
             {
@@ -321,23 +312,8 @@ namespace BetterLegacy.Core.Managers
 
         public static void PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop)
         {
-            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-            audioSource.clip = clip;
-            audioSource.playOnAwake = true;
-            audioSource.loop = loop;
-            audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
-            audioSource.volume = volume * AudioManager.inst.sfxVol;
-            audioSource.Play();
-
-            float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
-            if (x == 0f)
-                x = 1f;
-            if (x < 0f)
-                x = -x;
-
-            if (!loop)
-                CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
-            else if (!audioSources.ContainsKey(id))
+            var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch * AudioManager.inst.CurrentAudioSource.pitch, loop);
+            if (loop && !audioSources.ContainsKey(id))
                 audioSources.Add(id, audioSource);
         }
 
@@ -393,14 +369,15 @@ namespace BetterLegacy.Core.Managers
             if (path.Contains("\\") || path.Contains("/") || path.Contains(".."))
                 return;
 
-            if (!RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}profile"))
-                Directory.CreateDirectory($"{RTFile.ApplicationDirectory}profile");
+            var profile = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            RTFile.CreateDirectory(profile);
 
-            var jn = JSON.Parse(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/{path}.ses") ? RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}profile/{path}.ses") : "{}");
+            var file = RTFile.CombinePaths(profile, $"{path}{FileFormat.SES.Dot()}");
+            var jn = JSON.Parse(RTFile.FileExists(file) ? RTFile.ReadFromFile(file) : "{}");
 
             jn[chapter][level]["float"] = data.ToString();
 
-            RTFile.WriteToFile($"{RTFile.ApplicationDirectory}profile/{path}.ses", jn.ToString(3));
+            RTFile.WriteToFile(file, jn.ToString(3));
         }
 
         public static void SaveProgress(string path, string chapter, string level, string data)
@@ -408,24 +385,25 @@ namespace BetterLegacy.Core.Managers
             if (path.Contains("\\") || path.Contains("/") || path.Contains(".."))
                 return;
 
-            if (!RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}profile"))
-                Directory.CreateDirectory($"{RTFile.ApplicationDirectory}profile");
+            var profile = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            RTFile.CreateDirectory(profile);
 
-            var jn = JSON.Parse(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/{path}.ses") ? RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}profile/{path}.ses") : "{}");
+            var file = RTFile.CombinePaths(profile, $"{path}{FileFormat.SES.Dot()}");
+            var jn = JSON.Parse(RTFile.FileExists(file) ? RTFile.ReadFromFile(file) : "{}");
 
             jn[chapter][level]["string"] = data.ToString();
 
-            RTFile.WriteToFile($"{RTFile.ApplicationDirectory}profile/{path}.ses", jn.ToString(3));
+            RTFile.WriteToFile(file, jn.ToString(3));
         }
 
         public static IEnumerator ActivateModifier(BeatmapObject beatmapObject, float delay)
         {
-            yield return new WaitForSeconds(delay);
+            if (delay != 0.0)
+                yield return new WaitForSeconds(delay);
 
             if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> modifier))
-            {
                 modifier.Result = "death hd";
-            }
+            yield break;
         }
 
         #endregion
