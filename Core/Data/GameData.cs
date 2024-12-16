@@ -13,8 +13,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BaseBeatmapTheme = DataManager.BeatmapTheme;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 using BaseGameData = DataManager.GameData;
@@ -28,6 +26,10 @@ namespace BetterLegacy.Core.Data
     {
         public GameData() { }
 
+        #region Properties
+
+        #region Instance
+
         /// <summary>
         /// Checks if the current GameData is of the correct type.
         /// </summary>
@@ -37,291 +39,606 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public static GameData Current { get => DataManager.inst.gameData as GameData; set => DataManager.inst.gameData = value; }
 
-        public Dictionary<string, BaseBeatmapTheme> beatmapThemes = new Dictionary<string, BaseBeatmapTheme>();
+        #endregion
 
-        public List<LevelModifier> levelModifiers = new List<LevelModifier>();
+        #region Verifying
+
+        public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
+
+        bool BeatmapObjectsModded => beatmapObjects.Any(x => x.modifiers.Count > 0
+                    || x.objectType == Data.BeatmapObject.ObjectType.Solid
+                    || x.desync
+                    || x.background
+                    || x.LDM
+                    || x.parallaxSettings.Any(y => y != 1f)
+                    || x.parentAdditive != "000"
+                    || x.shape > UnmoddedShapeOptions.Length - 1
+                    || x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length - 1)]
+                    || x.events[0].Any(x => x.random > 4 || x.eventValues.Length > 2 && x.eventValues[2] != 0f || ((Data.EventKeyframe)x).relative)
+                    || x.events[1].Any(x => ((Data.EventKeyframe)x).relative)
+                    || x.events[2].Any(x => x.random > 4 || !((Data.EventKeyframe)x).relative)
+                    || x.events[3].Any(x => x.random > 4 || x.eventValues[0] > 8f || x.eventValues[2] != 0f || x.eventValues[3] != 0f || x.eventValues[4] != 0f));
+
+        bool EventKeyframesModded
+        {
+            get
+            {
+                bool eventKeyframesModded = false;
+
+                for (int i = 0; i < eventObjects.allEvents.Count; i++)
+                {
+                    for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
+                    {
+                        var eventKeyframe = (Data.EventKeyframe)eventObjects.allEvents[i][j];
+
+                        for (int k = 0; k < eventKeyframe.eventValues.Length; k++)
+                        {
+                            if ((DefaultUnmoddedEventKeyframes.Length <= i || DefaultUnmoddedEventKeyframes[i] <= k) && DefaultKeyframes[i].eventValues[k] != eventKeyframe.eventValues[k])
+                            {
+                                eventKeyframesModded = true;
+                                break;
+                            }
+                        }
+
+                        if (eventKeyframesModded)
+                            break;
+                    }
+
+                    if (eventKeyframesModded)
+                        break;
+                }
+
+                return eventKeyframesModded;
+            }
+        }
+
+        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Data.PrefabObject.AutoKillType.Regular);
+
+        #endregion
+
+        #region Events
 
         /// <summary>
-        /// Class for alpha EventTrigger support.
+        /// The total amount of event keyframes.
         /// </summary>
-        public class LevelModifier
+        public static int EventCount => DefaultKeyframes.Count;
+
+        /// <summary>
+        /// If opacity should be saved to themes.
+        /// </summary>
+        public static bool SaveOpacityToThemes { get; set; } = false;
+
+        /// <summary>
+        /// The vanilla event keyframe value counts.
+        /// </summary>
+        public static int[] DefaultUnmoddedEventKeyframes => new int[]
         {
-            public Modifier<GameData> TriggerModifier { get; set; }
-            public Modifier<GameData> ActionModifier { get; set; }
+            2, // Move
+            1, // Zoom
+            1, // Rotate
+            1, // Shake
+            1, // Theme
+            1, // Chroma
+            1, // Bloom
+            6, // Vignette
+            1, // Lens
+            3, // Grain
+        };
 
-            public int retriggerAmount = -1;
-            public int current;
+        /// <summary>
+        /// The JSON names of all the events in BetterLegacy.
+        /// </summary>
+        public static string[] EventTypes => new string[]
+        {
+            #region Vanilla
+            "pos", // 0
+			"zoom", // 1
+			"rot", // 2
+			"shake", // 3
+			"theme", // 4
+			"chroma", // 5
+			"bloom", // 6
+			"vignette", // 7
+			"lens", // 8
+			"grain", // 9
+            #endregion
 
-            public void AssignModifier(ModifierBase.Type type, int i)
+            #region Modded
+            "cg", // 10
+			"rip", // 11
+			"rb", // 12
+			"cs", // 13
+			"offset", // 14
+			"grd", // 15
+			"dbv", // 16
+			"scan", // 17
+			"blur", // 18
+			"pixel", // 19
+			"bg", // 20
+			"invert", // 21
+			"timeline", // 22
+			"player", // 23
+			"follow_player", // 24
+			"audio", // 25
+			"vidbg_p", // 26
+			"vidbg", // 27
+			"sharp", // 28
+			"bars", // 29
+			"danger", // 30
+			"xyrot", // 31
+			"camdepth", // 32
+			"winbase", // 33
+			"winposx", // 34
+			"winposy", // 35
+			"playerforce", // 36
+			"mosaic", // 37
+			"analog_glitch", // 38
+			"digital_glitch", // 39
+            #endregion
+        };
+
+        /// <summary>
+        /// The default events in BetterLegacy.
+        /// </summary>
+        public static List<BaseEventKeyframe> DefaultKeyframes = new List<BaseEventKeyframe>
+        {
+            #region Vanilla
+            new Data.EventKeyframe
             {
-                if (type == ModifierBase.Type.Trigger)
-                    AssignTrigger(i);
-                if (type == ModifierBase.Type.Action)
-                    AssignAction(i);
-            }
-
-            public void AssignModifier(int action, int trigger)
+                eventTime = 0f,
+                eventValues = new float[2],
+                id = LSText.randomNumString(8),
+            }, // Move
+			new Data.EventKeyframe
             {
-                AssignTrigger(trigger);
-                AssignAction(action);
-            }
-
-            public void AssignTrigger(int i)
+                eventTime = 0f,
+                eventValues = new float[1]
+                { 20f },
+                id = LSText.randomNumString(8),
+            }, // Zoom
+			new Data.EventKeyframe
             {
-                TriggerModifier = DefaultTriggers[Mathf.Clamp(i, 0, DefaultTriggers.Length - 1)];
-            }
-
-            public void AssignAction(int i)
+                eventTime = 0f,
+                eventValues = new float[1],
+                id = LSText.randomNumString(8),
+            }, // Rotate
+			new Data.EventKeyframe
             {
-                ActionModifier = DefaultActions[Mathf.Clamp(i, 0, DefaultActions.Length - 1)];
-            }
-
-            public void Activate()
+                eventTime = 0f,
+                eventValues = new float[5]
+                {
+                    0f, // Shake Intensity
+					1f, // Shake X
+					1f, // Shake Y
+					0f, // Shake Interpolation
+					1f, // Shake Speed
+                },
+                id = LSText.randomNumString(8),
+            }, // Shake
+			new Data.EventKeyframe
             {
-                var trigger = Trigger();
-                if ((trigger && !TriggerModifier.not || !trigger && TriggerModifier.not) && !TriggerModifier.active)
-                {
-                    Action();
-
-                    if (!TriggerModifier.constant)
-                        TriggerModifier.active = true;
-                }
-                else if (!(trigger && !TriggerModifier.not || !trigger && TriggerModifier.not))
-                    TriggerModifier.active = false;
-            }
-
-            public bool Trigger()
+                eventTime = 0f,
+                eventValues = new float[1],
+                id = LSText.randomNumString(8),
+            }, // Theme
+			new Data.EventKeyframe
             {
-                var modiifer = TriggerModifier;
-
-                if (modiifer == null || retriggerAmount != -1 && current > retriggerAmount)
-                    return false;
-
-                current++;
-
-                var time = Updater.CurrentTime;
-
-                switch (modiifer.commands[0].ToLower())
-                {
-                    case "none":
-                        {
-                            return true;
-                        }
-                    case "time":
-                        {
-                            return modiifer.commands.Count > 2 && float.TryParse(modiifer.commands[1], out float min) && float.TryParse(modiifer.commands[2], out float max)
-                                && time >= min - 0.01f && time <= max + 0.1f;
-                        }
-                    case "playerhit":
-                        {
-                            return PlayerManager.Players.Any(x => x.Player != null && x.Player.isTakingHit);
-                        }
-                    case "playerdeath":
-                        {
-                            return PlayerManager.Players.Any(x => x.Player != null && x.Player.isDead);
-                        }
-                    case "levelstart":
-                        {
-                            return AudioManager.inst.CurrentAudioSource.time < 0.1f;
-                        }
-                }
-
-                return false;
-            }
-
-            public void Action()
+                eventTime = 0f,
+                eventValues = new float[1],
+                id = LSText.randomNumString(8),
+            }, // Chroma
+			new Data.EventKeyframe
             {
-                var modifier = ActionModifier;
-
-                if (modifier == null)
-                    return;
-
-                switch (modifier.commands[0].ToLower().Replace(" ", "").Replace("_", ""))
+                eventTime = 0f,
+                eventValues = new float[8]
                 {
-                    case "playerlocation":
-                        {
-                            float x = 0f;
-                            float y = 0f;
-                            float t = 0f;
-
-                            if (modifier.commands.Count > 1 && float.TryParse(modifier.commands[1], out float xResult))
-                                x = xResult;
-
-                            if (modifier.commands.Count > 2 && float.TryParse(modifier.commands[2], out float yResult))
-                                y = yResult;
-
-                            if (modifier.commands.Count > 2 && float.TryParse(modifier.commands[2], out float tResult))
-                                t = tResult;
-
-                            foreach (var player in PlayerManager.Players)
-                            {
-                                if (!player.Player || !player.Player.rb)
-                                    continue;
-
-                                var tf = player.Player.rb.transform;
-
-                                if (t == 0f)
-                                {
-                                    tf.localPosition = new Vector3(x, y, 0f);
-                                    continue;
-                                }
-
-                                var animation = new RTAnimation("Player Move");
-
-                                animation.animationHandlers = new List<AnimationHandlerBase>
-                                {
-                                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                                    {
-                                        new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
-                                        new Vector2Keyframe(t, new Vector2(x, y), Ease.Linear),
-                                    }, x =>
-                                    {
-                                        if (!tf)
-                                            return;
-
-                                        tf.localPosition = x;
-                                    }),
-                                };
-
-                                animation.onComplete = () =>
-                                {
-                                    AnimationManager.inst.Remove(animation.id);
-                                    if (tf)
-                                        tf.localPosition = new Vector2(x, y);
-                                };
-
-                                AnimationManager.inst.Play(animation);
-                            }
-
-                            break;
-                        }
-                    case "playerboostlock":
-                        {
-                            if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.commands[1], out bool lockBoost))
-                                RTPlayer.LockBoost = lockBoost;
-
-                            break;
-                        }
-
-                }
-            }
-
-            public static Modifier<GameData>[] DefaultTriggers => new Modifier<GameData>[]
+                    0f, // Bloom Intensity
+					7f, // Bloom Diffusion
+					1f, // Bloom Threshold
+					0f, // Bloom Anamorphic Ratio
+					18f, // Bloom Color
+					0f, // Bloom Hue
+					0f, // Bloom Sat
+					0f, // Bloom Val
+				},
+                id = LSText.randomNumString(8),
+            }, // Bloom
+			new Data.EventKeyframe
             {
-                new Modifier<GameData>
+                eventTime = 0f,
+                eventValues = new float[10]
                 {
-                    type = ModifierBase.Type.Trigger,
-                    constant = true,
-                    commands = new List<string>
-                    {
-                        "time",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // time
-				new Modifier<GameData>
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerHit",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // playerHit
-				new Modifier<GameData>
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerDeath",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // playerDeath
-				new Modifier<GameData>
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "levelStart",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // levelStart
-			};
-            public static Modifier<GameData>[] DefaultActions => new Modifier<GameData>[]
+                    0f, // Vignette Intensity
+					0f, // Vignette Smoothness
+					0f, // Vignette Rounded
+					0f, // Vignette Roundness
+					0f, // Vignette Center X
+					0f, // Vignette Center Y
+					18f, // Vignette Color
+					0f, // Vignette Hue
+					0f, // Vignette Sat
+					0f, // Vignette Val
+                },
+                id = LSText.randomNumString(8),
+            }, // Vignette
+			new Data.EventKeyframe
             {
-                new Modifier<GameData>
+                eventTime = 0f,
+                eventValues = new float[6]
                 {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "vnInk"
-                    },
-                    value = "",
-                }, // vnInk
-				new Modifier<GameData>
+                    0f,
+                    0f,
+                    0f,
+                    1f,
+                    1f,
+                    1f
+                },
+                id = LSText.randomNumString(8),
+            }, // Lens
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[3],
+                id = LSText.randomNumString(8),
+            }, // Grain
+            #endregion
+
+            #region Modded
+            new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[9],
+                id = LSText.randomNumString(8),
+            }, // ColorGrading
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[6]
                 {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "vnTimeline"
-                    },
-                    value = "",
-                }, // vnTimeline
-				new Modifier<GameData>
+                    0f,
+                    0f,
+                    1f,
+                    0f,
+                    0f,
+                    0f,
+                },
+                id = LSText.randomNumString(8),
+            }, // Ripples
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2]
                 {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerBubble",
-                        "Text", // Text
-						"0", // Time
-                    },
-                    value = "",
-                }, // playerBubble (Probably won't have support for this yet)
-				new Modifier<GameData>
+                    0f,
+                    6f
+                },
+                id = LSText.randomNumString(8),
+            }, // RadialBlur
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2],
+                id = LSText.randomNumString(8),
+            }, // ColorSplit
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2],
+                id = LSText.randomNumString(8),
+            }, // Offset
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[13]
                 {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerLocation",
-                        "0", // X
-						"0", // Y
-						"0", // Time
-                    },
-                    value = "",
-                }, // playerLocation
-				new Modifier<GameData>
+                    0f,
+                    0f,
+                    18f,
+                    18f,
+                    0f,
+                    1f, // Top Opacity
+					0f, // Top Hue
+					0f, // Top Sat
+					0f, // Top Val
+					1f, // Bottom Opacity
+					0f, // Bottom Hue
+					0f, // Bottom Sat
+					0f, // Bottom Val
+				},
+                id = LSText.randomNumString(8),
+            }, // Gradient
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2],
+                id = LSText.randomNumString(8),
+            }, // DoubleVision
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[3],
+                id = LSText.randomNumString(8),
+            }, // ScanLines
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2]
                 {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerBoostLock",
-                        "False", // Lock Enabled
-						"", // Show Bubble
-						"", // Bubble Time
-                    },
-                    value = "",
-                }, // playerBoostLock
-			};
-        }
+                    0f,
+                    6f
+                },
+                id = LSText.randomNumString(8),
+            }, // Blur
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1],
+                id = LSText.randomNumString(8),
+            }, // Pixelize
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[5]
+                {
+                    18f, // Color
+					0f, // Active
+					0f, // Hue
+					0f, // Sat
+					0f, // Val
+				},
+                id = LSText.randomNumString(8),
+            }, // BG
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1],
+                id = LSText.randomNumString(8),
+            }, // Invert
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[11]
+                {
+                    0f,
+                    0f,
+                    -342f,
+                    1f,
+                    1f,
+                    0f,
+                    18f,
+                    1f, // Opacity
+					0f, // Hue
+					0f, // Sat
+					0f, // Val
+				},
+                id = LSText.randomNumString(8),
+            }, // Timeline
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[6],
+                id = LSText.randomNumString(8),
+            }, // Player
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[10]
+                {
+                    0f, // Active
+					0f, // Move
+					0f, // Rotate
+					0.5f,
+                    0f,
+                    9999f,
+                    -9999f,
+                    9999f,
+                    -9999f,
+                    1f,
+                },
+                id = LSText.randomNumString(8),
+            }, // Follow Player
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2]
+                {
+                    1f,
+                    1f
+                },
+                id = LSText.randomNumString(8),
+            }, // Audio
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[9]
+                {
+                    0f, // Position X
+                    0f, // Position Y
+                    0f, // Position Z
+                    1f, // Scale X
+                    1f, // Scale Y
+                    1f, // Scale Z
+                    0f, // Rotation X
+                    0f, // Rotation Y
+                    0f, // Rotation Z
+                },
+                id = LSText.randomNumString(8),
+            }, // Video BG Parent
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[10]
+                {
+                    0f, // Position X
+                    0f, // Position Y
+                    120f, // Position Z
+                    240f, // Scale X
+                    135f, // Scale Y
+                    1f, // Scale Z
+                    0f, // Rotation X
+                    0f, // Rotation Y
+                    0f, // Rotation Z
+                    0f, // Render Layer (Foreground / Background)
+                },
+                id = LSText.randomNumString(8),
+            }, // Video BG
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1]
+                {
+                    0f, // Sharpen Amount
+                },
+                id = LSText.randomNumString(8),
+            }, // Sharpen
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2]
+                {
+                    0f, // Amount
+					0f, // Mode
+                },
+                id = LSText.randomNumString(8),
+            }, // Bars
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[7]
+                {
+                    0f, // Intensity
+					0f, // Size
+					18f, // Color
+					1f, // Opacity
+					0f, // Hue
+					0f, // Sat
+					0f, // Val
+                },
+                id = LSText.randomNumString(8),
+            }, // Danger
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2]
+                {
+                    0f, // X
+					0f, // Y
+                },
+                id = LSText.randomNumString(8),
+            }, // 3D Rotation
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[3]
+                {
+                    -10f, // Depth
+					0f, // Zoom
+					0f, // Global Position
+                },
+                id = LSText.randomNumString(8),
+            }, // Camera Depth
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[4]
+                {
+                    0f, // Force Resolution (1 = true, includes position)
+					1280f, // X
+					720f, // Y
+					0f, // Allow Position
+                },
+                id = LSText.randomNumString(8),
+            }, // Window Base
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1]
+                {
+                    0f, // Position X
+                },
+                id = LSText.randomNumString(8),
+            }, // Window Position X
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1]
+                {
+                    0f, // Position Y
+                },
+                id = LSText.randomNumString(8),
+            }, // Window Position Y
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[2]
+                {
+                    0f, // Player Force X
+					0f, // Player Force Y
+                },
+                id = LSText.randomNumString(8),
+            }, // Player Force
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1]
+                {
+                    0f, // Intensity
+                },
+                id = LSText.randomNumString(8),
+            }, // Mosaic
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[5]
+                {
+                    0f, // Enabled
+                    0f, // ColorDrift
+                    0f, // HorizontalShake
+                    0f, // ScanLineJitter
+                    0f, // VerticalJump
+                },
+                id = LSText.randomNumString(8),
+            }, // Analog Glitch
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1]
+                {
+                    0f, // Intensity
+                },
+                id = LSText.randomNumString(8),
+            }, // Digital Glitch
+            #endregion
+        };
+
+        #endregion
+
+        /// <summary>
+        /// The vanilla shape options.
+        /// </summary>
+        public static int[] UnmoddedShapeOptions => new int[]
+        {
+            3,
+            9,
+            4,
+            2,
+            1,
+            6
+        };
+
+        // debug
+        //public static JSONNode LastParsedJSON { get; set; }
+        //public static GameData ConvertedGameData { get; set; }
+
+        #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Creates a copy of a <see cref="GameData"/>.
+        /// </summary>
+        /// <param name="orig">Original to copy.</param>
+        /// <returns>Returns a copied <see cref="GameData"/>.</returns>
         public static GameData DeepCopy(GameData orig)
         {
             if (orig.beatmapObjects == null)
@@ -358,15 +675,28 @@ namespace BetterLegacy.Core.Data
             return gameData;
         }
 
-        public static GameData ConvertedGameData { get; set; }
-
-        public static GameData ReadFromFile(string path, FileType fileType, bool parseThemes = true, Version version = default) => fileType switch
+        /// <summary>
+        /// Parses a level from a file.
+        /// </summary>
+        /// <param name="path">File to parse.</param>
+        /// <param name="fileType">The type of Project Arrhythmia the file is from.</param>
+        /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
+        /// <param name="version">The exact version the level is from.</param>
+        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
+        public static GameData ReadFromFile(string path, ArrhythmiaType fileType, bool parseThemes = true, Version version = default) => fileType switch
         {
-            FileType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes),
-            FileType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes, version),
+            ArrhythmiaType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes),
+            ArrhythmiaType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes, version),
             _ => null,
         };
 
+        /// <summary>
+        /// Parses a level from JSON in the VG format.
+        /// </summary>
+        /// <param name="jn">VG JSON to parse.</param>
+        /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
+        /// <param name="version">The exact version the level is from.</param>
+        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
         public static GameData ParseVG(JSONNode jn, bool parseThemes = true, Version version = default)
         {
             var gameData = new GameData();
@@ -781,7 +1111,7 @@ namespace BetterLegacy.Core.Data
             }
 
             CoreHelper.Log($"Checking keyframe counts");
-            ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
+            ClampEventListValues(gameData.eventObjects.allEvents);
 
             if (jn["events"].Count > 13 && jn["events"][13] != null && gameData.eventObjects.allEvents.Count > 36)
             {
@@ -811,16 +1141,22 @@ namespace BetterLegacy.Core.Data
                 }
             }
 
-            ConvertedGameData = gameData;
+            //ConvertedGameData = gameData;
 
             return gameData;
         }
 
+        /// <summary>
+        /// Parses a level from JSON in the LS format.
+        /// </summary>
+        /// <param name="jn">LS JSON to parse.</param>
+        /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
+        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
         public static GameData Parse(JSONNode jn, bool parseThemes = true)
         {
             var gameData = new GameData();
 
-            LastParsedJSON = jn;
+            //LastParsedJSON = jn;
             var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
 
             if (jn["modifiers"] != null)
@@ -916,7 +1252,6 @@ namespace BetterLegacy.Core.Data
                     gameData.beatmapObjects.RemoveAt(index);
 
                 gameData.beatmapObjects.Add(beatmapObject);
-                gameData.modifierCount += beatmapObject.modifiers.Count;
             }
 
             if (parseOptimizations)
@@ -994,18 +1329,15 @@ namespace BetterLegacy.Core.Data
                 CoreHelper.LogException(ex);
             }
 
-            ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
+            ClampEventListValues(gameData.eventObjects.allEvents);
 
             return gameData;
         }
 
         /// <summary>
-        /// Parsed JSON for debugging purposes.
+        /// Writes the <see cref="GameData"/> to a VG format file.
         /// </summary>
-        public static JSONNode LastParsedJSON { get; set; }
-
-        public static int EventCount => DefaultKeyframes.Count;
-
+        /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
         public JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
@@ -1249,6 +1581,11 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        /// <summary>
+        /// Writes the <see cref="GameData"/> to an LS format file.
+        /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
+        /// </summary>
+        /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
         public JSONNode ToJSON(bool saveGameDataThemes = false)
         {
             CoreHelper.Log("Saving Beatmap");
@@ -1338,6 +1675,12 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        /// <summary>
+        /// Saves the <see cref="GameData"/> to a LS format file.
+        /// </summary>
+        /// <param name="path">The file to save to.</param>
+        /// <param name="onSave">Function to run when saving is complete.</param>
+        /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
         public void SaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
@@ -1345,7 +1688,12 @@ namespace BetterLegacy.Core.Data
             else
                 CoreHelper.StartCoroutine(ISaveData(path, onSave, saveGameDataThemes));
         }
-        
+
+        /// <summary>
+        /// Saves the <see cref="GameData"/> to a VG format file.
+        /// </summary>
+        /// <param name="path">The file to save to.</param>
+        /// <param name="onSave">Function to run when saving is complete.</param>
         public void SaveDataVG(string path, Action onSave = null)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
@@ -1354,6 +1702,12 @@ namespace BetterLegacy.Core.Data
                 CoreHelper.StartCoroutine(ISaveDataVG(path, onSave));
         }
 
+        /// <summary>
+        /// Saves the <see cref="GameData"/> to a LS format file.
+        /// </summary>
+        /// <param name="path">The file to save to.</param>
+        /// <param name="onSave">Function to run when saving is complete.</param>
+        /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
         public IEnumerator ISaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
         {
             var jn = ToJSON(saveGameDataThemes);
@@ -1366,6 +1720,11 @@ namespace BetterLegacy.Core.Data
             yield break;
         }
 
+        /// <summary>
+        /// Saves the <see cref="GameData"/> to a VG format file.
+        /// </summary>
+        /// <param name="path">The file to save to.</param>
+        /// <param name="onSave">Function to run when saving is complete.</param>
         public IEnumerator ISaveDataVG(string path, Action onSave = null)
         {
             var jn = ToJSONVG();
@@ -1378,10 +1737,17 @@ namespace BetterLegacy.Core.Data
             yield break;
         }
 
+        /// <summary>
+        /// Parses all events from a level.
+        /// </summary>
+        /// <param name="jn">The LS JSON to parse.</param>
+        /// <param name="clamp">If event keyframes list should be verified.</param>
+        /// <returns>Returns a parsed list of event keyframes.</returns>
         public static List<List<BaseEventKeyframe>> ParseEventkeyframes(JSONNode jn, bool clamp = true)
         {
             var allEvents = new List<List<BaseEventKeyframe>>();
 
+            // here we iterate through the default event types and check if the JSON exists. This is so we don't need to have a ton of repeating code.
             for (int i = 0; i < EventCount; i++)
             {
                 allEvents.Add(new List<BaseEventKeyframe>());
@@ -1391,26 +1757,37 @@ namespace BetterLegacy.Core.Data
             }
 
             if (clamp)
-                ClampEventListValues(allEvents, EventCount);
+                ClampEventListValues(allEvents);
 
-            allEvents.ForEach(x => x = x.OrderBy(x => x.eventTime).ToList());
+            for (int i = 0; i < allEvents.Count; i++)
+                allEvents[i] = allEvents[i].OrderBy(x => x.eventTime).ToList(); // ensures the event keyframes are ordered correctly.
 
             return allEvents;
         }
 
-        public static void ClampEventListValues(List<List<BaseEventKeyframe>> eventKeyframes, int totalTypes)
+        /// <summary>
+        /// Verifies that the list of event keyframes is of the correct length.
+        /// </summary>
+        /// <param name="eventKeyframes">List of event keyframes to check.</param>
+        public static void ClampEventListValues(List<List<BaseEventKeyframe>> eventKeyframes)
         {
+            int totalTypes = EventCount;
+
+            // first, check if event keyframes count is higher than normal.
             while (eventKeyframes.Count > totalTypes)
                 eventKeyframes.RemoveAt(eventKeyframes.Count - 1);
 
             for (int type = 0; type < totalTypes; type++)
             {
+                // add to the event types if no event exists.
                 if (eventKeyframes.Count < type + 1)
                     eventKeyframes.Add(new List<BaseEventKeyframe>());
 
+                // add an event if the list contains none.
                 if (eventKeyframes[type].Count < 1)
                     eventKeyframes[type].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[type]));
 
+                // verify the event value lengths are correct.
                 for (int index = 0; index < eventKeyframes[type].Count; index++)
                 {
                     var array = eventKeyframes[type][index].eventValues;
@@ -1427,573 +1804,9 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        public int modifierCount;
+        #region Fields
 
-        #region Verifying
-
-        public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
-
-        bool BeatmapObjectsModded => beatmapObjects.Any(x => x.modifiers.Count > 0
-                    || x.objectType == Data.BeatmapObject.ObjectType.Solid
-                    || x.desync
-                    || x.background
-                    || x.LDM
-                    || x.parallaxSettings.Any(y => y != 1f)
-                    || x.parentAdditive != "000"
-                    || x.shape > UnmoddedShapeOptions.Length - 1
-                    || x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length - 1)]
-                    || ArePositionKeyframesModded(x.events[0])
-                    || AreScaleKeyframesModded(x.events[1])
-                    || AreRotationKeyframesModded(x.events[2])
-                    || AreColorKeyframesModded(x.events[3]));
-
-        bool EventKeyframesModded
-        {
-            get
-            {
-                bool eventKeyframesModded = false;
-
-                for (int i = 0; i < eventObjects.allEvents.Count; i++)
-                {
-                    for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
-                    {
-                        var eventKeyframe = (Data.EventKeyframe)eventObjects.allEvents[i][j];
-
-                        for (int k = 0; k < eventKeyframe.eventValues.Length; k++)
-                        {
-                            if ((DefaultUnmoddedEventKeyframes.Length <= i || DefaultUnmoddedEventKeyframes[i] <= k) && DefaultKeyframes[i].eventValues[k] != eventKeyframe.eventValues[k])
-                            {
-                                eventKeyframesModded = true;
-                                break;
-                            }
-                        }
-
-                        if (eventKeyframesModded)
-                            break;
-                    }
-
-                    if (eventKeyframesModded)
-                        break;
-                }
-
-                return eventKeyframesModded;
-            }
-        }
-
-        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Data.PrefabObject.AutoKillType.Regular);
-
-        static bool ArePositionKeyframesModded(List<BaseEventKeyframe> eventKeyframes)
-            => eventKeyframes.Any(x => x.random > 4 || x.eventValues.Length > 2 && x.eventValues[2] != 0f || ((Data.EventKeyframe)x).relative);
-
-        static bool AreScaleKeyframesModded(List<BaseEventKeyframe> eventKeyframes)
-            => eventKeyframes.Any(x => ((Data.EventKeyframe)x).relative);
-
-        static bool AreRotationKeyframesModded(List<BaseEventKeyframe> eventKeyframes)
-            => eventKeyframes.Any(x => x.random > 4 || !((Data.EventKeyframe)x).relative);
-
-        static bool AreColorKeyframesModded(List<BaseEventKeyframe> eventKeyframes)
-            => eventKeyframes.Any(x => x.random > 4 || x.eventValues[0] > 8f || x.eventValues[2] != 0f || x.eventValues[3] != 0f || x.eventValues[4] != 0f);
-
-        public static int[] UnmoddedShapeOptions => new int[]
-        {
-            3,
-            9,
-            4,
-            2,
-            1,
-            6
-        };
-
-        /// <summary>
-        /// For comparing modded values.
-        /// </summary>
-        public static int[] DefaultUnmoddedEventKeyframes => new int[]
-        {
-            2, // Move
-            1, // Zoom
-            1, // Rotate
-            1, // Shake
-            1, // Theme
-            1, // Chroma
-            1, // Bloom
-            6, // Vignette
-            1, // Lens
-            3, // Grain
-        };
-
-        public static string[] EventTypes => new string[]
-        {
-            "pos", // 0
-			"zoom", // 1
-			"rot", // 2
-			"shake", // 3
-			"theme", // 4
-			"chroma", // 5
-			"bloom", // 6
-			"vignette", // 7
-			"lens", // 8
-			"grain", // 9
-			"cg", // 10
-			"rip", // 11
-			"rb", // 12
-			"cs", // 13
-			"offset", // 14
-			"grd", // 15
-			"dbv", // 16
-			"scan", // 17
-			"blur", // 18
-			"pixel", // 19
-			"bg", // 20
-			"invert", // 21
-			"timeline", // 22
-			"player", // 23
-			"follow_player", // 24
-			"audio", // 25
-			"vidbg_p", // 26
-			"vidbg", // 27
-			"sharp", // 28
-			"bars", // 29
-			"danger", // 30
-			"xyrot", // 31
-			"camdepth", // 32
-			"winbase", // 33
-			"winposx", // 34
-			"winposy", // 35
-			"playerforce", // 36
-			"mosaic", // 37
-			"analog_glitch", // 38
-			"digital_glitch", // 39
-		};
-
-        public static List<BaseEventKeyframe> DefaultKeyframes = new List<BaseEventKeyframe>
-        {
-            new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2],
-                id = LSText.randomNumString(8),
-            }, // Move
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1]
-                { 20f },
-                id = LSText.randomNumString(8),
-            }, // Zoom
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Rotate
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[5]
-                {
-                    0f, // Shake Intensity
-					1f, // Shake X
-					1f, // Shake Y
-					0f, // Shake Interpolation
-					1f, // Shake Speed
-                },
-                id = LSText.randomNumString(8),
-            }, // Shake
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Theme
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Chroma
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[8]
-                {
-                    0f, // Bloom Intensity
-					7f, // Bloom Diffusion
-					1f, // Bloom Threshold
-					0f, // Bloom Anamorphic Ratio
-					18f, // Bloom Color
-					0f, // Bloom Hue
-					0f, // Bloom Sat
-					0f, // Bloom Val
-				},
-                id = LSText.randomNumString(8),
-            }, // Bloom
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[10]
-                {
-                    0f, // Vignette Intensity
-					0f, // Vignette Smoothness
-					0f, // Vignette Rounded
-					0f, // Vignette Roundness
-					0f, // Vignette Center X
-					0f, // Vignette Center Y
-					18f, // Vignette Color
-					0f, // Vignette Hue
-					0f, // Vignette Sat
-					0f, // Vignette Val
-                },
-                id = LSText.randomNumString(8),
-            }, // Vignette
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[6]
-                {
-                    0f,
-                    0f,
-                    0f,
-                    1f,
-                    1f,
-                    1f
-                },
-                id = LSText.randomNumString(8),
-            }, // Lens
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[3],
-                id = LSText.randomNumString(8),
-            }, // Grain
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[9],
-                id = LSText.randomNumString(8),
-            }, // ColorGrading
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[6]
-                {
-                    0f,
-                    0f,
-                    1f,
-                    0f,
-                    0f,
-                    0f,
-                },
-                id = LSText.randomNumString(8),
-            }, // Ripples
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2]
-                {
-                    0f,
-                    6f
-                },
-                id = LSText.randomNumString(8),
-            }, // RadialBlur
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2],
-                id = LSText.randomNumString(8),
-            }, // ColorSplit
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2],
-                id = LSText.randomNumString(8),
-            }, // Offset
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[13]
-                {
-                    0f,
-                    0f,
-                    18f,
-                    18f,
-                    0f,
-                    1f, // Top Opacity
-					0f, // Top Hue
-					0f, // Top Sat
-					0f, // Top Val
-					1f, // Bottom Opacity
-					0f, // Bottom Hue
-					0f, // Bottom Sat
-					0f, // Bottom Val
-				},
-                id = LSText.randomNumString(8),
-            }, // Gradient
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2],
-                id = LSText.randomNumString(8),
-            }, // DoubleVision
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[3],
-                id = LSText.randomNumString(8),
-            }, // ScanLines
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2]
-                {
-                    0f,
-                    6f
-                },
-                id = LSText.randomNumString(8),
-            }, // Blur
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Pixelize
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[5]
-                {
-                    18f, // Color
-					0f, // Active
-					0f, // Hue
-					0f, // Sat
-					0f, // Val
-				},
-                id = LSText.randomNumString(8),
-            }, // BG
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Invert
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[11]
-                {
-                    0f,
-                    0f,
-                    -342f,
-                    1f,
-                    1f,
-                    0f,
-                    18f,
-                    1f, // Opacity
-					0f, // Hue
-					0f, // Sat
-					0f, // Val
-				},
-                id = LSText.randomNumString(8),
-            }, // Timeline
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[6],
-                id = LSText.randomNumString(8),
-            }, // Player
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[10]
-                {
-                    0f, // Active
-					0f, // Move
-					0f, // Rotate
-					0.5f,
-                    0f,
-                    9999f,
-                    -9999f,
-                    9999f,
-                    -9999f,
-                    1f,
-                },
-                id = LSText.randomNumString(8),
-            }, // Follow Player
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2]
-                {
-                    1f,
-                    1f
-                },
-                id = LSText.randomNumString(8),
-            }, // Audio
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[9]
-                {
-                    0f, // Position X
-                    0f, // Position Y
-                    0f, // Position Z
-                    1f, // Scale X
-                    1f, // Scale Y
-                    1f, // Scale Z
-                    0f, // Rotation X
-                    0f, // Rotation Y
-                    0f, // Rotation Z
-                },
-                id = LSText.randomNumString(8),
-            }, // Video BG Parent
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[10]
-                {
-                    0f, // Position X
-                    0f, // Position Y
-                    120f, // Position Z
-                    240f, // Scale X
-                    135f, // Scale Y
-                    1f, // Scale Z
-                    0f, // Rotation X
-                    0f, // Rotation Y
-                    0f, // Rotation Z
-                    0f, // Render Layer (Foreground / Background)
-                },
-                id = LSText.randomNumString(8),
-            }, // Video BG
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1]
-                {
-                    0f, // Sharpen Amount
-                },
-                id = LSText.randomNumString(8),
-            }, // Sharpen
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2]
-                {
-                    0f, // Amount
-					0f, // Mode
-                },
-                id = LSText.randomNumString(8),
-            }, // Bars
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[7]
-                {
-                    0f, // Intensity
-					0f, // Size
-					18f, // Color
-					1f, // Opacity
-					0f, // Hue
-					0f, // Sat
-					0f, // Val
-                },
-                id = LSText.randomNumString(8),
-            }, // Danger
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2]
-                {
-                    0f, // X
-					0f, // Y
-                },
-                id = LSText.randomNumString(8),
-            }, // 3D Rotation
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[3]
-                {
-                    -10f, // Depth
-					0f, // Zoom
-					0f, // Global Position
-                },
-                id = LSText.randomNumString(8),
-            }, // Camera Depth
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[4]
-                {
-                    0f, // Force Resolution (1 = true, includes position)
-					1280f, // X
-					720f, // Y
-					0f, // Allow Position
-                },
-                id = LSText.randomNumString(8),
-            }, // Window Base
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1]
-                {
-                    0f, // Position X
-                },
-                id = LSText.randomNumString(8),
-            }, // Window Position X
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1]
-                {
-                    0f, // Position Y
-                },
-                id = LSText.randomNumString(8),
-            }, // Window Position Y
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[2]
-                {
-                    0f, // Player Force X
-					0f, // Player Force Y
-                },
-                id = LSText.randomNumString(8),
-            }, // Player Force
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1]
-                {
-                    0f, // Intensity
-                },
-                id = LSText.randomNumString(8),
-            }, // Mosaic
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[5]
-                {
-                    0f, // Enabled
-                    0f, // ColorDrift
-                    0f, // HorizontalShake
-                    0f, // ScanLineJitter
-                    0f, // VerticalJump
-                },
-                id = LSText.randomNumString(8),
-            }, // Analog Glitch
-			new Data.EventKeyframe
-            {
-                eventTime = 0f,
-                eventValues = new float[1]
-                {
-                    0f, // Intensity
-                },
-                id = LSText.randomNumString(8),
-            }, // Digital Glitch
-		};
-
-        public static bool SaveOpacityToThemes { get; set; } = false;
-
-        #endregion
+        public Dictionary<string, BaseBeatmapTheme> beatmapThemes = new Dictionary<string, BaseBeatmapTheme>();
 
         public new LevelBeatmapData beatmapData;
 
@@ -2005,8 +1818,291 @@ namespace BetterLegacy.Core.Data
 
         public new List<Data.BackgroundObject> backgroundObjects = new List<Data.BackgroundObject>();
 
+        public List<LevelModifier> levelModifiers = new List<LevelModifier>();
+
+        #endregion
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameData operator +(GameData a, GameData b) => Combiner.Combine(a, b);
+
+        /// <summary>
+        /// Class for alpha EventTrigger support.
+        /// </summary>
+        public class LevelModifier
+        {
+            public Modifier<GameData> TriggerModifier { get; set; }
+            public Modifier<GameData> ActionModifier { get; set; }
+
+            public int retriggerAmount = -1;
+            public int current;
+
+            public void AssignModifier(ModifierBase.Type type, int i)
+            {
+                if (type == ModifierBase.Type.Trigger)
+                    AssignTrigger(i);
+                if (type == ModifierBase.Type.Action)
+                    AssignAction(i);
+            }
+
+            public void AssignModifier(int action, int trigger)
+            {
+                AssignTrigger(trigger);
+                AssignAction(action);
+            }
+
+            public void AssignTrigger(int i)
+            {
+                TriggerModifier = DefaultTriggers[Mathf.Clamp(i, 0, DefaultTriggers.Length - 1)];
+            }
+
+            public void AssignAction(int i)
+            {
+                ActionModifier = DefaultActions[Mathf.Clamp(i, 0, DefaultActions.Length - 1)];
+            }
+
+            public void Activate()
+            {
+                var trigger = Trigger();
+                if ((trigger && !TriggerModifier.not || !trigger && TriggerModifier.not) && !TriggerModifier.active)
+                {
+                    Action();
+
+                    if (!TriggerModifier.constant)
+                        TriggerModifier.active = true;
+                }
+                else if (!(trigger && !TriggerModifier.not || !trigger && TriggerModifier.not))
+                    TriggerModifier.active = false;
+            }
+
+            public bool Trigger()
+            {
+                var modiifer = TriggerModifier;
+
+                if (modiifer == null || retriggerAmount != -1 && current > retriggerAmount)
+                    return false;
+
+                current++;
+
+                var time = Updater.CurrentTime;
+
+                switch (modiifer.commands[0].ToLower())
+                {
+                    case "none":
+                        {
+                            return true;
+                        }
+                    case "time":
+                        {
+                            return modiifer.commands.Count > 2 && float.TryParse(modiifer.commands[1], out float min) && float.TryParse(modiifer.commands[2], out float max)
+                                && time >= min - 0.01f && time <= max + 0.1f;
+                        }
+                    case "playerhit":
+                        {
+                            return PlayerManager.Players.Any(x => x.Player != null && x.Player.isTakingHit);
+                        }
+                    case "playerdeath":
+                        {
+                            return PlayerManager.Players.Any(x => x.Player != null && x.Player.isDead);
+                        }
+                    case "levelstart":
+                        {
+                            return AudioManager.inst.CurrentAudioSource.time < 0.1f;
+                        }
+                }
+
+                return false;
+            }
+
+            public void Action()
+            {
+                var modifier = ActionModifier;
+
+                if (modifier == null)
+                    return;
+
+                switch (modifier.commands[0].ToLower().Replace(" ", "").Replace("_", ""))
+                {
+                    case "playerlocation":
+                        {
+                            float x = 0f;
+                            float y = 0f;
+                            float t = 0f;
+
+                            if (modifier.commands.Count > 1 && float.TryParse(modifier.commands[1], out float xResult))
+                                x = xResult;
+
+                            if (modifier.commands.Count > 2 && float.TryParse(modifier.commands[2], out float yResult))
+                                y = yResult;
+
+                            if (modifier.commands.Count > 2 && float.TryParse(modifier.commands[2], out float tResult))
+                                t = tResult;
+
+                            foreach (var player in PlayerManager.Players)
+                            {
+                                if (!player.Player || !player.Player.rb)
+                                    continue;
+
+                                var tf = player.Player.rb.transform;
+
+                                if (t == 0f)
+                                {
+                                    tf.localPosition = new Vector3(x, y, 0f);
+                                    continue;
+                                }
+
+                                var animation = new RTAnimation("Player Move");
+
+                                animation.animationHandlers = new List<AnimationHandlerBase>
+                                {
+                                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                                    {
+                                        new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
+                                        new Vector2Keyframe(t, new Vector2(x, y), Ease.Linear),
+                                    }, x =>
+                                    {
+                                        if (!tf)
+                                            return;
+
+                                        tf.localPosition = x;
+                                    }),
+                                };
+
+                                animation.onComplete = () =>
+                                {
+                                    AnimationManager.inst.Remove(animation.id);
+                                    if (tf)
+                                        tf.localPosition = new Vector2(x, y);
+                                };
+
+                                AnimationManager.inst.Play(animation);
+                            }
+
+                            break;
+                        }
+                    case "playerboostlock":
+                        {
+                            if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.commands[1], out bool lockBoost))
+                                RTPlayer.LockBoost = lockBoost;
+
+                            break;
+                        }
+
+                }
+            }
+
+            public static Modifier<GameData>[] DefaultTriggers => new Modifier<GameData>[]
+            {
+                new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = true,
+                    commands = new List<string>
+                    {
+                        "time",
+                        "0", // Activation Time Range Min
+						"0", // Activation Time Range Max
+					},
+                    value = "",
+                }, // time
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "playerHit",
+                        "0", // Activation Time Range Min
+						"0", // Activation Time Range Max
+					},
+                    value = "",
+                }, // playerHit
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "playerDeath",
+                        "0", // Activation Time Range Min
+						"0", // Activation Time Range Max
+					},
+                    value = "",
+                }, // playerDeath
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "levelStart",
+                        "0", // Activation Time Range Min
+						"0", // Activation Time Range Max
+					},
+                    value = "",
+                }, // levelStart
+			};
+            public static Modifier<GameData>[] DefaultActions => new Modifier<GameData>[]
+            {
+                new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "vnInk"
+                    },
+                    value = "",
+                }, // vnInk
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "vnTimeline"
+                    },
+                    value = "",
+                }, // vnTimeline
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "playerBubble",
+                        "Text", // Text
+						"0", // Time
+                    },
+                    value = "",
+                }, // playerBubble (Probably won't have support for this yet)
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "playerLocation",
+                        "0", // X
+						"0", // Y
+						"0", // Time
+                    },
+                    value = "",
+                }, // playerLocation
+				new Modifier<GameData>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "playerBoostLock",
+                        "False", // Lock Enabled
+						"", // Show Bubble
+						"", // Bubble Time
+                    },
+                    value = "",
+                }, // playerBoostLock
+			};
+        }
 
         public static class Combiner
         {
