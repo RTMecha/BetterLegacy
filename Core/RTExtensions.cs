@@ -920,7 +920,7 @@ namespace BetterLegacy.Core
 
         #endregion
 
-        #region Misc
+        #region Enums
 
         /// <summary>
         /// Gets the <see cref="Animation.EaseFunction"/> in the easing dictionary.
@@ -938,13 +938,25 @@ namespace BetterLegacy.Core
         /// Converts the file format to a string and appends a . to the start, to make it a proper file extension.
         /// </summary>
         /// <returns>Returns a file extension.</returns>
-        public static string Dot(this FileFormat fileFormat) => "." + fileFormat.ToString().ToLower();
+        public static string Dot(this FileFormat fileFormat) => "." + fileFormat.ToName();
 
         /// <summary>
         /// Converts the file format to a string pattern, used for getting files from a directory.
         /// </summary>
         /// <returns>Returns a pattern. Example: *.json</returns>
         public static string ToPattern(this FileFormat fileFormat) => "*" + fileFormat.Dot();
+
+        /// <summary>
+        /// Converts the file format to a lowercased string.
+        /// </summary>
+        /// <returns>Returns a lowercase string representing the <see cref="FileFormat"/>.</returns>
+        public static string ToName(this FileFormat fileFormat) => fileFormat.ToString().ToLower();
+
+        /// <summary>
+        /// Converts the file format to an <see cref="ArrhythmiaType"/>.
+        /// </summary>
+        /// <returns>Returns an <see cref="ArrhythmiaType"/> based on the <see cref="FileFormat"/>.<br></br>Example: <see cref="FileFormat.LSB"/> > <see cref="ArrhythmiaType.LS"/> or <see cref="FileFormat.VGD"/> to <see cref="ArrhythmiaType.VG"/>.</returns>
+        public static ArrhythmiaType ToArrhythmiaType(this FileFormat fileFormat) => fileFormat.ToName().Contains("ls") ? ArrhythmiaType.LS : fileFormat.ToName().Contains("vg") ? ArrhythmiaType.VG : ArrhythmiaType.NULL;
 
         /// <summary>
         /// Converts Unity's <see cref="AudioType"/> to the BetterLegacy <see cref="FileFormat"/> enum.
@@ -971,6 +983,10 @@ namespace BetterLegacy.Core
         };
 
         public static Rank GetEnum(this DataManager.LevelRank levelRank) => Enum.TryParse(levelRank.name, out Rank rank) ? rank : Rank.Null;
+
+        #endregion
+
+        #region Misc
 
         public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
         {
