@@ -750,19 +750,19 @@ namespace BetterLegacy.Editor.Managers
             //original JSON: t
             jn["misc"]["time"] = AudioManager.inst.CurrentAudioSource.time.ToString();
 
-            RTFile.WriteToFile(GameManager.inst.basePath + "editor.lse", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE), jn.ToString(3));
         }
 
         public void LoadSettings()
         {
-            if (!RTFile.FileExists(GameManager.inst.basePath + "editor.lse"))
+            if (!RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)))
             {
                 savedTimeEditng = 0f;
                 timeOffset = Time.time;
                 return;
             }
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(GameManager.inst.basePath + "editor.lse"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)));
 
             if (jn["timeline"] != null)
             {
@@ -1109,8 +1109,8 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator AssignTimelineTexture()
         {
             var config = EditorConfig.Instance;
-            var path = $"{GameManager.inst.basePath}waveform-{config.WaveformMode.Value.ToString().ToLower()}.png";
-            var settingsPath = $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png";
+            var path = RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
+            var settingsPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
 
             SetTimelineSprite(null);
 
@@ -1164,7 +1164,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
                 settingsPath :
-                path), texture2D => { SetTimelineSprite(SpriteHelper.CreateSprite(texture2D)); }));
+                path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
             }
 
             SetTimelineGridSize();
@@ -1175,8 +1175,8 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator SaveWaveform(EditorConfig config)
         {
             var path = !EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
-                    $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
-                    GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png";
+                    RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}") :
+                    RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
             var bytes = TimelineImage.sprite.texture.EncodeToPNG();
 
             File.WriteAllBytes(path, bytes);
@@ -3048,31 +3048,26 @@ namespace BetterLegacy.Editor.Managers
                     var name = MetaData.Current.beatmap.name;
                     name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
                     name = RTFile.ValidateDirectory(name);
-                    var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{MetaData.Current.arcadeID}]";
+                    var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{MetaData.Current.arcadeID}]");
 
                     if (RTFile.DirectoryExists(directory))
                     {
                         var backupDirectory = directory.Replace("beatmaps", "beatmaps/arcade backups");
-                        if (RTFile.DirectoryExists(backupDirectory))
-                            Directory.Delete(backupDirectory, true);
-
-                        //Directory.CreateDirectory(backupDirectory);
-                        Directory.Move(directory, backupDirectory);
+                        RTFile.DeleteDirectory(backupDirectory);
+                        RTFile.MoveDirectory(directory, backupDirectory);
                     }
 
-                    var files = Directory.GetFiles(GameManager.inst.basePath, "*", SearchOption.AllDirectories);
+                    var files = Directory.GetFiles(RTFile.BasePath, "*", SearchOption.AllDirectories);
                     for (int i = 0; i < files.Length; i++)
                     {
                         var file = files[i];
                         if (!RTMetaDataEditor.inst.VerifyFile(Path.GetFileName(file)))
                             continue;
 
-                        var fileDirectory = Path.GetDirectoryName(file).Replace("\\", "/");
+                        var fileDirectory = RTFile.GetDirectory(file);
                         var fileDestination = file.Replace(fileDirectory, directory);
-                        if (!RTFile.DirectoryExists(Path.GetDirectoryName(fileDestination)))
-                            Directory.CreateDirectory(Path.GetDirectoryName(fileDestination));
-
-                        File.Copy(file, fileDestination, true);
+                        RTFile.CreateDirectory(RTFile.GetDirectory(fileDestination));
+                        RTFile.CopyFile(file, fileDestination);
                     }
 
                     EditorManager.inst.DisplayNotification($"Successfully copied {name} to {LevelManager.Path}!", 2f, EditorManager.NotificationType.Success);
@@ -3113,7 +3108,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.ShowDialog("Browser Popup");
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.OGG, FileFormat.WAV, FileFormat.PNG, FileFormat.JPG, FileFormat.MP4, FileFormat.LSP, FileFormat.VGP), onSelectFile: _val =>
                 {
-                    var selectedFile = _val.Replace("\\", "/");
+                    var selectedFile = RTFile.ReplaceSlash(_val);
                     var fileFormat = RTFile.GetFileFormat(selectedFile);
 
                     switch (fileFormat)
@@ -3121,8 +3116,8 @@ namespace BetterLegacy.Editor.Managers
                         case FileFormat.MP4:
                         case FileFormat.MOV:
                             {
-                                var copyTo = selectedFile.Replace((Path.GetDirectoryName(_val) + "/").Replace("\\", "/"), RTFile.BasePath).Replace(Path.GetFileName(_val),
-                                    _val.Contains(".mp4") ? "bg.mp4" : "bg.mov");
+                                var copyTo = selectedFile.Replace(RTFile.AppendEndSlash(RTFile.GetDirectory(_val)), RTFile.AppendEndSlash(RTFile.BasePath)).Replace(Path.GetFileName(_val),
+                                    RTFile.FileIsFormat(_val, FileFormat.MP4) ? $"bg{FileFormat.MP4.Dot()}" : $"bg{FileFormat.MOV.Dot()}");
 
                                 if (RTFile.CopyFile(selectedFile, copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
                                 {
@@ -3156,8 +3151,8 @@ namespace BetterLegacy.Editor.Managers
                             }
                     }
 
-                    var destination = _val.Replace("\\", "/").Replace((Path.GetDirectoryName(_val) + "/").Replace("\\", "/"), RTFile.BasePath);
-                    if (RTFile.CopyFile(_val, destination))
+                    var destination = selectedFile.Replace(RTFile.AppendEndSlash(RTFile.GetDirectory(selectedFile)), RTFile.AppendEndSlash(RTFile.BasePath));
+                    if (RTFile.CopyFile(selectedFile, destination))
                         EditorManager.inst.DisplayNotification($"Copied file {Path.GetFileName(selectedFile)}!", 2f, EditorManager.NotificationType.Success);
                     else
                         EditorManager.inst.DisplayNotification($"Could not copy file {Path.GetFileName(selectedFile)}.", 2f, EditorManager.NotificationType.Error);
@@ -3175,12 +3170,12 @@ namespace BetterLegacy.Editor.Managers
 
                 ShowWarningPopup("Are you sure you want to reload the level?", () =>
                 {
-                    var path = GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.LastIndexOf('/'));
+                    var path = RTFile.BasePath;
                     if (RTFile.DirectoryExists(path))
                     {
                         if (GameData.IsValid)
                             GameData.Current.SaveData(RTFile.CombinePaths(path, "reload-level-backup.lsb"));
-                        StartCoroutine(LoadLevel(path));
+                        StartCoroutine(LoadLevel(RTFile.RemoveEndSlash(path)));
                     }
                     else
                         EditorManager.inst.DisplayNotification("Level does not exist.", 2f, EditorManager.NotificationType.Error);
@@ -9597,7 +9592,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
-            GameManager.inst.basePath = RTFile.AppendEndSlash(fullPath);
+            RTFile.BasePath = RTFile.AppendEndSlash(fullPath);
             GameManager.inst.levelName = name;
             SetFileInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
 
@@ -10314,7 +10309,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetAutoSave()
         {
-            var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
+            var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
             RTFile.CreateDirectory(autosavesDirectory);
             var files = Directory.GetFiles(autosavesDirectory, $"autosave_*{FileFormat.LSB.Dot()}", SearchOption.TopDirectoryOnly);
 
@@ -10347,7 +10342,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
+            var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
             var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
@@ -10393,7 +10388,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var autosavesDirectory = RTFile.CombinePaths(GameManager.inst.basePath, "autosaves");
+            var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
             var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);

@@ -130,13 +130,12 @@ namespace BetterLegacy.Core.Managers.Networking
                 uint punTimeStamp = 0;
                 SteamUGC.Internal.GetItemInstallInfo(publishedFileID, ref punSizeOnDisk, out pchFolder, ref punTimeStamp);
 
-                if (!Level.Verify(pchFolder + "/"))
+                if (!Level.TryVerify(pchFolder, true, out Level level))
                     yield break;
 
-                var level = new Level(pchFolder + "/");
                 level.id = publishedFileID.Value.ToString();
                 level.isSteamLevel = true;
-                Task.Run(() => { GetItem(publishedFileID, level); });
+                Task.Run(() => GetItem(publishedFileID, level));
 
                 if (LevelManager.Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
                     level.playerData = LevelManager.Saves[saveIndex];
@@ -154,15 +153,6 @@ namespace BetterLegacy.Core.Managers.Networking
             var item = await Item.GetAsync(publishedFileID);
             level.steamItem = item.Value;
             level.steamLevelInit = true;
-        }
-
-        public void CreateEntry(Item entry)
-        {
-            var level = new Level(entry.Directory.Replace("\\", "/") + "/");
-            if (level.id == null || level.id == "0" || level.id == "-1")
-                return;
-
-            Levels.Add(level);
         }
 
         public void SearchTest(string search, int page = 1)

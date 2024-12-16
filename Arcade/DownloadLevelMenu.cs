@@ -315,32 +315,29 @@ namespace BetterLegacy.Arcade
             Close();
 
             var name = jn["name"].Value;
+            string id = jn["id"];
             name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
             name = RTFile.ValidateDirectory(name);
-            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{jn["id"].Value}]";
+            var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{id}]");
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{id}{FileFormat.ZIP.Dot()}", bytes =>
             {
-                if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == jn["id"].Value, out int existingLevelIndex)) // prevent multiple of the same level ID
+                if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
                 {
                     var existingLevel = LevelManager.Levels[existingLevelIndex];
-                    if (RTFile.DirectoryExists(existingLevel.path))
-                        Directory.Delete(existingLevel.path, true);
+                    RTFile.DeleteDirectory(existingLevel.path);
                     LevelManager.Levels.RemoveAt(existingLevelIndex);
                 }
 
-                if (RTFile.DirectoryExists(directory))
-                    Directory.Delete(directory, true);
+                RTFile.DeleteDirectory(directory);
+                RTFile.CreateDirectory(directory);
 
-                Directory.CreateDirectory(directory);
+                var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
+                File.WriteAllBytes(zipFile, bytes);
+                ZipFile.ExtractToDirectory(zipFile, directory);
+                RTFile.DeleteFile(zipFile);
 
-                File.WriteAllBytes($"{directory}.zip", bytes);
-
-                ZipFile.ExtractToDirectory($"{directory}.zip", directory);
-
-                File.Delete($"{directory}.zip");
-
-                var level = new Level(directory + "/");
+                var level = new Level(directory);
 
                 LevelManager.Levels.Add(level);
 
@@ -362,7 +359,7 @@ namespace BetterLegacy.Arcade
         public IEnumerator SelectLocalLevel(Level level)
         {
             if (!level.music)
-                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
             else
                 OpenPlayLevelMenu(level);
             yield break;

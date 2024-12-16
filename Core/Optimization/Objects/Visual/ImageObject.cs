@@ -51,7 +51,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             var regex = new System.Text.RegularExpressions.Regex(@"img\((.*?)\)");
             var match = regex.Match(text);
 
-            path = match.Success ? RTFile.BasePath + match.Groups[1].ToString() : RTFile.BasePath + text;
+            path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, text);
 
             var position = gameObject.transform.localPosition;
             if (!RTFile.FileExists(path))

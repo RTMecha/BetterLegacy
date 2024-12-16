@@ -874,12 +874,11 @@ namespace BetterLegacy.Story
             }
 
             CoreHelper.Log($"Loading story mode level... {path}");
-            if (path.EndsWith(".lsb"))
+            if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                path = Path.GetDirectoryName(path).Replace("\\", "/") + "/";
                 SetLevelEnd(level, isCutscene, cutsceneIndex);
 
-                StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
+                StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
                 yield break;
             }
 
@@ -924,9 +923,8 @@ namespace BetterLegacy.Story
             }
 
             CoreHelper.Log($"Loading story mode level... {path}");
-            if (path.EndsWith(".lsb"))
+            if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                path = Path.GetDirectoryName(path).Replace("\\", "/") + "/";
                 LevelManager.OnLevelEnd = () =>
                 {
                     LevelManager.Clear();
@@ -962,7 +960,7 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadInterfaceScene();
                 };
 
-                StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
+                StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
                 yield break;
             }
 
@@ -1039,9 +1037,8 @@ namespace BetterLegacy.Story
             }
 
             CoreHelper.Log($"Loading story mode level... {path}");
-            if (path.EndsWith(".lsb"))
+            if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                path = Path.GetDirectoryName(path).Replace("\\", "/") + "/";
                 LevelManager.OnLevelEnd = () =>
                 {
                     LevelManager.Clear();
@@ -1077,7 +1074,7 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadInterfaceScene();
                 };
 
-                StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
+                StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
                 yield break;
             }
 

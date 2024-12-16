@@ -46,84 +46,88 @@
         #region LS
 
         /// <summary>
-        /// Level / metadata file format.
+        /// Legacy Level / metadata file format.
         /// </summary>
         LSB,
         /// <summary>
-        /// Theme file format.
+        /// Legacy Theme file format.
         /// </summary>
         LST,
         /// <summary>
-        /// Prefab file format.
+        /// Legacy Prefab file format.
         /// </summary>
         LSP,
         /// <summary>
-        /// Config file format.
+        /// Legacy Config file format.
         /// </summary>
         LSC,
         /// <summary>
-        /// Level Collection file format.
+        /// Legacy Level Collection file format.
         /// </summary>
         LSCO,
         /// <summary>
-        /// Editor file format.
+        /// Legacy Editor file format.
         /// </summary>
         LSE,
         /// <summary>
-        /// Player model file format.
+        /// Legacy Player model file format.
         /// </summary>
         LSPL,
         /// <summary>
-        /// Settings / saves file format.
+        /// Legacy Settings / saves file format.
         /// </summary>
         LSS,
         /// <summary>
-        /// Interface file format.
+        /// Legacy Interface file format.
         /// </summary>
         LSI,
         /// <summary>
-        /// Old interface file format.
+        /// Legacy Old interface file format.
         /// </summary>
         LSM,
         /// <summary>
-        /// Prefab Type file format.
+        /// Legacy Prefab Type file format.
         /// </summary>
         LSPT,
         /// <summary>
-        /// Shape file format.
+        /// Legacy Shape file format.
         /// </summary>
         LSSH,
         /// <summary>
-        /// Project Planner file format.
+        /// Legacy Project Planner file format.
         /// </summary>
         LSN,
         /// <summary>
-        /// QuickElement file format.
+        /// Legacy QuickElement file format.
         /// </summary>
         LSQE,
+        /// <summary>
+        /// Legacy Level file list.
+        /// </summary>
+        LSF,
 
         #endregion
 
         #region VG
 
         /// <summary>
-        /// Level file format.
+        /// Alpha Level file format.
         /// </summary>
         VGD,
         /// <summary>
-        /// Metadata file format.
+        /// Alpha Metadata file format.
         /// </summary>
         VGM,
         /// <summary>
-        /// Theme file format.
+        /// Alpha Theme file format.
         /// </summary>
         VGT,
         /// <summary>
-        /// Prefab file format.
+        /// Alpha Prefab file format.
         /// </summary>
         VGP,
         /// <summary>
-        /// Settings / saves file format.
+        /// Alpha Settings / saves file format.
         /// </summary>
         VGS,
 

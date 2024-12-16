@@ -864,7 +864,7 @@ namespace BetterLegacy.Editor.Managers
                             MetaData.Current.serverID = null;
                             MetaData.Current.beatmap.date_published = "";
                             var jn = MetaData.Current.ToJSON();
-                            RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                         }, RTEditor.inst.HideWarningPopup);
 
                         return;
@@ -885,7 +885,7 @@ namespace BetterLegacy.Editor.Managers
                             MetaData.Current.serverID = null;
                             MetaData.Current.beatmap.date_published = "";
                             var jn = MetaData.Current.ToJSON();
-                            RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                         }, RTEditor.inst.HideWarningPopup);
 
                         break;
@@ -902,15 +902,13 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(exportPath))
             {
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
-                exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
+                exportPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
+                RTFile.CreateDirectory(exportPath);
             }
 
-            if (exportPath[exportPath.Length - 1] != '/')
-                exportPath += "/";
+            exportPath = RTFile.AppendEndSlash(exportPath);
 
-            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+            if (!RTFile.DirectoryExists(RTFile.RemoveEndSlash(exportPath)))
             {
                 EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -920,35 +918,35 @@ namespace BetterLegacy.Editor.Managers
 
             var metadata = MetaData.Current.ToJSONVG();
 
-            var path = exportPath + EditorManager.inst.currentLoadedLevel;
+            var path = RTFile.CombinePaths(exportPath, EditorManager.inst.currentLoadedLevel);
 
-            if (!RTFile.DirectoryExists(path))
-                Directory.CreateDirectory(path);
+            RTFile.CreateDirectory(path);
 
-            var ogPath = GameManager.inst.path.Replace("/level.lsb", "");
+            var ogPath = RTFile.BasePath;
 
-            if (RTFile.FileExists(ogPath + "/level.ogg"))
-                File.Copy(ogPath + "/level.ogg", path + "/audio.ogg", RTFile.FileExists(path + "/audio.ogg"));
-
-            if (RTFile.FileExists(ogPath + "/level.jpg"))
-                File.Copy(ogPath + "/level.jpg", path + "/cover.jpg", RTFile.FileExists(path + "/cover.jpg"));
+            RTFile.CopyFile(RTFile.CombinePaths(ogPath, Level.LEVEL_OGG), RTFile.CombinePaths(path, Level.AUDIO_OGG));
+            RTFile.CopyFile(RTFile.CombinePaths(ogPath, Level.LEVEL_WAV), RTFile.CombinePaths(path, Level.AUDIO_WAV));
+            RTFile.CopyFile(RTFile.CombinePaths(ogPath, Level.LEVEL_MP3), RTFile.CombinePaths(path, Level.AUDIO_MP3));
+            RTFile.CopyFile(RTFile.CombinePaths(ogPath, Level.LEVEL_JPG), RTFile.CombinePaths(path, Level.COVER_JPG));
 
             try
             {
-                RTFile.WriteToFile(path + "/metadata.vgm", metadata.ToString());
+                RTFile.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_VGM), metadata.ToString());
             }
             catch (Exception ex)
             {
                 Debug.LogError($"{MetadataEditor.inst.className}Convert to VG error (MetaData) {ex}");
+                EditorManager.inst.DisplayNotification($"Convert to VG error (MetaData)", 4f, EditorManager.NotificationType.Error);
             }
 
             try
             {
-                RTFile.WriteToFile(path + "/level.vgd", vg.ToString());
+                RTFile.WriteToFile(RTFile.CombinePaths(path, Level.LEVEL_VGD), vg.ToString());
             }
             catch (Exception ex)
             {
                 Debug.LogError($"{MetadataEditor.inst.className}Convert to VG error (GameData) {ex}");
+                EditorManager.inst.DisplayNotification($"Convert to VG error (GameData)", 4f, EditorManager.NotificationType.Error);
             }
 
             EditorManager.inst.DisplayNotification($"Converted Level \"{EditorManager.inst.currentLoadedLevel}\" from LS format to VG format and saved to {Path.GetFileName(path)}.", 4f,
@@ -973,21 +971,19 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(exportPath))
             {
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
-                exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
+                exportPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
+                RTFile.CreateDirectory(exportPath);
             }
 
-            if (exportPath[exportPath.Length - 1] != '/')
-                exportPath += "/";
+            exportPath = RTFile.AppendEndSlash(exportPath);
 
-            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+            if (!RTFile.DirectoryExists(RTFile.RemoveEndSlash(exportPath)))
             {
                 EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
-            var path = exportPath + EditorManager.inst.currentLoadedLevel + "-server-upload.zip";
+            var path = RTFile.CombinePaths(exportPath, EditorManager.inst.currentLoadedLevel + "-server-upload.zip");
 
             try
             {
@@ -997,16 +993,14 @@ namespace BetterLegacy.Editor.Managers
                     MetaData.Current.uploaderID = authData["id"];
 
                 var jn = MetaData.Current.ToJSON();
-                RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
 
-                if (RTFile.FileExists(path))
-                    File.Delete(path);
+                RTFile.DeleteFile(path);
 
                 // here we setup a temporary upload folder that has no editor files, which we then zip and delete the directory.
-                var tempDirectory = exportPath + EditorManager.inst.currentLoadedLevel + "-temp/";
-                if (!RTFile.DirectoryExists(tempDirectory))
-                    Directory.CreateDirectory(tempDirectory);
-                var directory = GameManager.inst.basePath;
+                var tempDirectory = RTFile.CombinePaths(exportPath, EditorManager.inst.currentLoadedLevel + "-temp/");
+                RTFile.CreateDirectory(tempDirectory);
+                var directory = RTFile.BasePath;
                 var files = Directory.GetFiles(directory);
                 for (int i = 0; i < files.Length; i++)
                 {
@@ -1014,18 +1008,16 @@ namespace BetterLegacy.Editor.Managers
                     if (!VerifyFile(Path.GetFileName(file)))
                         continue;
 
-                    var copyTo = file.Replace(GameManager.inst.basePath, tempDirectory);
+                    var copyTo = file.Replace(directory, tempDirectory);
 
-                    var dir = Path.GetDirectoryName(copyTo).Replace("\\", "/");
+                    var dir = RTFile.GetDirectory(copyTo);
 
-                    if (!RTFile.DirectoryExists(dir))
-                        Directory.CreateDirectory(dir);
-
-                    File.Copy(file, copyTo, RTFile.FileExists(copyTo));
+                    RTFile.CreateDirectory(dir);
+                    RTFile.CopyFile(file, copyTo);
                 }
 
                 ZipFile.CreateFromDirectory(tempDirectory, path);
-                Directory.Delete(tempDirectory, true);
+                RTFile.DeleteDirectory(tempDirectory);
 
                 var headers = new Dictionary<string, string>();
                 if (authData != null && authData["access_token"] != null)
@@ -1037,10 +1029,8 @@ namespace BetterLegacy.Editor.Managers
                     MetaData.Current.serverID = id;
 
                     var jn = MetaData.Current.ToJSON();
-                    RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
-
-                    if (RTFile.FileExists(path))
-                        File.Delete(path);
+                    RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
+                    RTFile.DeleteFile(path);
 
                     EditorManager.inst.DisplayNotification($"Level uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
                     RenderEditor();
@@ -1056,11 +1046,10 @@ namespace BetterLegacy.Editor.Managers
                         MetaData.Current.beatmap.date_published = "";
                         MetaData.Current.beatmap.version_number--;
                         var jn = MetaData.Current.ToJSON();
-                        RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                        RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                     }
 
-                    if (RTFile.FileExists(path))
-                        File.Delete(path);
+                    RTFile.DeleteFile(path);
 
                     switch (responseCode)
                     {
@@ -1121,7 +1110,7 @@ namespace BetterLegacy.Editor.Managers
                         MetaData.Current.beatmap.date_published = "";
                         MetaData.Current.serverID = null;
                         var jn = MetaData.Current.ToJSON();
-                        RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                        RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
 
                         EditorManager.inst.DisplayNotification($"Successfully deleted level off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
                         RenderEditor();

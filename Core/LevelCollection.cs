@@ -335,13 +335,13 @@ namespace BetterLegacy.Core
 
             var path = RTFile.RemoveEndSlash(level.path);
             var folderName = Path.GetFileName(path);
-            var levelPath = $"{RTFile.CombinePaths(this.path, folderName)}/";
+            var levelPath = RTFile.CombinePaths(this.path, folderName);
 
             var files = Directory.GetFiles(level.path, "*", SearchOption.AllDirectories);
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
-                var copyToPath = file.Replace("\\", "/").Replace(level.path, levelPath);
+                var copyToPath = RTFile.ReplaceSlash(file).Replace(level.path, levelPath);
                 RTFile.CreateDirectory(Path.GetDirectoryName(copyToPath));
                 RTFile.CopyFile(file, copyToPath);
             }
@@ -361,7 +361,7 @@ namespace BetterLegacy.Core
             if (!levels.TryFind(x => x.id == level.id, out Level actualLevel))
                 return;
 
-            Directory.Delete(RTFile.RemoveEndSlash(actualLevel.path), true);
+            RTFile.DeleteDirectory(RTFile.RemoveEndSlash(actualLevel.path));
 
             levels.RemoveAll(x => x.id == level.id);
             levelInformation.RemoveAll(x => x.id == level.id);

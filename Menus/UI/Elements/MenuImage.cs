@@ -3021,10 +3021,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (string.IsNullOrEmpty(directory))
                             directory = InterfaceManager.inst.MainDirectory;
 
-                        var directories = Directory.GetDirectories(directory);
-                        var list = directories.Where(x => Level.Verify(x + "/")).Select(x => new Level(x.Replace("\\", "/") + "/")).ToList();
-
-                        Arcade.LevelListMenu.Init(list);
+                        Arcade.LevelListMenu.Init(Directory.GetDirectories(directory).Where(x => Level.Verify(x)).Select(x => new Level(RTFile.ReplaceSlash(x))).ToList());
                         break;
                     }
 

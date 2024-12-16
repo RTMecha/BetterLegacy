@@ -2321,8 +2321,8 @@ namespace BetterLegacy.Components.Player
                     {
                         if (health.image)
                         {
-                            health.image.sprite = RTFile.FileExists(RTFile.BasePath + "health.png") && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.BasePath + "health.png") :
-                                RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/health.png") ? SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/health.png") :
+                            health.image.sprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
+                                RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :
                                 PlayerManager.healthSprite;
                         }
                     }
@@ -2712,7 +2712,7 @@ namespace BetterLegacy.Components.Player
 
                 if (s == 6 && renderer is SpriteRenderer spriteRenderer)
                 {
-                    var path = RTFile.BasePath + customObj.customObject.text;
+                    var path = RTFile.CombinePaths(RTFile.BasePath, customObj.customObject.text);
 
                     if (!RTFile.FileExists(path))
                     {
@@ -2720,7 +2720,7 @@ namespace BetterLegacy.Components.Player
                         continue;
                     }
 
-                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{path}", delegate (Texture2D texture2D)
+                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{path}", texture2D =>
                     {
                         if (!spriteRenderer)
                             return;

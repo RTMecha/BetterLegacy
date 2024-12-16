@@ -321,7 +321,7 @@ namespace BetterLegacy.Core.Helpers
                     RTFile.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_LSB), metadataJN.ToString(3));
                 }
 
-                var level = new Level(path + "/", metadata);
+                var level = new Level(path, metadata);
 
                 if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
                     level.playerData = playerData;
@@ -340,7 +340,7 @@ namespace BetterLegacy.Core.Helpers
                         return;
 
                     LoadLevelsManager.totalLevelCount = (int)SteamWorkshopManager.inst.LevelCount;
-                    LoadLevelsManager.inst.UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(Path.GetDirectoryName(level.path))}", i);
+                    LoadLevelsManager.inst.UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);
                 }));
             }
 

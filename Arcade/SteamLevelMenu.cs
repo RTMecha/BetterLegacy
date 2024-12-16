@@ -407,7 +407,7 @@ namespace BetterLegacy.Arcade
             }
             if (item.IsSubscribed)
             {
-                var path = item.Directory.Last() != '/' ? item.Directory + "/" : item.Directory;
+                var path = item.Directory;
                 CoreHelper.Log($"Subscribed > Add level {path}.");
                 SteamWorkshopManager.inst.Levels.Add(new Level(path));
             }
@@ -453,7 +453,7 @@ namespace BetterLegacy.Arcade
         public IEnumerator SelectLocalLevel(Level level)
         {
             if (!level.music)
-                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
             else
                 OpenPlayLevelMenu(level);
             yield break;

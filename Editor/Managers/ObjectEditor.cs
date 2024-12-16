@@ -3371,7 +3371,7 @@ namespace BetterLegacy.Editor.Managers
                         var regex = new Regex(@"img\((.*?)\)");
                         var match = regex.Match(beatmapObject.text);
 
-                        var path = match.Success ? RTFile.BasePath + match.Groups[1].ToString() : RTFile.BasePath + beatmapObject.text;
+                        var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
 
                         if (RTFile.FileExists(path))
                         {

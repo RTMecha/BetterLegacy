@@ -249,7 +249,7 @@ namespace BetterLegacy.Core.Managers
                 var levelMode = level.CurrentFile;
                 Debug.Log($"{className}Level Mode: {levelMode}...");
 
-                var rawJSON = RTFile.ReadFromFile(level.path + levelMode);
+                var rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(level.path, levelMode));
                 if (level.metadata.beatmap.game_version != "4.1.16" && level.metadata.beatmap.game_version != "20.4.4")
                     rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
 
@@ -263,7 +263,7 @@ namespace BetterLegacy.Core.Managers
 
             DataManager.inst.metaData = level.metadata;
             GameManager.inst.currentLevelName = level.metadata.song.title;
-            GameManager.inst.basePath = level.path;
+            RTFile.BasePath = RTFile.AppendEndSlash(level.path);
 
             Debug.Log($"{className}Updating states...");
 
@@ -374,13 +374,13 @@ namespace BetterLegacy.Core.Managers
                     SceneHelper.LoadScene(SceneName.Main_Menu);
                 };
 
-            if (path.EndsWith(".asset"))
+            if (path.EndsWith(FileFormat.ASSET.Dot()))
             {
-                CoreHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel => { CoreHelper.StartCoroutine(Play(storyLevel)); }));
+                CoreHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel => CoreHelper.StartCoroutine(Play(storyLevel))));
                 return;
             }
 
-            var level = new Level(path.Replace("level.lsb", "").Replace("level.vgd", ""));
+            var level = new Level(path.Replace(Level.LEVEL_LSB, "").Replace(Level.LEVEL_VGD, ""));
             CoreHelper.StartCoroutine(Play(level));
         }
 

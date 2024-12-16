@@ -703,13 +703,9 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            if (RTFile.FileExists(GameManager.inst.basePath + "level-previous.lsb"))
-                File.Delete(GameManager.inst.basePath + "level-previous.lsb");
+            RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, "level-previous.lsb"));
 
-            if (RTFile.FileExists(GameManager.inst.basePath + "level.lsb"))
-                File.Copy(GameManager.inst.basePath + "level.lsb", GameManager.inst.basePath + "level-previous.lsb");
-
-            DataManager.inst.SaveMetadata(GameManager.inst.basePath + "metadata.lsb");
+            DataManager.inst.SaveMetadata(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
             CoreHelper.StartCoroutine(SaveData(GameManager.inst.path));
             PlayerManager.SaveLocalModels();
 
@@ -980,12 +976,12 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenLevelFolder()
         {
-            if (RTFile.DirectoryExists(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.LastIndexOf("/"))))
+            if (RTFile.DirectoryExists(RTFile.BasePath))
             {
-                RTFile.OpenInFileBrowser.Open(GameManager.inst.basePath);
+                RTFile.OpenInFileBrowser.Open(RTFile.BasePath);
                 return false;
             }
-            RTFile.OpenInFileBrowser.Open(RTFile.ApplicationDirectory + RTEditor.editorListPath);
+            RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.editorListPath));
             return false;
         }
 
@@ -1160,7 +1156,7 @@ namespace BetterLegacy.Patchers
             }
 
             inst.ClearDialogs();
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.BasePath}level.jpg", x =>
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_JPG)}", x =>
             {
                 var cover = SpriteHelper.CreateSprite(x);
                 inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;

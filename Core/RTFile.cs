@@ -30,7 +30,15 @@ namespace BetterLegacy.Core
         /// <summary>
         /// The main level path.
         /// </summary>
-        public static string BasePath => GameManager.inst.basePath;
+        public static string BasePath
+        {
+            get => GameManager.inst?.basePath;
+            set
+            {
+                if (CoreHelper.InGame)
+                    GameManager.inst.basePath = value;
+            }
+        }
 
         /// <summary>
         /// Path where all the plugins are stored.
@@ -70,6 +78,13 @@ namespace BetterLegacy.Core
         /// <returns>Returns true if the directory exists, otherwise returns false.</returns>
         public static bool DirectoryExists(string path) => !string.IsNullOrEmpty(path) && Directory.Exists(path);
 
+        /// <summary>
+        /// Gets an asset file from the BepInEx plugins folder.
+        /// </summary>
+        /// <param name="path">File to get.</param>
+        /// <returns>Returns a combined path of the app directory and BepInEx assets path.</returns>
+        public static string GetAsset(string path) => CombinePaths(ApplicationDirectory, BepInExAssetsPath, path);
+
         #region Copying / Moving
 
         /// <summary>
@@ -80,7 +95,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns true if the file was successfully copied, otherwise returns false.</returns>
         public static bool CopyFile(string path, string destination)
         {
-            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            if (FileExists(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
             {
                 try
                 {
@@ -103,7 +118,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns true if the directory was successfully copied, otherwise returns false.</returns>
         public static bool CopyDirectory(string path, string destination)
         {
-            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            if (DirectoryExists(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
             {
                 try
                 {
@@ -423,6 +438,14 @@ namespace BetterLegacy.Core
         #endregion
 
         #region File Formats
+
+        /// <summary>
+        /// Checks if the file is a specific file format.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <param name="fileFormat">The file format to compare.</param>
+        /// <returns>Returns true if the files' format is compared to the <paramref name="fileFormat"/>, otherwise returns false.</returns>
+        public static bool FileIsFormat(string path, FileFormat fileFormat) => GetFileFormat(path) == fileFormat;
 
         /// <summary>
         /// Gets a files' <see cref="AudioType"/>.

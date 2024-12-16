@@ -12,7 +12,7 @@ using UnityEngine;
 namespace BetterLegacy.Core
 {
     /// <summary>
-    /// Stores data to be used for playing levels in the arcade. Make sure the path ends in a "/"
+    /// Stores data to be used for playing a level in the <see cref="SceneName.Game"/> scene.
     /// </summary>
     public class Level : Exists
     {
@@ -54,39 +54,94 @@ namespace BetterLegacy.Core
 
         #region Fields
 
-        public SteamworksFacepunch.Ugc.Item steamItem;
-        public bool isSteamLevel;
-        public bool steamLevelInit;
-
-        public string path;
-
-        public Sprite icon;
-
-        public AudioClip music;
-
+        /// <summary>
+        /// Unique Arcade / Steam Workshop ID.
+        /// </summary>
         public string id;
 
+        /// <summary>
+        /// The path to the level folder.
+        /// </summary>
+        public string path;
+
+        /// <summary>
+        /// Icon of the level.
+        /// </summary>
+        public Sprite icon;
+
+        /// <summary>
+        /// Song the level plays.
+        /// </summary>
+        public AudioClip music;
+
+        /// <summary>
+        /// MetaData of the level.
+        /// </summary>
         public MetaData metadata;
 
-        public int currentMode = 0;
+        /// <summary>
+        /// Saved player data, used for ranking a level.
+        /// </summary>
         public LevelManager.PlayerData playerData;
 
+        #region Level Context
+
+        /// <summary>
+        /// If level is from a collection.
+        /// </summary>
         public bool fromCollection;
 
+        /// <summary>
+        /// If level is <see cref="Story.StoryLevel"/>.
+        /// </summary>
         public bool isStory;
+
+        /// <summary>
+        /// Steam Workshop item reference.
+        /// </summary>
+        public SteamworksFacepunch.Ugc.Item steamItem;
+        /// <summary>
+        /// If level is from the Steam Workshop.
+        /// </summary>
+        public bool isSteamLevel;
+        /// <summary>
+        /// If steamItem was initialized.
+        /// </summary>
+        public bool steamLevelInit;
+
+        #endregion
 
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets the current locked state of the level. Returns true if <see cref="MetaData.requireUnlock"/> is on and the level was not unlocked, otherwise returns false.
+        /// </summary>
         public bool Locked => metadata != null && metadata.requireUnlock && (playerData == null || !playerData.Unlocked);
 
-        public string[] LevelModes { get; set; }
-        public string CurrentFile => LevelModes[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelModes.Length - 1)];
+        /// <summary>
+        /// The level files. (level.lsb, level.vgd, etc)
+        /// </summary>
+        public string[] LevelFiles { get; set; }
+        /// <summary>
+        /// The current selected level file.
+        /// </summary>
+        public string CurrentFile => LevelFiles[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelFiles.Length - 1)];
 
-        public bool IsVG => CurrentFile.Contains(".vgd");
-        public bool VGExists => RTFile.FileExists(GetFile(LEVEL_VGD)) && RTFile.FileExists(GetFile(METADATA_VGM));
+        /// <summary>
+        /// The type of Project Arrhythmia the level comes from.
+        /// </summary>
+        public ArrhythmiaType ArrhythmiaType => RTFile.GetFileFormat(CurrentFile).ToArrhythmiaType();
 
+        /// <summary>
+        /// If the current selected file is a VG format.
+        /// </summary>
+        public bool IsVG => ArrhythmiaType == ArrhythmiaType.VG;
+
+        /// <summary>
+        /// If the ID is invalid.
+        /// </summary>
         public bool InvalidID => string.IsNullOrEmpty(id) || id == "0" || id == "-1";
 
         #endregion
@@ -151,6 +206,16 @@ namespace BetterLegacy.Core
         /// </summary>
         public const string PLAYERS_LSB = "players.lsb";
 
+        /// <summary>
+        /// The files index file in BetterLegacy.
+        /// </summary>
+        public const string FILES_LSF = "files.lsf";
+
+        /// <summary>
+        /// The editor file.
+        /// </summary>
+        public const string EDITOR_LSE = "editor.lse";
+
         #endregion
 
         #region Methods
@@ -162,6 +227,9 @@ namespace BetterLegacy.Core
         /// <returns>Returns a combined path.</returns>
         public string GetFile(string fileName) => RTFile.CombinePaths(path, fileName);
 
+        /// <summary>
+        /// Updates the default values of the level.
+        /// </summary>
         public void UpdateDefaults()
         {
             if (metadata)
@@ -174,18 +242,21 @@ namespace BetterLegacy.Core
                     id = "-1";
             }
 
-            if (RTFile.FileExists(GetFile("modes.lsms")))
+            if (RTFile.FileExists(GetFile(FILES_LSF)))
             {
-                var jn = JSON.Parse(RTFile.ReadFromFile(GetFile("modes.lsms")));
-                LevelModes = new string[jn["paths"].Count + 1];
-                LevelModes[0] = CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
+                var jn = JSON.Parse(RTFile.ReadFromFile(GetFile(FILES_LSF)));
+                LevelFiles = new string[jn["paths"].Count + 1];
+                LevelFiles[0] = CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
                 for (int i = 1; i < jn["paths"].Count + 1; i++)
-                    LevelModes[i] = jn["paths"][i - 1];
+                    LevelFiles[i] = jn["paths"][i - 1];
             }
             else
-                LevelModes = new string[1] { CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB, };
+                LevelFiles = new string[1] { CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB, };
         }
 
+        /// <summary>
+        /// Loads the levels' song.
+        /// </summary>
         public void LoadAudioClip()
         {
             if (music)
@@ -205,10 +276,17 @@ namespace BetterLegacy.Core
                 music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
         }
 
+        /// <summary>
+        /// Loads the levels' song.
+        /// </summary>
+        /// <param name="onComplete">Function to run when loading has completed or if the song was already loaded..</param>
         public IEnumerator LoadAudioClipRoutine(Action onComplete = null)
         {
             if (music)
+            {
+                onComplete?.Invoke();
                 yield break;
+            }
 
             if (RTFile.FileExists(GetFile(LEVEL_OGG)))
                 yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
@@ -230,9 +308,16 @@ namespace BetterLegacy.Core
         /// Checks if all files required to load a level exist. Includes LS / VG formats.
         /// </summary>
         /// <param name="folder">The folder to check. Must end with a /.</param>
-        /// <returns>True if all files are validated, otherwise false.</returns>
+        /// <returns>Returns true if all files are validated, otherwise false.</returns>
         public static bool Verify(string folder) => VerifySong(folder) && VerifyMetadata(folder) && VerifyLevel(folder);
 
+        /// <summary>
+        /// Checks if all necessary level files exist in a folder, and outputs a level.
+        /// </summary>
+        /// <param name="folder">Folder to check.</param>
+        /// <param name="loadIcon">If the icon should be loaded.</param>
+        /// <param name="level">The output level.</param>
+        /// <returns>Returns true if a level was found, otherwise returns false.</returns>
         public static bool TryVerify(string folder, bool loadIcon, out Level level)
         {
             var verify = Verify(folder);
@@ -244,7 +329,7 @@ namespace BetterLegacy.Core
         /// Checks if the level has a song. Includes all audio types and LS / VG names.
         /// </summary>
         /// <param name="folder">The folder to check. Must end with a /.</param>
-        /// <returns>True if a song exists, otherwise false.</returns>
+        /// <returns>Returns true if a song exists, otherwise false.</returns>
         public static bool VerifySong(string folder) =>
             RTFile.FileExists(RTFile.CombinePaths(folder, AUDIO_OGG)) || RTFile.FileExists(RTFile.CombinePaths(folder, AUDIO_WAV)) || RTFile.FileExists(RTFile.CombinePaths(folder, AUDIO_MP3)) ||
             RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_OGG)) || RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_WAV)) || RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_MP3));
@@ -252,18 +337,18 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Checks if the level has metadata. Includes LS and VG formats.
         /// </summary>
-        /// <param name="folder">The folder to check. Must end with a /.</param>
-        /// <returns>True if metadata exists, otherwise false.</returns>
-        public static bool VerifyMetadata(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, "metadata.vgm")) || RTFile.FileExists(RTFile.CombinePaths(folder, "metadata.lsb"));
+        /// <param name="folder">The folder to check.</param>
+        /// <returns>Returns true if metadata exists, otherwise false.</returns>
+        public static bool VerifyMetadata(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, METADATA_VGM)) || RTFile.FileExists(RTFile.CombinePaths(folder, METADATA_LSB));
 
         /// <summary>
         /// Checks if the level has level data. Includes LS and VG formats.
         /// </summary>
-        /// <param name="folder">The folder to check. Must end with a /.</param>
-        /// <returns>True if level data exists, otherwise false.</returns>
-        public static bool VerifyLevel(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, "level.vgd")) || RTFile.FileExists(RTFile.CombinePaths(folder, "level.lsb"));
+        /// <param name="folder">The folder to check.</param>
+        /// <returns>Returns true if level data exists, otherwise false.</returns>
+        public static bool VerifyLevel(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_VGD)) || RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_LSB));
 
-        public override string ToString() => $"{Path.GetFileName(Path.GetDirectoryName(path))} - {id} - {(metadata == null || metadata.song == null ? "" : metadata.song.title)}";
+        public override string ToString() => $"{Path.GetFileName(RTFile.RemoveEndSlash(path))} - {id} - {(metadata == null || metadata.song == null ? "" : metadata.song.title)}";
 
         #endregion
     }

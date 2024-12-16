@@ -277,14 +277,7 @@ namespace BetterLegacy
                 Application.quitting += () =>
                 {
                     if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.IsValid)
-                    {
-                        string str = RTFile.BasePath;
-                        string modBackup = str + "level-quit-backup.lsb";
-                        if (RTFile.FileExists(modBackup))
-                            File.Delete(modBackup);
-
-                        GameData.Current.SaveData(modBackup);
-                    }
+                        GameData.Current.SaveData(RTFile.CombinePaths(RTFile.BasePath, "level-quit-backup.lsb"));
                 };
             }
             catch (Exception ex)
