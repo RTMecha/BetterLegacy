@@ -3,6 +3,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
+using SteamworksFacepunch.Ugc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -983,6 +984,29 @@ namespace BetterLegacy.Core
         };
 
         public static Rank GetEnum(this DataManager.LevelRank levelRank) => Enum.TryParse(levelRank.name, out Rank rank) ? rank : Rank.Null;
+
+        /// <summary>
+        /// Sorts a query.
+        /// </summary>
+        /// <param name="query">Query to sort.</param>
+        /// <returns>Returns a sorted query based on the <see cref="QuerySort"/>.</returns>
+        public static Query SortQuery(this QuerySort querySort, Query query) => querySort switch
+        {
+            QuerySort.UploadDate => query.RankedByPublicationDate(),
+            QuerySort.Votes => query.RankedByVote(),
+            QuerySort.VotesUp => query.RankedByVotesUp(),
+            QuerySort.TotalVotes => query.RankedByTotalVotesAsc(),
+            QuerySort.TotalSubs => query.RankedByTotalUniqueSubscriptions(),
+            QuerySort.Trend => query.RankedByTrend(),
+            _ => query,
+        };
+
+        /// <summary>
+        /// Sorts a query.
+        /// </summary>
+        /// <param name="querySort">Query sorting.</param>
+        /// <returns>Returns a sorted query based on the <see cref="QuerySort"/>.</returns>
+        public static Query Sort(this Query query, QuerySort querySort) => querySort.SortQuery(query);
 
         #endregion
 

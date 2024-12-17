@@ -234,6 +234,20 @@
     }
 
     /// <summary>
+    /// How the Steam Workshop Query should be sorted.
+    /// </summary>
+    public enum QuerySort
+    {
+        None,
+        UploadDate,
+        Votes,
+        VotesUp,
+        TotalVotes,
+        TotalSubs,
+        Trend
+    }
+
+    /// <summary>
     /// How a level list should be sorted.
     /// </summary>
     public enum LevelSort

@@ -911,7 +911,7 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "steam settings",
-                            rect = RectValues.Default.SizeDelta(!ViewOnline ? 404f : 868f, 64f),
+                            rect = RectValues.Default.SizeDelta(!ViewOnline ? 404f : 468f, 64f),
                             text = currentSearch,
                             valueChangedFunc = ViewOnline ? SearchOnlineSteamLevels : SearchSubscribedSteamLevels,
                             placeholder = "Search levels...",
@@ -934,7 +934,7 @@ namespace BetterLegacy.Arcade
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(0, 1),
                                 rect = RectValues.Default.SizeDelta(200f, 64f),
-                                func = () => { CoreHelper.StartCoroutine(RefreshOnlineSteamLevels()); },
+                                func = RefreshOnlineSteamLevels().Start,
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -944,6 +944,39 @@ namespace BetterLegacy.Arcade
                                 length = 0.1f,
                                 regenerate = false,
                             });
+
+                            var sortButton = new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Sort Button",
+                                text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamWorkshopOrderby.Value} ]",
+                                parentLayout = "steam settings",
+                                selectionPosition = new Vector2Int(1, 1),
+                                rect = RectValues.Default.SizeDelta(400f, 64f),
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            };
+                            sortButton.func = () =>
+                            {
+                                var num = (int)ArcadeConfig.Instance.SteamWorkshopOrderby.Value;
+                                num++;
+                                if (num >= Enum.GetNames(typeof(QuerySort)).Length)
+                                    num = 0;
+                                ArcadeConfig.Instance.SteamWorkshopOrderby.Value = (QuerySort)num;
+                                sortButton.text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamWorkshopOrderby.Value} ]";
+                                if (sortButton.textUI)
+                                {
+                                    sortButton.textUI.maxVisibleCharacters = 9999;
+                                    sortButton.textUI.text = sortButton.text;
+                                }
+                            };
+                            elements.Add(sortButton);
                         }
                         else
                         {
@@ -1090,7 +1123,7 @@ namespace BetterLegacy.Arcade
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 3 : 1, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 3 : 2, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -1121,7 +1154,7 @@ namespace BetterLegacy.Arcade
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 4 : 2, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 4 : 3, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -1150,7 +1183,7 @@ namespace BetterLegacy.Arcade
                             name = "Switch Steam View",
                             text = $"<align=center><b>[ {(ViewOnline ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 5 : 3, 1),
+                            selectionPosition = new Vector2Int(!ViewOnline ? 5 : 4, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {

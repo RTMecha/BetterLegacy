@@ -134,6 +134,26 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> SteamLevelAscend { get; set; }
 
+        /// <summary>
+        /// How the Steam Workshop is ordered.
+        /// </summary>
+        public Setting<QuerySort> SteamWorkshopOrderby { get; set; }
+
+        /// <summary>
+        /// If items from friends should only appear.
+        /// </summary>
+        public Setting<bool> SteamWorkshopFriendsOnly { get; set; }
+
+        /// <summary>
+        /// If items from followed users should only appear.
+        /// </summary>
+        public Setting<bool> SteamWorkshopFollowingOnly { get; set; }
+
+        /// <summary>
+        /// If favorited items should only appear.
+        /// </summary>
+        public Setting<bool> SteamWorkshopFavoritedOnly { get; set; }
+
         #endregion
 
         #endregion
@@ -179,6 +199,11 @@ namespace BetterLegacy.Configs
             SteamLevelOrderby = BindEnum(this, "Sorting", "Steam Orderby", LevelSort.Cover, "How the Steam level list is ordered.");
             SteamLevelAscend = Bind(this, "Sorting", "Steam Ascend", true, "If the Steam level order should be up or down.");
 
+            SteamWorkshopOrderby = BindEnum(this, "Sorting", "Steam Workshop Orderby", QuerySort.None, "How the Steam Workshop search should be sorted.");
+            SteamWorkshopFriendsOnly = Bind(this, "Sorting", "Steam Workshop Friends Only", false, "If items from friends should only appear.");
+            SteamWorkshopFollowingOnly = Bind(this, "Sorting", "Steam Workshop Following Only", false, "If items from followed users should only appear.");
+            SteamWorkshopFavoritedOnly = Bind(this, "Sorting", "Steam Workshop Favorited Only", false, "If favorited items should only appear.");
+
             #endregion
 
             Save();
@@ -196,6 +221,11 @@ namespace BetterLegacy.Configs
             SteamLevelOrderby.SettingChanged += SteamLevelSortChanged;
             SteamLevelAscend.SettingChanged += SteamLevelSortChanged;
 
+            SteamWorkshopOrderby.SettingChanged += SteamLevelSortChanged;
+            SteamWorkshopFriendsOnly.SettingChanged += SteamLevelSortChanged;
+            SteamWorkshopFollowingOnly.SettingChanged += SteamLevelSortChanged;
+            SteamWorkshopFavoritedOnly.SettingChanged += SteamLevelSortChanged;
+
             LocalLevelsPath.SettingChanged += LocalLevelsPathChanged;
         }
 
@@ -203,8 +233,14 @@ namespace BetterLegacy.Configs
         {
             SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
 
-            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam && !ArcadeMenu.ViewOnline)
+            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam)
             {
+                if (ArcadeMenu.ViewOnline)
+                {
+                    ArcadeMenu.Current.SetOnlineSteamLevelsPage(0);
+                    return;
+                }
+
                 ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Steam] = 0;
                 ArcadeMenu.Current.RefreshSubscribedSteamLevels(true, true);
             }
