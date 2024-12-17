@@ -268,7 +268,7 @@ namespace BetterLegacy.Core.Helpers
                     yield break;
                 }
 
-                var path = folder.Replace("\\", "/");
+                var path = RTFile.ReplaceSlash(folder);
                 var name = Path.GetFileName(path);
 
                 if (loadYieldMode != YieldType.None)
@@ -332,6 +332,8 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.Levels.Add(level);
             }
 
+            CoreHelper.Log($"Finished loading Arcade levels at {sw.Elapsed}");
+
             if (ArcadeConfig.Instance.LoadSteamLevels.Value)
             {
                 yield return CoreHelper.StartCoroutine(SteamWorkshopManager.inst.GetSubscribedItems((Level level, int i) =>
@@ -342,6 +344,11 @@ namespace BetterLegacy.Core.Helpers
                     LoadLevelsManager.totalLevelCount = (int)SteamWorkshopManager.inst.LevelCount;
                     LoadLevelsManager.inst.UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);
                 }));
+
+                if (!currentlyLoading)
+                    yield break;
+
+                CoreHelper.Log($"Finished loading Steam levels at {sw.Elapsed}");
             }
 
             LevelManager.Sort(ArcadeConfig.Instance.LocalLevelOrderby.Value, ArcadeConfig.Instance.LocalLevelAscend.Value);
@@ -355,7 +362,7 @@ namespace BetterLegacy.Core.Helpers
                 var path = levelCollections.Dequeue();
                 var name = Path.GetFileName(path);
 
-                var levelCollection = LevelCollection.Parse($"{path}/", JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
+                var levelCollection = LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
                 LevelManager.LevelCollections.Add(levelCollection);
                 if (LoadLevelsManager.inst)
                     LoadLevelsManager.inst.UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
@@ -364,6 +371,7 @@ namespace BetterLegacy.Core.Helpers
             
             sw.Stop();
             CoreHelper.Log($"Total levels: {LevelManager.Levels.Union(SteamWorkshopManager.inst.Levels).Count()}\nTime taken: {sw.Elapsed}");
+            sw = null;
 
             currentlyLoading = false;
 
