@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.IO.Compression;
+using System.Text.RegularExpressions;
+
+using UnityEngine;
 
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Menus.UI.Interfaces;
-using UnityEngine;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -19,10 +23,10 @@ using LSFunctions;
 using SimpleJSON;
 using BetterLegacy.Core.Managers.Networking;
 using System.Collections;
-using System.IO;
-using System.IO.Compression;
+
+using SteamworksFacepunch;
 using SteamworksFacepunch.Ugc;
-using System.Text.RegularExpressions;
+
 
 namespace BetterLegacy.Arcade
 {
@@ -43,6 +47,7 @@ namespace BetterLegacy.Arcade
                 name = "Effects",
                 func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -54,6 +59,7 @@ namespace BetterLegacy.Arcade
                 color = 17,
                 opacity = 1f,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuButton
@@ -89,7 +95,7 @@ namespace BetterLegacy.Arcade
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = () => { LSText.CopyToClipboard(CurrentSteamItem.Id.ToString()); },
+                func = () => LSText.CopyToClipboard(CurrentSteamItem.Id.ToString()),
             });
 
             elements.Add(new MenuImage
@@ -99,7 +105,7 @@ namespace BetterLegacy.Arcade
                 rect = RectValues.Default.AnchoredPosition(250f, 100f).SizeDelta(900f, 600f),
                 opacity = 0.1f,
                 color = 6,
-                length = 0.1f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -110,7 +116,7 @@ namespace BetterLegacy.Arcade
                 icon = ArcadeMenu.OnlineSteamLevelIcons.TryGetValue(CurrentSteamItem.Id.ToString(), out Sprite sprite) ? sprite : SteamWorkshop.inst.defaultSteamImageSprite,
                 opacity = 1f,
                 val = 40f,
-                length = 0.1f,
+                wait = false,
             });
 
             var name = RTString.ReplaceFormatting(CurrentSteamItem.Title);
@@ -165,98 +171,6 @@ namespace BetterLegacy.Arcade
                 });
             }
 
-            //elements.Add(new MenuText
-            //{
-            //    id = "638553",
-            //    name = "Song Button",
-            //    rect = RectValues.Default.AnchoredPosition(340f, 240f).SizeDelta(500f, 48f),
-            //    text = $" [ {jn["title"].Value} ]",
-            //    opacity = 0f,
-            //    color = 6,
-            //    textColor = 6,
-            //    length = 0.5f,
-            //    playBlipSound = true,
-            //});
-
-            //elements.Add(new MenuText
-            //{
-            //    id = "4624859539",
-            //    name = "Artist",
-            //    rect = RectValues.Default.AnchoredPosition(-100f, 190f),
-            //    text = $"<size=40>Artist:",
-            //    hideBG = true,
-            //    textColor = 6,
-            //});
-
-            //elements.Add(new MenuText
-            //{
-            //    id = "638553",
-            //    name = "Artist Button",
-            //    rect = RectValues.Default.AnchoredPosition(340f, 190f).SizeDelta(500f, 48f),
-            //    text = $" [ {jn["artist"].Value} ]",
-            //    opacity = 0f,
-            //    color = 6,
-            //    textColor = 6,
-            //    length = 0.5f,
-            //});
-
-            //elements.Add(new MenuText
-            //{
-            //    id = "4624859539",
-            //    name = "Creator",
-            //    rect = RectValues.Default.AnchoredPosition(-100f, 140f),
-            //    text = $"<size=40>Creator:",
-            //    hideBG = true,
-            //    textColor = 6,
-            //});
-
-            //elements.Add(new MenuText
-            //{
-            //    id = "638553",
-            //    name = "Creator Button",
-            //    rect = RectValues.Default.AnchoredPosition(340f, 140f).SizeDelta(500f, 48f),
-            //    text = $" [ {jn["creator"].Value} ]",
-            //    opacity = 0f,
-            //    color = 6,
-            //    textColor = 6,
-            //    length = 0.5f,
-            //});
-
-            //var difficulty = CoreHelper.GetDifficulty(jn["difficulty"].AsInt);
-            //elements.Add(new MenuText
-            //{
-            //    id = "4624859539",
-            //    name = "Difficulty",
-            //    rect = RectValues.Default.AnchoredPosition(-100f, 90f),
-            //    text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
-            //    hideBG = true,
-            //    textColor = 6,
-            //});
-
-            //elements.Add(new MenuText
-            //{
-            //    id = "4624859539",
-            //    name = "Description Label",
-            //    rect = RectValues.Default.AnchoredPosition(250f, 20f).SizeDelta(800f, 100f),
-            //    text = "<size=40><b>Description:",
-            //    hideBG = true,
-            //    textColor = 6,
-            //    enableWordWrapping = true,
-            //    alignment = TMPro.TextAlignmentOptions.TopLeft,
-            //});
-
-            //elements.Add(new MenuText
-            //{
-            //    id = "4624859539",
-            //    name = "Description",
-            //    rect = RectValues.Default.AnchoredPosition(250f, -20f).SizeDelta(800f, 100f),
-            //    text = "<size=22>" + jn["description"],
-            //    hideBG = true,
-            //    textColor = 6,
-            //    enableWordWrapping = true,
-            //    alignment = TMPro.TextAlignmentOptions.TopLeft,
-            //});
-
             elements.Add(new MenuText
             {
                 id = "4624859539",
@@ -303,7 +217,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                    func = SelectLocalLevel(level).Start,
                 });
 
             exitFunc = Close;
@@ -313,6 +227,15 @@ namespace BetterLegacy.Arcade
             defaultSelection = new Vector2Int(0, 1);
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
+
+        public bool downloading;
+        void LogItem(Item item) => CoreHelper.Log(
+                            $"Downloading item: {item.Id} ({item.Title})\n" +
+                            $"Download Pending: {item.IsDownloadPending}\n" +
+                            $"Downloading: {item.IsDownloading}\n" +
+                            $"Download Amount: {item.DownloadAmount}\n" +
+                            $"Installed: {item.IsInstalled}\n" +
+                            $"Subscribed: {item.IsSubscribed}");
 
         public IEnumerator DownloadLevel()
         {
@@ -324,115 +247,85 @@ namespace BetterLegacy.Arcade
 
             ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
 
-            if (!item.IsSubscribed)
+            var subscribed = item.IsSubscribed;
+            downloading = true;
+            if (!subscribed)
             {
                 CoreHelper.Log($"Subscribing...");
-                item.Subscribe();
-                CoreHelper.Log($"Download Pending: {item.IsDownloadPending}");
-                CoreHelper.Log($"Downloading: {item.IsDownloading}");
-                CoreHelper.Log($"Installed: {item.IsInstalled}");
-                CoreHelper.Log($"Subscribed: {item.IsSubscribed}");
+                yield return item.Subscribe();
 
-                yield return new WaitUntil(() =>
+                LogItem(item);
+                yield return item.DownloadAsync(progress =>
                 {
-                    CoreHelper.ReturnToUnity(() =>
+                    try
                     {
-                        if (!Input.GetKeyDown(KeyCode.A))
-                            return;
-                        CoreHelper.Log($"Download Pending: {item.IsDownloadPending}");
-                        CoreHelper.Log($"Downloading: {item.IsDownloading}");
-                        CoreHelper.Log($"Installed: {item.IsInstalled}");
-                        CoreHelper.Log($"Subscribed: {item.IsSubscribed}");
-                    });
-
-                    if (item.DownloadAmount != 1f)
-                    {
-                        try
-                        {
-                            ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
-                        }
-                        catch
-                        {
-
-                        }
+                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
                     }
-                    return item.IsSubscribed && item.IsInstalled;
+                    catch
+                    {
+
+                    }
                 });
+
+                while (!item.IsInstalled || item.IsDownloadPending || item.IsDownloading)
+                {
+                    if (Input.GetKeyDown(KeyCode.A))
+                        LogItem(item);
+
+                    try
+                    {
+                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                    }
+                    catch
+                    {
+
+                    }
+
+                    yield return null;
+                }
+                ProgressMenu.Current.UpdateProgress(1f);
+
+                subscribed = true;
+                LogItem(item);
             }
             else
             {
                 CoreHelper.Log($"Unsubscribing...");
-                item.Unsubscribe();
-                item.Download();
-                CoreHelper.Log($"Download Pending: {item.IsDownloadPending}");
-                CoreHelper.Log($"Downloading: {item.IsDownloading}");
-                CoreHelper.Log($"Installed: {item.IsInstalled}");
-                CoreHelper.Log($"Subscribed: {item.IsSubscribed}");
+                yield return item.Unsubscribe();
 
-                yield return new WaitUntil(() =>
-                {
-                    CoreHelper.ReturnToUnity(() =>
-                    {
-                        if (!Input.GetKeyDown(KeyCode.A))
-                            return;
-                        CoreHelper.Log($"Download Pending: {item.IsDownloadPending}");
-                        CoreHelper.Log($"Downloading: {item.IsDownloading}");
-                        CoreHelper.Log($"Installed: {item.IsInstalled}");
-                        CoreHelper.Log($"Subscribed: {item.IsSubscribed}");
-                    });
+                LogItem(item);
+                yield return item.DownloadAsync();
 
-                    if (item.DownloadAmount != 1f)
-                    {
-                        try
-                        {
-                            ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
-                        }
-                        catch
-                        {
-
-                        }
-                    }
-                    return !item.IsSubscribed && !item.IsDownloadPending && !item.IsDownloading;
-                });
+                subscribed = false;
+                LogItem(item);
             }
+            downloading = false;
 
             yield return new WaitForSeconds(0.1f);
-            CoreHelper.Log($"{item.Id} Status: {(item.IsSubscribed ? "Subscribed" : "Unsubscribed")}");
+            CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
+
+            while (InterfaceManager.inst.CurrentMenu != null && InterfaceManager.inst.CurrentMenu.generating)
+                yield return null;
 
             int levelIndex = -1;
-            if (!item.IsSubscribed && SteamWorkshopManager.inst.Levels.TryFindIndex(x => x.metadata != null && x.id == item.Id.ToString(), out levelIndex))
+            if (!subscribed && SteamWorkshopManager.inst.Levels.TryFindIndex(x => x.metadata != null && x.id == item.Id.ToString(), out levelIndex))
             {
                 CoreHelper.Log($"Unsubscribed > Remove level {SteamWorkshopManager.inst.Levels[levelIndex]}.");
                 SteamWorkshopManager.inst.Levels.RemoveAt(levelIndex);
             }
-            if (item.IsSubscribed)
-            {
-                var path = item.Directory;
-                CoreHelper.Log($"Subscribed > Add level {path}.");
-                SteamWorkshopManager.inst.Levels.Add(new Level(path));
-            }
 
-            CoreHelper.Log($"Checking install state...");
-            if (item.IsSubscribed && item.IsInstalled)
+            if (subscribed && item.IsInstalled && Level.TryVerify(item.Directory, true, out Level level))
             {
-                if (SteamWorkshopManager.inst.Levels.TryFind(x => x.metadata != null && x.id == item.Id.ToString(), out Level level))
-                {
-                    CoreHelper.StartCoroutine(SelectLocalLevel(level));
-                    CoreHelper.Log($"Item is installed so opening.");
-                }
-                else
-                {
-                    ArcadeMenu.Init();
-                    CoreHelper.Log($"Item doesn't exist.");
-                }
-
+                CoreHelper.Log($"Subscribed > Add level {level.path}.");
+                SteamWorkshopManager.inst.Levels.Add(level);
+                CoreHelper.StartCoroutine(SelectLocalLevel(level));
+                CoreHelper.Log($"Item is installed so opening.");
                 CoreHelper.LogSeparator();
                 CurrentSteamItem = default;
                 yield break;
             }
-
-            while (InterfaceManager.inst.CurrentMenu != null && InterfaceManager.inst.CurrentMenu.generating)
-                yield return null;
+            else if (subscribed)
+                CoreHelper.LogError($"Item doesn't exist.");
 
             CoreHelper.Log($"Finished.");
             CoreHelper.LogSeparator();
