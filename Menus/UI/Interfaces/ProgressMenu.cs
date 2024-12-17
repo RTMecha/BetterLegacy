@@ -48,6 +48,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.Default.AnchoredPosition(0f, -100f).SizeDelta(900f, 64f),
                 color = 6,
                 opacity = 0.1f,
+                length = 0f,
+                wait = false,
             });
             progressBar = new MenuImage
             {
@@ -57,6 +59,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.Default.AnchorMax(0f, 0.5f).AnchorMin(0f, 0.5f).Pivot(0f, 0.5f).SizeDelta(0f, 64f),
                 color = 6,
                 opacity = 1f,
+                length = 0f,
+                wait = false,
             };
             elements.Add(progressBar);
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
