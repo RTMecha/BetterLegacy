@@ -1501,7 +1501,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                CoreHelper.StartCoroutine(GenerateUI());
+                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public IEnumerator SelectLocalLevel(Level level)
@@ -1684,7 +1684,7 @@ namespace BetterLegacy.Arcade
             }, headers));
 
             loadingOnlineLevels = false;
-            CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
             while (generating)
                 yield return null;
         }
@@ -1792,9 +1792,9 @@ namespace BetterLegacy.Arcade
                 int column = (num % (MAX_LEVELS_PER_PAGE)) % 5;
                 int row = (int)((num % (MAX_LEVELS_PER_PAGE)) / 5) + 2;
 
-                var folder = folders[index].Replace("\\", "/");
+                var folder = RTFile.ReplaceSlash(folders[index]);
 
-                if (Level.TryVerify(folder + "/", true, out Level level))
+                if (Level.TryVerify(folder, true, out Level level))
                 {
                     var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
 
@@ -1949,7 +1949,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                CoreHelper.StartCoroutine(GenerateUI());
+                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         #endregion
@@ -2163,7 +2163,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                CoreHelper.StartCoroutine(GenerateUI());
+                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public void StartQueue()
@@ -2413,7 +2413,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                CoreHelper.StartCoroutine(GenerateUI());
+                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public void SearchOnlineSteamLevels(string search)
@@ -2446,7 +2446,7 @@ namespace BetterLegacy.Arcade
                 int row = (int)((index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) / 5) + 2;
                 var id = item.Id.ToString();
 
-                CoreHelper.Log($"Item: {id}\nTitle: {item.Title}");
+                //CoreHelper.Log($"Item: {id}\nTitle: {item.Title}");
 
                 var button = new MenuButton
                 {
@@ -2454,7 +2454,7 @@ namespace BetterLegacy.Arcade
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    func = () => { SelectOnlineSteamLevel(item); },
+                    func = () => SelectOnlineSteamLevel(item),
                     iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
                     text = "<size=24>" + $"{item.Title}",
                     textRect = RectValues.FullAnchored.AnchorMin(0.24f, 0f),
@@ -2497,7 +2497,7 @@ namespace BetterLegacy.Arcade
                     }));
                 }
             }).IsCompleted);
-            CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public void SelectOnlineSteamLevel(Item item) => SteamLevelMenu.Init(item);
