@@ -159,6 +159,15 @@ namespace BetterLegacy.Core.Optimization
         }
 
         /// <summary>
+        /// Updates the game's current seed and updates all animations accordingly.
+        /// </summary>
+        public static void InitSeed()
+        {
+            RandomHelper.UpdateSeed();
+            RecacheAllSequences();
+        }
+
+        /// <summary>
         /// Updates every objects' animations.
         /// </summary>
         public static void RecacheAllSequences()

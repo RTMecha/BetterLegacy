@@ -9495,6 +9495,8 @@ namespace BetterLegacy.Editor.Managers
 
             WindowController.ResetTitle();
 
+            RandomHelper.UpdateSeed();
+
             CoreHelper.Log("Clearing data...");
 
             for (int i = 0; i < timelineObjects.Count; i++)

@@ -202,6 +202,8 @@ namespace BetterLegacy.Core.Managers
             if (level.metadata != null && level.metadata.isHubLevel)
                 Hub = level;
 
+            RandomHelper.UpdateSeed();
+
             Debug.Log($"{className}Switching to Game scene");
 
             bool inGame = CoreHelper.InGame;

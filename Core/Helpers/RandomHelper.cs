@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,36 +8,259 @@ using System.Threading.Tasks;
 
 namespace BetterLegacy.Core.Helpers
 {
+    /// <summary>
+    /// Helper class for randomization.
+    /// </summary>
     public static class RandomHelper
     {
-        // temporary, replace with proper setting later
-        public static string seedSettingTemp;
+        /// <summary>
+        /// The current seed a Project Arrhythmia level uses.
+        /// </summary>
+        public static string CurrentSeed { get; set; }
 
-        public static int CurrentSeed { get; set; }
-
-        public static void UpdateSeed() => SetSeed(seedSettingTemp);
-
-        public static void SetSeed(string seedSetting)
+        /// <summary>
+        /// Updates the seed to the current seed setting.
+        /// </summary>
+        public static void UpdateSeed()
         {
-            if (string.IsNullOrEmpty(seedSetting))
-                RandomizeSeed();
-            else if (int.TryParse(seedSetting, out int seed))
-                CurrentSeed = seed;
+            try
+            {
+                SetSeed(CoreConfig.Instance.Seed.Value);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
-        public static void RandomizeSeed() => CurrentSeed = new Random().Next();
+        /// <summary>
+        /// Sets the current seed.
+        /// </summary>
+        /// <param name="seedSetting">The seed setting to apply.</param>
+        public static void SetSeed(string seedSetting) => CurrentSeed = !string.IsNullOrEmpty(seedSetting) ? seedSetting : LSFunctions.LSText.randomString(16);
 
-        public static float SingleFromID(string id, int seed)
+        /// <summary>
+        /// Randomizes the current seed.
+        /// </summary>
+        public static void RandomizeSeed() => CurrentSeed = LSFunctions.LSText.randomString(16);
+
+        #region Main Seed
+
+        #region ID
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed between 0 and 1.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromID(string id)
+        {
+            var hash = id.GetHashCode() ^ CurrentSeed.GetHashCode();
+            return (float)(hash / (double)int.MaxValue) * 0.5f + 0.5f;
+        }
+
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromIDRange(string id, float min, float max) => RTMath.Lerp(min, max, SingleFromID(id));
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromID(string id) => id.GetHashCode() ^ CurrentSeed.GetHashCode();
+
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromIDRange(string id, int min, int max) => UnityEngine.Mathf.RoundToInt(RTMath.Lerp(min, max, SingleFromID(id)));
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed between 0 and 1.
+        /// </summary>
+        /// <param name="index">Object ID to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromIndex(int index)
+        {
+            var hash = index.GetHashCode() ^ CurrentSeed.GetHashCode();
+            return (float)(hash / (double)int.MaxValue) * 0.5f + 0.5f;
+        }
+
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="index">Object ID to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromIndexRange(int index, float min, float max) => RTMath.Lerp(min, max, SingleFromIndex(index));
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed.
+        /// </summary>
+        /// <param name="index">Object ID to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromIndex(int index) => index.GetHashCode() ^ CurrentSeed.GetHashCode();
+
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="index">Object ID to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromIndexRange(int index, int min, int max) => UnityEngine.Mathf.RoundToInt(RTMath.Lerp(min, max, SingleFromIndex(index)));
+
+        #endregion
+
+        #region Bool
+
+        /// <summary>
+        /// Initializes a new Random class and checks for a true or false value.
+        /// </summary>
+        /// <returns>Returns a random true or false value.</returns>
+        public static bool IsTrueSeed() => FromRange(0, 1) == 1;
+
+        /// <summary>
+        /// Determines a random true or false value depending on the seed and index.
+        /// </summary>
+        /// <param name="index">The index of Random.Next(0, 2)</param>
+        /// <returns>Returns a random true or false value based on the seed and index.</returns>
+        public static bool IsTrue(int index) => FromIndexRange(index, 0, 2) == 1;
+
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChanceSeed(int p) => FromRange(0, 100) <= p;
+
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="index">Index to get.</param>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChance(int index, int p) => FromIndexRange(index, 0, 100) <= p;
+
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChanceSeedSingle(float p) => SingleFromRange(0f, 100f) <= p;
+
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="index">Index to get.</param>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChanceSeedSingle(int index, float p) => SingleFromIndexRange(index, 0f, 100f) <= p;
+
+        #endregion
+
+        public static float SingleFromRange(float min, float max) => RTMath.Lerp(min, max, (float)(Convert.ToUInt32(CurrentSeed.GetHashCode()) * 2U / (double)uint.MaxValue));
+        public static int FromRange(int min, int max) => UnityEngine.Mathf.RoundToInt(RTMath.Lerp(min, max, (float)(Convert.ToUInt32(CurrentSeed.GetHashCode()) * 2U / (double)uint.MaxValue)));
+
+        #endregion
+
+        #region Specific Seed
+
+        #region ID
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed between 0 and 1.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromID(string seed, string id)
         {
             var hash = id.GetHashCode() ^ seed.GetHashCode();
             return (float)(hash / (double)int.MaxValue) * 0.5f + 0.5f;
         }
 
-        public static float SingleFromIDRange(string id, int seed, float min, float max) => RTMath.Lerp(min, max, SingleFromID(id, seed));
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromIDRange(string seed, string id, float min, float max) => RTMath.Lerp(min, max, SingleFromID(seed, id));
 
-        public static int FromID(string id, int seed) => id.GetHashCode() ^ seed.GetHashCode();
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromID(string seed, string id) => id.GetHashCode() ^ seed.GetHashCode();
 
-        public static int FromIDRange(string id, int seed, int min, int max) => FromID(id, seed) * (min + max) - min;
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromIDRange(string seed, string id, int min, int max) => UnityEngine.Mathf.RoundToInt(RTMath.Lerp(min, max, SingleFromID(seed, id)));
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed between 0 and 1.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromIndex(string seed, int index)
+        {
+            var hash = index.GetHashCode() ^ seed.GetHashCode();
+            return (float)(hash / (double)int.MaxValue) * 0.5f + 0.5f;
+        }
+
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static float SingleFromIndexRange(string seed, int index, float min, float max) => RTMath.Lerp(min, max, SingleFromIndex(seed, index));
+
+        /// <summary>
+        /// Gets a "random" value from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromIndex(string seed, int index) => index.GetHashCode() ^ seed.GetHashCode();
+
+        /// <summary>
+        /// Gets a "random" value within a range from a specific ID and seed.
+        /// </summary>
+        /// <param name="id">Object ID to calculate.</param>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="min">Minimum range.</param>
+        /// <param name="max">Maximum range.</param>
+        /// <returns>Returns a value based on the object ID and seed.</returns>
+        public static int FromIndexRange(string seed, int index, int min, int max) => UnityEngine.Mathf.RoundToInt(RTMath.Lerp(min, max, SingleFromIndex(seed, index)));
+
+        #endregion
+
+        #region Bool
 
         /// <summary>
         /// Initializes a new Random class and checks for a true or false value.
@@ -49,7 +273,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="seed">The seed to determine the random value.</param>
         /// <returns>Returns a random true or false value based on the seed.</returns>
-        public static bool IsTrue(int seed) => new Random(seed).Next(0, 2) == 1;
+        public static bool IsTrue(string seed) => new Random(seed.GetHashCode()).Next(0, 2) == 1;
 
         /// <summary>
         /// Determines a random true or false value depending on the seed and index.
@@ -57,82 +281,62 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="seed">The seed to determine the random value.</param>
         /// <param name="index">The index of Random.Next(0, 2)</param>
         /// <returns>Returns a random true or false value based on the seed and index.</returns>
-        public static bool IsTrue(int seed, int index) => RandomInstanceRange(seed, 0, 2, index) == 1;
+        public static bool IsTrue(string seed, int index) => FromIndexRange(seed, index, 0, 2) == 1;
 
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
         public static bool PercentChance(int p) => new Random().Next(0, 101) <= p;
 
-        public static bool PercentChance(int seed, int p) => new Random(seed).Next(0, 101) <= p;
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChance(string seed, int p) => new Random(seed.GetHashCode()).Next(0, 101) <= p;
 
-        public static bool PercentChance(int seed, int index, int p) => RandomInstanceRange(seed, 0, 101, index) <= p;
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="index">Index to get.</param>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChance(string seed, int index, int p) => FromIndexRange(seed, index, 0, 101) <= p;
 
-        public static bool PercentChanceSingle(float p) => RandomInstanceSingleRange(new Random().Next(), 0f, 100f, 1) <= p;
-        public static bool PercentChanceSingle(int seed, float p) => RandomInstanceSingleRange(seed, 0f, 100f, 1) <= p;
-        public static bool PercentChanceSingle(int seed, int index, float p) => RandomInstanceSingleRange(seed, 0f, 100f, index) <= p;
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChanceSingle(float p) => UnityEngine.Random.Range(0f, 100f) <= p;
 
-        public static int RandomInstance(int seed, int index)
-        {
-            var rand = new Random(seed);
-            int num = 0;
-            int result = 0;
-            if (index < 1)
-                index = 1;
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChanceSingle(string seed, float p) => SingleFromRange(seed, 0f, 100f) <= p;
 
-            while (num < index)
-            {
-                result = rand.Next();
-                num++;
-            }
-            return result;
-        }
+        /// <summary>
+        /// Calculates a chance value.
+        /// </summary>
+        /// <param name="seed">Seed to calculate.</param>
+        /// <param name="index">Index to get.</param>
+        /// <param name="p">Percentage chance to happen.</param>
+        /// <returns>Returns true if a random value was higher than the percentage.</returns>
+        public static bool PercentChanceSingle(string seed, int index, float p) => SingleFromIndexRange(seed, index, 0f, 100f) <= p;
 
-        public static int RandomInstanceRange(int seed, int min, int max, int index)
-        {
-            var rand = new Random(seed);
-            int num = 0;
-            int result = 0;
-            if (index < 1)
-                index = 1;
+        #endregion
 
-            while (num < index)
-            {
-                result = rand.Next(min, max);
-                num++;
-            }
-            return result;
-        }
+        public static float SingleFromRange(string seed, float min, float max) => RTMath.Lerp(min, max, (float)(Convert.ToUInt32(seed.GetHashCode()) * 2U / (double)uint.MaxValue));
+        public static int FromRange(string seed, int min, int max) => UnityEngine.Mathf.RoundToInt(RTMath.Lerp(min, max, (float)(Convert.ToUInt32(seed.GetHashCode()) * 2U / (double)uint.MaxValue)));
 
-        public static float RandomInstanceSingle(int seed, int index)
-        {
-            var rand = new Random(seed);
-            int num = 0;
-            double result = 0;
-            if (index < 1)
-                index = 1;
-
-            while (num < index)
-            {
-                result = rand.NextDouble();
-                num++;
-            }
-            return (float)result;
-        }
-
-        public static float RandomInstanceSingleRange(int seed, float min, float max, int index)
-        {
-            var rand = new Random(seed);
-            int num = 0;
-            float result = 0f;
-            float total = min + max;
-            if (index < 1)
-                index = 1;
-
-            while (num < index)
-            {
-                result = (float)rand.NextDouble() * total - min;
-                num++;
-            }
-            return result;
-        }
+        #endregion
 
         public static class KeyframeRandomizer
         {
@@ -166,34 +370,34 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 x = (eventKeyframe.eventValues[0] == eventKeyframe.eventRandomValues[0]) ?
                                         eventKeyframe.eventValues[0] :
-                                        RTMath.RoundToNearestNumber(SingleFromIDRange(id + "X", CurrentSeed, eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]), eventKeyframe.eventRandomValues[2]);
+                                        RTMath.RoundToNearestNumber(SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]), eventKeyframe.eventRandomValues[2]);
                                 y = (eventKeyframe.eventValues[1] == eventKeyframe.eventRandomValues[1]) ?
                                         eventKeyframe.eventValues[1] :
-                                        RTMath.RoundToNearestNumber(SingleFromIDRange(id + "Y", CurrentSeed, eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]);
+                                        RTMath.RoundToNearestNumber(SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]);
                             }
                             else
                             {
-                                x = SingleFromIDRange(id + "X", CurrentSeed, eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]);
-                                y = SingleFromIDRange(id + "Y", CurrentSeed, eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]);
+                                x = SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]);
+                                y = SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]);
                             }
                             break;
                         }
-                    case 2: // Support for really old levels
+                    case 2: // Support for really old levels (for some reason)
                         {
-                            x = UnityEngine.Mathf.Round(SingleFromIDRange(id + "X", CurrentSeed, eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]));
-                            y = UnityEngine.Mathf.Round(SingleFromIDRange(id + "Y", CurrentSeed, eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]));
+                            x = UnityEngine.Mathf.Round(SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]));
+                            y = UnityEngine.Mathf.Round(SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]));
                             break;
                         }
                     case 3: // Toggle
                         {
-                            bool toggle = SingleFromID(id, CurrentSeed) > 0.5f;
+                            bool toggle = SingleFromID(CurrentSeed, id) > 0.5f;
                             x = toggle ? eventKeyframe.eventValues[0] : eventKeyframe.eventRandomValues[0];
                             y = toggle ? eventKeyframe.eventValues[1] : eventKeyframe.eventRandomValues[1];
                             break;
                         }
                     case 4: // Scale
                         {
-                            float multiply = SingleFromIDRange(id, CurrentSeed, eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]);
+                            float multiply = SingleFromIDRange(CurrentSeed, id, eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]);
 
                             if (round)
                                 multiply = RTMath.RoundToNearestNumber(multiply, eventKeyframe.eventRandomValues[2]);

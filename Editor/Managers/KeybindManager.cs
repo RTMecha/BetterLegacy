@@ -1186,12 +1186,15 @@ namespace BetterLegacy.Editor.Managers
 
         public static void UpdateEverything(Keybind keybind)
         {
+            RandomHelper.UpdateSeed();
             EventManager.inst.updateEvents();
-            ObjectManager.inst.updateObjects();
+            Updater.UpdateObjects();
+            BackgroundManager.inst.UpdateBackgrounds();
         }
 
         public static void UpdateObject(Keybind keybind)
         {
+            Updater.InitSeed();
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
                 if (timelineObject.IsBeatmapObject)

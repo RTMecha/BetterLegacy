@@ -53,6 +53,7 @@ namespace BetterLegacy.Core
                     context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
                     context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
                     context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
+                    context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
 
                     var players = PlayerManager.Players;
                     for (int i = 0; i < players.Count; i++)
@@ -98,26 +99,54 @@ namespace BetterLegacy.Core
                 {
                     0 => new System.Random().NextDouble(),
                     1 => new System.Random((int)parameters[0]).NextDouble(),
-                    2 => RandomHelper.RandomInstanceSingle((int)parameters[0], (int)parameters[1]),
+                    2 => RandomHelper.SingleFromIndex(parameters[0].ToString(), (int)parameters[1]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomSeed", parameters => parameters.Length switch
+                {
+                    0 => new System.Random(RandomHelper.CurrentSeed.GetHashCode()).NextDouble(),
+                    1 => new System.Random((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).NextDouble(),
                     _ => 0
                 });
                 context.RegisterFunction("randomRange", parameters => parameters.Length switch
                 {
-                    3 => RandomHelper.RandomInstanceSingleRange((int)parameters[0], (float)parameters[1], (float)parameters[2], new System.Random().Next()),
-                    4 => RandomHelper.RandomInstanceSingleRange((int)parameters[0], (float)parameters[1], (float)parameters[2], (int)parameters[3]),
+                    2 => RandomHelper.SingleFromRange(new System.Random().Next().ToString(), (float)parameters[0], (float)parameters[1]),
+                    3 => RandomHelper.SingleFromIndexRange(parameters[0].ToString(), new System.Random().Next(), (float)parameters[1], (float)parameters[2]),
+                    4 => RandomHelper.SingleFromIndexRange(parameters[0].ToString(), (int)parameters[1], (float)parameters[2], (float)parameters[3]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomSeedRange", parameters => parameters.Length switch
+                {
+                    2 => RandomHelper.SingleFromRange(RandomHelper.CurrentSeed, (float)parameters[0], (float)parameters[1]),
+                    3 => RandomHelper.SingleFromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (float)parameters[1], (float)parameters[2]),
+                    4 => RandomHelper.SingleFromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (float)parameters[2], (float)parameters[3]),
                     _ => 0
                 });
                 context.RegisterFunction("randomInt", parameters => parameters.Length switch
                 {
                     0 => new System.Random().Next(),
                     1 => new System.Random((int)parameters[0]).Next(),
-                    2 => RandomHelper.RandomInstance((int)parameters[0], (int)parameters[1]),
+                    2 => RandomHelper.FromIndex(parameters[0].ToString(), (int)parameters[1]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomSeedInt", parameters => parameters.Length switch
+                {
+                    0 => new System.Random(RandomHelper.CurrentSeed.GetHashCode()).Next(),
+                    1 => new System.Random((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).Next(),
                     _ => 0
                 });
                 context.RegisterFunction("randomRangeInt", parameters => parameters.Length switch
                 {
-                    3 => RandomHelper.RandomInstanceRange((int)parameters[0], (int)parameters[1], (int)parameters[2], new System.Random().Next()),
-                    4 => RandomHelper.RandomInstanceRange((int)parameters[0], (int)parameters[1], (int)parameters[2], (int)parameters[3]),
+                    2 => RandomHelper.FromRange(new System.Random().Next().ToString(), (int)parameters[0], (int)parameters[1]),
+                    3 => RandomHelper.FromIndexRange(parameters[0].ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
+                    4 => RandomHelper.FromIndexRange(parameters[0].ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomSeedRangeInt", parameters => parameters.Length switch
+                {
+                    2 => RandomHelper.FromRange(RandomHelper.CurrentSeed, (int)parameters[0], (int)parameters[1]),
+                    3 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
+                    4 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
                     _ => 0
                 });
                 context.RegisterFunction("roundToNearestNumber", parameters => RoundToNearestNumber((float)parameters[0], (float)parameters[1]));

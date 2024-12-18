@@ -281,6 +281,11 @@ namespace BetterLegacy.Configs
         #region Level
 
         /// <summary>
+        /// The current seed randomization in a level uses. Leave empty to randomize the seed each time you play a level.
+        /// </summary>
+        public Setting<string> Seed { get; set; }
+
+        /// <summary>
         /// If enabled, any objects with "LDM" (Low Detail Mode) toggled on will not be rendered.
         /// </summary>
         public Setting<bool> LDM { get; set; }
@@ -436,6 +441,7 @@ namespace BetterLegacy.Configs
 
             #region Level
 
+            Seed = Bind(this, "Level", "Seed", "", "The current seed randomization in a level uses. Leave empty to randomize the seed each time you play a level.");
             LDM = Bind(this, "Level", "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
             ShowBackgroundObjects = Bind(this, "Level", "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
             EnableVideoBackground = Bind(this, "Level", "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
