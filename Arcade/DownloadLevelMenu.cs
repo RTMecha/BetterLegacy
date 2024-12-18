@@ -312,7 +312,6 @@ namespace BetterLegacy.Arcade
         public void DownloadLevel()
         {
             var jn = CurrentOnlineLevel;
-            Close();
 
             var name = jn["name"].Value;
             string id = jn["id"];
@@ -320,7 +319,9 @@ namespace BetterLegacy.Arcade
             name = RTFile.ValidateDirectory(name);
             var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{id}]");
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{id}{FileFormat.ZIP.Dot()}", bytes =>
+            ProgressMenu.Init($"Downloading Arcade server level: {id} - {name}<br>Please wait...");
+
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
             {
                 if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
                 {
@@ -341,8 +342,14 @@ namespace BetterLegacy.Arcade
 
                 LevelManager.Levels.Add(level);
 
+                CurrentOnlineLevel = null;
+                InterfaceManager.inst.CloseMenus();
                 if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
                     CoreHelper.StartCoroutine(SelectLocalLevel(level));
+            }, onError =>
+            {
+                Close();
+                CoreHelper.LogError($"Download level error: {onError}");
             }));
         }
 
