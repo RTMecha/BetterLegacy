@@ -24,86 +24,7 @@ namespace BetterLegacy.Core.Data
             this.rotation = rotation;
         }
 
-        /// <summary>
-        /// Sets only the <see cref="anchoredPosition"/> value of RectValues.
-        /// </summary>
-        /// <param name="x">X value of anchoredPosition.</param>
-        /// <param name="y">Y value of anchoredPosition.</param>
-        /// <returns>Returns the current RectValue.</returns>
-        public RectValues AnchoredPosition(float x, float y) => AnchoredPosition(new Vector2(x, y));
-
-        RectValues AnchoredPosition(Vector2 anchoredPosition)
-        {
-            this.anchoredPosition = anchoredPosition;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets only the <see cref="anchorMax"/> value of RectValues.
-        /// </summary>
-        /// <param name="x">X value of anchorMax.</param>
-        /// <param name="y">Y value of anchorMax.</param>
-        /// <returns>Returns the current RectValue.</returns>
-        public RectValues AnchorMax(float x, float y) => AnchorMax(new Vector2(x, y));
-
-        RectValues AnchorMax(Vector2 anchorMax)
-        {
-            this.anchorMax = anchorMax;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets only the <see cref="anchorMin"/> value of RectValues.
-        /// </summary>
-        /// <param name="x">X value of anchorMin.</param>
-        /// <param name="y">Y value of anchorMin.</param>
-        /// <returns>Returns the current RectValue.</returns>
-        public RectValues AnchorMin(float x, float y) => AnchorMin(new Vector2(x, y));
-
-        RectValues AnchorMin(Vector2 anchorMin)
-        {
-            this.anchorMin = anchorMin;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets only the <see cref="pivot"/> value of RectValues.
-        /// </summary>
-        /// <param name="x">X value of pivot.</param>
-        /// <param name="y">Y value of pivot.</param>
-        /// <returns>Returns the current RectValue.</returns>
-        public RectValues Pivot(float x, float y) => Pivot(new Vector2(x, y));
-
-        RectValues Pivot(Vector2 pivot)
-        {
-            this.pivot = pivot;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets only the <see cref="sizeDelta"/> value of RectValues.
-        /// </summary>
-        /// <param name="x">X value of sizeDelta.</param>
-        /// <param name="y">Y value of sizeDelta.</param>
-        /// <returns>Returns the current RectValue.</returns>
-        public RectValues SizeDelta(float x, float y) => SizeDelta(new Vector2(x, y));
-
-        RectValues SizeDelta(Vector2 sizeDelta)
-        {
-            this.sizeDelta = sizeDelta;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets only the <see cref="rotation"/> value of RectValues.
-        /// </summary>
-        /// <param name="rotation">Rotation value.</param>
-        /// <returns>Returns the current RectValue.</returns>
-        public RectValues Rotation(float rotation)
-        {
-            this.rotation = rotation;
-            return this;
-        }
+        #region Properties
 
         /// <summary>
         /// The default values when a <see cref="RectTransform"/> component is added to a <see cref="GameObject"/>.
@@ -162,6 +83,10 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public static Vector2 CenterPivot => new Vector2(0.5f, 0.5f);
 
+        #endregion
+
+        #region Fields
+
         public Vector2 anchoredPosition;
         public Vector2 anchorMax;
         public Vector2 anchorMin;
@@ -169,12 +94,120 @@ namespace BetterLegacy.Core.Data
         public Vector2 sizeDelta;
         public float rotation;
 
+        #endregion
+
+        #region Methods
+
+        #region Modify
+
+        /// <summary>
+        /// Sets only the <see cref="anchoredPosition"/> value of RectValues.
+        /// </summary>
+        /// <param name="x">X value of anchoredPosition.</param>
+        /// <param name="y">Y value of anchoredPosition.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues AnchoredPosition(float x, float y) => AnchoredPosition(new Vector2(x, y));
+
+        /// <summary>
+        /// Sets only the <see cref="anchorMax"/> value of RectValues.
+        /// </summary>
+        /// <param name="x">X value of anchorMax.</param>
+        /// <param name="y">Y value of anchorMax.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues AnchorMax(float x, float y) => AnchorMax(new Vector2(x, y));
+
+        /// <summary>
+        /// Sets only the <see cref="anchorMin"/> value of RectValues.
+        /// </summary>
+        /// <param name="x">X value of anchorMin.</param>
+        /// <param name="y">Y value of anchorMin.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues AnchorMin(float x, float y) => AnchorMin(new Vector2(x, y));
+
+        /// <summary>
+        /// Sets only the <see cref="pivot"/> value of RectValues.
+        /// </summary>
+        /// <param name="x">X value of pivot.</param>
+        /// <param name="y">Y value of pivot.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues Pivot(float x, float y) => Pivot(new Vector2(x, y));
+
+        /// <summary>
+        /// Sets only the <see cref="sizeDelta"/> value of RectValues.
+        /// </summary>
+        /// <param name="x">X value of sizeDelta.</param>
+        /// <param name="y">Y value of sizeDelta.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues SizeDelta(float x, float y) => SizeDelta(new Vector2(x, y));
+
+        /// <summary>
+        /// Sets only the <see cref="rotation"/> value of RectValues.
+        /// </summary>
+        /// <param name="rotation">Rotation value.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues Rotation(float rotation)
+        {
+            this.rotation = rotation;
+            return this;
+        }
+
+        #endregion
+
+        #region Modify Internal
+
+        RectValues AnchoredPosition(Vector2 anchoredPosition)
+        {
+            this.anchoredPosition = anchoredPosition;
+            return this;
+        }
+
+        RectValues AnchorMax(Vector2 anchorMax)
+        {
+            this.anchorMax = anchorMax;
+            return this;
+        }
+
+        RectValues AnchorMin(Vector2 anchorMin)
+        {
+            this.anchorMin = anchorMin;
+            return this;
+        }
+
+        RectValues Pivot(Vector2 pivot)
+        {
+            this.pivot = pivot;
+            return this;
+        }
+
+        RectValues SizeDelta(Vector2 sizeDelta)
+        {
+            this.sizeDelta = sizeDelta;
+            return this;
+        }
+
+        #endregion
+
+        #region Write / Read
+
+        /// <summary>
+        /// Returns one of the default RectValues from a string name.
+        /// </summary>
+        /// <param name="name">Name of the default RectValues.</param>
+        /// <returns>Returns a default RectValues.</returns>
+        public static RectValues FromString(string name) => string.IsNullOrEmpty(name) ? Default : name.ToLower() switch
+        {
+            "fullanchored" => FullAnchored,
+            "horizontalanchored" => HorizontalAnchored,
+            "verticalanchored" => VerticalAnchored,
+            _ => Default,
+        };
+
         /// <summary>
         /// Parses a "rect" JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed RectValue.</returns>
-        public static RectValues Parse(JSONNode jn) => new RectValues
+        public static RectValues Parse(JSONNode jn) => jn.IsString ? FromString(jn) : new RectValues
         {
             anchoredPosition = Parser.TryParse(jn["anc_pos"], Vector2.zero),
             anchorMax = Parser.TryParse(jn["anc_max"], CenterPivot),
@@ -190,7 +223,7 @@ namespace BetterLegacy.Core.Data
         /// <param name="jn">JSON to parse.</param>
         /// <param name="defaultValue">Default value to set if a value is null.</param>
         /// <returns>Returns a parsed RectValue.</returns>
-        public static RectValues Parse(JSONNode jn, RectValues defaultValue) => new RectValues
+        public static RectValues Parse(JSONNode jn, RectValues defaultValue) => jn.IsString ? FromString(jn) : new RectValues
         {
             anchoredPosition = Parser.TryParse(jn["anc_pos"], defaultValue.anchoredPosition),
             anchorMax = Parser.TryParse(jn["anc_max"], defaultValue.anchorMax),
@@ -261,6 +294,10 @@ namespace BetterLegacy.Core.Data
             rectTransform.sizeDelta = sizeDelta;
             rectTransform.SetLocalRotationEulerZ(rotation);
         }
+
+        #endregion
+
+        #endregion
 
         public static implicit operator RectValues(JSONNode jn) => Parse(jn);
     }
