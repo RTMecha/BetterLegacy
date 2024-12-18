@@ -417,6 +417,34 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Tries to get an item at an index if the index is in range.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="index">Index of the item to get.</param>
+        /// <param name="item">Output item.</param>
+        /// <returns>Returns true if the index is inside the range of the list, otherwise returns false.</returns>
+        public static bool TryGetAt<T>(this List<T> list, int index, out T item)
+        {
+            var exists = index >= 0 && index < list.Count;
+            item = exists ? list[index] : default;
+            return exists;
+        }
+
+        /// <summary>
+        /// Tries to get an item at an index if the index is in range.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="index">Index of the item to get.</param>
+        /// <param name="item">Output item.</param>
+        /// <returns>Returns true if the index is inside the range of the array, otherwise returns false.</returns>
+        public static bool TryGetAt<T>(this T[] array, int index, out T item)
+        {
+            var exists = index >= 0 && index < array.Length;
+            item = exists ? array[index] : default;
+            return exists;
+        }
+
+        /// <summary>
         /// Moves an item in a list to a different index.
         /// </summary>
         /// <typeparam name="T">The type of the List</typeparam>
