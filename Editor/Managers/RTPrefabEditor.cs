@@ -1297,18 +1297,18 @@ namespace BetterLegacy.Editor.Managers
             var objects = gameData.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
             float startTime = objects.Min(x => x.StartTime);
 
-            var originalPrefab = gameData.prefabs.Find(x => x.ID == bm.prefabID);
+            int index = gameData.prefabs.FindIndex(x => x.ID == bm.prefabID);
+            var originalPrefab = gameData.prefabs[index];
 
             var prefabObject = new PrefabObject(originalPrefab.ID, startTime - originalPrefab.Offset);
             prefabObject.editorData.Bin = editorData.Bin;
             prefabObject.editorData.layer = editorData.layer;
-            var prefab2 = new Prefab(originalPrefab.Name, originalPrefab.Type, originalPrefab.Offset, objects, new List<PrefabObject>());
+            var newPrefab = new Prefab(originalPrefab.Name, originalPrefab.Type, originalPrefab.Offset, objects, new List<PrefabObject>());
 
-            prefab2.ID = originalPrefab.ID;
-            prefab2.typeID = originalPrefab.typeID;
+            newPrefab.ID = originalPrefab.ID;
+            newPrefab.typeID = originalPrefab.typeID;
 
-            int index = gameData.prefabs.FindIndex(x => x.ID == bm.prefabID);
-            gameData.prefabs[index] = prefab2;
+            gameData.prefabs[index] = newPrefab;
             var list = RTEditor.inst.TimelineBeatmapObjects.FindAll(x => x.GetData<BeatmapObject>().prefabInstanceID == prefabInstanceID);
             foreach (var timelineObject in list)
             {
@@ -1320,12 +1320,8 @@ namespace BetterLegacy.Editor.Managers
 
             gameData.prefabObjects.Add(prefabObject);
 
-            //gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.ID);
-
             gameData.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab).ForEach(x => Updater.UpdateObject(x, reinsert: false, recalculate: false));
             gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab);
-
-            //Updater.UpdatePrefab(prefabObject, recalculate: false);
 
             Updater.AddPrefabToLevel(prefabObject, recalculate: false);
 

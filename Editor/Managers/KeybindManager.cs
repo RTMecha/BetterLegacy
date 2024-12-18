@@ -1217,7 +1217,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ExpandPrefab(Keybind keybind)
         {
-            if (ObjectEditor.inst.SelectedPrefabObjects.Count == 1 && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.Data != null && ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (ObjectEditor.inst.SelectedPrefabObjects.Count == 1 && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsPrefabObject)
                 PrefabEditor.inst.ExpandCurrentPrefab();
         }
 

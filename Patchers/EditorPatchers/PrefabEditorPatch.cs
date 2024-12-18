@@ -246,7 +246,7 @@ namespace BetterLegacy.Patchers
         {
             EditorManager.inst.ClearDialogs();
 
-            bool isPrefab = ObjectEditor.inst.CurrentSelection != null && ObjectEditor.inst.CurrentSelection.Data != null && ObjectEditor.inst.CurrentSelection.IsPrefabObject;
+            bool isPrefab = ObjectEditor.inst.CurrentSelection != null && ObjectEditor.inst.CurrentSelection.IsPrefabObject;
             if (!isPrefab)
             {
                 Debug.LogError($"{Instance.className}Cannot select non-Prefab with this editor!");

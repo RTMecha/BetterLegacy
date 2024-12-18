@@ -1670,7 +1670,7 @@ namespace BetterLegacy.Editor.Managers
             if (timelineObject.IsPrefabObject)
             {
                 var prefabObject = timelineObject.GetData<PrefabObject>();
-                var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
+                var prefab = prefabObject.Prefab;
 
                 offset = prefabObject.GetPrefabLifeLength(true);
                 timeOffset = prefab.Offset;

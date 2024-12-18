@@ -692,7 +692,7 @@ namespace BetterLegacy.Core.Optimization
 
                         float timeToAdd = 0f;
 
-                        var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
+                        var prefab = prefabObject.Prefab;
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
@@ -757,7 +757,7 @@ namespace BetterLegacy.Core.Optimization
 
                         float timeToAdd = 0f;
 
-                        var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
+                        var prefab = prefabObject.Prefab;
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
@@ -766,19 +766,6 @@ namespace BetterLegacy.Core.Optimization
                                 if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
                                     beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED));
-
-                                    if (lower == "speed")
-                                    {
-                                        for (int j = 0; j < beatmapObject.events.Count; j++)
-                                        {
-                                            for (int k = 0; k < beatmapObject.events[j].Count; k++)
-                                            {
-                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MAX_PREFAB_OBJECT_SPEED);
-                                            }
-                                        }
-
-                                        UpdateObject(beatmapObject, "Keyframes");
-                                    }
 
                                     // Update Start Time
                                     if (TryGetObject(beatmapObject, out LevelObject levelObject))
@@ -849,7 +836,7 @@ namespace BetterLegacy.Core.Optimization
 
             float timeToAdd = 0f;
 
-            var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
+            var prefab = prefabObject.Prefab;
             if (prefabObject.expandedObjects == null)
                 prefabObject.expandedObjects = new List<BeatmapObject>();
             prefabObject.expandedObjects.Clear();
