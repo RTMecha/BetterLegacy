@@ -1200,6 +1200,9 @@ namespace BetterLegacy.Editor.Managers
                     Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
             }
             Updater.RecalculateObjectStates();
+
+            if (RTBackgroundEditor.CurrentSelectedBG)
+                Updater.CreateBackgroundObject(RTBackgroundEditor.CurrentSelectedBG);
         }
 
         public static void OpenPrefabDialog(Keybind keybind)
