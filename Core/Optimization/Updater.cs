@@ -22,11 +22,17 @@ namespace BetterLegacy.Core.Optimization
     {
         public static string className = "[<color=#FF26C5>Updater</color>] \n";
 
+        /// <summary>
+        /// Level Processor reference.
+        /// </summary>
         public static LevelProcessor levelProcessor;
 
         static float previousAudioTime;
         static float audioTimeVelocity;
 
+        /// <summary>
+        /// Samples of the current audio.
+        /// </summary>
         public static float[] samples = new float[256];
 
         /// <summary>
@@ -93,8 +99,14 @@ namespace BetterLegacy.Core.Optimization
 
         #region Tick Update
 
+        /// <summary>
+        /// If the smooth method should be used for time updating.
+        /// </summary>
         public static bool UseNewUpdateMethod { get; set; }
 
+        /// <summary>
+        /// The current time the objects are interpolating to.
+        /// </summary>
         public static float CurrentTime { get; set; }
 
         /// <summary>
@@ -249,8 +261,6 @@ namespace BetterLegacy.Core.Optimization
         #endregion
 
         #region Objects
-
-        public static List<BeatmapObject> noParentObjects;
 
         /// <summary>
         /// Updates a Beatmap Object.
@@ -475,17 +485,11 @@ namespace BetterLegacy.Core.Optimization
                 }
             }
             else if (context.ToLower() == "keyframe" || context.ToLower() == "keyframes")
-            {
                 RecacheSequences(beatmapObject, levelProcessor.converter);
-            }
             else if (context == "starttime" || context == "time")
-            {
                 Sort();
-            }
             else if (context == "objecttype")
-            {
                 UpdateObject(beatmapObject);
-            }
         }
 
         /// <summary>
@@ -578,7 +582,7 @@ namespace BetterLegacy.Core.Optimization
                 levelProcessor.converter.beatmapObjects.Clear();
 
                 // Delete all the "GameObjects" children.
-                LSFunctions.LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
+                LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
 
                 // End and restart.
                 OnLevelEnd();
@@ -594,7 +598,7 @@ namespace BetterLegacy.Core.Optimization
         /// <summary>
         /// The max speed of a prefab object.
         /// </summary>
-        public static float MAX_PREFAB_OBJECT_SPEED => 1000f;
+        public const float MAX_PREFAB_OBJECT_SPEED = 1000f;
 
         /// <summary>
         /// Updates a Prefab Object.
@@ -1014,18 +1018,17 @@ namespace BetterLegacy.Core.Optimization
             if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active)
                 return null;
 
-            float scaleZ = backgroundObject.zscale;
-            int depth = backgroundObject.depth;
+            if (backgroundObject.BaseObject)
+                CoreHelper.Destroy(backgroundObject.BaseObject);
 
             var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(BackgroundManager.inst.backgroundParent, backgroundObject.name);
             gameObject.layer = 9;
             gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f);
-            gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, scaleZ);
+            gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
             gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
             Object.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
             Object.Destroy(gameObject.GetComponent<BoxCollider>());
-            BackgroundManager.inst.backgroundObjects.Add(gameObject);
 
             backgroundObject.gameObjects.Clear();
             backgroundObject.transforms.Clear();
@@ -1037,6 +1040,8 @@ namespace BetterLegacy.Core.Optimization
 
             if (backgroundObject.drawFade)
             {
+                int depth = backgroundObject.depth;
+
                 for (int i = 1; i < depth - backgroundObject.layer; i++)
                 {
                     var gameObject2 = BackgroundManager.inst.backgroundFadePrefab.Duplicate(gameObject.transform, $"{backgroundObject.name} Fade [{i}]");
