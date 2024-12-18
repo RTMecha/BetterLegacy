@@ -328,7 +328,7 @@ namespace BetterLegacy.Core
         /// Adds a <see cref="Level"/> to the level collection and copies its folder to the level collection folder.
         /// </summary>
         /// <param name="level">Level to add.</param>
-        public void AddLevelToFolder(Level level)
+        public void AddLevelToFolder(Level level, bool add = false)
         {
             if (levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
                 return;
@@ -347,9 +347,16 @@ namespace BetterLegacy.Core
             }
 
             var actualLevel = new Level(levelPath);
+            var levelInfo = LevelInfo.FromLevel(actualLevel);
+            levelInfo.index = levelInformation.Count;
+            var id = levelInfo.id;
+            actualLevel.id = id;
+            if (actualLevel.metadata)
+                actualLevel.metadata.arcadeID = id;
 
-            levels.Add(actualLevel);
-            levelInformation.Add(LevelInfo.FromLevel(actualLevel));
+            if (add)
+                levels.Add(actualLevel);
+            levelInformation.Add(levelInfo);
         }
 
         /// <summary>
@@ -365,6 +372,9 @@ namespace BetterLegacy.Core
 
             levels.RemoveAll(x => x.id == level.id);
             levelInformation.RemoveAll(x => x.id == level.id);
+
+            for (int i = 0; i < levelInformation.Count; i++)
+                levelInformation[i].index = i;
         }
 
         #endregion
@@ -433,6 +443,12 @@ namespace BetterLegacy.Core
 
             #region Methods
 
+            /// <summary>
+            /// Parses a levels' information from the level collection file.
+            /// </summary>
+            /// <param name="jn">JSON to parse.</param>
+            /// <param name="index">Index of the level.</param>
+            /// <returns>Returns a parsed <see cref="LevelInfo"/>.</returns>
             public static LevelInfo Parse(JSONNode jn, int index) => new LevelInfo
             {
                 index = index,
@@ -453,6 +469,10 @@ namespace BetterLegacy.Core
                 requireUnlock = jn["require_unlock"].AsBool,
             };
 
+            /// <summary>
+            /// Writes the <see cref="LevelInfo"/> to a JSON.
+            /// </summary>
+            /// <returns>Returns a JSON representing the <see cref="LevelInfo"/>.</returns>
             public JSONNode ToJSON()
             {
                 var jn = JSON.Parse("{}");
@@ -486,6 +506,11 @@ namespace BetterLegacy.Core
                 return jn;
             }
 
+            /// <summary>
+            /// Creates a <see cref="LevelInfo"/> from a <see cref="Level"/>.
+            /// </summary>
+            /// <param name="level"><see cref="Level"/> to reference.</param>
+            /// <returns>Returns a <see cref="LevelInfo"/> based on the <see cref="Level"/>.</returns>
             public static LevelInfo FromLevel(Level level) => new LevelInfo
             {
                 id = LSText.randomNumString(16),
