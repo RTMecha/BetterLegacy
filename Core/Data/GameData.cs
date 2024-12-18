@@ -1340,7 +1340,7 @@ namespace BetterLegacy.Core.Data
         }
 
         /// <summary>
-        /// Writes the <see cref="GameData"/> to a VG format file.
+        /// Writes the <see cref="GameData"/> to a VG format JSON.
         /// </summary>
         /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
         public JSONNode ToJSONVG()
@@ -1587,9 +1587,9 @@ namespace BetterLegacy.Core.Data
         }
 
         /// <summary>
-        /// Writes the <see cref="GameData"/> to an LS format file.
-        /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
+        /// Writes the <see cref="GameData"/> to an LS format JSON.
         /// </summary>
+        /// <param name="saveGameDataThemes">If the levels' themes should be written to the JSON.</param>
         /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
         public JSONNode ToJSON(bool saveGameDataThemes = false)
         {
@@ -1688,7 +1688,7 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <param name="path">The file to save to.</param>
         /// <param name="onSave">Function to run when saving is complete.</param>
-        /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
+        /// <param name="saveGameDataThemes">If the levels' themes should be written to the JSON.</param>
         public void SaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
