@@ -23,7 +23,7 @@ namespace BetterLegacy.Editor.Managers
     {
         public static RTBackgroundEditor inst;
 
-        public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : GameData.Current.backgroundObjects[BackgroundEditor.inst.currentObj];
+        public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null || BackgroundEditor.inst.currentObj < 0 || BackgroundEditor.inst.currentObj >= GameData.Current.backgroundObjects.Count ? null : GameData.Current.backgroundObjects[BackgroundEditor.inst.currentObj];
 
         public List<BackgroundObject> copiedBackgroundObjects = new List<BackgroundObject>();
 
