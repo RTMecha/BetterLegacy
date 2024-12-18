@@ -29,6 +29,10 @@ namespace BetterLegacy.Core.Data
             this.beatmap = beatmap;
         }
 
+        #region Properties
+
+        #region Instance
+
         /// <summary>
         /// Checks if the current MetaData is of the correct type.
         /// </summary>
@@ -39,19 +43,16 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public static MetaData Current { get => DataManager.inst.metaData as MetaData; set => DataManager.inst.metaData = value; }
 
-        public string collectionID;
-        public int index;
-        public string uploaderName;
-        public string uploaderID;
-        public string serverID;
-        public string arcadeID;
-        public string prevID;
-        public string nextID;
-        public bool isHubLevel;
-        public bool requireUnlock;
-        public bool unlockAfterCompletion = true;
-        public ServerVisibility visibility;
-        public string changelog;
+        /// <summary>
+        /// Gets the prioritised ID. Arcade ID (if empty) > Server ID (if empty) > Steam Workshop ID (if empty) > -1
+        /// </summary>
+        public string ID =>
+                !string.IsNullOrEmpty(arcadeID) && arcadeID != "-1" ?
+                    arcadeID : !string.IsNullOrEmpty(serverID) && serverID != "-1" ?
+                    serverID : !string.IsNullOrEmpty(beatmap.beatmap_id) && beatmap.beatmap_id != "-1" ?
+                    beatmap.beatmap_id : "-1";
+
+        #endregion
 
         /// <summary>
         /// Gets the game version of the metadata.
@@ -64,16 +65,19 @@ namespace BetterLegacy.Core.Data
         public Version ModVersion => new Version(beatmap.mod_version);
 
         /// <summary>
-        /// Gets the prioritised ID. Arcade ID (if empty) > Server ID (if empty) > Steam Workshop ID (if empty) > -1
+        /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
         /// </summary>
-        public string ID =>
-                !string.IsNullOrEmpty(arcadeID) && arcadeID != "-1" ?
-                    arcadeID : !string.IsNullOrEmpty(serverID) && serverID != "-1" ?
-                    serverID : !string.IsNullOrEmpty(beatmap.beatmap_id) && beatmap.beatmap_id != "-1" ?
-                    beatmap.beatmap_id : "-1";
+        public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(CoreHelper.LinkType.Song, song.linkType, song.linkType == 2 ? artist.Link + "," + song.link : song.link);
+
+        #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Creates a copy of a <see cref="MetaData"/>.
+        /// </summary>
+        /// <param name="orig">Original to copy.</param>
+        /// <returns>Returns a copied <see cref="MetaData"/>.</returns>
         public static MetaData DeepCopy(MetaData orig) => new MetaData
         {
             artist = new LevelArtist
@@ -129,6 +133,13 @@ namespace BetterLegacy.Core.Data
             changelog = orig.changelog,
         };
 
+        /// <summary>
+        /// Parses a levels' metadata from a file.
+        /// </summary>
+        /// <param name="path">File to parse.</param>
+        /// <param name="fileType">The type of Project Arrhythmia the file is from.</param>
+        /// <param name="setDefaultValues">If defaults should be set when a value is null.</param>
+        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
         public static MetaData ReadFromFile(string path, ArrhythmiaType fileType, bool setDefaultValues = true) => fileType switch
         {
             ArrhythmiaType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), setDefaultValues),
@@ -136,6 +147,11 @@ namespace BetterLegacy.Core.Data
             _ => null,
         };
 
+        /// <summary>
+        /// Parses a levels' metadata from JSON in the VG format.
+        /// </summary>
+        /// <param name="jn">VG JSON to parse.</param>
+        /// <returns>Returns a parsed <see cref="MetaData"/>.</returns>
         public static MetaData ParseVG(JSONNode jn)
         {
             MetaData result;
@@ -257,6 +273,11 @@ namespace BetterLegacy.Core.Data
             return result;
         }
 
+        /// <summary>
+        /// Parses a levels' metadata from JSON in the LS format.
+        /// </summary>
+        /// <param name="jn">LS JSON to parse.</param>
+        /// <returns>Returns a parsed <see cref="MetaData"/>.</returns>
         public static MetaData Parse(JSONNode jn, bool setDefaultValues = true)
         {
             MetaData result;
@@ -441,6 +462,10 @@ namespace BetterLegacy.Core.Data
             return result;
         }
 
+        /// <summary>
+        /// Writes the <see cref="MetaData"/> to a VG format JSON.
+        /// </summary>
+        /// <returns>Returns a JSON object representing the <see cref="MetaData"/>.</returns>
         public JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
@@ -469,6 +494,10 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        /// <summary>
+        /// Writes the <see cref="MetaData"/> to a LS format JSON.
+        /// </summary>
+        /// <returns>Returns a JSON object representing the <see cref="MetaData"/>.</returns>
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
@@ -556,17 +585,42 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        /// <summary>
+        /// Saves the <see cref="MetaData"/> to a LS format file.
+        /// </summary>
+        /// <param name="path">The file to save to.</param>
+        public void WriteToFile(string path) => RTFile.WriteToFile(path, ToJSON().ToString(3));
+
+        /// <summary>
+        /// Saves the <see cref="MetaData"/> to a VG format file.
+        /// </summary>
+        /// <param name="path">The file to save to.</param>
+        public void WriteToFileVG(string path) => RTFile.WriteToFile(path, ToJSONVG().ToString(3));
+
         #endregion
+
+        #region Fields
 
         public new LevelArtist artist;
         public new LevelCreator creator;
         public new LevelSong song;
         public new LevelBeatmap beatmap;
 
-        /// <summary>
-        /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
-        /// </summary>
-        public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(CoreHelper.LinkType.Song, song.linkType, song.linkType == 2 ? artist.Link + "," + song.link : song.link);
+        public string collectionID;
+        public int index;
+        public string uploaderName;
+        public string uploaderID;
+        public string serverID;
+        public string arcadeID;
+        public string prevID;
+        public string nextID;
+        public bool isHubLevel;
+        public bool requireUnlock;
+        public bool unlockAfterCompletion = true;
+        public ServerVisibility visibility;
+        public string changelog;
+
+        #endregion
 
         #region Operators
 
