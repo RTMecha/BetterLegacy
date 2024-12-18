@@ -446,16 +446,11 @@ namespace BetterLegacy.Core.Optimization.Objects
             // Empty objects don't need a color sequence, so it is not cached
             if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
             {
-                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
-                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
+                collection.ColorSequence = GetColorSequence(beatmapObject.events[3], new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
 
                 if (beatmapObject.gradientType != 0)
-                {
-                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
-                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
-                }
+                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3], new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
             }
-
         }
 
         public Sequence<Vector3> GetVector3Sequence(List<BaseEventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe)
