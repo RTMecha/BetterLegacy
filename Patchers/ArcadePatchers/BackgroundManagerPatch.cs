@@ -206,12 +206,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateBackgrounds()
         {
-            foreach (var gameObject in Instance.backgroundObjects)
-                CoreHelper.Destroy(gameObject);
-            Instance.backgroundObjects.Clear();
-
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                Instance.CreateBackgroundObject(backgroundObject);
+                Updater.CreateBackgroundObject(backgroundObject);
             return false;
         }
 
