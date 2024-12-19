@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Data
             {
                 levelData = new Data.LevelData(),
                 editorData = new LevelEditorData(),
-                markers = new List<Marker>()
+                markers = new List<Data.Marker>()
             };
 
             for (int i = 0; i < jn["markers"].Count; i++)
@@ -32,7 +32,7 @@ namespace BetterLegacy.Core.Data
             {
                 levelData = Data.LevelData.Parse(jn["level_data"]),
                 editorData = LevelEditorData.Parse(jn["ed"]),
-                markers = new List<Marker>()
+                markers = new List<Data.Marker>()
             };
 
             for (int i = 0; i < jn["ed"]["markers"].Count; i++)
@@ -40,6 +40,8 @@ namespace BetterLegacy.Core.Data
 
             return beatmapData;
         }
+
+        public new List<Data.Marker> markers = new List<Data.Marker>();
 
         public Data.LevelData ModLevelData => (Data.LevelData)levelData;
         public LevelEditorData ModEditorData => (LevelEditorData)editorData;
