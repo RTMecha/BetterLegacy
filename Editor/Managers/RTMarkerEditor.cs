@@ -49,7 +49,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!timelineMarkers[i].dragging)
                     continue;
 
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorManager.inst.GetTimelineTime(),
+                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(RTEditor.inst.GetTimelineTime(),
                 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
                 RenderMarker(timelineMarkers[i]);
             }

@@ -108,7 +108,7 @@ namespace BetterLegacy.Patchers
 
             if (Instance.eventDrag)
             {
-                var timelineTime = EditorManager.inst.GetTimelineTime();
+                var timelineTime = RTEditor.inst.GetTimelineTime();
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                 {
                     if (timelineObject.Index == 0 || timelineObject.Locked)

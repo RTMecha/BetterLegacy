@@ -287,7 +287,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            float timeOffset = Mathf.Round(Mathf.Clamp(EditorManager.inst.GetTimelineTime() + ObjEditor.inst.mouseOffsetXForDrag,
+            float timeOffset = Mathf.Round(Mathf.Clamp(RTEditor.inst.GetTimelineTime() + ObjEditor.inst.mouseOffsetXForDrag,
                 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
 
             if (RTEditor.inst.dragOffset != timeOffset && !SelectedObjects.All(x => x.Locked))

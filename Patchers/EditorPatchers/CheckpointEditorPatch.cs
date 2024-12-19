@@ -64,7 +64,7 @@ namespace BetterLegacy.Patchers
             {
                 if (Instance.checkpointsDrag[j])
                 {
-                    GameData.Current.beatmapData.checkpoints[j].time = Mathf.Clamp(EditorManager.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    GameData.Current.beatmapData.checkpoints[j].time = Mathf.Clamp(RTEditor.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     Instance.left.Find("time/time").GetComponent<InputField>().text = GameData.Current.beatmapData.checkpoints[j].time.ToString("f3");
                     Instance.RenderCheckpoint(j);
                 }

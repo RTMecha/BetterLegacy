@@ -2749,7 +2749,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
                         {
-                            var index = GameData.Current.eventObjects.allEvents[currentEvent].FindLastIndex(x => x.eventTime < EditorManager.inst.GetTimelineTime());
+                            var index = GameData.Current.eventObjects.allEvents[currentEvent].FindLastIndex(x => x.eventTime < RTEditor.inst.GetTimelineTime());
 
                             if (index >= 0)
                                 RTEventEditor.inst.SetCurrentEvent(currentEvent, index);

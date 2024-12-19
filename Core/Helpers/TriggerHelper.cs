@@ -469,7 +469,7 @@ namespace BetterLegacy.Core.Helpers
             timelineObject.timeOffset = 0f;
             timelineObject.binOffset = 0;
 
-            float timelineTime = EditorManager.inst.GetTimelineTime();
+            float timelineTime = RTEditor.inst.GetTimelineTime();
             int num = 14 - Mathf.RoundToInt((Input.mousePosition.y - 25f) * EditorManager.inst.ScreenScaleInverse / 20f);
             ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
             ObjEditor.inst.mouseOffsetYForDrag = bin - num;
@@ -692,7 +692,7 @@ namespace BetterLegacy.Core.Helpers
                 else
                     ObjectEditor.inst.SetCurrentObject(timelineObject);
 
-                float timelineTime = EditorManager.inst.GetTimelineTime();
+                float timelineTime = RTEditor.inst.GetTimelineTime();
                 ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
                 return;
             }
@@ -906,7 +906,7 @@ namespace BetterLegacy.Core.Helpers
             else
                 EventEditor.inst.SetCurrentEvent(kf.Type, kf.Index);
 
-            float timelineTime = EditorManager.inst.GetTimelineTime();
+            float timelineTime = RTEditor.inst.GetTimelineTime();
             EventEditor.inst.mouseOffsetXForDrag = GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
             EventEditor.inst.eventDrag = true;
         });
