@@ -1155,6 +1155,18 @@ namespace BetterLegacy.Core.Data
             return false;
         }
 
+        public void RemovePrefabReference()
+        {
+            prefabID = "";
+            prefabInstanceID = "";
+        }
+
+        public void SetPrefabReference(PrefabObject prefabObject)
+        {
+            prefabID = prefabObject.prefabID;
+            prefabInstanceID = prefabObject.ID;
+        }
+
         #region Custom Interpolation
 
         public void SetTransform(int toType, Vector3 value)
