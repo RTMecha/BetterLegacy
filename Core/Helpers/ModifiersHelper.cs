@@ -36,6 +36,8 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static bool development = false;
 
+        #region Running
+
         /// <summary>
         /// Checks if triggers return true.
         /// </summary>
@@ -277,6 +279,12 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
         }
+
+        #endregion
+
+        #region Functions
+
+        #region BeatmapObject
 
         /// <summary>
         /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="BeatmapObject"/>.
@@ -7171,6 +7179,10 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        #endregion
+
+        #region BackgroundObject
+
         /// <summary>
         /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="BackgroundObject"/>.
         /// </summary>
@@ -7419,6 +7431,10 @@ namespace BetterLegacy.Core.Helpers
                 return;
         }
 
+        #endregion
+
+        #region Player
+
         /// <summary>
         /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="CustomPlayer"/>.
         /// </summary>
@@ -7653,6 +7669,10 @@ namespace BetterLegacy.Core.Helpers
                     }
             }
         }
+
+        #endregion
+
+        #endregion
 
         public static void ApplyAnimationTo(
             BeatmapObject applyTo, BeatmapObject takeFrom,
