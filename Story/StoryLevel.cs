@@ -20,10 +20,7 @@ namespace BetterLegacy.Story
     /// </summary>
     public class StoryLevel : Level
     {
-        public StoryLevel() : base()
-        {
-            isStory = true;
-        }
+        public StoryLevel() : base() => isStory = true;
 
         /// <summary>
         /// Name of the story level.
@@ -45,6 +42,11 @@ namespace BetterLegacy.Story
         /// </summary>
         public VideoClip videoClip;
 
+        /// <summary>
+        /// Loads a story level from an <see cref="AssetBundle"/>.
+        /// </summary>
+        /// <param name="path">Path to an <see cref="AssetBundle"/>.</param>
+        /// <param name="result">The loaded <see cref="StoryLevel"/>.</param>
         public static IEnumerator LoadFromAsset(string path, Action<StoryLevel> result)
         {
             CoreHelper.Log($"Loading level from {System.IO.Path.GetFileName(path)}");
@@ -65,17 +67,33 @@ namespace BetterLegacy.Story
                 yield break;
             }
 
-            var icon = assets.LoadAsset<Sprite>($"cover.jpg");
-            var song = assets.LoadAsset<AudioClip>($"song.ogg");
-            var levelJSON = assets.LoadAsset<TextAsset>($"level.json");
-            var metadataJSON = assets.LoadAsset<TextAsset>($"metadata.json");
-            var players = assets.LoadAsset<TextAsset>($"players.json");
-
-            if (!song)
+            var storyLevel = FromAsset(assets);
+            if (!storyLevel)
             {
                 assets.Unload(true);
                 yield break;
             }
+
+            assets.Unload(false);
+            assets = null;
+            result?.Invoke(storyLevel);
+        }
+
+        /// <summary>
+        /// Loads a story level from an <see cref="AssetBundle"/>.
+        /// </summary>
+        /// <param name="assets"><see cref="AssetBundle"/> to get a story level from.</param>
+        /// <returns>Returns a story level.</returns>
+        public static StoryLevel FromAsset(AssetBundle assets)
+        {
+            var icon = assets.LoadAsset<Sprite>($"cover{FileFormat.JPG.Dot()}");
+            var song = assets.LoadAsset<AudioClip>($"song{FileFormat.OGG.Dot()}");
+            var levelJSON = assets.LoadAsset<TextAsset>($"level{FileFormat.JSON.Dot()}");
+            var metadataJSON = assets.LoadAsset<TextAsset>($"metadata{FileFormat.JSON.Dot()}");
+            var players = assets.LoadAsset<TextAsset>($"players{FileFormat.JSON.Dot()}");
+
+            if (!song)
+                return null;
 
             var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text), false);
             var storyLevel = new StoryLevel
@@ -87,12 +105,10 @@ namespace BetterLegacy.Story
                 json = levelJSON.text,
                 metadata = metadata,
                 jsonPlayers = players.text,
-                videoClip = assets.Contains($"bg.mp4") ? assets.LoadAsset<VideoClip>($"bg.mp4") : null,
+                videoClip = assets.Contains($"bg{FileFormat.MP4.Dot()}") ? assets.LoadAsset<VideoClip>($"bg{FileFormat.MP4.Dot()}") : null,
             };
 
-            assets.Unload(false);
-            assets = null;
-            result?.Invoke(storyLevel);
+            return storyLevel;
         }
     }
 }
