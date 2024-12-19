@@ -165,7 +165,7 @@ namespace BetterLegacy.Editor
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.layer = value;
 
-                UpdateVisibleState();
+                RenderVisibleState();
             }
         }
 
@@ -232,7 +232,7 @@ namespace BetterLegacy.Editor
             set
             {
                 selected = value;
-                UpdateVisibleState(false);
+                RenderVisibleState(false);
             }
         }
 
@@ -381,11 +381,11 @@ namespace BetterLegacy.Editor
 
             if (update)
             {
-                Update();
+                Render();
                 return;
             }
 
-            UpdateVisibleState();
+            RenderVisibleState();
         }
 
         /// <summary>
@@ -408,7 +408,7 @@ namespace BetterLegacy.Editor
         /// <summary>
         /// Updates all properties of the timeline object.
         /// </summary>
-        public void Update()
+        public void Render()
         {
             string name = "object name";
             float startTime = 0f;
@@ -446,17 +446,17 @@ namespace BetterLegacy.Editor
                 image.sprite = null;
             }
 
-            UpdateText(name);
-            UpdateIcons(prefab?.PrefabType);
-            UpdatePosLength(EditorManager.inst.Zoom, length, startTime);
-            UpdateVisibleState();
+            RenderText(name);
+            RenderIcons(prefab?.PrefabType);
+            RenderPosLength(EditorManager.inst.Zoom, length, startTime);
+            RenderVisibleState();
         }
 
         /// <summary>
         /// Updates the Timeline Objects' active state and color.
         /// </summary>
         /// <param name="setActive">If active state should change.</param>
-        public void UpdateVisibleState(bool setActive = true)
+        public void RenderVisibleState(bool setActive = true)
         {
             switch (TimelineReference)
             {
@@ -568,7 +568,7 @@ namespace BetterLegacy.Editor
         /// </summary>
         /// <param name="name">Name of the timeline object.</param>
         /// <param name="nullName">Name to display if <paramref name="name"/> is null or empty.</param>
-        public void UpdateText(string name)
+        public void RenderText(string name)
         {
             var textMeshNoob = Text; // ha! take that tmp
             if (!textMeshNoob)
@@ -581,14 +581,14 @@ namespace BetterLegacy.Editor
         /// <summary>
         /// Updates the timeline objects' position and length.
         /// </summary>
-        public void UpdatePosLength()
+        public void RenderPosLength()
         {
             float timeOffset = 0f;
 
             if (isPrefabObject)
                 timeOffset = GetData<PrefabObject>().Prefab.Offset;
 
-            UpdatePosLength(EditorManager.inst.Zoom, Length, Time + timeOffset);
+            RenderPosLength(EditorManager.inst.Zoom, Length, Time + timeOffset);
         }
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace BetterLegacy.Editor
         /// <param name="zoom">Timeline zoom.</param>
         /// <param name="length">Alive time of the object.</param>
         /// <param name="time">Time the object is positioned at.</param>
-        public void UpdatePosLength(float zoom, float length, float time)
+        public void RenderPosLength(float zoom, float length, float time)
         {
             var rectTransform = GameObject.transform.AsRT();
 
@@ -617,7 +617,7 @@ namespace BetterLegacy.Editor
                 Hover.size = ObjectEditor.TimelineObjectHoverSize;
         }
 
-        public void UpdateSprite(List<DataManager.GameData.EventKeyframe> events)
+        public void RenderSprite(List<DataManager.GameData.EventKeyframe> events)
         {
             if (TryGetData(out EventKeyframe eventKeyframe))
             {
@@ -634,7 +634,7 @@ namespace BetterLegacy.Editor
         /// Updates the timeline objects' icons.
         /// </summary>
         /// <param name="prefabType">Prefab Type to retrieve a Prefab Type icon from.</param>
-        public void UpdateIcons(PrefabType prefabType = null)
+        public void RenderIcons(PrefabType prefabType = null)
         {
             var gameObject = GameObject;
             if (!gameObject)

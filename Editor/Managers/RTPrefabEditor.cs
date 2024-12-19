@@ -740,7 +740,7 @@ namespace BetterLegacy.Editor.Managers
                 var prefabObject = prefabObjects[i];
 
                 if (isObjectLayer && prefabObject.editorData.layer == RTEditor.inst.Layer)
-                    GetTimelineObject(prefabObject).UpdatePosLength();
+                    GetTimelineObject(prefabObject).RenderPosLength();
 
                 Updater.UpdatePrefab(prefabObject, "Start Time");
             }

@@ -1092,14 +1092,14 @@ namespace BetterLegacy.Editor.Managers
         void UpdateTimelineObjects()
         {
             for (int i = 0; i < timelineObjects.Count; i++)
-                timelineObjects[i].UpdateVisibleState();
+                timelineObjects[i].RenderVisibleState();
 
             if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.isBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Count > 0)
                 for (int i = 0; i < ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Count; i++)
-                    ObjectEditor.inst.CurrentSelection.InternalTimelineObjects[i].UpdateVisibleState();
+                    ObjectEditor.inst.CurrentSelection.InternalTimelineObjects[i].RenderVisibleState();
 
             for (int i = 0; i < timelineKeyframes.Count; i++)
-                timelineKeyframes[i].UpdateVisibleState();
+                timelineKeyframes[i].RenderVisibleState();
         }
 
         #endregion
@@ -4483,7 +4483,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        timelineObject.UpdatePosLength();
+                        timelineObject.RenderPosLength();
                     }
                 });
                 inputFieldStorage.middleButton.onClick.NewListener(() =>
@@ -4499,7 +4499,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        timelineObject.UpdatePosLength();
+                        timelineObject.RenderPosLength();
                     }
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -4517,7 +4517,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        timelineObject.UpdatePosLength();
+                        timelineObject.RenderPosLength();
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
@@ -4790,7 +4790,7 @@ namespace BetterLegacy.Editor.Managers
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                         beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
                         Updater.UpdateObject(beatmapObject, "Autokill");
-                        timelineObject.UpdatePosLength();
+                        timelineObject.RenderPosLength();
                     }
                 }));
 
@@ -4971,7 +4971,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
-                        timelineObject.UpdatePosLength();
+                        timelineObject.RenderPosLength();
                     }
                 }), new ButtonFunction("Snap Offset", () =>
                 {
@@ -4986,7 +4986,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
-                        timelineObject.UpdatePosLength();
+                        timelineObject.RenderPosLength();
                     }
                 }));
 

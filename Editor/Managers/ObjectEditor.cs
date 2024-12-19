@@ -271,7 +271,7 @@ namespace BetterLegacy.Editor.Managers
                         hasChanged = true;
 
                     timelineObject.Bin = binCalc;
-                    timelineObject.UpdatePosLength();
+                    timelineObject.RenderPosLength();
                     if (timelineObject.isBeatmapObject && SelectedObjects.Count == 1)
                         RenderBin(timelineObject.GetData<BeatmapObject>());
                 }
@@ -310,7 +310,7 @@ namespace BetterLegacy.Editor.Managers
 
                 timelineObject.Time = Mathf.Clamp(timeOffset + timelineObject.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                timelineObject.UpdatePosLength();
+                timelineObject.RenderPosLength();
 
                 if (timelineObject.isPrefabObject)
                 {
@@ -1559,7 +1559,7 @@ namespace BetterLegacy.Editor.Managers
             if (!timelineObject.GameObject)
                 CreateTimelineObject(timelineObject);
 
-            timelineObject.Update();
+            timelineObject.Render();
         }
 
         public void RenderTimelineObjects()
@@ -1573,7 +1573,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var timelineObject in RTEditor.inst.timelineObjects)
             {
                 if (timelineObject.IsCurrentLayer)
-                    timelineObject.UpdatePosLength();
+                    timelineObject.RenderPosLength();
             }
         }
 
@@ -4839,7 +4839,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 kf.GameObject = KeyframeObject(beatmapObject, kf);
                 kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-                kf.UpdateVisibleState();
+                kf.RenderVisibleState();
             }
 
             return kf;
@@ -4871,7 +4871,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         kf.GameObject = KeyframeObject(beatmapObject, kf);
                         kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-                        kf.UpdateVisibleState();
+                        kf.RenderVisibleState();
                     }
 
                     RenderKeyframe(beatmapObject, kf);
@@ -4895,7 +4895,7 @@ namespace BetterLegacy.Editor.Managers
 
             kf.GameObject = KeyframeObject(beatmapObject, kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-            kf.UpdateVisibleState();
+            kf.RenderVisibleState();
 
             return kf;
         }
@@ -4951,9 +4951,9 @@ namespace BetterLegacy.Editor.Managers
                 timelineObject.Index = kfIndex;
 
             var eventKeyframe = timelineObject.GetData<EventKeyframe>();
-            timelineObject.UpdateSprite(beatmapObject.events[timelineObject.Type]);
-            timelineObject.UpdatePosLength(ObjEditor.inst.zoomVal, 0f, eventKeyframe.eventTime);
-            timelineObject.UpdateIcons();
+            timelineObject.RenderSprite(beatmapObject.events[timelineObject.Type]);
+            timelineObject.RenderPosLength(ObjEditor.inst.zoomVal, 0f, eventKeyframe.eventTime);
+            timelineObject.RenderIcons();
         }
 
         public void UpdateKeyframeOrder(BeatmapObject beatmapObject)

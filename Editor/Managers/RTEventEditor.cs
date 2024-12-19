@@ -745,7 +745,7 @@ namespace BetterLegacy.Editor.Managers
             kf.Index = index;
             kf.GameObject = EventGameObject(kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-            kf.UpdateVisibleState();
+            kf.RenderVisibleState();
 
             TriggerHelper.AddEventTriggers(kf.GameObject,
                 TriggerHelper.CreateEventObjectTrigger(kf),
@@ -792,8 +792,8 @@ namespace BetterLegacy.Editor.Managers
                 kf.GameObject.transform.AsRT().anchoredPosition = new Vector2(events[kf.Index].eventTime * EditorManager.inst.Zoom - EditorManager.BaseUnit / 2, 0.0f);
                 kf.GameObject.transform.AsRT().pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
 
-                kf.UpdateSprite(events);
-                kf.UpdateIcons();
+                kf.RenderSprite(events);
+                kf.RenderIcons();
             }
         }
 
