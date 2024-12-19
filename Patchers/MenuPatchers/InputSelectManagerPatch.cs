@@ -16,7 +16,7 @@ namespace BetterLegacy.Patchers
         static void StartPrefix()
         {
             if (Menus.InterfaceManager.inst)
-                Menus.InterfaceManager.inst.CurrentMenu = null; // clear menu for now until Input Select scene is reworked to use the new menu system.
+                Menus.InterfaceManager.inst.CurrentInterface = null; // clear menu for now until Input Select scene is reworked to use the new menu system.
 
             InputDataManager.inst.ClearInputs();
             LSHelpers.HideCursor();

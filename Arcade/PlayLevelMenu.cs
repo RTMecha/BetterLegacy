@@ -27,7 +27,6 @@ namespace BetterLegacy.Arcade
 
         public PlayLevelMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
             this.name = CurrentLevel?.metadata?.beatmap?.name;
 
             elements.Add(new MenuEvent
@@ -619,7 +618,8 @@ namespace BetterLegacy.Arcade
 
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public override void UpdateTheme()
@@ -634,7 +634,6 @@ namespace BetterLegacy.Arcade
 
         public static void Init(Level level)
         {
-            InterfaceManager.inst.CloseMenus();
             CurrentLevel = level;
             Current = new PlayLevelMenu();
         }

@@ -18,8 +18,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public ProgressMenu(string currentMessage) : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
-            InterfaceManager.inst.CloseMenus();
-            InterfaceManager.inst.CurrentMenu = this;
             name = "Progress";
 
             if (!CoreHelper.InGame)
@@ -29,6 +27,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     name = "Effects",
                     func = MenuEffectsManager.inst.SetDefaultEffects,
                     length = 0f,
+                    wait = false,
                 });
 
             elements.Add(new MenuText
@@ -63,24 +62,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 wait = false,
             };
             elements.Add(progressBar);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public void UpdateProgress(float progress)
         {
-            if (progressBar == null || !progressBar.gameObject)
-                return;
-
-            progressBar.gameObject.transform.AsRT().sizeDelta = new UnityEngine.Vector2(900f * progress, 64f);
+            if (progressBar && progressBar.gameObject)
+                progressBar.gameObject.transform.AsRT().sizeDelta = new UnityEngine.Vector2(900f * progress, 64f);
         }
 
         public MenuImage progressBar;
 
-        public static void Init(string currentMessage)
-        {
-            InterfaceManager.inst.CloseMenus();
-            Current = new ProgressMenu(currentMessage);
-        }
+        public static void Init(string currentMessage) => Current = new ProgressMenu(currentMessage);
 
         public override void UpdateTheme()
         {

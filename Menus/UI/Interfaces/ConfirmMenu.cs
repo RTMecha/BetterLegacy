@@ -17,8 +17,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public ConfirmMenu(string currentMessage, Action confirm, Action cancel) : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
-            InterfaceManager.inst.CloseMenus();
-            InterfaceManager.inst.CurrentMenu = this;
             name = "Confirm";
 
             layouts.Add("buttons", new MenuHorizontalLayout
@@ -78,7 +76,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 func = cancel,
             });
 
-            CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public override void UpdateTheme()

@@ -38,7 +38,6 @@ namespace BetterLegacy.Arcade
 
         public SteamLevelMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
             this.name = "Arcade";
 
             elements.Add(new MenuEvent
@@ -225,7 +224,7 @@ namespace BetterLegacy.Arcade
             allowEffects = false;
             layer = 10000;
             defaultSelection = new Vector2Int(0, 1);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public bool downloading;
@@ -304,7 +303,7 @@ namespace BetterLegacy.Arcade
             yield return new WaitForSeconds(0.1f);
             CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
 
-            while (InterfaceManager.inst.CurrentMenu != null && InterfaceManager.inst.CurrentMenu.generating)
+            while (InterfaceManager.inst.CurrentInterface != null && InterfaceManager.inst.CurrentInterface.generating)
                 yield return null;
 
             int levelIndex = -1;
@@ -362,7 +361,6 @@ namespace BetterLegacy.Arcade
 
         public static void Init(Item item)
         {
-            InterfaceManager.inst.CloseMenus();
             CurrentSteamItem = item;
             Current = new SteamLevelMenu();
         }

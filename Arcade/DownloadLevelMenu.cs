@@ -32,7 +32,6 @@ namespace BetterLegacy.Arcade
 
         public DownloadLevelMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
             this.name = "Arcade";
 
             elements.Add(new MenuEvent
@@ -41,6 +40,7 @@ namespace BetterLegacy.Arcade
                 name = "Effects",
                 func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -52,6 +52,7 @@ namespace BetterLegacy.Arcade
                 color = 17,
                 opacity = 1f,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuButton
@@ -99,7 +100,8 @@ namespace BetterLegacy.Arcade
                 rect = RectValues.Default.AnchoredPosition(250f, 100f).SizeDelta(900f, 600f),
                 opacity = 0.1f,
                 color = 6,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuImage
@@ -110,7 +112,8 @@ namespace BetterLegacy.Arcade
                 icon = ArcadeMenu.OnlineLevelIcons.TryGetValue(jn["id"], out Sprite sprite) ? sprite : SteamWorkshop.inst.defaultSteamImageSprite,
                 opacity = 1f,
                 val = 40f,
-                length = 0.1f,
+                length = 0f,
+                wait = false,
             });
 
             var name = RTString.ReplaceFormatting(jn["name"]);
@@ -306,7 +309,7 @@ namespace BetterLegacy.Arcade
             allowEffects = false;
             layer = 10000;
             defaultSelection = new Vector2Int(0, 1);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public void DownloadLevel()
@@ -382,7 +385,6 @@ namespace BetterLegacy.Arcade
 
         public static void Init(JSONObject level)
         {
-            InterfaceManager.inst.CloseMenus();
             CurrentOnlineLevel = level;
             Current = new DownloadLevelMenu();
         }

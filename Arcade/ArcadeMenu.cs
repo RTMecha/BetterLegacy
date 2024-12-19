@@ -70,7 +70,7 @@ namespace BetterLegacy.Arcade
 
         public ArcadeMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
+            InterfaceManager.inst.CurrentInterface = this;
             name = "Arcade";
 
             regenerate = false;
@@ -1224,7 +1224,7 @@ namespace BetterLegacy.Arcade
             defaultSelection = new Vector2Int(1, 0);
             exitFunc = Exit;
             if (CurrentTab != Tab.Steam || !ViewOnline)
-                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+                StartGeneration();
             InterfaceManager.inst.PlayMusic();
         }
 
@@ -1534,7 +1534,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+                StartGeneration();
         }
 
         public IEnumerator SelectLocalLevel(Level level)
@@ -1717,7 +1717,7 @@ namespace BetterLegacy.Arcade
             }, headers));
 
             loadingOnlineLevels = false;
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
             while (generating)
                 yield return null;
         }
@@ -1982,7 +1982,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+                StartGeneration();
         }
 
         #endregion
@@ -2196,7 +2196,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+                StartGeneration();
         }
 
         public void StartQueue()
@@ -2446,7 +2446,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+                StartGeneration();
         }
 
         public void SearchOnlineSteamLevels(string search)
@@ -2530,7 +2530,7 @@ namespace BetterLegacy.Arcade
                     }));
                 }
             }).IsCompleted);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
         }
 
         public void SelectOnlineSteamLevel(Item item) => SteamLevelMenu.Init(item);

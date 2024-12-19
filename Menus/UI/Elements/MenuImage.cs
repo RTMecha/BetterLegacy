@@ -622,7 +622,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 case "LayoutChildCountEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -632,7 +632,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutChildCountLesserEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -642,7 +642,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutChildCountGreaterEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -652,7 +652,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutChildCountLesser":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -662,7 +662,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutChildCountGreater":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -673,7 +673,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 case "LayoutScrollXEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -683,7 +683,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollXLesserEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -693,7 +693,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollXGreaterEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -703,7 +703,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollXLesser":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -713,7 +713,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollXGreater":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -724,7 +724,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     
                 case "LayoutScrollYEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -734,7 +734,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollYLesserEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -744,7 +744,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollYGreaterEquals":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -754,7 +754,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollYLesser":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -764,7 +764,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "LayoutScrollYGreater":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -1174,7 +1174,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // Function has no parameters.
                 case "Close":
                     {
-                        string id = InterfaceManager.inst.CurrentMenu?.id;
+                        string id = InterfaceManager.inst.CurrentInterface?.id;
                         InterfaceManager.inst.CloseMenus();
                         InterfaceManager.inst.StopMusic();
 
@@ -1378,7 +1378,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "PlaySound":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || InterfaceManager.inst.CurrentMenu == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || InterfaceManager.inst.CurrentInterface == null)
                             break;
 
                         string sound = parameters.IsArray ? parameters[0] : parameters["sound"];
@@ -1389,7 +1389,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             break;
                         }
 
-                        var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentMenu.filePath)}{sound}";
+                        var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentInterface.filePath)}{sound}";
                         if (!RTFile.FileExists(filePath))
                             return;
 
@@ -1445,7 +1445,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (isArray && parameters.Count > 2 || isObject && parameters["loop"] != null)
                             loop = isArray ? parameters[2].AsBool : parameters["loop"].AsBool;
 
-                        var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentMenu.filePath)}{music}";
+                        var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentInterface.filePath)}{music}";
                         if (!RTFile.FileExists(filePath))
                         {
                             InterfaceManager.inst.PlayMusic(AudioManager.inst.GetMusic(music), fadeDuration: fadeDuration, loop: loop);
@@ -1559,10 +1559,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetElementActive":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || InterfaceManager.inst.CurrentMenu == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || InterfaceManager.inst.CurrentInterface == null)
                             return;
 
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
+                        if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
                             menuImage.gameObject && bool.TryParse(parameters.IsArray ? parameters[1] : parameters["active"], out bool active))
                         {
                             menuImage.gameObject.SetActive(active);
@@ -1597,10 +1597,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetLayoutActive":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["name"] == null || InterfaceManager.inst.CurrentMenu == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["name"] == null || InterfaceManager.inst.CurrentInterface == null)
                             return;
 
-                        if (InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["name"], out Layouts.MenuLayoutBase layout) &&
+                        if (InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["name"], out Layouts.MenuLayoutBase layout) &&
                             layout.gameObject && bool.TryParse(parameters.IsArray ? parameters[1] : parameters["active"], out bool active))
                         {
                             layout.gameObject.SetActive(active);
@@ -1707,7 +1707,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var type = Parser.TryParse(isArray ? parameters[1] : parameters["type"], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
                         var isColor = type == 3;
 
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
                         {
                             var animation = new RTAnimation($"Interface Element Animation {element.id}"); // no way element animation reference :scream:
 
@@ -1831,7 +1831,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var elementName = parameters[0]; // Name of an object to animate
                         var type = Parser.TryParse(parameters[1], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
 
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.name == elementName, out MenuImage element))
+                        if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.name == elementName, out MenuImage element))
                         {
                             var animation = new RTAnimation("Interface Element Animation"); // no way element animation reference :scream:
 
@@ -1957,7 +1957,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var animations = this.animations;
                         string id = parameters.IsArray && parameters.Count > 1 ? parameters[1] : parameters.IsObject && parameters["id"] != null ? parameters["id"] : "";
-                        if (!string.IsNullOrEmpty(id) && InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage menuImage))
+                        if (!string.IsNullOrEmpty(id) && InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
                             animations = menuImage.animations;
 
                         string animName = parameters.IsArray && parameters.Count > 2 ? parameters[2] : parameters.IsObject && parameters["name"] != null ? parameters["name"] : "";
@@ -2034,14 +2034,14 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetText":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || InterfaceManager.inst.CurrentMenu == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || InterfaceManager.inst.CurrentInterface == null)
                             return;
 
                         var isArray = parameters.IsArray;
                         string array = isArray ? parameters[0] : parameters["id"];
                         string text = isArray ? parameters[1] : parameters["text"];
 
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == array, out MenuImage menuImage) && menuImage is MenuText menuText)
+                        if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == array, out MenuImage menuImage) && menuImage is MenuText menuText)
                         {
                             menuText.text = text;
                             menuText.textUI.maxVisibleCharacters = text.Length;
@@ -2077,12 +2077,12 @@ namespace BetterLegacy.Menus.UI.Elements
                             break;
 
                         var id = parameters.IsArray ? parameters[0] : parameters["id"];
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
                         {
                             element.Clear();
                             if (element.gameObject)
                                 CoreHelper.Destroy(element.gameObject);
-                            InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                            InterfaceManager.inst.CurrentInterface.elements.Remove(element);
                         }
 
                         break;
@@ -2128,12 +2128,12 @@ namespace BetterLegacy.Menus.UI.Elements
                         for (int i = 0; i < ids.Count; i++)
                         {
                             var id = ids[i];
-                            if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                            if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
                             {
                                 element.Clear();
                                 if (element.gameObject)
                                     CoreHelper.Destroy(element.gameObject);
-                                InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                                InterfaceManager.inst.CurrentInterface.elements.Remove(element);
                             }
                         }
 
@@ -2183,10 +2183,10 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
                             break;
 
-                        var customMenu = InterfaceManager.inst.CurrentMenu;
+                        var customMenu = InterfaceManager.inst.CurrentInterface;
                         customMenu.elements.AddRange(CustomMenu.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
 
-                        CoreHelper.StartCoroutine(customMenu.GenerateUI());
+                        customMenu.StartGeneration();
 
                         break;
                     }
@@ -2197,7 +2197,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 case "ScrollLayout":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
                             break;
 
                         var isArray = parameters.IsArray;
@@ -2836,7 +2836,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                     
                                     if (values["col"] != null)
                                     {
-                                        MenuEffectsManager.inst.UpdateBloomColor(InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(values["col"].AsInt));
+                                        MenuEffectsManager.inst.UpdateBloomColor(InterfaceManager.inst.CurrentInterface.Theme.GetFXColor(values["col"].AsInt));
                                     }
 
                                     break;
@@ -2910,7 +2910,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                     
                                     if (values["col"] != null)
                                     {
-                                        MenuEffectsManager.inst.UpdateVignetteColor(InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(values["col"].AsInt));
+                                        MenuEffectsManager.inst.UpdateVignetteColor(InterfaceManager.inst.CurrentInterface.Theme.GetFXColor(values["col"].AsInt));
                                     }
 
                                     break;
@@ -3108,7 +3108,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     {
                         InterfaceManager.inst.CloseMenus();
                         var profileMenu = new ProfileMenu();
-                        InterfaceManager.inst.CurrentMenu = profileMenu;
+                        InterfaceManager.inst.CurrentInterface = profileMenu;
 
                         break;
                     }
@@ -3483,5 +3483,7 @@ namespace BetterLegacy.Menus.UI.Elements
         }
 
         #endregion
+
+        public static implicit operator bool(MenuImage element) => element != null;
     }
 }

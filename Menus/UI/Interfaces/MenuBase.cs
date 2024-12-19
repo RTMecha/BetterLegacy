@@ -332,6 +332,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public bool generating = false;
 
         /// <summary>
+        /// Starts the interface generation sequence.
+        /// </summary>
+        public void StartGeneration() => InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+
+        /// <summary>
         /// IEnumerator Coroutine used to Generate all the menus' elements. Can be overridden if needed.
         /// </summary>
         /// <returns></returns>
@@ -392,7 +397,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 AnimationManager.inst.Play(spawnEvents);
             }
 
-            CoreHelper.Log("Creating layouts...");
+            //CoreHelper.Log("Creating layouts...");
 
             var gameObject = canvas.Canvas.transform.Find("Base Layout") ? canvas.Canvas.transform.Find("Base Layout").gameObject : Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
@@ -422,7 +427,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     SetupVerticalLayout(verticalLayout, gameObject.transform);
             }
 
-            CoreHelper.Log("Creating elements...");
+            //CoreHelper.Log("Creating elements...");
 
             int num = 0;
             int count = elements.Count;
@@ -1337,5 +1342,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public BeatmapTheme Theme { get; set; }
 
         #endregion
+
+        public static implicit operator bool(MenuBase menu) => menu != null;
     }
 }

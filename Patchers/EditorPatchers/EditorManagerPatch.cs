@@ -992,7 +992,7 @@ namespace BetterLegacy.Patchers
             if (Instance.hasLoadedLevel && RTEventManager.windowPositionResolutionChanged)
                 WindowController.ResetResolution();
 
-            if (InterfaceManager.inst && InterfaceManager.inst.CurrentMenu != null)
+            if (InterfaceManager.inst && InterfaceManager.inst.CurrentInterface)
                 InterfaceManager.inst.CloseMenus();
 
             EventManager.inst.cam.rect = new Rect(0f, 0.3708f, 0.601f, 0.601f);

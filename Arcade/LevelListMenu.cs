@@ -40,7 +40,6 @@ namespace BetterLegacy.Arcade
 
         public LevelListMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
             name = "Level List";
 
             regenerate = false;
@@ -333,7 +332,7 @@ namespace BetterLegacy.Arcade
             allowEffects = false;
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.SetCurrentInterface(this);
             InterfaceManager.inst.PlayMusic();
         }
 
@@ -645,7 +644,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (regenerateUI)
-                CoreHelper.StartCoroutine(GenerateUI());
+                StartGeneration();
         }
 
         public IEnumerator SelectLocalLevel(Level level)
@@ -827,7 +826,7 @@ namespace BetterLegacy.Arcade
             }, headers));
 
             loadingOnlineLevels = false;
-            CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
             while (generating)
                 yield return null;
         }

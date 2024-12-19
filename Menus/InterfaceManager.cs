@@ -28,32 +28,38 @@ using BetterLegacy.Story;
 
 namespace BetterLegacy.Menus
 {
+    /// <summary>
+    /// Manages all things related to PA's interfaces.
+    /// </summary>
     public class InterfaceManager : MonoBehaviour
     {
+        /// <summary>
+        /// The global instance reference.
+        /// </summary>
         public static InterfaceManager inst;
+
+        /// <summary>
+        /// Initializes <see cref="InterfaceManager"/>.
+        /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(InterfaceManager), SystemManager.inst.transform).AddComponent<InterfaceManager>();
-
-        public float[] samples = new float[256];
-
-        public const string RANDOM_MUSIC_NAME = "menu";
-        public const string MAIN_MENU_ID = "0";
-        public const string STORY_SAVES_MENU_ID = "1";
-        public const string CHAPTER_SELECT_MENU_ID = "2";
-        public const string PROFILE_MENU_ID = "3";
-
-        public MenuBase CurrentMenu { get; set; }
-        public Coroutine CurrentGenerateUICoroutine { get; set; }
-
-        public List<MenuBase> interfaces = new List<MenuBase>();
-
-        public AudioSource CurrentAudioSource { get; set; }
 
         /// <summary>
         /// The main directory to load interfaces from. Must end with a slash.
         /// </summary>
         public string MainDirectory { get; set; }
 
-        public static float InterfaceSpeed => InputDataManager.inst.menuActions.Submit.IsPressed || Input.GetMouseButton(0) ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
+        #region Constants
+
+        /// <summary>
+        /// The normal menu music group.
+        /// </summary>
+        public const string RANDOM_MUSIC_NAME = "menu";
+        public const string MAIN_MENU_ID = "0";
+        public const string STORY_SAVES_MENU_ID = "1";
+        public const string CHAPTER_SELECT_MENU_ID = "2";
+        public const string PROFILE_MENU_ID = "3";
+
+        #endregion
 
         void Awake()
         {
@@ -61,9 +67,9 @@ namespace BetterLegacy.Menus
 
             CurrentAudioSource = gameObject.AddComponent<AudioSource>();
             CurrentAudioSource.loop = true;
-            MainDirectory = RTFile.ApplicationDirectory + "beatmaps/interfaces/";
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/interfaces"))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/interfaces");
+            var path = RTFile.ApplicationDirectory + "beatmaps/interfaces/";
+            MainDirectory = path;
+            RTFile.CreateDirectory(MainDirectory);
         }
 
         void Update()
@@ -75,13 +81,32 @@ namespace BetterLegacy.Menus
 
             CurrentAudioSource.volume = DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * AudioManager.inst.masterVol;
 
-            if (CurrentMenu == null)
+            if (!CurrentInterface)
                 return;
 
-            CurrentMenu.UpdateControls();
-            CurrentMenu.UpdateTheme();
+            CurrentInterface.UpdateControls();
+            CurrentInterface.UpdateTheme();
         }
 
+        #region Music
+
+        /// <summary>
+        /// The current audio source the interfaces in-game use.
+        /// </summary>
+        public AudioSource CurrentAudioSource { get; set; }
+
+        /// <summary>
+        /// Samples of the current audio.
+        /// </summary>
+        public float[] samples = new float[256];
+
+        /// <summary>
+        /// Sets and plays the current music. If the player is in the game scene, play from a custom audio source, otherwise play from the main audio source.
+        /// </summary>
+        /// <param name="music">Music to play.</param>
+        /// <param name="allowSame">If same audio should be forced to play. With this off, it will not play the song if the current song equals the passed one.</param>
+        /// <param name="fadeDuration">The duration to fade from previous to current song.</param>
+        /// <param name="loop">If the song should loop.</param>
         public void PlayMusic(AudioClip music, bool allowSame = false, float fadeDuration = 1f, bool loop = true)
         {
             if (CoreHelper.InEditor)
@@ -106,19 +131,26 @@ namespace BetterLegacy.Menus
             CurrentAudioSource.Play();
         }
 
+        /// <summary>
+        /// Stops the current music.
+        /// </summary>
         public void StopMusic()
         {
             if (!CoreHelper.InGame)
-            {
                 AudioManager.inst.StopMusic();
+
+            if (!CurrentAudioSource.clip)
                 return;
-            }
 
             CurrentAudioSource.Stop();
             CurrentAudioSource.clip = null;
         }
 
         public int randomIndex = -1;
+
+        /// <summary>
+        /// Plays a random song.
+        /// </summary>
         public void PlayMusic()
         {
             if (CoreHelper.InEditor)
@@ -127,14 +159,14 @@ namespace BetterLegacy.Menus
             if (!MenuConfig.Instance.PlayCustomMusic.Value)
             {
                 CoreHelper.LogWarning("PlayCustomMusic setting is off, so play default music.");
-                CurrentMenu?.PlayDefaultMusic();
+                CurrentInterface?.PlayDefaultMusic();
                 return;
             }
 
-            if (CurrentMenu != null && !CurrentMenu.allowCustomMusic)
+            if (CurrentInterface != null && !CurrentInterface.allowCustomMusic)
             {
                 CoreHelper.LogWarning("CurrentMenu does not allow custom music.");
-                CurrentMenu?.PlayDefaultMusic();
+                CurrentInterface?.PlayDefaultMusic();
                 return;
             }
 
@@ -151,30 +183,22 @@ namespace BetterLegacy.Menus
             if (!RTFile.DirectoryExists(directory))
             {
                 CoreHelper.LogWarning("Directory does not exist, so play default music.");
-                CurrentMenu?.PlayDefaultMusic();
+                CurrentInterface?.PlayDefaultMusic();
                 return;
             }
 
-            string oggSearchPattern = "*.ogg";
-            string wavSearchPattern = "*.wav";
-            string mp3SearchPattern = "*.mp3";
-            if (MenuConfig.Instance.MusicLoadMode.Value == MenuMusicLoadMode.StoryFolder || MenuConfig.Instance.MusicLoadMode.Value == MenuMusicLoadMode.EditorFolder)
-            {
-                oggSearchPattern = "level.ogg";
-                wavSearchPattern = "level.wav";
-                mp3SearchPattern = "level.mp3";
-            }
+            var isLevelFolder = CoreHelper.Equals(MenuConfig.Instance.MusicLoadMode.Value, MenuMusicLoadMode.StoryFolder, MenuMusicLoadMode.EditorFolder, MenuMusicLoadMode.ArcadeFolder);
 
-            var oggFiles = Directory.GetFiles(directory, oggSearchPattern, SearchOption.AllDirectories);
-            var wavFiles = Directory.GetFiles(directory, wavSearchPattern, SearchOption.AllDirectories);
-            var mp3Files = Directory.GetFiles(directory, mp3SearchPattern, SearchOption.AllDirectories);
+            var oggFiles = Directory.GetFiles(directory, isLevelFolder ? Level.LEVEL_OGG : FileFormat.OGG.ToPattern(), SearchOption.AllDirectories);
+            var wavFiles = Directory.GetFiles(directory, isLevelFolder ? Level.LEVEL_WAV : FileFormat.WAV.ToPattern(), SearchOption.AllDirectories);
+            var mp3Files = Directory.GetFiles(directory, isLevelFolder ? Level.LEVEL_MP3 : FileFormat.MP3.ToPattern(), SearchOption.AllDirectories);
 
             var songFiles = oggFiles.Union(wavFiles).Union(mp3Files).ToArray();
 
             if (songFiles.Length < 1)
             {
                 CoreHelper.LogWarning("No song files, so play default music.");
-                CurrentMenu?.PlayDefaultMusic();
+                CurrentInterface?.PlayDefaultMusic();
                 return;
             }
 
@@ -189,7 +213,7 @@ namespace BetterLegacy.Menus
             if (string.IsNullOrEmpty(songFileCurrent))
             {
                 CoreHelper.LogWarning("Path is empty for some reason, so play default music.");
-                CurrentMenu?.PlayDefaultMusic();
+                CurrentInterface?.PlayDefaultMusic();
                 return;
             }
 
@@ -221,27 +245,62 @@ namespace BetterLegacy.Menus
         {
             CoreHelper.Log($"Attempting to play music: {name}");
             audioClip.name = name;
-            if (CurrentMenu != null)
-                CurrentMenu.music = audioClip;
+            if (CurrentInterface != null)
+                CurrentInterface.music = audioClip;
             PlayMusic(audioClip);
         }
 
+        #endregion
+
+        #region Interfaces
+
+        /// <summary>
+        /// The currently open interface.
+        /// </summary>
+        public MenuBase CurrentInterface { get; set; }
+        /// <summary>
+        /// The current interface generation sequence.
+        /// </summary>
+        public Coroutine CurrentGenerateUICoroutine { get; set; }
+
+        /// <summary>
+        /// All loaded interfaces.
+        /// </summary>
+        public List<MenuBase> interfaces = new List<MenuBase>();
+
+        /// <summary>
+        /// The current speed the interface should generate at.
+        /// </summary>
+        public static float InterfaceSpeed => InputDataManager.inst.menuActions.Submit.IsPressed || Input.GetMouseButton(0) ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
+
+        /// <summary>
+        /// Closes all interfaces and opens an interface.
+        /// </summary>
+        /// <param name="menu">Interface to open.</param>
+        public void SetCurrentInterface(MenuBase menu)
+        {
+            CloseMenus();
+            CurrentInterface = menu;
+            menu.StartGeneration();
+        }
+
+        /// <summary>
+        /// Closes all interfaces and opens an interface.
+        /// </summary>
+        /// <param name="id">Interface ID to find. If no interface is found, do nothing.</param>
         public void SetCurrentInterface(string id)
         {
             if (interfaces.TryFind(x => x.id == id, out MenuBase menu))
-            {
-                CloseMenus();
-                CurrentMenu = menu;
-                CurrentGenerateUICoroutine = StartCoroutine(menu.GenerateUI());
-            }
+                SetCurrentInterface(menu);
         }
 
-        public List<BeatmapTheme> themes = new List<BeatmapTheme>();
-
+        /// <summary>
+        /// Closes and clears all interfaces.
+        /// </summary>
         public void CloseMenus()
         {
-            CurrentMenu?.Clear();
-            CurrentMenu = null;
+            CurrentInterface?.Clear();
+            CurrentInterface = null;
             PauseMenu.Current = null;
             EndLevelMenu.Current = null;
             ArcadeMenu.Current = null;
@@ -255,12 +314,17 @@ namespace BetterLegacy.Menus
             StopGenerating();
         }
 
+        /// <summary>
+        /// Clears interface data and stops interface generation.
+        /// </summary>
+        /// <param name="clearThemes">If interface themes should be cleared.</param>
+        /// <param name="stopGenerating">If the current interface should stop generating.</param>
         public void Clear(bool clearThemes = true, bool stopGenerating = true)
         {
-            if (CurrentMenu != null)
+            if (CurrentInterface != null)
             {
-                CurrentMenu.Clear();
-                CurrentMenu = null;
+                CurrentInterface.Clear();
+                CurrentInterface = null;
             }
 
             for (int i = 0; i < interfaces.Count; i++)
@@ -283,6 +347,9 @@ namespace BetterLegacy.Menus
                 StopGenerating();
         }
 
+        /// <summary>
+        /// Stops the current interface from generating.
+        /// </summary>
         public void StopGenerating()
         {
             if (CurrentGenerateUICoroutine == null)
@@ -292,24 +359,11 @@ namespace BetterLegacy.Menus
             CurrentGenerateUICoroutine = null;
         }
 
-        public void LoadThemes()
-        {
-            themes.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/default_themes.lst"));
-            for (int i = 0; i < jn["themes"].Count; i++)
-                themes.Add(BeatmapTheme.Parse(jn["themes"][i]));
-
-            if (!RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}beatmaps/interfaces/themes"))
-                return;
-
-            var files = Directory.GetFiles($"{RTFile.ApplicationDirectory}beatmaps/interfaces/themes");
-            for (int i = 0; i < files.Length; i++)
-            {
-                jn = JSON.Parse(RTFile.ReadFromFile(files[i]));
-                themes.Add(BeatmapTheme.Parse(jn));
-            }
-        }
-
+        /// <summary>
+        /// Starts the story mode interface.
+        /// </summary>
+        /// <param name="chapterIndex">Chapter to load.</param>
+        /// <param name="levelIndex">Level to use.</param>
         public void StartupStoryInterface(int chapterIndex, int levelIndex)
         {
             Clear(false, false);
@@ -332,6 +386,10 @@ namespace BetterLegacy.Menus
             Parse(path);
         }
 
+        /// <summary>
+        /// Parses an interface from a path, adds it to the interfaces list and opens it.
+        /// </summary>
+        /// <param name="path">Path to an interface.</param>
         public void Parse(string path)
         {
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
@@ -344,10 +402,19 @@ namespace BetterLegacy.Menus
             PlayMusic();
         }
 
+        /// <summary>
+        /// Function to run when returning from a level to the story interface.
+        /// </summary>
         public Action onReturnToStoryInterface;
 
+        /// <summary>
+        /// Starts the story mode interface.
+        /// </summary>
         public void StartupStoryInterface() => StartupStoryInterface(StoryManager.inst.currentPlayingChapterIndex, StoryManager.inst.currentPlayingLevelSequenceIndex);
 
+        /// <summary>
+        /// Starts the main menu interface.
+        /// </summary>
         public void StartupInterface()
         {
             Clear(false, false);
@@ -355,7 +422,7 @@ namespace BetterLegacy.Menus
             if (Example.ExampleManager.inst)
                 Example.ExampleManager.inst.SetActive(true); // if Example was disabled
 
-            Parse($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi");
+            Parse(RTFile.GetAsset($"Interfaces/main_menu{FileFormat.LSI.Dot()}"));
 
             interfaces.Add(new StoryMenu());
 
@@ -380,7 +447,7 @@ namespace BetterLegacy.Menus
         {
             CoreHelper.Log($"Is loading scene: {SceneHelper.Loading}");
 
-            yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://raw.githubusercontent.com/RTMecha/BetterLegacy/master/updates.lss", x =>
+            yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile(ChangeLogMenu.UPDATE_NOTES_URL, x =>
             {
                 var changeLogMenu = new ChangeLogMenu();
 
@@ -430,7 +497,7 @@ namespace BetterLegacy.Menus
                     name = "Next Menu Button",
                     text = "<b><align=center>[ NEXT ]",
                     rect = RectValues.Default.AnchoredPosition(0f, -400f).SizeDelta(300f, 64f),
-                    func = () => { SetCurrentInterface("0"); },
+                    func = () => SetCurrentInterface(MAIN_MENU_ID),
                     opacity = 0.1f,
                     selectedOpacity = 1f,
                     color = 6,
@@ -440,8 +507,8 @@ namespace BetterLegacy.Menus
                     length = 1f,
                 });
 
-                CurrentMenu = changeLogMenu;
-                CurrentGenerateUICoroutine = StartCoroutine(changeLogMenu.GenerateUI());
+                CurrentInterface = changeLogMenu;
+                changeLogMenu.StartGeneration();
                 PlayMusic();
 
                 if (CoreHelper.InEditor || SceneHelper.Loading)
@@ -456,14 +523,59 @@ namespace BetterLegacy.Menus
             }));
             yield break;
         }
+
+        #endregion
+
+        #region Themes
+
+        /// <summary>
+        /// Themes that should be used in the interface.
+        /// </summary>
+        public List<BeatmapTheme> themes = new List<BeatmapTheme>();
+
+        /// <summary>
+        /// Reloads all themes.
+        /// </summary>
+        public void LoadThemes()
+        {
+            themes.Clear();
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"Interfaces/default_themes{FileFormat.LST.Dot()}")));
+            for (int i = 0; i < jn["themes"].Count; i++)
+                themes.Add(BeatmapTheme.Parse(jn["themes"][i]));
+
+            var path = $"{RTFile.ApplicationDirectory}beatmaps/interfaces/themes";
+            if (!RTFile.DirectoryExists(path))
+                return;
+
+            var files = Directory.GetFiles(path, FileFormat.LST.ToPattern());
+            for (int i = 0; i < files.Length; i++)
+            {
+                try
+                {
+                    jn = JSON.Parse(RTFile.ReadFromFile(files[i]));
+                    themes.Add(BeatmapTheme.Parse(jn));
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Failed to load theme: {Path.GetFileName(files[i])}\nException: {ex}");
+                }
+            }
+        }
+
+        #endregion
     }
 
     public class ChangeLogMenu : MenuBase
     {
+        /// <summary>
+        /// The URL for the BetterLegacy update notes.
+        /// </summary>
+        public const string UPDATE_NOTES_URL = "https://raw.githubusercontent.com/RTMecha/BetterLegacy/master/updates.lss";
+
         public ChangeLogMenu() : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
-            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID); };
+            exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID);
         }
 
         public static bool Seen { get; set; }

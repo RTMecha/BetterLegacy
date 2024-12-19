@@ -28,7 +28,6 @@ namespace BetterLegacy.Arcade
 
         public LevelCollectionMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
             this.name = CurrentCollection.name;
 
             elements.Add(new MenuEvent
@@ -269,7 +268,7 @@ namespace BetterLegacy.Arcade
             allowEffects = false;
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public override void UpdateTheme()

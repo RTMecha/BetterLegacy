@@ -33,8 +33,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 WindowController.ResetResolution();
             }
 
-            InterfaceManager.inst.CurrentMenu = this;
-
             GameManager.inst.players.SetActive(false);
             InputDataManager.inst.SetAllControllerRumble(0f);
 
@@ -322,7 +320,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 elements.AddRange(GenerateBottomBar());
             }
 
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public override void UpdateTheme()
@@ -332,12 +330,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             base.UpdateTheme();
         }
 
-        public static void Init()
-        {
-            InterfaceManager.inst.CloseMenus();
-
-            Current = new EndLevelMenu();
-        }
+        public static void Init() => Current = new EndLevelMenu();
 
         public static void Close()
         {

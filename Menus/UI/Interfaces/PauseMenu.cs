@@ -40,7 +40,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
-            InterfaceManager.inst.CurrentMenu = this;
+            InterfaceManager.inst.CurrentInterface = this;
 
             layouts.Add("buttons", new MenuVerticalLayout
             {
@@ -338,7 +338,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             exitFunc = UnPause;
 
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
         }
 
         public override void UpdateTheme()

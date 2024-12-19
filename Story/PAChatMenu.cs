@@ -25,7 +25,7 @@ namespace BetterLegacy.Story
 
         public PAChatMenu() : base()
         {
-            InterfaceManager.inst.CurrentMenu = this;
+            InterfaceManager.inst.CurrentInterface = this;
 
             id = "24";
 
@@ -139,7 +139,7 @@ namespace BetterLegacy.Story
             //allowEffects = false;
             layer = 10000;
             //defaultSelection = new Vector2Int(0, 4);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
         }
 
         public void AddChat(string character, string chat, Action onSeen = null)
@@ -177,7 +177,7 @@ namespace BetterLegacy.Story
                 onWaitEndFunc = onSeen,
             });
             StoryManager.inst.AddChat(character, chat, time);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
         }
 
         public void RemoveNextButton()
@@ -210,7 +210,7 @@ namespace BetterLegacy.Story
                 regenerate = false,
             };
             elements.Add(element);
-            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            StartGeneration();
         }
 
         public override void UpdateTheme()
