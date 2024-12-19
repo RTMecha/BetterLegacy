@@ -665,7 +665,6 @@ namespace BetterLegacy.Editor.Managers
             SetCurrentEvent(type, kf.Index);
         }
 
-        public float NewKeyframeOffset { get; set; } = /*-0.1f*/0f;
         public void NewKeyframeFromTimeline(int type)
         {
             if (!(AllEvents.Count > type))
@@ -674,7 +673,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CreateNewEventObject(EditorManager.inst.GetTimelineTime(NewKeyframeOffset), type);
+            CreateNewEventObject(RTEditor.inst.GetTimelineTime(), type);
         }
 
         public void AddSelectedEvent(int type, int index)
