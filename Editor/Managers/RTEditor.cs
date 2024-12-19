@@ -2369,6 +2369,9 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelineBar()
         {
+            if (EditorManager.inst.markerTimeline)
+                EditorManager.inst.markerTimeline.SetActive(EditorConfig.Instance.ShowMarkers.Value);
+
             for (int i = 1; i <= 5; i++)
                 timelineBar.transform.Find(i.ToString()).SetParent(transform);
 

@@ -104,6 +104,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> TimelineGridEnabled { get; set; }
         public Setting<Color> TimelineGridColor { get; set; }
         public Setting<float> TimelineGridThickness { get; set; }
+        public Setting<bool> ShowMarkers { get; set; }
         public Setting<PointerEventData.InputButton> MarkerDragButton { get; set; }
         public Setting<bool> MarkerShowContextMenu { get; set; }
         public Setting<Color> MarkerLineColor { get; set; }
@@ -1300,6 +1301,7 @@ namespace BetterLegacy.Configs
             TimelineGridEnabled = Bind(this, "Timeline", "Timeline Grid Enabled", true, "If the timeline grid renders.");
             TimelineGridColor = Bind(this, "Timeline", "Timeline Grid Color", new Color(0.2157f, 0.2157f, 0.2196f, 1f), "The color of the timeline grid.");
             TimelineGridThickness = Bind(this, "Timeline", "Timeline Grid Thickness", 2f, "The size of each line of the timeline grid.");
+            ShowMarkers = Bind(this, "Timeline", "Show Markers", true, "If markers should show in the editor timeline.");
             MarkerDragButton = BindEnum(this, "Timeline", "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
             MarkerShowContextMenu = Bind(this, "Timeline", "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
             MarkerLineColor = Bind(this, "Timeline", "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
@@ -2583,6 +2585,13 @@ namespace BetterLegacy.Configs
             PrefabExternalTypeVerticalWrap.SettingChanged += PrefabPopupsItemsChanged;
 
             UserPreference.SettingChanged += UserPreferenceChanged;
+            ShowMarkers.SettingChanged += ShowMarkersChanged;
+        }
+
+        void ShowMarkersChanged()
+        {
+            if (EditorManager.inst && EditorManager.inst.markerTimeline)
+                EditorManager.inst.markerTimeline.SetActive(ShowMarkers.Value);
         }
 
         void UserPreferenceChanged() => CoreHelper.SetConfigPreset(UserPreference.Value);
