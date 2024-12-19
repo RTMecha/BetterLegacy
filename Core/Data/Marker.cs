@@ -37,6 +37,14 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string id;
 
+        #region Methods
+
+        /// <summary>
+        /// Creates a copy of a <see cref="Marker"/>.
+        /// </summary>
+        /// <param name="orig">Original to copy.</param>
+        /// <param name="newID">True if a new ID should be generated, false if it should use the original.</param>
+        /// <returns>Returns a copied <see cref="Marker"/>.</returns>
         public static Marker DeepCopy(Marker orig, bool newID = true) => new Marker(newID ? LSText.randomString(16) : orig.id, orig.name, orig.desc, orig.color, orig.time);
 
         /// <summary>
@@ -95,5 +103,9 @@ namespace BetterLegacy.Core.Data
         }
 
         public override string ToString() => $"{id} - {name}";
+
+        #endregion
+
+        public static implicit operator bool(Marker exists) => exists != null;
     }
 }
