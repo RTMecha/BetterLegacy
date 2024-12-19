@@ -1036,6 +1036,47 @@ namespace BetterLegacy.Core
         /// <returns>Returns a sorted query based on the <see cref="QuerySort"/>.</returns>
         public static Query Sort(this Query query, QuerySort querySort) => querySort.SortQuery(query);
 
+        public static Type ToType(this ValueType valueType) => valueType switch
+        {
+            ValueType.Bool => typeof(bool),
+            ValueType.Int => typeof(int),
+            ValueType.Float => typeof(float),
+            ValueType.String => typeof(string),
+            ValueType.Vector2 => typeof(Vector2),
+            ValueType.Vector2Int => typeof(Vector2Int),
+            ValueType.Vector3 => typeof(Vector3),
+            ValueType.Vector3Int => typeof(Vector3Int),
+            ValueType.Color => typeof(Color),
+            _ => null,
+        };
+
+        public static ValueType ToValueType(this Type type)
+        {
+            if (type.IsEnum)
+                return ValueType.Enum;
+            if (type == typeof(bool))
+                return ValueType.Bool;
+            if (type == typeof(int))
+                return ValueType.Int;
+            if (type == typeof(float))
+                return ValueType.Float;
+            if (type == typeof(string))
+                return ValueType.String;
+            if (type == typeof(Vector2))
+                return ValueType.Vector2;
+            if (type == typeof(Vector2Int))
+                return ValueType.Vector2Int;
+            if (type == typeof(Vector3))
+                return ValueType.Vector3;
+            if (type == typeof(Vector3Int))
+                return ValueType.Vector3Int;
+            if (type == typeof(Color))
+                return ValueType.Color;
+            if (type == typeof(Delegate))
+                return ValueType.Function;
+            return ValueType.Unrecognized;
+        }
+
         #endregion
 
         #region Misc

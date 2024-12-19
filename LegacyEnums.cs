@@ -441,7 +441,8 @@
         Vector3Int,
         Enum,
         Color,
-        Function
+        Function,
+        Unrecognized
     }
 
     /// <summary>
