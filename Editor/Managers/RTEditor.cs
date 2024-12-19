@@ -9503,13 +9503,16 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < timelineObjects.Count; i++)
             {
                 var timelineObject = timelineObjects[i];
-                Destroy(timelineObject.GameObject);
+                if (timelineObject.GameObject)
+                    Destroy(timelineObject.GameObject);
 
-                for (int j = 0; j < timelineObject.InternalTimelineObjects.Count; j++)
-                {
-                    var kf = timelineObject.InternalTimelineObjects[j];
-                    Destroy(kf.GameObject);
-                }
+                if (timelineObject.InternalTimelineObjects != null)
+                    for (int j = 0; j < timelineObject.InternalTimelineObjects.Count; j++)
+                    {
+                        var kf = timelineObject.InternalTimelineObjects[j];
+                        if (kf.GameObject)
+                            Destroy(kf.GameObject);
+                    }
                 timelineObjects[i] = null;
             }
             timelineObjects.Clear();
@@ -9517,7 +9520,8 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < timelineKeyframes.Count; i++)
             {
                 var timelineObject = timelineKeyframes[i];
-                Destroy(timelineObject.GameObject);
+                if (timelineObject.GameObject)
+                    Destroy(timelineObject.GameObject);
                 timelineKeyframes[i] = null;
             }
             timelineKeyframes.Clear();
@@ -9533,14 +9537,18 @@ namespace BetterLegacy.Editor.Managers
                     var bg = bgs[i];
                     for (int j = 0; j < bg.gameObjects.Count; j++)
                     {
-                        Destroy(bg.gameObjects[j]);
+                        if (bg.gameObjects[j])
+                            Destroy(bg.gameObjects[j]);
                         bg.gameObjects[j] = null;
                     }
                     for (int j = 0; j < bg.renderers.Count; j++)
                         bg.renderers[j] = null;
                     for (int j = 0; j < bg.transforms.Count; j++)
                         bg.transforms[j] = null;
+
                     bg.gameObjects.Clear();
+                    bg.renderers.Clear();
+                    bg.transforms.Clear();
                 }
             }
 
