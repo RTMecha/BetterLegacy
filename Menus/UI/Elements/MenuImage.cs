@@ -3115,16 +3115,6 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region InitPAChat
-
-                case "InitPAChat":
-                    {
-                        PAChatMenu.Init();
-                        break;
-                    }
-
-                #endregion
-
                 #region BeginStoryMode
 
                 // Begins the BetterLegacy story mode.
