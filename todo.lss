@@ -64,6 +64,7 @@
 - Glow object that acts like bloom.
 - Ignore start time object spawn?
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
+- New Editor Layer types [Object Only, Prefab Object Only]
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
 - Update dev+ player to have current properties.
