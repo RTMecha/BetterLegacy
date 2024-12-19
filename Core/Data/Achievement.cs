@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -88,6 +89,8 @@ namespace BetterLegacy.Core.Data
 
             achievement.Unlock();
         }
+
+        public static Achievement DeepCopy(Achievement orig, bool newID = true) => new Achievement(newID ? LSText.randomNumString(16) : orig.ID, orig.Name, orig.Description, orig.Difficulty, orig.Icon, orig.Hidden);
 
         public static Achievement Parse(JSONNode jn, bool parseUnlock = false)
             => new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteHelper.StringToSprite(jn["icon"]), jn["hidden"].AsBool)

@@ -663,9 +663,8 @@ namespace BetterLegacy.Core.Data
                 showIntro = orig.beatmapData.levelData.showIntro
             };
             beatmapData.checkpoints = orig.beatmapData.checkpoints.Select(x => BeatmapData.Checkpoint.DeepCopy(x)).ToList();
-            beatmapData.markers = new List<BeatmapData.Marker>();
-            beatmapData.markers.AddRange(orig.beatmapData.markers.Select(x => new Marker(x.active, x.name, x.desc, x.color, x.time)));
-            gameData.achievements = orig.achievements.Select(x => new Achievement(x.ID, x.Name, x.Description, x.Difficulty, x.Icon, x.Hidden)).ToList();
+            beatmapData.markers = orig.beatmapData.markers.Select(x => Marker.DeepCopy(x)).ToList();
+            gameData.achievements = orig.achievements.Select(x => Achievement.DeepCopy(x)).ToList();
 
             gameData.beatmapData = beatmapData;
             gameData.beatmapObjects = new List<Data.BeatmapObject>((from obj in orig.beatmapObjects
@@ -2155,7 +2154,7 @@ namespace BetterLegacy.Core.Data
                             if (baseData.beatmapData.checkpoints == null)
                                 baseData.beatmapData.checkpoints = new List<BeatmapData.Checkpoint>();
                             if (baseData.beatmapData.markers == null)
-                                baseData.beatmapData.markers = new List<BeatmapData.Marker>();
+                                baseData.beatmapData.markers = new List<Marker>();
 
                             baseData.beatmapData.checkpoints.AddRange(gameDatas[i].beatmapData.checkpoints.FindAll(x => !baseData.beatmapData.checkpoints.Has(y => y.time == x.time)));
                             baseData.beatmapData.markers.AddRange(gameDatas[i].beatmapData.markers.FindAll(x => !baseData.beatmapData.markers.Has(y => y.time == x.time)));
