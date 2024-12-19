@@ -1,4 +1,5 @@
-﻿using LSFunctions;
+﻿using BetterLegacy.Editor;
+using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,11 @@ namespace BetterLegacy.Core.Data
         /// ID of the Marker to be used for editor identifying.
         /// </summary>
         public string id;
+
+        /// <summary>
+        /// Timeline Marker reference.
+        /// </summary>
+        public TimelineMarker timelineMarker;
 
         #region Methods
 

@@ -22,8 +22,6 @@ namespace BetterLegacy.Patchers
     {
         static MarkerEditor Instance { get => MarkerEditor.inst; set => MarkerEditor.inst = value; }
 
-        static List<DataManager.GameData.BeatmapData.Marker> Markers => GameData.Current.beatmapData.markers;
-
         static string className = "[<color=#FFAF38>MarkerEditor</color>] \n";
 
         [HarmonyPatch(nameof(MarkerEditor.Awake))]
@@ -66,7 +64,7 @@ namespace BetterLegacy.Patchers
         static bool RenderMarkersPrefix(int __0)
         {
             if (__0 < RTMarkerEditor.inst.timelineMarkers.Count)
-                RTMarkerEditor.inst.RenderMarker(RTMarkerEditor.inst.timelineMarkers[__0]);
+                RTMarkerEditor.inst.timelineMarkers[__0].Render();
             else
                 RTMarkerEditor.inst.CreateMarker(__0);
             return false;

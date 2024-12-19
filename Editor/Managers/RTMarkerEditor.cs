@@ -20,18 +20,22 @@ using BaseMarker = DataManager.GameData.BeatmapData.Marker;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// BetterLegacy version of <see cref="MarkerEditor"/>.
+    /// </summary>
     public class RTMarkerEditor : MonoBehaviour
     {
-        public static RTMarkerEditor inst;
+        #region Init
 
-        public List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();
-
-        public TimelineMarker CurrentMarker { get; set; }
-
-        public List<BaseMarker> Markers => GameData.Current.beatmapData.markers;
-        public Marker markerCopy;
-
+        /// <summary>
+        /// Initializes <see cref="RTMarkerEditor"/> onto <see cref="MarkerEditor"/>.
+        /// </summary>
         public static void Init() => MarkerEditor.inst.gameObject.AddComponent<RTMarkerEditor>();
+
+        /// <summary>
+        /// <see cref="RTMarkerEditor"/> global instance reference.
+        /// </summary>
+        public static RTMarkerEditor inst;
 
         void Awake()
         {
@@ -39,44 +43,12 @@ namespace BetterLegacy.Editor.Managers
             StartCoroutine(SetupUI());
         }
 
-        void Update()
-        {
-            if (Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
-                StopDragging();
-
-            for (int i = 0; i < timelineMarkers.Count; i++)
-            {
-                if (!timelineMarkers[i].dragging)
-                    continue;
-
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(RTEditor.inst.GetTimelineTime(),
-                0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
-                RenderMarker(timelineMarkers[i]);
-            }
-
-            if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
-                return;
-
-            int markerStart = markerLoopBegin.Index;
-            int markerEnd = markerLoopEnd.Index;
-
-            if (markerStart < 0)
-                markerStart = 0;
-            if (markerStart > GameData.Current.beatmapData.markers.Count - 1)
-                markerStart = GameData.Current.beatmapData.markers.Count - 1;
-
-            if (markerEnd < 0)
-                markerEnd = 0;
-            if (markerEnd > GameData.Current.beatmapData.markers.Count - 1)
-                markerEnd = GameData.Current.beatmapData.markers.Count - 1;
-
-            if (AudioManager.inst.CurrentAudioSource.time > GameData.Current.beatmapData.markers[markerEnd].time)
-                AudioManager.inst.SetMusicTime(GameData.Current.beatmapData.markers[markerStart].time);
-        }
-
-        public IEnumerator SetupUI()
+        IEnumerator SetupUI()
         {
             var dialog = EditorManager.inst.GetDialog("Marker Editor").Dialog;
+
+            var activeState = dialog.gameObject.AddComponent<ActiveState>();
+            activeState.onStateChanged = active => editorOpen = active;
 
             MarkerEditor.inst.dialog = dialog;
             MarkerEditor.inst.left = dialog.Find("data/left");
@@ -148,6 +120,9 @@ namespace BetterLegacy.Editor.Managers
 
             time.name = "time";
 
+            // fixes color slot spacing
+            MarkerEditor.inst.left.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(8f, 8f);
+
             if (!EditorPrefabHolder.Instance.Function2Button)
             {
                 CoreHelper.LogError("No Function 2 button for some reason.");
@@ -197,6 +172,104 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        #endregion
+
+        #region Variables
+
+        /// <summary>
+        /// List of timeline markers.
+        /// </summary>
+        public List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();
+
+        /// <summary>
+        /// The current selected marker.
+        /// </summary>
+        public TimelineMarker CurrentMarker { get; set; }
+
+        /// <summary>
+        /// Quick references to the markers list.
+        /// </summary>
+        public List<Marker> Markers => GameData.Current.beatmapData.markers;
+
+        /// <summary>
+        /// Copied marker.
+        /// </summary>
+        public Marker markerCopy;
+
+        /// <summary>
+        /// If a marker is dragging.
+        /// </summary>
+        public bool dragging;
+
+        /// <summary>
+        /// If the Marker editor is open.
+        /// </summary>
+        public bool editorOpen;
+
+        List<GameObject> markerColors = new List<GameObject>();
+
+        #region Looping
+
+        /// <summary>
+        /// If marker looping is enabled.
+        /// </summary>
+        public bool markerLooping;
+        /// <summary>
+        /// Marker to loop to.
+        /// </summary>
+        public TimelineMarker markerLoopBegin;
+        /// <summary>
+        /// Marker to end loop.
+        /// </summary>
+        public TimelineMarker markerLoopEnd;
+
+        #endregion
+
+        #endregion
+
+        void Update()
+        {
+            if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
+                StopDragging();
+
+            for (int i = 0; i < timelineMarkers.Count; i++)
+            {
+                if (!timelineMarkers[i].dragging)
+                    continue;
+
+                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(RTEditor.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+                timelineMarkers[i].RenderPosition();
+            }
+
+            if (dragging && CurrentMarker && editorOpen)
+                RenderTime(CurrentMarker.Marker);
+
+            if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
+                return;
+
+            int markerStart = markerLoopBegin.Index;
+            int markerEnd = markerLoopEnd.Index;
+
+            if (markerStart < 0)
+                markerStart = 0;
+            if (markerStart > GameData.Current.beatmapData.markers.Count - 1)
+                markerStart = GameData.Current.beatmapData.markers.Count - 1;
+
+            if (markerEnd < 0)
+                markerEnd = 0;
+            if (markerEnd > GameData.Current.beatmapData.markers.Count - 1)
+                markerEnd = GameData.Current.beatmapData.markers.Count - 1;
+
+            if (AudioManager.inst.CurrentAudioSource.time > GameData.Current.beatmapData.markers[markerEnd].time)
+                AudioManager.inst.SetMusicTime(GameData.Current.beatmapData.markers[markerStart].time);
+        }
+
+        #region Editor Rendering
+
+        /// <summary>
+        /// Opens the Marker editor.
+        /// </summary>
+        /// <param name="timelineMarker">The marker to edit.</param>
         public void OpenDialog(TimelineMarker timelineMarker)
         {
             EditorManager.inst.ClearDialogs();
@@ -205,29 +278,98 @@ namespace BetterLegacy.Editor.Managers
             UpdateMarkerList();
             RenderMarkers();
 
-            MarkerEditor.inst.left.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(8f, 8f);
-            MarkerEditor.inst.left.Find("index/text").GetComponent<Text>().text = $"Index: {timelineMarker.Index} ID: {timelineMarker.Marker.id}";
-
             var marker = timelineMarker.Marker;
 
-            var matchCollection = Regex.Matches(marker.desc, @"setLayer\((.*?)\)");
+            RenderLabel(timelineMarker);
+            RenderColors(marker);
+            RenderNameEditor(marker);
+            RenderDescriptionEditor(marker);
+            RenderTime(marker);
 
-            if (matchCollection.Count > 0)
-                foreach (var obj in matchCollection)
+            var convertToNote = MarkerEditor.inst.left.Find("convert to note").GetComponent<Button>();
+            convertToNote.onClick.ClearAll();
+            convertToNote.onClick.AddListener(() =>
+            {
+                var note = new ProjectPlannerManager.NoteItem
                 {
-                    var match = (Match)obj;
+                    Active = true,
+                    Name = marker.name,
+                    Color = marker.color,
+                    Position = new Vector2(Screen.width / 2, Screen.height / 2),
+                    Text = marker.desc,
+                };
+                ProjectPlannerManager.inst.planners.Add(note);
+                ProjectPlannerManager.inst.GenerateNote(note);
 
-                    var matchGroup = match.Groups[1].ToString();
-                    if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
-                        RTEditor.inst.SetLayer(RTEditor.LayerType.Events);
-                    else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
-                        RTEditor.inst.SetLayer(RTEditor.LayerType.Objects);
-                    else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
-                        RTEditor.inst.SetLayer(RTEditor.inst.layerType == RTEditor.LayerType.Objects ? RTEditor.LayerType.Events : RTEditor.LayerType.Objects);
-                    else if (int.TryParse(matchGroup, out int layer))
-                        RTEditor.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
-                }
+                ProjectPlannerManager.inst.SaveNotes();
+            });
 
+            CheckDescription(marker);
+        }
+
+        /// <summary>
+        /// Updates the label of the marker.
+        /// </summary>
+        /// <param name="timelineMarker">Marker to use.</param>
+        public void RenderLabel(TimelineMarker timelineMarker) => MarkerEditor.inst.left.Find("index/text").GetComponent<Text>().text = $"Index: {timelineMarker.Index} ID: {timelineMarker.Marker.id}";
+
+        /// <summary>
+        /// Updates the name input field.
+        /// </summary>
+        /// <param name="marker">Marker to edit.</param>
+        public void RenderNameEditor(Marker marker)
+        {
+            var name = MarkerEditor.inst.left.Find("name").GetComponent<InputField>();
+            name.onValueChanged.ClearAll();
+            name.text = marker.name.ToString();
+            name.onValueChanged.AddListener(SetName);
+        }
+
+        /// <summary>
+        /// Updates the description input field.
+        /// </summary>
+        /// <param name="marker">Marker to edit.</param>
+        public void RenderDescriptionEditor(Marker marker)
+        {
+            var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
+            desc.onValueChanged.ClearAll();
+            desc.text = marker.desc.ToString();
+            desc.onValueChanged.AddListener(SetDescription);
+        }
+
+        /// <summary>
+        /// Updates the time editor functions.
+        /// </summary>
+        /// <param name="marker">Marker to edit.</param>
+        public void RenderTime(Marker marker)
+        {
+            var time = MarkerEditor.inst.left.Find("time/input").GetComponent<InputField>();
+            time.onValueChanged.ClearAll();
+            time.text = marker.time.ToString();
+            time.onValueChanged.AddListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                    SetTime(num);
+            });
+
+            TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
+            TriggerHelper.IncreaseDecreaseButtons(time, t: MarkerEditor.inst.left.Find("time"));
+
+            var set = MarkerEditor.inst.left.Find("time/|").GetComponent<Button>();
+            set.onClick.ClearAll();
+            set.onClick.AddListener(() => time.text = AudioManager.inst.CurrentAudioSource.time.ToString());
+
+            var snapBPM = MarkerEditor.inst.left.Find("snap bpm").GetComponent<Button>();
+            snapBPM.onClick.ClearAll();
+            snapBPM.onClick.AddListener(() => time.text = RTEditor.SnapToBPM(marker.time).ToString());
+        }
+
+        /// <summary>
+        /// Updates the color slots.
+        /// </summary>
+        /// <param name="marker">Marker to edit.</param>
+        public void RenderColors(Marker marker)
+        {
             var colorsParent = MarkerEditor.inst.left.Find("color");
             LSHelpers.DeleteChildren(MarkerEditor.inst.left.Find("color"));
             markerColors.Clear();
@@ -237,8 +379,11 @@ namespace BetterLegacy.Editor.Managers
                 int colorIndex = num;
                 var gameObject = EditorManager.inst.colorGUI.Duplicate(colorsParent, "marker color");
                 gameObject.transform.localScale = Vector3.one;
-                gameObject.transform.Find("Image").gameObject.SetActive(marker.color == colorIndex);
-                markerColors.Add(gameObject.transform.Find("Image").gameObject);
+
+                var markerColorSelection = gameObject.transform.Find("Image").gameObject;
+                markerColorSelection.SetActive(marker.color == colorIndex);
+                markerColors.Add(markerColorSelection);
+
                 var button = gameObject.GetComponent<Button>();
                 button.image.color = color;
                 button.onClick.ClearAll();
@@ -272,90 +417,11 @@ namespace BetterLegacy.Editor.Managers
 
                 num++;
             }
-
-            var name = MarkerEditor.inst.left.Find("name").GetComponent<InputField>();
-            name.onValueChanged.ClearAll();
-            name.text = marker.name.ToString();
-            name.onValueChanged.AddListener(val => { SetName(val); });
-
-            var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
-            desc.onValueChanged.ClearAll();
-            desc.text = marker.desc.ToString();
-            desc.onValueChanged.AddListener(val => { SetDescription(val); });
-
-            var time = MarkerEditor.inst.left.Find("time/input").GetComponent<InputField>();
-            time.onValueChanged.ClearAll();
-            time.text = marker.time.ToString();
-            time.onValueChanged.AddListener(_val =>
-            {
-                if (float.TryParse(_val, out float num))
-                    SetTime(num);
-            });
-
-            TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
-            TriggerHelper.IncreaseDecreaseButtons(time, t: MarkerEditor.inst.left.Find("time"));
-
-            var set = MarkerEditor.inst.left.Find("time/|").GetComponent<Button>();
-            set.onClick.ClearAll();
-            set.onClick.AddListener(() => { time.text = AudioManager.inst.CurrentAudioSource.time.ToString(); });
-
-            var snapBPM = MarkerEditor.inst.left.Find("snap bpm").GetComponent<Button>();
-            snapBPM.onClick.ClearAll();
-            snapBPM.onClick.AddListener(() => { time.text = RTEditor.SnapToBPM(marker.time).ToString(); });
-
-            var convertToNote = MarkerEditor.inst.left.Find("convert to note").GetComponent<Button>();
-            convertToNote.onClick.ClearAll();
-            convertToNote.onClick.AddListener(() =>
-            {
-                var note = new ProjectPlannerManager.NoteItem
-                {
-                    Active = true,
-                    Name = marker.name,
-                    Color = marker.color,
-                    Position = new Vector2(Screen.width / 2, Screen.height / 2),
-                    Text = marker.desc,
-                };
-                ProjectPlannerManager.inst.planners.Add(note);
-                ProjectPlannerManager.inst.GenerateNote(note);
-
-                ProjectPlannerManager.inst.SaveNotes();
-            });
         }
 
-        public void CreateNewMarker(float time)
-        {
-            Marker marker;
-            if (!Markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out BaseMarker baseMarker))
-            {
-                Markers.Add(new Marker
-                {
-                    time = time,
-                    name = "",
-                    color = Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1),
-                });
-
-                marker = (Marker)Markers[Markers.Count - 1];
-            }
-            else
-                marker = (Marker)baseMarker;
-
-            OrderMarkers();
-
-            if (timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
-                SetCurrentMarker(timelineMarker);
-        }
-
-        public void DeleteMarker(int index)
-        {
-            Markers.RemoveAt(index);
-            if (index - 1 >= 0)
-                SetCurrentMarker(timelineMarkers[index - 1]);
-            else
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
-            CreateMarkers();
-        }
-
-        List<GameObject> markerColors = new List<GameObject>();
+        /// <summary>
+        /// Updates the color toggle list.
+        /// </summary>
         public void UpdateColorSelection()
         {
             var marker = CurrentMarker.Marker;
@@ -363,29 +429,34 @@ namespace BetterLegacy.Editor.Managers
                 markerColors[i].SetActive(marker.color == i);
         }
 
-        public void SetCurrentMarker(TimelineMarker timelineMarker, bool bringTo = false, bool moveTimeline = false, bool showDialog = true)
+        /// <summary>
+        /// Checks the description of a marker, running specific functions.
+        /// </summary>
+        /// <param name="marker">Marker to check.</param>
+        public void CheckDescription(Marker marker)
         {
-            DataManager.inst.UpdateSettingInt("EditorMarker", timelineMarker.Index);
-            MarkerEditor.inst.currentMarker = timelineMarker.Index;
-            CoreHelper.Log($"Set marker to {timelineMarker.Index}");
+            var matchCollection = Regex.Matches(marker.desc, @"setLayer\((.*?)\)");
 
-            CurrentMarker = timelineMarker;
+            if (matchCollection.Count > 0)
+                foreach (var obj in matchCollection)
+                {
+                    var match = (Match)obj;
 
-            if (showDialog)
-                OpenDialog(CurrentMarker);
-
-            if (!bringTo)
-                return;
-
-            float time = CurrentMarker.Marker.time;
-            AudioManager.inst.SetMusicTime(Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-            AudioManager.inst.CurrentAudioSource.Pause();
-            EditorManager.inst.UpdatePlayButton();
-
-            if (moveTimeline)
-                RTEditor.inst.SetTimeline(EditorManager.inst.zoomFloat, AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+                    var matchGroup = match.Groups[1].ToString();
+                    if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
+                        RTEditor.inst.SetLayer(RTEditor.LayerType.Events);
+                    else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
+                        RTEditor.inst.SetLayer(RTEditor.LayerType.Objects);
+                    else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
+                        RTEditor.inst.SetLayer(RTEditor.inst.layerType == RTEditor.LayerType.Objects ? RTEditor.LayerType.Events : RTEditor.LayerType.Objects);
+                    else if (int.TryParse(matchGroup, out int layer))
+                        RTEditor.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
+                }
         }
 
+        /// <summary>
+        /// Updates the marker editor list.
+        /// </summary>
         public void UpdateMarkerList()
         {
             var parent = MarkerEditor.inst.right.Find("markers/list");
@@ -431,191 +502,187 @@ namespace BetterLegacy.Editor.Managers
             }
 
             int num = 0;
-            foreach (var marker in GameData.Current.beatmapData.markers)
+            foreach (var marker in Markers)
             {
                 if (!RTString.SearchString(MarkerEditor.inst.sortedName, marker.name) && !RTString.SearchString(MarkerEditor.inst.sortedName, marker.desc))
                 {
                     num++;
+                    if (marker.timelineMarker && marker.timelineMarker.listButton)
+                        marker.timelineMarker.listButton.Clear();
                     continue;
                 }
 
                 var index = num;
+
+                var markerButton = marker.timelineMarker.listButton;
+
                 var gameObject = MarkerEditor.inst.markerButtonPrefab.Duplicate(parent, marker.name);
+                markerButton.GameObject = gameObject;
+                markerButton.Name = gameObject.transform.Find("name").GetComponent<Text>();
+                markerButton.Time = gameObject.transform.Find("pos").GetComponent<Text>();
+                markerButton.Color = gameObject.transform.Find("color").GetComponent<Image>();
 
-                var name = gameObject.transform.Find("name").GetComponent<Text>();
-                var pos = gameObject.transform.Find("pos").GetComponent<Text>();
-                var image = gameObject.transform.Find("color").GetComponent<Image>();
+                markerButton.RenderName();
+                markerButton.RenderTime();
+                markerButton.RenderColor();
 
-                name.text = marker.name;
-                pos.text = string.Format("{0:0}:{1:00}.{2:000}", Mathf.Floor(marker.time / 60f), Mathf.Floor(marker.time % 60f), Mathf.Floor(marker.time * 1000f % 1000f));
-
-                var markerColor = MarkerEditor.inst.markerColors[Mathf.Clamp(marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
-                image.color = markerColor;
-                var button = gameObject.GetComponent<Button>();
-                button.onClick.AddListener(() => { SetCurrentMarker(timelineMarkers[index], true); });
+                markerButton.Button = gameObject.GetComponent<Button>();
+                markerButton.Button.onClick.AddListener(() => SetCurrentMarker(timelineMarkers[index], true));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
                 {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    RTEditor.inst.ShowContextMenu(300f,
-                        new RTEditor.ButtonFunction("Open", () => SetCurrentMarker(timelineMarkers[index])),
-                        new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarkers[index], true)),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Copy", () =>
-                        {
-                            markerCopy = Marker.DeepCopy((Marker)marker);
-                            EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
-                        }),
-                        new RTEditor.ButtonFunction("Paste", () =>
-                        {
-                            if (markerCopy == null)
-                            {
-                                EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            var marker = Marker.DeepCopy(markerCopy);
-                            marker.time = SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
-                            GameData.Current.beatmapData.markers.Add(marker);
-                            CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
-                            OrderMarkers();
-                            EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
-                        }),
-                        new RTEditor.ButtonFunction("Delete", () => DeleteMarker(index)),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Start Marker Looping", () => { markerLooping = true; }),
-                        new RTEditor.ButtonFunction("Stop Marker Looping", () => { markerLooping = false; }),
-                        new RTEditor.ButtonFunction("Set Begin Loop", () => { markerLoopBegin = timelineMarkers[index]; }),
-                        new RTEditor.ButtonFunction("Set End Loop", () => { markerLoopEnd = timelineMarkers[index]; })
-                        );
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                        ShowMarkerContextMenu(timelineMarkers[index]);
                 };
 
-                TooltipHelper.AddHoverTooltip(gameObject, "<#" + LSColors.ColorToHex(markerColor) + ">" + marker.name + " [ " + marker.time + " ]</color>", marker.desc, new List<string>());
+                TooltipHelper.AddHoverTooltip(gameObject, $"<#{LSColors.ColorToHex(marker.timelineMarker.Color)}>{marker.name} [ {marker.time} ]</color>", marker.desc, new List<string>());
 
-                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
-                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
-                EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
-                EditorThemeManager.ApplyGraphic(pos, ThemeGroup.List_Button_2_Text);
-
+                EditorThemeManager.ApplyGraphic(markerButton.Button.image, ThemeGroup.List_Button_2_Normal, true);
+                EditorThemeManager.ApplyGraphic(markerButton.Color, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(markerButton.Name, ThemeGroup.List_Button_2_Text);
+                EditorThemeManager.ApplyGraphic(markerButton.Time, ThemeGroup.List_Button_2_Text);
                 num++;
             }
         }
 
-        public bool markerLooping;
-        public TimelineMarker markerLoopBegin;
-        public TimelineMarker markerLoopEnd;
+        #endregion
 
+        #region Rendering
+
+        /// <summary>
+        /// Creates a new marker or finds a marker at a specific time and selects it.
+        /// </summary>
+        /// <param name="time">If a marker is found nearby this time, select that marker. Otherwise, create a new marker with this time.</param>
+        public void CreateNewMarker(float time)
+        {
+            Marker marker;
+            if (!Markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out Marker baseMarker))
+            {
+                marker = new Marker("", "", Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1), time);
+                Markers.Add(marker);
+            }
+            else
+                marker = baseMarker;
+
+            OrderMarkers();
+
+            if (timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                SetCurrentMarker(timelineMarker);
+        }
+
+        /// <summary>
+        /// Deletes the marker at an index.
+        /// </summary>
+        /// <param name="index">Index of the marker to delete.</param>
+        public void DeleteMarker(int index)
+        {
+            Markers.RemoveAt(index);
+            if (index - 1 >= 0)
+                SetCurrentMarker(timelineMarkers[index - 1]);
+            else
+                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+            CreateMarkers();
+        }
+
+        /// <summary>
+        /// Sets the current marker and opens the Marker editor.
+        /// </summary>
+        /// <param name="index">Index of the timeline marker to set.</param>
+        /// <param name="bringTo">If the timeline time should be brought to the timeline marker.</param>
+        /// <param name="moveTimeline">If the timeline should be shifted to the marker.</param>
+        /// <param name="showDialog">If the Marker editor should open.</param>
+        public void SetCurrentMarker(int index, bool bringTo = false, bool moveTimeline = false, bool showDialog = true) => SetCurrentMarker(timelineMarkers[index], bringTo, moveTimeline, showDialog);
+
+        /// <summary>
+        /// Sets the current marker and opens the Marker editor.
+        /// </summary>
+        /// <param name="timelineMarker">Timeline marker to set.</param>
+        /// <param name="bringTo">If the timeline time should be brought to the timeline marker.</param>
+        /// <param name="moveTimeline">If the timeline should be shifted to the marker.</param>
+        /// <param name="showDialog">If the Marker editor should open.</param>
+        public void SetCurrentMarker(TimelineMarker timelineMarker, bool bringTo = false, bool moveTimeline = false, bool showDialog = true)
+        {
+            MarkerEditor.inst.currentMarker = timelineMarker.Index;
+            CoreHelper.Log($"Set marker to {timelineMarker.Index}");
+
+            CurrentMarker = timelineMarker;
+
+            if (showDialog)
+                OpenDialog(CurrentMarker);
+
+            if (!bringTo)
+                return;
+
+            float time = CurrentMarker.Marker.time;
+            AudioManager.inst.SetMusicTime(Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+            AudioManager.inst.CurrentAudioSource.Pause();
+            EditorManager.inst.UpdatePlayButton();
+
+            if (moveTimeline)
+                RTEditor.inst.SetTimeline(EditorManager.inst.zoomFloat, AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+        }
+
+        /// <summary>
+        /// Shows the marker context menu for a timeline marker.
+        /// </summary>
+        /// <param name="timelineMarker">Timeline marker to use.</param>
+        public void ShowMarkerContextMenu(TimelineMarker timelineMarker)
+        {
+            RTEditor.inst.ShowContextMenu(300f,
+                new RTEditor.ButtonFunction("Open", () => SetCurrentMarker(timelineMarker)),
+                new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
+                new RTEditor.ButtonFunction(true),
+                new RTEditor.ButtonFunction("Copy", () =>
+                {
+                    markerCopy = Marker.DeepCopy(timelineMarker.Marker);
+                    EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
+                }),
+                new RTEditor.ButtonFunction("Paste", () =>
+                {
+                    if (markerCopy == null)
+                    {
+                        EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
+                        return;
+                    }
+
+                    var marker = Marker.DeepCopy(markerCopy);
+                    marker.time = SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                    GameData.Current.beatmapData.markers.Add(marker);
+                    CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
+                    OrderMarkers();
+                    EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
+                }),
+                new RTEditor.ButtonFunction("Delete", () => DeleteMarker(timelineMarker.Index)),
+                new RTEditor.ButtonFunction(true),
+                new RTEditor.ButtonFunction("Start Marker Looping", () => markerLooping = true),
+                new RTEditor.ButtonFunction("Stop Marker Looping", () => markerLooping = false),
+                new RTEditor.ButtonFunction("Set Begin Loop", () => markerLoopBegin = timelineMarker),
+                new RTEditor.ButtonFunction("Set End Loop", () => markerLoopEnd = timelineMarker)
+                );
+        }
+
+        /// <summary>
+        /// Creates a timeline marker for the marker at a specific index.
+        /// </summary>
+        /// <param name="index">Index of the marker.</param>
         public void CreateMarker(int index)
         {
-            var marker = GameData.Current.beatmapData.markers[index];
-            var gameObject = MarkerEditor.inst.markerPrefab.Duplicate(EditorManager.inst.markerTimeline.transform, $"Marker {index + 1}");
-            gameObject.SetActive(true);
-            gameObject.transform.localScale = Vector3.one;
-
-            var timelineMarker = new TimelineMarker
-            {
-                Index = index,
-                Marker = (Marker)marker,
-                GameObject = gameObject,
-                RectTransform = gameObject.transform.AsRT(),
-                Handle = gameObject.GetComponent<Image>(),
-                Line = gameObject.transform.Find("line").GetComponent<Image>(),
-                Text = gameObject.GetComponentInChildren<Text>(),
-            };
-
-            EditorThemeManager.ApplyLightText(timelineMarker.Text);
-
-            TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
-            {
-                var pointerEventData = (PointerEventData)eventData;
-
-                switch (pointerEventData.button)
-                {
-                    case PointerEventData.InputButton.Left:
-                        {
-                            SetCurrentMarker(timelineMarker);
-                            AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
-                            break;
-                        }
-                    case PointerEventData.InputButton.Right:
-                        {
-                            if (EditorConfig.Instance.MarkerShowContextMenu.Value)
-                            {
-                                RTEditor.inst.ShowContextMenu(300f,
-                                    new RTEditor.ButtonFunction("Open", () => { SetCurrentMarker(timelineMarker, true); }),
-                                    new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
-                                    new RTEditor.ButtonFunction(true),
-                                    new RTEditor.ButtonFunction("Copy", () =>
-                                    {
-                                        markerCopy = Marker.DeepCopy(timelineMarker.Marker);
-                                        EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
-                                    }),
-                                    new RTEditor.ButtonFunction("Paste", () =>
-                                    {
-                                        if (markerCopy == null)
-                                        {
-                                            EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        var marker = Marker.DeepCopy(markerCopy);
-                                        marker.time = SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
-                                        GameData.Current.beatmapData.markers.Add(marker);
-                                        CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
-                                        OrderMarkers();
-                                        EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
-                                    }),
-                                    new RTEditor.ButtonFunction("Delete", () =>
-                                    {
-                                        DeleteMarker(timelineMarker.Index);
-                                    }),
-                                    new RTEditor.ButtonFunction(true),
-                                    new RTEditor.ButtonFunction("Start Marker Looping", () => { markerLooping = true; }),
-                                    new RTEditor.ButtonFunction("Stop Marker Looping", () => { markerLooping = false; }),
-                                    new RTEditor.ButtonFunction("Set Begin Loop", () => { markerLoopBegin = timelineMarker; }),
-                                    new RTEditor.ButtonFunction("Set End Loop", () => { markerLoopEnd = timelineMarker; })
-                                    );
-
-                                break;
-                            }
-                            DeleteMarker(timelineMarker.Index);
-                            break;
-                        }
-                    case PointerEventData.InputButton.Middle:
-                        {
-                            if (EditorConfig.Instance.MarkerDragButton.Value == PointerEventData.InputButton.Middle)
-                                return;
-
-                            AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-                            break;
-                        }
-                }
-
-            }),
-            TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
-            {
-                var pointerEventData = (PointerEventData)eventData;
-
-                if (pointerEventData.button == EditorConfig.Instance.MarkerDragButton.Value)
-                {
-                    CoreHelper.Log($"Started dragging marker {index}");
-                    timelineMarker.dragging = true;
-                }
-            }));
-
+            var timelineMarker = new TimelineMarker(Markers[index]);
+            timelineMarker.Init(index);
             timelineMarkers.Add(timelineMarker);
         }
 
+        /// <summary>
+        /// Creates all markers.
+        /// </summary>
         public void CreateMarkers()
         {
             if (timelineMarkers.Count > 0)
             {
                 for (int i = 0; i < timelineMarkers.Count; i++)
-                    Destroy(timelineMarkers[i].GameObject);
-
+                    if (timelineMarkers[i].GameObject)
+                        CoreHelper.Destroy(timelineMarkers[i].GameObject);
                 timelineMarkers.Clear();
             }
 
@@ -630,93 +697,107 @@ namespace BetterLegacy.Editor.Managers
             RenderMarkers();
         }
 
-        public void RenderMarker(TimelineMarker timelineMarker)
-        {
-            float time = timelineMarker.Marker.time;
-            var markerColor = MarkerEditor.inst.markerColors[Mathf.Clamp(timelineMarker.Marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
-
-            var hoverTooltip = timelineMarker.GameObject.GetComponent<HoverTooltip>();
-            if (hoverTooltip)
-            {
-                hoverTooltip.tooltipLangauges.Clear();
-                hoverTooltip.tooltipLangauges.Add(TooltipHelper.NewTooltip("<#" + LSColors.ColorToHex(markerColor) + ">" + timelineMarker.Marker.name + " [ " + timelineMarker.Marker.time + " ]</color>", timelineMarker.Marker.desc, new List<string>()));
-            }
-
-            timelineMarker.RectTransform.sizeDelta = new Vector2(12f, 12f);
-            timelineMarker.RectTransform.anchoredPosition = new Vector2(time * EditorManager.inst.Zoom - 6f, -12f);
-            timelineMarker.Handle.color = markerColor;
-
-            var name = timelineMarker.Marker.name;
-            timelineMarker.Text.gameObject.SetActive(!string.IsNullOrEmpty(name));
-            if (!string.IsNullOrEmpty(name))
-                timelineMarker.Text.text = name;
-            timelineMarker.Text.transform.AsRT().sizeDelta = new Vector2(EditorConfig.Instance.MarkerTextWidth.Value, 20f);
-            timelineMarker.GameObject.SetActive(true);
-
-            timelineMarker.Line.color = EditorConfig.Instance.MarkerLineColor.Value;
-            timelineMarker.Line.rectTransform.sizeDelta = new Vector2(EditorConfig.Instance.MarkerLineWidth.Value, 301f);
-        }
-
+        /// <summary>
+        /// Renders all markers.
+        /// </summary>
         public void RenderMarkers()
         {
-            if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.markers != null)
-            {
-                for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
-                {
-                    var marker = (Marker)GameData.Current.beatmapData.markers[i];
-                    if (timelineMarkers.TryFind(x => x.Marker != null && x.Marker.id == marker.id, out TimelineMarker timelineMarker))
-                    {
-                        timelineMarker.Index = i;
-                        RenderMarker(timelineMarker);
-                    }
-                    else
-                        CreateMarker(i);
-                }
+            if (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.markers == null)
+                return;
 
-                timelineMarkers = timelineMarkers.OrderBy(x => x.Index).ToList();
+            for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
+            {
+                var marker = GameData.Current.beatmapData.markers[i];
+
+                if (!marker.timelineMarker)
+                    CreateMarker(i);
+
+                marker.timelineMarker.Index = i;
+                marker.timelineMarker.Render();
+            }
+
+            timelineMarkers = timelineMarkers.OrderBy(x => x.Index).ToList();
+        }
+
+        /// <summary>
+        /// Stops dragging all markers.
+        /// </summary>
+        public void StopDragging()
+        {
+            for (int i = 0; i < timelineMarkers.Count; i++)
+                timelineMarkers[i].dragging = false;
+            dragging = false;
+
+            OrderMarkers();
+
+            if (editorOpen && CurrentMarker)
+            {
+                RenderLabel(CurrentMarker);
+                UpdateMarkerList();
             }
         }
 
+        /// <summary>
+        /// Orders the markers by time.
+        /// </summary>
+        public void OrderMarkers()
+        {
+            GameData.Current.beatmapData.markers = GameData.Current.beatmapData.markers.OrderBy(x => x.time).ToList();
+
+            RenderMarkers();
+        }
+
+        #endregion
+
+        #region Update Values
+
+        /// <summary>
+        /// Sets the current selected markers' name and updates it.
+        /// </summary>
+        /// <param name="name">Name to set to the marker.</param>
         public void SetName(string name)
         {
             CurrentMarker.Marker.name = name;
             UpdateMarkerList();
-            RenderMarker(CurrentMarker);
+            CurrentMarker.RenderName();
+            CurrentMarker.RenderTooltip();
         }
 
+        /// <summary>
+        /// Sets the current selected markers' description and updates it.
+        /// </summary>
+        /// <param name="desc">Description to set to the marker.</param>
         public void SetDescription(string desc)
         {
             CurrentMarker.Marker.desc = desc;
+            CurrentMarker.RenderTooltip();
         }
 
+        /// <summary>
+        /// Sets the current selected markers' time and updates it.
+        /// </summary>
+        /// <param name="time">Time to set to the marker.</param>
         public void SetTime(float time)
         {
             CurrentMarker.Marker.time = time;
-            UpdateMarkerList();
-            RenderMarker(CurrentMarker);
+            if (CurrentMarker.listButton && CurrentMarker.listButton.Time)
+                CurrentMarker.listButton.RenderTime();
+            OrderMarkers();
         }
 
+        /// <summary>
+        /// Sets the current selected markers' color slot and updates it.
+        /// </summary>
+        /// <param name="color">Color slot to set to the marker.</param>
         public void SetColor(int color)
         {
             CurrentMarker.Marker.color = color;
             UpdateMarkerList();
-            RenderMarker(CurrentMarker);
+
+            CurrentMarker.RenderTooltip();
+            CurrentMarker.RenderColor();
         }
 
-        public void StopDragging()
-        {
-            //CoreHelper.Log($"Stopped dragging.");
-            for (int i = 0; i < timelineMarkers.Count; i++)
-                timelineMarkers[i].dragging = false;
-        }
-
-        public void OrderMarkers()
-        {
-            GameData.Current.beatmapData.markers = (from x in GameData.Current.beatmapData.markers
-                                                             orderby x.time
-                                                             select x).ToList();
-
-            RenderMarkers();
-        }
+        #endregion
     }
 }
