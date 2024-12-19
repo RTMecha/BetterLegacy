@@ -368,11 +368,30 @@ namespace BetterLegacy.Core.Helpers
         #region Color
 
         /// <summary>
-        /// Converts all color channels (including alpha) to a hex number.
+        /// Hex ToString format.
+        /// </summary>
+        public const string X2 = "X2";
+
+        /// <summary>
+        /// Converts all color channels (including alpha) to a hex value.
         /// </summary>
         /// <param name="color">Color to convert.</param>
         /// <returns>Returns a hex code from the color provided.</returns>
-        public static string ColorToHex(Color32 color) => color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2") + color.a.ToString("X2");
+        public static string ColorToHex(Color32 color) => color.r.ToString(X2) + color.g.ToString(X2) + color.b.ToString(X2) + color.a.ToString(X2);
+
+        /// <summary>
+        /// Converts R, G and B color channels to a hex value. If the alpha channel is not full, then add that to the hex value.
+        /// </summary>
+        /// <param name="color">Color to convert.</param>
+        /// <returns>Returns a hex code from the color provided.</returns>
+        public static string ColorToHexOptional(Color32 color)
+        {
+            var result = color.r.ToString(X2) + color.g.ToString(X2) + color.b.ToString(X2);
+            var a = color.a.ToString(X2);
+            if (a != "FF")
+                result += a;
+            return result;
+        }
 
         /// <summary>
         /// Changes the hue, saturation and value of a color.

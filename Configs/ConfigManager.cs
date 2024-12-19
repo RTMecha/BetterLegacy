@@ -743,7 +743,7 @@ namespace BetterLegacy.Configs
                         var colorSetting = (Setting<Color>)setting;
 
                         var colorObject = Creator.NewUIObject("Color", gameObject.transform);
-                        UIManager.SetRectTransform(colorObject.transform.AsRT(), new Vector2(80f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                        RectValues.Default.AnchoredPosition(80f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(colorObject.transform.AsRT());
                         var colorImage = colorObject.AddComponent<Image>();
                         colorImage.color = colorSetting.Value;
 
@@ -756,7 +756,7 @@ namespace BetterLegacy.Configs
                         stringInputField.onValueChanged.ClearAll();
                         stringInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                         ((Text)stringInputField.placeholder).alignment = TextAnchor.MiddleLeft;
-                        stringInputField.text = LSColors.ColorToHex(colorSetting.Value);
+                        stringInputField.text = CoreHelper.ColorToHexOptional(colorSetting.Value);
                         stringInputField.onValueChanged.AddListener(_val =>
                         {
                             colorSetting.Value = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : LSColors.HexToColor(_val);
@@ -833,11 +833,11 @@ namespace BetterLegacy.Configs
                     // Reset
                     {
                         var resetBase = Creator.NewUIObject("Reset", gameObject.transform);
-                        UIManager.SetRectTransform(resetBase.transform.AsRT(), new Vector2(395f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 32f));
+                        RectValues.Default.AnchoredPosition(395f, 0f).SizeDelta(64f, 32f).AssignToRectTransform(resetBase.transform.AsRT());
                         var resetBaseImage = resetBase.AddComponent<Image>();
 
                         var resetTitle = Creator.NewUIObject("Title", resetBase.transform);
-                        UIManager.SetRectTransform(resetTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                        RectValues.FullAnchored.AssignToRectTransform(resetTitle.transform.AsRT());
                         var resetTitleText = resetTitle.AddComponent<Text>();
                         resetTitleText.alignment = TextAnchor.MiddleCenter;
                         resetTitleText.font = Font.GetDefault();
