@@ -175,7 +175,7 @@ namespace BetterLegacy.Components.Editor
 
                 if (RTEditor.inst.selectingMultiple)
                 {
-                    foreach (var otherTimelineObject in selectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var otherTimelineObject in selectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
@@ -185,7 +185,7 @@ namespace BetterLegacy.Components.Editor
                         ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                     }
                 }
-                else if (currentSelection.IsBeatmapObject)
+                else if (currentSelection.isBeatmapObject)
                 {
                     var currentBeatmapObject = currentSelection.GetData<BeatmapObject>();
 
@@ -210,7 +210,7 @@ namespace BetterLegacy.Components.Editor
                 bool success = false;
                 foreach (var otherTimelineObject in selectedObjects)
                 {
-                    if (otherTimelineObject.IsPrefabObject)
+                    if (otherTimelineObject.isPrefabObject)
                     {
                         var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                         prefabObject.parent = beatmapObject.id;
@@ -234,7 +234,7 @@ namespace BetterLegacy.Components.Editor
             }
 
             // assign parent to prefab
-            if (currentSelection.IsPrefabObject)
+            if (currentSelection.isPrefabObject)
             {
                 var prefabObject = currentSelection.GetData<PrefabObject>();
                 prefabObject.parent = beatmapObject.id;
@@ -285,7 +285,7 @@ namespace BetterLegacy.Components.Editor
             {
                 var currentSelection = ObjectEditor.inst.CurrentSelection;
 
-                if (!currentSelection.IsPrefabObject || currentSelection.ID != beatmapObject.prefabInstanceID)
+                if (!currentSelection.isPrefabObject || currentSelection.ID != beatmapObject.prefabInstanceID)
                     return;
 
                 prefabObjectToDrag = currentSelection.GetData<PrefabObject>();

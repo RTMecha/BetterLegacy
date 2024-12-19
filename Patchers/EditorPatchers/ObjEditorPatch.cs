@@ -732,7 +732,7 @@ namespace BetterLegacy.Patchers
                         flipXButton.onClick.ClearAll();
                         flipXButton.onClick.AddListener(() =>
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
+                            foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             {
                                 var eventKeyframe = timelineObject.GetData<EventKeyframe>();
                                 eventKeyframe.eventValues[0] = -eventKeyframe.eventValues[0];
@@ -759,7 +759,7 @@ namespace BetterLegacy.Patchers
                             flipYButton.onClick.ClearAll();
                             flipYButton.onClick.AddListener(() =>
                             {
-                                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
+                                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                                 {
                                     var eventKeyframe = timelineObject.GetData<EventKeyframe>();
                                     eventKeyframe.eventValues[1] = -eventKeyframe.eventValues[1];
@@ -1150,8 +1150,7 @@ namespace BetterLegacy.Patchers
                 removePrefabButton.onClick.AddListener(() =>
                 {
                     var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                    beatmapObject.prefabID = "";
-                    beatmapObject.prefabInstanceID = "";
+                    beatmapObject.RemovePrefabReference();
                     ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
                     ObjectEditor.inst.OpenDialog(beatmapObject);
                 });
@@ -1489,7 +1488,7 @@ namespace BetterLegacy.Patchers
             snapToBPM.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                 {
                     if (timelineObject.Index != 0)
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
@@ -1535,7 +1534,7 @@ namespace BetterLegacy.Patchers
             pasteAll.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1632,7 +1631,7 @@ namespace BetterLegacy.Patchers
             pastePos.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1673,7 +1672,7 @@ namespace BetterLegacy.Patchers
             pasteSca.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1739,7 +1738,7 @@ namespace BetterLegacy.Patchers
             pasteRot.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1780,7 +1779,7 @@ namespace BetterLegacy.Patchers
             pasteCol.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1941,7 +1940,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyAllSelectedEventsPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.CopyAllSelectedEvents(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
@@ -1950,7 +1949,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool PasteKeyframesPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.PasteKeyframes(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
@@ -1967,7 +1966,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetCurrentKeyframePrefix(int __0, bool __1 = false)
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.SetCurrentKeyframe(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
@@ -1976,7 +1975,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetCurrentKeyframePrefix(int __0, int __1, bool __2 = false, bool __3 = false)
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.SetCurrentKeyframe(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
@@ -1985,7 +1984,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddCurrentKeyframePrefix(int __0, bool __1 = false)
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.AddCurrentKeyframe(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
@@ -1994,7 +1993,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ResizeKeyframeTimelinePrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.ResizeKeyframeTimeline(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
@@ -2023,7 +2022,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateKeyframesPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.CreateKeyframes(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
@@ -2069,8 +2068,8 @@ namespace BetterLegacy.Patchers
                 start = -AudioManager.inst.CurrentAudioSource.time + a[0].Time;
 
             var copy = new Prefab("copied prefab", 0, start,
-                a.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                a.Where(x => x.IsPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+                a.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                a.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
 
             copy.description = "Take me wherever you go!";
             Instance.beatmapObjCopy = copy;
@@ -2099,9 +2098,9 @@ namespace BetterLegacy.Patchers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
+                if (timelineObject.isBeatmapObject)
                     timelineObject.GetData<BeatmapObject>().editorData.locked = !timelineObject.GetData<BeatmapObject>().editorData.locked;
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                     timelineObject.GetData<PrefabObject>().editorData.locked = !timelineObject.GetData<PrefabObject>().editorData.locked;
 
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -2114,7 +2113,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateKeyframeOrderPrefix(bool _setCurrent = true)
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.UpdateKeyframeOrder(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
@@ -2147,7 +2146,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RefreshKeyframeGUIPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
             return false;
         }

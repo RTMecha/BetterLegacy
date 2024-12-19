@@ -734,12 +734,13 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator UpdatePrefabObjectTimes(PrefabObject currentPrefab)
         {
             var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == currentPrefab.prefabID);
+            var isObjectLayer = RTEditor.inst.layerType == RTEditor.LayerType.Objects;
             for (int i = 0; i < prefabObjects.Count; i++)
             {
                 var prefabObject = prefabObjects[i];
 
-                if (prefabObject.editorData.layer == EditorManager.inst.layer)
-                    ObjectEditor.inst.RenderTimelineObjectPosition(GetTimelineObject(prefabObject));
+                if (isObjectLayer && prefabObject.editorData.layer == RTEditor.inst.Layer)
+                    GetTimelineObject(prefabObject).UpdatePosLength();
 
                 Updater.UpdatePrefab(prefabObject, "Start Time");
             }
@@ -1277,7 +1278,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void CollapseCurrentPrefab()
         {
-            if (!ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (!ObjectEditor.inst.CurrentSelection.isBeatmapObject)
             {
                 EditorManager.inst.DisplayNotification("Can't collapse non-object.", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -1285,7 +1286,7 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
-            if (!bm || bm.prefabInstanceID == "")
+            if (!bm || string.IsNullOrEmpty(bm.prefabInstanceID))
             {
                 EditorManager.inst.DisplayNotification("Beatmap Object does not have a Prefab Object reference.", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -1335,7 +1336,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void ExpandCurrentPrefab()
         {
-            if (!ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (!ObjectEditor.inst.CurrentSelection.isPrefabObject)
             {
                 EditorManager.inst.DisplayNotification("Can't expand non-prefab!", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -1485,9 +1486,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
                 EditorManager.inst.ShowDialog("Multi Object Editor", false);
-            else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.OpenDialog(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
-            else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            else if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
                 PrefabEditor.inst.OpenPrefabDialog();
 
             EditorManager.inst.DisplayNotification($"Expanded Prefab Object {prefab.Name} in {sw.Elapsed}!.", 5f, EditorManager.NotificationType.Success, false);
@@ -2222,7 +2223,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification($"Saving External Prefab [{prefab.Name}]...", 1.5f, EditorManager.NotificationType.Warning);
 
-            prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
+            prefab.objects.ForEach(x => (x as BeatmapObject).RemovePrefabReference());
             int count = PrefabPanels.Count;
             var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath, $"{RTFile.FormatLegacyFileName(prefab.Name)}{FileFormat.LSP.Dot()}");
             prefab.filePath = file;
@@ -2667,7 +2668,7 @@ namespace BetterLegacy.Editor.Managers
                         var prefabInstanceID = LSText.randomString(16);
                         if (RTEditor.inst.selectingMultiple)
                         {
-                            foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
@@ -2676,7 +2677,7 @@ namespace BetterLegacy.Editor.Managers
                                 ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                             }
                         }
-                        else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                        else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                         {
                             var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 

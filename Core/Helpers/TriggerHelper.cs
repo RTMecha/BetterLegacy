@@ -360,9 +360,9 @@ namespace BetterLegacy.Core.Helpers
             ObjEditor.inst.currentKeyframeKind = timelineObject.Type;
             ObjEditor.inst.currentKeyframe = timelineObject.Index;
 
-            var list = beatmapObject.timelineObject.InternalSelections;
+            var list = beatmapObject.timelineObject.InternalTimelineObjects;
             if (list.FindIndex(x => x.Type == timelineObject.Type && x.Index == timelineObject.Index) != -1)
-                foreach (var otherTLO in beatmapObject.timelineObject.InternalSelections)
+                foreach (var otherTLO in beatmapObject.timelineObject.InternalTimelineObjects)
                     otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineObject.Time;
             ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineObject.Time - ObjectEditor.MouseTimelineCalc();
             ObjEditor.inst.timelineKeyframesDrag = true;
@@ -406,7 +406,7 @@ namespace BetterLegacy.Core.Helpers
                 new RTEditor.ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
                 new RTEditor.ButtonFunction("Copy Data", () =>
                 {
-                    var selected = beatmapObject.timelineObject.InternalSelections.Where(x => x.Selected);
+                    var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
                     var firstKF = selected.ElementAt(0);
                     var type = timelineObject.Type;
 
@@ -429,7 +429,7 @@ namespace BetterLegacy.Core.Helpers
                 }),
                 new RTEditor.ButtonFunction("Paste Data", () =>
                 {
-                    var selected = beatmapObject.timelineObject.InternalSelections.Where(x => x.Selected);
+                    var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
                     var type = timelineObject.Type;
 
                     switch (type)
@@ -485,16 +485,16 @@ namespace BetterLegacy.Core.Helpers
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
                 if (ObjectEditor.UpdateObjects)
                 {
-                    if (timelineObject.IsBeatmapObject)
+                    if (timelineObject.isBeatmapObject)
                         Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Drag");
-                    if (timelineObject.IsPrefabObject)
+                    if (timelineObject.isPrefabObject)
                         Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Drag");
                 }
 
                 Updater.Sort();
             }
 
-            if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.IsBeatmapObject)
+            if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
                 RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
         });
 
@@ -516,9 +516,9 @@ namespace BetterLegacy.Core.Helpers
                         new RTEditor.ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
                         new RTEditor.ButtonFunction("Update Object", () =>
                         {
-                            if (timelineObject.IsBeatmapObject)
+                            if (timelineObject.isBeatmapObject)
                                 Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
-                            if (timelineObject.IsPrefabObject)
+                            if (timelineObject.isPrefabObject)
                                 Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
                         }),
                         new RTEditor.ButtonFunction(true),
@@ -548,9 +548,9 @@ namespace BetterLegacy.Core.Helpers
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Move Backwards", () =>
                         {
-                            switch (timelineObject.ObjectType)
+                            switch (timelineObject.TimelineReference)
                             {
-                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                case TimelineObject.TimelineReferenceType.BeatmapObject:
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                         var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
@@ -564,7 +564,7 @@ namespace BetterLegacy.Core.Helpers
                                         ObjectEditor.inst.UpdateTransformIndex();
                                         break;
                                     }
-                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                case TimelineObject.TimelineReferenceType.PrefabObject:
                                     {
                                         var prefabObject = timelineObject.GetData<PrefabObject>();
                                         var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
@@ -582,9 +582,9 @@ namespace BetterLegacy.Core.Helpers
                         }),
                         new RTEditor.ButtonFunction("Move Forwards", () =>
                         {
-                            switch (timelineObject.ObjectType)
+                            switch (timelineObject.TimelineReference)
                             {
-                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                case TimelineObject.TimelineReferenceType.BeatmapObject:
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                         var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
@@ -598,7 +598,7 @@ namespace BetterLegacy.Core.Helpers
                                         ObjectEditor.inst.UpdateTransformIndex();
                                         break;
                                     }
-                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                case TimelineObject.TimelineReferenceType.PrefabObject:
                                     {
                                         var prefabObject = timelineObject.GetData<PrefabObject>();
                                         var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
@@ -616,9 +616,9 @@ namespace BetterLegacy.Core.Helpers
                         }),
                         new RTEditor.ButtonFunction("Move to Back", () =>
                         {
-                            switch (timelineObject.ObjectType)
+                            switch (timelineObject.TimelineReference)
                             {
-                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                case TimelineObject.TimelineReferenceType.BeatmapObject:
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                         var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
@@ -632,7 +632,7 @@ namespace BetterLegacy.Core.Helpers
                                         ObjectEditor.inst.UpdateTransformIndex();
                                         break;
                                     }
-                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                case TimelineObject.TimelineReferenceType.PrefabObject:
                                     {
                                         var prefabObject = timelineObject.GetData<PrefabObject>();
                                         var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
@@ -650,9 +650,9 @@ namespace BetterLegacy.Core.Helpers
                         }),
                         new RTEditor.ButtonFunction("Move to Front", () =>
                         {
-                            switch (timelineObject.ObjectType)
+                            switch (timelineObject.TimelineReference)
                             {
-                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                case TimelineObject.TimelineReferenceType.BeatmapObject:
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                         var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
@@ -666,7 +666,7 @@ namespace BetterLegacy.Core.Helpers
                                         ObjectEditor.inst.UpdateTransformIndex();
                                         break;
                                     }
-                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                case TimelineObject.TimelineReferenceType.PrefabObject:
                                     {
                                         var prefabObject = timelineObject.GetData<PrefabObject>();
                                         var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
@@ -707,7 +707,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsBeatmapObject)
+            if (RTEditor.inst.prefabPickerEnabled && timelineObject.isBeatmapObject)
             {
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
                 if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
@@ -718,7 +718,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (RTEditor.inst.selectingMultiple)
                 {
-                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
@@ -727,7 +727,7 @@ namespace BetterLegacy.Core.Helpers
                         ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                     }
                 }
-                else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 {
                     var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
@@ -742,14 +742,14 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsPrefabObject)
+            if (RTEditor.inst.prefabPickerEnabled && timelineObject.isPrefabObject)
             {
                 var prefabObject = timelineObject.GetData<PrefabObject>();
                 var prefabInstanceID = LSText.randomString(16);
 
                 if (RTEditor.inst.selectingMultiple)
                 {
-                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
@@ -758,7 +758,7 @@ namespace BetterLegacy.Core.Helpers
                         ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                     }
                 }
-                else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 {
                     var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
@@ -773,14 +773,14 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (RTEditor.inst.parentPickerEnabled && timelineObject.IsBeatmapObject)
+            if (RTEditor.inst.parentPickerEnabled && timelineObject.isBeatmapObject)
             {
                 if (RTEditor.inst.selectingMultiple)
                 {
                     bool success = false;
                     foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects)
                     {
-                        if (otherTimelineObject.IsPrefabObject)
+                        if (otherTimelineObject.isPrefabObject)
                         {
                             var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                             prefabObject.parent = timelineObject.ID;
@@ -801,7 +801,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+                if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
                 {
                     var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
                     prefabObject.parent = timelineObject.ID;
@@ -883,6 +883,8 @@ namespace BetterLegacy.Core.Helpers
             EventEditor.inst.eventDrag = false;
             EventEditor.inst.UpdateEventOrder();
             EventManager.inst.updateEvents();
+
+            RTEventEditor.inst.OpenDialog();
         });
 
         public static EventTrigger.Entry CreateEventStartDragTrigger(TimelineObject kf) => CreateEntry(EventTriggerType.BeginDrag, eventData =>

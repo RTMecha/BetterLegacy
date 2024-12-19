@@ -1197,9 +1197,9 @@ namespace BetterLegacy.Editor.Managers
             Updater.InitSeed();
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
+                if (timelineObject.isBeatmapObject)
                     Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                     Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
             }
             Updater.RecalculateObjectStates();
@@ -1216,14 +1216,14 @@ namespace BetterLegacy.Editor.Managers
         public static void CollapsePrefab(Keybind keybind)
         {
             if (ObjectEditor.inst.SelectedBeatmapObjects.Count == 1 &&
-                ObjectEditor.inst.CurrentSelection.IsBeatmapObject &&
+                ObjectEditor.inst.CurrentSelection.isBeatmapObject &&
                 !string.IsNullOrEmpty(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().prefabInstanceID))
                 PrefabEditor.inst.CollapseCurrentPrefab();
         }
 
         public static void ExpandPrefab(Keybind keybind)
         {
-            if (ObjectEditor.inst.SelectedPrefabObjects.Count == 1 && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (ObjectEditor.inst.SelectedPrefabObjects.Count == 1 && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.isPrefabObject)
                 PrefabEditor.inst.ExpandCurrentPrefab();
         }
 
@@ -1295,7 +1295,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
+                if (timelineObject.isBeatmapObject)
                 {
                     var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -1314,7 +1314,7 @@ namespace BetterLegacy.Editor.Managers
 
                     Updater.UpdateObject(bm, "Keyframes");
                 }
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                 {
                     var po = timelineObject.GetData<PrefabObject>();
 
@@ -1337,7 +1337,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
+                if (timelineObject.isBeatmapObject)
                 {
                     var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -1356,7 +1356,7 @@ namespace BetterLegacy.Editor.Managers
 
                     Updater.UpdateObject(bm, "Keyframes");
                 }
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                 {
                     var po = timelineObject.GetData<PrefabObject>();
 
@@ -1379,7 +1379,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
+                if (timelineObject.isBeatmapObject)
                 {
                     var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -1398,7 +1398,7 @@ namespace BetterLegacy.Editor.Managers
 
                     Updater.UpdateObject(bm, "Keyframes");
                 }
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                 {
                     var po = timelineObject.GetData<PrefabObject>();
 
@@ -1414,9 +1414,9 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SwapLockSelection(Keybind keybind)
         {
-            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
             {
-                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var selected = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
                 foreach (var timelineObject in selected)
@@ -1451,9 +1451,9 @@ namespace BetterLegacy.Editor.Managers
         public static bool loggled = true;
         public static void ToggleLockSelection(Keybind keybind)
         {
-            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
             {
-                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
+                var selected = ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
                 foreach (var timelineObject in selected)
@@ -1535,7 +1535,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (!timelineObject.IsBeatmapObject)
+                if (!timelineObject.isBeatmapObject)
                     continue;
 
                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -1555,7 +1555,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (!timelineObject.IsBeatmapObject)
+                if (!timelineObject.isBeatmapObject)
                     continue;
 
                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -1664,7 +1664,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
             {
-                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                     ObjectEditor.inst.UpdateKeyframeOrder(bm);
@@ -1682,7 +1682,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
             {
-                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                     ObjectEditor.inst.UpdateKeyframeOrder(bm);
@@ -1700,7 +1700,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
             {
-                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                     ObjectEditor.inst.UpdateKeyframeOrder(bm);
@@ -1722,7 +1722,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
             {
-                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                     ObjectEditor.inst.UpdateKeyframeOrder(bm);
@@ -1922,19 +1922,19 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                 {
                     timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
-                    if (timelineObject.IsBeatmapObject)
+                    if (timelineObject.isBeatmapObject)
                         Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
-                    if (timelineObject.IsPrefabObject)
+                    if (timelineObject.isPrefabObject)
                         Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
                     ObjectEditor.inst.RenderTimelineObject(timelineObject);
                 }
 
             if (ObjEditor.inst.ObjectView.activeInHierarchy
-                && ObjectEditor.inst.CurrentSelection.IsBeatmapObject
-                && ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected).Count() > 0)
+                && ObjectEditor.inst.CurrentSelection.isBeatmapObject
+                && ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected).Count() > 0)
             {
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                 {
                     if (timelineObject.Index != 0)
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
@@ -1970,7 +1970,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ParentPicker(Keybind keybind)
         {
-            if (!ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (!ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 return;
 
             RTEditor.inst.parentPickerEnabled = true;
@@ -2124,13 +2124,13 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
             {
                 selectionType = SelectionType.Object;
                 beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 SetCurrentKeyframe(type);
             }
-            if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
             {
                 selectionType = SelectionType.Prefab;
                 prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();

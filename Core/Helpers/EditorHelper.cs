@@ -217,7 +217,7 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
             {
                 for (int i = 0; i < 3; i++)
                 {
@@ -239,7 +239,7 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
             {
                 for (int i = 0; i < 2; i++)
                 {
@@ -261,7 +261,7 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                 Updater.UpdateObject(beatmapObject, "Keyframes");
 
             return true;
@@ -309,7 +309,7 @@ namespace BetterLegacy.Core.Helpers
                 var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
-                    foreach (var kf in timelineObject.InternalSelections)
+                    foreach (var kf in timelineObject.InternalTimelineObjects)
                         kf.Selected = ids.Contains(kf.ID);
                 }
 
@@ -361,7 +361,7 @@ namespace BetterLegacy.Core.Helpers
                 var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
-                    foreach (var kf in timelineObject.InternalSelections)
+                    foreach (var kf in timelineObject.InternalTimelineObjects)
                         kf.Selected = ids.Contains(kf.ID);
                 }
 

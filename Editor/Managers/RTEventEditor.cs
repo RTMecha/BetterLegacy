@@ -24,7 +24,9 @@ namespace BetterLegacy.Editor.Managers
 
         #region Variables
 
-        public Transform eventEditorDialog;
+        public static List<List<BaseEventKeyframe>> AllEvents => !GameData.IsValid ? null : GameData.Current.eventObjects.allEvents;
+
+        #region Selection
 
         public TimelineObject CurrentSelectedTimelineKeyframe => RTEditor.inst.timelineKeyframes.Find(x => x.Type == EventEditor.inst.currentEventType && x.Index == EventEditor.inst.currentEvent);
         public EventKeyframe CurrentSelectedKeyframe => !GameData.IsValid ? null : (EventKeyframe)GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
@@ -33,21 +35,11 @@ namespace BetterLegacy.Editor.Managers
 
         public List<TimelineObject> copiedEventKeyframes = new List<TimelineObject>();
 
-        public static List<List<BaseEventKeyframe>> AllEvents => !GameData.IsValid ? null : GameData.Current.eventObjects.allEvents;
+        #endregion
 
-        // Timeline will only ever have up to 15 "bins" and since the 15th bin is the checkpoints, we only need the first 14 bins.
-        public const int EVENT_LIMIT = 14;
+        #region UI
 
-        public static bool ResetRotation => EditorConfig.Instance.RotationEventKeyframeResets.Value;
-
-        public List<Toggle> vignetteColorButtons = new List<Toggle>();
-        public List<Toggle> bloomColorButtons = new List<Toggle>();
-        public List<Toggle> gradientColor1Buttons = new List<Toggle>();
-        public List<Toggle> gradientColor2Buttons = new List<Toggle>();
-        public List<Toggle> bgColorButtons = new List<Toggle>();
-        public List<Toggle> overlayColorButtons = new List<Toggle>();
-        public List<Toggle> timelineColorButtons = new List<Toggle>();
-        public List<Toggle> dangerColorButtons = new List<Toggle>();
+        public Transform eventEditorDialog;
 
         public static string[] EventTypes => new string[]
         {
@@ -119,6 +111,30 @@ namespace BetterLegacy.Editor.Managers
 
         public List<Image> EventBins { get; set; } = new List<Image>();
         public List<Text> EventLabels { get; set; } = new List<Text>();
+
+        #endregion
+
+        #region Color Toggles
+
+        public List<Toggle> vignetteColorButtons = new List<Toggle>();
+        public List<Toggle> bloomColorButtons = new List<Toggle>();
+        public List<Toggle> gradientColor1Buttons = new List<Toggle>();
+        public List<Toggle> gradientColor2Buttons = new List<Toggle>();
+        public List<Toggle> bgColorButtons = new List<Toggle>();
+        public List<Toggle> overlayColorButtons = new List<Toggle>();
+        public List<Toggle> timelineColorButtons = new List<Toggle>();
+        public List<Toggle> dangerColorButtons = new List<Toggle>();
+
+        #endregion
+
+        #region Constants
+
+        // Timeline will only ever have up to 15 "bins" and since the 15th bin is the checkpoints, we only need the first 14 bins.
+        public const int EVENT_LIMIT = 14;
+
+        public const string NO_EVENT_LABEL = "??? (No event yet)";
+
+        #endregion
 
         #endregion
 
@@ -634,7 +650,7 @@ namespace BetterLegacy.Editor.Managers
 
             eventKeyframe.locked = false;
 
-            if (type == 2 && ResetRotation)
+            if (type == 2 && EditorConfig.Instance.RotationEventKeyframeResets.Value)
                 eventKeyframe.SetEventValues(new float[1]);
 
             AllEvents[type].Add(eventKeyframe);
@@ -722,14 +738,15 @@ namespace BetterLegacy.Editor.Managers
 
         public TimelineObject CreateEventObject(int type, int index)
         {
-            var eventKeyframe = AllEvents[type][index];
+            var eventKeyframe = AllEvents[type][index] as EventKeyframe;
 
-            var kf = new TimelineObject((EventKeyframe)eventKeyframe);
+            var kf = new TimelineObject(eventKeyframe);
+            eventKeyframe.timelineObject = kf;
             kf.Type = type;
             kf.Index = index;
             kf.GameObject = EventGameObject(kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-            kf.Update();
+            kf.UpdateVisibleState();
 
             TriggerHelper.AddEventTriggers(kf.GameObject,
                 TriggerHelper.CreateEventObjectTrigger(kf),
@@ -740,11 +757,7 @@ namespace BetterLegacy.Editor.Managers
             return kf;
         }
 
-        public GameObject EventGameObject(TimelineObject kf)
-        {
-            var gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EVENT_LIMIT), $"keyframe - {kf.Type}");
-            return gameObject;
-        }
+        public GameObject EventGameObject(TimelineObject kf) => EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EVENT_LIMIT), $"keyframe - {kf.Type}");
 
         public void RenderEventObjects()
         {
@@ -775,24 +788,13 @@ namespace BetterLegacy.Editor.Managers
             if (events.TryFindIndex(x => (x as EventKeyframe).id == kf.ID, out int index))
                 kf.Index = index;
 
-            var eventKeyframe = events[kf.Index];
-            float eventTime = eventKeyframe.eventTime;
-            int baseUnit = EditorManager.BaseUnit;
-            int limit = kf.Type / EVENT_LIMIT;
-
-            if (limit == RTEditor.inst.Layer)
+            if (kf.Type / EVENT_LIMIT == RTEditor.inst.Layer)
             {
-                kf.GameObject.transform.AsRT().anchoredPosition = new Vector2(eventTime * EditorManager.inst.Zoom - baseUnit / 2, 0.0f);
+                kf.GameObject.transform.AsRT().anchoredPosition = new Vector2(events[kf.Index].eventTime * EditorManager.inst.Zoom - EditorManager.BaseUnit / 2, 0.0f);
                 kf.GameObject.transform.AsRT().pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
 
-                kf.Image.sprite =
-                    RTEditor.GetKeyframeIcon(eventKeyframe.curveType,
-                    events.Count > kf.Index + 1 ?
-                    events[kf.Index + 1].curveType : DataManager.inst.AnimationList[0]);
-
-                var locked = kf.GameObject.transform.Find("lock");
-                if (locked)
-                    locked.gameObject.SetActive(kf.Locked);
+                kf.UpdateSprite(events);
+                kf.UpdateIcons();
             }
         }
 
@@ -2142,7 +2144,7 @@ namespace BetterLegacy.Editor.Managers
 
             var currentKeyframe = GameData.Current.eventObjects.allEvents[__instance.currentEventType][__instance.currentEvent] as EventKeyframe;
 
-            timeTime.onValueChanged.RemoveAllListeners();
+            timeTime.onValueChanged.ClearAll();
             timeTime.text = currentKeyframe.eventTime.ToString("f3");
 
             bool isNotFirst = __instance.currentEvent != 0;
@@ -2770,86 +2772,35 @@ namespace BetterLegacy.Editor.Managers
             }
 
             // Curves
+            var curvesDropdown = dialogTmp.transform.Find("curves").GetComponent<Dropdown>();
+
+            dialogTmp.transform.Find("curves_label").gameObject.SetActive(isNotFirst);
+            curvesDropdown.gameObject.SetActive(isNotFirst);
+            if (isNotFirst)
             {
-                var curvesDropdown = dialogTmp.transform.Find("curves").GetComponent<Dropdown>();
+                curvesDropdown.onValueChanged.ClearAll();
+                if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(currentKeyframe.curveType, out int animIndex))
+                    curvesDropdown.value = animIndex;
 
-                dialogTmp.transform.Find("curves_label").gameObject.SetActive(isNotFirst);
-                curvesDropdown.gameObject.SetActive(isNotFirst);
-                if (isNotFirst)
+                curvesDropdown.onValueChanged.AddListener(_val =>
                 {
-                    curvesDropdown.onValueChanged.ClearAll();
-                    if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(currentKeyframe.curveType, out int animIndex))
-                        curvesDropdown.value = animIndex;
+                    if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
+                        return;
 
-                    curvesDropdown.onValueChanged.AddListener(_val =>
-                    {
-                        if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
-                            return;
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
+                        kf.GetData<EventKeyframe>().curveType = anim;
 
-                        foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
-                            kf.GetData<EventKeyframe>().curveType = anim;
-
-                        RenderEventObjects();
-                        eventManager.updateEvents();
-                    });
-                }
-
-                var editJumpLeftLarge = dialogTmp.Find("edit/<<").GetComponent<Button>();
-                var editJumpLeft = dialogTmp.Find("edit/<").GetComponent<Button>();
-                var editJumpRight = dialogTmp.Find("edit/>").GetComponent<Button>();
-                var editJumpRightLarge = dialogTmp.Find("edit/>>").GetComponent<Button>();
-
-                editJumpLeftLarge.interactable = isNotFirst;
-                editJumpLeftLarge.onClick.ClearAll();
-                editJumpLeftLarge.onClick.AddListener(() =>
-                {
-                    __instance.UpdateEventOrder(false);
-                    __instance.SetCurrentEvent(__instance.currentEventType, 0);
+                    RenderEventObjects();
+                    eventManager.updateEvents();
                 });
-
-                editJumpLeft.interactable = isNotFirst;
-                editJumpLeft.onClick.ClearAll();
-                editJumpLeft.onClick.AddListener(() =>
-                {
-                    __instance.UpdateEventOrder(false);
-                    int num = __instance.currentEvent - 1;
-                    if (num < 0)
-                        num = 0;
-
-                    __instance.SetCurrentEvent(__instance.currentEventType, num);
-                });
-
-                var indexText = dialogTmp.Find("edit/|/text").GetComponent<Text>();
-                var allEvents = GameData.Current.eventObjects.allEvents[__instance.currentEventType];
-
-                indexText.text = !isNotFirst ? "S" : __instance.currentEvent == allEvents.Count ? "E" : __instance.currentEvent.ToString();
-
-                editJumpRight.interactable = __instance.currentEvent != allEvents.Count - 1;
-                editJumpRight.onClick.ClearAll();
-                editJumpRight.onClick.AddListener(() =>
-                {
-                    __instance.UpdateEventOrder(false);
-                    int num = __instance.currentEvent + 1;
-                    if (num >= allEvents.Count)
-                        num = allEvents.Count - 1;
-
-                    __instance.SetCurrentEvent(__instance.currentEventType, num);
-                });
-
-                editJumpRightLarge.interactable = __instance.currentEvent != allEvents.Count() - 1;
-                editJumpRightLarge.onClick.ClearAll();
-                editJumpRightLarge.onClick.AddListener(() =>
-                {
-                    __instance.UpdateEventOrder(false);
-                    __instance.SetCurrentEvent(__instance.currentEventType, allEvents.IndexOf(allEvents.Last()));
-                });
-
-                var editDelete = dialogTmp.Find("edit/del").GetComponent<Button>();
-
-                editDelete.onClick.RemoveAllListeners();
-                editDelete.interactable = isNotFirst;
-                editDelete.onClick.AddListener(() => { StartCoroutine(DeleteKeyframes()); });
             }
+
+            RenderIndexSelector(dialogTmp, __instance.currentEvent);
+            var editDelete = dialogTmp.Find("edit/del").GetComponent<Button>();
+
+            editDelete.onClick.ClearAll();
+            editDelete.interactable = isNotFirst;
+            editDelete.onClick.AddListener(DeleteKeyframes().Start);
 
             if (dialogTmp.Find("edit/copy") && dialogTmp.Find("edit/paste"))
             {
@@ -2857,13 +2808,69 @@ namespace BetterLegacy.Editor.Managers
                 var paste = dialogTmp.Find("edit/paste").GetComponent<Button>();
 
                 copy.onClick.ClearAll();
-                copy.onClick.AddListener(() => { CopyKeyframeData(CurrentSelectedTimelineKeyframe); });
+                copy.onClick.AddListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
 
                 paste.onClick.ClearAll();
-                paste.onClick.AddListener(() => { PasteKeyframeData(__instance.currentEventType); });
+                paste.onClick.AddListener(() => PasteKeyframeData(__instance.currentEventType));
             }
 
             RenderTitle(__instance.currentEventType);
+        }
+
+        public void RenderIndexSelector(Transform dialogTmp, int currentIndex)
+        {
+            bool isNotFirst = currentIndex != 0;
+
+            var editJumpLeftLarge = dialogTmp.Find("edit/<<").GetComponent<Button>();
+            var editJumpLeft = dialogTmp.Find("edit/<").GetComponent<Button>();
+            var editJumpRight = dialogTmp.Find("edit/>").GetComponent<Button>();
+            var editJumpRightLarge = dialogTmp.Find("edit/>>").GetComponent<Button>();
+
+            editJumpLeftLarge.interactable = isNotFirst;
+            editJumpLeftLarge.onClick.ClearAll();
+            editJumpLeftLarge.onClick.AddListener(() =>
+            {
+                EventEditor.inst.UpdateEventOrder(false);
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
+            });
+
+            editJumpLeft.interactable = isNotFirst;
+            editJumpLeft.onClick.ClearAll();
+            editJumpLeft.onClick.AddListener(() =>
+            {
+                EventEditor.inst.UpdateEventOrder(false);
+                int num = currentIndex - 1;
+                if (num < 0)
+                    num = 0;
+
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
+            });
+
+            var indexText = dialogTmp.Find("edit/|/text").GetComponent<Text>();
+            var allEvents = GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType];
+
+            indexText.text = !isNotFirst ? "S" : currentIndex == allEvents.Count ? "E" : currentIndex.ToString();
+
+            editJumpRight.interactable = currentIndex != allEvents.Count - 1;
+            editJumpRight.onClick.ClearAll();
+            editJumpRight.onClick.AddListener(() =>
+            {
+                EventEditor.inst.UpdateEventOrder(false);
+                int num = currentIndex + 1;
+                if (num >= allEvents.Count)
+                    num = allEvents.Count - 1;
+
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
+            });
+
+            editJumpRightLarge.interactable = currentIndex != allEvents.Count - 1;
+            editJumpRightLarge.onClick.ClearAll();
+            editJumpRightLarge.onClick.AddListener(() =>
+            {
+                EventEditor.inst.UpdateEventOrder(false);
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, allEvents.IndexOf(allEvents.Last()));
+            });
+
         }
 
         public void CopyKeyframeData(TimelineObject currentKeyframe)
@@ -3359,19 +3366,17 @@ namespace BetterLegacy.Editor.Managers
             title.GetChild(1).GetComponent<Text>().text = $"- {EventTypes[i]} Editor - ";
         }
 
-        public static string NoEventLabel => "??? (No event yet)";
-
         public void RenderLayerBins()
         {
             var renderLeft = EditorConfig.Instance.EventLabelsRenderLeft.Value;
             var eventLabels = EventEditor.inst.EventLabels;
 
             var layer = RTEditor.inst.Layer + 1;
+            int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
 
             for (int i = 0; i < AllEvents.Count; i++)
             {
                 int t = i % EVENT_LIMIT;
-                int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
 
                 var text = eventLabels.transform.GetChild(t).GetChild(0).GetComponent<Text>();
 
@@ -3380,17 +3385,15 @@ namespace BetterLegacy.Editor.Managers
                     if (i >= num - EVENT_LIMIT && i < num)
                         text.text = EventTypes[i];
                     else if (i < num)
-                        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
+                        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
                 }
                 else
-                    text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
+                    text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
 
                 text.alignment = renderLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
 
                 if (!RTEditor.ShowModdedUI && RTEditor.inst.Layer > 0)
-                {
                     text.text = "No Event";
-                }
             }
 
             var theme = EditorThemeManager.CurrentTheme;
@@ -3401,12 +3404,10 @@ namespace BetterLegacy.Editor.Managers
                 var enabled = i == 14 || i < (RTEditor.ShowModdedUI ? 14 : 10);
 
                 img.enabled = enabled;
-                if (enabled)
-                {
-                    img.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
-                }
-
                 EventLabels[i].enabled = enabled;
+
+                if (enabled)
+                    img.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
             }
         }
 

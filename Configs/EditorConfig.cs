@@ -2722,7 +2722,7 @@ namespace BetterLegacy.Configs
             UpdateEditorComplexity?.Invoke();
             AdjustPositionInputsChanged?.Invoke();
 
-            if (ObjectEditor.inst && ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst && ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 CoreHelper.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
 
             if (RTEditor.inst && RTEditor.inst.layerType == RTEditor.LayerType.Events)
@@ -2739,7 +2739,7 @@ namespace BetterLegacy.Configs
 
             if (!prefabSelectorLeft.gameObject.activeInHierarchy)
                 RTPrefabEditor.inst.UpdateModdedVisbility();
-            else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            else if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
                 RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
@@ -2774,7 +2774,7 @@ namespace BetterLegacy.Configs
             ObjEditor.inst.ObjectLengthOffset = KeyframeEndLengthOffset.Value;
             ObjEditor.inst.SelectedColor = ObjectSelectionColor.Value;
 
-            if (ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 CoreHelper.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
         }
 

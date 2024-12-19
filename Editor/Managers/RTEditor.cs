@@ -1069,12 +1069,12 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Timeline Objects
-
+        
         public List<TimelineObject> timelineObjects = new List<TimelineObject>();
         public List<TimelineObject> timelineKeyframes = new List<TimelineObject>();
 
-        public List<TimelineObject> TimelineBeatmapObjects => timelineObjects.Where(x => x.IsBeatmapObject).ToList();
-        public List<TimelineObject> TimelinePrefabObjects => timelineObjects.Where(x => x.IsPrefabObject).ToList();
+        public List<TimelineObject> TimelineBeatmapObjects => timelineObjects.Where(x => x.isBeatmapObject).ToList();
+        public List<TimelineObject> TimelinePrefabObjects => timelineObjects.Where(x => x.isPrefabObject).ToList();
 
         public void RemoveTimelineObject(TimelineObject timelineObject)
         {
@@ -1092,14 +1092,14 @@ namespace BetterLegacy.Editor.Managers
         void UpdateTimelineObjects()
         {
             for (int i = 0; i < timelineObjects.Count; i++)
-                timelineObjects[i].Update();
+                timelineObjects[i].UpdateVisibleState();
 
-            if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalSelections.Count > 0)
-                for (int i = 0; i < ObjectEditor.inst.CurrentSelection.InternalSelections.Count; i++)
-                    ObjectEditor.inst.CurrentSelection.InternalSelections[i].Update();
+            if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.isBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Count > 0)
+                for (int i = 0; i < ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Count; i++)
+                    ObjectEditor.inst.CurrentSelection.InternalTimelineObjects[i].UpdateVisibleState();
 
             for (int i = 0; i < timelineKeyframes.Count; i++)
-                timelineKeyframes[i].Update();
+                timelineKeyframes[i].UpdateVisibleState();
         }
 
         #endregion
@@ -2078,11 +2078,11 @@ namespace BetterLegacy.Editor.Managers
         {
             if (!isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
             {
-                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                     if (ObjEditor.inst.currentKeyframe != 0)
                     {
                         var list = new List<TimelineObject>();
-                        foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
+                        foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             list.Add(timelineObject);
                         var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
@@ -2123,8 +2123,8 @@ namespace BetterLegacy.Editor.Managers
                     startTime = startTimeList[0];
 
                     var prefab = new Prefab("deleted objects", 0, startTime,
-                        list.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                        list.Where(x => x.IsPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+                        list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                        list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
 
                     EditorManager.inst.history.Add(new History.Command("Delete Objects", () =>
                     {
@@ -2581,7 +2581,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Create Marker", MarkerEditor.inst.CreateNewMarker),
                     new ButtonFunction("Create Marker at Object", () =>
                     {
-                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.ObjectType != TimelineObject.TimelineObjectType.Null)
+                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             RTMarkerEditor.inst.CreateNewMarker(ObjectEditor.inst.CurrentSelection.Time);
                     })
                     );
@@ -2608,7 +2608,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Create Checkpoint", CheckpointEditor.inst.CreateNewCheckpoint),
                     new ButtonFunction("Create Checkpoint at Object", () =>
                     {
-                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.ObjectType != TimelineObject.TimelineObjectType.Null)
+                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             CheckpointEditor.inst.CreateNewCheckpoint(ObjectEditor.inst.CurrentSelection.Time, Vector2.zero);
                     })
                     );
@@ -4431,7 +4431,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
                         return;
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth -= num;
@@ -4442,7 +4442,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
                         return;
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth = num;
@@ -4453,7 +4453,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
                         return;
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth += num;
@@ -4478,12 +4478,12 @@ namespace BetterLegacy.Editor.Managers
                     {
                         //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time + num;
                         timelineObject.Time = timelineObject.Time - num;
-                        if (timelineObject.IsBeatmapObject)
+                        if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                        if (timelineObject.IsPrefabObject)
+                        if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                        timelineObject.UpdatePosLength();
                     }
                 });
                 inputFieldStorage.middleButton.onClick.NewListener(() =>
@@ -4494,12 +4494,12 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
                         timelineObject.Time = num;
-                        if (timelineObject.IsBeatmapObject)
+                        if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                        if (timelineObject.IsPrefabObject)
+                        if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                        timelineObject.UpdatePosLength();
                     }
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -4512,12 +4512,12 @@ namespace BetterLegacy.Editor.Managers
                     {
                         //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time - num;
                         timelineObject.Time = timelineObject.Time + num;
-                        if (timelineObject.IsBeatmapObject)
+                        if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                        if (timelineObject.IsPrefabObject)
+                        if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                        timelineObject.UpdatePosLength();
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
@@ -4532,7 +4532,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
                         return;
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.autoKillOffset -= num;
@@ -4544,7 +4544,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
                         return;
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.autoKillOffset = num;
@@ -4556,7 +4556,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
                         return;
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.autoKillOffset += num;
@@ -4596,7 +4596,7 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.middleButton.onClick.ClearAll();
                 inputFieldStorage.middleButton.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         timelineObject.GetData<BeatmapObject>().name = inputFieldStorage.inputField.text;
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -4621,7 +4621,7 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.rightButton.onClick.ClearAll();
                 inputFieldStorage.rightButton.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         timelineObject.GetData<BeatmapObject>().name += inputFieldStorage.inputField.text;
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -4671,7 +4671,7 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.rightButton.onClick.ClearAll();
                 inputFieldStorage.rightButton.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         timelineObject.GetData<BeatmapObject>().tags.Add(inputFieldStorage.inputField.text);
                 });
 
@@ -4721,7 +4721,7 @@ namespace BetterLegacy.Editor.Managers
                      {
                          ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
                          {
-                             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                              {
                                  beatmapObject.tags.Clear();
                              }
@@ -4733,14 +4733,14 @@ namespace BetterLegacy.Editor.Managers
                      {
                          ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
                          {
-                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                              {
                                  var bm = timelineObject.GetData<BeatmapObject>();
-                                 foreach (var tkf in timelineObject.InternalSelections)
+                                 foreach (var tkf in timelineObject.InternalTimelineObjects)
                                  {
                                      Destroy(tkf.GameObject);
                                  }
-                                 timelineObject.InternalSelections.Clear();
+                                 timelineObject.InternalTimelineObjects.Clear();
                                  for (int i = 0; i < bm.events.Count; i++)
                                  {
                                      bm.events[i] = bm.events[i].OrderBy(x => x.eventTime).ToList();
@@ -4765,7 +4765,7 @@ namespace BetterLegacy.Editor.Managers
                      {
                          ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
                          {
-                             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                              {
                                  beatmapObject.modifiers.Clear();
                                  Updater.UpdateObject(beatmapObject, recalculate: false);
@@ -4785,12 +4785,12 @@ namespace BetterLegacy.Editor.Managers
                 var labels = GenerateLabels(parent, 32f, "Auto optimize objects");
                 var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                         beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
                         Updater.UpdateObject(beatmapObject, "Autokill");
-                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                        timelineObject.UpdatePosLength();
                     }
                 }));
 
@@ -4803,7 +4803,7 @@ namespace BetterLegacy.Editor.Managers
                 var labels = GenerateLabels(parent, 32f, "Set autokill to current time");
                 var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Set", () =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
@@ -4837,7 +4837,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 48f, 8f,
                     new ButtonFunction("No Autokill", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.autoKillType = AutoKillType.OldStyleNoAutokill;
@@ -4848,7 +4848,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Last KF", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.autoKillType = AutoKillType.LastKeyframe;
@@ -4859,7 +4859,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Last KF Offset", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.autoKillType = AutoKillType.LastKeyframeOffset;
@@ -4870,7 +4870,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Fixed Time", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.autoKillType = AutoKillType.FixedTime;
@@ -4881,7 +4881,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Song Time", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.autoKillType = AutoKillType.SongTime;
@@ -4909,7 +4909,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
                         {
-                            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                             {
                                 beatmapObject.parent = "";
                                 Updater.UpdateObject(beatmapObject);
@@ -4927,7 +4927,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
                         {
                             timelineObject.GetData<BeatmapObject>().desync = true;
 
@@ -4936,7 +4936,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Off", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
                         {
                             timelineObject.GetData<BeatmapObject>().desync = false;
 
@@ -4945,7 +4945,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
                     {
                         timelineObject.GetData<BeatmapObject>().desync = !timelineObject.GetData<BeatmapObject>().desync;
 
@@ -4966,12 +4966,12 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
                         timelineObject.Time = SnapToBPM(timelineObject.Time);
-                        if (timelineObject.IsBeatmapObject)
+                        if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
-                        if (timelineObject.IsPrefabObject)
+                        if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
-                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                        timelineObject.UpdatePosLength();
                     }
                 }), new ButtonFunction("Snap Offset", () =>
                 {
@@ -4981,12 +4981,12 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
                         timelineObject.Time += distance;
-                        if (timelineObject.IsBeatmapObject)
+                        if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
-                        if (timelineObject.IsPrefabObject)
+                        if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
-                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                        timelineObject.UpdatePosLength();
                     }
                 }));
 
@@ -5001,7 +5001,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Sub", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -5019,7 +5019,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Add", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -5040,7 +5040,7 @@ namespace BetterLegacy.Editor.Managers
                 GenerateButtons(parent, 48f, 8f,
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Normal), () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.objectType = BeatmapObject.ObjectType.Normal;
@@ -5051,7 +5051,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.objectType = BeatmapObject.ObjectType.Helper;
@@ -5062,7 +5062,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Deco", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.objectType = BeatmapObject.ObjectType.Decoration;
@@ -5073,7 +5073,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.objectType = BeatmapObject.ObjectType.Empty;
@@ -5084,7 +5084,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.objectType = BeatmapObject.ObjectType.Solid;
@@ -5104,7 +5104,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Sub", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -5122,7 +5122,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Add", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             int gradientType = (int)bm.gradientType;
@@ -5141,7 +5141,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons2 = GenerateButtons(parent, 48f, 8f,
                     new ButtonFunction(nameof(BeatmapObject.GradientType.Normal), () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.gradientType = BeatmapObject.GradientType.Normal;
@@ -5152,7 +5152,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Linear Right", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.gradientType = BeatmapObject.GradientType.RightLinear;
@@ -5163,7 +5163,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Linear Left", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.gradientType = BeatmapObject.GradientType.LeftLinear;
@@ -5174,7 +5174,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Radial In", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.gradientType = BeatmapObject.GradientType.OutInRadial;
@@ -5185,7 +5185,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Radial Out", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
                             bm.gradientType = BeatmapObject.GradientType.InOutRadial;
@@ -5218,11 +5218,9 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Remove", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            beatmapObject.prefabID = "";
-                            beatmapObject.prefabInstanceID = "";
+                            timelineObject.GetData<BeatmapObject>().RemovePrefabReference();
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }));
@@ -5309,7 +5307,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Background", () =>
                     {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = true;
                             if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -5318,7 +5316,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Foreground", () =>
                     {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = false;
                             if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -5327,7 +5325,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.background = !beatmapObject.background;
                         if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -5347,7 +5345,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
                     {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.LDM = true;
                             Updater.UpdateObject(beatmapObject);
@@ -5355,7 +5353,7 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Off", () =>
                     {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.LDM = false;
                             Updater.UpdateObject(beatmapObject);
@@ -5363,7 +5361,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.LDM = !beatmapObject.LDM;
                         Updater.UpdateObject(beatmapObject);
@@ -5681,7 +5679,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.name = bm.name.Replace(oldNameIF.text, newNameIF.text);
@@ -5761,7 +5759,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         for (int i = 0; i < bm.tags.Count; i++)
@@ -5843,7 +5841,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
@@ -5923,7 +5921,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6128,7 +6126,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             DataManager.LSAnimation anim = default;
                             bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6168,7 +6166,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             DataManager.LSAnimation anim = default;
                             bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6208,7 +6206,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             DataManager.LSAnimation anim = default;
                             bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6267,7 +6265,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (!int.TryParse(text, out int a))
                                         continue;
 
-                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                                     {
                                         var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6283,7 +6281,7 @@ namespace BetterLegacy.Editor.Managers
 
                             if (!int.TryParse(assignIndex.text, out int num))
                                 return;
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6305,7 +6303,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (!int.TryParse(text, out int a))
                                         return;
 
-                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                                     {
                                         var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6321,7 +6319,7 @@ namespace BetterLegacy.Editor.Managers
 
                             if (!int.TryParse(assignIndex.text, out int num))
                                 return;
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6343,7 +6341,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (!int.TryParse(text, out int a))
                                         return;
 
-                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                                     {
                                         var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6359,7 +6357,7 @@ namespace BetterLegacy.Editor.Managers
 
                             if (!int.TryParse(assignIndex.text, out int num))
                                 return;
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -6387,7 +6385,7 @@ namespace BetterLegacy.Editor.Managers
                     var labels = GenerateLabels(parent, 32f, "Create Color Keyframe");
                     var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Create", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
 
@@ -7148,7 +7146,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SyncObjectData(Action<TimelineObject> update, bool renderTimelineObject = false, bool updateObject = true, string updateContext = "")
         {
-            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
             {
                 update?.Invoke(timelineObject);
 
@@ -9504,9 +9502,9 @@ namespace BetterLegacy.Editor.Managers
                 var timelineObject = timelineObjects[i];
                 Destroy(timelineObject.GameObject);
 
-                for (int j = 0; j < timelineObject.InternalSelections.Count; j++)
+                for (int j = 0; j < timelineObject.InternalTimelineObjects.Count; j++)
                 {
-                    var kf = timelineObject.InternalSelections[j];
+                    var kf = timelineObject.InternalTimelineObjects[j];
                     Destroy(kf.GameObject);
                 }
                 timelineObjects[i] = null;
@@ -10287,7 +10285,7 @@ namespace BetterLegacy.Editor.Managers
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
                 var prefab = Prefab.Parse(jn);
-                prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
+                prefab.objects.ForEach(x => (x as BeatmapObject).RemovePrefabReference());
                 prefab.filePath = RTFile.ReplaceSlash(file);
 
                 RTPrefabEditor.inst.CreatePrefabButton(prefab, i, PrefabDialog.External, file, false, hoverSize,
@@ -10653,7 +10651,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    foreach (var bm in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    foreach (var bm in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         bm.parent = "";
                         Updater.UpdateObject(bm);
@@ -10931,7 +10929,7 @@ namespace BetterLegacy.Editor.Managers
                 var list = ObjectEditor.inst.SelectedObjects;
                 foreach (var timelineObject in list)
                 {
-                    if (timelineObject.IsPrefabObject)
+                    if (timelineObject.isPrefabObject)
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.parent = "";
@@ -10947,9 +10945,9 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 EditorManager.inst.HideDialog("Parent Selector");
-                if (list.Count == 1 && timelineObject.IsBeatmapObject)
+                if (list.Count == 1 && timelineObject.isBeatmapObject)
                     StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
-                if (list.Count == 1 && timelineObject.IsPrefabObject)
+                if (list.Count == 1 && timelineObject.isPrefabObject)
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
             });
 
@@ -10969,7 +10967,7 @@ namespace BetterLegacy.Editor.Managers
                     var list = ObjectEditor.inst.SelectedObjects;
                     foreach (var timelineObject in list)
                     {
-                        if (timelineObject.IsPrefabObject)
+                        if (timelineObject.isPrefabObject)
                         {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.parent = BeatmapObject.CAMERA_PARENT;
@@ -10984,9 +10982,9 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     EditorManager.inst.HideDialog("Parent Selector");
-                    if (list.Count == 1 && timelineObject.IsBeatmapObject)
+                    if (list.Count == 1 && timelineObject.isBeatmapObject)
                         StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
-                    if (list.Count == 1 && timelineObject.IsPrefabObject)
+                    if (list.Count == 1 && timelineObject.isPrefabObject)
                         RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
                 });
 
@@ -11037,7 +11035,7 @@ namespace BetterLegacy.Editor.Managers
                         var list = ObjectEditor.inst.SelectedObjects;
                         foreach (var timelineObject in list)
                         {
-                            if (timelineObject.IsPrefabObject)
+                            if (timelineObject.isPrefabObject)
                             {
                                 var prefabObject = timelineObject.GetData<PrefabObject>();
                                 prefabObject.parent = id;
@@ -11052,9 +11050,9 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         EditorManager.inst.HideDialog("Parent Selector");
-                        if (list.Count == 1 && timelineObject.IsBeatmapObject)
+                        if (list.Count == 1 && timelineObject.isBeatmapObject)
                             StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
-                        if (list.Count == 1 && timelineObject.IsPrefabObject)
+                        if (list.Count == 1 && timelineObject.isPrefabObject)
                             RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
 
                         Debug.Log($"{__instance.className}Set Parent ID: {id}");

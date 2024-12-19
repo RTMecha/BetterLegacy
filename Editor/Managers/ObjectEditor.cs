@@ -42,7 +42,7 @@ namespace BetterLegacy.Editor.Managers
             timelinePosScrollbar = ObjEditor.inst.objTimelineContent.parent.parent.GetComponent<ScrollRect>().horizontalScrollbar;
             timelinePosScrollbar.onValueChanged.AddListener(_val =>
             {
-                if (CurrentSelection.IsBeatmapObject)
+                if (CurrentSelection.isBeatmapObject)
                     CurrentSelection.TimelinePosition = _val;
             });
 
@@ -132,7 +132,7 @@ namespace BetterLegacy.Editor.Managers
 
         public TimelineObject CurrentSelection { get; set; } = new TimelineObject(null);
 
-        public List<TimelineObject> SelectedObjects => RTEditor.inst.timelineObjects.FindAll(x => x.Selected && !x.IsEventKeyframe);
+        public List<TimelineObject> SelectedObjects => RTEditor.inst.timelineObjects.FindAll(x => x.Selected && !x.isEventKeyframe);
         public List<TimelineObject> SelectedBeatmapObjects => RTEditor.inst.TimelineBeatmapObjects.FindAll(x => x.Selected);
         public List<TimelineObject> SelectedPrefabObjects => RTEditor.inst.TimelinePrefabObjects.FindAll(x => x.Selected);
 
@@ -228,7 +228,7 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
-            if (!ObjEditor.inst.changingTime && CurrentSelection && CurrentSelection.IsBeatmapObject)
+            if (!ObjEditor.inst.changingTime && CurrentSelection && CurrentSelection.isBeatmapObject)
             {
                 // Sets new audio time using the Object Keyframe timeline cursor.
                 ObjEditor.inst.newTime = Mathf.Clamp(EditorManager.inst.CurrentAudioPos,
@@ -271,8 +271,8 @@ namespace BetterLegacy.Editor.Managers
                         hasChanged = true;
 
                     timelineObject.Bin = binCalc;
-                    RenderTimelineObjectPosition(timelineObject);
-                    if (timelineObject.IsBeatmapObject && SelectedObjects.Count == 1)
+                    timelineObject.UpdatePosLength();
+                    if (timelineObject.isBeatmapObject && SelectedObjects.Count == 1)
                         RenderBin(timelineObject.GetData<BeatmapObject>());
                 }
 
@@ -310,9 +310,9 @@ namespace BetterLegacy.Editor.Managers
 
                 timelineObject.Time = Mathf.Clamp(timeOffset + timelineObject.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                RenderTimelineObjectPosition(timelineObject);
+                timelineObject.UpdatePosLength();
 
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                 {
                     var prefabObject = timelineObject.GetData<PrefabObject>();
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
@@ -353,14 +353,14 @@ namespace BetterLegacy.Editor.Managers
 
         void HandleKeyframesDrag()
         {
-            if (!ObjEditor.inst.timelineKeyframesDrag || !CurrentSelection.IsBeatmapObject)
+            if (!ObjEditor.inst.timelineKeyframesDrag || !CurrentSelection.isBeatmapObject)
                 return;
 
             var beatmapObject = CurrentSelection.GetData<BeatmapObject>();
 
             var snap = EditorConfig.Instance.BPMSnapsKeyframes.Value;
             var timelineCalc = MouseTimelineCalc();
-            var selected = CurrentSelection.InternalSelections.Where(x => x.Selected);
+            var selected = CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
             var startTime = beatmapObject.StartTime;
 
             foreach (var timelineObject in selected)
@@ -417,12 +417,12 @@ namespace BetterLegacy.Editor.Managers
 
             int min = list.Min(x => x.Index) - 1;
 
-            var beatmapObjects = list.FindAll(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList();
+            var beatmapObjects = list.FindAll(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList();
             var beatmapObjectIDs = new List<string>();
             var prefabObjectIDs = new List<string>();
 
-            beatmapObjectIDs.AddRange(list.FindAll(x => x.IsBeatmapObject).Select(x => x.ID));
-            prefabObjectIDs.AddRange(list.FindAll(x => x.IsPrefabObject).Select(x => x.ID));
+            beatmapObjectIDs.AddRange(list.FindAll(x => x.isBeatmapObject).Select(x => x.ID));
+            prefabObjectIDs.AddRange(list.FindAll(x => x.isPrefabObject).Select(x => x.ID));
 
             if (beatmapObjectIDs.Count == gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count)
             {
@@ -430,7 +430,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (prefabObjectIDs.Count > 0)
-                list.FindAll(x => x.IsPrefabObject)
+                list.FindAll(x => x.isPrefabObject)
                     .Select(x => x.GetData<PrefabObject>()).ToList()
                     .ForEach(x => beatmapObjectIDs
                         .AddRange(GameData.Current.beatmapObjects
@@ -477,7 +477,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.RemoveTimelineObject(timelineObject);
 
-            if (timelineObject.IsBeatmapObject)
+            if (timelineObject.isBeatmapObject)
             {
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
@@ -505,7 +505,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     EditorManager.inst.DisplayNotification("Can't delete only object", 2f, EditorManager.NotificationType.Error);
             }
-            else if (timelineObject.IsPrefabObject)
+            else if (timelineObject.isPrefabObject)
             {
                 var prefabObject = timelineObject.GetData<PrefabObject>();
 
@@ -525,7 +525,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator DeleteKeyframes()
         {
-            if (CurrentSelection.IsBeatmapObject)
+            if (CurrentSelection.isBeatmapObject)
                 yield return DeleteKeyframes(CurrentSelection.GetData<BeatmapObject>());
             yield break;
         }
@@ -534,7 +534,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var bmTimelineObject = GetTimelineObject(beatmapObject);
 
-            var list = bmTimelineObject.InternalSelections.Where(x => x.Selected).ToList();
+            var list = bmTimelineObject.InternalTimelineObjects.Where(x => x.Selected).ToList();
             int count = list.Where(x => x.Index != 0).Count();
 
             if (count < 1)
@@ -563,8 +563,8 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.events[i].RemoveAll(x => strs.Contains(((EventKeyframe)x).id));
             }
 
-            bmTimelineObject.InternalSelections.Where(x => x.Selected).ToList().ForEach(x => Destroy(x.GameObject));
-            bmTimelineObject.InternalSelections.RemoveAll(x => x.Selected);
+            bmTimelineObject.InternalTimelineObjects.Where(x => x.Selected).ToList().ForEach(x => Destroy(x.GameObject));
+            bmTimelineObject.InternalTimelineObjects.RemoveAll(x => x.Selected);
 
             RenderTimelineObject(bmTimelineObject);
             Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -614,9 +614,9 @@ namespace BetterLegacy.Editor.Managers
 
             var bmTimelineObject = GetTimelineObject(beatmapObject);
 
-            float num = bmTimelineObject.InternalSelections.Where(x => x.Selected).Min(x => x.Time);
+            float num = bmTimelineObject.InternalTimelineObjects.Where(x => x.Selected).Min(x => x.Time);
 
-            foreach (var timelineObject in bmTimelineObject.InternalSelections.Where(x => x.Selected))
+            foreach (var timelineObject in bmTimelineObject.InternalTimelineObjects.Where(x => x.Selected))
             {
                 int type = timelineObject.Type;
                 int index = timelineObject.Index;
@@ -653,7 +653,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.SelectPasted.Value)
             {
                 var timelineObject = GetTimelineObject(beatmapObject);
-                foreach (var kf in timelineObject.InternalSelections)
+                foreach (var kf in timelineObject.InternalTimelineObjects)
                     kf.Selected = ids.Contains(kf.ID);
             }
 
@@ -732,7 +732,7 @@ namespace BetterLegacy.Editor.Managers
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
                 RTEditor.inst.SetLayer(RTEditor.LayerType.Objects);
 
-            if (CurrentSelection.IsBeatmapObject && prefab.objects.Count > 0)
+            if (CurrentSelection.isBeatmapObject && prefab.objects.Count > 0)
                 ClearKeyframes(CurrentSelection.GetData<BeatmapObject>());
 
             if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
@@ -767,14 +767,13 @@ namespace BetterLegacy.Editor.Managers
                     else if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != BeatmapObject.CAMERA_PARENT)
                         beatmapObjectCopy.parent = "";
 
-                    beatmapObjectCopy.prefabID = beatmapObject.prefabID;
                     if (regen)
-                    {
-                        beatmapObjectCopy.prefabID = "";
-                        beatmapObjectCopy.prefabInstanceID = "";
-                    }
+                        beatmapObjectCopy.RemovePrefabReference();
                     else
+                    {
+                        beatmapObjectCopy.prefabID = beatmapObject.prefabID;
                         beatmapObjectCopy.prefabInstanceID = beatmapObject.prefabInstanceID;
+                    }
 
                     beatmapObjectCopy.fromPrefab = false;
 
@@ -871,9 +870,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
                     EditorManager.inst.ShowDialog("Multi Object Editor", false);
-                else if (CurrentSelection.IsBeatmapObject)
+                else if (CurrentSelection.isBeatmapObject)
                     OpenDialog(CurrentSelection.GetData<BeatmapObject>());
-                else if (CurrentSelection.IsPrefabObject)
+                else if (CurrentSelection.isPrefabObject)
                     PrefabEditor.inst.OpenPrefabDialog();
             }
 
@@ -1380,10 +1379,10 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator GroupSelectKeyframes(bool _add = true)
         {
-            if (!CurrentSelection.IsBeatmapObject)
+            if (!CurrentSelection.isBeatmapObject)
                 yield break;
 
-            var list = CurrentSelection.InternalSelections;
+            var list = CurrentSelection.InternalTimelineObjects;
 
             if (!_add)
                 list.ForEach(x => x.Selected = false);
@@ -1441,7 +1440,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderTimelineObject(timelineObject);
             }
 
-            if (CurrentSelection.IsBeatmapObject && CurrentSelection.ID != timelineObject.ID)
+            if (CurrentSelection.isBeatmapObject && CurrentSelection.ID != timelineObject.ID)
                 for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
                 {
                     LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
@@ -1454,9 +1453,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (!string.IsNullOrEmpty(timelineObject.ID) && openDialog)
             {
-                if (timelineObject.IsBeatmapObject)
+                if (timelineObject.isBeatmapObject)
                     OpenDialog(timelineObject.GetData<BeatmapObject>());
-                if (timelineObject.IsPrefabObject)
+                if (timelineObject.isPrefabObject)
                     PrefabEditor.inst.OpenPrefabDialog();
             }
 
@@ -1484,8 +1483,8 @@ namespace BetterLegacy.Editor.Managers
             if (!ObjEditor.inst.timelineKeyframesDrag)
             {
                 Debug.Log($"{ObjEditor.inst.className}Setting Current Keyframe: {type}, {index}");
-                if (!_shift && bmTimelineObject.InternalSelections.Count > 0)
-                    bmTimelineObject.InternalSelections.ForEach(timelineObject => { timelineObject.Selected = false; });
+                if (!_shift && bmTimelineObject.InternalTimelineObjects.Count > 0)
+                    bmTimelineObject.InternalTimelineObjects.ForEach(timelineObject => { timelineObject.Selected = false; });
 
                 var kf = GetKeyframe(beatmapObject, type, index);
 
@@ -1546,7 +1545,7 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
         public TimelineObject GetTimelineObject(BeatmapObject beatmapObject)
         {
-            if (beatmapObject.fromPrefab && RTEditor.inst.timelineObjects.TryFind(x => x.IsPrefabObject && x.ID == beatmapObject.prefabInstanceID, out TimelineObject timelineObject))
+            if (beatmapObject.fromPrefab && RTEditor.inst.timelineObjects.TryFind(x => x.isPrefabObject && x.ID == beatmapObject.prefabInstanceID, out TimelineObject timelineObject))
                 return timelineObject;
 
             if (!beatmapObject.timelineObject)
@@ -1555,182 +1554,33 @@ namespace BetterLegacy.Editor.Managers
             return beatmapObject.timelineObject;
         }
 
-        public GameObject RenderTimelineObject(TimelineObject timelineObject)
+        public void RenderTimelineObject(TimelineObject timelineObject)
         {
-            var gameObject = !timelineObject.GameObject ? CreateTimelineObject(timelineObject) : timelineObject.GameObject;
-
-            bool locked = false;
-            bool collapsed = false;
-            int bin = 0;
-            string name = "object name";
-            float startTime = 0f;
-            float offset = 0f;
-
-            string nullName = "";
-
-            var image = timelineObject.Image;
-
-            Prefab prefab = timelineObject.ObjectType switch
-            {
-                TimelineObject.TimelineObjectType.BeatmapObject => timelineObject.GetData<BeatmapObject>().Prefab,
-                TimelineObject.TimelineObjectType.PrefabObject => timelineObject.GetData<PrefabObject>().Prefab,
-                _ => null,
-            };
-
-            var prefabExists = prefab != null;
-
-            if (timelineObject.IsBeatmapObject)
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.timelineObject = timelineObject;
-
-                locked = beatmapObject.editorData.locked;
-                collapsed = beatmapObject.editorData.collapse;
-                bin = beatmapObject.editorData.Bin;
-                name = beatmapObject.name;
-                startTime = beatmapObject.StartTime;
-                offset = beatmapObject.GetObjectLifeLength(_takeCollapseIntoConsideration: true);
-
-                image.type = GetObjectTypePattern(beatmapObject.objectType);
-                image.sprite = GetObjectTypeSprite(beatmapObject.objectType);
-
-                if (!prefabExists)
-                {
-                    beatmapObject.prefabID = null;
-                    beatmapObject.prefabInstanceID = null;
-                }
-            }
-
-            if (timelineObject.IsPrefabObject)
-            {
-                var prefabObject = timelineObject.GetData<PrefabObject>();
-
-                locked = prefabObject.editorData.locked;
-                collapsed = prefabObject.editorData.collapse;
-                bin = prefabObject.editorData.Bin;
-                name = prefab.Name;
-                startTime = prefabObject.StartTime + prefab.Offset;
-                offset = prefabObject.GetPrefabLifeLength(true);
-                image.type = Image.Type.Simple;
-                image.sprite = null;
-
-                var prefabType = prefab.PrefabType;
-
-                nullName = prefabType.Name;
-            }
-
-            if (timelineObject.Text)
-            {
-                var textMeshNoob = timelineObject.Text; // ha! take that tmp
-                textMeshNoob.text = (!string.IsNullOrEmpty(name)) ? string.Format("<mark=#000000aa>{0}</mark>", name) : nullName;
-                textMeshNoob.color = LSColors.white;
-            }
-
-            gameObject.transform.Find("icons/lock").gameObject.SetActive(locked);
-            gameObject.transform.Find("icons/dots").gameObject.SetActive(collapsed);
-            var typeIcon = gameObject.transform.Find("icons/type").gameObject;
-
-            var renderTypeIcon = prefabExists && RenderPrefabTypeIcon;
-            typeIcon.SetActive(renderTypeIcon);
-            if (renderTypeIcon)
-                gameObject.transform.Find("icons/type/type").GetComponent<Image>().sprite = prefab.PrefabType.icon;
-
-            float zoom = EditorManager.inst.Zoom;
-
-            offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
-
-            var rectTransform = gameObject.transform.AsRT();
-            rectTransform.sizeDelta = new Vector2(offset, 20f);
-            rectTransform.anchoredPosition = new Vector2(startTime * zoom, (-20 * Mathf.Clamp(bin, 0, 14)));
-            if (timelineObject.Hover)
-                timelineObject.Hover.size = TimelineObjectHoverSize;
+            if (!timelineObject.GameObject)
+                CreateTimelineObject(timelineObject);
 
             timelineObject.Update();
-
-            return gameObject;
         }
 
         public void RenderTimelineObjects()
         {
-            foreach (var timelineObject in RTEditor.inst.timelineObjects.FindAll(x => !x.IsEventKeyframe))
+            foreach (var timelineObject in RTEditor.inst.timelineObjects)
                 RenderTimelineObject(timelineObject);
-        }
-
-        public void RenderTimelineObjectPosition(TimelineObject timelineObject)
-        {
-            float offset = 0f;
-            float timeOffset = 0f;
-
-            if (timelineObject.IsBeatmapObject)
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                offset = beatmapObject.GetObjectLifeLength(_takeCollapseIntoConsideration: true);
-            }
-
-            if (timelineObject.IsPrefabObject)
-            {
-                var prefabObject = timelineObject.GetData<PrefabObject>();
-                var prefab = prefabObject.Prefab;
-
-                offset = prefabObject.GetPrefabLifeLength(true);
-                timeOffset = prefab.Offset;
-            }
-
-            float zoom = EditorManager.inst.Zoom;
-
-            offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
-
-            var rectTransform = timelineObject.GameObject.transform.AsRT();
-            rectTransform.sizeDelta = new Vector2(offset, 20f);
-            rectTransform.anchoredPosition = new Vector2((timelineObject.Time + timeOffset) * zoom, (-20 * Mathf.Clamp(timelineObject.Bin, 0, 14)));
-            if (timelineObject.Hover)
-                timelineObject.Hover.size = TimelineObjectHoverSize;
         }
 
         public void RenderTimelineObjectsPositions()
         {
-            foreach (var timelineObject in RTEditor.inst.timelineObjects.FindAll(x => !x.IsEventKeyframe && RTEditor.inst.Layer == x.Layer))
+            foreach (var timelineObject in RTEditor.inst.timelineObjects)
             {
-                RenderTimelineObjectPosition(timelineObject);
+                if (timelineObject.IsCurrentLayer)
+                    timelineObject.UpdatePosLength();
             }
         }
 
-        public GameObject CreateTimelineObject(TimelineObject timelineObject, bool forceAdd = false, bool dontAdd = false)
+        public void CreateTimelineObject(TimelineObject timelineObject, bool forceAdd = false, bool dontAdd = false)
         {
-            GameObject gameObject = null;
-
-            int index = 0;
-            if (forceAdd || !dontAdd && !timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
-            {
-                timelineObject.verified = true;
-                if (timelineObject.IsPrefabObject || !RTEditor.inst.timelineObjects.TryFindIndex(x => x.IsPrefabObject, out index))
-                {
-                    index = RTEditor.inst.timelineObjects.Count;
-                    RTEditor.inst.timelineObjects.Add(timelineObject);
-                }
-                else
-                    RTEditor.inst.timelineObjects.Insert(index, timelineObject);
-            }
-
-            if (timelineObject.GameObject)
-                Destroy(timelineObject.GameObject);
-
-            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object", index);
-            var storage = gameObject.GetComponent<TimelineObjectStorage>();
-
-            timelineObject.Hover = storage.hoverUI;
-            timelineObject.GameObject = gameObject;
-            timelineObject.Image = storage.image;
-            timelineObject.Text = storage.text;
-
-            storage.eventTrigger.triggers.Clear();
-            storage.eventTrigger.triggers.Add(TriggerHelper.CreateBeatmapObjectTrigger(timelineObject));
-            storage.eventTrigger.triggers.Add(TriggerHelper.CreateBeatmapObjectStartDragTrigger(timelineObject));
-            storage.eventTrigger.triggers.Add(TriggerHelper.CreateBeatmapObjectEndDragTrigger(timelineObject));
-
-            timelineObject.Update();
-
-            return gameObject;
+            timelineObject.AddToList(forceAdd, dontAdd);
+            timelineObject.Init();
         }
 
         public IEnumerator ICreateTimelineObjects(bool forceAdd = false)
@@ -1927,7 +1777,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to edit.</param>
         public void OpenDialog(BeatmapObject beatmapObject)
         {
-            if (!CurrentSelection.IsBeatmapObject)
+            if (!CurrentSelection.isBeatmapObject)
             {
                 EditorManager.inst.DisplayNotification("Cannot edit non-object!", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -4023,7 +3873,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderObjectKeyframesDialog(BeatmapObject beatmapObject)
         {
-            var selected = beatmapObject.timelineObject.InternalSelections.Where(x => x.Selected);
+            var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
 
             for (int i = 0; i < ObjEditor.inst.KeyframeDialogs.Count; i++)
                 ObjEditor.inst.KeyframeDialogs[i].SetActive(false);
@@ -4941,15 +4791,15 @@ namespace BetterLegacy.Editor.Managers
         public void ResizeKeyframeTimeline(BeatmapObject beatmapObject)
         {
             // ObjEditor.inst.ObjectLengthOffset is the offset from the last keyframe. Could allow for more timeline space.
-            float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
-            float x = ObjEditor.inst.posCalc(objectLifeLength);
+            float objectLifeLength = beatmapObject.GetObjectLifeLength();
+            float x = TimeTimelineCalc(objectLifeLength + ObjEditor.inst.ObjectLengthOffset);
 
             ObjEditor.inst.objTimelineContent.AsRT().sizeDelta = new Vector2(x, 0f);
             ObjEditor.inst.objTimelineGrid.AsRT().sizeDelta = new Vector2(x, 122f);
 
             // Whether the value should clamp at 0.001 over StartTime or not.
             ObjEditor.inst.objTimelineSlider.minValue = AllowTimeExactlyAtStart ? beatmapObject.StartTime : beatmapObject.StartTime + 0.001f;
-            ObjEditor.inst.objTimelineSlider.maxValue = beatmapObject.StartTime + objectLifeLength;
+            ObjEditor.inst.objTimelineSlider.maxValue = beatmapObject.StartTime + objectLifeLength + ObjEditor.inst.ObjectLengthOffset;
 
             if (!keyframeEnd)
             {
@@ -4959,14 +4809,14 @@ namespace BetterLegacy.Editor.Managers
 
             var rectTransform = keyframeEnd.transform.AsRT();
             rectTransform.sizeDelta = new Vector2(4f, 122f);
-            rectTransform.anchoredPosition = new Vector2(beatmapObject.GetObjectLifeLength() * ObjEditor.inst.Zoom * 14f, 0f);
+            rectTransform.anchoredPosition = new Vector2(objectLifeLength * ObjEditor.inst.Zoom * 14f, 0f);
         }
 
         public void ClearKeyframes(BeatmapObject beatmapObject)
         {
             var timelineObject = GetTimelineObject(beatmapObject);
 
-            foreach (var kf in timelineObject.InternalSelections)
+            foreach (var kf in timelineObject.InternalTimelineObjects)
                 Destroy(kf.GameObject);
         }
 
@@ -4974,22 +4824,22 @@ namespace BetterLegacy.Editor.Managers
         {
             var bmTimelineObject = GetTimelineObject(beatmapObject);
 
-            var kf = bmTimelineObject.InternalSelections.Find(x => x.Type == type && x.Index == index);
+            var kf = bmTimelineObject.InternalTimelineObjects.Find(x => x.Type == type && x.Index == index);
 
             if (!kf)
-                kf = bmTimelineObject.InternalSelections.Find(x => x.ID == (beatmapObject.events[type][index] as EventKeyframe).id);
+                kf = bmTimelineObject.InternalTimelineObjects.Find(x => x.ID == (beatmapObject.events[type][index] as EventKeyframe).id);
 
             if (!kf)
             {
                 kf = CreateKeyframe(beatmapObject, type, index);
-                bmTimelineObject.InternalSelections.Add(kf);
+                bmTimelineObject.InternalTimelineObjects.Add(kf);
             }
 
             if (!kf.GameObject)
             {
                 kf.GameObject = KeyframeObject(beatmapObject, kf);
                 kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-                kf.Update();
+                kf.UpdateVisibleState();
             }
 
             return kf;
@@ -5010,18 +4860,18 @@ namespace BetterLegacy.Editor.Managers
                 for (int j = 0; j < beatmapObject.events[i].Count; j++)
                 {
                     var keyframe = (EventKeyframe)beatmapObject.events[i][j];
-                    var kf = beatmapObject.timelineObject.InternalSelections.Find(x => x.ID == keyframe.id);
+                    var kf = beatmapObject.timelineObject.InternalTimelineObjects.Find(x => x.ID == keyframe.id);
                     if (!kf)
                     {
                         kf = CreateKeyframe(beatmapObject, i, j);
-                        beatmapObject.timelineObject.InternalSelections.Add(kf);
+                        beatmapObject.timelineObject.InternalTimelineObjects.Add(kf);
                     }
 
                     if (!kf.GameObject)
                     {
                         kf.GameObject = KeyframeObject(beatmapObject, kf);
                         kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-                        kf.Update();
+                        kf.UpdateVisibleState();
                     }
 
                     RenderKeyframe(beatmapObject, kf);
@@ -5040,9 +4890,12 @@ namespace BetterLegacy.Editor.Managers
                 isObjectKeyframe = true
             };
 
+            if (eventKeyframe is EventKeyframe eventKF)
+                eventKF.timelineObject = kf;
+
             kf.GameObject = KeyframeObject(beatmapObject, kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-            kf.Update();
+            kf.UpdateVisibleState();
 
             return kf;
         }
@@ -5080,15 +4933,15 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var timelineObject = GetTimelineObject(beatmapObject);
-            if (timelineObject.InternalSelections.Count > 0 && timelineObject.InternalSelections.Where(x => x.Selected).Count() == 0)
+            if (timelineObject.InternalTimelineObjects.Count > 0 && timelineObject.InternalTimelineObjects.Where(x => x.Selected).Count() == 0)
             {
-                if (EditorConfig.Instance.RememberLastKeyframeType.Value && timelineObject.InternalSelections.TryFind(x => x.Type == ObjEditor.inst.currentKeyframeKind, out TimelineObject kf))
+                if (EditorConfig.Instance.RememberLastKeyframeType.Value && timelineObject.InternalTimelineObjects.TryFind(x => x.Type == ObjEditor.inst.currentKeyframeKind, out TimelineObject kf))
                     kf.Selected = true;
                 else
-                    timelineObject.InternalSelections[0].Selected = true;
+                    timelineObject.InternalTimelineObjects[0].Selected = true;
             }
 
-            if (timelineObject.InternalSelections.Count >= 1000)
+            if (timelineObject.InternalTimelineObjects.Count >= 1000)
                 AchievementManager.inst.UnlockAchievement("holy_keyframes");
         }
 
@@ -5098,20 +4951,9 @@ namespace BetterLegacy.Editor.Managers
                 timelineObject.Index = kfIndex;
 
             var eventKeyframe = timelineObject.GetData<EventKeyframe>();
-            timelineObject.Image.sprite =
-                                RTEditor.GetKeyframeIcon(eventKeyframe.curveType,
-                                beatmapObject.events[timelineObject.Type].Count > timelineObject.Index + 1 ?
-                                beatmapObject.events[timelineObject.Type][timelineObject.Index + 1].curveType : DataManager.inst.AnimationList[0]);
-
-            float x = ObjEditor.inst.posCalc(eventKeyframe.eventTime);
-
-            var rectTransform = (RectTransform)timelineObject.GameObject.transform;
-            rectTransform.sizeDelta = new Vector2(14f, 25f);
-            rectTransform.anchoredPosition = new Vector2(x, 0f);
-
-            var locked = timelineObject.GameObject.transform.Find("lock");
-            if (locked)
-                locked.gameObject.SetActive(timelineObject.Locked);
+            timelineObject.UpdateSprite(beatmapObject.events[timelineObject.Type]);
+            timelineObject.UpdatePosLength(ObjEditor.inst.zoomVal, 0f, eventKeyframe.eventTime);
+            timelineObject.UpdateIcons();
         }
 
         public void UpdateKeyframeOrder(BeatmapObject beatmapObject)
@@ -5126,29 +4968,22 @@ namespace BetterLegacy.Editor.Managers
             RenderKeyframes(beatmapObject);
         }
 
-        public static string IntToAxis(int num)
+        public static string IntToAxis(int num) => num switch
         {
-            switch (num)
-            {
-                case 0: return "x";
-                case 1: return "y";
-                case 2: return "z";
-                case 3: return "w";
-                default: throw new Exception("Axis out of dimensional range.");
-            }
-        }
+            0 => "x",
+            1 => "y",
+            2 => "z",
+            _ => string.Empty,
+        };
 
-        public static string IntToType(int num)
+        public static string IntToType(int num) => num switch
         {
-            switch (num)
-            {
-                case 0: return "pos";
-                case 1: return "sca";
-                case 2: return "rot";
-                case 3: return "col";
-                default: throw new Exception($"No recognized Keyframe Type at {num}.");
-            }
-        }
+            0 => "pos",
+            1 => "sca",
+            2 => "rot",
+            3 => "col",
+            _ => string.Empty,
+        };
 
         #endregion
 

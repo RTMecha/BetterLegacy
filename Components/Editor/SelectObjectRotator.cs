@@ -30,9 +30,9 @@ namespace BetterLegacy.Components.Editor
             if (!dragging)
                 return;
 
-            if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.RenderObjectKeyframesDialog(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
-            else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            else if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
                 RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
@@ -51,7 +51,7 @@ namespace BetterLegacy.Components.Editor
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
             var vector2 = Camera.main.ScreenToWorldPoint(vector);
 
-            if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
             {
                 selectedKeyframe = (EventKeyframe)ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>().events[2];
 
@@ -77,8 +77,8 @@ namespace BetterLegacy.Components.Editor
                 return;
 
             var pos = new Vector3(
-                ObjectEditor.inst.CurrentSelection.IsPrefabObject ? ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>().events[0].eventValues[0] : transform.position.x,
-                ObjectEditor.inst.CurrentSelection.IsPrefabObject ? ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>().events[0].eventValues[1] : transform.position.y,
+                ObjectEditor.inst.CurrentSelection.isPrefabObject ? ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>().events[0].eventValues[0] : transform.position.x,
+                ObjectEditor.inst.CurrentSelection.isPrefabObject ? ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>().events[0].eventValues[1] : transform.position.y,
                 0f);
 
             if (!setKeyframeValues)
@@ -91,7 +91,7 @@ namespace BetterLegacy.Components.Editor
             selectedKeyframe.eventValues[0] =
                 Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(dragKeyframeValues - dragOffset + -RTMath.VectorAngle(pos, vector2), 15f) : dragKeyframeValues - dragOffset + -RTMath.VectorAngle(pos, vector2);
 
-            if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
                 Updater.UpdatePrefab(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>(), "Offset");
             else
                 Updater.UpdateObject(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), "Keyframes");

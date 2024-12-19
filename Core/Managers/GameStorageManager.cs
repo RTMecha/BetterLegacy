@@ -71,7 +71,7 @@ namespace BetterLegacy.Core.Managers
 
             objectDragger.gameObject.SetActive(SelectObject.Enabled && CoreHelper.InEditor && EditorManager.inst.isEditing &&
                 ObjectEditor.inst.SelectedObjectCount == 1 &&
-                (ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || ObjectEditor.inst.CurrentSelection.IsPrefabObject));
+                (ObjectEditor.inst.CurrentSelection.isBeatmapObject && ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || ObjectEditor.inst.CurrentSelection.isPrefabObject));
         }
 
         SelectObjectScaler CreateScaler(Axis axis, Color color)
