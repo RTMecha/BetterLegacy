@@ -40,8 +40,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
-            InterfaceManager.inst.CurrentInterface = this;
-
             layouts.Add("buttons", new MenuVerticalLayout
             {
                 name = "buttons",
@@ -338,7 +336,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             exitFunc = UnPause;
 
-            StartGeneration();
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
         public override void UpdateTheme()
