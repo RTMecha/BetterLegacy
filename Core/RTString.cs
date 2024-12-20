@@ -710,6 +710,8 @@ namespace BetterLegacy.Core
                 .Replace("{{SplashText}}", LegacyPlugin.SplashText);
         }
 
+        public static string ToStoryNumber(int num) => (num + 1).ToString("00");
+
         public static string PreciseToMilliSeconds(float seconds, string format = "{0:000}") => string.Format(format, TimeSpan.FromSeconds(seconds).Milliseconds);
 
         public static string PreciseToSeconds(float seconds, string format = "{0:00}") => string.Format(format, TimeSpan.FromSeconds(seconds).Seconds);
