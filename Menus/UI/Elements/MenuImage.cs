@@ -329,11 +329,11 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public virtual void UpdateSpawnCondition()
         {
-            time += (Time.time - timeOffset) * length * InterfaceManager.InterfaceSpeed;
+            time += (Time.time - timeOffset) * InterfaceManager.InterfaceSpeed;
 
             timeOffset = Time.time;
 
-            if (time > length * InterfaceManager.InterfaceSpeed)
+            if (time > length)
                 isSpawning = false;
         }
 
@@ -1210,8 +1210,12 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetCurrentInterface":
                     {
-                        if (parameters != null && (parameters.IsArray && parameters.Count >= 1 || parameters.IsObject && parameters["id"] != null))
-                            InterfaceManager.inst.SetCurrentInterface(parameters.IsArray ? parameters[0] : parameters["id"]);
+                        if (parameters != null && (parameters.IsArray && parameters.Count >= 1 || parameters.IsObject && parameters["id"] != null) &&
+                                InterfaceManager.inst.interfaces.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuBase menu))
+                        {
+                            InterfaceManager.inst.SetCurrentInterface(menu);
+                            InterfaceManager.inst.PlayMusic();
+                        }
 
                         break;
                     }
@@ -1277,7 +1281,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                             InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
 
-                        var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}.lsi");
+                        var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}{FileFormat.LSI.Dot()}");
 
                         if (!RTFile.FileExists(path))
                         {
@@ -1291,18 +1295,23 @@ namespace BetterLegacy.Menus.UI.Elements
                         var menu = CustomMenu.Parse(interfaceJN);
                         menu.filePath = path;
 
-                        if (InterfaceManager.inst.interfaces.Has(x => x.id == menu.id))
+                        var load = parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true);
+
+                        if (load)
+                            InterfaceManager.inst.PlayMusic();
+
+                        if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
                         {
-                            if (parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true))
-                                InterfaceManager.inst.SetCurrentInterface(menu.id);
+                            if (load)
+                                InterfaceManager.inst.SetCurrentInterface(otherMenu);
 
                             break;
                         }
 
                         InterfaceManager.inst.interfaces.Add(menu);
 
-                        if (parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true))
-                            InterfaceManager.inst.SetCurrentInterface(menu.id);
+                        if (load)
+                            InterfaceManager.inst.SetCurrentInterface(menu);
 
                         break;
                     }
