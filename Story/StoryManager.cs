@@ -97,7 +97,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// Path to the current save slot file.
         /// </summary>
-        public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}{FileFormat.LSS.Dot()}";
+        public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{RTString.ToStoryNumber(SaveSlot)}{FileFormat.LSS.Dot()}";
         public JSONNode storySavesJSON;
         int saveSlot;
         /// <summary>
@@ -127,10 +127,10 @@ namespace BetterLegacy.Story
         /// </summary>
         public void UpdateCurrentLevelProgress()
         {
-            if (LevelManager.CurrentLevel == null)
-                return;
-
             var level = LevelManager.CurrentLevel;
+
+            if (!level)
+                return;
 
             CoreHelper.Log($"Setting Player Data");
 
@@ -958,7 +958,7 @@ namespace BetterLegacy.Story
             int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
             var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
 
-            if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && !LoadBool(completeString, false))
+            if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && cutsceneIndex != level.preCutscenes.Count && !LoadBool(completeString, false))
             {
                 isCutscene = true;
                 path = level[cutsceneIndex];
