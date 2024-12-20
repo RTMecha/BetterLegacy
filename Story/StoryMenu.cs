@@ -94,11 +94,23 @@ namespace BetterLegacy.Story
             for (int i = 0; i < MAX_SAVE_SLOTS; i++)
             {
                 int index = i;
+                string progress = "";
+                var fileExists = RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/story_saves_{RTString.ToStoryNumber(index)}{FileFormat.LSS.Dot()}");
+                if (fileExists)
+                {
+                    var saveSlot = new SaveSlot(i);
+                    var chapterIndex = RTMath.Clamp(saveSlot.ChapterIndex, 0, StoryMode.Instance.chapters.Count - 1);
+                    var levelSequenceIndex = RTMath.Clamp(saveSlot.LevelSequenceIndex, 0, StoryMode.Instance.chapters[chapterIndex].Count - 1);
+                    progress = $" | DOC{RTString.ToStoryNumber(chapterIndex)} - SIM{RTString.ToStoryNumber(levelSequenceIndex)} |";
+                    saveSlot.storySavesJSON = null;
+                    saveSlot = null;
+                }
+
                 elements.Add(new MenuButton
                 {
                     id = "4918487",
                     name = name,
-                    text = $"<b> [ SLOT {(index + 1).ToString("00")} ]",
+                    text = $"<b> [ SLOT {(index + 1).ToString("00")}{progress} ]",
                     parentLayout = "buttons",
                     selectionPosition = new Vector2Int(0, index + 1),
                     rect = RectValues.Default.SizeDelta(200f, 64f),
@@ -119,7 +131,7 @@ namespace BetterLegacy.Story
                     },
                 });
 
-                if (!RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/story_saves_{(index + 1).ToString("00")}.lss"))
+                if (!fileExists)
                 {
                     elements.Add(new MenuImage
                     {
