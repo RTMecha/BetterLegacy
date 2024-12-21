@@ -492,46 +492,25 @@ namespace BetterLegacy.Core.Helpers
             if (string.IsNullOrEmpty(link))
                 return link;
 
-            var userLinks = ArtistLinks;
-            var instanceLinks = SongLinks;
-            var creatorLinks = CreatorLinks;
-
-            switch (type)
+            var links = type switch
             {
-                case LinkType.Song:
-                    {
-                        if (site < 0 || site >= instanceLinks.Count)
-                            return null;
+                LinkType.Artist => ArtistLinks,
+                LinkType.Song => SongLinks,
+                LinkType.Creator => CreatorLinks,
+                _ => null,
+            };
 
+            if (links == null || site < 0 || site >= links.Count)
+                return null;
 
-                        if (site < 0 || site >= instanceLinks.Count)
-                            return null;
-
-                        if (instanceLinks[site].linkFormat.Contains("{1}"))
-                        {
-                            var split = link.Split(',');
-                            return string.Format(instanceLinks[site].linkFormat, split[0], split[1]);
-                        }
-                        else
-                            return string.Format(instanceLinks[site].linkFormat, link);
-                    }
-                case LinkType.Artist:
-                    {
-                        if (site < 0 || site >= userLinks.Count)
-                            return null;
-
-                        return string.Format(userLinks[site].linkFormat, link);
-                    }
-                case LinkType.Creator:
-                    {
-                        if (site < 0 || site >= creatorLinks.Count)
-                            return null;
-
-                        return string.Format(creatorLinks[site].linkFormat, link);
-                    }
+            var linkFormat = links[site];
+            if (type == LinkType.Song && linkFormat.linkFormat.Contains("{1}"))
+            {
+                var split = link.Split(',');
+                return string.Format(linkFormat.linkFormat, split[0], split[1]);
             }
-
-            return null;
+            else
+                return string.Format(linkFormat.linkFormat, link);
         }
 
         public static List<DataManager.LinkType> SongLinks => new List<DataManager.LinkType>
