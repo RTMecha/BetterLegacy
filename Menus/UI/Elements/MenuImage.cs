@@ -387,9 +387,9 @@ namespace BetterLegacy.Menus.UI.Elements
             });
 
             return input
-                .Replace("{{CurrentPlayingChapterNumber}}", (StoryManager.inst.currentPlayingChapterIndex + 1).ToString("00"))
-                .Replace("{{CurrentPlayingLevelNumber}}", (StoryManager.inst.currentPlayingLevelSequenceIndex + 1).ToString("00"))
-                .Replace("{{SaveSlotNumber}}", (StoryManager.inst.SaveSlot + 1).ToString("00"))
+                .Replace("{{CurrentPlayingChapterNumber}}", RTString.ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex))
+                .Replace("{{CurrentPlayingLevelNumber}}", RTString.ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex))
+                .Replace("{{SaveSlotNumber}}", RTString.ToStoryNumber(StoryManager.inst.SaveSlot))
                 ;
         }
 
