@@ -106,16 +106,17 @@ namespace BetterLegacy.Core.Managers
             var refer = MaterialReferenceManager.instance;
             var dictionary = (Dictionary<int, TMP_FontAsset>)refer.GetType().GetField("m_FontAssetReferenceLookup", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(refer);
 
-            if (!RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/customfonts.asset"))
+            var path = RTFile.GetAsset($"customfonts{FileFormat.ASSET.Dot()}");
+            if (!RTFile.FileExists(path))
             {
-                Debug.LogError($"{className}customfonts.asset does not exist in the BepInEx/plugins/Assets folder.");
+                Debug.LogError($"{className}customfonts{FileFormat.ASSET.Dot()} does not exist in the BepInEx/plugins/Assets folder.");
                 yield break;
             }
 
-            var assetBundle = GetAssetBundle(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets", "customfonts.asset");
+            var assetBundle = AssetBundle.LoadFromFile(path);
             foreach (var asset in assetBundle.GetAllAssetNames())
             {
-                string fontName = asset.Replace("assets/fonts/", "").Replace("assets/font/", "");
+                string fontName = asset.Remove("assets/fonts/").Remove("assets/font/");
                 var font = assetBundle.LoadAsset<Font>(fontName);
 
                 if (font == null)
@@ -127,13 +128,7 @@ namespace BetterLegacy.Core.Managers
                 var fontCopy = Instantiate(font);
                 fontCopy.name = ChangeName(fontName);
 
-                if (allFonts.ContainsKey(fontCopy.name))
-                {
-                    Debug.LogError($"{className}The font ({fontName}) was already in the font dictionary.");
-                    continue;
-                }
-
-                allFonts.Add(fontCopy.name, fontCopy);
+                allFonts[fontCopy.name] = fontCopy;
             }
             assetBundle.Unload(false);
 
@@ -154,13 +149,7 @@ namespace BetterLegacy.Core.Managers
 
                 MaterialReferenceManager.AddFontAsset(e);
 
-                if (allFontAssets.ContainsKey(font.Key))
-                {
-                    Debug.LogError($"{className}The font asset ({font.Key}) was already in the font asset dictionary.");
-                    continue;
-                }
-
-                allFontAssets.Add(font.Key, e);
+                allFontAssets[font.Key] = e;
             }
 
             if (CoreConfig.Instance.DebugInfoStartup.Value)
@@ -170,8 +159,6 @@ namespace BetterLegacy.Core.Managers
 
             yield break;
         }
-
-        public AssetBundle GetAssetBundle(string _filepath, string _bundle) => AssetBundle.LoadFromFile(Path.Combine(_filepath, _bundle));
 
         // UNUSED DUE TO FILESIZE
         // - NotoSansSC-VariableFont.ttf
