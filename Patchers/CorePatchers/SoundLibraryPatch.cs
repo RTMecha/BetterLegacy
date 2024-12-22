@@ -26,11 +26,11 @@ namespace BetterLegacy.Patchers
                 return false; // only run once due to Awake being run every time a scene is loaded.
             ran = true;
 
-            var ost = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}ost.asset");
+            var ost = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}ost{FileFormat.ASSET.Dot()}");
 
             foreach (var asset in ost.GetAllAssetNames())
             {
-                var assetName = asset.Replace("assets/ost/", "");
+                var assetName = asset.Remove("assets/ost/");
                 var music = ost.LoadAsset<AudioClip>(assetName);
 
                 if (music == null)
@@ -56,17 +56,18 @@ namespace BetterLegacy.Patchers
                 foreach (var audioClip in quickSounds)
                     __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
 
+            var ogg = FileFormat.OGG.Dot();
             AddSound(Example.ExampleManager.SpeakPath, "example_speak");
-            AddSound($"{SFXPath}anna speak.ogg", "anna_speak");
-            AddSound($"{SFXPath}hal speak.ogg", "hal_speak");
-            AddSound($"{SFXPath}para speak.ogg", "para_speak");
-            AddSound($"{SFXPath}t speak.ogg", "t_speak");
-            AddSound($"{SFXPath}menuflip.ogg", "menuflip");
-            AddSound($"{SFXPath}Record Scratch.ogg", "record_scratch");
-            AddSound($"{SFXPath}hit2.ogg", "HurtPlayer2");
-            AddSound($"{SFXPath}hit3.ogg", "HurtPlayer3");
-            AddSound($"{SFXPath}HealPlayer.ogg", "HealPlayer");
-            AddSound($"{SFXPath}shoot.ogg", "shoot");
+            AddSound($"{SFXPath}anna speak{ogg}", "anna_speak");
+            AddSound($"{SFXPath}hal speak{ogg}", "hal_speak");
+            AddSound($"{SFXPath}para speak{ogg}", "para_speak");
+            AddSound($"{SFXPath}t speak{ogg}", "t_speak");
+            AddSound($"{SFXPath}menuflip{ogg}", "menuflip");
+            AddSound($"{SFXPath}Record Scratch{ogg}", "record_scratch");
+            AddSound($"{SFXPath}hit2{ogg}", "HurtPlayer2");
+            AddSound($"{SFXPath}hit3{ogg}", "HurtPlayer3");
+            AddSound($"{SFXPath}HealPlayer{ogg}", "HealPlayer");
+            AddSound($"{SFXPath}shoot{ogg}", "shoot");
 
             foreach (var musicGroup in __instance.musicGroups)
             {
@@ -75,9 +76,9 @@ namespace BetterLegacy.Patchers
                 __instance.musicClips[musicGroup.musicID] = musicGroup.music;
             }
 
-            SetSound($"{SFXPath}click cut.ogg", DefaultSounds.UpDown, DefaultSounds.LeftRight);
-            SetSound($"{SFXPath}optionexit.ogg", DefaultSounds.Block);
-            SetSound($"{SFXPath}SpawnPlayer.ogg", DefaultSounds.SpawnPlayer);
+            SetSound($"{SFXPath}click cut{ogg}", DefaultSounds.UpDown, DefaultSounds.LeftRight);
+            SetSound($"{SFXPath}optionexit{ogg}", DefaultSounds.Block);
+            SetSound($"{SFXPath}SpawnPlayer{ogg}", DefaultSounds.SpawnPlayer);
 
             return false;
         }
@@ -132,10 +133,8 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            if (__instance.musicClipsRandomIndex.TryGetValue(__0, out int randomIndex))
-                return musicClips[randomIndex];
-
-            return musicClips[Random.Range(0, musicClips.Length)];
+            __result = musicClips[__instance.musicClipsRandomIndex.TryGetValue(__0, out int randomIndex) ? randomIndex : Random.Range(0, musicClips.Length)];
+            return false;
         }
 
         static string GetMusicName(string input) => input switch
