@@ -17,6 +17,9 @@ using BetterLegacy.Core.Animation.Keyframe;
 
 namespace BetterLegacy.Core.Managers
 {
+    /// <summary>
+    /// Achievement prefab storage.
+    /// </summary>
     public class AchievementStorage : MonoBehaviour
     {
         [SerializeField]
@@ -38,15 +41,24 @@ namespace BetterLegacy.Core.Managers
         public Image difficulty;
     }
 
+    /// <summary>
+    /// Manager class for handling BetterLegacy achievements.
+    /// </summary>
     public class AchievementManager : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="AchievementManager"/> global instance reference.
+        /// </summary>
         public static AchievementManager inst;
 
-        public UICanvas canvas;
-
-        public GameObject achievementPrefab;
-
+        /// <summary>
+        /// Initializes <see cref="AchievementManager"/>.
+        /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(AchievementManager), SystemManager.inst.transform).AddComponent<AchievementManager>();
+
+        #region Internal
 
         void Awake()
         {
@@ -104,7 +116,7 @@ namespace BetterLegacy.Core.Managers
             // story_doc01_full
         }
 
-        public void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
+        void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
         {
             try
             {
@@ -206,6 +218,15 @@ namespace BetterLegacy.Core.Managers
             yield break;
         }
 
+        #endregion
+
+        #endregion
+
+        #region Unlock / Lock
+
+        /// <summary>
+        /// Checks for level started related achievements.
+        /// </summary>
         public void CheckLevelBeginAchievements()
         {
             if (PlayerManager.Players.Count > 1)
@@ -217,6 +238,11 @@ namespace BetterLegacy.Core.Managers
                 UnlockAchievement("no_fps");
         }
 
+        /// <summary>
+        /// Checks for level finished related achievements.
+        /// </summary>
+        /// <param name="metadata">Metadata of the level.</param>
+        /// <param name="levelRank">Level rank that was gained.</param>
         public void CheckLevelEndAchievements(MetaData metadata, DataManager.LevelRank levelRank)
         {
             if (metadata.song.difficulty == 6)
@@ -313,6 +339,62 @@ namespace BetterLegacy.Core.Managers
             return achievement.unlocked;
         }
 
+        /// <summary>
+        /// Resets all achievements.
+        /// </summary>
+        public void ResetGlobalAchievements()
+        {
+            for (int i = 0; i < globalAchievements.Count; i++)
+                globalAchievements[i].unlocked = false;
+            LegacyPlugin.SaveProfile();
+        }
+
+        /// <summary>
+        /// Resets all achievements.
+        /// </summary>
+        public void ResetCustomAchievements()
+        {
+            for (int i = 0; i < customAchievements.Count; i++)
+                customAchievements[i].unlocked = false;
+        }
+
+        /// <summary>
+        /// What <see cref="globalAchievements"/> are unlocked.
+        /// </summary>
+        public static Dictionary<string, bool> unlockedGlobalAchievements = new Dictionary<string, bool>();
+
+        /// <summary>
+        /// List of built-in BetterLegacy achievements.
+        /// </summary>
+        public static List<Achievement> globalAchievements = new List<Achievement>();
+
+        /// <summary>
+        /// List of user-made achievements.
+        /// </summary>
+        public static List<Achievement> customAchievements = new List<Achievement>
+        {
+            Achievement.TestAchievement,
+        };
+
+        #endregion
+
+        #region UI
+
+        /// <summary>
+        /// Achievement UI canvas parent.
+        /// </summary>
+        public UICanvas canvas;
+
+        /// <summary>
+        /// Achievement notification prefab.
+        /// </summary>
+        public GameObject achievementPrefab;
+
+        /// <summary>
+        /// Displays the achievement popup.
+        /// </summary>
+        /// <param name="id">ID of the achievement to find.</param>
+        /// <param name="global">If it should search the global list.</param>
         public void ShowAchievement(string id, bool global = true)
         {
             var list = global ? globalAchievements : customAchievements;
@@ -331,6 +413,13 @@ namespace BetterLegacy.Core.Managers
         /// <param name="achievement">Achievement to apply to the popup UI.</param>
         public void ShowAchievement(Achievement achievement) => ShowAchievement(achievement.Name, achievement.Description, achievement.Icon, achievement.DifficultyType.color);
 
+        /// <summary>
+        /// Displays the achievement popup.
+        /// </summary>
+        /// <param name="name">Name of the achievement.</param>
+        /// <param name="description">Description of the achievement.</param>
+        /// <param name="icon">Icon of the achievement.</param>
+        /// <param name="color">Difficulty color of the achievement.</param>
         public void ShowAchievement(string name, string description, Sprite icon, Color color = default)
         {
             try
@@ -374,32 +463,6 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
-        /// <summary>
-        /// Resets all achievements.
-        /// </summary>
-        public void ResetGlobalAchievements()
-        {
-            for (int i = 0; i < globalAchievements.Count; i++)
-                globalAchievements[i].unlocked = false;
-            LegacyPlugin.SaveProfile();
-        }
-
-        /// <summary>
-        /// Resets all achievements.
-        /// </summary>
-        public void ResetCustomAchievements()
-        {
-            for (int i = 0; i < customAchievements.Count; i++)
-                customAchievements[i].unlocked = false;
-        }
-
-        public static Dictionary<string, bool> unlockedGlobalAchievements = new Dictionary<string, bool>();
-
-        public static List<Achievement> globalAchievements = new List<Achievement>();
-
-        public static List<Achievement> customAchievements = new List<Achievement>
-        {
-            Achievement.TestAchievement,
-        };
+        #endregion
     }
 }

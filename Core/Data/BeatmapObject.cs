@@ -35,7 +35,12 @@ namespace BetterLegacy.Core.Data
             editorData = new ObjectEditorData();
         }
 
+        #region Object Values
+
         string uniqueID;
+        /// <summary>
+        /// Unique ID used to identify different Beatmap Objects.
+        /// </summary>
         public string UniqueID
         {
             get
@@ -230,6 +235,8 @@ namespace BetterLegacy.Core.Data
             /// </summary>
             Solid
         }
+
+        #endregion
 
         #region Constants
 
