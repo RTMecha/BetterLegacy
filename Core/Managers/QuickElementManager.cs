@@ -36,50 +36,50 @@ namespace BetterLegacy.Core.Managers
 
                 if (quickElements.TryGetValue("loading_bar_1", out QuickElement loadingBar1))
                     loadingBar1.effects.Add(new QuickElement.Effect { data = new List<string> { "loop" }, name = "loop", });
+            }
 
-                if (!quickElements.ContainsKey("blink_loop"))
+            if (!quickElements.ContainsKey("blink_loop"))
+            {
+                var blinkLoop = ScriptableObject.CreateInstance<QuickElement>();
+                blinkLoop.name = "blink_loop";
+                blinkLoop.keyframes = new List<QuickElement.Keyframe>
                 {
-                    var blinkLoop = ScriptableObject.CreateInstance<QuickElement>();
-                    blinkLoop.name = "blink_loop";
-                    blinkLoop.keyframes = new List<QuickElement.Keyframe>
+                    new QuickElement.Keyframe
                     {
-                        new QuickElement.Keyframe
-                        {
-                            text = "(._.)",
-                            time = 1f
-                        },
-                        new QuickElement.Keyframe
-                        {
-                            text = "(-_-)",
-                            time = 0.1f
-                        },
-                        new QuickElement.Keyframe
-                        {
-                            text = "(._.)",
-                            time = 0.1f
-                        },
-                        new QuickElement.Keyframe
-                        {
-                            text = "(-_-)",
-                            time = 0.1f
-                        },
-                        new QuickElement.Keyframe
-                        {
-                            text = "(._.)",
-                            time = 1f
-                        },
-                    };
-                    blinkLoop.effects = new List<QuickElement.Effect>
+                        text = "(._.)",
+                        time = 1f
+                    },
+                    new QuickElement.Keyframe
                     {
-                        new QuickElement.Effect
-                        {
-                            name = "loop",
-                            data = new List<string> { "loop" },
-                        }
-                    };
+                        text = "(-_-)",
+                        time = 0.1f
+                    },
+                    new QuickElement.Keyframe
+                    {
+                        text = "(._.)",
+                        time = 0.1f
+                    },
+                    new QuickElement.Keyframe
+                    {
+                        text = "(-_-)",
+                        time = 0.1f
+                    },
+                    new QuickElement.Keyframe
+                    {
+                        text = "(._.)",
+                        time = 1f
+                    },
+                };
+                blinkLoop.effects = new List<QuickElement.Effect>
+                {
+                    new QuickElement.Effect
+                    {
+                        name = "loop",
+                        data = new List<string> { "loop" },
+                    }
+                };
 
-                    quickElements.Add("blink_loop", blinkLoop);
-                }
+                quickElements.Add("blink_loop", blinkLoop);
             }
 
             inst.StartCoroutine(LoadExternalQuickElements());
@@ -172,8 +172,8 @@ namespace BetterLegacy.Core.Managers
 
         public static void SaveExternalQuickElements()
         {
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/quickelements"))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/quickelements");
+            var directory = RTFile.ApplicationDirectory + "beatmaps/quickelements";
+            RTFile.CreateDirectory(directory);
 
             foreach (var quickElementPair in customQuickElements)
             {
@@ -198,28 +198,26 @@ namespace BetterLegacy.Core.Managers
                         jn["effects"][i]["data"][j] = quickElement.effects[i].data[j];
                 }
 
-                RTFile.WriteToFile($"{RTFile.ApplicationDirectory}beatmaps/quickelements/{RTFile.ValidateFileName(quickElement.name.ToLower().Replace(" ", "_"))}.lsqe", jn.ToString(3));
+                RTFile.WriteToFile(RTFile.CombinePaths(directory, RTFile.FormatLegacyFileName(quickElement.name) + FileFormat.LSQE.Dot()), jn.ToString(3));
             }
         }
 
         public static IEnumerator LoadExternalQuickElements()
         {
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/quickelements"))
+            var directory = RTFile.ApplicationDirectory + "beatmaps/quickelements";
+            if (!RTFile.DirectoryExists(directory))
                 yield break;
 
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/quickelements", "*.lsqe");
+            var files = Directory.GetFiles(directory, FileFormat.LSQE.ToPattern());
             foreach (var file in files)
             {
-                var json = FileManager.inst.LoadJSONFileRaw(file);
-                var jn = JSON.Parse(json);
+                var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
                 var quickElement = ScriptableObject.CreateInstance<QuickElement>();
 
-                quickElement.name = Path.GetFileName(file).Replace(".lsqe", "");
+                quickElement.name = Path.GetFileName(file).Replace(FileFormat.LSQE.Dot(), "");
                 if (!string.IsNullOrEmpty(jn["name"]))
-                {
                     quickElement.name = jn["name"];
-                }
 
                 try
                 {
@@ -242,9 +240,7 @@ namespace BetterLegacy.Core.Managers
 
                         keyframe.time = 1f;
                         if (float.TryParse(jn["keys"][i]["time"], out float result))
-                        {
                             keyframe.time = result;
-                        }
 
                         quickElement.keyframes.Add(keyframe);
                     }
@@ -266,9 +262,7 @@ namespace BetterLegacy.Core.Managers
                         effect.name = jn["effects"][i]["name"];
                         effect.data = new List<string>();
                         for (int j = 0; j < jn["effects"][i]["data"].Count; j++)
-                        {
                             effect.data.Add(jn["effects"][i]["data"][j]);
-                        }
 
                         quickElement.effects.Add(effect);
                     }
@@ -321,9 +315,7 @@ namespace BetterLegacy.Core.Managers
                 num = i;
                 i = num + 1;
                 if (i > keyframes.Count - 1)
-                {
                     i = 0;
-                }
                 currentKeyframe = keyframes[i];
                 newText = newText.Replace(replaceStr, currentKeyframe.text);
                 if (tmp.text.Contains(replaceStr))
