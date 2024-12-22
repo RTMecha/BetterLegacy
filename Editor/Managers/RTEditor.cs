@@ -9484,7 +9484,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
-            string code = RTFile.CombinePaths(fullPath, "EditorLoad.cs");
+            string code = RTFile.CombinePaths(fullPath, $"EditorLoad{FileFormat.CS.Dot()}");
             if (RTFile.FileExists(code))
             {
                 var str = RTFile.ReadFromFile(code);
@@ -9571,14 +9571,14 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.ClearDialogs();
             EditorManager.inst.ShowDialog("File Info Popup");
 
-            var previousLevel = GameManager.inst.path.Replace("/" + Level.LEVEL_LSB, "");
+            var previousLevel = GameManager.inst.path.Replace(Level.LEVEL_LSB, "");
             if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.DirectoryExists(previousLevel))
             {
                 CoreHelper.Log("Backing up previous level...");
 
-                SetFileInfo($"Backing up previous level [ {Path.GetFileName(previousLevel)} ]");
+                SetFileInfo($"Backing up previous level [ {Path.GetFileName(RTFile.RemoveEndSlash(previousLevel))} ]");
 
-                GameData.Current.SaveData(GameManager.inst.path.Replace(Level.LEVEL_LSB, "level-open-backup.lsb"));
+                GameData.Current.SaveData(GameManager.inst.path.Replace(Level.LEVEL_LSB, $"level-open-backup{FileFormat.LSB.Dot()}"));
 
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
