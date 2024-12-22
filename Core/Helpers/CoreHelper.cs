@@ -61,7 +61,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// If InterfaceController exists.
         /// </summary>
-        public static bool InMenu => MenuManager.inst.ic;
+        public static bool InMenu => MenuManager.inst.ic || InterfaceManager.inst.CurrentInterface;
 
         /// <summary>
         /// If the player is in the Classic Arrhythmia story mode.
@@ -119,8 +119,14 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// The current pitch setting.
         /// </summary>
-        public static float Pitch => InEditor || InStory ? 1f : new List<float>
-            { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, }[Mathf.Clamp(PlayerManager.ArcadeGameSpeed, 0, 7)];
+        public static float Pitch
+        {
+            get
+            {
+                var gameSpeeds = PlayerManager.GameSpeeds;
+                return InEditor || InStory ? 1f : gameSpeeds[Mathf.Clamp(PlayerManager.ArcadeGameSpeed, 0, gameSpeeds.Length - 1)];
+            }
+        }
 
         /// <summary>
         /// Gets the current interpolated theme or if the user is in the theme editor, the preview theme.
@@ -829,10 +835,9 @@ namespace BetterLegacy.Core.Helpers
         public static void TakeScreenshot()
         {
             string directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
+            RTFile.CreateDirectory(directory);
 
-            var file = directory + "/" + DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".png";
+            var file = RTFile.CombinePaths(directory, DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + FileFormat.PNG.Dot());
             ScreenCapture.CaptureScreenshot(file, 1);
             Log($"Took Screenshot! - {file}");
 
