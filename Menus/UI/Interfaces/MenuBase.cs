@@ -313,10 +313,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 CoreHelper.Log($"Playing from music clip groups {musicName}");
                 InterfaceManager.inst.PlayMusic(audioClip);
             }
-            else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
+            else if (RTFile.FileExists(RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")))
             {
                 CoreHelper.Log($"Playing from music ogg file");
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{Path.GetDirectoryName(filePath)}/{musicName}.ogg", AudioType.OGGVORBIS, audioClip =>
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
                 {
                     CoreHelper.Log($"Attempting to play music: {musicName}");
                     music = audioClip;
