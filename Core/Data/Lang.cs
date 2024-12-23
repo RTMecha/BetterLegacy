@@ -12,36 +12,25 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public class Lang : Exists
     {
+        #region Main
+
         public Lang() { }
 
-        public Lang(string text) => languages[Language.English] = text;
+        public Lang(string text) : this(Language.English, text) { }
+        public Lang(Language language, string text) => languages[language] = text;
 
         public Lang(string[] array) => Read(array);
 
         public Lang(Dictionary<Language, string> languages) => this.languages = languages;
 
-        public string this[string language]
-        {
-            get => languages[Parser.TryParse(language, Language.English)];
-            set => languages[Parser.TryParse(language, Language.English)] = value;
-        }
-
-        public string this[int language]
-        {
-            get => languages[(Language)language];
-            set => languages[(Language)language] = value;
-        }
-
-        public string this[Language language]
-        {
-            get => languages[language];
-            set => languages[language] = value;
-        }
-
         /// <summary>
         /// Dictionary that contains the languages.
         /// </summary>
         public Dictionary<Language, string> languages = new Dictionary<Language, string>();
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Tries to get a string in a specific language.
@@ -139,8 +128,34 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        #endregion
+
+        #region Operators
+
+        public string this[string language]
+        {
+            get => languages[Parser.TryParse(language, Language.English)];
+            set => languages[Parser.TryParse(language, Language.English)] = value;
+        }
+
+        public string this[int language]
+        {
+            get => languages[(Language)language];
+            set => languages[(Language)language] = value;
+        }
+
+        public string this[Language language]
+        {
+            get => languages[language];
+            set => languages[language] = value;
+        }
+
         public static implicit operator string(Lang lang) => lang ? lang.GetText(Configs.CoreConfig.Instance.Language.Value) : null;
 
+        public static implicit operator Lang(string input) => new Lang(Configs.CoreConfig.Instance.Language.Value, input);
+
         public override string ToString() => this;
+
+        #endregion
     }
 }
