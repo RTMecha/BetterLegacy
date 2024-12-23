@@ -1297,13 +1297,13 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var load = parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true);
 
-                        if (load)
-                            InterfaceManager.inst.PlayMusic();
-
                         if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
                         {
                             if (load)
+                            {
                                 InterfaceManager.inst.SetCurrentInterface(otherMenu);
+                                InterfaceManager.inst.PlayMusic();
+                            }
 
                             break;
                         }
@@ -1311,7 +1311,10 @@ namespace BetterLegacy.Menus.UI.Elements
                         InterfaceManager.inst.interfaces.Add(menu);
 
                         if (load)
+                        {
                             InterfaceManager.inst.SetCurrentInterface(menu);
+                            InterfaceManager.inst.PlayMusic();
+                        }
 
                         break;
                     }
