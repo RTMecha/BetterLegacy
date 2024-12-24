@@ -16,6 +16,8 @@ namespace BetterLegacy.Story
     /// </summary>
     public class StoryMode
     {
+        #region Init
+
         /// <summary>
         /// Where the story is located.
         /// </summary>
@@ -35,6 +37,10 @@ namespace BetterLegacy.Story
                 Instance = Parse(JSON.Parse(RTFile.ReadFromFile(path)));
         }
 
+        #endregion
+
+        #region Values
+
         /// <summary>
         /// Where the story begins.
         /// </summary>
@@ -50,6 +56,13 @@ namespace BetterLegacy.Story
         /// </summary>
         public List<Chapter> bonusChapters = new List<Chapter>();
 
+        #endregion
+
+        /// <summary>
+        /// Parses the Story Mode from JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed <see cref="StoryMode"/>.</returns>
         public static StoryMode Parse(JSONNode jn)
         {
             var story = new StoryMode()
@@ -67,8 +80,13 @@ namespace BetterLegacy.Story
             return story;
         }
 
+        /// <summary>
+        /// Represents a chapter in the BetterLegacy story mode.
+        /// </summary>
         public class Chapter
         {
+            #region Values
+
             /// <summary>
             /// Name of the chapter.
             /// </summary>
@@ -84,17 +102,24 @@ namespace BetterLegacy.Story
             /// </summary>
             public List<LevelSequence> levels = new List<LevelSequence>();
 
-            /// <summary>
-            /// Amount of levels in a chapter.
-            /// </summary>
-            public int Count => levels.Count;
-
             public LevelSequence this[int index]
             {
                 get => levels[index];
                 set => levels[index] = value;
             }
 
+            /// <summary>
+            /// Amount of levels in a chapter.
+            /// </summary>
+            public int Count => levels.Count;
+
+            #endregion
+
+            /// <summary>
+            /// Parses a <see cref="Chapter"/> from JSON.
+            /// </summary>
+            /// <param name="jn">JSON to parse.</param>
+            /// <returns>Returns a parsed <see cref="Chapter"/> for the story mode.</returns>
             public static Chapter Parse(JSONNode jn)
             {
                 var chapter = new Chapter
@@ -112,8 +137,13 @@ namespace BetterLegacy.Story
             public override string ToString() => $"{name} - {Count}";
         }
 
+        /// <summary>
+        /// Represents a level with cutscenes in the BetterLegacy story mode.
+        /// </summary>
         public class LevelSequence
         {
+            #region Values
+
             /// <summary>
             /// Identification number of the level.
             /// </summary>
@@ -156,12 +186,35 @@ namespace BetterLegacy.Story
             /// </summary>
             public int Count => preCutscenes.Count + 1 + postCutscenes.Count;
 
+            /// <summary>
+            /// Cutscenes to play before the level starts.
+            /// </summary>
             public List<string> preCutscenes = new List<string>();
+            /// <summary>
+            /// Cutscenes to play after the level is completed.
+            /// </summary>
             public List<string> postCutscenes = new List<string>();
 
+            /// <summary>
+            /// Interface to return to when the level is completed.
+            /// </summary>
             public string returnInterface;
+            /// <summary>
+            /// If the return interface is replayable after completion.
+            /// </summary>
             public bool returnReplayable;
+            /// <summary>
+            /// Level to return to when the level is completed. Currently only used for custom stories.
+            /// </summary>
+            public string returnLevel;
 
+            #endregion
+
+            /// <summary>
+            /// Parses a <see cref="LevelSequence"/> from JSON.
+            /// </summary>
+            /// <param name="jn">JSON to parse.</param>
+            /// <returns>Returns a parsed <see cref="LevelSequence"/> for the story mode.</returns>
             public static LevelSequence Parse(JSONNode jn)
             {
                 var level = new LevelSequence
@@ -182,7 +235,8 @@ namespace BetterLegacy.Story
                         level.postCutscenes.Add(RTFile.ParsePaths(jn["post_cutscenes"][i]));
 
                 level.returnInterface = RTFile.ParsePaths(jn["return_interface"]);
-                level.returnReplayable = jn["return_replayable"];
+                level.returnReplayable = jn["return_replayable"].AsBool;
+                level.returnLevel = jn["return_level"];
 
                 return level;
             }
