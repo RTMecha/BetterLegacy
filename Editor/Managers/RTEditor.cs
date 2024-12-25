@@ -9691,7 +9691,7 @@ namespace BetterLegacy.Editor.Managers
                     if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
                         MetaData.Current.arcadeID = LSText.randomNumString(16);
 
-                    if (MetaData.Current.beatmap.game_version != "4.1.16" && MetaData.Current.beatmap.game_version != "20.4.4")
+                    if (ProjectArrhythmia.RequireUpdate(MetaData.Current.beatmap.game_version))
                         rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.game_version);
 
                     GameData.Current = null;

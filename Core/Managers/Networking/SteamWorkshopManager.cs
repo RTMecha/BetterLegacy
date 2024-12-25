@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Arcade;
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using LSFunctions;
 using SimpleJSON;
@@ -57,7 +58,7 @@ namespace BetterLegacy.Core.Managers.Networking
         {
             try
             {
-                SteamClient.Init(440310U);
+                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID);
                 steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
                 Debug.Log($"{className}Init Steam User: {SteamClient.Name}");
                 Initialized = true;

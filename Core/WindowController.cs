@@ -66,6 +66,6 @@ namespace BetterLegacy.Core
 
         public static void SetTitle(string title) => SetWindowText(WindowHandle, title);
 
-        public static void ResetTitle() => SetWindowText(WindowHandle, ProjectArrhythmia.Title);
+        public static void ResetTitle() => SetWindowText(WindowHandle, ProjectArrhythmia.TITLE);
     }
 }

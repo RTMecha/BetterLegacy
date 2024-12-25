@@ -252,7 +252,7 @@ namespace BetterLegacy.Core.Managers
                 Debug.Log($"{className}Level Mode: {levelMode}...");
 
                 var rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(level.path, levelMode));
-                if (level.metadata.beatmap.game_version != "4.1.16" && level.metadata.beatmap.game_version != "20.4.4")
+                if (ProjectArrhythmia.RequireUpdate(level.metadata.beatmap.game_version))
                     rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
 
                 if (level.IsVG)

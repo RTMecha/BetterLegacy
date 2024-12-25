@@ -102,7 +102,7 @@ namespace BetterLegacy.Core.Data
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
-            jn["level_version"] = "4.1.16";
+            jn["level_version"] = ProjectArrhythmia.GAME_VERSION;
             jn["mod_version"] = modVersion;
 
             if (showIntro)
