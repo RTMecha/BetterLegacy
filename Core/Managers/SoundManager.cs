@@ -13,20 +13,44 @@ namespace BetterLegacy.Core.Managers
     /// </summary>
     public class SoundManager : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="SoundManager"/> global instance reference.
+        /// </summary>
         public static SoundManager inst;
 
-        public AudioManager BaseManager => AudioManager.inst;
-        public SoundLibrary Library => AudioManager.inst.library;
+        AudioManager BaseManager => AudioManager.inst;
+        SoundLibrary Library => AudioManager.inst.library;
 
-        public bool Playing => BaseManager.CurrentAudioSource.isPlaying;
-
+        /// <summary>
+        /// Music volume reference for the no_volume achievement.
+        /// </summary>
         public static float musicVolume = 1f;
 
         void Awake() => inst = this;
 
+        #endregion
+
+        #region Playing State
+
+        /// <summary>
+        /// If the current audio source is playing.
+        /// </summary>
+        public bool Playing => BaseManager.CurrentAudioSource.isPlaying;
+
+        /// <summary>
+        /// Sets the playing state of the current audio source.
+        /// </summary>
+        /// <param name="playing">If the audio should play.</param>
         public void SetPlaying(bool playing) => (playing ? (System.Action)BaseManager.CurrentAudioSource.Play : BaseManager.CurrentAudioSource.Pause).Invoke();
 
+        /// <summary>
+        /// Toggles the playing state of the current audio source.
+        /// </summary>
         public void TogglePlaying() => SetPlaying(!Playing);
+
+        #endregion
 
         #region Sound
 
