@@ -10,8 +10,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
-using BasePrefabObject = DataManager.GameData.PrefabObject;
 
 namespace BetterLegacy.Editor
 {
@@ -360,6 +358,7 @@ namespace BetterLegacy.Editor
         /// <summary>
         /// Initializes the timeline object.
         /// </summary>
+        /// <param name="update">If <see cref="Render"/> should run.</param>
         public void Init(bool update = false)
         {
             var gameObject = GameObject;
