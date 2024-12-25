@@ -379,7 +379,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 countdown.text = num;
                 countdown.textUI.text = num;
                 countdown.textUI.maxVisibleCharacters = 9999;
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(InterfaceManager.SpeedUp ? 0.1f : 0.5f);
                 pitch++;
             }
 
@@ -387,14 +387,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             countdown.text = "<align=center><size=120><b><font=Fredoka One>GO!";
             countdown.textUI.text = "<align=center><size=120><b><font=Fredoka One>GO!";
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(InterfaceManager.SpeedUp ? 0.05f : 0.2f);
 
             InterfaceManager.inst.CloseMenus();
             if (!currentCursorVisibility)
                 LSHelpers.HideCursor();
             AudioManager.inst.CurrentAudioSource.UnPause();
             if (shouldRespawn)
-                PlayerManager.RespawnPlayers();
+                PlayerManager.SpawnPlayersOnStart();
             GameManager.inst.gameState = GameManager.State.Playing;
 
             yield break;

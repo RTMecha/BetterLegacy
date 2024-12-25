@@ -269,9 +269,14 @@ namespace BetterLegacy.Menus
         public List<MenuBase> interfaces = new List<MenuBase>();
 
         /// <summary>
+        /// If the interfaces should speed up.
+        /// </summary>
+        public static bool SpeedUp => InputDataManager.inst.menuActions.Submit.IsPressed || Input.GetMouseButton(0);
+
+        /// <summary>
         /// The current speed the interface should generate at.
         /// </summary>
-        public static float InterfaceSpeed => InputDataManager.inst.menuActions.Submit.IsPressed || Input.GetMouseButton(0) ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
+        public static float InterfaceSpeed => SpeedUp ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
 
         /// <summary>
         /// Closes all interfaces and opens an interface.
