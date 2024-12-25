@@ -129,7 +129,7 @@ namespace BetterLegacy.Core.Helpers
             GameManager.inst.deaths.Clear();
 
             if (respawnPlayers)
-                PlayerManager.RespawnPlayers();
+                PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(0f);
             action?.Invoke();

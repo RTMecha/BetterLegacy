@@ -311,16 +311,6 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Spawning...");
             BoostCount = 0;
-            if (InputDataManager.inst.players.Count == 0)
-            {
-                var customPlayer = new Data.Player.CustomPlayer(true, 0, null);
-                InputDataManager.inst.players.Add(customPlayer);
-            }
-            else
-            {
-                for (int i = 0; i < PlayerManager.Players.Count; i++)
-                    DestroyImmediate(PlayerManager.Players[i].GameObject);
-            }
 
             PlayerManager.allowController = PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value && InputDataManager.inst.players.Count == 1;
 
@@ -331,7 +321,7 @@ namespace BetterLegacy.Core.Managers
             RTPlayer.GameMode = GameMode.Regular;
 
             GameStorageManager.inst.PlayIntro();
-            GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
+            PlayerManager.SpawnPlayersOnStart();
 
             RTPlayer.SetGameDataProperties();
 

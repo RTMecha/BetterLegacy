@@ -21,6 +21,7 @@ namespace BetterLegacy.Core.Data
         public int maxJumpBoostCount = 1;
         public int maxHealth = 3;
         public bool allowCustomPlayerModels = true;
+        public bool spawnPlayers = true;
 
         public bool limitPlayer = true;
         public Vector2 limitMoveSpeed = new Vector2(20f, 20f);
@@ -73,6 +74,9 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(jn["allow_custom_player_models"]))
                 levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
+
+            if (!string.IsNullOrEmpty(jn["spawn_players"]))
+                levelData.spawnPlayers = jn["spawn_players"].AsBool;
 
             if (!string.IsNullOrEmpty(jn["limit_player"]))
                 levelData.limitPlayer = jn["limit_player"].AsBool;
@@ -129,6 +133,9 @@ namespace BetterLegacy.Core.Data
 
             if (!allowCustomPlayerModels)
                 jn["allow_custom_player_models"] = allowCustomPlayerModels.ToString();
+            
+            if (!spawnPlayers)
+                jn["spawn_players"] = spawnPlayers.ToString();
 
             jn["limit_player"] = limitPlayer.ToString();
 

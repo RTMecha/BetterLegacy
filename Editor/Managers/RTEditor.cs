@@ -9761,7 +9761,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Spawning players...");
             PlayerManager.LoadGlobalModels();
-            PlayerManager.RespawnPlayers();
+            PlayerManager.SpawnPlayersOnStart();
 
             RTPlayer.SetGameDataProperties();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");

@@ -15,12 +15,20 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Managers
 {
+    /// <summary>
+    /// Manager class that wraps <see cref="InputDataManager"/> and manages all player related things.
+    /// </summary>
     public class PlayerManager : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="PlayerManager"/> global instance reference.
+        /// </summary>
         public static PlayerManager inst;
 
         /// <summary>
-        /// Inits PlayerManager.
+        /// Initializes <see cref="PlayerManager"/>.
         /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(PlayerManager), SystemManager.inst.transform).AddComponent<PlayerManager>();
 
@@ -29,13 +37,23 @@ namespace BetterLegacy.Core.Managers
             inst = this;
 
             for (int i = 0; i < 5; i++)
-            {
                 PlayerModels.Add(i.ToString(), null);
-            }
         }
 
+        #endregion
+
+        #region Main
+
+        #region Properties
+
+        /// <summary>
+        /// All player models that is currently loaded.
+        /// </summary>
         public static Dictionary<string, PlayerModel> PlayerModels { get; set; } = new Dictionary<string, PlayerModel>();
 
+        /// <summary>
+        /// Player model ID indexer.
+        /// </summary>
         public static Dictionary<int, string> PlayerModelsIndex { get; set; } = new Dictionary<int, string>
         {
             { 0, "0" },
@@ -44,15 +62,46 @@ namespace BetterLegacy.Core.Managers
             { 3, "0" },
         };
 
+        /// <summary>
+        /// Player model custom IDs.
+        /// </summary>
         public static List<Setting<string>> PlayerIndexes { get; set; } = new List<Setting<string>>();
 
+        /// <summary>
+        /// Wrapped players list.
+        /// </summary>
         public static List<CustomPlayer> Players => InputDataManager.inst.players.Select(x => x as CustomPlayer).ToList();
 
-        public static bool IsSingleplayer => Players.Count == 1;
+        /// <summary>
+        /// If the game is currently in single player.
+        /// </summary>
+        public static bool IsSingleplayer => InputDataManager.inst.players.Count == 1;
+
+        /// <summary>
+        /// If the game has no players loaded.
+        /// </summary>
+        public static bool NoPlayers => InputDataManager.inst.players == null || InputDataManager.inst.players.Count == 0;
+
+        /// <summary>
+        /// If other players should be considered in the level ranking.
+        /// </summary>
+        public static bool IncludeOtherPlayersInRank { get; set; }
+
+        public static float AcurracyDivisionAmount { get; set; } = 10f;
+
+        #endregion
+
+        #region Fields
 
         public static GameObject healthImages;
         public static Transform healthParent;
         public static Sprite healthSprite;
+
+        public static bool allowController;
+
+        #endregion
+
+        #region Methods
 
         public static void SetupImages(GameManager __instance)
         {
@@ -60,14 +109,11 @@ namespace BetterLegacy.Core.Managers
             health.gameObject.SetActive(true);
             health.GetChild(0).gameObject.SetActive(true);
             for (int i = 1; i < 4; i++)
-            {
                 Destroy(health.GetChild(i).gameObject);
-            }
 
             for (int i = 3; i < 5; i++)
-            {
                 Destroy(health.GetChild(0).GetChild(i).gameObject);
-            }
+            
             var gm = health.GetChild(0).gameObject;
             healthImages = gm;
             var text = gm.AddComponent<Text>();
@@ -77,19 +123,11 @@ namespace BetterLegacy.Core.Managers
             text.enabled = false;
 
             if (gm.transform.Find("Image"))
-            {
                 healthSprite = gm.transform.Find("Image").GetComponent<Image>().sprite;
-            }
 
             gm.transform.SetParent(null);
             healthParent = health;
         }
-
-        public static bool allowController;
-
-        public static bool IncludeOtherPlayersInRank { get; set; }
-
-        public static float AcurracyDivisionAmount { get; set; } = 10f;
 
         /// <summary>
         /// Gets the player closest to a vector.
@@ -103,6 +141,11 @@ namespace BetterLegacy.Core.Managers
             return index >= 0 && index < players.Count ? players[index] : null;
         }
 
+        /// <summary>
+        /// Gets the player closest to a vector.
+        /// </summary>
+        /// <param name="vector2">Position to check closeness to.</param>
+        /// <returns>Returns an index of the CustomPlayer closest to the Vector2 parameter.</returns>
         public static int GetClosestPlayerIndex(Vector2 pos)
         {
             var players = Players;
@@ -127,6 +170,10 @@ namespace BetterLegacy.Core.Managers
             return player ? player.index : -1;
         }
 
+        /// <summary>
+        /// Calculates the center of all players positions.
+        /// </summary>
+        /// <returns>Returns a center vector of all players.</returns>
         public static Vector2 CenterOfPlayers()
         {
             var players = Players;
@@ -154,32 +201,100 @@ namespace BetterLegacy.Core.Managers
             return result / count;
         }
 
+        /// <summary>
+        /// Checks if there are any players loaded and if there are none, adds a default player.
+        /// </summary>
+        public static void ValidatePlayers()
+        {
+            if (NoPlayers)
+                InputDataManager.inst.players.Add(CreateDefaultPlayer());
+        }
+
+        /// <summary>
+        /// Creates the default player that uses a keyboard.
+        /// </summary>
+        /// <returns>Returns a <see cref="CustomPlayer"/> with the default values.</returns>
+        public static CustomPlayer CreateDefaultPlayer() => new CustomPlayer(true, 0, null);
+
+        #endregion
+
+        #endregion
+
         #region Level Difficulties
 
+        /// <summary>
+        /// Sets the challenge mode.
+        /// </summary>
+        /// <param name="mode">Mode to set.</param>
+        public static void SetChallengeMode(ChallengeMode mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", (int)mode);
+
+        /// <summary>
+        /// Sets the challenge mode.
+        /// </summary>
+        /// <param name="mode">Mode to set.</param>
         public static void SetChallengeMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
 
+        /// <summary>
+        /// Challenge mode the level should use.
+        /// </summary>
         public static ChallengeMode ChallengeMode => (ChallengeMode)DataManager.inst.GetSettingInt("ArcadeDifficulty", 0);
 
+        /// <summary>
+        /// Players take no damage.
+        /// </summary>
         public static bool IsZenMode => ChallengeMode == ChallengeMode.ZenMode;
+        /// <summary>
+        /// Players take damage and can die if health hits zero.
+        /// </summary>
         public static bool IsNormal => ChallengeMode == ChallengeMode.Normal;
+        /// <summary>
+        /// Players take damage and only have 1 life. When they die, restart the level.
+        /// </summary>
         public static bool Is1Life => ChallengeMode == ChallengeMode.OneLife;
+        /// <summary>
+        /// Players take damage and only have 1 health. When they die, restart the level.
+        /// </summary>
         public static bool IsNoHit => ChallengeMode == ChallengeMode.OneHit;
+        /// <summary>
+        /// Players take damage but lose health and don't die.
+        /// </summary>
         public static bool IsPractice => ChallengeMode == ChallengeMode.Practice;
 
+        /// <summary>
+        /// Names of the challenge modes.
+        /// </summary>
         public static string[] ChallengeModeNames => new string[] { "ZEN", "NORMAL", "ONE LIFE", "ONE HIT", "PRACTICE" };
 
+        /// <summary>
+        /// If the player is invincible.
+        /// </summary>
         public static bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : IsZenMode;
 
+        /// <summary>
+        /// Customizable game speeds.
+        /// </summary>
         public static float[] GameSpeeds => new float[] { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
 
+        /// <summary>
+        /// The current game speed index.
+        /// </summary>
         public static int ArcadeGameSpeed => DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2);
 
+        /// <summary>
+        /// Sets the current game speed index.
+        /// </summary>
+        /// <param name="speed">Game speed index.</param>
         public static void SetGameSpeed(int speed) => DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", speed);
 
         #endregion
 
         #region Spawning
 
+        /// <summary>
+        /// Spawns a player at a position.
+        /// </summary>
+        /// <param name="customPlayer">Player to spawn.</param>
+        /// <param name="pos">Position to spawn at.</param>
         public static void SpawnPlayer(CustomPlayer customPlayer, Vector3 pos)
         {
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (customPlayer.index + 1));
@@ -284,6 +399,14 @@ namespace BetterLegacy.Core.Managers
             customPlayer.active = true;
         }
 
+        /// <summary>
+        /// Spawns a player object with a custom model, parent and index at a position.
+        /// </summary>
+        /// <param name="playerModel">Model to assign to the player.</param>
+        /// <param name="transform">Parent.</param>
+        /// <param name="index">Index of the player.</param>
+        /// <param name="pos">Position to spawn at.</param>
+        /// <returns>Returns the spawned players' game object.</returns>
         public static GameObject SpawnPlayer(PlayerModel playerModel, Transform transform, int index, Vector3 pos)
         {
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(transform, "Player");
@@ -324,24 +447,78 @@ namespace BetterLegacy.Core.Managers
             return gameObject;
         }
 
-        public static void RespawnPlayers() => RespawnPlayers(GetSpawnPosition());
+        /// <summary>
+        /// Spawns all players at the start of the level. If <see cref="LevelData.spawnPlayers"/> is off, then don't spawn players.
+        /// </summary>
+        public static void SpawnPlayersOnStart()
+        {
+            ValidatePlayers();
+            DestroyPlayers();
 
-        public static void RespawnPlayers(Vector2 pos)
+            if (!GameData.IsValid || GameData.Current.beatmapData is not LevelBeatmapData beatmapData || beatmapData.levelData is not LevelData levelData || levelData.spawnPlayers)
+                GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
+        }
+
+        /// <summary>
+        /// Destroys all player related game objects.
+        /// </summary>
+        public static void DestroyPlayers()
         {
             foreach (var player in Players)
             {
                 if (!player.Player)
                     continue;
+
                 DestroyImmediate(player.Player.health);
                 DestroyImmediate(player.Player.gameObject);
+                player.Player = null;
             }
+        }
 
+        /// <summary>
+        /// Destroys a players' game objects.
+        /// </summary>
+        /// <param name="index">Index of a player to destroy.</param>
+        public static void DestroyPlayer(int index)
+        {
+            if (index < 0 || index >= Players.Count)
+                return;
+
+            var player = Players[index];
+            if (!player.Player)
+                return;
+
+            DestroyImmediate(player.Player.health);
+            DestroyImmediate(player.Player.gameObject);
+            player.Player = null;
+        }
+
+        /// <summary>
+        /// Respawns all players at the default spawn position.
+        /// </summary>
+        public static void RespawnPlayers() => RespawnPlayers(GetSpawnPosition());
+
+        /// <summary>
+        /// Respawns all players at a set spawn position.
+        /// </summary>
+        public static void RespawnPlayers(Vector2 pos)
+        {
+            DestroyPlayers();
             AssignPlayerModels();
             GameManager.inst.SpawnPlayers(pos);
         }
 
+        /// <summary>
+        /// Respawns a specific player at the default spawn position.
+        /// </summary>
+        /// <param name="index">Index of the player to respawn.</param>
         public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPosition());
 
+        /// <summary>
+        /// Respawns a specific player at a set spawn position.
+        /// </summary>
+        /// <param name="index">Index of the player to respawn.</param>
+        /// <param name="pos">Position to spawn at.</param>
         public static void RespawnPlayer(int index, Vector2 pos)
         {
             if (index < 0 || index >= Players.Count)
@@ -360,6 +537,11 @@ namespace BetterLegacy.Core.Managers
             GameManager.inst.SpawnPlayers(pos);
         }
 
+        // TODO: replace this with Checkpoint.ActiveCheckpoint.
+        /// <summary>
+        /// Gets the last active checkpoint and its position.
+        /// </summary>
+        /// <returns>Returns the last active checkpoint position.</returns>
         public static Vector2 GetSpawnPosition()
         {
             var nextIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
@@ -375,8 +557,14 @@ namespace BetterLegacy.Core.Managers
 
         #region Models
 
+        /// <summary>
+        /// Path to the global player models folder.
+        /// </summary>
         public const string PLAYERS_PATH = "beatmaps/players";
 
+        /// <summary>
+        /// Saves all models to a JSON file in the level folder.
+        /// </summary>
         public static void SaveLocalModels()
         {
             string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
@@ -396,14 +584,20 @@ namespace BetterLegacy.Core.Managers
             RTFile.WriteToFile(location, jn.ToString());
         }
 
+        /// <summary>
+        /// Loads the models from a JSON file in the level folder if global loading is not allowed.
+        /// </summary>
         public static void LoadLocalModels()
         {
-            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value && GameData.IsValid && GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels)
+            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value && GameData.IsValid && GameData.Current.beatmapData.levelData.allowCustomPlayerModels)
                 inst.StartCoroutine(ILoadGlobalModels());
             else
                 inst.StartCoroutine(ILoadLocalModels());
         }
 
+        /// <summary>
+        /// Internal load coroutine.
+        /// </summary>
         public static IEnumerator ILoadLocalModels()
         {
             if (CoreHelper.InStory && LevelManager.CurrentLevel is Story.StoryLevel storyLevel && !string.IsNullOrEmpty(storyLevel.jsonPlayers))
@@ -426,6 +620,9 @@ namespace BetterLegacy.Core.Managers
             yield break;
         }
 
+        /// <summary>
+        /// Clears and destroys all player models that aren't defaults.
+        /// </summary>
         public static void ClearModels()
         {
             var list = new List<string>();
@@ -471,6 +668,9 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Creates a new player model.
+        /// </summary>
         public static void CreateNewPlayerModel()
         {
             var model = new PlayerModel(true);
@@ -480,6 +680,10 @@ namespace BetterLegacy.Core.Managers
             PlayerModels[model.basePart.id] = model;
         }
 
+        /// <summary>
+        /// Saves all the global player models that are loaded.
+        /// </summary>
+        /// <returns>Returns true if it was sucessful, otherwise returns false.</returns>
         public static bool SaveGlobalModels()
         {
             bool success = true;
@@ -506,11 +710,17 @@ namespace BetterLegacy.Core.Managers
             return success;
         }
 
+        /// <summary>
+        /// Loads the player models from the global player models folder.
+        /// </summary>
         public static void LoadGlobalModels()
         {
             inst.StartCoroutine(ILoadGlobalModels());
         }
 
+        /// <summary>
+        /// Internal load coroutine.
+        /// </summary>
         public static IEnumerator ILoadGlobalModels()
         {
             var fullPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, PLAYERS_PATH);
@@ -534,19 +744,22 @@ namespace BetterLegacy.Core.Managers
                     PlayerModels[id] = model;
                 }
 
-                if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+                if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                     LoadIndexes();
                 else if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                     for (int i = 0; i < PlayerModelsIndex.Count; i++)
                         PlayerModelsIndex[i] = PlayerIndexes[i].Value;
             }
 
-            if (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            if (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 AssignPlayerModels();
 
             yield break;
         }
 
+        /// <summary>
+        /// Loads the model IDs that should be used in the level.
+        /// </summary>
         public static void LoadIndexes()
         {
             string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
@@ -567,7 +780,7 @@ namespace BetterLegacy.Core.Managers
                         CoreHelper.LogError($"Failed to load PlayerModel Index: {jn["indexes"][i]}\nPlayer with that ID does not exist");
                 }
             }
-            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels))
+            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels))
             {
                 CoreHelper.LogError("player.lsb file does not exist, setting to default player");
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
@@ -577,6 +790,9 @@ namespace BetterLegacy.Core.Managers
             AssignPlayerModels();
         }
 
+        /// <summary>
+        /// Clears all models.
+        /// </summary>
         public static void ClearPlayerModels()
         {
             var list = new List<string>();
@@ -597,6 +813,11 @@ namespace BetterLegacy.Core.Managers
             LoadLocalModels();
         }
 
+        /// <summary>
+        /// Sets the current player model.
+        /// </summary>
+        /// <param name="index">Index of the player to assign to.</param>
+        /// <param name="id">Model ID to set.</param>
         public static void SetPlayerModel(int index, string id)
         {
             if (!PlayerModels.ContainsKey(id))
@@ -610,6 +831,10 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Duplicates a player model.
+        /// </summary>
+        /// <param name="id">Model ID to duplicate.</param>
         public static void DuplicatePlayerModel(string id)
         {
             if (PlayerModels.TryGetValue(id, out PlayerModel orig))
@@ -622,6 +847,9 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Updates all players.
+        /// </summary>
         public static void UpdatePlayers()
         {
             if (InputDataManager.inst)
