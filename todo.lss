@@ -15,8 +15,8 @@
 - Global Player toggle for if the players should have their movement speed multiplied by the pitch or not. > 1.8.0
 - 2D option for BG objects (VG parallax support?)
 - Collapse toggle for modifiers in editor. > 1.8.0
-- Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers)
-- Spawn players on level start toggle? With if off, players will not spawn when the level begins. Players can be spawned after the fact using a respawn players modifier or a checkpoint.
+- Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers, respawnable)
+- Spawn players on level start toggle? With it off, players will not spawn when the level begins. Players can be spawned after the fact using a respawn players modifier or a checkpoint.
 - Level preview song.
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers [custom end function (same as above), song transition].
