@@ -32,7 +32,7 @@ namespace BetterLegacy.Story
         public static StoryManager inst;
 
         /// <summary>
-        /// Inits <see cref="StoryManager"/>.
+        /// Initializes <see cref="StoryManager"/>.
         /// </summary>
         public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
 
@@ -958,7 +958,7 @@ namespace BetterLegacy.Story
             int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
             var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
 
-            if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && cutsceneIndex != level.preCutscenes.Count && !LoadBool(completeString, false))
+            if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && cutsceneIndex != level.preCutscenes.Count)
             {
                 isCutscene = true;
                 path = level[cutsceneIndex];
