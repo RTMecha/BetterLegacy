@@ -357,7 +357,7 @@ namespace BetterLegacy.Core.Managers
             {
                 player.playerDeathEvent += _val =>
                 {
-                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.PlayerAlive)))
+                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.Alive)))
                     {
                         GameManager.inst.lastCheckpointState = -1;
                         GameManager.inst.ResetCheckpoints();
@@ -374,7 +374,7 @@ namespace BetterLegacy.Core.Managers
             {
                 player.playerDeathEvent += _val =>
                 {
-                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.PlayerAlive)))
+                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.Alive)))
                         GameManager.inst.gameState = GameManager.State.Reversing;
                 };
             }

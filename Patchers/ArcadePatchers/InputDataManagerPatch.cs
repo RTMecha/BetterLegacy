@@ -16,7 +16,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetAlivePlayers(ref List<InputDataManager.CustomPlayer> __result)
         {
-            __result = Instance.players.FindAll(x => x is CustomPlayer && (x as CustomPlayer).Player && (x as CustomPlayer).Player.PlayerAlive);
+            __result = Instance.players.FindAll(x => x is CustomPlayer && (x as CustomPlayer).Player && (x as CustomPlayer).Player.Alive);
             return false;
         }
 

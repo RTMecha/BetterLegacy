@@ -396,7 +396,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var closest = PlayerManager.Players[hit];
 
-                                return closest.Player && closest.Player.PlayerAlive;
+                                return closest.Player && closest.Player.Alive;
                             }
                         }
 

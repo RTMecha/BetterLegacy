@@ -44,8 +44,8 @@ namespace BetterLegacy.Components.Player
         /// <summary>
         /// If player does not take damage in editor.
         /// </summary>
-        /// 
         public static bool ZenModeInEditor { get; set; }
+
         /// <summary>
         /// If zen mode in editor should also consider solid.
         /// </summary>
@@ -397,7 +397,7 @@ namespace BetterLegacy.Components.Player
             set => canBoost = value;
         }
 
-        public bool PlayerAlive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
+        public bool Alive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
 
         #endregion
 
@@ -989,7 +989,7 @@ namespace BetterLegacy.Components.Player
                 ((TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"]).endWidth = PlayerModel.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
             }
 
-            if (!PlayerAlive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
+            if (!Alive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
                 StartCoroutine(Kill());
         }
 
@@ -1218,7 +1218,7 @@ namespace BetterLegacy.Components.Player
 
         void UpdateControls()
         {
-            if (!CustomPlayer || !PlayerModel || !PlayerAlive)
+            if (!CustomPlayer || !PlayerModel || !Alive)
                 return;
 
             if (CanMove && Actions != null)
@@ -1251,7 +1251,7 @@ namespace BetterLegacy.Components.Player
                     InitMidBoost(true);
             }
 
-            if (PlayerAlive && faceController != null && PlayerModel.bulletPart.active &&
+            if (Alive && faceController != null && PlayerModel.bulletPart.active &&
                 (!PlayerModel.bulletPart.constant && faceController.Shoot.WasPressed && canShoot ||
                     PlayerModel.bulletPart.constant && faceController.Shoot.IsPressed && canShoot))
                 CreateBullet();
@@ -1308,7 +1308,7 @@ namespace BetterLegacy.Components.Player
 
             rb.gravityScale = 0f;
 
-            if (PlayerAlive && Actions != null && CustomPlayer.active && CanMove && !CoreHelper.Paused &&
+            if (Alive && Actions != null && CustomPlayer.active && CanMove && !CoreHelper.Paused &&
                 (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
@@ -1431,7 +1431,7 @@ namespace BetterLegacy.Components.Player
             }
 
             // Currently unused.
-            if (PlayerAlive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !CoreHelper.IsUsingInputField && movementMode == MovementMode.Mouse && CoreHelper.InEditorPreview && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
+            if (Alive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !CoreHelper.IsUsingInputField && movementMode == MovementMode.Mouse && CoreHelper.InEditorPreview && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
             {
                 Vector2 screenCenter = new Vector2(1920 / 2 * (int)CoreHelper.ScreenScale, 1080 / 2 * (int)CoreHelper.ScreenScale);
                 Vector2 mousePos = new Vector2(System.Windows.Forms.Cursor.Position.X - screenCenter.x, -(System.Windows.Forms.Cursor.Position.Y - (screenCenter.y * 2)) - screenCenter.y);
@@ -1908,13 +1908,13 @@ namespace BetterLegacy.Components.Player
 
         public void Hit()
         {
-            if (!CanTakeDamage || !PlayerAlive)
+            if (!CanTakeDamage || !Alive)
                 return;
 
             timeHit = Time.time;
 
             InitBeforeHit();
-            if (PlayerAlive)
+            if (Alive)
                 anim.SetTrigger("hurt");
             if (CustomPlayer == null)
                 return;
