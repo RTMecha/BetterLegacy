@@ -40,7 +40,6 @@
 - trailRendererGradient > 1.8.0
 - trailRendererColored > 1.8.0
 - particleSystemColored > 1.8.0
-- clearHits (clears GameManager.inst.hits and GameManager.inst.deaths)
 
 ### Misc
 - Color picker rework. > 1.8.0
