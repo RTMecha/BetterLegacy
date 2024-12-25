@@ -6713,14 +6713,15 @@ namespace BetterLegacy.Core.Helpers
                             GameManager.inst.gameState = GameManager.State.Paused;
                             ArcadeHelper.endedLevel = false;
 
-                            if (InterfaceManager.inst.interfaces.Has(x => x.id == menu.id))
+                            if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
                             {
-                                InterfaceManager.inst.SetCurrentInterface(menu.id);
+                                InterfaceManager.inst.SetCurrentInterface(otherMenu);
                                 menu = null;
                                 return;
                             }
+
                             InterfaceManager.inst.interfaces.Add(menu);
-                            InterfaceManager.inst.SetCurrentInterface(menu.id);
+                            InterfaceManager.inst.SetCurrentInterface(menu);
 
                             break;
                         }
