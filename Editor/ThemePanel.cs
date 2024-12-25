@@ -16,37 +16,108 @@ namespace BetterLegacy.Editor
 {
     public class ThemePanel
     {
-        public List<Image> Colors { get; set; } = new List<Image>();
+        #region Properties
 
+        #region UI
+
+        /// <summary>
+        /// The theme panel game object.
+        /// </summary>
         public GameObject GameObject { get; set; }
-        public ContextClickable ContextClickable { get; set; }
-        public Button UseButton { get; set; }
-        public Button EditButton { get; set; }
-        public Button DeleteButton { get; set; }
-        public Image BaseImage { get; set; }
-        public FolderButtonFunction FolderButton { get; set; }
 
+        /// <summary>
+        /// The name text of the theme panel.
+        /// </summary>
         public Text Name { get; set; }
 
-        public void SetActive(bool active)
-        {
-            if (GameObject)
-                GameObject.SetActive(active);
-        }
+        /// <summary>
+        /// The colors list of the theme panel.
+        /// </summary>
+        public List<Image> Colors { get; set; } = new List<Image>();
 
+        /// <summary>
+        /// Context menu clickable component.
+        /// </summary>
+        public ContextClickable ContextClickable { get; set; }
+
+        /// <summary>
+        /// The button to use the theme.
+        /// </summary>
+        public Button UseButton { get; set; }
+
+        /// <summary>
+        /// The button to edit the theme.
+        /// </summary>
+        public Button EditButton { get; set; }
+
+        /// <summary>
+        /// The button to delete the theme.
+        /// </summary>
+        public Button DeleteButton { get; set; }
+
+        /// <summary>
+        /// The base image.
+        /// </summary>
+        public Image BaseImage { get; set; }
+
+        /// <summary>
+        /// The folder button function.
+        /// </summary>
+        public FolderButtonFunction FolderButton { get; set; }
+
+        #endregion
+
+        #region Data
+
+        /// <summary>
+        /// The theme reference.
+        /// </summary>
         public BeatmapTheme Theme { get; set; }
 
+        /// <summary>
+        /// The file path to the theme.
+        /// </summary>
         public string FilePath { get; set; }
 
+        /// <summary>
+        /// The original ID from the theme.
+        /// </summary>
         public string OriginalID { get; set; }
 
+        #endregion
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// If the theme is a default theme (e.g. PA Machine, PA Anarchy, etc)
+        /// </summary>
         public bool isDefault;
+
+        /// <summary>
+        /// If the theme is a duplicate (or a theme with the ID already exists)
+        /// </summary>
         public bool isDuplicate;
 
+        /// <summary>
+        /// If the theme panel is a folder button instead.
+        /// </summary>
         public bool isFolder;
 
+        /// <summary>
+        /// Index of the theme panel.
+        /// </summary>
         public int index;
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Initializes the theme panel as a folder.
+        /// </summary>
+        /// <param name="directory">Directory to set to the theme panel.</param>
         public void Init(string directory)
         {
             var gameObject = GameObject;
@@ -76,6 +147,12 @@ namespace BetterLegacy.Editor
             SetActive(false);
         }
 
+        /// <summary>
+        /// Initializes the theme panel as a beatmap theme panel.
+        /// </summary>
+        /// <param name="beatmapTheme"><see cref="BeatmapTheme"/> reference.</param>
+        /// <param name="defaultTheme">If the theme is a default theme.</param>
+        /// <param name="duplicate">If the theme is a duplicate.</param>
         public void Init(BeatmapTheme beatmapTheme, bool defaultTheme = false, bool duplicate = false)
         {
             var gameObject = GameObject;
@@ -289,5 +366,17 @@ namespace BetterLegacy.Editor
         /// </summary>
         /// <param name="name">Name of the theme.</param>
         public void RenderName(string name) => Name.text = name;
+
+        /// <summary>
+        /// Sets the theme panel active state.
+        /// </summary>
+        /// <param name="active">Active state to set.</param>
+        public void SetActive(bool active)
+        {
+            if (GameObject)
+                GameObject.SetActive(active);
+        }
+
+        #endregion
     }
 }
