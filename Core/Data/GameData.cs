@@ -650,12 +650,12 @@ namespace BetterLegacy.Core.Data
 
             var gameData = new GameData();
             var beatmapData = new LevelBeatmapData();
-            beatmapData.editorData = new BeatmapData.EditorData
+            beatmapData.editorData = new LevelEditorData
             {
                 timelinePos = orig.beatmapData.editorData.timelinePos,
                 mainTimelineZoom = orig.beatmapData.editorData.mainTimelineZoom
             };
-            beatmapData.levelData = new BeatmapData.LevelData
+            beatmapData.levelData = new LevelData
             {
                 levelVersion = orig.beatmapData.levelData.levelVersion,
                 backgroundColor = orig.beatmapData.levelData.backgroundColor,
@@ -1626,7 +1626,7 @@ namespace BetterLegacy.Core.Data
                 jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
             CoreHelper.Log("Saving Level Data");
-            jn["level_data"] = beatmapData.ModLevelData.ToJSON();
+            jn["level_data"] = beatmapData.levelData.ToJSON();
 
             CoreHelper.Log("Saving prefabs");
             if (prefabs != null)

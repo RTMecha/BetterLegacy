@@ -43,7 +43,7 @@ namespace BetterLegacy.Core.Data
 
         public new List<Data.Marker> markers = new List<Data.Marker>();
 
-        public Data.LevelData ModLevelData => (Data.LevelData)levelData;
-        public LevelEditorData ModEditorData => (LevelEditorData)editorData;
+        public new Data.LevelData levelData;
+        public new LevelEditorData editorData;
     }
 }
