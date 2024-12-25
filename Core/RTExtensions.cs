@@ -100,7 +100,8 @@ namespace BetterLegacy.Core
         public static GameObject Duplicate(this GameObject gameObject, Transform parent, string name, int index)
         {
             var copy = gameObject.Duplicate(parent, name);
-            copy.transform.SetSiblingIndex(index);
+            if (index >= 0)
+                copy.transform.SetSiblingIndex(index);
             return copy;
         }
 
