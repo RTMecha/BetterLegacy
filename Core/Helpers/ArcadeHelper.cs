@@ -25,6 +25,9 @@ namespace BetterLegacy.Core.Helpers
     {
         public static bool endedLevel;
 
+        public static int temporaryEndLevelFunc; // end level screen, return to hub, return to previous, quit to arcade
+        public static string temporaryEndLevelString;
+
         public static void LoadInputSelect()
         {
             LevelManager.Levels.Clear();
@@ -178,10 +181,104 @@ namespace BetterLegacy.Core.Helpers
         {
             endedLevel = true;
 
-            if (EndLevelMenu.Current != null)
-                return;
+            switch (temporaryEndLevelFunc)
+            {
+                case 0:
+                    {
+                        if (!EndLevelMenu.Current)
+                            EndLevelMenu.Init();
 
-            EndLevelMenu.Init();
+                        break;
+                    } // end level screen
+                case 1:
+                    {
+                        EndLoadLevel(LevelManager.Hub);
+
+                        break;
+                    } // return to hub
+                case 2:
+                    {
+                        EndLoadLevel(LevelManager.PreviousLevel);
+
+                        break;
+                    } // return to previous
+                case 3:
+                    {
+                        if (string.IsNullOrEmpty(temporaryEndLevelString))
+                            break;
+
+                        if (LevelManager.Levels.TryFind(x => x.id == temporaryEndLevelString, out Level level))
+                            EndLoadLevel(level);
+                        else if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == temporaryEndLevelString, out Level steamLevel))
+                            EndLoadLevel(steamLevel);
+
+                        break;
+                    } // loads level
+                case 4:
+                    {
+                        LevelManager.UpdateCurrentLevelProgress();
+                        QuitToArcade();
+
+                        break;
+                    } // quit to arcade
+                case 5:
+                    {
+                        if (CoreHelper.IsEditing) // don't want interfaces to load in editor
+                        {
+                            EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        LevelManager.UpdateCurrentLevelProgress();
+
+                        var path = RTFile.CombinePaths(RTFile.BasePath, temporaryEndLevelString + FileFormat.LSI.Dot());
+
+                        if (!RTFile.FileExists(path))
+                        {
+                            CoreHelper.LogError($"Interface with file name: \"{temporaryEndLevelString}\" does not exist.");
+                            return;
+                        }
+
+                        var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
+
+                        menu.filePath = path;
+
+                        if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
+                        {
+                            CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
+                            return;
+                        }
+
+                        InterfaceManager.inst.MainDirectory = RTFile.BasePath;
+
+                        LSHelpers.ShowCursor();
+                        AudioManager.inst.CurrentAudioSource.Pause();
+                        InputDataManager.inst.SetAllControllerRumble(0f);
+
+                        if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
+                        {
+                            InterfaceManager.inst.SetCurrentInterface(otherMenu);
+                            menu = null;
+                            return;
+                        }
+
+                        InterfaceManager.inst.interfaces.Add(menu);
+                        InterfaceManager.inst.SetCurrentInterface(menu);
+
+                        break;
+                    } // parse interface
+            }
+
+            // reset
+            temporaryEndLevelFunc = 0;
+            temporaryEndLevelString = null;
+        }
+
+        static void EndLoadLevel(Level level)
+        {
+            LevelManager.UpdateCurrentLevelProgress();
+            if (level)
+                CoreHelper.StartCoroutine(LevelManager.Play(level));
         }
 
         public static bool fromLevel = false;
