@@ -574,7 +574,7 @@ namespace BetterLegacy.Editor
             if (!textMeshNoob)
                 return;
 
-            textMeshNoob.text = !string.IsNullOrEmpty(name) ? string.Format("<mark=#000000aa>{0}</mark>", name) : "NULL";
+            textMeshNoob.text = !string.IsNullOrEmpty(name) ? string.Format("<mark=#000000aa>{0}</mark>", name) : string.Empty;
             textMeshNoob.color = LSColors.white;
         }
 
@@ -620,14 +620,7 @@ namespace BetterLegacy.Editor
         public void RenderSprite(List<DataManager.GameData.EventKeyframe> events)
         {
             if (TryGetData(out EventKeyframe eventKeyframe))
-            {
-                Image.sprite =
-                    RTEditor.GetKeyframeIcon(eventKeyframe.curveType,
-                    events.Count > Index + 1 ?
-                    events[Index + 1].curveType : DataManager.inst.AnimationList[0]);
-
-                return;
-            }
+                Image.sprite = RTEditor.GetKeyframeIcon(eventKeyframe.curveType, events.Count > Index + 1 ? events[Index + 1].curveType : DataManager.inst.AnimationList[0]);
         }
 
         /// <summary>
@@ -667,9 +660,21 @@ namespace BetterLegacy.Editor
         /// </summary>
         public enum TimelineReferenceType
         {
+            /// <summary>
+            /// If <see cref="data"/> is null.
+            /// </summary>
             Null,
+            /// <summary>
+            /// If <see cref="data"/> is <seealso cref="Core.Data.BeatmapObject"/>.
+            /// </summary>
             BeatmapObject,
+            /// <summary>
+            /// If <see cref="data"/> is <seealso cref="Core.Data.PrefabObject"/>.
+            /// </summary>
             PrefabObject,
+            /// <summary>
+            /// If <see cref="data"/> is <seealso cref="Core.Data.EventKeyframe"/>.
+            /// </summary>
             EventKeyframe
         }
     }
