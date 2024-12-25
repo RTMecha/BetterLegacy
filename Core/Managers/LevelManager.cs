@@ -508,6 +508,21 @@ namespace BetterLegacy.Core.Managers
             return json;
         }
 
+        /// <summary>
+        /// Forces the level to end.
+        /// </summary>
+        public static void EndLevel()
+        {
+            GameManager.inst.gameState = GameManager.State.Finish;
+            AudioManager.inst.CurrentAudioSource.time = AudioManager.inst.CurrentAudioSource.clip.length;
+
+            Time.timeScale = 1f;
+            Clear();
+
+            LevelEnded = true;
+            OnLevelEnd?.Invoke();
+        }
+
         #endregion
 
         #region Player Data

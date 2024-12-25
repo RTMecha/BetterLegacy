@@ -146,7 +146,7 @@ namespace BetterLegacy.Patchers
                 if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor
                     && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f)
                     if (!LevelManager.LevelEnded)
-                        __instance.GoToNextLevel();
+                        LevelManager.EndLevel();
             }
             else if (CoreHelper.Finished)
             {
@@ -318,13 +318,7 @@ namespace BetterLegacy.Patchers
 
         static IEnumerator GoToNextLevelLoop(GameManager __instance)
         {
-            __instance.gameState = GameManager.State.Finish;
-            Time.timeScale = 1f;
-            DG.Tweening.DOTween.Clear();
-            InputDataManager.inst.SetAllControllerRumble(0f);
-
-            LevelManager.LevelEnded = true;
-            LevelManager.OnLevelEnd?.Invoke();
+            LevelManager.EndLevel();
             yield break;
         }
 
