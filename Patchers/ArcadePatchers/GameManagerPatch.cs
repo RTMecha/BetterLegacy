@@ -127,34 +127,15 @@ namespace BetterLegacy.Patchers
                         PauseMenu.Pause();
                 }
 
-                if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
-                    AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation &&
-                    __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] &&
-                    CoreHelper.InEditorPreview)
-                {
-                    CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
-                    __instance.playingCheckpointAnimation = true;
-                    __instance.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
-                    __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
-                }
+                UpdateCheckpoint(__instance);
             }
 
             if (CoreHelper.Reversing && !__instance.isReversing)
                 __instance.StartCoroutine(ReverseToCheckpointLoop(__instance));
             else if (CoreHelper.Playing)
-            {
-                if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor
-                    && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f)
-                    if (!LevelManager.LevelEnded)
-                        LevelManager.EndLevel();
-            }
+                CheckLevelEnd(__instance);
             else if (CoreHelper.Finished)
-            {
-                if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor
-                    && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f
-                    && CoreConfig.Instance.ReplayLevel.Value && LevelManager.LevelEnded)
-                    AudioManager.inst.SetMusicTime(0f);
-            }
+                CheckReplay(__instance);
 
             if (CoreHelper.Playing || CoreHelper.Reversing)
                 __instance.UpdateEventSequenceTime();
@@ -162,6 +143,31 @@ namespace BetterLegacy.Patchers
             __instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
 
             return false;
+        }
+
+        static void UpdateCheckpoint(GameManager __instance)
+        {
+            if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
+                AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation &&
+                __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] && CoreHelper.InEditorPreview)
+            {
+                CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
+                __instance.playingCheckpointAnimation = true;
+                __instance.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
+                __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
+            }
+        }
+
+        static void CheckLevelEnd(GameManager __instance)
+        {
+            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f && !LevelManager.LevelEnded)
+                LevelManager.EndLevel();
+        }
+
+        static void CheckReplay(GameManager __instance)
+        {
+            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f && CoreConfig.Instance.ReplayLevel.Value && LevelManager.LevelEnded)
+                AudioManager.inst.SetMusicTime(0f);
         }
 
         public static IEnumerator ReverseToCheckpointLoop(GameManager __instance)
