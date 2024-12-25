@@ -93,19 +93,20 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                var sayings = JSON.Parse(RTFile.ReadFromFile(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/sayings.json") ? $"{RTFile.ApplicationDirectory}profile/sayings.json" : $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sayings.json"))["sayings"];
+                var sayings = JSON.Parse(RTFile.ReadFromFile(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}") ? $"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}" : $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sayings{FileFormat.JSON.Dot()}"))["sayings"];
 
-                __instance.levelRanks = new List<DataManager.LevelRank>
-                {
-                    new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, sayings["null"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, sayings["ss"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, sayings["s"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, sayings["a"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, sayings["b"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, sayings["c"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, sayings["d"].Children.Select(x => x.Value).ToArray()),
-                    new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, sayings["f"].Children.Select(x => x.Value).ToArray())
-                };
+                if (sayings != null)
+                    __instance.levelRanks = new List<DataManager.LevelRank>
+                    {
+                        new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, sayings["null"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, sayings["ss"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, sayings["s"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, sayings["a"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, sayings["b"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, sayings["c"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, sayings["d"].Children.Select(x => x.Value).ToArray()),
+                        new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, sayings["f"].Children.Select(x => x.Value).ToArray())
+                    };
             }
             catch (Exception ex)
             {
@@ -197,12 +198,12 @@ namespace BetterLegacy.Patchers
                 };
             }
 
-            __instance.UpdateSettingString("versionNumber", "4.1.16");
+            __instance.UpdateSettingString("versionNumber", ProjectArrhythmia.GAME_VERSION);
             __instance.UpdateSettingBool("CanEdit", true);
 
-            if (RTFile.FileExists(RTFile.ApplicationDirectory + "settings/menu.lss"))
+            if (RTFile.FileExists(RTFile.ApplicationDirectory + $"settings/menu{FileFormat.LSS.Dot()}"))
             {
-                string rawProfileJSON = FileManager.inst.LoadJSONFile("settings/menu.lss");
+                string rawProfileJSON = RTFile.ReadFromFile(RTFile.ApplicationDirectory + $"settings/menu{FileFormat.LSS.Dot()}");
 
                 var jn = JSON.Parse(rawProfileJSON);
 
@@ -335,7 +336,7 @@ namespace BetterLegacy.Patchers
                 jn["UITheme"][4]["values"]["buttonbg"] = "transparent";
                 jn["UITheme"][4]["function_call"] = "apply_ui_theme";
 
-                RTFile.WriteToFile("settings/menu.lss", jn.ToString(3));
+                RTFile.WriteToFile(RTFile.ApplicationDirectory + $"settings/menu{FileFormat.LSS.Dot()}", jn.ToString(3));
             }
 
             InterfaceManager.Init();
@@ -343,11 +344,9 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/pa_example_m.lsp";
+                var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/pa_example_m{FileFormat.LSP.Dot()}";
                 if (RTFile.FileExists(path))
-                {
                     LegacyPlugin.ExamplePrefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-                }
             }
             catch (Exception ex)
             {
