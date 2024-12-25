@@ -9788,7 +9788,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Creating timeline objects...");
             SetFileInfo($"Setting first object of [ {name} ]");
-            StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects(true));
+            StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects());
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.SetCurrentCheckpoint(0);

@@ -1577,17 +1577,16 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void CreateTimelineObject(TimelineObject timelineObject, bool forceAdd = false, bool dontAdd = false)
+        public void CreateTimelineObject(TimelineObject timelineObject, bool forceAdd = false)
         {
-            timelineObject.AddToList(forceAdd, dontAdd);
+            timelineObject.AddToList(forceAdd);
             timelineObject.Init();
         }
 
-        public IEnumerator ICreateTimelineObjects(bool forceAdd = false)
+        public IEnumerator ICreateTimelineObjects()
         {
             if (RTEditor.inst.timelineObjects.Count > 0)
                 RTEditor.inst.timelineObjects.ForEach(x => Destroy(x.GameObject));
-
             RTEditor.inst.timelineObjects.Clear();
 
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
@@ -1596,8 +1595,8 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.fromPrefab)
                 {
                     var timelineObject = GetTimelineObject(beatmapObject);
-                    CreateTimelineObject(timelineObject, forceAdd);
-                    RenderTimelineObject(timelineObject);
+                    timelineObject.AddToList(true);
+                    timelineObject.Init(true);
                 }
             }
 
@@ -1607,19 +1606,18 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(prefabObject.ID))
                 {
                     var timelineObject = RTPrefabEditor.inst.GetTimelineObject(prefabObject);
-                    CreateTimelineObject(timelineObject, forceAdd);
-                    RenderTimelineObject(timelineObject);
+                    timelineObject.AddToList(true);
+                    timelineObject.Init(true);
                 }
             }
 
             yield break;
         }
 
-        public void CreateTimelineObjects(bool forceAdd = false)
+        public void CreateTimelineObjects()
         {
             if (RTEditor.inst.timelineObjects.Count > 0)
                 RTEditor.inst.timelineObjects.ForEach(x => Destroy(x.GameObject));
-
             RTEditor.inst.timelineObjects.Clear();
 
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
@@ -1628,8 +1626,8 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.fromPrefab)
                 {
                     var timelineObject = GetTimelineObject(beatmapObject);
-                    CreateTimelineObject(timelineObject);
-                    RenderTimelineObject(timelineObject);
+                    timelineObject.AddToList(true);
+                    timelineObject.Init(true);
                 }
             }
 
@@ -1639,8 +1637,8 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(prefabObject.ID))
                 {
                     var timelineObject = RTPrefabEditor.inst.GetTimelineObject(prefabObject);
-                    CreateTimelineObject(timelineObject);
-                    RenderTimelineObject(timelineObject);
+                    timelineObject.AddToList(true);
+                    timelineObject.Init(true);
                 }
             }
         }

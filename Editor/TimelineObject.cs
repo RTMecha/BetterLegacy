@@ -392,10 +392,9 @@ namespace BetterLegacy.Editor
         /// Adds to the <see cref="RTEditor.timelineObjects"/> list if the timeline object wasn't verified already.
         /// </summary>
         /// <param name="forceAdd">If the timeline object should be added regardless of verification.</param>
-        /// <param name="dontAdd">if timeline object shouldn't be added if it isn't verified.</param>
-        public void AddToList(bool forceAdd = false, bool dontAdd = false)
+        public void AddToList(bool forceAdd = false)
         {
-            if (forceAdd || !dontAdd && !verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == ID))
+            if (forceAdd || !verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == ID))
             {
                 verified = true;
                 if (isPrefabObject || !RTEditor.inst.timelineObjects.TryFindIndex(x => x.isPrefabObject, out int index))
