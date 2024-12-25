@@ -21,6 +21,7 @@ using BetterLegacy.Core.Managers.Networking;
 using System.Collections;
 using System.IO;
 using System.IO.Compression;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Arcade
 {

@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -703,7 +704,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, "level-previous.lsb"));
+            _ = RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, $"level-previous{FileFormat.LSB.Dot()}"));
 
             DataManager.inst.SaveMetadata(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
             CoreHelper.StartCoroutine(SaveData(GameManager.inst.path));

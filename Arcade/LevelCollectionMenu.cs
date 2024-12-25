@@ -18,6 +18,7 @@ using BetterLegacy.Configs;
 using LSFunctions;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Arcade
 {

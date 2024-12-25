@@ -23,6 +23,7 @@ using System.IO.Compression;
 using System.Net;
 using UnityEngine.Networking;
 using HarmonyLib;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Editor.Managers
 {

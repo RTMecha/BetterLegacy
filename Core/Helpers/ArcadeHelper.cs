@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Arcade;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
@@ -420,7 +421,7 @@ namespace BetterLegacy.Core.Helpers
 
                 var level = new Level(path, metadata);
 
-                if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
+                if (LevelManager.Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
                     level.playerData = playerData;
 
                 if (LoadLevelsManager.inst)

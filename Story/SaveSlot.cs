@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using SimpleJSON;
@@ -59,7 +60,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// All level saves in the current story save slot.
         /// </summary>
-        public List<LevelManager.PlayerData> Saves { get; set; } = new List<LevelManager.PlayerData>();
+        public List<PlayerData> Saves { get; set; } = new List<PlayerData>();
 
         #endregion
 
@@ -83,7 +84,7 @@ namespace BetterLegacy.Story
 
             var makeNewPlayerData = level.playerData == null;
             if (makeNewPlayerData)
-                level.playerData = new LevelManager.PlayerData { ID = level.id, LevelName = level.metadata?.beatmap?.name, };
+                level.playerData = new PlayerData { ID = level.id, LevelName = level.metadata?.beatmap?.name, };
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewPlayerData}\n" +
@@ -206,7 +207,7 @@ namespace BetterLegacy.Story
             Saves.Clear();
             if (storySavesJSON["lvl"] != null)
                 for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
-                    Saves.Add(LevelManager.PlayerData.Parse(storySavesJSON["lvl"][i]));
+                    Saves.Add(PlayerData.Parse(storySavesJSON["lvl"][i]));
         }
 
         /// <summary>

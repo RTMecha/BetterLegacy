@@ -2,6 +2,7 @@
 using BetterLegacy.Components.Player;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using LSFunctions;

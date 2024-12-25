@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Components.Player;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Story;
@@ -17,8 +18,43 @@ namespace BetterLegacy.Core.Managers
 {
     public class LevelManager : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="LevelManager"/> global instance reference.
+        /// </summary>
         public static LevelManager inst;
+
+        /// <summary>
+        /// Manager class name.
+        /// </summary>
         public static string className = "[<color=#7F00FF>LevelManager</color>] \n";
+
+        /// <summary>
+        /// Initializes <see cref="LevelManager"/>.
+        /// </summary>
+        public static void Init() => Creator.NewGameObject(nameof(LevelManager), SystemManager.inst.transform).AddComponent<LevelManager>();
+
+        void Awake()
+        {
+            inst = this;
+            Levels = new List<Level>();
+            ArcadeQueue = new List<Level>();
+            LevelCollections = new List<LevelCollection>();
+
+            if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/saves.les") && RTFile.FileExists(RTFile.ApplicationDirectory + $"settings/save{FileFormat.LSS.Dot()}"))
+                UpgradeProgress();
+            else
+                LoadProgress();
+        }
+
+        void Update()
+        {
+            if (CoreHelper.InEditor && EditorManager.inst.isEditing)
+                BoostCount = 0;
+        }
+
+        #endregion
 
         #region Path
 
@@ -154,30 +190,6 @@ namespace BetterLegacy.Core.Managers
         public static float songFadeTransition = 0.5f;
 
         #endregion
-
-        /// <summary>
-        /// Inits LevelManager.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(LevelManager), SystemManager.inst.transform).AddComponent<LevelManager>();
-
-        void Awake()
-        {
-            inst = this;
-            Levels = new List<Level>();
-            ArcadeQueue = new List<Level>();
-            LevelCollections = new List<LevelCollection>();
-
-            if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/saves.les") && RTFile.FileExists(RTFile.ApplicationDirectory + "settings/save.lss"))
-                UpgradeProgress();
-            else
-                LoadProgress();
-        }
-
-        void Update()
-        {
-            if (CoreHelper.InEditor && EditorManager.inst.isEditing)
-                BoostCount = 0;
-        }
 
         #region Loading & Sorting
 
@@ -652,14 +664,10 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(decryptedJSON);
 
             for (int i = 0; i < jn["lvl"].Count; i++)
-            {
                 Saves.Add(PlayerData.Parse(jn["lvl"][i]));
-            }
 
             if (!string.IsNullOrEmpty(jn["played_count"]))
-            {
                 PlayedLevelCount = jn["played_count"].AsInt;
-            }
         }
 
         public static PlayerData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
@@ -733,86 +741,6 @@ namespace BetterLegacy.Core.Managers
              => x => level.playerData != null && level.playerData.Hits >= x.minHits && level.playerData.Hits <= x.maxHits;
 
         public static List<PlayerData> Saves { get; set; } = new List<PlayerData>();
-        public class PlayerData
-        {
-            public PlayerData() { }
-
-            public string LevelName { get; set; }
-            public string ID { get; set; }
-            public bool Completed { get; set; }
-            public int Hits { get; set; } = -1;
-            public int Deaths { get; set; } = -1;
-            public int Boosts { get; set; } = -1;
-            public int PlayedTimes { get; set; }
-            public float TimeInLevel { get; set; }
-            public float Percentage { get; set; }
-            public float LevelLength { get; set; }
-            public bool Unlocked { get; set; }
-
-            public void Update()
-            {
-                if (Hits > GameManager.inst.hits.Count)
-                    Hits = GameManager.inst.hits.Count;
-
-                if (Deaths > GameManager.inst.deaths.Count)
-                    Deaths = GameManager.inst.deaths.Count;
-
-                var l = AudioManager.inst.CurrentAudioSource.clip.length;
-                if (LevelLength != l)
-                    LevelLength = l;
-
-                float calc = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length * 100f;
-
-                if (Percentage < calc)
-                    Percentage = calc;
-            }
-
-            public void Update(int deaths, int hits, int boosts, bool completed)
-            {
-                if (Deaths == -1 || Deaths > deaths)
-                    Deaths = deaths;
-                if (Hits == -1 || Hits > hits)
-                    CurrentLevel.playerData.Hits = hits;
-                if (Boosts == -1 || Boosts > boosts)
-                    CurrentLevel.playerData.Boosts = boosts;
-                Completed = completed;
-            }
-
-            public static PlayerData Parse(JSONNode jn) => new PlayerData
-            {
-                LevelName = jn["n"],
-                ID = jn["id"],
-                Completed = jn["c"].AsBool,
-                Hits = jn["h"].AsInt,
-                Deaths = jn["d"].AsInt,
-                Boosts = jn["b"].AsInt,
-                PlayedTimes = jn["pt"].AsInt,
-                TimeInLevel = jn["t"].AsFloat,
-                Percentage = jn["p"].AsFloat,
-                LevelLength = jn["l"].AsFloat,
-                Unlocked = jn["u"].AsBool,
-            };
-
-            public JSONNode ToJSON()
-            {
-                var jn = JSON.Parse("{}");
-                if (!string.IsNullOrEmpty(LevelName))
-                    jn["n"] = LevelName;
-                jn["id"] = ID;
-                jn["c"] = Completed;
-                jn["h"] = Hits;
-                jn["d"] = Deaths;
-                jn["b"] = Boosts;
-                jn["pt"] = PlayedTimes;
-                jn["t"] = TimeInLevel;
-                jn["p"] = Percentage;
-                jn["l"] = LevelLength;
-                jn["u"] = Unlocked;
-                return jn;
-            }
-
-            public override string ToString() => $"{ID} - Hits: {Hits} Deaths: {Deaths}";
-        }
 
         #endregion
     }

@@ -26,7 +26,7 @@ using System.Collections;
 
 using SteamworksFacepunch;
 using SteamworksFacepunch.Ugc;
-
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Arcade
 {

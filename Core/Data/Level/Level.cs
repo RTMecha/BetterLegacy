@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
@@ -9,7 +10,7 @@ using System.Collections;
 using System.IO;
 using UnityEngine;
 
-namespace BetterLegacy.Core
+namespace BetterLegacy.Core.Data.Level
 {
     /// <summary>
     /// Stores data to be used for playing a level in the <see cref="SceneName.Game"/> scene.
@@ -82,7 +83,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Saved player data, used for ranking a level.
         /// </summary>
-        public LevelManager.PlayerData playerData;
+        public PlayerData playerData;
 
         #region Level Context
 

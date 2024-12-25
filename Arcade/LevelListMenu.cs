@@ -26,6 +26,7 @@ using UnityEngine.UI;
 using System.IO;
 using InControl;
 using SteamworksFacepunch.Ugc;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Arcade
 {

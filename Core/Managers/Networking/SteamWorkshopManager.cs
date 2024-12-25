@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Arcade;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using LSFunctions;
 using SimpleJSON;

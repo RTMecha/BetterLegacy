@@ -25,6 +25,7 @@ using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Arcade;
 using BetterLegacy.Patchers;
 using BetterLegacy.Story;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Menus
 {

@@ -23,6 +23,7 @@ using SimpleJSON;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Story;
 using System.Text.RegularExpressions;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -1071,7 +1072,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
             {
                 DataManager.LevelRank levelRank =
-                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
                     CoreHelper.InEditor ?
                         LevelManager.EditorRank :
                         DataManager.inst.levelRanks[0];

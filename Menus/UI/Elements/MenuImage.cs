@@ -22,6 +22,7 @@ using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Story;
 using BetterLegacy.Menus.UI.Layouts;
+using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -363,7 +364,7 @@ namespace BetterLegacy.Menus.UI.Elements
             RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
             {
                 DataManager.LevelRank levelRank =
-                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
                     CoreHelper.InEditor ?
                         LevelManager.EditorRank :
                         DataManager.inst.levelRanks[0];
@@ -791,7 +792,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value =
                             chapter < levelIDs.Count &&
                             levelIDs[chapter].levels.All(x => x.bonus ||
-                                            StoryManager.inst.Saves.TryFind(y => y.ID == x.id, out LevelManager.PlayerData playerData) &&
+                                            StoryManager.inst.Saves.TryFind(y => y.ID == x.id, out PlayerData playerData) &&
                                             LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= maxRank &&
                                             LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= minRank);
 
@@ -845,7 +846,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
                         
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankLesserEquals":
@@ -856,7 +857,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
                         
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankGreaterEquals":
@@ -867,7 +868,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
                         
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankLesser":
@@ -878,7 +879,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
                         
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankGreater":
@@ -889,7 +890,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
                         
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                     #endregion

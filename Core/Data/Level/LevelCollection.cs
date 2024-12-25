@@ -1,4 +1,6 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using LSFunctions;
@@ -8,7 +10,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-namespace BetterLegacy.Core
+namespace BetterLegacy.Core.Data.Level
 {
     /// <summary>
     /// Stores multiple levels in a specific order. Good for stories.
@@ -255,7 +257,7 @@ namespace BetterLegacy.Core
             // So when the player plays the level inside the collection, it isn't already ranked.
             level.id = jn["id"];
 
-            if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
+            if (LevelManager.Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
                 level.playerData = playerData;
 
             levels.Add(level);
