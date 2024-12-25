@@ -15,19 +15,35 @@ using UnityEngine;
 
 namespace BetterLegacy.Core.Managers.Networking
 {
+    /// <summary>
+    /// <see cref="SteamManager"/>, <see cref="SteamWorkshop"/> and <see cref="SteamWrapper"/> wrapper.
+    /// </summary>
     public class SteamWorkshopManager : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="SteamWorkshopManager"/> global instance reference.
+        /// </summary>
         public static SteamWorkshopManager inst;
 
+        /// <summary>
+        /// Manager class name.
+        /// </summary>
         public static string className = "[<color=#e81e62>Steam</color>] \n";
 
+        /// <summary>
+        /// Initializes <see cref="SteamWorkshopManager"/>.
+        /// </summary>
+        /// <param name="steamManager">Wrap.</param>
         public static void Init(SteamManager steamManager) => steamManager.gameObject.AddComponent<SteamWorkshopManager>();
 
-        public List<Level> Levels { get; set; } = new List<Level>();
-
-        public SteamUser steamUser;
-
+        /// <summary>
+        /// If Steam Client was initialized.
+        /// </summary>
         public bool Initialized { get; set; }
+
+        #region Internal
 
         void Awake()
         {
@@ -74,6 +90,17 @@ namespace BetterLegacy.Core.Managers.Networking
             if (Initialized)
                 SteamClient.Shutdown();
         }
+
+        #endregion
+
+        #endregion
+
+        #region Levels
+
+        /// <summary>
+        /// Subscribed Steam Workshop levels.
+        /// </summary>
+        public List<Level> Levels { get; set; } = new List<Level>();
 
         /// <summary>
         /// True if the subscribed Steam levels have finished loading.
@@ -170,10 +197,10 @@ namespace BetterLegacy.Core.Managers.Networking
         }
 
         /// <summary>
-        /// 
+        /// Gets the levels' related Steam Item.
         /// </summary>
-        /// <param name="publishedFileID"></param>
-        /// <param name="level"></param>
+        /// <param name="publishedFileID">Steam Workshop item ID.</param>
+        /// <param name="level">Level to assign the item to.</param>
         async void GetItem(PublishedFileId publishedFileID, Level level)
         {
             var item = await Item.GetAsync(publishedFileID);
@@ -200,15 +227,15 @@ namespace BetterLegacy.Core.Managers.Networking
 
             if (ArcadeConfig.Instance.SteamWorkshopFriendsOnly.Value)
                 query = query.CreatedByFriends();
-            
+
             if (ArcadeConfig.Instance.SteamWorkshopFollowingOnly.Value)
                 query = query.CreatedByFollowedUsers();
-            
+
             if (ArcadeConfig.Instance.SteamWorkshopFavoritedOnly.Value)
                 query = query.WhereUserFavorited(steamUser.steamID);
 
             ResultPage? resultPage = await query.GetPageAsync(page);
-            
+
             if (resultPage == null || !resultPage.HasValue || resultPage.Value.ResultCount <= 0)
             {
                 Debug.LogError($"{className}Page has no content.");
@@ -222,15 +249,20 @@ namespace BetterLegacy.Core.Managers.Networking
             }
         }
 
+        #endregion
+
+        #region User
+
+        /// <summary>
+        /// Local Steam User reference.
+        /// </summary>
+        public SteamUser steamUser;
+
         /// <summary>
         /// Steam User wrapper.
         /// </summary>
         public class SteamUser
         {
-            public SteamId steamID;
-            public ulong id;
-            public string name = "No Steam User";
-
             public SteamUser() { }
 
             public SteamUser(SteamId steamID, ulong id, string name)
@@ -239,6 +271,10 @@ namespace BetterLegacy.Core.Managers.Networking
                 this.id = id;
                 this.name = name;
             }
+
+            public SteamId steamID;
+            public ulong id;
+            public string name = "No Steam User";
 
             /// <summary>
             /// Unlocks an achievement.
@@ -284,5 +320,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 Debug.Log($"{className} Cleared Achievement : [{achievement}]");
             }
         }
+
+        #endregion
     }
 }
