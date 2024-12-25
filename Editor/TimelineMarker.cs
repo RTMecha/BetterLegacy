@@ -15,6 +15,9 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor
 {
+    /// <summary>
+    /// Object for storing marker data.
+    /// </summary>
     public class TimelineMarker : Exists
     {
         public TimelineMarker() { }

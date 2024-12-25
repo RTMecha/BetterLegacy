@@ -14,6 +14,9 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor
 {
+    /// <summary>
+    /// Object for storing theme panel data. Used for the themes in the theme keyframe.
+    /// </summary>
     public class ThemePanel
     {
         #region Properties

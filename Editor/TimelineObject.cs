@@ -14,7 +14,7 @@ using UnityEngine.UI;
 namespace BetterLegacy.Editor
 {
     /// <summary>
-    /// The object for storing object data in the timeline.
+    /// Object for storing object data in the timeline.
     /// </summary>
     public class TimelineObject : Exists
     {
