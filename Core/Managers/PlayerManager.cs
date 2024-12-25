@@ -328,9 +328,10 @@ namespace BetterLegacy.Core.Managers
 
             if (customPlayer.device == null)
             {
-                player.Actions = (CoreHelper.InEditor || allowController) && InputDataManager.inst.players.Count == 1 ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
+                var setBoth = (CoreHelper.InEditor || allowController) && IsSingleplayer;
+                player.Actions = setBoth ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
                 player.isKeyboard = true;
-                player.faceController = (CoreHelper.InEditor || allowController) && InputDataManager.inst.players.Count == 1 ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
+                player.faceController = setBoth ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
             }
             else
             {
