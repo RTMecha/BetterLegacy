@@ -1925,7 +1925,7 @@ namespace BetterLegacy.Core.Helpers
                                 return;
                             }
 
-                            EndLevelMenu.Init();
+                            LevelManager.EndLevel();
 
                             break;
                         }
