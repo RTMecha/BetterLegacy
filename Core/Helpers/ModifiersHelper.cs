@@ -7683,58 +7683,53 @@ namespace BetterLegacy.Core.Helpers
         {
             if (!useVisual && Updater.levelProcessor.converter.cachedSequences.TryGetValue(takeFrom.id, out ObjectConverter.CachedSequences cachedSequences))
             {
-                var positionSequence = cachedSequences.Position3DSequence.Interpolate(currentTime - time - delayPos);
-                var scaleSequence = cachedSequences.ScaleSequence.Interpolate(currentTime - time - delaySca);
-                var rotationSequence = cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot);
-
                 // Animate position
                 if (animatePos)
-                    applyTo.positionOffset = positionSequence;
+                    applyTo.positionOffset = cachedSequences.Position3DSequence.Interpolate(currentTime - time - delayPos);
 
                 // Animate scale
                 if (animateSca)
+                {
+                    var scaleSequence = cachedSequences.ScaleSequence.Interpolate(currentTime - time - delaySca);
                     applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
+                }
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = new Vector3(0f, 0f, rotationSequence);
+                    applyTo.rotationOffset = new Vector3(0f, 0f, cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot));
             }
             else if (useVisual && Updater.TryGetObject(takeFrom, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
             {
                 var transform = levelObject.visualObject.GameObject.transform;
-                var position = transform.position;
-                var scale = transform.lossyScale;
-                var rotation = transform.rotation.eulerAngles;
 
                 // Animate position
                 if (animatePos)
-                    applyTo.positionOffset = position;
+                    applyTo.positionOffset = transform.position;
 
                 // Animate scale
                 if (animateSca)
-                    applyTo.scaleOffset = scale;
+                    applyTo.scaleOffset = transform.lossyScale;
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = rotation;
+                    applyTo.rotationOffset = transform.rotation.eulerAngles;
             }
             else if (useVisual)
             {
-                var positionSequence = takeFrom.InterpolateChainPosition(currentTime - time - delayPos);
-                var scaleSequence = takeFrom.InterpolateChainScale(currentTime - time - delaySca);
-                var rotationSequence = takeFrom.InterpolateChainRotation(currentTime - time - delayRot);
-
                 // Animate position
                 if (animatePos)
-                    applyTo.positionOffset = positionSequence;
+                    applyTo.positionOffset = takeFrom.InterpolateChainPosition(currentTime - time - delayPos);
 
                 // Animate scale
                 if (animateSca)
+                {
+                    var scaleSequence = takeFrom.InterpolateChainScale(currentTime - time - delaySca);
                     applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
+                }
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = new Vector3(0f, 0f, rotationSequence);
+                    applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.InterpolateChainRotation(currentTime - time - delayRot));
             }
         }
     }
