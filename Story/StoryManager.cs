@@ -1031,40 +1031,7 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Loading story mode level... {path}");
             if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                LevelManager.OnLevelEnd = () =>
-                {
-                    LevelManager.Clear();
-                    Updater.OnLevelEnd();
-                    UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-                    if (!ContinueStory)
-                    {
-                        CoreHelper.InStory = true;
-                        LevelManager.OnLevelEnd = null;
-                        ContinueStory = true;
-                        SceneHelper.LoadInterfaceScene();
-                        return;
-                    }
-
-                    int chapter = LoadInt("Chapter", 0);
-                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
-                    level++;
-                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
-                    {
-                        UnlockChapterAchievement(chapter);
-                        chapter++;
-                        level = 0;
-                    }
-
-                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
-
-                    SaveInt("Chapter", chapter);
-                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                };
+                SetLevelEnd();
 
                 StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
                 yield break;
@@ -1083,39 +1050,7 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                LevelManager.OnLevelEnd = () =>
-                {
-                    LevelManager.Clear();
-                    Updater.OnLevelEnd();
-                    UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-                    int chapter = LoadInt("Chapter", 0);
-                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
-                    level++;
-                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
-                    {
-                        chapter++;
-                        level = 0;
-                    }
-
-                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
-
-                    SaveInt("Chapter", chapter);
-                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                    if (!ContinueStory)
-                    {
-                        CoreHelper.InStory = true;
-                        LevelManager.OnLevelEnd = null;
-                        ContinueStory = true;
-                        SceneHelper.LoadInterfaceScene();
-                        return;
-                    }
-
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                };
+                SetLevelEnd();
 
                 if (!storyLevel.music)
                 {
@@ -1149,40 +1084,7 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Loading story mode level... {path}");
             if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                LevelManager.OnLevelEnd = () =>
-                {
-                    LevelManager.Clear();
-                    Updater.OnLevelEnd();
-                    UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-                    if (!ContinueStory)
-                    {
-                        CoreHelper.InStory = true;
-                        LevelManager.OnLevelEnd = null;
-                        ContinueStory = true;
-                        SceneHelper.LoadInterfaceScene();
-                        return;
-                    }
-
-                    int chapter = LoadInt("Chapter", 0);
-                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
-                    level++;
-                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
-                    {
-                        UnlockChapterAchievement(chapter);
-                        chapter++;
-                        level = 0;
-                    }
-
-                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
-
-                    SaveInt("Chapter", chapter);
-                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                };
+                SetLevelEnd();
 
                 StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
                 yield break;
@@ -1201,39 +1103,7 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                LevelManager.OnLevelEnd = () =>
-                {
-                    LevelManager.Clear();
-                    Updater.OnLevelEnd();
-                    UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-                    int chapter = LoadInt("Chapter", 0);
-                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
-                    level++;
-                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
-                    {
-                        chapter++;
-                        level = 0;
-                    }
-
-                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
-
-                    SaveInt("Chapter", chapter);
-                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                    if (!ContinueStory)
-                    {
-                        CoreHelper.InStory = true;
-                        LevelManager.OnLevelEnd = null;
-                        ContinueStory = true;
-                        SceneHelper.LoadInterfaceScene();
-                        return;
-                    }
-
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                };
+                SetLevelEnd();
 
                 if (!storyLevel.music)
                 {
@@ -1248,6 +1118,44 @@ namespace BetterLegacy.Story
         }
 
         void UnlockChapterAchievement(int chapter) => AchievementManager.inst.UnlockAchievement($"story_doc{(chapter + 1).ToString("00")}_complete");
+
+        void SetLevelEnd()
+        {
+            LevelManager.OnLevelEnd = () =>
+            {
+                LevelManager.Clear();
+                Updater.OnLevelEnd();
+                UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+                if (!ContinueStory)
+                {
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    ContinueStory = true;
+                    SceneHelper.LoadInterfaceScene();
+                    return;
+                }
+
+                int chapter = LoadInt("Chapter", 0);
+                int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                level++;
+                if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                {
+                    UnlockChapterAchievement(chapter);
+                    chapter++;
+                    level = 0;
+                }
+
+                chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+
+                SaveInt("Chapter", chapter);
+                SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+
+                CoreHelper.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                SceneHelper.LoadInterfaceScene();
+            };
+        }
 
         void SetLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
         {
