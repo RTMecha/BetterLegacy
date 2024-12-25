@@ -312,11 +312,11 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Spawning...");
             BoostCount = 0;
 
-            PlayerManager.allowController = PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value && InputDataManager.inst.players.Count == 1;
-
             PlayerManager.LoadLocalModels();
-
+            PlayerManager.ValidatePlayers();
             PlayerManager.AssignPlayerModels();
+
+            PlayerManager.allowController = PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value && PlayerManager.IsSingleplayer;
 
             RTPlayer.GameMode = GameMode.Regular;
 
