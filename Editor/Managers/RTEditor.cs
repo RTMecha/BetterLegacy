@@ -11993,6 +11993,28 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        const string STORY_LEVELS_COMPILER_PATH = "C:/Users/Mecha/Documents/Project Arrhythmia/Unity/BetterLegacyEditor/Assets/Story Levels";
+
+        /// <summary>
+        /// Debug only.
+        /// </summary>
+        public void ToStoryLevel(int chapter, int level, string type = "", int cutscene = 0)
+        {
+            var path = RTFile.BasePath;
+            var doc = $"doc{RTString.ToStoryNumber(chapter)}";
+            var saveTo = RTFile.CombinePaths(STORY_LEVELS_COMPILER_PATH, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? "" : "_" + type + RTString.ToStoryNumber(cutscene))}");
+
+            RTFile.CreateDirectory(saveTo);
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_LSB), RTFile.CombinePaths(saveTo, $"level{FileFormat.JSON.Dot()}"));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.METADATA_LSB), RTFile.CombinePaths(saveTo, $"metadata{FileFormat.JSON.Dot()}"));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.PLAYERS_LSB), RTFile.CombinePaths(saveTo, $"players{FileFormat.JSON.Dot()}"));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_OGG), RTFile.CombinePaths(saveTo, $"song{FileFormat.OGG.Dot()}"));
+            if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
+                RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_JPG), RTFile.CombinePaths(saveTo, Level.COVER_JPG));
+
+            EditorManager.inst.DisplayNotification("Saved the level to the story level compiler.", 2f, EditorManager.NotificationType.Success);
+        }
+
         #endregion
 
         #region Constructors
