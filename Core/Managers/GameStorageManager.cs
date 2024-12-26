@@ -130,14 +130,18 @@ namespace BetterLegacy.Core.Managers
         {
             GameManager.inst.introAnimator.enabled = false;
             levelAnimationController.Play(IntroAnimation);
+            doIntroFadeInternal = doIntroFade;
         }
 
         const float INTRO_SPEED = 0.3f;
 
+        public static bool doIntroFade = true;
+        bool doIntroFadeInternal = true;
+
         public static void SetIntroBGOpacity(float x)
         {
             if (GameManager.inst && GameManager.inst.introBG)
-                GameManager.inst.introBG.color = LSColors.fadeColor(GameManager.inst.introBG.color, x);
+                GameManager.inst.introBG.color = LSColors.fadeColor(GameManager.inst.introBG.color, inst.doIntroFadeInternal ? x : 0f);
         }
 
         public static void SetIntroTitlePosition(Vector2 pos)

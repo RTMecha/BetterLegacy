@@ -1930,6 +1930,23 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "setAudioTransition":
+                        {
+                            LevelManager.songFadeTransition = modifier.GetFloat(0, 0.5f);
+                            break;
+                        }
+                    case "setIntroFade":
+                        {
+                            GameStorageManager.doIntroFade = modifier.GetBool(0, true);
+                            break;
+                        }
+                    case "setLevelEnd":
+                        {
+                            ArcadeHelper.temporaryEndLevelFunc = modifier.GetInt(0, 0);
+                            ArcadeHelper.temporaryEndLevelString = modifier.GetString(1, "");
+
+                            break;
+                        }
                     #endregion
                     #region Component
                     case "blur":

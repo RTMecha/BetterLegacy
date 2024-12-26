@@ -527,6 +527,7 @@ namespace BetterLegacy.Editor.Managers
                     case "setAlphaOther":
                     case "blackHole":
                     case "playerSpeed":
+                    case "setAudioTransition":
                         {
                             if (cmd.Contains("Other"))
                                 PrefabGroupOnly(modifier, layout);
@@ -2500,6 +2501,11 @@ namespace BetterLegacy.Editor.Managers
 
                             DropdownGenerator(modifier, layout, "Language", 0, options);
 
+                            break;
+                        }
+                    case "setIntroFade":
+                        {
+                            BoolGenerator(modifier, layout, "Should Fade", 0, true);
                             break;
                         }
 
