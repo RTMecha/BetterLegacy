@@ -827,8 +827,8 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != "editor.lse" && !file.Contains("waveform-") &&
-            (file.Contains(".lsb") || file.Contains(".jpg") || file.Contains(".png") || file.Contains(".ogg") || file.Contains(".wav") || file.Contains(".mp3") || file.Contains(".mp4"));
+        public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != Level.EDITOR_LSE && !file.Contains("waveform-") &&
+            RTFile.FileIsFormat(file, FileFormat.LSB, FileFormat.JPG, FileFormat.PNG, FileFormat.OGG, FileFormat.WAV, FileFormat.MP3, FileFormat.MP4);
 
         #region Functions
 
