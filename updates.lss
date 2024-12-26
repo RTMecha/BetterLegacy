@@ -1,3 +1,23 @@
+snapshot-2024.12.4 - (pre-1.7.0) > [Dec 26, 2024]
+- Updated the chapter 1 demo. This includes some very WIP cutscenes.
+- Background Objects now update in the UpdateObject keybind action.
+- Began implementing seed-based random.
+- Changed the emoji in the main menu sound.
+- Implemented default rect values for interfaces.
+- Added the progress menu to the Arcade server downloading.
+- Reworked a lot of timeline object and timeline marker related code.
+- Ending event keyframe dragging now updates the event editor.
+- Some marker editor values now update when dragging a marker.
+- Example now considers the loading level screen a menu.
+- Added "Show Marker" setting to Config Manager > Editor > Timeline.
+- Added an intro sequence to the story mode.
+- Story save slots now show your current progress.
+- Added a "Spawn Players" toggle to the Player Editor. With this off, players will not spawn at the start of the level, allowing for cutscenes. If you want to respawn players, create a checkpoint or use the playerRespawn modifiers.
+- Unpause sequence can now be sped up if the user is speeding up the interface by pressing left mouse button / Xbox controller A button / PS controller X button / keyboard space.
+- Rewrote some theme panel code.
+- Added "setAudioTransition" action modifier. This sets the audio transition for the next loaded level.
+- Added "setIntroFade" action modifier. This is if you don't want the intro fade to play for the next loaded level.
+- Internally a custom end level function can be set, but this probably won't be implemented until 1.8.0.
 snapshot-2024.12.3 - (pre-1.7.0) > [Dec 17, 2024]
 - Cleaned up a lot file path related code. If anything goes wrong related to that, please let me know!
 - Added a notification that informs you about editor freecam and show GUI & Players being toggled.
