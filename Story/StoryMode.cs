@@ -113,6 +113,11 @@ namespace BetterLegacy.Story
             /// </summary>
             public int Count => levels.Count;
 
+            /// <summary>
+            /// The transition sequence to the next chapter.
+            /// </summary>
+            public ChapterTransition transition;
+
             #endregion
 
             /// <summary>
@@ -130,6 +135,9 @@ namespace BetterLegacy.Story
 
                 for (int i = 0; i < jn["levels"].Count; i++)
                     chapter.levels.Add(LevelSequence.Parse(jn["levels"][i]));
+
+                if (jn["transition"] != null)
+                    chapter.transition = ChapterTransition.Parse(jn["transition"]);
 
                 return chapter;
             }
@@ -242,6 +250,39 @@ namespace BetterLegacy.Story
             }
 
             public override string ToString() => $"{name} | {songTitle} - {Count}";
+        }
+
+        /// <summary>
+        /// Represents the transition from one chapter to the next.
+        /// </summary>
+        public class ChapterTransition
+        {
+            /// <summary>
+            /// Path to the interface to load when moving onto the next chapter. If left empty, load the level sequence.
+            /// </summary>
+            public string interfacePath;
+
+            /// <summary>
+            /// Level transition between chapters. If left null, move onto the next chapter anyways.
+            /// </summary>
+            public LevelSequence levelSequence;
+
+            /// <summary>
+            /// Parses a Chapters' transition from JSON.
+            /// </summary>
+            /// <param name="jn">JSON to parse.</param>
+            /// <returns>Returns a parsed <see cref="ChapterTransition"/> for the story mode.</returns>
+            public static ChapterTransition Parse(JSONNode jn)
+            {
+                var transition = new ChapterTransition();
+                if (!string.IsNullOrEmpty(jn["interface"]))
+                    transition.interfacePath = jn["interface"];
+                if (jn["level"] != null)
+                    transition.levelSequence = LevelSequence.Parse(jn["level"]);
+                return transition;
+            }
+
+            public override string ToString() => levelSequence?.ToString();
         }
     }
 }
