@@ -462,6 +462,21 @@ namespace BetterLegacy.Core
         /// Checks if the file is a specific file format.
         /// </summary>
         /// <param name="path">The path to check.</param>
+        /// <param name="fileFormats">The file formats to compare.</param>
+        /// <returns>Returns true if the files' format is compared to the <paramref name="fileFormats"/>, otherwise returns false.</returns>
+        public static bool FileIsFormat(string path, params FileFormat[] fileFormats)
+        {
+            var result = false;
+            for (int i = 0; i < fileFormats.Length; i++)
+                if (FileIsFormat(path, fileFormats[i]))
+                    result = true;
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if the file is a specific file format.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
         /// <param name="fileFormat">The file format to compare.</param>
         /// <returns>Returns true if the files' format is compared to the <paramref name="fileFormat"/>, otherwise returns false.</returns>
         public static bool FileIsFormat(string path, FileFormat fileFormat) => GetFileFormat(path) == fileFormat;
