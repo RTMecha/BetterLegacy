@@ -17,7 +17,18 @@ namespace BetterLegacy.Core.Data.Level
     /// </summary>
     public class LevelCollection : Exists
     {
-        public LevelCollection() { id = LSText.randomNumString(16); }
+        public LevelCollection() => id = LSText.randomNumString(16);
+
+        /// <summary>
+        /// Constructs a level collection from a pre-existing queue. This allows the creation of collections in the Arcade menu.
+        /// </summary>
+        /// <param name="levels">Level queue.</param>
+        public LevelCollection(List<Level> levels) : this()
+        {
+            this.levels = levels;
+            for (int i = 0; i < levels.Count; i++)
+                levelInformation.Add(LevelInfo.FromLevel(levels[i]));
+        }
 
         #region Fields
 
