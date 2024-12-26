@@ -145,18 +145,8 @@ namespace BetterLegacy.Core.Helpers
             InterfaceManager.inst.CloseMenus();
 
             CoreHelper.Log("Quitting to arcade...");
-            DG.Tweening.DOTween.Clear();
-            try
-            {
-                Updater.UpdateObjects(false);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // try cleanup
-            GameData.Current = null;
-            GameData.Current = new GameData();
-            InputDataManager.inst.SetAllControllerRumble(0f);
+            LevelManager.Clear();
+            LevelManager.ResetTransition();
 
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
@@ -205,6 +195,24 @@ namespace BetterLegacy.Core.Helpers
                     } // return to previous
                 case 3:
                     {
+                        LevelManager.UpdateCurrentLevelProgress();
+                        if (LevelManager.NextLevelInCollection || !LevelManager.IsNextEndOfQueue)
+                        {
+                            if (LevelManager.NextLevelInCollection != null)
+                                CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
+                            else
+                                CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
+
+                            NextLevel();
+                            break;
+                        }
+
+                        QuitToArcade();
+
+                        break;
+                    } // continue collection
+                case 4:
+                    {
                         if (string.IsNullOrEmpty(temporaryEndLevelString))
                             break;
 
@@ -215,14 +223,14 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     } // loads level
-                case 4:
+                case 5:
                     {
                         LevelManager.UpdateCurrentLevelProgress();
                         QuitToArcade();
 
                         break;
                     } // quit to arcade
-                case 5:
+                case 6:
                     {
                         if (CoreHelper.IsEditing) // don't want interfaces to load in editor
                         {
