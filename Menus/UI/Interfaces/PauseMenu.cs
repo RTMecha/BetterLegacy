@@ -365,6 +365,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             elements.RemoveAll(x => x.id != "321" && x.id != "35255236785");
 
             int pitch = 0;
+            var speedUp = false;
             for (int i = 3; i > 0; i--)
             {
                 if (countdown == null || !countdown.textUI)
@@ -379,7 +380,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 countdown.text = num;
                 countdown.textUI.text = num;
                 countdown.textUI.maxVisibleCharacters = 9999;
-                yield return new WaitForSeconds(InterfaceManager.SpeedUp ? 0.1f : 0.5f);
+                yield return new WaitForSeconds(speedUp ? 0.1f : 0.5f);
+                speedUp = InterfaceManager.SpeedUp;
                 pitch++;
             }
 
