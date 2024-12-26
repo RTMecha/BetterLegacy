@@ -304,7 +304,6 @@ namespace BetterLegacy.Core.Managers
             AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
             AudioManager.inst.SetPitch(CoreHelper.Pitch);
             GameManager.inst.songLength = level.music.length;
-            songFadeTransition = 0.5f;
 
             if (!CurrentLevel.isStory)
                 yield return RTVideoManager.inst.Setup(level.path);
@@ -352,6 +351,7 @@ namespace BetterLegacy.Core.Managers
 
             LoadingFromHere = false;
 
+            ResetTransition();
             CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
             AchievementManager.inst.CheckLevelBeginAchievements();
         }
@@ -389,11 +389,29 @@ namespace BetterLegacy.Core.Managers
         }
 
         /// <summary>
+        /// Resets the level transition values to the defaults.
+        /// </summary>
+        public static void ResetTransition()
+        {
+            //CoreHelper.Log($"Song Fade Transition: {songFadeTransition}\nDo Intro Fade: {GameStorageManager.doIntroFade}");
+            songFadeTransition = 0.5f;
+            GameStorageManager.doIntroFade = true;
+        }
+
+        /// <summary>
         /// Clears any left over data.
         /// </summary>
         public static void Clear()
         {
             DG.Tweening.DOTween.Clear();
+            try
+            {
+                Updater.UpdateObjects(false);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // try cleanup
             GameData.Current = null;
             GameData.Current = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);

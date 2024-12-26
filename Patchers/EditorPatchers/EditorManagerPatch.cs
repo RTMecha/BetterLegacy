@@ -301,6 +301,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogError($"{Instance.className}First opened error!{ex}");
             }
 
+            LevelManager.ResetTransition();
             return false;
         }
 
