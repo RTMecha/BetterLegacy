@@ -544,7 +544,6 @@ namespace BetterLegacy.Core.Managers
         public static void EndLevel()
         {
             GameManager.inst.gameState = GameManager.State.Finish;
-            AudioManager.inst.CurrentAudioSource.time = AudioManager.inst.CurrentAudioSource.clip.length;
 
             Time.timeScale = 1f;
             InputDataManager.inst.SetAllControllerRumble(0f);
