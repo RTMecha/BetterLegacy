@@ -19,6 +19,10 @@ namespace BetterLegacy.Editor
     /// </summary>
     public class ThemePanel
     {
+        public ThemePanel() { }
+
+        public ThemePanel(int index) => this.index = index;
+
         #region Properties
 
         #region UI
@@ -127,7 +131,7 @@ namespace BetterLegacy.Editor
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, $"Folder [{Path.GetFileName(directory)}]", index + 1);
+            var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, $"Folder [{Path.GetFileName(directory)}]", index + 2);
             var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -140,6 +144,7 @@ namespace BetterLegacy.Editor
 
             GameObject = gameObjectFolder;
             FilePath = directory;
+            isFolder = true;
             Name = folderButtonStorageFolder.text;
             FolderButton = folderButtonFunctionFolder;
 
@@ -162,7 +167,7 @@ namespace BetterLegacy.Editor
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EventEditor.inst.ThemePanel.Duplicate(RTThemeEditor.inst.themeKeyframeContent, "theme-panel", index + 1);
+            gameObject = EventEditor.inst.ThemePanel.Duplicate(RTThemeEditor.inst.themeKeyframeContent, "theme-panel", index + 2);
 
             var storage = gameObject.GetComponent<ThemePanelStorage>();
 

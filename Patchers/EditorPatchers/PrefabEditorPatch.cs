@@ -215,7 +215,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogErrorFormat("External Prefabs Error: \n{0}\n{1}\n{2}", Instance.externalPrefabDialog, Instance.externalSearch, Instance.externalContent);
             }
             Debug.Log("Loading External Prefabs Popup");
-            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.ExternalPrefabFiles(__0));
+            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.RenderExternalPrefabs());
             return false;
         }
 
@@ -228,7 +228,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogErrorFormat("Internal Prefabs Error: \n{0}\n{1}\n{2}", Instance.internalPrefabDialog, Instance.internalSearch, Instance.internalContent);
             }
             Debug.Log("Loading Internal Prefabs Popup");
-            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.InternalPrefabs(__0));
+            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs(__0));
             return false;
         }
 

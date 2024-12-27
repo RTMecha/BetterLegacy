@@ -755,12 +755,7 @@ namespace BetterLegacy.Editor.Managers
 
         public ThemePanel SetupThemePanel(string directory, bool add = true, int index = -1)
         {
-            var themePanel = new ThemePanel
-            {
-                FilePath = directory,
-                isFolder = true,
-                index = index,
-            };
+            var themePanel = new ThemePanel(index);
             themePanel.Init(directory);
 
             if (add)
@@ -771,11 +766,7 @@ namespace BetterLegacy.Editor.Managers
 
         public ThemePanel SetupThemePanel(BeatmapTheme beatmapTheme, bool defaultTheme, bool duplicate = false, bool add = true, int index = -1)
         {
-            var themePanel = new ThemePanel
-            {
-                index = index,
-            };
-
+            var themePanel = new ThemePanel(index);
             themePanel.Init(beatmapTheme, defaultTheme, duplicate);
 
             if (add)

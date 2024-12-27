@@ -10045,20 +10045,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 DeleteChildren(PrefabEditor.inst.externalContent);
 
-                prefabExternalAddButton = PrefabEditor.inst.CreatePrefab.Duplicate(PrefabEditor.inst.externalContent, "add new prefab");
-                var text = prefabExternalAddButton.GetComponentInChildren<Text>();
-                text.text = "New External Prefab";
-
-                var hover = prefabExternalAddButton.AddComponent<HoverUI>();
-                hover.animateSca = true;
-                hover.animatePos = false;
-                hover.size = hoverSize;
-
-                var button = prefabExternalAddButton.GetComponent<Button>();
-                button.onClick.ClearAll();
-
-                var contextClickable = prefabExternalAddButton.AddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
+                prefabExternalAddButton = RTPrefabEditor.inst.CreatePrefabButton(PrefabEditor.inst.externalContent, "New External Prefab", eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
@@ -10091,10 +10078,7 @@ namespace BetterLegacy.Editor.Managers
 
                     PrefabEditor.inst.OpenDialog();
                     RTPrefabEditor.inst.createInternal = false;
-                };
-
-                EditorThemeManager.AddGraphic(button.image, ThemeGroup.Add, true);
-                EditorThemeManager.AddGraphic(text, ThemeGroup.Add_Text);
+                });
             }
             else
             {
@@ -10168,66 +10152,9 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < directories.Length; i++)
             {
                 var directory = directories[i];
-                var path = RTFile.ReplaceSlash(directory);
-                var fileName = Path.GetFileName(directory);
-
-                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
-                var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
-                var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
-
-                var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
-                hoverUIFolder.size = hoverSize;
-                hoverUIFolder.animatePos = false;
-                hoverUIFolder.animateSca = true;
-
-                folderButtonStorageFolder.text.text = fileName;
-
-                folderButtonStorageFolder.button.onClick.ClearAll();
-                folderButtonFunctionFolder.onClick = eventData =>
-                {
-                    if (!path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                    {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        ShowContextMenu(300f,
-                            new ButtonFunction("Open folder", () =>
-                            {
-                                prefabPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                                UpdatePrefabPath(false);
-                            }),
-                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); })),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
-                            new ButtonFunction("Delete", () => ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
-                                {
-                                    Directory.Delete(path, true);
-                                    UpdatePrefabPath(true);
-                                    EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                                    HideWarningPopup();
-                                }, HideWarningPopup))
-                            );
-
-                        return;
-                    }
-
-                    prefabPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                    UpdatePrefabPath(false);
-                };
-
-                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
-
-                RTPrefabEditor.inst.PrefabPanels.Add(new PrefabPanel
-                {
-                    GameObject = gameObjectFolder,
-                    FilePath = directory,
-                    Dialog = PrefabDialog.External,
-                    isFolder = true,
-                });
+                var prefabPanel = new PrefabPanel(i);
+                prefabPanel.Init(directory);
+                RTPrefabEditor.inst.PrefabPanels.Add(prefabPanel);
             }
 
             var files = Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
@@ -10241,10 +10168,9 @@ namespace BetterLegacy.Editor.Managers
                 prefab.objects.ForEach(x => (x as BeatmapObject).RemovePrefabReference());
                 prefab.filePath = RTFile.ReplaceSlash(file);
 
-                RTPrefabEditor.inst.CreatePrefabButton(prefab, i, PrefabDialog.External, file, false, hoverSize,
-                         nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
-                         typeHorizontalOverflow, typeVerticalOverflow, typeFontSize,
-                         deleteAnchoredPosition, deleteSizeDelta);
+                var prefabPanel = new PrefabPanel(PrefabDialog.External, i);
+                prefabPanel.Init(prefab);
+                RTPrefabEditor.inst.PrefabPanels.Add(prefabPanel);
             }
 
             prefabsLoading = false;
