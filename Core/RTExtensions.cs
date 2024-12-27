@@ -571,7 +571,21 @@ namespace BetterLegacy.Core
                 list.Add(obj);
             return list;
         }
+
+        /// <summary>
+        /// Checks if a list contains no elements.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <returns>Returns true if the list contains elements.</returns>
+        public static bool Empty<T>(this List<T> list) => list.Count < 1;
         
+        /// <summary>
+        /// Checks if an array contains no elements.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <returns>Returns true if the array contains elements.</returns>
+        public static bool Empty<T>(this T[] array) => array.Length < 1;
+
         /// <summary>
         /// Removes a specified string from the input string.
         /// </summary>
@@ -582,6 +596,18 @@ namespace BetterLegacy.Core
         #endregion
 
         #region JSON
+
+        public static bool Empty(this JSONNode jn) => jn == null || jn.IsArray ? jn.Count < 1 : jn.Children.Count() < 1;
+
+        public static bool Contains(this JSONNode jn, int index, string key) => jn != null && jn.IsArray ? jn[index] != null : jn[key] != null;
+
+        /// <summary>
+        /// If the JSON is an array, gets the JSON node at the index, otherwise gets the JSON node with the key.
+        /// </summary>
+        /// <param name="index">Index to get if JSON is an array.</param>
+        /// <param name="key">Key to get if the JSON is an object.</param>
+        /// <returns>Returns a JSON node.</returns>
+        public static JSONNode Get(this JSONNode jn, int index, string key) => jn.IsArray ? jn[index] : jn[key];
 
         public static JSONNode ToJSONArray(this Vector2Int vector2)
         {
