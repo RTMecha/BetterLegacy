@@ -3157,7 +3157,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         StoryManager.inst.ContinueStory = isArray && parameters.Count > 2 && parameters[2].AsBool || parameters.IsObject && parameters["continue"].AsBool;
 
-                        LevelManager.ResetTransition();
+                        ArcadeHelper.ResetModifiedStates();
                         StoryManager.inst.Play(chapter, level, bonus, skipCutscenes);
 
                         break;

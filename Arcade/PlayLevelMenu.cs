@@ -29,7 +29,8 @@ namespace BetterLegacy.Arcade
         public PlayLevelMenu() : base()
         {
             this.name = CurrentLevel?.metadata?.beatmap?.name;
-            LevelManager.ResetTransition();
+
+            ArcadeHelper.ResetModifiedStates();
 
             elements.Add(new MenuEvent
             {

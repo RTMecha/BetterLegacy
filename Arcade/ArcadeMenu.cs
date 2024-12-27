@@ -74,6 +74,8 @@ namespace BetterLegacy.Arcade
             InterfaceManager.inst.CurrentInterface = this;
             name = "Arcade";
 
+            ArcadeHelper.ResetModifiedStates();
+
             regenerate = false;
 
             elements.Add(new MenuEvent
