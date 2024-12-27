@@ -256,13 +256,7 @@ namespace BetterLegacy.Core
         /// <param name="path1">First path to combine.</param>
         /// <param name="path2">Second path to combine.</param>
         /// <returns>Returns a proper path.<br></br>Example:<br></br>path1: beatmaps/editor<br></br>path2: Node<br>Result: beatmaps/editor/Node</br></returns>
-        public static string CombinePaths(string path1, string path2)
-        {
-            if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2))
-                return string.Empty;
-
-            return ReplaceSlash(Path.Combine(path1, path2));
-        }
+        public static string CombinePaths(string path1, string path2) => string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2) ? string.Empty : ReplaceSlash(Path.Combine(path1, path2));
 
         /// <summary>
         /// Combines multiple paths together and ensures a correct set of slashes.
