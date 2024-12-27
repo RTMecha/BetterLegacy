@@ -1292,7 +1292,10 @@ namespace BetterLegacy.Arcade
             {
                 int index = num;
                 if (index < max - MAX_LEVELS_PER_PAGE || index >= max)
+                {
+                    num++;
                     continue;
+                }
 
                 int column = (index % MAX_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
@@ -1335,7 +1338,10 @@ namespace BetterLegacy.Arcade
             {
                 int index = num;
                 if (index < max - MAX_LEVELS_PER_PAGE || index >= max)
+                {
+                    num++;
                     continue;
+                }
 
                 int column = (index % MAX_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
