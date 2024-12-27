@@ -43,7 +43,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             var metadata = LevelManager.CurrentLevel.metadata;
 
             int prevHits = LevelManager.CurrentLevel.playerData != null ? LevelManager.CurrentLevel.playerData.Hits : -1;
-            LevelManager.UpdateCurrentLevelProgress();
 
             CoreHelper.Log($"Setting More Info");
             {
@@ -331,6 +330,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
             base.UpdateTheme();
         }
 
+        /// <summary>
+        /// Initializes the end level menu.
+        /// </summary>
         public static void Init() => Current = new EndLevelMenu();
 
         public static void Close()
