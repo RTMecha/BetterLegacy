@@ -383,8 +383,7 @@ namespace BetterLegacy.Core.Helpers
 
             var levelsDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath);
 
-            if (!RTFile.DirectoryExists(levelsDirectory))
-                Directory.CreateDirectory(levelsDirectory);
+            RTFile.CreateDirectory(levelsDirectory);
 
             var directories = Directory.GetDirectories(levelsDirectory, "*", SearchOption.TopDirectoryOnly);
 
