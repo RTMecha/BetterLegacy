@@ -26,8 +26,9 @@ namespace BetterLegacy.Core.Helpers
     {
         public static bool endedLevel;
 
-        public static int temporaryEndLevelFunc; // end level screen, return to hub, return to previous, quit to arcade
-        public static string temporaryEndLevelString;
+        public static EndLevelFunction endLevelFunc;
+        public static string endLevelData;
+        public static bool endLevelUpdateProgress = true;
 
         public static void LoadInputSelect()
         {
@@ -147,7 +148,7 @@ namespace BetterLegacy.Core.Helpers
 
             CoreHelper.Log("Quitting to arcade...");
             LevelManager.Clear();
-            LevelManager.ResetTransition();
+            ResetModifiedStates();
 
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
@@ -173,120 +174,157 @@ namespace BetterLegacy.Core.Helpers
         {
             endedLevel = true;
 
-            switch (temporaryEndLevelFunc)
+            try
             {
-                case 0:
-                    {
-                        if (!EndLevelMenu.Current)
-                            EndLevelMenu.Init();
+                if (endLevelUpdateProgress)
+                    LevelManager.UpdateCurrentLevelProgress();
 
-                        break;
-                    } // end level screen
-                case 1:
-                    {
-                        EndLoadLevel(LevelManager.Hub);
-
-                        break;
-                    } // return to hub
-                case 2:
-                    {
-                        EndLoadLevel(LevelManager.PreviousLevel);
-
-                        break;
-                    } // return to previous
-                case 3:
-                    {
-                        LevelManager.UpdateCurrentLevelProgress();
-                        if (LevelManager.NextLevelInCollection || !LevelManager.IsNextEndOfQueue)
+                switch (endLevelFunc)
+                {
+                    case EndLevelFunction.EndLevelMenu:
                         {
-                            if (LevelManager.NextLevelInCollection != null)
-                                CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
-                            else
-                                CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
+                            if (!EndLevelMenu.Current)
+                                EndLevelMenu.Init();
 
-                            NextLevel();
                             break;
                         }
+                    case EndLevelFunction.QuitToArcade:
+                        {
+                            QuitToArcade();
 
-                        QuitToArcade();
-
-                        break;
-                    } // continue collection
-                case 4:
-                    {
-                        if (string.IsNullOrEmpty(temporaryEndLevelString))
                             break;
-
-                        if (LevelManager.Levels.TryFind(x => x.id == temporaryEndLevelString, out Level level))
-                            EndLoadLevel(level);
-                        else if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == temporaryEndLevelString, out Level steamLevel))
-                            EndLoadLevel(steamLevel);
-
-                        break;
-                    } // loads level
-                case 5:
-                    {
-                        LevelManager.UpdateCurrentLevelProgress();
-                        QuitToArcade();
-
-                        break;
-                    } // quit to arcade
-                case 6:
-                    {
-                        if (CoreHelper.IsEditing) // don't want interfaces to load in editor
-                        {
-                            EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
-                            return;
                         }
-
-                        LevelManager.UpdateCurrentLevelProgress();
-
-                        var path = RTFile.CombinePaths(RTFile.BasePath, temporaryEndLevelString + FileFormat.LSI.Dot());
-
-                        if (!RTFile.FileExists(path))
+                    case EndLevelFunction.ReturnToHub:
                         {
-                            CoreHelper.LogError($"Interface with file name: \"{temporaryEndLevelString}\" does not exist.");
-                            return;
+                            EndLoadLevel(LevelManager.Hub);
+
+                            break;
                         }
-
-                        var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-
-                        menu.filePath = path;
-
-                        if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
+                    case EndLevelFunction.ReturnToPrevious:
                         {
-                            CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
-                            return;
+                            EndLoadLevel(LevelManager.PreviousLevel);
+
+                            break;
                         }
-
-                        InterfaceManager.inst.MainDirectory = RTFile.BasePath;
-
-                        LSHelpers.ShowCursor();
-                        AudioManager.inst.CurrentAudioSource.Pause();
-                        InputDataManager.inst.SetAllControllerRumble(0f);
-
-                        if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
+                    case EndLevelFunction.ContinueCollection:
                         {
-                            InterfaceManager.inst.SetCurrentInterface(otherMenu);
-                            menu = null;
-                            return;
+                            if (LevelManager.NextLevelInCollection || !LevelManager.IsNextEndOfQueue)
+                            {
+                                if (LevelManager.NextLevelInCollection != null)
+                                    CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
+                                else
+                                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
+
+                                NextLevel();
+                                break;
+                            }
+
+                            QuitToArcade();
+
+                            break;
                         }
+                    case EndLevelFunction.LoadLevel:
+                        {
+                            if (string.IsNullOrEmpty(endLevelData))
+                                break;
 
-                        InterfaceManager.inst.interfaces.Add(menu);
-                        InterfaceManager.inst.SetCurrentInterface(menu);
+                            if (LevelManager.Levels.TryFind(x => x.id == endLevelData, out Level level))
+                                EndLoadLevel(level);
+                            else if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == endLevelData, out Level steamLevel))
+                                EndLoadLevel(steamLevel);
 
-                        break;
-                    } // parse interface
+                            break;
+                        }
+                    case EndLevelFunction.ParseInterface:
+                        {
+                            if (CoreHelper.IsEditing) // don't want interfaces to load in editor
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            var path = RTFile.CombinePaths(RTFile.BasePath, endLevelData + FileFormat.LSI.Dot());
+
+                            if (!RTFile.FileExists(path))
+                            {
+                                CoreHelper.LogError($"Interface with file name: \"{endLevelData}\" does not exist.");
+                                return;
+                            }
+
+                            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
+
+                            menu.filePath = path;
+
+                            if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
+                            {
+                                CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
+                                return;
+                            }
+
+                            InterfaceManager.inst.MainDirectory = RTFile.BasePath;
+
+                            LSHelpers.ShowCursor();
+                            AudioManager.inst.CurrentAudioSource.Pause();
+                            InputDataManager.inst.SetAllControllerRumble(0f);
+
+                            if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
+                            {
+                                InterfaceManager.inst.SetCurrentInterface(otherMenu);
+                                menu = null;
+                                return;
+                            }
+
+                            InterfaceManager.inst.interfaces.Add(menu);
+                            InterfaceManager.inst.SetCurrentInterface(menu);
+
+                            break;
+                        }
+                    case EndLevelFunction.Loop:
+                        {
+                            GameManager.inst.gameState = GameManager.State.Playing;
+                            AudioManager.inst.SetMusicTime(0f);
+
+                            Time.timeScale = 1f;
+                            InputDataManager.inst.SetAllControllerRumble(0f);
+
+                            LevelManager.LevelEnded = false;
+                            break;
+                        }
+                    case EndLevelFunction.Restart:
+                        {
+                            GameManager.inst.gameState = GameManager.State.Playing;
+                            RestartLevel();
+                            AudioManager.inst.CurrentAudioSource.Play();
+                            break;
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"End Level Func: {endLevelFunc}\nEnd Level String: {endLevelData}\nException: {ex}");
             }
 
-            // reset
-            temporaryEndLevelFunc = 0;
-            temporaryEndLevelString = null;
+            ResetEndLevelVariables();
+        }
+
+        /// <summary>
+        /// Resets the transition and level end states.
+        /// </summary>
+        public static void ResetModifiedStates()
+        {
+            LevelManager.ResetTransition();
+            ResetEndLevelVariables();
+        }
+
+        public static void ResetEndLevelVariables()
+        {
+            endLevelFunc = 0;
+            endLevelData = null;
+            endLevelUpdateProgress = true;
         }
 
         static void EndLoadLevel(Level level)
         {
-            LevelManager.UpdateCurrentLevelProgress();
             if (level)
                 CoreHelper.StartCoroutine(LevelManager.Play(level));
         }

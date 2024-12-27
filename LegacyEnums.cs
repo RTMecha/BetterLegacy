@@ -937,6 +937,49 @@
         Count
     }
 
+    /// <summary>
+    /// The function that should occur when a level ends.
+    /// </summary>
+    public enum EndLevelFunction
+    {
+        /// <summary>
+        /// Initializes the EndLevelMenu.
+        /// </summary>
+        EndLevelMenu,
+        /// <summary>
+        /// Loads the Arcade scene.
+        /// </summary>
+        QuitToArcade,
+        /// <summary>
+        /// Returns to the hub level if there was one loaded.
+        /// </summary>
+        ReturnToHub,
+        /// <summary>
+        /// Returns to the previously loaded level.
+        /// </summary>
+        ReturnToPrevious,
+        /// <summary>
+        /// Continues the collection.
+        /// </summary>
+        ContinueCollection,
+        /// <summary>
+        /// Loads another level.
+        /// </summary>
+        LoadLevel,
+        /// <summary>
+        /// Parses an interface.
+        /// </summary>
+        ParseInterface,
+        /// <summary>
+        /// Loops the level.
+        /// </summary>
+        Loop,
+        /// <summary>
+        /// Fully restarts the level, clearing hit and death data.
+        /// </summary>
+        Restart
+    }
+
     public enum DefaultMusic
     {
         loading,

@@ -1926,6 +1926,17 @@ namespace BetterLegacy.Core.Helpers
                                 return;
                             }
 
+                            var endLevelFunc = modifier.GetInt(0, 0);
+
+                            if (endLevelFunc > 0)
+                            {
+                                var endLevelUpdateProgress = modifier.GetBool(2, true);
+
+                                ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
+                                ArcadeHelper.endLevelData = modifier.GetString(1, "");
+                            }
+                            ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true);
+
                             LevelManager.EndLevel();
 
                             break;
@@ -1940,10 +1951,21 @@ namespace BetterLegacy.Core.Helpers
                             GameStorageManager.doIntroFade = modifier.GetBool(0, true);
                             break;
                         }
-                    case "setLevelEnd":
+                    case "setLevelEndFunc":
                         {
-                            ArcadeHelper.temporaryEndLevelFunc = modifier.GetInt(0, 0);
-                            ArcadeHelper.temporaryEndLevelString = modifier.GetString(1, "");
+                            if (CoreHelper.InEditor)
+                                return;
+
+                            var endLevelFunc = modifier.GetInt(0, 0);
+
+                            if (endLevelFunc > 0)
+                            {
+                                var endLevelUpdateProgress = modifier.GetBool(2, true);
+
+                                ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
+                                ArcadeHelper.endLevelData = modifier.GetString(1, "");
+                            }
+                            ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true);
 
                             break;
                         }
