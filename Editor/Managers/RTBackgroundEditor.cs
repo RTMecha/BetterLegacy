@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Components;
 using BetterLegacy.Components.Editor;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
@@ -97,6 +98,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 copiedBackgroundObjects.Clear();
                 copiedBackgroundObjects.AddRange(GameData.Current.backgroundObjects.Select(x => BackgroundObject.DeepCopy(x)));
+                EditorManager.inst.DisplayNotification("Copied all Background Objects.", 2f, EditorManager.NotificationType.Success);
             });
 
             var copyTip = copy.GetComponent<HoverTooltip>();
@@ -122,14 +124,23 @@ namespace BetterLegacy.Editor.Managers
                 if (copiedBackgroundObjects == null || copiedBackgroundObjects.Count < 1)
                     return;
 
-                for (int i = 0; i < copiedBackgroundObjects.Count; i++)
+                var overwrite = EditorConfig.Instance.PasteBackgroundObjectsOverwrites.Value;
+                if (overwrite)
                 {
-                    var backgroundObject = BackgroundObject.DeepCopy(copiedBackgroundObjects[i]);
-                    GameData.Current.backgroundObjects.Add(backgroundObject);
+                    for (int i = GameData.Current.backgroundObjects.Count - 1; i >= 0; i--)
+                    {
+                        var backgroundObject = GameData.Current.backgroundObjects[i];
+                        Updater.DestroyBackgroundObject(backgroundObject);
+                        GameData.Current.backgroundObjects.RemoveAt(i);
+                    }
                 }
+
+                for (int i = 0; i < copiedBackgroundObjects.Count; i++)
+                    GameData.Current.backgroundObjects.Add(BackgroundObject.DeepCopy(copiedBackgroundObjects[i]));
 
                 BackgroundManager.inst.UpdateBackgrounds();
                 BackgroundEditor.inst.UpdateBackgroundList();
+                EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list." : "")}.", 2f, EditorManager.NotificationType.Success);
             });
 
             var pasteTip = paste.GetComponent<HoverTooltip>();
@@ -1782,15 +1793,13 @@ namespace BetterLegacy.Editor.Managers
         public void DeleteAllBackgrounds()
         {
             int num = GameData.Current.backgroundObjects.Count;
-
-            for (int i = 1; i < num; i++)
+            for (int i = GameData.Current.backgroundObjects.Count - 1; i > 0; i--)
             {
-                int nooo = Mathf.Clamp(i, 1, GameData.Current.backgroundObjects.Count - 1);
-                GameData.Current.backgroundObjects.RemoveAt(nooo);
+                var backgroundObject = GameData.Current.backgroundObjects[i];
+                Updater.DestroyBackgroundObject(backgroundObject);
+                GameData.Current.backgroundObjects.RemoveAt(i);
             }
-
             BackgroundEditor.inst.SetCurrentBackground(0);
-            BackgroundManager.inst.UpdateBackgrounds();
             BackgroundEditor.inst.UpdateBackgroundList();
 
             EditorManager.inst.DisplayNotification("Deleted " + (num - 1).ToString() + " backgrounds!", 2f, EditorManager.NotificationType.Success);

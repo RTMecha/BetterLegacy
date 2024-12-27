@@ -1013,22 +1013,35 @@ namespace BetterLegacy.Core.Optimization
                 beatmapObject.scaleOffset = Vector3.zero;
                 beatmapObject.rotationOffset = Vector3.zero;
             }
+
+            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+            {
+                backgroundObject.positionOffset = Vector3.zero;
+                backgroundObject.scaleOffset = Vector3.zero;
+                backgroundObject.rotationOffset = Vector3.zero;
+            }
+        }
+
+        /// <summary>
+        /// Updates all BackgroundObjects.
+        /// </summary>
+        public static void UpdateBackgroundObjects()
+        {
+            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+                CreateBackgroundObject(backgroundObject);
         }
 
         /// <summary>
         /// Creates the GameObjects for the BackgroundObject.
         /// </summary>
-        /// <param name="__instance"></param>
-        /// <param name="__result"></param>
-        /// <param name="__0"></param>
+        /// <param name="backgroundObject">BG Object to create.</param>
         /// <returns></returns>
         public static GameObject CreateBackgroundObject(BackgroundObject backgroundObject)
         {
             if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active)
                 return null;
 
-            if (backgroundObject.BaseObject)
-                CoreHelper.Destroy(backgroundObject.BaseObject);
+            DestroyBackgroundObject(backgroundObject);
 
             var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(BackgroundManager.inst.backgroundParent, backgroundObject.name);
             gameObject.layer = 9;
@@ -1069,6 +1082,20 @@ namespace BetterLegacy.Core.Optimization
             backgroundObject.SetShape(backgroundObject.shape.Type, backgroundObject.shape.Option);
 
             return gameObject;
+        }
+
+        /// <summary>
+        /// Destroys and clears the BackgroundObject.
+        /// </summary>
+        /// <param name="backgroundObject">BG Object to clear.</param>
+        public static void DestroyBackgroundObject(BackgroundObject backgroundObject)
+        {
+            var gameObject = backgroundObject.BaseObject;
+            if (gameObject)
+                CoreHelper.Destroy(gameObject);
+            backgroundObject.gameObjects.Clear();
+            backgroundObject.transforms.Clear();
+            backgroundObject.renderers.Clear();
         }
 
         #endregion

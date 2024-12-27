@@ -161,13 +161,13 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            string name = GameData.Current.backgroundObjects[__0].name;
+            var backgroundObject = GameData.Current.backgroundObjects[__0];
+            string name = backgroundObject.name;
+            Updater.DestroyBackgroundObject(backgroundObject);
             GameData.Current.backgroundObjects.RemoveAt(__0);
 
             if (GameData.Current.backgroundObjects.Count > 0)
                 Instance.SetCurrentBackground(Mathf.Clamp(Instance.currentObj - 1, 0, GameData.Current.backgroundObjects.Count - 1));
-
-            BackgroundManager.inst.UpdateBackgrounds();
 
             __result = name;
             return false;
