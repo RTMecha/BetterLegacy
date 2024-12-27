@@ -547,7 +547,7 @@ namespace BetterLegacy.Core.Managers
             AudioManager.inst.CurrentAudioSource.time = AudioManager.inst.CurrentAudioSource.clip.length;
 
             Time.timeScale = 1f;
-            Clear();
+            InputDataManager.inst.SetAllControllerRumble(0f);
 
             LevelEnded = true;
             OnLevelEnd?.Invoke();
