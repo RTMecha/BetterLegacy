@@ -1177,13 +1177,17 @@ namespace BetterLegacy.Editor.Managers
 
             if (www.isNetworkError)
             {
-                EditorManager.inst.DisplayNotification($"Login failed. Error: {www.error}", 5f, EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification($"Login failed due to a network error. Message: {www.error}", 5f, EditorManager.NotificationType.Error);
+                if (www.downloadHandler != null)
+                    CoreHelper.Log(www.downloadHandler.text);
                 yield break;
             }
 
             if (www.isHttpError)
             {
-                EditorManager.inst.DisplayNotification(www.downloadHandler.text, 5f, EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification($"Login failed due to a HTTP error. Message: {www.error}", 5f, EditorManager.NotificationType.Error);
+                if (www.downloadHandler != null)
+                    CoreHelper.Log(www.downloadHandler.text);
                 ShowLoginPopup(onRefreshed);
                 yield break;
             }
