@@ -117,6 +117,11 @@ namespace BetterLegacy.Core.Data.Level
         #region Properties
 
         /// <summary>
+        /// Gets the level paths' folder name.
+        /// </summary>
+        public string FolderName => string.IsNullOrEmpty(path) ? path : Path.GetFileName(RTFile.RemoveEndSlash(path));
+
+        /// <summary>
         /// Gets the current locked state of the level. Returns true if <see cref="MetaData.requireUnlock"/> is on and the level was not unlocked, otherwise returns false.
         /// </summary>
         public bool Locked => metadata != null && metadata.requireUnlock && (playerData == null || !playerData.Unlocked);
