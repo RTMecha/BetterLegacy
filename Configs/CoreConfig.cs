@@ -248,6 +248,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> EvaluateCode { get; set; }
 
+        /// <summary>
+        /// If resuming the game starts a countdown. With this off, the game immediately unpauses.
+        /// </summary>
+        public Setting<bool> PlayPauseCountdown { get; set; }
+
         #endregion
 
         #region User
@@ -420,6 +425,7 @@ namespace BetterLegacy.Configs
             AllowCustomTextFormatting = Bind(this, "Game", "Allow Custom Text Formatting", false, "If text objects should display custom formatting such as levelRank. Currently very unoptimized, so it's off by default.");
             IncreasedClipPlanes = Bind(this, "Game", "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
             EvaluateCode = Bind(this, "Game", "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
+            PlayPauseCountdown = Bind(this, "Game", "Play Pause Countdown", true, "If resuming the game starts a countdown. With this off, the game immediately unpauses.");
 
             #endregion
 
