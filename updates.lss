@@ -1,3 +1,8 @@
+snapshot-2024.12.6 - (pre-1.7.0) > [Dec 28, 2024]
+- Fixed Arcade menu local pages not working.
+- Fixed Background Objects not being destroyed / properly updated in some cases.
+- Added "Paste Background Objects Overwrites" setting to Config Manager > Editor > Data. This removes the current list of BG objects and replaces it with the copied list.
+- Made Prefab Panel code more consistent with other editor elements.
 snapshot-2024.12.5 - (pre-1.7.0) > [Dec 27, 2024]
 - Fixed the replay button being broken in the End Level screen due to it clearing the level data.
 - Restarting level from Pause menu now restarts after the countdown.
