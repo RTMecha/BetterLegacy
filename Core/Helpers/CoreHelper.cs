@@ -248,6 +248,46 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a list of <see cref="Dropdown.OptionData"/> based on the string array.</returns>
         public static List<Dropdown.OptionData> StringToOptionData(params string[] str) => str.Select(x => new Dropdown.OptionData(x)).ToList();
 
+        public static KeyValuePair<List<Dropdown.OptionData>, List<bool>> ToDropdownData<T>() where T : struct
+        {
+            var options = new List<Dropdown.OptionData>();
+            var disabledOptions = new List<bool>();
+            var type = typeof(T);
+            if (!type.IsEnum)
+                return new KeyValuePair<List<Dropdown.OptionData>, List<bool>>(options, disabledOptions);
+
+            var keyCodes = Enum.GetValues(type);
+
+            for (int i = 0; i < keyCodes.Length; i++)
+            {
+                var str = Enum.GetName(type, i) ?? "Invalid Value";
+
+                options.Add(new Dropdown.OptionData(str));
+                disabledOptions.Add(string.IsNullOrEmpty(Enum.GetName(type, i)));
+            }
+
+            return new KeyValuePair<List<Dropdown.OptionData>, List<bool>>(options, disabledOptions);
+        }
+
+        public static List<Dropdown.OptionData> ToOptionData<T>() where T : struct
+        {
+            var options = new List<Dropdown.OptionData>();
+            var type = typeof(T);
+            if (!type.IsEnum)
+                return new List<Dropdown.OptionData>();
+
+            var keyCodes = Enum.GetValues(type);
+
+            for (int i = 0; i < keyCodes.Length; i++)
+            {
+                var str = Enum.GetName(type, i) ?? "Invalid Value";
+
+                options.Add(new Dropdown.OptionData(str));
+            }
+
+            return options;
+        }
+
         #region Coroutines
 
         /// <summary>
@@ -934,6 +974,24 @@ namespace BetterLegacy.Core.Helpers
         {
             for (int i = 0; i < array.Length; i++)
                 action?.Invoke(array[i]);
+        }
+
+        /// <summary>
+        /// Gets an array containing all the values of an enum.
+        /// </summary>
+        /// <typeparam name="T">The enum.</typeparam>
+        /// <returns>Returns an array representing the enum.</returns>
+        public static T[] GetValues<T>() where T : struct
+        {
+            var values = Enum.GetValues(typeof(T));
+            var result = new T[values.Length];
+            int num = 0;
+            foreach (T value in values)
+            {
+                result[num] = value;
+                num++;
+            }
+            return result;
         }
 
         /// <summary>
