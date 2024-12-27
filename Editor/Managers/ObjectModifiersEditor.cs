@@ -503,7 +503,7 @@ namespace BetterLegacy.Editor.Managers
                         })
                     };
                     if (ModCompatibility.UnityExplorerInstalled)
-                        buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => { ModCompatibility.Inspect(modifier); }));
+                        buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
 
                     RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
                 };
