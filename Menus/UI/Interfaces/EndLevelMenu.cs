@@ -35,6 +35,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             GameManager.inst.players.SetActive(false);
             InputDataManager.inst.SetAllControllerRumble(0f);
+            onGenerateUIFinish = () => InputDataManager.inst.SetAllControllerRumble(0f);
 
             GameManager.inst.timeline.gameObject.SetActive(false);
             LSHelpers.ShowCursor();
@@ -314,7 +315,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     length = 0.3f,
                     playBlipSound = true,
                     rect = RectValues.Default.SizeDelta(100f, 64f),
-                    func = () => ArcadeHelper.RestartLevel(true, Close),
+                    func = () => ArcadeHelper.RestartLevel(Close),
                 });
 
                 elements.AddRange(GenerateBottomBar());
