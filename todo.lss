@@ -17,7 +17,7 @@
 - Collapse toggle for modifiers in editor. > 1.8.0
 - Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers, respawnable)
 - Level preview song.
-- Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
+- Custom end level function. (somewhat implemented, I just want a default level data setting for it)
 - loadLevel modifiers [custom end function (same as above), song transition].
 - Transition time for applyAnimation modifiers.
 - Add Set Data to image shape for Custom Player objects.
@@ -44,6 +44,7 @@
 ### Misc
 - Color picker rework. > 1.8.0
 - Multi language support.
+- Some kind of way to change the timing and length of the Game Timeline.
 - Add rank display to level buttons. (Idk why they don't have them already...)
 - Rework controller shake to be properly toggleable and have a separate variable.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.
