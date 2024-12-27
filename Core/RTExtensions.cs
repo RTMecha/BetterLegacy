@@ -804,148 +804,30 @@ namespace BetterLegacy.Core
         public static Text GetPlaceholderText(this InputField inputField) => (Text)inputField.placeholder;
 
         /// <summary>
-        /// Clears all functions from a <see cref="Button"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// Clears all functions from a <see cref="UnityEventBase"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
         /// </summary>
-        public static void ClearAll(this Button.ButtonClickedEvent uiEvent)
+        public static void ClearAll(this UnityEventBase unityEvent)
         {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
+            unityEvent.m_Calls.m_ExecutingCalls.Clear();
+            unityEvent.m_Calls.m_PersistentCalls.Clear();
+            unityEvent.m_Calls.Clear();
+            unityEvent.m_PersistentCalls.m_Calls.Clear();
+            unityEvent.m_PersistentCalls.Clear();
+            unityEvent.RemoveAllListeners();
         }
 
-        /// <summary>
-        /// Clears all functions from an <see cref="InputField"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
-        /// </summary>
-        public static void ClearAll(this InputField.OnChangeEvent uiEvent)
+        public static void NewListener<T>(this UnityEvent<T> unityEvent, Action<T> action)
         {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
+            unityEvent.ClearAll();
+            unityEvent.AddListener(x => action?.Invoke(x));
         }
 
-        /// <summary>
-        /// Clears all functions from an <see cref="InputField"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
-        /// </summary>
-        public static void ClearAll(this InputField.SubmitEvent uiEvent)
+        public static void NewListener(this UnityEvent unityEvent, Action action)
         {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
+            unityEvent.ClearAll();
+            unityEvent.AddListener(() => action?.Invoke());
         }
 
-        /// <summary>
-        /// Clears all functions from a <see cref="Toggle"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
-        /// </summary>
-        public static void ClearAll(this Toggle.ToggleEvent uiEvent)
-        {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
-        }
-
-        /// <summary>
-        /// Clears all functions from a <see cref="Dropdown"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
-        /// </summary>
-        public static void ClearAll(this Dropdown.DropdownEvent uiEvent)
-        {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
-        }
-
-        /// <summary>
-        /// Clears all functions from a <see cref="Slider"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
-        /// </summary>
-        public static void ClearAll(this Slider.SliderEvent uiEvent)
-        {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
-        }
-
-        /// <summary>
-        /// Clears all functions from a <see cref="Scrollbar"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
-        /// </summary>
-        public static void ClearAll(this Scrollbar.ScrollEvent uiEvent)
-        {
-            uiEvent.m_Calls.m_ExecutingCalls.Clear();
-            uiEvent.m_Calls.m_PersistentCalls.Clear();
-            uiEvent.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.m_Calls.Clear();
-            uiEvent.m_PersistentCalls.Clear();
-            uiEvent.RemoveAllListeners();
-        }
-
-        /// <summary>
-        /// Clears <see cref="Button"/> functions and adds a new one.
-        /// </summary>
-        /// <param name="unityAction">Action to set.</param>
-        public static void NewOnClickListener(this Button b, UnityAction unityAction)
-        {
-            b.onClick.ClearAll();
-            b.onClick.AddListener(unityAction);
-        }
-
-        public static void NewListener(this Button.ButtonClickedEvent b, Action action)
-        {
-            b.ClearAll();
-            b.AddListener(() => { action?.Invoke(); });
-        }
-
-        public static void NewListener(this InputField.OnChangeEvent s, Action<string> action)
-        {
-            s.ClearAll();
-            s.AddListener(x => { action?.Invoke(x); });
-        }
-        
-        public static void NewListener(this InputField.SubmitEvent s, Action<string> action)
-        {
-            s.ClearAll();
-            s.AddListener(x => { action?.Invoke(x); });
-        }
-        
-        public static void NewListener(this Toggle.ToggleEvent t, Action<bool> action)
-        {
-            t.ClearAll();
-            t.AddListener(x => { action?.Invoke(x); });
-        }
-        
-        public static void NewListener(this Dropdown.DropdownEvent d, Action<int> action)
-        {
-            d.ClearAll();
-            d.AddListener(x => { action?.Invoke(x); });
-        }
-        
-        public static void NewListener(this Slider.SliderEvent s, Action<float> action)
-        {
-            s.ClearAll();
-            s.AddListener(x => { action?.Invoke(x); });
-        }
-        
-        public static void NewListener(this Scrollbar.ScrollEvent s, Action<float> action)
-        {
-            s.ClearAll();
-            s.AddListener(x => { action?.Invoke(x); });
-        }
-        
         public static void NewValueChangedListener(this InputField i, string value, UnityAction<string> unityAction)
         {
             i.onValueChanged.ClearAll();
