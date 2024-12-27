@@ -1094,35 +1094,8 @@ namespace BetterLegacy.Editor.Managers
                     case "keyPress":
                     case "keyPressUp":
                         {
-                            var dd = dropdownBar.Duplicate(layout, "Key");
-                            var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                            labelText.text = "Value";
-
-                            Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-
-                            var hide = dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>();
-                            hide.DisabledOptions.Clear();
-                            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                            d.onValueChanged.RemoveAllListeners();
-                            d.options.Clear();
-
-                            var keyCodes = Enum.GetValues(typeof(KeyCode));
-
-                            for (int i = 0; i < keyCodes.Length; i++)
-                            {
-                                var str = Enum.GetName(typeof(KeyCode), i) ?? "Invalid Value";
-
-                                hide.DisabledOptions.Add(string.IsNullOrEmpty(Enum.GetName(typeof(KeyCode), i)));
-
-                                d.options.Add(new Dropdown.OptionData(str));
-                            }
-
-                            d.value = Parser.TryParse(modifier.value, 0);
-
-                            d.onValueChanged.AddListener(_val => { modifier.value = _val.ToString(); });
-
-                            EditorThemeManager.ApplyLightText(labelText);
-                            EditorThemeManager.ApplyDropdown(d);
+                            var dropdownData = CoreHelper.ToDropdownData<KeyCode>();
+                            DropdownGenerator(modifier, layout, "Key", 0, dropdownData.Key, dropdownData.Value);
 
                             break;
                         }
@@ -1131,35 +1104,8 @@ namespace BetterLegacy.Editor.Managers
                     case "controlPress":
                     case "controlPressUp":
                         {
-                            var dd = dropdownBar.Duplicate(layout, "Key");
-                            var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                            labelText.text = "Value";
-
-                            Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-
-                            var hide = dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>();
-                            hide.DisabledOptions.Clear();
-                            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                            d.onValueChanged.RemoveAllListeners();
-                            d.options.Clear();
-
-                            var keyCodes = Enum.GetValues(typeof(PlayerInputControlType));
-
-                            for (int i = 0; i < keyCodes.Length; i++)
-                            {
-                                var str = Enum.GetName(typeof(PlayerInputControlType), i) ?? "Invalid Value";
-
-                                hide.DisabledOptions.Add(string.IsNullOrEmpty(Enum.GetName(typeof(PlayerInputControlType), i)));
-
-                                d.options.Add(new Dropdown.OptionData(str));
-                            }
-
-                            d.value = Parser.TryParse(modifier.value, 0);
-
-                            d.onValueChanged.AddListener(_val => { modifier.value = _val.ToString(); });
-
-                            EditorThemeManager.ApplyLightText(labelText);
-                            EditorThemeManager.ApplyDropdown(d);
+                            var dropdownData = CoreHelper.ToDropdownData<PlayerInputControlType>();
+                            DropdownGenerator(modifier, layout, "Button", 0, dropdownData.Key, dropdownData.Value);
 
                             break;
                         }
@@ -2508,6 +2454,17 @@ namespace BetterLegacy.Editor.Managers
                             BoolGenerator(modifier, layout, "Should Fade", 0, true);
                             break;
                         }
+                    case "endLevel":
+                    case "setLevelEndFunc":
+                        {
+                            var options = CoreHelper.ToOptionData<EndLevelFunction>();
+                            options.Insert(0, new Dropdown.OptionData("Default"));
+                            DropdownGenerator(modifier, layout, "End Level Function", 0, options);
+                            StringGenerator(modifier, layout, "End Level Data", 1);
+                            BoolGenerator(modifier, layout, "Save Player Data", 2, true);
+
+                            break;
+                        }
 
                     #endregion
 
@@ -2887,7 +2844,9 @@ namespace BetterLegacy.Editor.Managers
             return startColorBase;
         }
 
-        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<string> options)
+        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<string> options) => DropdownGenerator(modifier, layout, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList());
+
+        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions = null)
         {
             var dd = dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -2895,48 +2854,18 @@ namespace BetterLegacy.Editor.Managers
             labelText.text = label;
 
             Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-            Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
-            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-            d.onValueChanged.ClearAll();
-            d.options.Clear();
-
-            d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
-
-            d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
-
-            d.onValueChanged.AddListener(_val =>
+            var hideOptions = dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>();
+            if (disabledOptions == null)
+                Destroy(hideOptions);
+            else
             {
-                if (type == 0)
-                    modifier.value = _val.ToString();
-                else
-                    modifier.commands[type] = _val.ToString();
+                if (!hideOptions)
+                    hideOptions = dd.transform.Find("Dropdown").gameObject.AddComponent<HideDropdownOptions>();
 
-                try
-                {
-                    modifier.Inactive?.Invoke(modifier);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
-            });
-
-            EditorThemeManager.ApplyLightText(labelText);
-            EditorThemeManager.ApplyDropdown(d);
-            return dd;
-        }
-
-        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options)
-        {
-            var dd = dropdownBar.Duplicate(layout, label);
-            dd.transform.localScale = Vector3.one;
-            var labelText = dd.transform.Find("Text").GetComponent<Text>();
-            labelText.text = label;
-
-            Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-            Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+                hideOptions.DisabledOptions = disabledOptions;
+                hideOptions.remove = true;
+            }
 
             var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
             d.onValueChanged.ClearAll();
@@ -2963,6 +2892,9 @@ namespace BetterLegacy.Editor.Managers
                 }
                 modifier.active = false;
             });
+
+            if (d.template)
+                d.template.sizeDelta = new Vector2(80f, 192f);
 
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyDropdown(d);
