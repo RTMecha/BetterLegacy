@@ -1,3 +1,9 @@
+snapshot-2024.12.5 - (pre-1.7.0) > [Dec 27, 2024]
+- Fixed the replay button being broken in the End Level screen due to it clearing the level data.
+- Restarting level from Pause menu now restarts after the countdown.
+- Added "Play Pause Countdown" setting to Config Manager > Core > Game.
+- endLevel modifier now has a customizable end level function. This includes a new "setLevelEndFunc" modifier that only changes the level end behavior without actually ending the level.
+- Increased the modifier dropdown width.
 snapshot-2024.12.4 - (pre-1.7.0) > [Dec 26, 2024]
 - Updated the chapter 1 demo. This includes some very WIP cutscenes.
 - Background Objects now update in the UpdateObject keybind action.
