@@ -121,7 +121,9 @@ namespace BetterLegacy.Core.Helpers
             SceneHelper.LoadGame();
         }
 
-        public static void RestartLevel(bool respawnPlayers, Action action)
+        public static void RestartLevel() => RestartLevel(null);
+
+        public static void RestartLevel(Action action)
         {
             if (CoreHelper.InEditor || !CoreHelper.InGame)
                 return;
@@ -132,8 +134,7 @@ namespace BetterLegacy.Core.Helpers
             GameManager.inst.hits.Clear();
             GameManager.inst.deaths.Clear();
 
-            if (respawnPlayers)
-                PlayerManager.SpawnPlayersOnStart();
+            PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(0f);
             action?.Invoke();

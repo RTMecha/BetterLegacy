@@ -30,7 +30,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public static PauseMenu Current { get; set; }
 
         static bool currentCursorVisibility;
-        public bool shouldRespawn;
 
         public PauseMenu() : base()
         {
@@ -39,6 +38,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 CoreHelper.LogError($"Cannot pause outside of the game!");
                 return;
             }
+
+            onGenerateUIFinish = () => InputDataManager.inst.SetAllControllerRumble(0f);
 
             layouts.Add("buttons", new MenuVerticalLayout
             {
@@ -107,11 +108,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             Action[] actions = new Action[6]
             {
                 UnPause, // 0
-                () => ArcadeHelper.RestartLevel(false, () =>
-                {
-                    shouldRespawn = true;
-                    UnPause();
-                }), // 1
+                () => UnPause(ArcadeHelper.RestartLevel), // 1
                 SceneHelper.LoadEditorWithProgress, // 2
                 ConfigManager.inst.Show, // 3
                 ArcadeHelper.QuitToArcade, // 4
@@ -346,7 +343,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             base.UpdateTheme();
         }
 
-        IEnumerator StartCountdown()
+        #region Methods
+
+        #region Internal
+
+        IEnumerator StartCountdown(Action onCooldownEnd)
         {
             MenuText countdown = null;
             for (int i = 0; i < elements.Count; i++)
@@ -391,17 +392,32 @@ namespace BetterLegacy.Menus.UI.Interfaces
             countdown.textUI.text = "<align=center><size=120><b><font=Fredoka One>GO!";
             yield return new WaitForSeconds(InterfaceManager.SpeedUp ? 0.05f : 0.2f);
 
-            InterfaceManager.inst.CloseMenus();
-            if (!currentCursorVisibility)
-                LSHelpers.HideCursor();
-            AudioManager.inst.CurrentAudioSource.UnPause();
-            if (shouldRespawn)
-                PlayerManager.SpawnPlayersOnStart();
-            GameManager.inst.gameState = GameManager.State.Playing;
+            CountdownEnd(onCooldownEnd);
 
             yield break;
         }
 
+        IEnumerator SkipCountdown(Action onCooldownEnd)
+        {
+            yield return new WaitForSeconds(0.3f);
+            CountdownEnd(onCooldownEnd);
+        }
+
+        static void CountdownEnd(Action onCooldownEnd)
+        {
+            InterfaceManager.inst.CloseMenus();
+            if (!currentCursorVisibility)
+                LSHelpers.HideCursor();
+            AudioManager.inst.CurrentAudioSource.UnPause();
+            onCooldownEnd?.Invoke();
+            GameManager.inst.gameState = GameManager.State.Playing;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Initializes the pause menu.
+        /// </summary>
         public static void Pause()
         {
             if (!CoreHelper.Playing)
@@ -416,12 +432,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
             Current = new PauseMenu();
         }
 
-        public static void UnPause()
+        /// <summary>
+        /// Unpauses the game and starts the countdown sequence if it is enabled.
+        /// </summary>
+        public static void UnPause() => UnPause(null);
+
+        /// <summary>
+        /// Unpauses the game and starts the countdown sequence if it is enabled.
+        /// </summary>
+        /// <param name="onCooldownEnd">Action to run when the game is fully unpaused.</param>
+        public static void UnPause(Action onCooldownEnd)
         {
-            if (!CoreHelper.Paused || Current == null)
+            if (!CoreHelper.Paused || !Current)
                 return;
 
-            CoreHelper.StartCoroutine(Current.StartCountdown());
+            CoreHelper.StartCoroutine(CoreConfig.Instance.PlayPauseCountdown.Value ? Current.StartCountdown(onCooldownEnd) : Current.SkipCountdown(onCooldownEnd));
         }
+
+        #endregion
     }
 }
