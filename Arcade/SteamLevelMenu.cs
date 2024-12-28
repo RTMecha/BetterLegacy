@@ -36,6 +36,8 @@ namespace BetterLegacy.Arcade
 
         public static Item CurrentSteamItem { get; set; }
 
+        public Action<Level> onSubscribedLevel;
+
         public SteamLevelMenu() : base()
         {
             this.name = "Arcade";
@@ -216,7 +218,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = SelectLocalLevel(level).Start,
+                    func = () => PlayLevelMenu.Init(level),
                 });
 
             exitFunc = Close;
@@ -317,7 +319,15 @@ namespace BetterLegacy.Arcade
             {
                 CoreHelper.Log($"Subscribed > Add level {level.path}.");
                 SteamWorkshopManager.inst.Levels.Add(level);
-                CoreHelper.StartCoroutine(SelectLocalLevel(level));
+
+                if (onSubscribedLevel != null)
+                {
+                    onSubscribedLevel(level);
+                    CurrentSteamItem = default;
+                    yield break;
+                }
+
+                PlayLevelMenu.Init(level);
                 CoreHelper.Log($"Item is installed so opening.");
                 CoreHelper.LogSeparator();
                 CurrentSteamItem = default;
@@ -330,23 +340,6 @@ namespace BetterLegacy.Arcade
             CoreHelper.LogSeparator();
             CurrentSteamItem = default;
             ArcadeMenu.Init();
-        }
-
-        public IEnumerator SelectLocalLevel(Level level)
-        {
-            if (!level.music)
-                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
-            else
-                OpenPlayLevelMenu(level);
-            yield break;
-        }
-
-        void OpenPlayLevelMenu(Level level)
-        {
-            AudioManager.inst.StopMusic();
-            PlayLevelMenu.Init(level);
-            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public static void Init(Item item)

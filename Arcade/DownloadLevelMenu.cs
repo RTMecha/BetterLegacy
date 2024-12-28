@@ -31,6 +31,8 @@ namespace BetterLegacy.Arcade
 
         public static JSONObject CurrentOnlineLevel { get; set; }
 
+        public Action<Level> onDownloadComplete;
+
         public DownloadLevelMenu() : base()
         {
             this.name = "Arcade";
@@ -281,7 +283,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => CoreHelper.StartCoroutine(SelectLocalLevel(level)),
+                    func = () => PlayLevelMenu.Init(level),
                 });
             }
             else
@@ -348,30 +350,21 @@ namespace BetterLegacy.Arcade
 
                 CurrentOnlineLevel = null;
                 InterfaceManager.inst.CloseMenus();
+
+                if (onDownloadComplete != null)
+                {
+                    onDownloadComplete(level);
+                    onDownloadComplete = null;
+                    return;
+                }
+
                 if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                    CoreHelper.StartCoroutine(SelectLocalLevel(level));
+                    PlayLevelMenu.Init(level);
             }, onError =>
             {
                 Close();
                 CoreHelper.LogError($"Download level error: {onError}");
             }));
-        }
-
-        public IEnumerator SelectLocalLevel(Level level)
-        {
-            if (!level.music)
-                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
-            else
-                OpenPlayLevelMenu(level);
-            yield break;
-        }
-
-        void OpenPlayLevelMenu(Level level)
-        {
-            AudioManager.inst.StopMusic();
-            PlayLevelMenu.Init(level);
-            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public static void Init(JSONObject level)
