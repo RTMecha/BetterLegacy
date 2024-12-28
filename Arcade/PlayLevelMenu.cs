@@ -617,6 +617,11 @@ namespace BetterLegacy.Arcade
                 },
             });
 
+            //if (RTFile.FileExists(CurrentLevel.GetFile(Level.ACHIEVEMENTS_LSA)))
+            //{
+            //     // todo: add AchievementsMenu
+            //}
+
             exitFunc = Close;
 
             layer = 10000;
