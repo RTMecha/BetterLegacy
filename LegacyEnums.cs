@@ -317,7 +317,11 @@ namespace BetterLegacy
         dread,
         in_the_distance,
         io,
-        jukio_distance
+        jukio_distance,
+        little_calculations,
+        reflections,
+        fracture,
+        xilioh,
     }
 
     /// <summary>

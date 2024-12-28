@@ -144,6 +144,10 @@ namespace BetterLegacy.Patchers
             "in the distance.ogg" => "F-777 - In the Distance",
             "io.ogg" => "meganeko - IO",
             "jukio -kozilek- kallio - distance.ogg" => "Jukio -Kozilek- Kallio - Distance",
+            "shirobon - infinity - 06 little calculations.ogg" => "Shirobon - Little Calculations",
+            "shirobon - infinity - 10 reflections.ogg" => "Shirobon - Reflections",
+            "shirobon - rebirth - 01 fracture.ogg" => "Shirobon - Fracture",
+            "shirobon - rebirth - 04 xilioh.ogg" => "Shirobon - Xilioh",
             _ => input
         };
 
@@ -154,6 +158,10 @@ namespace BetterLegacy.Patchers
             "in the distance.ogg" => "in_the_distance",
             "io.ogg" => "io",
             "jukio -kozilek- kallio - distance.ogg" => "jukio_distance",
+            "shirobon - infinity - 06 little calculations.ogg" => "little_calculations",
+            "shirobon - infinity - 10 reflections.ogg" => "reflections",
+            "shirobon - rebirth - 01 fracture.ogg" => "fracture",
+            "shirobon - rebirth - 04 xilioh.ogg" => "xilioh",
             _ => input
         };
     }
