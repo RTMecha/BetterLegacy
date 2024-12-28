@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Example;
+using BetterLegacy.Menus;
 using LSFunctions;
 using System;
 using System.Collections;
@@ -148,45 +149,23 @@ namespace BetterLegacy.Core.Helpers
                     loadingImage = SceneManager.inst.canvas.transform.Find("loading sprite").GetComponent<Image>();
 
                 var loadingDisplayType = CoreConfig.Instance.LoadingDisplayType.Value;
-                switch (loadingDisplayType)
+                if (loadingImage)
                 {
-                    case LoadingDisplayType.Bar:
-                        {
-                            loadingImage?.gameObject?.SetActive(false);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("▓", progress)} ]</b>";
-                            break;
-                        }
-                    case LoadingDisplayType.EqualsBar:
-                        {
-                            loadingImage?.gameObject?.SetActive(false);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("=", progress)} ]</b>";
-                            break;
-                        }
-                    case LoadingDisplayType.Percentage:
-                        {
-                            loadingImage?.gameObject?.SetActive(false);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}{progress.ToString("F0")}%</b>";
-                            break;
-                        }
-                    case LoadingDisplayType.Waveform:
-                        {
-                            loadingImage?.gameObject?.SetActive(true);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = "";
-
-                            break;
-                        }
-                    case LoadingDisplayType.Doggo:
-                        {
-                            loadingImage?.gameObject?.SetActive(true);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = "";
-
-                            break;
-                        }
+                    var imageActive = loadingDisplayType == LoadingDisplayType.Doggo || loadingDisplayType == LoadingDisplayType.Waveform;
+                    loadingImage.gameObject.SetActive(imageActive);
+                    if (imageActive)
+                        loadingImage.color = InterfaceManager.inst.CurrentTheme.GetObjColor(6);
+                }
+                if (loadingText && loadingText.isActiveAndEnabled)
+                {
+                    loadingText.color = InterfaceManager.inst.CurrentTheme.GetObjColor(6);
+                    loadingText.text = loadingDisplayType switch
+                    {
+                        LoadingDisplayType.Bar => $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("▓", progress)} ]</b>",
+                        LoadingDisplayType.EqualsBar => $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("=", progress)} ]</b>",
+                        LoadingDisplayType.Percentage => $"<b>{(displayLoadingText ? "Loading : " : "")}{progress.ToString("F0")}%</b>",
+                        _ => string.Empty
+                    };
                 }
             }
             catch
@@ -204,17 +183,10 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator ILoadScene(string level, bool showLoading = true)
         {
             ExampleManager.onSceneLoad?.Invoke(level);
-
-            try
-            {
-                PreviousScene = CurrentScene;
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Error: {ex}");
-            }
-
+            
+            PreviousScene = CurrentScene;
             CurrentScene = level;
+
             CoreHelper.Log($"Set Scene\nType: {CurrentSceneType}\nName: {level}");
 
             startLoadTime = Time.time;
@@ -223,14 +195,18 @@ namespace BetterLegacy.Core.Helpers
             SetActive(showLoading);
 
             if (showLoading)
+            {
                 try
                 {
-                    SceneManager.inst.background.GetComponent<Image>().color = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
+                    CoreHelper.StartCoroutine(LoopSprite(0.1f));
+                    if (SceneManager.inst.background.TryGetComponent(out Image image) && InterfaceManager.inst && InterfaceManager.inst.CurrentTheme is Data.BeatmapTheme beatmapTheme)
+                        image.color = beatmapTheme.backgroundColor;
                 }
                 catch (Exception ex)
                 {
                     CoreHelper.LogException(ex);
                 }
+            }
 
             var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(level);
             async.allowSceneActivation = false;
@@ -272,6 +248,20 @@ namespace BetterLegacy.Core.Helpers
             InvokeSceneLoad(level);
 
             yield break;
+        }
+
+        static IEnumerator LoopSprite(float delay)
+        {
+            var loadingDisplayType = CoreConfig.Instance.LoadingDisplayType.Value;
+            int num = 0;
+            while (Loading && (loadingDisplayType == LoadingDisplayType.Waveform || loadingDisplayType == LoadingDisplayType.Doggo) && loadingImage.isActiveAndEnabled)
+            {
+                loadingImage.sprite = SceneManager.inst.loadingTextures[num];
+                yield return new WaitForSeconds(delay);
+                num++;
+                if (num >= SceneManager.inst.loadingTextures.Length)
+                    num = 0;
+            }
         }
 
         static void InvokeSceneLoad(string level)
