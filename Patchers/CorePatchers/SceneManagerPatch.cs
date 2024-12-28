@@ -27,12 +27,14 @@ namespace BetterLegacy.Patchers
             {
                 SceneHelper.loadingImage = Creator.NewUIObject("loading sprite", __instance.canvas.transform).AddComponent<Image>();
                 UIManager.SetRectTransform(SceneHelper.loadingImage.rectTransform, new Vector2(-172f, 80f), Vector2.right, Vector2.right, new Vector2(0.5f, 0.5f), new Vector2(100f, 100f));
-                SceneHelper.loadingImage?.gameObject?.SetActive(false);
+                if (SceneHelper.loadingImage)
+                    SceneHelper.loadingImage.gameObject.SetActive(false);
             }
             else if (__instance.canvas.transform.Find("loading sprite"))
             {
                 SceneHelper.loadingImage = __instance.canvas.transform.Find("loading sprite").GetComponent<Image>();
-                SceneHelper.loadingImage?.gameObject?.SetActive(false);
+                if (SceneHelper.loadingImage)
+                    SceneHelper.loadingImage.gameObject.SetActive(false);
             }
         }
 
