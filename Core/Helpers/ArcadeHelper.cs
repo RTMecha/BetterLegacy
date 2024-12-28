@@ -112,9 +112,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]);
         }
 
-        public static void RestartLevel() => RestartLevel(null);
-
-        public static void RestartLevel(Action action)
+        public static void RestartLevel()
         {
             if (CoreHelper.InEditor || !CoreHelper.InGame)
                 return;
@@ -128,7 +126,6 @@ namespace BetterLegacy.Core.Helpers
             PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(0f);
-            action?.Invoke();
             endedLevel = false;
         }
 
