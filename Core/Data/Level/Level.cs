@@ -326,7 +326,7 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public void LoadAchievements()
         {
-            var achievementsPath = RTFile.CombinePaths(path, ACHIEVEMENTS_LSA);
+            var achievementsPath = GetFile(ACHIEVEMENTS_LSA);
             if (RTFile.FileExists(achievementsPath))
             {
                 var ach = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
