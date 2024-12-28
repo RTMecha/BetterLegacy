@@ -74,13 +74,15 @@ namespace BetterLegacy.Core.Data.Level
         public bool Unlocked { get; set; }
 
         /// <summary>
-        /// All unlocked custom achievements. TODO: is this necessary? or should it be something else...
+        /// All unlocked custom achievements.
         /// </summary>
-        public List<Achievement> UnlockedAchievements { get; set; }
+        public Dictionary<string, bool> UnlockedAchievements { get; set; }
 
         #endregion
 
         #region Methods
+
+        #region Updating
 
         /// <summary>
         /// Updates several values of the player data.
@@ -142,25 +144,120 @@ namespace BetterLegacy.Core.Data.Level
             }
         }
 
+        #endregion
+
+        #region Achievements
+
+        List<Achievement> GetAchievements()
+        {
+            var list = LevelManager.CurrentLevel.achievements;
+            if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.achievements != null)
+                list.AddRange(LevelManager.CurrentLevelCollection.achievements);
+            return list;
+        }
+
+        /// <summary>
+        /// Locks the achievement, marking it incomplete.
+        /// </summary>
+        /// <param name="achievement">Achievement to lock.</param>
+        public void LockAchievement(Achievement achievement)
+        {
+            if (achievement != null && UnlockedAchievements != null && UnlockedAchievements.TryGetValue(achievement.ID, out bool unlocked) && unlocked)
+            {
+                UnlockedAchievements[achievement.ID] = false;
+                CoreHelper.Log($"Locked achievement {achievement.Name}");
+            }
+        }
+
+        /// <summary>
+        /// Locks the achievement, marking it incomplete.
+        /// </summary>
+        /// <param name="id">ID to find a matching achievement and lock.</param>
+        public void LockAchievement(string id, bool global = true)
+        {
+            var list = GetAchievements();
+
+            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            {
+                CoreHelper.LogError($"No achievement of ID {id}");
+                return;
+            }
+
+            LockAchievement(achievement);
+        }
+
+        /// <summary>
+        /// Unlocks the achievement, marking it complete.
+        /// </summary>
+        /// <param name="achievement">Achievement to unlock.</param>
+        public void UnlockAchievement(Achievement achievement)
+        {
+            if (achievement != null && (UnlockedAchievements == null || !UnlockedAchievements.TryGetValue(achievement.ID, out bool unlocked) || !unlocked))
+            {
+                if (UnlockedAchievements == null)
+                    UnlockedAchievements = new Dictionary<string, bool>();
+
+                UnlockedAchievements[achievement.ID] = true;
+                AchievementManager.inst.ShowAchievement(achievement);
+            }
+        }
+
+        /// <summary>
+        /// Unlocks the achievement, marking it complete.
+        /// </summary>
+        /// <param name="id">ID to find a matching achievement and unlock.</param>
+        public void UnlockAchievement(string id)
+        {
+            var list = GetAchievements();
+
+            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            {
+                CoreHelper.LogError($"No achievement of ID {id}");
+                return;
+            }
+
+            UnlockAchievement(achievement);
+        }
+
+        #endregion
+
+        #region JSON
+
         /// <summary>
         /// Parses a <see cref="PlayerData"/> from JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed player data.</returns>
-        public static PlayerData Parse(JSONNode jn) => new PlayerData
+        public static PlayerData Parse(JSONNode jn)
         {
-            LevelName = jn["n"],
-            ID = jn["id"],
-            Completed = jn["c"].AsBool,
-            Hits = jn["h"].AsInt,
-            Deaths = jn["d"].AsInt,
-            Boosts = jn["b"].AsInt,
-            PlayedTimes = jn["pt"].AsInt,
-            TimeInLevel = jn["t"].AsFloat,
-            Percentage = jn["p"].AsFloat,
-            LevelLength = jn["l"].AsFloat,
-            Unlocked = jn["u"].AsBool,
-        };
+            var playerData = new PlayerData
+            {
+                LevelName = jn["n"],
+                ID = jn["id"],
+                Completed = jn["c"].AsBool,
+                Hits = jn["h"].AsInt,
+                Deaths = jn["d"].AsInt,
+                Boosts = jn["b"].AsInt,
+                PlayedTimes = jn["pt"].AsInt,
+                TimeInLevel = jn["t"].AsFloat,
+                Percentage = jn["p"].AsFloat,
+                LevelLength = jn["l"].AsFloat,
+                Unlocked = jn["u"].AsBool,
+            };
+
+            if (jn["ach"] != null)
+            {
+                playerData.UnlockedAchievements = new Dictionary<string, bool>();
+                for (int i = 0; i < jn["ach"].Count; i++)
+                {
+                    var unlocked = jn["ach"][i]["u"].AsBool;
+                    if (unlocked)
+                        playerData.UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
+                }
+            }
+
+            return playerData;
+        }
 
         /// <summary>
         /// Converts the player data to a JSON node.
@@ -187,8 +284,24 @@ namespace BetterLegacy.Core.Data.Level
             if (Unlocked)
                 jn["u"] = Unlocked;
 
+            if (UnlockedAchievements != null)
+            {
+                int num = 0;
+                foreach (var keyValuePair in UnlockedAchievements)
+                {
+                    var ach = JSON.Parse("{}");
+                    ach["id"] = keyValuePair.Key;
+                    ach["u"] = keyValuePair.Value;
+                    jn["ach"][num] = ach;
+
+                    num++;
+                }
+            }
+
             return jn;
         }
+
+        #endregion
 
         public override string ToString() => $"{ID} - Hits: {Hits} Deaths: {Deaths}";
 

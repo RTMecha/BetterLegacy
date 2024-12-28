@@ -92,6 +92,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public List<LevelInfo> levelInformation = new List<LevelInfo>();
 
+        /// <summary>
+        /// Achievements to be loaded for a collection.
+        /// </summary>
+        public List<Achievement> achievements = new List<Achievement>();
+
         #endregion
 
         #region Properties
@@ -275,6 +280,20 @@ namespace BetterLegacy.Core.Data.Level
         }
 
         static Level NewCollectionLevel(string path) => new Level(path) { fromCollection = true };
+
+        /// <summary>
+        /// Loads the collections' achievements.
+        /// </summary>
+        public void LoadAchievements()
+        {
+            var achievementsPath = RTFile.CombinePaths(path, Level.ACHIEVEMENTS_LSA);
+            if (RTFile.FileExists(achievementsPath))
+            {
+                var ach = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
+                for (int i = 0; i < ach["achievements"].Count; i++)
+                    achievements.Add(Achievement.Parse(ach["achievements"][i]));
+            }
+        }
 
         /// <summary>
         /// Updates the icons of the collection.

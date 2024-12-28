@@ -105,6 +105,10 @@
         /// Legacy Level file list.
         /// </summary>
         LSF,
+        /// <summary>
+        /// Legacy Achievement file format.
+        /// </summary>
+        LSA,
 
         #endregion
 

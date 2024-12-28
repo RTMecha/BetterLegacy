@@ -7,6 +7,7 @@ using BetterLegacy.Core.Managers.Networking;
 using SimpleJSON;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -84,6 +85,11 @@ namespace BetterLegacy.Core.Data.Level
         /// Saved player data, used for ranking a level.
         /// </summary>
         public PlayerData playerData;
+
+        /// <summary>
+        /// Achievements to be loaded for a level.
+        /// </summary>
+        public List<Achievement> achievements = new List<Achievement>();
 
         #region Level Context
 
@@ -222,6 +228,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public const string EDITOR_LSE = "editor.lse";
 
+        /// <summary>
+        /// The achievements list file.
+        /// </summary>
+        public const string ACHIEVEMENTS_LSA = "achievements.lsa";
+
         #endregion
 
         #region Methods
@@ -308,6 +319,20 @@ namespace BetterLegacy.Core.Data.Level
                 yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
 
             onComplete?.Invoke();
+        }
+
+        /// <summary>
+        /// Loads the levels' achievements.
+        /// </summary>
+        public void LoadAchievements()
+        {
+            var achievementsPath = RTFile.CombinePaths(path, ACHIEVEMENTS_LSA);
+            if (RTFile.FileExists(achievementsPath))
+            {
+                var ach = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
+                for (int i = 0; i < ach["achievements"].Count; i++)
+                    achievements.Add(Achievement.Parse(ach["achievements"][i]));
+            }
         }
 
         /// <summary>

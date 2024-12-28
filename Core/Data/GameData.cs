@@ -664,7 +664,6 @@ namespace BetterLegacy.Core.Data
             };
             beatmapData.checkpoints = orig.beatmapData.checkpoints.Select(x => BeatmapData.Checkpoint.DeepCopy(x)).ToList();
             beatmapData.markers = orig.beatmapData.markers.Select(x => Marker.DeepCopy(x)).ToList();
-            gameData.achievements = orig.achievements.Select(x => Achievement.DeepCopy(x)).ToList();
 
             gameData.beatmapData = beatmapData;
             gameData.beatmapObjects = new List<Data.BeatmapObject>((from obj in orig.beatmapObjects
@@ -1173,10 +1172,6 @@ namespace BetterLegacy.Core.Data
                     gameData.levelModifiers.Add(levelModifier);
                 }
 
-            if (jn["achievements"] != null)
-                for (int i = 0; i < jn["achievements"].Count; i++)
-                    gameData.achievements.Add(Achievement.Parse(jn["achievements"]));
-
             gameData.beatmapData = LevelBeatmapData.Parse(jn);
 
             gameData.beatmapData.markers = gameData.beatmapData.markers.OrderBy(x => x.time).ToList();
@@ -1611,9 +1606,6 @@ namespace BetterLegacy.Core.Data
                 jn["modifiers"][i]["retrigger"] = levelModifier.retriggerAmount.ToString();
             }
 
-            for (int i = 0; i < achievements.Count; i++)
-                jn["achievements"][i] = achievements[i].ToJSON();
-
             for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
             {
                 jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
@@ -1826,8 +1818,6 @@ namespace BetterLegacy.Core.Data
         public new List<Data.BackgroundObject> backgroundObjects = new List<Data.BackgroundObject>();
 
         public List<LevelModifier> levelModifiers = new List<LevelModifier>();
-
-        public List<Achievement> achievements = new List<Achievement>();
 
         #endregion
 
