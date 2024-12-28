@@ -1,5 +1,8 @@
-﻿namespace BetterLegacy
+﻿// all main enums
+
+namespace BetterLegacy
 {
+    #region Core
 
     /// <summary>
     /// File formats enum.
@@ -8,22 +11,58 @@
     {
         #region Main
 
+        /// <summary>
+        /// No file format.
+        /// </summary>
         NULL,
 
+        /// <summary>
+        /// Audio file format.
+        /// </summary>
         OGG,
+        /// <summary>
+        /// Audio file format.
+        /// </summary>
         WAV,
+        /// <summary>
+        /// Audio file format.
+        /// </summary>
         MP3,
 
+        /// <summary>
+        /// Image file format.
+        /// </summary>
         PNG,
+        /// <summary>
+        /// Compressed image file format.
+        /// </summary>
         JPG,
 
+        /// <summary>
+        /// Video file format.
+        /// </summary>
         MP4,
+        /// <summary>
+        /// Video file format.
+        /// </summary>
         MOV,
 
+        /// <summary>
+        /// ZIP file format/
+        /// </summary>
         ZIP,
 
+        /// <summary>
+        /// JavaScript Object Notation file format.
+        /// </summary>
         JSON,
+        /// <summary>
+        /// Text file format.
+        /// </summary>
         TXT,
+        /// <summary>
+        /// C# file format.
+        /// </summary>
         CS,
         /// <summary>
         /// System Error Profile file format.
@@ -38,7 +77,13 @@
         /// </summary>
         ASSET,
 
+        /// <summary>
+        /// Dynamic Link Library file format.
+        /// </summary>
         DLL,
+        /// <summary>
+        /// Executable file format.
+        /// </summary>
         EXE,
 
         #endregion
@@ -138,60 +183,206 @@
         #endregion
     }
 
-    public enum EditorTheme
+    /// <summary>
+    /// Which era of Project Arrhythmia a file is from.
+    /// </summary>
+    public enum ArrhythmiaType
     {
-        Legacy,
-        Dark,
-        Light,
-        Vision,
-        Butter,
-        Arrhythmia,
-        Modern,
-        Beats,
-        Archives,
-        Void
+        /// <summary>
+        /// Unknown format.
+        /// </summary>
+        NULL,
+        /// <summary>
+        /// Lime Studios / Lilscript format used in old dev and Legacy versions.
+        /// </summary>
+        LS,
+        /// <summary>
+        /// Vitamin Games format used in the modern versions.
+        /// </summary>
+        VG
     }
 
-    public enum EditorFont
+    /// <summary>
+    /// Where a URL is from.
+    /// </summary>
+    public enum URLSource
     {
-        Inconsolata_Variable,
-        Fredoka_One,
-        Pusab,
-        Revue,
-        Transformers_Movie,
-        Ancient_Autobot,
-        Determination_Mono,
-        Flow_Circular,
-        Arrhythmia,
-        Angsana,
-        About_Friend,
-        VAG_Rounded,
+        Song,
+        Artist,
+        Creator
     }
 
+    /// <summary>
+    /// What general type a scene is.
+    /// </summary>
     public enum SceneType
     {
+        /// <summary>
+        /// Scene is an interface.
+        /// </summary>
         Interface,
+        /// <summary>
+        /// Scene is the game.
+        /// </summary>
         Game,
+        /// <summary>
+        /// Scene is the editor.
+        /// </summary>
         Editor,
     }
 
+    /// <summary>
+    /// All scenes in PA Legacy.
+    /// </summary>
     public enum SceneName
     {
+        /// <summary>
+        /// The main menu interface scene.
+        /// </summary>
         Main_Menu,
+        /// <summary>
+        /// The player register interface scene.
+        /// </summary>
         Input_Select,
+        /// <summary>
+        /// The game scene where levels are played.
+        /// </summary>
         Game,
+        /// <summary>
+        /// The editor scene.
+        /// </summary>
         Editor,
+        /// <summary>
+        /// The story interface scene.
+        /// </summary>
         Interface,
+        /// <summary>
+        /// Unused story demo end scene.
+        /// </summary>
         post_level,
+        /// <summary>
+        /// The arcade menu scene.
+        /// </summary>
         Arcade_Select
     }
 
+    /// <summary>
+    /// Language the game should be in.
+    /// </summary>
+    public enum Language
+    {
+        English,
+        Spanish,
+        Japanese,
+        Thai,
+        Russian,
+        Pirate,
+        French,
+        Dutch,
+        German,
+        Chinese,
+        AncientAutobot,
+        Matoran
+    }
+
+    /// <summary>
+    /// Resolution setting.
+    /// </summary>
+    public enum Resolutions
+    {
+        p270,
+        p360,
+        p540,
+        p720,
+        p768,
+        p810,
+        p900,
+        p1080,
+        p1440,
+        p2160
+    }
+
+    /// <summary>
+    /// Music loaded into the SoundLibrary.
+    /// </summary>
+    public enum DefaultMusic
+    {
+        loading,
+        menu,
+        barrels,
+        nostalgia,
+        arcade_dream,
+        distance,
+        truepianoskg,
+        dread,
+        in_the_distance,
+        io,
+        jukio_distance
+    }
+
+    /// <summary>
+    /// Sounds loaded into the SoundLibrary.
+    /// </summary>
+    public enum DefaultSounds
+    {
+        UpDown,
+        LeftRight,
+        Block,
+        Select,
+        Click,
+
+        rewind,
+        record_scratch,
+        checkpoint,
+        boost,
+        boost_recover,
+        shoot,
+        pirate_KillPlayer,
+
+        KillPlayer,
+        SpawnPlayer,
+        HealPlayer,
+        HurtPlayer,
+        HurtPlayer2,
+        HurtPlayer3,
+
+        glitch,
+        menuflip,
+
+        blip,
+        loadsound,
+
+        example_speak,
+        hal_speak,
+        anna_speak,
+        para_speak,
+        t_speak,
+    }
+
+    /// <summary>
+    /// What the loading UI should display as.
+    /// </summary>
     public enum LoadingDisplayType
     {
+        /// <summary>
+        /// Displays a little doggo.
+        /// </summary>
         Doggo,
+        /// <summary>
+        /// Displays a waveform.
+        /// </summary>
         Waveform,
+        /// <summary>
+        /// Displays a bar.
+        /// </summary>
         Bar,
+        /// <summary>
+        /// Displays a percentage (like 60%)
+        /// </summary>
         Percentage,
+        /// <summary>
+        /// Displays an equals bar (like [ ====    ])
+        /// </summary>
         EqualsBar
     }
 
@@ -221,22 +412,123 @@
         /// </summary>
         FixedUpdate,
     }
-    
+
+    /// <summary>
+    /// Visibility of the item on the Arcade server.
+    /// </summary>
+    public enum ServerVisibility
+    {
+        /// <summary>
+        /// Shows for everyone.
+        /// </summary>
+        Public,
+        /// <summary>
+        /// Only shows if the user searches for a specific ID.
+        /// </summary>
+        Unlisted,
+        /// <summary>
+        /// Only shows for the publisher.
+        /// </summary>
+        Private
+    }
+
+    /// <summary>
+    /// PA Easings.
+    /// </summary>
+    public enum Easings
+    {
+        Linear,
+        Instant,
+        InSine,
+        OutSine,
+        InOutSine,
+        InElastic,
+        OutElastic,
+        InOutElastic,
+        InBack,
+        OutBack,
+        InOutBack,
+        InBounce,
+        OutBounce,
+        InOutBounce,
+        InQuad,
+        OutQuad,
+        InOutQuad,
+        InCirc,
+        OutCirc,
+        InOutCirc,
+        InExpo,
+        OutExpo,
+        InOutExpo
+    }
+
+    /// <summary>
+    /// What type of value an object is.
+    /// </summary>
+    public enum ValueType
+    {
+        Bool,
+        Int,
+        Float,
+        IntSlider,
+        FloatSlider,
+        String,
+        Vector2,
+        Vector2Int,
+        Vector3,
+        Vector3Int,
+        Enum,
+        Color,
+        Function,
+        Unrecognized
+    }
+
+    #endregion
+
+    #region Arcade / Game
+
+    /// <summary>
+    /// Rank that is awarded depending on how many hits you have. 0 hits is SS and 16+ hits is F.
+    /// </summary>
     public enum Rank
     {
         /// <summary>
         /// Does not set a rank.
         /// </summary>
         Null,
+        /// <summary>
+        /// 0 hits.
+        /// </summary>
         SS,
+        /// <summary>
+        /// 1 hit.
+        /// </summary>
         S,
+        /// <summary>
+        /// 2 to 3 hits.
+        /// </summary>
         A,
+        /// <summary>
+        /// 4 to 6 hits.
+        /// </summary>
         B,
+        /// <summary>
+        /// 7 to 9 hits.
+        /// </summary>
         C,
+        /// <summary>
+        /// 10 to 15 hits.
+        /// </summary>
         D,
+        /// <summary>
+        /// 16+ hits.
+        /// </summary>
         F
     }
 
+    /// <summary>
+    /// Difficulty of a level.
+    /// </summary>
     public enum LevelDifficulty
     {
         Unknown,
@@ -283,148 +575,6 @@
         Ranking,
     }
 
-    public enum MenuMusicLoadMode
-    {
-        /// <summary>
-        /// Takes from Project Arrhythmia/settings/menus
-        /// </summary>
-        Settings,
-        /// <summary>
-        /// Takes from the story folder.
-        /// </summary>
-        ArcadeFolder,
-        /// <summary>
-        /// Takes from the story folder.
-        /// </summary>
-        StoryFolder,
-        /// <summary>
-        /// Takes from the editor folder.
-        /// </summary>
-        EditorFolder,
-        /// <summary>
-        /// Takes from the interfaces/music folder.
-        /// </summary>
-        InterfacesFolder,
-        /// <summary>
-        /// Takes from the global folder.
-        /// </summary>
-        GlobalFolder,
-    }
-
-    public enum ServerVisibility
-    {
-        Public,
-        Unlisted,
-        Private
-    }
-
-    public enum UserPreferenceType
-    {
-        None,
-        Beginner,
-        Legacy,
-        Alpha,
-        Modded
-    }
-
-    /// <summary>
-    /// How <i>complex</i> something is.<br></br><br></br>Can be used for <i>Examples</i>' tutorials or for displaying editor features. If used for editor features, Normal is vanilla and Advanced is fully modded.
-    /// </summary>
-    public enum Complexity
-    {
-        /// <summary>
-        /// If used for editor feature display, only show the most basic of features.
-        /// </summary>
-        Simple,
-        /// <summary>
-        /// If used for editor feature display, only show vanilla features.
-        /// </summary>
-        Normal,
-        /// <summary>
-        /// If used for editor feature display, show all features.
-        /// </summary>
-        Advanced
-    }
-
-    /// <summary>
-    /// The type of Waveform the editor timeline should render.
-    /// </summary>
-    public enum WaveformType
-    {
-        /// <summary>
-        /// The vanilla rendering type.
-        /// </summary>
-        Legacy,
-        /// <summary>
-        /// Old rendering type.
-        /// </summary>
-        Beta,
-        /// <summary>
-        /// New rendering type based on alpha waveform.
-        /// </summary>
-        Modern,
-        LegacyFast,
-        BetaFast,
-        ModernFast
-    }
-
-    public enum VerticalDirection
-    {
-        Up,
-        Down
-    }
-
-    public enum HorizontalDirection
-    {
-        Left,
-        Right
-    }
-
-    /// <summary>
-    /// PA Easings.
-    /// </summary>
-    public enum Easings
-    {
-        Linear,
-        Instant,
-        InSine,
-        OutSine,
-        InOutSine,
-        InElastic,
-        OutElastic,
-        InOutElastic,
-        InBack,
-        OutBack,
-        InOutBack,
-        InBounce,
-        OutBounce,
-        InOutBounce,
-        InQuad,
-        OutQuad,
-        InOutQuad,
-        InCirc,
-        OutCirc,
-        InOutCirc,
-        InExpo,
-        OutExpo,
-        InOutExpo
-    }
-
-    /// <summary>
-    /// Where a Prefab comes from.
-    /// </summary>
-    public enum PrefabDialog
-    {
-        /// <summary>
-        /// Prefab comes from internal level file.
-        /// </summary>
-        Internal,
-        /// <summary>
-        /// Prefab comes from external prefabs folder.
-        /// </summary>
-        External
-    }
-
     /// <summary>
     /// The type of shake to be used when playing a level.
     /// </summary>
@@ -441,28 +591,138 @@
     }
 
     /// <summary>
-    /// What type of value an object is.
+    /// The challenge mode the user wants to play a level with.
     /// </summary>
-    public enum ValueType
+    public enum ChallengeMode
     {
-        Bool,
-        Int,
-        Float,
-        IntSlider,
-        FloatSlider,
-        String,
-        Vector2,
-        Vector2Int,
-        Vector3,
-        Vector3Int,
-        Enum,
-        Color,
-        Function,
-        Unrecognized
+        /// <summary>
+        /// No damage is taken.
+        /// </summary>
+        ZenMode,
+        /// <summary>
+        /// Damage is taken.
+        /// </summary>
+        Normal,
+        /// <summary>
+        /// Player restarts the level when dead.
+        /// </summary>
+        OneLife,
+        /// <summary>
+        /// Player restarts the level when hit.
+        /// </summary>
+        OneHit,
+        /// <summary>
+        /// Damage is taken, but health is not subtracted so the Player will not die.
+        /// </summary>
+        Practice
     }
 
     /// <summary>
-    /// Theem group used for applying Editor Themes.
+    /// The GameMode type of a level.
+    /// </summary>
+    public enum GameMode
+    {
+        /// <summary>
+        /// The normal top-down movement.
+        /// </summary>
+        Regular,
+        /// <summary>
+        /// Left/right movement with jumping affected by gravity.
+        /// </summary>
+        Platformer
+    }
+
+    /// <summary>
+    /// The function that should occur when a level ends.
+    /// </summary>
+    public enum EndLevelFunction
+    {
+        /// <summary>
+        /// Initializes the EndLevelMenu.
+        /// </summary>
+        EndLevelMenu,
+        /// <summary>
+        /// Loads the Arcade scene.
+        /// </summary>
+        QuitToArcade,
+        /// <summary>
+        /// Returns to the hub level if there was one loaded.
+        /// </summary>
+        ReturnToHub,
+        /// <summary>
+        /// Returns to the previously loaded level.
+        /// </summary>
+        ReturnToPrevious,
+        /// <summary>
+        /// Continues the collection.
+        /// </summary>
+        ContinueCollection,
+        /// <summary>
+        /// Loads another level.
+        /// </summary>
+        LoadLevel,
+        /// <summary>
+        /// Parses an interface.
+        /// </summary>
+        ParseInterface,
+        /// <summary>
+        /// Loops the level.
+        /// </summary>
+        Loop,
+        /// <summary>
+        /// Fully restarts the level, clearing hit and death data.
+        /// </summary>
+        Restart
+    }
+
+    #endregion
+
+    #region Editor
+
+    public enum UserPreferenceType
+    {
+        None,
+        Beginner,
+        Legacy,
+        Alpha,
+        Modded
+    }
+
+    /// <summary>
+    /// How <i>advanced</i> a feature is.
+    /// </summary>
+    public enum Complexity
+    {
+        /// <summary>
+        /// Only show the most basic of features.
+        /// </summary>
+        Simple,
+        /// <summary>
+        /// Only show vanilla features.
+        /// </summary>
+        Normal,
+        /// <summary>
+        /// Show all features.
+        /// </summary>
+        Advanced
+    }
+
+    public enum EditorTheme
+    {
+        Legacy,
+        Dark,
+        Light,
+        Vision,
+        Butter,
+        Arrhythmia,
+        Modern,
+        Beats,
+        Archives,
+        Void
+    }
+
+    /// <summary>
+    /// Theme group used for applying Editor Themes.
     /// </summary>
     public enum ThemeGroup
     {
@@ -727,95 +987,108 @@
         Object_Keyframe_Color_4,
     }
 
-    public enum Language
+    public enum EditorFont
     {
-        English,
-        Spanish,
-        Japanese,
-        Thai,
-        Russian,
-        Pirate,
-        French,
-        Dutch,
-        German,
-        Chinese,
-        AncientAutobot,
-        Matoran
+        Inconsolata_Variable,
+        Fredoka_One,
+        Pusab,
+        Revue,
+        Transformers_Movie,
+        Ancient_Autobot,
+        Determination_Mono,
+        Flow_Circular,
+        Arrhythmia,
+        Angsana,
+        About_Friend,
+        VAG_Rounded,
     }
 
     /// <summary>
-    /// The challenge mode the user wants to play a level with.
+    /// The type of Waveform the editor timeline should render.
     /// </summary>
-    public enum ChallengeMode
+    public enum WaveformType
     {
         /// <summary>
-        /// No damage is taken.
+        /// The vanilla rendering type.
         /// </summary>
-        ZenMode,
+        Legacy,
         /// <summary>
-        /// Damage is taken.
+        /// Old rendering type.
         /// </summary>
-        Normal,
+        Beta,
         /// <summary>
-        /// Player restarts the level when dead.
+        /// New rendering type based on alpha waveform.
         /// </summary>
-        OneLife,
-        /// <summary>
-        /// Player restarts the level when hit.
-        /// </summary>
-        OneHit,
-        /// <summary>
-        /// Damage is taken, but health is not subtracted so the Player will not die.
-        /// </summary>
-        Practice
+        Modern,
+        LegacyFast,
+        BetaFast,
+        ModernFast
     }
 
     /// <summary>
-    /// The GameMode type of a level.
+    /// Where a Prefab comes from.
     /// </summary>
-    public enum GameMode
+    public enum PrefabDialog
     {
         /// <summary>
-        /// The normal top-down movement.
+        /// Prefab comes from internal level file.
         /// </summary>
-        Regular,
+        Internal,
         /// <summary>
-        /// Left/right movement with jumping affected by gravity.
+        /// Prefab comes from external prefabs folder.
         /// </summary>
-        Platformer
+        External
     }
 
-    public enum Resolutions
-    {
-        p270,
-        p360,
-        p540,
-        p720,
-        p768,
-        p810,
-        p900,
-        p1080,
-        p1440,
-        p2160
-    }
+    #endregion
+
+    #region Menus
 
     /// <summary>
-    /// Which era of Project Arrhythmia a file is from.
+    /// Source of the menu music.
     /// </summary>
-    public enum ArrhythmiaType
+    public enum MenuMusicLoadMode
     {
         /// <summary>
-        /// Unknown format.
+        /// Takes from Project Arrhythmia/settings/menus
         /// </summary>
-        NULL,
+        Settings,
         /// <summary>
-        /// Lime Studios / Lilscript format used in old dev and Legacy versions.
+        /// Takes from the arcade folder.
         /// </summary>
-        LS,
+        ArcadeFolder,
         /// <summary>
-        /// Vitamin Games format used in the modern versions.
+        /// Takes from the story folder.
         /// </summary>
-        VG
+        StoryFolder,
+        /// <summary>
+        /// Takes from the editor folder.
+        /// </summary>
+        EditorFolder,
+        /// <summary>
+        /// Takes from the interfaces/music folder.
+        /// </summary>
+        InterfacesFolder,
+        /// <summary>
+        /// Takes from the global folder.
+        /// </summary>
+        GlobalFolder,
+    }
+
+    #endregion
+
+    #region Misc
+
+    public enum VerticalDirection
+    {
+        Up,
+        Down
+    }
+
+    public enum HorizontalDirection
+    {
+        Left,
+        Right
     }
 
     public enum AxisMode
@@ -953,97 +1226,5 @@
         Count
     }
 
-    /// <summary>
-    /// The function that should occur when a level ends.
-    /// </summary>
-    public enum EndLevelFunction
-    {
-        /// <summary>
-        /// Initializes the EndLevelMenu.
-        /// </summary>
-        EndLevelMenu,
-        /// <summary>
-        /// Loads the Arcade scene.
-        /// </summary>
-        QuitToArcade,
-        /// <summary>
-        /// Returns to the hub level if there was one loaded.
-        /// </summary>
-        ReturnToHub,
-        /// <summary>
-        /// Returns to the previously loaded level.
-        /// </summary>
-        ReturnToPrevious,
-        /// <summary>
-        /// Continues the collection.
-        /// </summary>
-        ContinueCollection,
-        /// <summary>
-        /// Loads another level.
-        /// </summary>
-        LoadLevel,
-        /// <summary>
-        /// Parses an interface.
-        /// </summary>
-        ParseInterface,
-        /// <summary>
-        /// Loops the level.
-        /// </summary>
-        Loop,
-        /// <summary>
-        /// Fully restarts the level, clearing hit and death data.
-        /// </summary>
-        Restart
-    }
-
-    public enum DefaultMusic
-    {
-        loading,
-        menu,
-        barrels,
-        nostalgia,
-        arcade_dream,
-        distance,
-        truepianoskg,
-        dread,
-        in_the_distance,
-        io,
-        jukio_distance
-    }
-
-    public enum DefaultSounds
-    {
-        UpDown,
-        LeftRight,
-        Block,
-        Select,
-        Click,
-
-        rewind,
-        record_scratch,
-        checkpoint,
-        boost,
-        boost_recover,
-        shoot,
-        pirate_KillPlayer,
-
-        KillPlayer,
-        SpawnPlayer,
-        HealPlayer,
-        HurtPlayer,
-        HurtPlayer2,
-        HurtPlayer3,
-
-        glitch,
-        menuflip,
-
-        blip,
-        loadsound,
-
-        example_speak,
-        hal_speak,
-        anna_speak,
-        para_speak,
-        t_speak,
-    }
+    #endregion
 }
