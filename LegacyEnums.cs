@@ -237,6 +237,18 @@
         F
     }
 
+    public enum LevelDifficulty
+    {
+        Unknown,
+        Easy,
+        Normal,
+        Hard,
+        Expert,
+        ExpertPlus,
+        Master,
+        Animation
+    }
+
     /// <summary>
     /// How the Steam Workshop Query should be sorted.
     /// </summary>

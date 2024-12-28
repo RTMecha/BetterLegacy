@@ -705,6 +705,8 @@ namespace BetterLegacy.Core.Data
         public string link;
         public string[] tags;
 
+        public LevelDifficulty LevelDifficulty => (LevelDifficulty)(difficulty + 1);
+
         #region Operators
 
         public static implicit operator bool(LevelSong exists) => exists != null;
