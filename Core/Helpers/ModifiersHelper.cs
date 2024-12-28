@@ -1862,7 +1862,7 @@ namespace BetterLegacy.Core.Helpers
                                 SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                             if (!CoreHelper.InEditor && LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
-                                CoreHelper.StartCoroutine(LevelManager.Play(level));
+                                LevelManager.Play(level);
                             else if (!CoreHelper.InEditor)
                                 SoundManager.inst.PlaySound(DefaultSounds.Block);
 
@@ -1902,9 +1902,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (CoreHelper.InEditor)
                                 return;
-                            
-                            if (LevelManager.PreviousLevel != null)
-                                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.PreviousLevel));
+
+                            LevelManager.Play(LevelManager.PreviousLevel);
 
                             break;
                         }
@@ -1912,9 +1911,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (CoreHelper.InEditor)
                                 return;
-                            
-                            if (LevelManager.Hub != null)
-                                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.Hub));
+
+                            LevelManager.Play(LevelManager.Hub);
 
                             break;
                         }

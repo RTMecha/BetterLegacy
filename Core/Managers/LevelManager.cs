@@ -197,8 +197,17 @@ namespace BetterLegacy.Core.Managers
         /// Loads the game scene and plays a level.
         /// </summary>
         /// <param name="level">The level to play.</param>
-        /// <returns></returns>
-        public static IEnumerator Play(Level level)
+        public static void Play(Level level)
+        {
+            if (level)
+                CoreHelper.StartCoroutine(IPlay(level));
+        }
+
+        /// <summary>
+        /// Loads the game scene and plays a level.
+        /// </summary>
+        /// <param name="level">The level to play.</param>
+        public static IEnumerator IPlay(Level level)
         {
             Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level.isStory}");
 
@@ -374,11 +383,11 @@ namespace BetterLegacy.Core.Managers
 
             if (path.EndsWith(FileFormat.ASSET.Dot()))
             {
-                CoreHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel => CoreHelper.StartCoroutine(Play(storyLevel))));
+                CoreHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, Play));
                 return;
             }
 
-            CoreHelper.StartCoroutine(Play(new Level(path.Replace(Level.LEVEL_LSB, "").Replace(Level.LEVEL_VGD, ""))));
+            Play(new Level(path.Replace(Level.LEVEL_LSB, "").Replace(Level.LEVEL_VGD, "")));
         }
 
         /// <summary>

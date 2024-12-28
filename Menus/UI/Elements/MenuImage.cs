@@ -3001,7 +3001,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             break;
 
                         if (LevelManager.Levels.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out Level level))
-                            CoreHelper.StartCoroutine(LevelManager.Play(level));
+                            LevelManager.Play(level);
 
                         break;
                     }

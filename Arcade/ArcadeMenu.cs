@@ -2212,7 +2212,7 @@ namespace BetterLegacy.Arcade
         {
             InterfaceManager.inst.CloseMenus();
             LevelManager.OnLevelEnd = ArcadeHelper.EndOfLevel;
-            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.ArcadeQueue[0]));
+            LevelManager.Play(LevelManager.ArcadeQueue[0]);
         }
 
         public void ShuffleQueue(bool play)

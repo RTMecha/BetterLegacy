@@ -379,7 +379,7 @@ namespace BetterLegacy.Arcade
 
                     InterfaceManager.inst.CloseMenus();
                     LevelManager.OnLevelEnd = ArcadeHelper.EndOfLevel;
-                    CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevel));
+                    LevelManager.Play(LevelManager.CurrentLevel);
                 },
             });
 

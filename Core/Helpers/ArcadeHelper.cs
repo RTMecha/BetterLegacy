@@ -45,7 +45,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
-            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.Hub));
+            LevelManager.Play(LevelManager.Hub);
         }
 
         public static void FirstLevel()
@@ -59,7 +59,7 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.LevelEnded = false;
 
                 InterfaceManager.inst.CloseMenus();
-                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]));
+                LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]);
 
                 return;
             }
@@ -75,7 +75,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
-            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]));
+            LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]);
         }
 
         public static void NextLevel()
@@ -93,7 +93,7 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.LevelEnded = false;
 
                 InterfaceManager.inst.CloseMenus();
-                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]));
+                LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]);
 
                 return;
             }
@@ -109,7 +109,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
-            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]));
+            LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]);
         }
 
         public static void RestartLevel() => RestartLevel(null);
@@ -316,7 +316,7 @@ namespace BetterLegacy.Core.Helpers
         static void EndLoadLevel(Level level)
         {
             if (level)
-                CoreHelper.StartCoroutine(LevelManager.Play(level));
+                LevelManager.Play(level);
         }
 
         public static bool fromLevel = false;

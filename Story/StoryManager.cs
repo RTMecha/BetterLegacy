@@ -620,7 +620,7 @@ namespace BetterLegacy.Story
                 LevelManager.OnLevelEnd = null;
                 SceneHelper.LoadScene(SceneName.Main_Menu);
             };
-            CoreHelper.StartCoroutine(LevelManager.Play(storyLevel));
+            LevelManager.Play(storyLevel);
         }
 
         public static GameData ParseSave(JSONNode jn)
@@ -981,7 +981,7 @@ namespace BetterLegacy.Story
             {
                 SetLevelEnd(level, isCutscene, cutsceneIndex);
 
-                StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
+                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true });
                 yield break;
             }
 
@@ -1006,7 +1006,7 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                StartCoroutine(LevelManager.Play(storyLevel));
+                LevelManager.Play(storyLevel);
             }));
 
             yield break;
@@ -1034,7 +1034,7 @@ namespace BetterLegacy.Story
             {
                 SetLevelEnd();
 
-                StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
+                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true });
                 yield break;
             }
 
@@ -1059,7 +1059,7 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                StartCoroutine(LevelManager.Play(storyLevel));
+                LevelManager.Play(storyLevel);
             }));
 
             yield break;
@@ -1087,7 +1087,7 @@ namespace BetterLegacy.Story
             {
                 SetLevelEnd();
 
-                StartCoroutine(LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }));
+                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true });
                 yield break;
             }
 
@@ -1112,7 +1112,7 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                StartCoroutine(LevelManager.Play(storyLevel));
+                LevelManager.Play(storyLevel);
             }));
 
             yield break;
