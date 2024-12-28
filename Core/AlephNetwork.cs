@@ -149,6 +149,26 @@ namespace BetterLegacy.Core
 
         #region Bytes
 
+        public static IEnumerator DownloadBytes(string path, Action<byte[]> callback, Action<float> percentage, Action<string> onError)
+        {
+            using var www = UnityWebRequest.Get(path);
+            www.certificateHandler = new ForceAcceptAll();
+            var webRequest = www.SendWebRequest();
+
+            while (!webRequest.isDone)
+            {
+                percentage?.Invoke(webRequest.progress);
+                yield return null;
+            }
+
+            if (www.isNetworkError || www.isHttpError)
+                onError?.Invoke(www.error);
+            else
+                callback?.Invoke(www.downloadHandler.data);
+
+            yield break;
+        }
+
         public static IEnumerator DownloadBytes(string path, Action<byte[]> callback, Action<string> onError)
         {
             using var www = UnityWebRequest.Get(path);
