@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
@@ -41,44 +42,7 @@ namespace BetterLegacy.Patchers
                     Destroy(eventSystem.GetComponent<InControlInputModule>());
                     Destroy(eventSystem.GetComponent<BaseInput>());
 
-                    var standaloneInputModule = eventSystem.GetComponent<StandaloneInputModule>() ?? eventSystem.gameObject.AddComponent<StandaloneInputModule>();
-                    var standaloneInputModuleType = standaloneInputModule.GetType();
-
-                    //var inputPointerEventField = AccessTools.Field(standaloneInputModuleType, "m_InputPointerEvent");
-                    //var inputPointerEvent = inputPointerEventField.GetValue(standaloneInputModule);
-
-                    //if (inputPointerEvent == null)
-                    //    inputPointerEventField.SetValue(standaloneInputModule, new PointerEventData(eventSystem)
-                    //    {
-                    //        button = PointerEventData.InputButton.Left,
-                    //    });
-
-                    //var baseEventDataField = AccessTools.Field(standaloneInputModuleType, "m_BaseEventData");
-                    //var baseEventData = baseEventDataField.GetValue(standaloneInputModule);
-
-                    //if (baseEventData == null)
-                    //    baseEventDataField.SetValue(standaloneInputModule, new BaseEventData(eventSystem));
-
-                    //var pointerEventDataField = AccessTools.Field(standaloneInputModuleType, "m_PointerData");
-                    //var pointerEventData = pointerEventDataField.GetValue(standaloneInputModule);
-
-                    //if (pointerEventData is Dictionary<int, PointerEventData> pointerData)
-                    //{
-                    //    pointerData[-1] = new PointerEventData(eventSystem)
-                    //    {
-                    //        button = PointerEventData.InputButton.Left,
-                    //    };
-                    //    pointerData[-2] = new PointerEventData(eventSystem)
-                    //    {
-                    //        button = PointerEventData.InputButton.Right,
-                    //    };
-                    //    pointerData[-3] = new PointerEventData(eventSystem)
-                    //    {
-                    //        button = PointerEventData.InputButton.Middle,
-                    //    };
-                    //}
-
-                    // TODO: Check if m_MouseState is required as well.
+                    eventSystem.gameObject.GetOrAddComponent<StandaloneInputModule>();
                 }
             }
             catch (Exception ex)
@@ -106,9 +70,9 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.BindMenuKeys();
             __instance.MainPanel = __instance.transform.Find("Panel");
 
-            Menus.InterfaceManager.inst.Clear();
+            InterfaceManager.inst.Clear();
 
-            if (__instance.gameObject.scene.name == "Main Menu")
+            if (__instance.gameObject.scene.name == SceneName.Main_Menu.ToName())
             {
                 InterfaceManager.inst.StartupInterface();
 
@@ -117,7 +81,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
             
-            if (__instance.gameObject.scene.name == "Interface")
+            if (__instance.gameObject.scene.name == SceneName.Interface.ToName())
             {
                 InterfaceManager.inst.StartupStoryInterface();
 
@@ -133,7 +97,7 @@ namespace BetterLegacy.Patchers
                 LoadInterface(null);
             }
 
-            if (!CoreHelper.InGame && (__instance.gameObject.scene.name != "Input Select" || !MenuConfig.Instance.PlayInputSelectMusic.Value))
+            if (!CoreHelper.InGame && (__instance.gameObject.scene.name != SceneName.Input_Select.ToName() || !MenuConfig.Instance.PlayInputSelectMusic.Value))
                 InterfaceManager.inst.PlayMusic();
 
             return false;
