@@ -39,15 +39,13 @@ namespace BetterLegacy.Core.Helpers
 
         public static void ReturnToHub()
         {
-            if (LevelManager.Hub == null)
+            if (!LevelManager.Hub)
                 return;
 
             LevelManager.LevelEnded = false;
-            LevelManager.CurrentLevel = LevelManager.Hub;
 
             InterfaceManager.inst.CloseMenus();
-
-            SceneHelper.LoadGame();
+            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.Hub));
         }
 
         public static void FirstLevel()
@@ -59,11 +57,9 @@ namespace BetterLegacy.Core.Helpers
 
                 CoreHelper.Log($"Update collection index - Prev: {prevIndex} > Current: {LevelManager.currentLevelIndex}");
                 LevelManager.LevelEnded = false;
-                LevelManager.CurrentLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
 
                 InterfaceManager.inst.CloseMenus();
-
-                SceneHelper.LoadGame();
+                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]));
 
                 return;
             }
@@ -77,16 +73,14 @@ namespace BetterLegacy.Core.Helpers
             CoreHelper.Log($"Update queue - Prev: {prev} > Current: {LevelManager.currentQueueIndex}");
 
             LevelManager.LevelEnded = false;
-            LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
 
             InterfaceManager.inst.CloseMenus();
-
-            SceneHelper.LoadGame();
+            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]));
         }
 
         public static void NextLevel()
         {
-            if (LevelManager.CurrentLevelCollection != null)
+            if (LevelManager.CurrentLevelCollection)
             {
                 var prevIndex = LevelManager.currentLevelIndex;
                 LevelManager.currentLevelIndex++;
@@ -97,11 +91,9 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 LevelManager.LevelEnded = false;
-                LevelManager.CurrentLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
 
                 InterfaceManager.inst.CloseMenus();
-
-                SceneHelper.LoadGame();
+                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]));
 
                 return;
             }
@@ -115,11 +107,9 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             LevelManager.LevelEnded = false;
-            LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
 
             InterfaceManager.inst.CloseMenus();
-
-            SceneHelper.LoadGame();
+            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]));
         }
 
         public static void RestartLevel() => RestartLevel(null);
