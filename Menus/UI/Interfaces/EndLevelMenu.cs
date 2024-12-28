@@ -208,7 +208,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     }
                 }
 
-                if (LevelManager.NextLevelInCollection || !LevelManager.IsNextEndOfQueue)
+                if (LevelManager.NextLevelInCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || LevelManager.NextLevelInCollection.playerData && LevelManager.NextLevelInCollection.playerData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice) || !LevelManager.IsNextEndOfQueue)
                 {
                     if (LevelManager.NextLevelInCollection != null)
                         CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
@@ -257,7 +257,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     });
                 }
 
-                if (LevelManager.Hub != null)
+                if (LevelManager.Hub)
                 {
                     elements.Add(new MenuButton
                     {
@@ -314,7 +314,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     length = 0.3f,
                     playBlipSound = true,
                     rect = RectValues.Default.SizeDelta(100f, 64f),
-                    func = () => ArcadeHelper.RestartLevel(Close),
+                    func = Close,
                 });
 
                 elements.AddRange(GenerateBottomBar());
@@ -337,6 +337,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static void Close()
         {
+            ArcadeHelper.RestartLevel();
             InterfaceManager.inst.CloseMenus();
             AudioManager.inst.CurrentAudioSource.UnPause();
             AudioManager.inst.CurrentAudioSource.Play();
