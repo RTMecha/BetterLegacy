@@ -251,6 +251,28 @@ namespace BetterLegacy.Core.Managers.Networking
             }
         }
 
+        /// <summary>
+        /// Gets a published file ID.
+        /// </summary>
+        /// <param name="id">ID to convert to <see cref="PublishedFileId"/>.</param>
+        /// <returns>Returns a Workshop ID.</returns>
+        public static PublishedFileId GetWorkshopID(string id) => ulong.TryParse(id, out ulong result) ? new PublishedFileId() { Value = result } : default;
+
+        /// <summary>
+        /// Gets a Steam Workshop item.
+        /// </summary>
+        /// <param name="publishedFileID">Workshop ID.</param>
+        /// <param name="result">Output item.</param>
+        /// <param name="onFail">Runs on fail.</param>
+        public static async Task GetItem(PublishedFileId publishedFileID, Action<Item> result, Action onFail = null)
+        {
+            var item = await Item.GetAsync(publishedFileID);
+            if (item is Item steamItem)
+                result?.Invoke(steamItem);
+            else
+                onFail?.Invoke();
+        }
+
         #endregion
 
         #region User

@@ -1,10 +1,16 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Arcade;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Interfaces;
 using LSFunctions;
 using SimpleJSON;
+using SteamworksFacepunch.Ugc;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -209,14 +215,15 @@ namespace BetterLegacy.Core.Data.Level
             for (int i = 0; i < jn["levels"].Count; i++)
             {
                 var jnLevel = jn["levels"][i];
-                collection.levelInformation.Add(LevelInfo.Parse(jnLevel, i));
+                var levelInfo = LevelInfo.Parse(jnLevel, i);
+                collection.levelInformation.Add(levelInfo);
 
                 if (!loadLevels)
                     continue;
 
                 var jnPath = jnLevel["path"];
 
-                // parse via path
+                // load via path
                 if (jnPath != null && (RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_VGD))))
                 {
                     var levelFolder = RTFile.CombinePaths(path, jnPath);
@@ -238,20 +245,21 @@ namespace BetterLegacy.Core.Data.Level
                         RTFile.WriteToFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB), metadataJN.ToString(3));
                     }
 
-                    collection.AddJSON(jnLevel, NewCollectionLevel(levelFolder));
+                    levelInfo.level = NewCollectionLevel(levelFolder);
                 }
 
                 // load via arcade ID
                 else if (jnLevel["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jnLevel["arcade_id"], out Level arcadeLevel))
-                    collection.AddJSON(jnLevel, NewCollectionLevel(arcadeLevel.path));
+                    levelInfo.level = NewCollectionLevel(arcadeLevel.path);
 
                 // load via workshop ID
                 else if (jnLevel["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jnLevel["workshop_id"], out Level steamLevel))
-                    collection.AddJSON(jnLevel, NewCollectionLevel(steamLevel.path));
+                    levelInfo.level = NewCollectionLevel(steamLevel.path);
 
-                // no level was found, so add null
-                else
-                    collection.levels.Add(null);
+                if (levelInfo.level)
+                    levelInfo.Overwrite(levelInfo.level);
+
+                collection.levels.Add(levelInfo.level);
             }
 
             collection.UpdateIcons();
@@ -259,27 +267,103 @@ namespace BetterLegacy.Core.Data.Level
             return collection;
         }
 
-        void AddJSON(JSONNode jn, Level level)
+        static Level NewCollectionLevel(string path) => new Level(path) { fromCollection = true };
+
+        /// <summary>
+        /// Downloads a level if it doesn't exist.
+        /// </summary>
+        /// <param name="levelInfo"></param>
+        public void DownloadLevel(LevelInfo levelInfo)
         {
-            if (level.metadata)
+            Level level;
+            if (!string.IsNullOrEmpty(levelInfo.arcadeID) && LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out level))
             {
-                level.metadata = MetaData.DeepCopy(level.metadata);
-                level.metadata.arcadeID = jn["id"];
-                if (jn["require_unlock"] != null)
-                    level.metadata.requireUnlock = jn["require_unlock"];
+                levelInfo.level = level;
+                CoreHelper.Log($"Level {level.id} already exists!");
+                return;
             }
 
-            // overwrites the original level ID so it doesn't conflict with the same level outside the collection.
-            // So when the player plays the level inside the collection, it isn't already ranked.
-            level.id = jn["id"];
+            if (!string.IsNullOrEmpty(levelInfo.serverID))
+            {
+                CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{levelInfo.serverID}", json =>
+                {
+                    var jn = JSON.Parse(json);
+                    if (jn is JSONObject jsonObject)
+                    {
+                        DownloadLevelMenu.Init(jsonObject);
+                        DownloadLevelMenu.Current.onDownloadComplete = level =>
+                        {
+                            level = NewCollectionLevel(level.path);
+                            levelInfo.Overwrite(level);
+                            levels.Insert(levelInfo.index, level);
+                            PlayLevelMenu.Init(level);
+                        };
+                    }
+                }, onError =>
+                {
+                    // error message or something
+                }));
+            }
+            else if (!string.IsNullOrEmpty(levelInfo.workshopID))
+            {
+                if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
+                {
+                    levelInfo.level = level;
+                    CoreHelper.Log($"Level {level.id} already exists!");
+                    return;
+                }
 
-            if (LevelManager.Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
-                level.playerData = playerData;
+                CoreHelper.StartCoroutine(SubscribeToSteamLevel(levelInfo, () =>
+                {
 
-            levels.Add(level);
+                }));
+            }
         }
 
-        static Level NewCollectionLevel(string path) => new Level(path) { fromCollection = true };
+        IEnumerator SubscribeToSteamLevel(LevelInfo levelInfo, Action onFail = null)
+        {
+            var workshopID = SteamWorkshopManager.GetWorkshopID(levelInfo.workshopID);
+            if (workshopID.Value == 0)
+            {
+                onFail?.Invoke();
+                yield break;
+            }
+
+            yield return SteamWorkshopManager.GetItem(workshopID, item =>
+            {
+                CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
+                {
+                    CoreHelper.ReturnToUnity(() =>
+                    {
+                        var sprite = SpriteHelper.LoadSprite(bytes);
+                        ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
+                        InitSteamItem(levelInfo, item);
+                    });
+                }, onError =>
+                {
+                    CoreHelper.ReturnToUnity(() =>
+                    {
+                        var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                        ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
+                        InitSteamItem(levelInfo, item);
+                    });
+                }));
+
+            }, onFail);
+        }
+
+        void InitSteamItem(LevelInfo levelInfo, Item item)
+        {
+            InterfaceManager.inst.CloseMenus();
+            SteamLevelMenu.Init(item);
+            SteamLevelMenu.Current.onSubscribedLevel = level =>
+            {
+                level = NewCollectionLevel(level.path);
+                levelInfo.Overwrite(level);
+                levels.Insert(levelInfo.index, level);
+                PlayLevelMenu.Init(level);
+            };
+        }
 
         /// <summary>
         /// Loads the collections' achievements.
@@ -416,10 +500,12 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public class LevelInfo
         {
+            public LevelInfo() { }
+
             #region Fields
 
             /// <summary>
-            /// Index of the level in the <see cref="LevelCollection.levels"/>.
+            /// Index of the level in the <see cref="levels"/>.
             /// </summary>
             public int index;
             /// <summary>
@@ -471,9 +557,37 @@ namespace BetterLegacy.Core.Data.Level
             /// </summary>
             public bool requireUnlock;
 
+            /// <summary>
+            /// If true, overwrites <see cref="requireUnlock"/>.
+            /// </summary>
+            public bool overwriteRequireUnlock;
+
+            /// <summary>
+            /// The level reference.
+            /// </summary>
+            public Level level;
+
             #endregion
 
             #region Methods
+
+            public void Overwrite(Level level)
+            {
+                if (level.metadata)
+                {
+                    level.metadata = MetaData.DeepCopy(level.metadata);
+                    level.metadata.arcadeID = id;
+                    if (overwriteRequireUnlock)
+                        level.metadata.requireUnlock = requireUnlock;
+                }
+
+                // overwrites the original level ID so it doesn't conflict with the same level outside the collection.
+                // So when the player plays the level inside the collection, it isn't already ranked.
+                level.id = id;
+
+                if (LevelManager.Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
+                    level.playerData = playerData;
+            }
 
             /// <summary>
             /// Parses a levels' information from the level collection file.
@@ -499,6 +613,7 @@ namespace BetterLegacy.Core.Data.Level
 
                 hidden = jn["hidden"].AsBool,
                 requireUnlock = jn["require_unlock"].AsBool,
+                overwriteRequireUnlock = jn["require_unlock"] != null,
             };
 
             /// <summary>
@@ -545,6 +660,7 @@ namespace BetterLegacy.Core.Data.Level
             /// <returns>Returns a <see cref="LevelInfo"/> based on the <see cref="Level"/>.</returns>
             public static LevelInfo FromLevel(Level level) => new LevelInfo
             {
+                level = level,
                 id = LSText.randomNumString(16),
 
                 name = level.metadata?.beatmap?.name,

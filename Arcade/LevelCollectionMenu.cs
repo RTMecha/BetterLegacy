@@ -220,7 +220,7 @@ namespace BetterLegacy.Arcade
 
                     if (!LevelManager.CurrentLevel)
                     {
-                        SoundManager.inst.PlaySound(DefaultSounds.Block);
+                        SoundManager.inst.PlaySound(DefaultSounds.blip);
                         if (CurrentCollection.levelInformation.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.LevelInfo levelInfo))
                         {
                             CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
@@ -230,6 +230,7 @@ namespace BetterLegacy.Arcade
                                 $"Arcade ID: {levelInfo.arcadeID}\n" +
                                 $"Server ID: {levelInfo.serverID}\n" +
                                 $"Workshop ID: {levelInfo.workshopID}");
+                            CurrentCollection.DownloadLevel(levelInfo);
                         }
                         else
                             CoreHelper.Log($"Level was not found.");
@@ -238,7 +239,13 @@ namespace BetterLegacy.Arcade
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    CoreHelper.StartCoroutine(SelectLocalLevel(LevelManager.CurrentLevel));
+                    var collection = CurrentCollection;
+                    PlayLevelMenu.close = () =>
+                    {
+                        Init(collection);
+                        collection = null;
+                    };
+                    PlayLevelMenu.Init(LevelManager.CurrentLevel);
                 },
             });
 
@@ -270,28 +277,6 @@ namespace BetterLegacy.Arcade
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
             InterfaceManager.inst.SetCurrentInterface(this);
-        }
-
-        IEnumerator SelectLocalLevel(Level level)
-        {
-            if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
-            else
-                OpenPlayLevelMenu(level);
-        }
-
-        void OpenPlayLevelMenu(Level level)
-        {
-            AudioManager.inst.StopMusic();
-            var collection = CurrentCollection;
-            PlayLevelMenu.close = () =>
-            {
-                Init(collection);
-                collection = null;
-            };
-            PlayLevelMenu.Init(level);
-            AudioManager.inst.PlayMusic(level?.metadata?.song?.title, level.music);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public static void Init(LevelCollection collection)

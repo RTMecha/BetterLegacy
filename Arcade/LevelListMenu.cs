@@ -400,7 +400,7 @@ namespace BetterLegacy.Arcade
 
                 var level = levels[index];
 
-                if (level == null)
+                if (!level)
                 {
                     if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelCollection.LevelInfo levelInfo))
                     {
@@ -418,7 +418,7 @@ namespace BetterLegacy.Arcade
                             name = "Level Button",
                             parentLayout = "levels",
                             selectionPosition = new Vector2Int(column, row),
-                            icon = level.icon,
+                            icon = LegacyPlugin.AtanPlaceholder,
                             iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                             text = "<size=24><#FF000045>" + levelInfo.name,
                             textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -435,7 +435,7 @@ namespace BetterLegacy.Arcade
                             playBlipSound = false,
                             func = () =>
                             {
-                                SoundManager.inst.PlaySound(DefaultSounds.Block);
+                                SoundManager.inst.PlaySound(DefaultSounds.blip);
                                 CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
                                     $"Level Name: {levelInfo.name}\n" +
                                     $"Song Title: {levelInfo.songTitle}\n" +
@@ -443,6 +443,8 @@ namespace BetterLegacy.Arcade
                                     $"Arcade ID: {levelInfo.arcadeID}\n" +
                                     $"Server ID: {levelInfo.serverID}\n" +
                                     $"Workshop ID: {levelInfo.workshopID}");
+
+                                LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo);
                             }
                         });
                     }
@@ -579,7 +581,13 @@ namespace BetterLegacy.Arcade
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
                     LevelManager.currentLevelIndex = index;
-                    CoreHelper.StartCoroutine(SelectLocalLevel(level));
+                    var levels = Levels;
+                    PlayLevelMenu.close = () =>
+                    {
+                        Init(levels);
+                        levels = null;
+                    };
+                    PlayLevelMenu.Init(level);
                 };
                 elements.Add(button);
                 if (levelIsLocked)
@@ -646,28 +654,6 @@ namespace BetterLegacy.Arcade
 
             if (regenerateUI)
                 StartGeneration();
-        }
-
-        public IEnumerator SelectLocalLevel(Level level)
-        {
-            if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
-            else
-                OpenPlayLevelMenu(level);
-        }
-
-        void OpenPlayLevelMenu(Level level)
-        {
-            AudioManager.inst.StopMusic();
-            var levels = Levels;
-            PlayLevelMenu.close = () =>
-            {
-                Init(levels);
-                levels = null;
-            };
-            PlayLevelMenu.Init(level);
-            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         #endregion
