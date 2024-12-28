@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Represents the data of a played level.
     /// </summary>
-    public class PlayerData
+    public class PlayerData : Exists
     {
         public PlayerData() { }
 
@@ -235,15 +235,19 @@ namespace BetterLegacy.Core.Data.Level
                 LevelName = jn["n"],
                 ID = jn["id"],
                 Completed = jn["c"].AsBool,
-                Hits = jn["h"].AsInt,
-                Deaths = jn["d"].AsInt,
-                Boosts = jn["b"].AsInt,
                 PlayedTimes = jn["pt"].AsInt,
                 TimeInLevel = jn["t"].AsFloat,
                 Percentage = jn["p"].AsFloat,
                 LevelLength = jn["l"].AsFloat,
                 Unlocked = jn["u"].AsBool,
             };
+
+            if (jn["h"] != null)
+                playerData.Hits = jn["h"].AsInt;
+            if (jn["d"] != null)
+                playerData.Deaths = jn["d"].AsInt;
+            if (jn["b"] != null)
+                playerData.Boosts = jn["b"].AsInt;
 
             if (jn["ach"] != null)
             {
@@ -260,6 +264,19 @@ namespace BetterLegacy.Core.Data.Level
         }
 
         /// <summary>
+        /// Parses a <see cref="PlayerData"/> from a vanilla version JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed player data.</returns>
+        public static PlayerData ParseVanilla(JSONNode jn) => new PlayerData
+        {
+            ID = jn["level_data"]["id"],
+            Completed = jn["play_data"]["finished"].AsBool,
+            Hits = jn["play_data"]["hits"].AsInt,
+            Deaths = jn["play_data"]["deaths"].AsInt,
+        };
+
+        /// <summary>
         /// Converts the player data to a JSON node.
         /// </summary>
         /// <returns>Returns a JSON representing the player data.</returns>
@@ -269,9 +286,12 @@ namespace BetterLegacy.Core.Data.Level
             if (!string.IsNullOrEmpty(LevelName))
                 jn["n"] = LevelName;
             jn["id"] = ID;
-            jn["c"] = Completed;
-            jn["h"] = Hits;
-            jn["d"] = Deaths;
+            if (Completed)
+                jn["c"] = Completed;
+            if (Hits >= 0)
+                jn["h"] = Hits;
+            if (Deaths >= 0)
+                jn["d"] = Deaths;
             jn["b"] = Boosts;
             if (PlayedTimes != 0)
                 jn["pt"] = PlayedTimes;
@@ -293,7 +313,6 @@ namespace BetterLegacy.Core.Data.Level
                     ach["id"] = keyValuePair.Key;
                     ach["u"] = keyValuePair.Value;
                     jn["ach"][num] = ach;
-
                     num++;
                 }
             }
