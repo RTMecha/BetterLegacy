@@ -502,7 +502,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         SoundManager.inst.PlaySound(audioClip, textSoundVolume, pitch);
                     else if (cachedTextSound == null && RTFile.FileExists(textSound))
                     {
-                        CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{textSound}", RTFile.GetAudioType(textSound), audioClip =>
+                        CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{textSound}", RTFile.GetAudioType(textSound), audioClip =>
                         {
                             cachedTextSound = audioClip;
                             SoundManager.inst.PlaySound(audioClip, textSoundVolume, pitch);

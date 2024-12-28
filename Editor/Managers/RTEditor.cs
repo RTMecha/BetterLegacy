@@ -1163,7 +1163,7 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
+                CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
                 settingsPath :
                 path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
             }
@@ -3316,7 +3316,7 @@ namespace BetterLegacy.Editor.Managers
             titleBar.Find("Help/Help Dropdown/Join Discord/Text").GetComponent<Text>().text = "Modder's Discord";
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").AsRT().sizeDelta = new Vector2(200f, 0f);
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").GetComponent<Text>().text = "Watch Mod Showcases";
-            titleBar.Find("Help/Help Dropdown/Community Guides").gameObject.SetActive(false);
+            titleBar.Find("Help/Help Dropdown/Community Guides/Text").GetComponent<Text>().text = "Open Source";
             titleBar.Find("Help/Help Dropdown/Which songs can I use?").gameObject.SetActive(false);
             var saveAsDropdown = titleBar.Find("File/File Dropdown/Save As").gameObject;
             saveAsDropdown.SetActive(true);
@@ -4122,7 +4122,7 @@ namespace BetterLegacy.Editor.Managers
             noLevelText.text = "No Preview";
             noLevel.SetActive(false);
 
-            StartCoroutine(AlephNetworkManager.DownloadImageTexture($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_template.png", texture2D =>
+            StartCoroutine(AlephNetwork.DownloadImageTexture($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_template.png", texture2D =>
             {
                 newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D);
             }));
@@ -9391,7 +9391,7 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
                 
-                list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.CombinePaths(path, Level.LEVEL_JPG)}", cover =>
+                list.Add(StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(path, Level.LEVEL_JPG)}", cover =>
                 {
                     if (!cover)
                     {
@@ -9611,9 +9611,9 @@ namespace BetterLegacy.Editor.Managers
             string errorMessage = "";
             bool hadError = false;
             if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)}", AudioType.OGGVORBIS, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)}", AudioType.OGGVORBIS, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)}", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)}", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3)))
             {
                 Exception e = null;
@@ -11466,7 +11466,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.AddListener(() => { System.Diagnostics.Process.Start(files[index]); });
                 button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{files[i]}", texture2D =>
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{files[i]}", texture2D =>
                 {
                     if (!image)
                         return;

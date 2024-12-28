@@ -34,7 +34,6 @@ namespace BetterLegacy.Patchers
             LegacyPlugin.ParseProfile();
 
             // Initialize managers
-            AlephNetworkManager.Init();
             ModCompatibility.Init();
             ShapeManager.Init();
             UIManager.Init();

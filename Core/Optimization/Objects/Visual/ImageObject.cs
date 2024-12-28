@@ -61,7 +61,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, x =>
             {
                 ((SpriteRenderer)Renderer).sprite = SpriteHelper.CreateSprite(x);
                 gameObject.transform.localPosition = position;

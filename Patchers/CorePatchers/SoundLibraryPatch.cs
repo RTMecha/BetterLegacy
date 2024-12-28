@@ -85,7 +85,7 @@ namespace BetterLegacy.Patchers
 
         static void SetSound(string path, params DefaultSounds[] defaultSounds)
         {
-            inst.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{path}", AudioType.OGGVORBIS, audioClip =>
+            inst.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{path}", AudioType.OGGVORBIS, audioClip =>
             {
                 foreach (var defaultSound in defaultSounds)
                     inst.soundClips[defaultSound.ToString()][0] = audioClip;
@@ -96,7 +96,7 @@ namespace BetterLegacy.Patchers
         {
             CoreHelper.Log($"Adding sound: {id} {path}");
             if (RTFile.FileExists(path))
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
+                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
                 {
                     audioClip.name = id;
                     var soundGroup = new SoundLibrary.SoundGroup { group = new AudioClip[] { audioClip }, soundID = id };

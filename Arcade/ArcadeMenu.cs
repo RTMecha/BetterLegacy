@@ -1566,9 +1566,9 @@ namespace BetterLegacy.Arcade
 
         #region Online
 
-        public static string SearchURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/search";
-        public static string CoverURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/cover/";
-        public static string DownloadURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/zip/";
+        public static string SearchURL => $"{AlephNetwork.ARCADE_SERVER_URL}api/level/search";
+        public static string CoverURL => $"{AlephNetwork.ARCADE_SERVER_URL}api/level/cover/";
+        public static string DownloadURL => $"{AlephNetwork.ARCADE_SERVER_URL}api/level/zip/";
 
         public static string OnlineSearch => Searches[1];
 
@@ -1611,8 +1611,8 @@ namespace BetterLegacy.Arcade
             string query =
                 string.IsNullOrEmpty(search) && page == 0 ? SearchURL :
                     string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" :
-                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetworkManager.ReplaceSpace(search)}" :
-                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetworkManager.ReplaceSpace(search)}&page={page}" : "";
+                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}" :
+                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}&page={page}" : "";
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1624,7 +1624,7 @@ namespace BetterLegacy.Arcade
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile(query, json =>
+            yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
             {
                 try
                 {
@@ -1693,7 +1693,7 @@ namespace BetterLegacy.Arcade
                                 button.icon = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
+                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
@@ -2516,7 +2516,7 @@ namespace BetterLegacy.Arcade
                     button.icon = sprite;
                 else
                 {
-                    CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadBytes(item.PreviewImageUrl, bytes =>
+                    CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
                         CoreHelper.ReturnToUnity(() =>
                         {

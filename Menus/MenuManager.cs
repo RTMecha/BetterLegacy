@@ -388,7 +388,7 @@ namespace BetterLegacy.Menus
                         try
                         {
                             if (data[1].ToLower().Substring(data[1].ToLower().Length - 4, 4) == ".ogg")
-                                ic.StartCoroutine(AlephNetworkManager.DownloadAudioClip(data[1], AudioType.OGGVORBIS, AudioManager.inst.PlaySound));
+                                ic.StartCoroutine(AlephNetwork.DownloadAudioClip(data[1], AudioType.OGGVORBIS, AudioManager.inst.PlaySound));
                         }
                         catch
                         {
@@ -996,7 +996,7 @@ namespace BetterLegacy.Menus
                                 var path = $"{RTFile.ApplicationDirectory}{loadLevelArray[1]}/level.jpg";
                                 if (RTFile.FileExists(path))
                                 {
-                                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{path}", delegate (Texture2D texture2D)
+                                    StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", delegate (Texture2D texture2D)
                                     {
                                         image.sprite = SpriteHelper.CreateSprite(texture2D);
                                         image.color = Color.white;

@@ -1043,7 +1043,7 @@ namespace BetterLegacy.Example
 
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{HeadPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
@@ -1256,7 +1256,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = new Vector2(0f, -58f);
                 im.transform.AsRT().sizeDelta = new Vector2(28f, 42f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{TailPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{TailPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
@@ -1291,7 +1291,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.2f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 52f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{EarBottomPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_earbottomright = Creator.NewUIObject("Example Ear Bottom Right", ears);
@@ -1308,7 +1308,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.2f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 52f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{EarBottomPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1338,7 +1338,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
                 im.transform.AsRT().sizeDelta = new Vector2(74f, 34f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{EyesPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData => { pokingEyes = true; };
@@ -1356,7 +1356,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
                 im.transform.AsRT().sizeDelta = new Vector2(47f, 22f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{PupilsPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData => { pokingEyes = true; };
@@ -1374,7 +1374,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
                 im.transform.AsRT().sizeDelta = new Vector2(74f, 34f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{BlinkPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1392,7 +1392,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = new Vector2(0f, -31f);
                 im.transform.AsRT().sizeDelta = new Vector2(60f, 31f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{SnoutPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_mouthBase = Creator.NewUIObject("Example Mouth Base", snout);
@@ -1414,7 +1414,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 1f);
                 im.transform.AsRT().sizeDelta = new Vector2(32f, 16f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{MouthPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_mouthLower = Creator.NewUIObject("Example Mouth Lower", mouthBase);
@@ -1431,7 +1431,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 1f);
                 im.transform.AsRT().sizeDelta = new Vector2(32f, 16f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{MouthPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_lips = Creator.NewUIObject("Example Lips", mouthBase);
@@ -1447,7 +1447,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 1f);
                 im.transform.AsRT().sizeDelta = new Vector2(32f, 8f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{LipsPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_nose = Creator.NewUIObject("Example Nose", snout);
@@ -1461,7 +1461,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
                 im.transform.AsRT().sizeDelta = new Vector2(22f, 8f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{NosePath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1484,7 +1484,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(1.7f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(20f, 6f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{BrowsPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_browRight = Creator.NewUIObject("Example Brow Right", browBase);
@@ -1499,7 +1499,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(-0.7f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(20f, 6f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{BrowsPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1521,7 +1521,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.275f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 80f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{EarTopPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
@@ -1563,7 +1563,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.275f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 80f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{EarTopPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
@@ -1611,7 +1611,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(42f, 42f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{HandsPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
@@ -1678,7 +1678,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(42f, 42f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", image.AssignTexture, LogFileDoesNotExist));
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{HandsPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>

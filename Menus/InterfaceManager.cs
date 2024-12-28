@@ -233,7 +233,7 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
             {
                 if (CoreHelper.InEditor)
                     return;
@@ -453,7 +453,7 @@ namespace BetterLegacy.Menus
         {
             CoreHelper.Log($"Is loading scene: {SceneHelper.Loading}");
 
-            yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile(ChangeLogMenu.UPDATE_NOTES_URL, x =>
+            yield return StartCoroutine(AlephNetwork.DownloadJSONFile(ChangeLogMenu.UPDATE_NOTES_URL, x =>
             {
                 var changeLogMenu = new ChangeLogMenu();
 

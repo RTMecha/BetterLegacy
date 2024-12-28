@@ -56,7 +56,7 @@ namespace BetterLegacy.Story
                 yield break;
 
             AssetBundle assets = null;
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            yield return CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadAssetBundle($"file://{path}", assetBundle =>
             {
                 assets = assetBundle;
                 assetBundle = null;

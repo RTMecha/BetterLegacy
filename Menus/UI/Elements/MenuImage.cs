@@ -1410,7 +1410,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (audioType == AudioType.MPEG)
                             AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
                         else
-                            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
+                            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
 
                         break;
                     }
@@ -1469,7 +1469,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (audioType == AudioType.MPEG)
                             InterfaceManager.inst.PlayMusic(LSAudio.CreateAudioClipUsingMP3File(filePath), fadeDuration: fadeDuration, loop: loop);
                         else
-                            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{filePath}", audioType, audioClip => InterfaceManager.inst.PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
+                            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => InterfaceManager.inst.PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
 
                         break;
                     }
@@ -3100,9 +3100,9 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 case "OpenLink":
                     {
-                        var linkType = Parser.TryParse(parameters.IsArray ? parameters[0] : parameters["link_type"], CoreHelper.LinkType.Artist);
+                        var linkType = Parser.TryParse(parameters.IsArray ? parameters[0] : parameters["link_type"], URLSource.Artist);
 
-                        var url = CoreHelper.GetURL(linkType, parameters.IsArray ? parameters[1].AsInt : parameters["site"], parameters.IsArray ? parameters[2] : parameters["link"]);
+                        var url = AlephNetwork.GetURL(linkType, parameters.IsArray ? parameters[1].AsInt : parameters["site"], parameters.IsArray ? parameters[2] : parameters["link"]);
 
                         Application.OpenURL(url);
 
@@ -3328,7 +3328,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // Function has no parameters.
                 case "ModderDiscord":
                     {
-                        Application.OpenURL(CoreHelper.MOD_DISCORD_LINK);
+                        Application.OpenURL(AlephNetwork.MOD_DISCORD_URL);
 
                         break;
                     }

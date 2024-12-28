@@ -278,7 +278,7 @@ namespace BetterLegacy.Arcade
                     var currentLevel = CurrentLevel;
                     if (currentLevel.metadata != null && !string.IsNullOrEmpty(currentLevel.metadata.uploaderID))
                     {
-                        LevelListMenu.Init($"{AlephNetworkManager.ARCADE_SERVER_URL}api/Level/user/{currentLevel.metadata.uploaderID}");
+                        LevelListMenu.Init($"{AlephNetwork.ARCADE_SERVER_URL}api/Level/user/{currentLevel.metadata.uploaderID}");
                         LevelListMenu.close = () => Init(currentLevel);
                     }
                 },

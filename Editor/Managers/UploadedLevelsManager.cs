@@ -152,7 +152,7 @@ namespace BetterLegacy.Editor.Managers
 
         int page;
         string search;
-        static string SearchURL => $"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/uploads";
+        static string SearchURL => $"{AlephNetwork.ARCADE_SERVER_URL}api/level/uploads";
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
@@ -175,8 +175,8 @@ namespace BetterLegacy.Editor.Managers
             string query =
                 string.IsNullOrEmpty(search) && page == 0 ? SearchURL :
                     string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" :
-                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetworkManager.ReplaceSpace(search)}" :
-                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetworkManager.ReplaceSpace(search)}&page={page}" : "";
+                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}" :
+                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}&page={page}" : "";
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -184,7 +184,7 @@ namespace BetterLegacy.Editor.Managers
 			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
 				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-			yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile($"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/uploads", json =>
+			yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/uploads", json =>
 			{
 				try
 				{
@@ -257,7 +257,7 @@ namespace BetterLegacy.Editor.Managers
                                 iconImage.sprite = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.CoverURL}{id}.jpg", bytes =>
+                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}.jpg", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
@@ -319,7 +319,7 @@ namespace BetterLegacy.Editor.Managers
             name = RTFile.ValidateDirectory(name);
             var directory = $"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{name} [{jn["id"].Value}]";
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
             {
                 if (RTFile.DirectoryExists(directory))
                     Directory.Delete(directory, true);

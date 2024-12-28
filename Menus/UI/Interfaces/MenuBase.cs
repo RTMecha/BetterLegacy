@@ -317,7 +317,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             else if (RTFile.FileExists(RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")))
             {
                 CoreHelper.Log($"Playing from music ogg file");
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
+                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
                 {
                     CoreHelper.Log($"Attempting to play music: {musicName}");
                     music = audioClip;

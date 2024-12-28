@@ -4255,7 +4255,7 @@ namespace BetterLegacy.Core.Helpers
                                     break;
                                 }
 
-                                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
+                                CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, x =>
                                 {
                                     ((SpriteRenderer)imageObject.Renderer).sprite = SpriteHelper.CreateSprite(x);
                                     imageObject.GameObject.transform.localPosition = local;
@@ -4288,7 +4288,7 @@ namespace BetterLegacy.Core.Helpers
                                         break;
                                     }
 
-                                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
+                                    CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, x =>
                                     {
                                         ((SpriteRenderer)imageObject.Renderer).sprite = SpriteHelper.CreateSprite(x);
                                         imageObject.GameObject.transform.localPosition = local;

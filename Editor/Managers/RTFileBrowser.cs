@@ -375,7 +375,7 @@ namespace BetterLegacy.Editor.Managers
 
         void PreviewAudio(string file)
         {
-            CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip =>
+            CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip =>
             {
                 CoreHelper.ReturnToUnity(() =>
                 {

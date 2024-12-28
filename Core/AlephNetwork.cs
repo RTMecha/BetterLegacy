@@ -8,45 +8,40 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace BetterLegacy.Core.Managers.Networking
+namespace BetterLegacy.Core
 {
     /// <summary>
     /// General class for handling online data.
     /// </summary>
-    public class AlephNetworkManager : MonoBehaviour
+    public static class AlephNetwork
     {
-        public static AlephNetworkManager inst;
-        public static string className = "[<color=#FC5F58>AlephNetworkManager</color>]\n";
+        /// <summary>
+        /// AlephNetwork logger name.
+        /// </summary>
+        public static string className = "[<color=#FC5F58>AlephNetwork</color>]\n";
 
-        public static void Init()
-        {
-            var gameObject = new GameObject(nameof(AlephNetworkManager));
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<AlephNetworkManager>();
-            gameObject.AddComponent<AlephNetworkEditorManager>();
-        }
+        #region Constants
 
-        void Awake() => inst = this;
+        /// <summary>
+        /// Link to the Arcade server.
+        /// </summary>
+        public const string ARCADE_SERVER_URL = "https://betterlegacy.net/";
+        /// <summary>
+        /// Link to the System Error Discord server.
+        /// </summary>
+        public const string MOD_DISCORD_URL = "https://discord.gg/nB27X2JZcY";
+        /// <summary>
+        /// Link to the Project Arrhythmia mod showcases playlist on YouTube.
+        /// </summary>
+        public const string PA_MOD_SHOWCASES_URL = "https://www.youtube.com/playlist?list=PLMHuUok_ojlX89xw2z6hUFF3meXFXz9DL";
+        /// <summary>
+        /// Link to the BetterLegacy github.
+        /// </summary>
+        public const string OPEN_SOURCE_URL = "https://github.com/RTMecha/BetterLegacy";
 
-        public static string ARCADE_SERVER_URL = "https://betterlegacy.net/";
+        #endregion
 
-        public static IEnumerator Delete(string path, Action onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
-        {
-            using var www = UnityWebRequest.Delete(path);
-            www.certificateHandler = new ForceAcceptAll();
-
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error, www.responseCode);
-            else
-                onComplete?.Invoke();
-
-            yield break;
-        }
+        #region Link Formatting
 
         /// <summary>
         /// Ensures that spaces are replaced with '+' for URL compatibility.
@@ -55,26 +50,76 @@ namespace BetterLegacy.Core.Managers.Networking
         /// <returns>Returns a proper query.</returns>
         public static string ReplaceSpace(string search) => search.ToLower().Replace(" ", "+");
 
-        public static IEnumerator GetResponseCode(string url, Action<long> result)
+        /// <summary>
+        /// Formats a URL based on source and site.
+        /// </summary>
+        /// <param name="source">The source of the URL.</param>
+        /// <param name="site">Site of the URL.</param>
+        /// <param name="link">Link to format.</param>
+        /// <returns>Returns a formatted URL.</returns>
+        public static string GetURL(URLSource source, int site, string link)
         {
-            using var www = UnityWebRequest.Get(url);
-            www.certificateHandler = new ForceAcceptAll();
-            yield return www.SendWebRequest();
-            result?.Invoke(www.responseCode);
+            if (string.IsNullOrEmpty(link))
+                return link;
+
+            var links = source switch
+            {
+                URLSource.Artist => ArtistLinks,
+                URLSource.Song => SongLinks,
+                URLSource.Creator => CreatorLinks,
+                _ => null,
+            };
+
+            if (links == null || site < 0 || site >= links.Count)
+                return null;
+
+            var linkFormat = links[site];
+            if (source == URLSource.Song && linkFormat.linkFormat.Contains("{1}"))
+            {
+                var split = link.Split(',');
+                return string.Format(linkFormat.linkFormat, split[0], split[1]);
+            }
+            else
+                return string.Format(linkFormat.linkFormat, link);
         }
 
-        public static async Task<bool> URLExistsAsync(string url) => await Task.Run(() =>
+        /// <summary>
+        /// <see cref="URLSource.Song"/> list.
+        /// </summary>
+        public static List<DataManager.LinkType> SongLinks => new List<DataManager.LinkType>
         {
-            using var www = UnityWebRequest.Get(url);
-            www.certificateHandler = new ForceAcceptAll();
+            new DataManager.LinkType("Spotify", "https://open.spotify.com/{0}"),
+            new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
+            new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com/{1}"),
+            new DataManager.LinkType("YouTube", "https://youtube.com/watch?v={0}"),
+            new DataManager.LinkType("Newgrounds", "https://newgrounds.com/audio/listen/{0}"),
+        };
 
-            var webRequest = www.SendWebRequest();
+        /// <summary>
+        /// <see cref="URLSource.Artist"/> list.
+        /// </summary>
+        public static List<DataManager.LinkType> ArtistLinks => new List<DataManager.LinkType>
+        {
+            new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
+            new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
+            new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com"),
+            new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
+            new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
+        };
 
-            while (!webRequest.isDone)
-                Thread.Sleep(1);
+        /// <summary>
+        /// <see cref="URLSource.Creator"/> list.
+        /// </summary>
+        public static List<DataManager.LinkType> CreatorLinks => new List<DataManager.LinkType>
+        {
+            new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
+            new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
+            new DataManager.LinkType("Discord", "https://discord.gg/{0}"),
+            new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
+            new DataManager.LinkType("Twitter", "https://twitter.com/{0}"),
+        };
 
-            return !www.isNetworkError && !www.isHttpError;
-        });
+        #endregion
 
         #region Client
 
@@ -508,12 +553,52 @@ namespace BetterLegacy.Core.Managers.Networking
 
         #endregion
 
+        #region Misc
+
+        public static IEnumerator Delete(string path, Action onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
+        {
+            using var www = UnityWebRequest.Delete(path);
+            www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+
+            yield return www.SendWebRequest();
+            if (www.isNetworkError || www.isHttpError)
+                onError?.Invoke(www.error, www.responseCode);
+            else
+                onComplete?.Invoke();
+
+            yield break;
+        }
+
+        public static IEnumerator GetResponseCode(string url, Action<long> result)
+        {
+            using var www = UnityWebRequest.Get(url);
+            www.certificateHandler = new ForceAcceptAll();
+            yield return www.SendWebRequest();
+            result?.Invoke(www.responseCode);
+        }
+
+        public static async Task<bool> URLExistsAsync(string url) => await Task.Run(() =>
+        {
+            using var www = UnityWebRequest.Get(url);
+            www.certificateHandler = new ForceAcceptAll();
+
+            var webRequest = www.SendWebRequest();
+
+            while (!webRequest.isDone)
+                Thread.Sleep(1);
+
+            return !www.isNetworkError && !www.isHttpError;
+        });
+
+        #endregion
+
         public class ForceAcceptAll : CertificateHandler
         {
-            public override bool ValidateCertificate(byte[] certificateData)
-            {
-                return true;
-            }
+            public override bool ValidateCertificate(byte[] certificateData) => true;
         }
     }
 }
