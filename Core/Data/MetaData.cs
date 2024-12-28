@@ -67,7 +67,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
         /// </summary>
-        public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(CoreHelper.LinkType.Song, song.linkType, song.linkType == 2 ? artist.Link + "," + song.link : song.link);
+        public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.Link) ? null : AlephNetwork.GetURL(URLSource.Song, song.linkType, song.linkType == 2 ? artist.Link + "," + song.link : song.link);
 
         #endregion
 
@@ -672,7 +672,7 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
         }
 
-        public string URL => CoreHelper.GetURL(CoreHelper.LinkType.Creator, linkType, link);
+        public string URL => AlephNetwork.GetURL(URLSource.Creator, linkType, link);
 
 
         public int linkType;

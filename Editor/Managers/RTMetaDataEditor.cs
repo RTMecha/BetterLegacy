@@ -638,7 +638,7 @@ namespace BetterLegacy.Editor.Managers
 
             var creatorLinkTypes = content.Find("creator/link/inputs/dropdown").GetComponent<Dropdown>();
             creatorLinkTypes.onValueChanged.ClearAll();
-            creatorLinkTypes.options = CoreHelper.CreatorLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            creatorLinkTypes.options = AlephNetwork.CreatorLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
             creatorLinkTypes.value = metadata.creator.linkType;
             creatorLinkTypes.onValueChanged.AddListener(_val =>
             {
@@ -683,7 +683,7 @@ namespace BetterLegacy.Editor.Managers
 
             var songLinkTypes = content.Find("song/link/inputs/dropdown").GetComponent<Dropdown>();
             songLinkTypes.onValueChanged.ClearAll();
-            songLinkTypes.options = CoreHelper.SongLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            songLinkTypes.options = AlephNetwork.SongLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
             songLinkTypes.value = metadata.song.linkType;
             songLinkTypes.onValueChanged.AddListener(_val =>
             {
@@ -851,7 +851,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile($"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/{serverID}", json =>
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
             {
                 EditorManager.inst.DisplayNotification($"Level is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
             }, (string onError, long responseCode, string errorMsg) =>
@@ -1024,7 +1024,7 @@ namespace BetterLegacy.Editor.Managers
                 if (authData != null && authData["access_token"] != null)
                     headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                CoreHelper.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ARCADE_SERVER_URL}api/level", File.ReadAllBytes(path), id =>
+                CoreHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ARCADE_SERVER_URL}api/level", File.ReadAllBytes(path), id =>
                 {
                     uploading = false;
                     MetaData.Current.serverID = id;
@@ -1105,7 +1105,7 @@ namespace BetterLegacy.Editor.Managers
                     if (authData != null && authData["access_token"] != null)
                         headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                    CoreHelper.StartCoroutine(AlephNetworkManager.Delete($"{AlephNetworkManager.ARCADE_SERVER_URL}api/level/{id}", () =>
+                    CoreHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{id}", () =>
                     {
                         uploading = false;
                         MetaData.Current.beatmap.date_published = "";
@@ -1157,7 +1157,7 @@ namespace BetterLegacy.Editor.Managers
         {
             RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
             {
-                Application.OpenURL($"{AlephNetworkManager.ARCADE_SERVER_URL}api/auth/login");
+                Application.OpenURL($"{AlephNetwork.ARCADE_SERVER_URL}api/auth/login");
                 CreateLoginListener(onLogin);
                 RTEditor.inst.HideWarningPopup();
             }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
@@ -1171,8 +1171,8 @@ namespace BetterLegacy.Editor.Managers
             form.AddField("AccessToken", authData["access_token"].Value);
             form.AddField("RefreshToken", authData["refresh_token"].Value);
 
-            using var www = UnityWebRequest.Post($"{AlephNetworkManager.ARCADE_SERVER_URL}api/auth/refresh", form);
-            www.certificateHandler = new AlephNetworkManager.ForceAcceptAll();
+            using var www = UnityWebRequest.Post($"{AlephNetwork.ARCADE_SERVER_URL}api/auth/refresh", form);
+            www.certificateHandler = new AlephNetwork.ForceAcceptAll();
             yield return www.SendWebRequest();
 
             if (www.isNetworkError)
