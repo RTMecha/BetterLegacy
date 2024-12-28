@@ -359,8 +359,8 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Loads a level from anywhere. For example: LevelManager.Load("E:/4.1.16/beatmaps/story/Apocrypha/level.lsb");
         /// </summary>
-        /// <param name="path"></param>
-        public static void Load(string path, bool setLevelEnd = true)
+        /// <param name="path">Path to the level. Can either be an asset file or a normal level format.</param>
+        public static void Load(string path)
         {
             if (!RTFile.FileExists(path))
             {
@@ -370,13 +370,7 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Loading level from {path}");
 
-            if (setLevelEnd)
-                OnLevelEnd = () =>
-                {
-                    Clear();
-                    Updater.OnLevelEnd();
-                    SceneHelper.LoadScene(SceneName.Main_Menu);
-                };
+            OnLevelEnd = ArcadeHelper.EndOfLevel;
 
             if (path.EndsWith(FileFormat.ASSET.Dot()))
             {
@@ -384,8 +378,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            var level = new Level(path.Replace(Level.LEVEL_LSB, "").Replace(Level.LEVEL_VGD, ""));
-            CoreHelper.StartCoroutine(Play(level));
+            CoreHelper.StartCoroutine(Play(new Level(path.Replace(Level.LEVEL_LSB, "").Replace(Level.LEVEL_VGD, ""))));
         }
 
         /// <summary>
