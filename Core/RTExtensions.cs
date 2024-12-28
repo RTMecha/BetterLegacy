@@ -270,6 +270,19 @@ namespace BetterLegacy.Core
             return result;
         }
 
+        /// <summary>
+        /// Add the component if doesn't exist in the game object, otherwise get the component.
+        /// </summary>
+        /// <typeparam name="T">Type of the Component.</typeparam>
+        /// <returns>Returns a component.</returns>
+        public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
+        {
+            var component = gameObject.GetComponent<T>();
+            if (!component)
+                component = gameObject.AddComponent<T>();
+            return component;
+        }
+
         #endregion
 
         #region Coroutines
