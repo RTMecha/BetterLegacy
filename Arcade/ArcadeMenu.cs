@@ -1262,7 +1262,6 @@ namespace BetterLegacy.Arcade
             RefreshLocalLevels(true, true);
         }
 
-
         void ClearLocalLevelButtons()
         {
             var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
@@ -1475,7 +1474,7 @@ namespace BetterLegacy.Arcade
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    CoreHelper.StartCoroutine(SelectLocalLevel(level));
+                    PlayLevelMenu.Init(level);
                 };
                 elements.Add(button);
                 if (levelIsLocked)
@@ -1544,22 +1543,6 @@ namespace BetterLegacy.Arcade
 
             if (regenerateUI)
                 StartGeneration();
-        }
-
-        public IEnumerator SelectLocalLevel(Level level)
-        {
-            if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => OpenPlayLevelMenu(level)));
-            else
-                OpenPlayLevelMenu(level);
-        }
-
-        void OpenPlayLevelMenu(Level level)
-        {
-            AudioManager.inst.StopMusic();
-            PlayLevelMenu.Init(level);
-            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         #endregion
@@ -1848,7 +1831,7 @@ namespace BetterLegacy.Arcade
                         name = "Level Button",
                         parentLayout = "levels",
                         selectionPosition = new Vector2Int(column, row),
-                        func = SelectLocalLevel(level).Start,
+                        func = () => PlayLevelMenu.Init(level),
                         icon = level.icon,
                         iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                         text = "<size=24>" + level.metadata?.beatmap?.name,
@@ -2060,7 +2043,7 @@ namespace BetterLegacy.Arcade
                     parentLayout = "levels",
                     rect = RectValues.Default.SizeDelta(800f, 120f),
                     selectionPosition = new Vector2Int(0, index + 2),
-                    func = SelectLocalLevel(level).Start,
+                    func = () => PlayLevelMenu.Init(level),
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-320f, 0f).SizeDelta(100f, 100f),
                     text = "<size=32>" + i.ToString() + " - " + level.metadata?.beatmap?.name,
@@ -2338,7 +2321,7 @@ namespace BetterLegacy.Arcade
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    func = SelectLocalLevel(level).Start,
+                    func = () => PlayLevelMenu.Init(level),
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
                     text = "<size=24>" + level.metadata?.beatmap?.name,

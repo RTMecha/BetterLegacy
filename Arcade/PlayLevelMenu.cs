@@ -18,6 +18,7 @@ using BetterLegacy.Core.Data;
 using LSFunctions;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Data.Level;
+using System.Collections;
 
 namespace BetterLegacy.Arcade
 {
@@ -632,8 +633,19 @@ namespace BetterLegacy.Arcade
 
         public static void Init(Level level)
         {
+            if (!level.music)
+                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => InternalInit(level)));
+            else
+                InternalInit(level);
+        }
+
+        static void InternalInit(Level level)
+        {
+            AudioManager.inst.StopMusic();
             CurrentLevel = level;
             Current = new PlayLevelMenu();
+            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public static void Close()
