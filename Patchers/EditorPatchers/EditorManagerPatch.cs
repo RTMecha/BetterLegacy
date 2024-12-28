@@ -422,8 +422,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenGuidesPrefix()
         {
-            Application.OpenURL("https://steamcommunity.com/app/440310/guides");
-            Instance.DisplayNotification("Guides Link will open in your browser!", 2f, EditorManager.NotificationType.Success);
+            Application.OpenURL(AlephNetwork.OPEN_SOURCE_URL);
+            Instance.DisplayNotification("Source code will open in your browser!", 2f, EditorManager.NotificationType.Success);
             return false;
         }
 
@@ -440,7 +440,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDiscordPrefix()
         {
-            Application.OpenURL(CoreHelper.MOD_DISCORD_LINK);
+            Application.OpenURL(AlephNetwork.MOD_DISCORD_URL);
             Instance.DisplayNotification("Modders' Discord will open in your browser!", 2f, EditorManager.NotificationType.Success);
             return false;
         }
@@ -449,7 +449,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenTutorialsPrefix()
         {
-            Application.OpenURL("https://www.youtube.com/playlist?list=PLMHuUok_ojlX89xw2z6hUFF3meXFXz9DL");
+            Application.OpenURL(AlephNetwork.PA_MOD_SHOWCASES_URL);
             Instance.DisplayNotification("PA Mod Showcases playlist will open in your browser!", 2f, EditorManager.NotificationType.Success);
             return false;
         }
@@ -458,7 +458,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenVerifiedSongsPrefix()
         {
-            Application.OpenURL("https://www.youtube.com/playlist?list=PLMHuUok_ojlX89xw2z6hUFF3meXFXz9DL");
+            Application.OpenURL(AlephNetwork.OPEN_SOURCE_URL);
             Instance.DisplayNotification("PA Mod Showcases playlist will open in your browser!", 2f, EditorManager.NotificationType.Success);
             return false;
         }
@@ -498,11 +498,11 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
             {
                 GameData.Current = GameData.Parse(JSON.Parse(json));
 
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
+                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
                 {
                     AudioManager.inst.PlayMusic(null, audioClip, true, 0f);
                     GameManager.inst.gameState = GameManager.State.Playing;
@@ -1158,7 +1158,7 @@ namespace BetterLegacy.Patchers
             }
 
             inst.ClearDialogs();
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_JPG)}", x =>
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_JPG)}", x =>
             {
                 var cover = SpriteHelper.CreateSprite(x);
                 inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
