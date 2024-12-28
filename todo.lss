@@ -86,11 +86,9 @@
 - Make CursorManager a main manager that can properly manage cursor states.
 - Clean up UIManager.
 - Clean up PlayerManager.
-- Move Level, LevelCollection and PlayerData to BetterLegacy.Core.Data.Level namespace.
 - Move Exists, Shape and Version to BetterLegacy.Core.Data namespace.
 - Rework Editor Dialogs to have custom ones under the BetterLegacy.Editor.Dialogs namespace.
 - Move some game related properties and methods from CoreHelper to ArcadeHelper or to GameData.
-- Change AlephNetworkManager class to AlephNetwork static class.
 - Summary and note as much as I can (or need to).
 
 ### Bugs
