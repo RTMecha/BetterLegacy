@@ -535,6 +535,13 @@ namespace BetterLegacy.Menus
         #region Themes
 
         /// <summary>
+        /// The theme that should be used by the current interface.
+        /// </summary>
+        public BeatmapTheme CurrentTheme =>
+            Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme) ?
+                interfaceTheme : themes != null && themes.Count > 0 ? themes[0] : DataManager.inst.BeatmapThemes[1] as BeatmapTheme;
+
+        /// <summary>
         /// Themes that should be used in the interface.
         /// </summary>
         public List<BeatmapTheme> themes = new List<BeatmapTheme>();
@@ -598,16 +605,6 @@ namespace BetterLegacy.Menus
                 hideBG = true,
                 textColor = 6
             });
-        }
-
-        public override void UpdateTheme()
-        {
-            if (Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme))
-                Theme = interfaceTheme;
-            else
-                Theme = InterfaceManager.inst.themes[0];
-
-            base.UpdateTheme();
         }
     }
 }

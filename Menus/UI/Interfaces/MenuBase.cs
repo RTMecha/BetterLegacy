@@ -1248,6 +1248,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public virtual void UpdateTheme()
         {
+            if (!Theme)
+                Theme = InterfaceManager.inst.CurrentTheme;
+
             if (!CoreHelper.InGame)
                 Camera.main.backgroundColor = Theme.backgroundColor;
 

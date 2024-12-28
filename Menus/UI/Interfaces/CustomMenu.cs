@@ -32,10 +32,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 Theme = loadedTheme;
             else if (Parser.TryParse(currentTheme, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == currentTheme, out BeatmapTheme current))
                 Theme = current;
-            else if (Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme))
-                Theme = interfaceTheme;
-            else
-                Theme = InterfaceManager.inst.themes[0];
 
             base.UpdateTheme();
         }

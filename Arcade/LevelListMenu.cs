@@ -838,16 +838,6 @@ namespace BetterLegacy.Arcade
 
         #endregion
 
-        public override void UpdateTheme()
-        {
-            if (Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme))
-                Theme = interfaceTheme;
-            else
-                Theme = InterfaceManager.inst.themes[0];
-
-            base.UpdateTheme();
-        }
-
         public static void Init(List<Level> levels)
         {
             InterfaceManager.inst.CloseMenus();
