@@ -3472,19 +3472,13 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <param name="type">The type of transform to set. 0 = position, 1 = scale, 2 = rotation.</param>
         /// <param name="axis">The axis to set. 0 = X, 1 = Y, 2 = Z.</param>
         /// <returns>Returns the transform value from the type and axis.</returns>
-        public float GetTransform(int type, int axis)
+        public float GetTransform(int type, int axis) => !gameObject || axis < 0 || axis > 2 ? 0f : type switch
         {
-            if (!gameObject || axis < 0 || axis > 2)
-                return 0f;
-
-            return type switch
-            {
-                0 => gameObject.transform.localPosition[axis],
-                1 => gameObject.transform.localScale[axis],
-                2 => gameObject.transform.localEulerAngles[axis],
-                _ => 0f
-            };
-        }
+            0 => gameObject.transform.localPosition[axis],
+            1 => gameObject.transform.localScale[axis],
+            2 => gameObject.transform.localEulerAngles[axis],
+            _ => 0f
+        };
 
         #endregion
 
