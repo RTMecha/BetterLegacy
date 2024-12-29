@@ -44,7 +44,7 @@ namespace BetterLegacy.Core.Helpers
         public static bool InEditorPreview => !EditorManager.inst || !EditorManager.inst.isEditing;
 
         /// <summary>
-        /// For checking if the user is in the editor preview or in game.
+        /// For checking if the user is just in the editor.
         /// </summary>
         public static bool IsEditing => EditorManager.inst && EditorManager.inst.isEditing;
 
