@@ -1676,7 +1676,7 @@ namespace BetterLegacy.Arcade
                                 button.icon = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
+                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
