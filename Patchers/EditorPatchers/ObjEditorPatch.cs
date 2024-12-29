@@ -2075,8 +2075,8 @@ namespace BetterLegacy.Patchers
             Instance.beatmapObjCopy = copy;
             Instance.hasCopiedObject = true;
 
-            if (EditorConfig.Instance.CopyPasteGlobal.Value)
-                RTFile.WriteToFile(Application.persistentDataPath + "/copied_objects.lsp", copy.ToJSON().ToString());
+            if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.DirectoryExists(Application.persistentDataPath))
+                RTFile.WriteToFile(RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}"), copy.ToJSON().ToString());
             return false;
         }
 

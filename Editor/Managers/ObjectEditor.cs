@@ -112,10 +112,11 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                if (!RTFile.FileExists(Application.persistentDataPath + "/copied_objects.lsp"))
+                var prefabFilePath = RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}");
+                if (!RTFile.FileExists(prefabFilePath))
                     return;
 
-                var jn = JSON.Parse(RTFile.ReadFromFile(Application.persistentDataPath + "/copied_objects.lsp"));
+                var jn = JSON.Parse(RTFile.ReadFromFile(prefabFilePath));
                 ObjEditor.inst.beatmapObjCopy = Prefab.Parse(jn);
                 ObjEditor.inst.hasCopiedObject = true;
             }
