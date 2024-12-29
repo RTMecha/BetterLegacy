@@ -171,7 +171,7 @@ namespace BetterLegacy.Core.Data.Level
 
             if (hidden)
                 jn["hidden"] = hidden.ToString();
-            if (requireUnlock)
+            if (overwriteRequireUnlock && requireUnlock)
                 jn["require_unlock"] = requireUnlock.ToString();
 
             return jn;
