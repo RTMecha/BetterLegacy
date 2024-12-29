@@ -93,7 +93,14 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.LevelEnded = false;
 
                 InterfaceManager.inst.CloseMenus();
-                LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]);
+                var nextLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
+                if (!nextLevel)
+                {
+                    LevelManager.CurrentLevelCollection.DownloadLevel(LevelManager.CurrentLevelCollection.levelInformation[LevelManager.currentLevelIndex], LevelManager.Play);
+                    return;
+                }
+
+                LevelManager.Play(nextLevel);
 
                 return;
             }
@@ -195,9 +202,11 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case EndLevelFunction.ContinueCollection:
                         {
-                            if (LevelManager.NextLevelInCollection || !LevelManager.IsNextEndOfQueue)
+                            var metadata = LevelManager.CurrentLevel.metadata;
+                            var nextLevel = LevelManager.NextLevelInCollection;
+                            if (LevelManager.CurrentLevelCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || nextLevel && nextLevel.playerData && nextLevel.playerData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
                             {
-                                if (LevelManager.NextLevelInCollection != null)
+                                if (nextLevel)
                                     CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
                                 else
                                     CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");

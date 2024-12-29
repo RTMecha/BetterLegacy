@@ -3,6 +3,8 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Interfaces;
 using LSFunctions;
 using SimpleJSON;
 using SteamworksFacepunch;
@@ -44,6 +46,11 @@ namespace BetterLegacy.Core.Managers.Networking
         /// If Steam Client was initialized.
         /// </summary>
         public bool Initialized { get; set; }
+
+        /// <summary>
+        /// Error message to show if Steam was not initialized.
+        /// </summary>
+        public const string NOT_INIT_MESSAGE = "Steam was not initialized. Open Steam if it isn't already, otherwise if it is then please replace the steam_api64.dll in Project Arrhythmia_Data/Plugins with the newer version provided.";
 
         #region Internal
 
@@ -115,6 +122,11 @@ namespace BetterLegacy.Core.Managers.Networking
         public bool loading;
 
         /// <summary>
+        /// If <see cref="DownloadLevel(Item)"/> is running.
+        /// </summary>
+        public bool downloading;
+
+        /// <summary>
         /// Array containing all subscribed Steam Workshop items.
         /// </summary>
         public PublishedFileId[] subscribedFiles;
@@ -136,7 +148,7 @@ namespace BetterLegacy.Core.Managers.Networking
 
             if (!Initialized)
             {
-                Debug.LogError($"{className}Steam is not initialized! Try restarting with Steam open or updating the steam_api64.dll file to the newer version provided in the BetterLegacy latest release.");
+                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
                 yield break;
             }
 
@@ -233,23 +245,215 @@ namespace BetterLegacy.Core.Managers.Networking
             hasLoaded = true;
         }
 
+        /// <summary>
+        /// Toggles the Subscribe state of a Steam item.
+        /// </summary>
+        /// <param name="item">Item to subscribe / unsubscribe from.</param>
+        /// <param name="onSubscribedLevel">Action to run when item is subscribed to.</param>
+        public IEnumerator ToggleSubscribedState(Item item, Action<Level> onSubscribedLevel = null)
+        {
+            if (!Initialized)
+            {
+                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                yield break;
+            }
+
+            CoreHelper.LogSeparator();
+            CoreHelper.Log($"Beginning {(!item.IsSubscribed ? "subscribing" : "unsubscribing")} of {item.Id}\nTitle: {item.Title}");
+
+            ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
+
+            var subscribed = item.IsSubscribed;
+            downloading = true;
+            if (!subscribed)
+            {
+                CoreHelper.Log($"Subscribing...");
+                yield return item.Subscribe();
+                yield return item.DownloadAsync(progress =>
+                {
+                    try
+                    {
+                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+
+                while (!item.IsInstalled || item.IsDownloadPending || item.IsDownloading)
+                {
+                    try
+                    {
+                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                    }
+                    catch
+                    {
+
+                    }
+
+                    yield return null;
+                }
+                ProgressMenu.Current.UpdateProgress(1f);
+
+                subscribed = true;
+            }
+            else
+            {
+                CoreHelper.Log($"Unsubscribing...");
+                yield return item.Unsubscribe();
+                yield return item.DownloadAsync();
+
+                subscribed = false;
+            }
+            downloading = false;
+
+            yield return new WaitForSeconds(0.1f);
+            CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
+
+            while (InterfaceManager.inst.CurrentInterface && InterfaceManager.inst.CurrentInterface.generating)
+                yield return null;
+
+            int levelIndex = -1;
+            if (!subscribed && Levels.TryFindIndex(x => x.metadata != null && x.id == item.Id.ToString(), out levelIndex))
+            {
+                CoreHelper.Log($"Unsubscribed > Remove level {Levels[levelIndex]}.");
+                Levels.RemoveAt(levelIndex);
+            }
+
+            if (subscribed && item.IsInstalled && Level.TryVerify(item.Directory, true, out Level level))
+            {
+                CoreHelper.Log($"Subscribed > Add level {level.path}.");
+                level.id = item.Id.Value.ToString();
+                Levels.Add(level);
+
+                if (onSubscribedLevel != null)
+                {
+                    onSubscribedLevel(level);
+                    item = default;
+                    yield break;
+                }
+
+                PlayLevelMenu.Init(level);
+                item = default;
+                yield break;
+            }
+            else if (subscribed)
+                CoreHelper.LogError($"Item doesn't exist.");
+
+            CoreHelper.Log($"Finished updating Steam item.");
+            item = default;
+            ArcadeMenu.Init();
+        }
+
+        /// <summary>
+        /// Sets the Subscribe state of a Steam item.
+        /// </summary>
+        /// <param name="item">Item to subscribe / unsubscribe from.</param>
+        /// <param name="subscribed">If the item should be subscribed to.</param>
+        /// <param name="onSubscribedLevel">Action to run when item is subscribed to.</param>
+        public IEnumerator SetSubscribedState(Item item, bool subscribed, Action<Level> onSubscribedLevel = null)
+        {
+            if (!Initialized)
+            {
+                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                yield break;
+            }
+
+            CoreHelper.LogSeparator();
+            CoreHelper.Log($"Beginning {(!item.IsSubscribed ? "subscribing" : "unsubscribing")} of {item.Id}\nTitle: {item.Title}");
+
+            ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
+
+            var isSubscribed = item.IsSubscribed;
+            downloading = true;
+            if (!isSubscribed && isSubscribed != subscribed)
+            {
+                CoreHelper.Log($"Subscribing...");
+                yield return item.Subscribe();
+                yield return item.DownloadAsync(progress =>
+                {
+                    try
+                    {
+                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+
+                while (!item.IsInstalled || item.IsDownloadPending || item.IsDownloading)
+                {
+                    try
+                    {
+                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                    }
+                    catch
+                    {
+
+                    }
+
+                    yield return null;
+                }
+                ProgressMenu.Current.UpdateProgress(1f);
+
+                subscribed = true;
+            }
+
+            if (isSubscribed && isSubscribed != subscribed)
+            {
+                CoreHelper.Log($"Unsubscribing...");
+                yield return item.Unsubscribe();
+                yield return item.DownloadAsync();
+
+                subscribed = false;
+            }
+            downloading = false;
+
+            yield return new WaitForSeconds(0.1f);
+            CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
+
+            while (InterfaceManager.inst.CurrentInterface && InterfaceManager.inst.CurrentInterface.generating)
+                yield return null;
+
+            int levelIndex = -1;
+            if (!isSubscribed && Levels.TryFindIndex(x => x.metadata != null && x.id == item.Id.ToString(), out levelIndex))
+            {
+                CoreHelper.Log($"Unsubscribed > Remove level {Levels[levelIndex]}.");
+                Levels.RemoveAt(levelIndex);
+            }
+
+            if (isSubscribed && item.IsInstalled && Level.TryVerify(item.Directory, true, out Level level))
+            {
+                CoreHelper.Log($"Subscribed > Add level {level.path}.");
+                level.id = item.Id.Value.ToString();
+                Levels.Add(level);
+
+                if (onSubscribedLevel != null)
+                {
+                    onSubscribedLevel(level);
+                    item = default;
+                    yield break;
+                }
+
+                PlayLevelMenu.Init(level);
+                item = default;
+                yield break;
+            }
+            else if (isSubscribed)
+                CoreHelper.LogError($"Item doesn't exist.");
+
+            CoreHelper.Log($"Finished updating Steam item.");
+            item = default;
+            ArcadeMenu.Init();
+        }
+
         public bool TryGetItemPath(PublishedFileId publishedFileID, out string folder)
         {
             ulong punSizeOnDisk = 0;
             uint punTimeStamp = 0;
             return SteamUGC.Internal.GetItemInstallInfo(publishedFileID, ref punSizeOnDisk, out folder, ref punTimeStamp);
-        }
-
-        /// <summary>
-        /// Gets the levels' related Steam Item.
-        /// </summary>
-        /// <param name="publishedFileID">Steam Workshop item ID.</param>
-        /// <param name="level">Level to assign the item to.</param>
-        async void GetItem(PublishedFileId publishedFileID, Level level)
-        {
-            var item = await Item.GetAsync(publishedFileID);
-            level.steamItem = item.Value;
-            level.steamLevelInit = true;
         }
 
         /// <summary>
@@ -260,6 +464,12 @@ namespace BetterLegacy.Core.Managers.Networking
         /// <param name="onAddItem">Function to run when an item is loaded.</param>
         public async Task SearchAsync(string search, int page = 1, Action<Item, int> onAddItem = null)
         {
+            if (!Initialized)
+            {
+                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                return;
+            }
+
             if (search == null)
                 search = "";
 

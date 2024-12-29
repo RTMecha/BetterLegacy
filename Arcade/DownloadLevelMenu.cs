@@ -319,35 +319,8 @@ namespace BetterLegacy.Arcade
         {
             var jn = CurrentOnlineLevel;
 
-            var name = jn["name"].Value;
-            string id = jn["id"];
-            name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
-            name = RTFile.ValidateDirectory(name);
-            var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{id}]");
-
-            ProgressMenu.Init($"Downloading Arcade server level: {id} - {name}<br>Please wait...");
-
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
+            AlephNetwork.DownloadLevel(jn, level =>
             {
-                if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
-                {
-                    var existingLevel = LevelManager.Levels[existingLevelIndex];
-                    RTFile.DeleteDirectory(existingLevel.path);
-                    LevelManager.Levels.RemoveAt(existingLevelIndex);
-                }
-
-                RTFile.DeleteDirectory(directory);
-                RTFile.CreateDirectory(directory);
-
-                var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
-                File.WriteAllBytes(zipFile, bytes);
-                ZipFile.ExtractToDirectory(zipFile, directory);
-                RTFile.DeleteFile(zipFile);
-
-                var level = new Level(directory);
-
-                LevelManager.Levels.Add(level);
-
                 CurrentOnlineLevel = null;
                 InterfaceManager.inst.CloseMenus();
 
@@ -363,8 +336,8 @@ namespace BetterLegacy.Arcade
             }, onError =>
             {
                 Close();
-                CoreHelper.LogError($"Download level error: {onError}");
-            }));
+                CoreHelper.Log($"Failed to download item: {jn}");
+            });
         }
 
         public static void Init(JSONObject level)

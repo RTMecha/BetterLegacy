@@ -251,117 +251,13 @@ namespace BetterLegacy.Arcade
         }
 
         public bool downloading;
-        void LogItem(Item item) => CoreHelper.Log(
-                            $"Downloading item: {item.Id} ({item.Title})\n" +
-                            $"Download Pending: {item.IsDownloadPending}\n" +
-                            $"Downloading: {item.IsDownloading}\n" +
-                            $"Download Amount: {item.DownloadAmount}\n" +
-                            $"Installed: {item.IsInstalled}\n" +
-                            $"Subscribed: {item.IsSubscribed}");
 
         public IEnumerator DownloadLevel()
         {
-            CoreHelper.LogSeparator();
-            var item = CurrentSteamItem;
-            CoreHelper.Log($"Beginning {(!item.IsSubscribed ? "subscribing" : "unsubscribing")} of {item.Id}\nTitle: {item.Title}");
-            InterfaceManager.inst.PlayMusic();
-            InterfaceManager.inst.CloseMenus();
-
-            ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
-
-            var subscribed = item.IsSubscribed;
             downloading = true;
-            if (!subscribed)
-            {
-                CoreHelper.Log($"Subscribing...");
-                yield return item.Subscribe();
-
-                LogItem(item);
-                yield return item.DownloadAsync(progress =>
-                {
-                    try
-                    {
-                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
-                    }
-                    catch
-                    {
-
-                    }
-                });
-
-                while (!item.IsInstalled || item.IsDownloadPending || item.IsDownloading)
-                {
-                    if (Input.GetKeyDown(KeyCode.A))
-                        LogItem(item);
-
-                    try
-                    {
-                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
-                    }
-                    catch
-                    {
-
-                    }
-
-                    yield return null;
-                }
-                ProgressMenu.Current.UpdateProgress(1f);
-
-                subscribed = true;
-                LogItem(item);
-            }
-            else
-            {
-                CoreHelper.Log($"Unsubscribing...");
-                yield return item.Unsubscribe();
-
-                LogItem(item);
-                yield return item.DownloadAsync();
-
-                subscribed = false;
-                LogItem(item);
-            }
+            yield return CoreHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(CurrentSteamItem, onSubscribedLevel));
             downloading = false;
-
-            yield return new WaitForSeconds(0.1f);
-            CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
-
-            while (InterfaceManager.inst.CurrentInterface != null && InterfaceManager.inst.CurrentInterface.generating)
-                yield return null;
-
-            int levelIndex = -1;
-            if (!subscribed && SteamWorkshopManager.inst.Levels.TryFindIndex(x => x.metadata != null && x.id == item.Id.ToString(), out levelIndex))
-            {
-                CoreHelper.Log($"Unsubscribed > Remove level {SteamWorkshopManager.inst.Levels[levelIndex]}.");
-                SteamWorkshopManager.inst.Levels.RemoveAt(levelIndex);
-            }
-
-            if (subscribed && item.IsInstalled && Level.TryVerify(item.Directory, true, out Level level))
-            {
-                CoreHelper.Log($"Subscribed > Add level {level.path}.");
-                level.id = item.Id.Value.ToString();
-                SteamWorkshopManager.inst.Levels.Add(level);
-
-                if (onSubscribedLevel != null)
-                {
-                    onSubscribedLevel(level);
-                    CurrentSteamItem = default;
-                    yield break;
-                }
-
-                PlayLevelMenu.Init(level);
-                CoreHelper.Log($"Item is installed so opening.");
-                CoreHelper.LogSeparator();
-                CurrentSteamItem = default;
-                yield break;
-            }
-            else if (subscribed)
-                CoreHelper.LogError($"Item doesn't exist.");
-
-            CoreHelper.Log($"Finished.");
-            CoreHelper.LogSeparator();
             CurrentSteamItem = default;
-            ArcadeMenu.Init();
         }
 
         public static void Init(Item item)

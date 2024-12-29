@@ -1,6 +1,14 @@
-﻿using System;
+﻿using BetterLegacy.Arcade;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
+using SimpleJSON;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -591,6 +599,41 @@ namespace BetterLegacy.Core
                 onComplete?.Invoke();
 
             yield break;
+        }
+
+        public static void DownloadLevel(JSONObject jn, Action<Level> onDownload, Action<string> onError)
+        {
+            var name = jn["name"].Value;
+            string id = jn["id"];
+            name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+            name = RTFile.ValidateDirectory(name);
+            var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{id}]");
+
+            ProgressMenu.Init($"Downloading Arcade server level: {id} - {name}<br>Please wait...");
+
+            CoreHelper.StartCoroutine(DownloadBytes($"{ArcadeMenu.DownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
+            {
+                if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
+                {
+                    var existingLevel = LevelManager.Levels[existingLevelIndex];
+                    RTFile.DeleteDirectory(existingLevel.path);
+                    LevelManager.Levels.RemoveAt(existingLevelIndex);
+                }
+
+                RTFile.DeleteDirectory(directory);
+                RTFile.CreateDirectory(directory);
+
+                var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
+                File.WriteAllBytes(zipFile, bytes);
+                ZipFile.ExtractToDirectory(zipFile, directory);
+                RTFile.DeleteFile(zipFile);
+
+                var level = new Level(directory);
+
+                LevelManager.Levels.Add(level);
+
+                onDownload?.Invoke(level);
+            }, onError));
         }
 
         public static IEnumerator GetResponseCode(string url, Action<long> result)

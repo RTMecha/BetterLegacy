@@ -444,6 +444,7 @@ namespace BetterLegacy.Arcade
                                     $"Server ID: {levelInfo.serverID}\n" +
                                     $"Workshop ID: {levelInfo.workshopID}");
 
+                                LevelManager.currentLevelIndex = index;
                                 LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo);
                             }
                         });

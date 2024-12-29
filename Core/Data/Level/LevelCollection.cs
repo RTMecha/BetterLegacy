@@ -273,12 +273,13 @@ namespace BetterLegacy.Core.Data.Level
         /// Downloads a level if it doesn't exist.
         /// </summary>
         /// <param name="levelInfo"></param>
-        public void DownloadLevel(LevelInfo levelInfo)
+        public void DownloadLevel(LevelInfo levelInfo, Action<Level> onDownload = null)
         {
             Level level;
             if (!string.IsNullOrEmpty(levelInfo.arcadeID) && LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out level))
             {
                 levelInfo.level = level;
+                onDownload?.Invoke(level);
                 CoreHelper.Log($"Level {level.id} already exists!");
                 return;
             }
@@ -287,57 +288,126 @@ namespace BetterLegacy.Core.Data.Level
             {
                 CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{levelInfo.serverID}", json =>
                 {
-                    var jn = JSON.Parse(json);
-                    if (jn is JSONObject jsonObject)
+                    ConfirmMenu.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", () =>
                     {
-                        DownloadLevelMenu.Init(jsonObject);
-                        DownloadLevelMenu.Current.onDownloadComplete = level =>
+                        var jn = JSON.Parse(json);
+                        if (jn is JSONObject jsonObject)
                         {
-                            level = NewCollectionLevel(level.path);
-                            levelInfo.Overwrite(level);
-                            levels.Insert(levelInfo.index, level);
-                            PlayLevelMenu.Init(level);
-                        };
-                    }
-                }, onError =>
-                {
-                    // error message or something
-                }));
+                            if (CoreHelper.InGame)
+                            {
+                                AlephNetwork.DownloadLevel(jsonObject, level =>
+                                {
+                                    level = NewCollectionLevel(level.path);
+                                    levelInfo.Overwrite(level);
+                                    levels[levelInfo.index] = level;
+                                    InterfaceManager.inst.CloseMenus();
+                                    onDownload?.Invoke(level);
+                                }, onError => ArcadeHelper.QuitToArcade());
+                                return;
+                            }
+
+                            InterfaceManager.inst.CloseMenus();
+                            CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}", bytes =>
+                            {
+                                var sprite = SpriteHelper.LoadSprite(bytes);
+                                ArcadeMenu.OnlineLevelIcons[levelInfo.serverID] = sprite;
+
+                                DownloadLevelMenu.Init(jsonObject);
+                                DownloadLevelMenu.Current.onDownloadComplete = level =>
+                                {
+                                    level = NewCollectionLevel(level.path);
+                                    levelInfo.Overwrite(level);
+                                    levels[levelInfo.index] = level;
+
+                                    InterfaceManager.inst.CloseMenus();
+                                    if (onDownload != null)
+                                    {
+                                        onDownload(level);
+                                        return;
+                                    }
+
+                                    PlayLevelMenu.Init(level);
+                                };
+                            }, onError =>
+                            {
+                                ArcadeMenu.OnlineLevelIcons[levelInfo.serverID] = LegacyPlugin.AtanPlaceholder;
+
+                                DownloadLevelMenu.Init(jsonObject);
+                                DownloadLevelMenu.Current.onDownloadComplete = level =>
+                                {
+                                    level = NewCollectionLevel(level.path);
+                                    levelInfo.Overwrite(level);
+                                    levels[levelInfo.index] = level;
+
+                                    InterfaceManager.inst.CloseMenus();
+                                    if (onDownload != null)
+                                    {
+                                        onDownload(level);
+                                        return;
+                                    }
+
+                                    PlayLevelMenu.Init(level);
+                                };
+                            }));
+                        }
+                    }, ArcadeHelper.QuitToArcade);
+                }, onError => ArcadeHelper.QuitToArcade()));
             }
             else if (!string.IsNullOrEmpty(levelInfo.workshopID))
             {
+                if (!SteamWorkshopManager.inst.Initialized)
+                {
+                    CoreHelper.Log($"Steam was not initialized. Please open Steam.");
+                    ArcadeHelper.QuitToArcade();
+                    return;
+                }
+
                 if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
                 {
+                    level = NewCollectionLevel(level.path);
+                    levelInfo.Overwrite(level);
+                    levels[levelInfo.index] = level;
                     levelInfo.level = level;
+
+                    InterfaceManager.inst.CloseMenus();
+                    onDownload?.Invoke(level);
                     CoreHelper.Log($"Level {level.id} already exists!");
                     return;
                 }
 
-                CoreHelper.StartCoroutine(SubscribeToSteamLevel(levelInfo, () =>
+                ConfirmMenu.Init("Level does not exist in your subscribed Steam items. Do you want to subscribe to the level?", () =>
                 {
-
-                }));
+                    CoreHelper.StartCoroutine(SubscribeToSteamLevel(levelInfo, onDownload, ArcadeHelper.QuitToArcade));
+                }, ArcadeHelper.QuitToArcade);
             }
         }
 
-        IEnumerator SubscribeToSteamLevel(LevelInfo levelInfo, Action onFail = null)
+        IEnumerator SubscribeToSteamLevel(LevelInfo levelInfo, Action<Level> onDownload = null, Action onFail = null)
         {
             var workshopID = SteamWorkshopManager.GetWorkshopID(levelInfo.workshopID);
             if (workshopID.Value == 0)
             {
+                InterfaceManager.inst.CloseMenus();
+                if (CoreHelper.InGame)
+                {
+                    ArcadeHelper.QuitToArcade();
+                    yield break;
+                }
                 onFail?.Invoke();
                 yield break;
             }
 
+            CoreHelper.Log($"Updating {workshopID}");
             yield return SteamWorkshopManager.GetItem(workshopID, item =>
             {
+                CoreHelper.Log($"Got item: {item}");
                 CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                 {
                     CoreHelper.ReturnToUnity(() =>
                     {
                         var sprite = SpriteHelper.LoadSprite(bytes);
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
-                        InitSteamItem(levelInfo, item);
+                        InitSteamItem(levelInfo, onDownload, item);
                     });
                 }, onError =>
                 {
@@ -345,22 +415,45 @@ namespace BetterLegacy.Core.Data.Level
                     {
                         var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
-                        InitSteamItem(levelInfo, item);
+                        InitSteamItem(levelInfo, onDownload, item);
                     });
                 }));
 
             }, onFail);
         }
 
-        void InitSteamItem(LevelInfo levelInfo, Item item)
+        void InitSteamItem(LevelInfo levelInfo, Action<Level> onDownload, Item item)
         {
+            CoreHelper.Log($"Init Steam Item: {item}");
+            if (CoreHelper.InGame)
+            {
+                CoreHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(item, level =>
+                {
+                    level = NewCollectionLevel(level.path);
+                    levelInfo.Overwrite(level);
+                    levels[levelInfo.index] = level;
+
+                    InterfaceManager.inst.CloseMenus();
+                    onDownload?.Invoke(level);
+                }));
+                return;
+            }
+
             InterfaceManager.inst.CloseMenus();
             SteamLevelMenu.Init(item);
             SteamLevelMenu.Current.onSubscribedLevel = level =>
             {
                 level = NewCollectionLevel(level.path);
                 levelInfo.Overwrite(level);
-                levels.Insert(levelInfo.index, level);
+                levels[levelInfo.index] = level;
+
+                InterfaceManager.inst.CloseMenus();
+                if (onDownload != null)
+                {
+                    onDownload(level);
+                    return;
+                }
+
                 PlayLevelMenu.Init(level);
             };
         }
