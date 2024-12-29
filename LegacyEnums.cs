@@ -666,6 +666,10 @@ namespace BetterLegacy
         /// </summary>
         LoadLevel,
         /// <summary>
+        /// Loads another level in the current collection.
+        /// </summary>
+        LoadLevelInCollection,
+        /// <summary>
         /// Parses an interface.
         /// </summary>
         ParseInterface,
