@@ -164,38 +164,80 @@ namespace BetterLegacy.Core.Managers.Networking
                 if (loadYieldMode != YieldType.None)
                     yield return CoreHelper.GetYieldInstruction(loadYieldMode, ref delay);
 
-                if (SteamUGC.Internal.GetItemState(publishedFileID) == 8U)
+                string folder;
+                var installInfo = TryGetItemPath(publishedFileID, out folder);
+
+                Item item = default;
+                bool exists = false;
+                yield return GetItem(publishedFileID, result =>
                 {
-                    var download = SteamUGC.Internal.DownloadItem(publishedFileID, false);
-                    Debug.Log($"{className}Downloaded File: {publishedFileID}\nDownloadItem returns: {download}");
-                    if (!download)
-                        continue;
-                }
-                else
+                    item = result;
+                    exists = true;
+                });
+
+                if (!installInfo)
                 {
-                    ulong punSizeOnDisk = 0;
-                    string pchFolder;
-                    uint punTimeStamp = 0;
-                    SteamUGC.Internal.GetItemInstallInfo(publishedFileID, ref punSizeOnDisk, out pchFolder, ref punTimeStamp);
+                    if (exists)
+                    {
+                        if (item.Result == Result.AccessDenied)
+                        {
+                            CoreHelper.Log($"Item {publishedFileID} could not be accessed..");
+                            if (LoadLevelsManager.inst)
+                                LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} could not be accessed.", i);
+                            continue;
+                        }
 
-                    if (!Level.TryVerify(pchFolder, true, out Level level))
+                        CoreHelper.Log($"Attempting to download item: {publishedFileID} Result: {item.Result}.");
+                        if (LoadLevelsManager.inst)
+                            LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Downloading item: {publishedFileID}", i);
+                        yield return item.DownloadAsync();
+                        installInfo = TryGetItemPath(publishedFileID, out folder);
+
+                        // for cases where the level no longer exists.
+                        if (!installInfo)
+                        {
+                            CoreHelper.Log($"Item {publishedFileID} no longer exists. {item.Result}");
+                            if (LoadLevelsManager.inst)
+                                LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
+
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        CoreHelper.Log($"Item {publishedFileID} no longer exists.");
+                        if (LoadLevelsManager.inst)
+                            LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
+
                         continue;
-
-                    level.id = publishedFileID.Value.ToString();
-                    level.isSteamLevel = true;
-                    Task.Run(() => GetItem(publishedFileID, level));
-
-                    if (LevelManager.Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
-                        level.playerData = LevelManager.Saves[saveIndex];
-
-                    onLoad?.Invoke(level, i);
-
-                    Levels.Add(level);
+                    }
                 }
+
+                if (!Level.TryVerify(folder, true, out Level level))
+                    continue;
+
+                level.id = publishedFileID.Value.ToString();
+                level.isSteamLevel = true;
+                level.steamItem = item;
+                level.steamLevelInit = exists;
+
+                if (LevelManager.Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
+                    level.playerData = LevelManager.Saves[saveIndex];
+
+                onLoad?.Invoke(level, i);
+
+                Levels.Add(level);
             }
 
             loading = false;
             hasLoaded = true;
+        }
+
+        public bool TryGetItemPath(PublishedFileId publishedFileID, out string folder)
+        {
+            ulong punSizeOnDisk = 0;
+            uint punTimeStamp = 0;
+            return SteamUGC.Internal.GetItemInstallInfo(publishedFileID, ref punSizeOnDisk, out folder, ref punTimeStamp);
         }
 
         /// <summary>
@@ -272,6 +314,12 @@ namespace BetterLegacy.Core.Managers.Networking
             else
                 onFail?.Invoke();
         }
+
+        /// <summary>
+        /// Opens an item's Steam Workshop page.
+        /// </summary>
+        /// <param name="id">ID to open.</param>
+        public void OpenWorkshop(PublishedFileId publishedFileID) => Application.OpenURL($"https://steamcommunity.com/sharedfiles/filedetails/?id={publishedFileID}");
 
         #endregion
 
