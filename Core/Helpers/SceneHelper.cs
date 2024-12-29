@@ -161,9 +161,9 @@ namespace BetterLegacy.Core.Helpers
                     loadingText.color = InterfaceManager.inst.CurrentTheme.GetObjColor(6);
                     loadingText.text = loadingDisplayType switch
                     {
-                        LoadingDisplayType.Bar => $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("▓", progress)} ]</b>",
-                        LoadingDisplayType.EqualsBar => $"<b>{(displayLoadingText ? "Loading : " : "")}[ {RTString.ConvertBar("=", progress)} ]</b>",
-                        LoadingDisplayType.Percentage => $"<b>{(displayLoadingText ? "Loading : " : "")}{progress.ToString("F0")}%</b>",
+                        LoadingDisplayType.Bar => $"<b>Loading [ {RTString.ConvertBar("▓", progress)} ]</b>",
+                        LoadingDisplayType.EqualsBar => $"<b>Loading [ {RTString.ConvertBar("=", progress)} ]</b>",
+                        LoadingDisplayType.Percentage => $"<b>Loading {progress.ToString("F0")}%</b>",
                         _ => string.Empty
                     };
                 }
@@ -273,8 +273,6 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Fields
-
-        static bool displayLoadingText = true;
 
         public static Text loadingText;
         public static Image loadingImage;
