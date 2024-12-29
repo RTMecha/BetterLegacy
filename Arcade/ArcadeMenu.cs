@@ -57,7 +57,6 @@ namespace BetterLegacy.Arcade
 
         public const int MAX_LEVELS_PER_PAGE = 20;
         public const int MAX_QUEUED_PER_PAGE = 6;
-        public const int MAX_STEAM_LEVELS_PER_PAGE = 35;
         public const int MAX_STEAM_ONLINE_LEVELS_PER_PAGE = 50;
 
         public static string[] Searches { get; set; } = new string[]
@@ -372,12 +371,12 @@ namespace BetterLegacy.Arcade
                             rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
                             cellSize = new Vector2(350f, 180f),
                             spacing = new Vector2(12f, 12f),
-                            constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                            constraint = GridLayoutGroup.Constraint.FixedColumnCount,
                             constraintCount = 5,
                             regenerate = false,
                         });
 
-                        RefreshLocalLevels(false);
+                        RefreshLocalLevels(false, false);
 
                         break;
                     }
@@ -1208,7 +1207,7 @@ namespace BetterLegacy.Arcade
                         {
                             name = "levels",
                             rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
-                            cellSize = new Vector2(350f, ViewOnline ? 70f : 105f),
+                            cellSize = new Vector2(350f, ViewOnline ? 70f : 180f),
                             spacing = new Vector2(12f, 12f),
                             constraint = GridLayoutGroup.Constraint.FixedColumnCount,
                             constraintCount = 5,
@@ -1252,19 +1251,19 @@ namespace BetterLegacy.Arcade
             Searches[0] = search;
             Pages[0] = 0;
 
-            RefreshLocalLevels(true, true);
+            RefreshLocalLevels(true);
         }
 
         public void SetLocalLevelsPage(int page)
         {
             Pages[0] = Mathf.Clamp(page, 0, LocalLevelPageCount);
 
-            RefreshLocalLevels(true, true);
+            RefreshLocalLevels(true);
         }
 
         void ClearLocalLevelButtons()
         {
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -1272,10 +1271,10 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
         }
 
-        public void RefreshLocalLevels(bool regenerateUI, bool clear = false)
+        public void RefreshLocalLevels(bool regenerateUI, bool clear = true)
         {
             if (clear)
                 ClearLocalLevelButtons();
@@ -1346,8 +1345,9 @@ namespace BetterLegacy.Arcade
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[i];
+                var levelRank = LevelManager.GetLevelRank(level);
 
-                var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
+                var isSSRank = levelRank.name == "SS";
 
                 MenuImage shine = null;
 
@@ -1377,14 +1377,10 @@ namespace BetterLegacy.Arcade
                     allowOriginalHoverMethods = true,
                     enterFunc = () =>
                     {
-                        if (AnimationManager.inst.TryFindAnimations(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
-                            for (int i = 0; i < animations.Count; i++)
-                                AnimationManager.inst.Remove(animations[i].id);
-
                         if (!isSSRank)
                             return;
 
-                        var animation = new RTAnimation("Level Shine")
+                        var animation = new RTAnimation($"{level.id} Level Shine")
                         {
                             animationHandlers = new List<AnimationHandlerBase>
                             {
@@ -1401,7 +1397,7 @@ namespace BetterLegacy.Arcade
                     },
                     exitFunc = () =>
                     {
-                        if (AnimationManager.inst.TryFindAnimations(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
+                        if (AnimationManager.inst.TryFindAnimations(x => x.name == $"{level.id} Level Shine", out List<RTAnimation> animations))
                             for (int i = 0; i < animations.Count; i++)
                                 AnimationManager.inst.Remove(animations[i].id);
 
@@ -1493,6 +1489,21 @@ namespace BetterLegacy.Arcade
                     length = 0f,
                     wait = false,
                 });
+
+                if (levelRank.name != "-")
+                    elements.Add(new MenuText
+                    {
+                        id = "0",
+                        name = "Rank",
+                        parent = level.id,
+                        text = $"<size=70><b><align=center>{levelRank.name}",
+                        rect = RectValues.Default.AnchoredPosition(65f, 25f).SizeDelta(64f, 64f),
+                        overrideTextColor = levelRank.color,
+                        useOverrideTextColor = true,
+                        hideBG = true,
+                        length = 0f,
+                        wait = false,
+                    });
 
                 if (isSSRank)
                 {
@@ -2251,7 +2262,7 @@ namespace BetterLegacy.Arcade
 
         #region Steam
 
-        public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_STEAM_LEVELS_PER_PAGE;
+        public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_LEVELS_PER_PAGE;
         public static string SteamSearch => Searches[4];
         public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(SteamSearch)
                         || level.id == SteamSearch
@@ -2279,7 +2290,7 @@ namespace BetterLegacy.Arcade
 
         void ClearSubscribedSteamLevelButtons()
         {
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -2287,7 +2298,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine"));
         }
 
         public void RefreshSubscribedSteamLevels(bool regenerateUI, bool clear = false)
@@ -2296,22 +2307,23 @@ namespace BetterLegacy.Arcade
                 ClearSubscribedSteamLevelButtons();
 
             var currentPage = Pages[(int)CurrentTab] + 1;
-            int max = currentPage * MAX_STEAM_LEVELS_PER_PAGE;
+            int max = currentPage * MAX_LEVELS_PER_PAGE;
             var currentSearch = Searches[(int)CurrentTab];
 
             var levels = SubscribedSteamLevels;
             for (int i = 0; i < levels.Count; i++)
             {
                 int index = i;
-                if (index < max - MAX_STEAM_LEVELS_PER_PAGE || index >= max)
+                if (index < max - MAX_LEVELS_PER_PAGE || index >= max)
                     continue;
 
-                int column = (index % MAX_STEAM_LEVELS_PER_PAGE) % 5;
-                int row = (int)((index % MAX_STEAM_LEVELS_PER_PAGE) / 5) + 2;
+                int column = (index % MAX_LEVELS_PER_PAGE) % 5;
+                int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[index];
+                var levelRank = LevelManager.GetLevelRank(level);
 
-                var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
+                var isSSRank = levelRank.name == "SS";
 
                 MenuImage shine = null;
 
@@ -2323,9 +2335,9 @@ namespace BetterLegacy.Arcade
                     selectionPosition = new Vector2Int(column, row),
                     func = () => PlayLevelMenu.Init(level),
                     icon = level.icon,
-                    iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
+                    iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                     text = "<size=24>" + level.metadata?.beatmap?.name,
-                    textRect = RectValues.FullAnchored.AnchorMin(0.24f, 0f),
+                    textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
                     enableWordWrapping = true,
                     color = 6,
                     opacity = 0.1f,
@@ -2341,14 +2353,10 @@ namespace BetterLegacy.Arcade
                     allowOriginalHoverMethods = true,
                     enterFunc = () =>
                     {
-                        if (AnimationManager.inst.TryFindAnimations(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
-                            for (int i = 0; i < animations.Count; i++)
-                                AnimationManager.inst.Remove(animations[i].id);
-
                         if (!isSSRank)
                             return;
 
-                        var animation = new RTAnimation("Level Shine")
+                        var animation = new RTAnimation($"{level.id} Level Shine")
                         {
                             animationHandlers = new List<AnimationHandlerBase>
                             {
@@ -2365,7 +2373,7 @@ namespace BetterLegacy.Arcade
                     },
                     exitFunc = () =>
                     {
-                        if (AnimationManager.inst.TryFindAnimations(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
+                        if (AnimationManager.inst.TryFindAnimations(x => x.name == $"{level.id} Level Shine", out List<RTAnimation> animations))
                             for (int i = 0; i < animations.Count; i++)
                                 AnimationManager.inst.Remove(animations[i].id);
 
@@ -2391,6 +2399,21 @@ namespace BetterLegacy.Arcade
                     length = 0f,
                     wait = false,
                 });
+
+                if (levelRank.name != "-")
+                    elements.Add(new MenuText
+                    {
+                        id = "0",
+                        name = "Rank",
+                        parent = level.id,
+                        text = $"<size=70><b><align=center>{levelRank.name}",
+                        rect = RectValues.Default.AnchoredPosition(65f, 25f).SizeDelta(64f, 64f),
+                        overrideTextColor = levelRank.color,
+                        useOverrideTextColor = true,
+                        hideBG = true,
+                        length = 0f,
+                        wait = false,
+                    });
 
                 if (isSSRank)
                 {

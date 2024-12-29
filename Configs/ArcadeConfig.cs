@@ -253,7 +253,7 @@ namespace BetterLegacy.Configs
             if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Local)
             {
                 ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Local] = 0;
-                ArcadeMenu.Current.RefreshLocalLevels(true, true);
+                ArcadeMenu.Current.RefreshLocalLevels(true);
             }
         }
 

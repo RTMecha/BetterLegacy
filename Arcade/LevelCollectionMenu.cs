@@ -298,7 +298,6 @@ namespace BetterLegacy.Arcade
         {
             if (collection.previewAudio)
             {
-                AudioManager.inst.StopMusic();
                 AudioManager.inst.PlayMusic(collection.name, collection.previewAudio);
                 AudioManager.inst.SetPitch(1f);
             }
