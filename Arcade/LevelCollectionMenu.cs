@@ -275,7 +275,7 @@ namespace BetterLegacy.Arcade
             exitFunc = Close;
             allowEffects = false;
             layer = 10000;
-            defaultSelection = new Vector2Int(0, 4);
+            defaultSelection = new Vector2Int(0, 1);
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
