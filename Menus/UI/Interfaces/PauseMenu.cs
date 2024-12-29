@@ -304,7 +304,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 {
                     id = "7463783",
                     name = "Info Text",
-                    text = $"<align=right>Difficulty mode: {PlayerManager.ChallengeMode}",
+                    text = $"<align=right>Challenge mode: {PlayerManager.ChallengeMode}",
                     rect = RectValues.Default.SizeDelta(300f, 32f),
                     hideBG = true,
                     textVal = 40f,
