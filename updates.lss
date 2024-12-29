@@ -1,3 +1,14 @@
+snapshot-2024.12.7 - (pre-1.7.0) > [Dec 30, 2024]
+- Scene loading screen now uses the current interface theme instead of the old interface colors.
+- Arcade level player data now saves in a non-encrypted arcade_saves.lss file. Since BetterLegacy doesn't have leaderboards (and likely never will), the encryption wasn't necessary.
+- Added Open Source link to the Help dropdown in the editor.
+- Added an Open Workshop button to the online Steam level menu.
+- loadLevelInCollection and downloadLevel modifiers.
+- LoadLevelInCollection to end level function dropdowns.
+- setMusicPlaying modifier. This sets the playing state of the current song. This feature is more for sandboxing and less to be used in actual levels due to pause menu taking priority in playing state.
+- pauseLevel modifier. Pauses the game and opens the pause menu.
+- Cursor now behaves consistently across the entire game in terms of visibility.
+- New "Cursor" sub-tab in Config Manager > Core. This has settings related to the cursors' visibility.
 snapshot-2024.12.6 - (pre-1.7.0) > [Dec 28, 2024]
 - Fixed Arcade menu local pages not working.
 - Fixed Background Objects not being destroyed / properly updated in some cases.
