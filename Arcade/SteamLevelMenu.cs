@@ -202,13 +202,15 @@ namespace BetterLegacy.Arcade
                 func = () => { CoreHelper.StartCoroutine(DownloadLevel()); },
             });
 
+            int pos = 2;
             if (SteamWorkshopManager.inst.Levels.TryFind(x => x.metadata != null && x.id == CurrentSteamItem.Id.ToString(), out Level level))
+            {
                 elements.Add(new MenuButton
                 {
                     id = "498145857",
                     name = "Play Button",
                     rect = RectValues.Default.AnchoredPosition(-500f, -360f).SizeDelta(600f, 64f),
-                    selectionPosition = new Vector2Int(0, 2),
+                    selectionPosition = new Vector2Int(0, pos),
                     text = "<size=40><b><align=center>[ OPEN LEVEL ]",
                     opacity = 0.1f,
                     selectedOpacity = 1f,
@@ -220,6 +222,25 @@ namespace BetterLegacy.Arcade
                     playBlipSound = true,
                     func = () => PlayLevelMenu.Init(level),
                 });
+                pos = 3;
+            }
+            elements.Add(new MenuButton
+            {
+                id = "498145857",
+                name = "Play Button",
+                rect = RectValues.Default.AnchoredPosition(-500f, -360f).SizeDelta(600f, 64f),
+                selectionPosition = new Vector2Int(0, pos),
+                text = "<size=40><b><align=center>[ OPEN WORKSHOP ]",
+                opacity = 0.1f,
+                selectedOpacity = 1f,
+                color = 6,
+                selectedColor = 6,
+                textColor = 6,
+                selectedTextColor = 7,
+                length = 0.5f,
+                playBlipSound = true,
+                func = () => SteamWorkshopManager.inst.OpenWorkshop(CurrentSteamItem.Id),
+            });
 
             exitFunc = Close;
 
@@ -318,6 +339,7 @@ namespace BetterLegacy.Arcade
             if (subscribed && item.IsInstalled && Level.TryVerify(item.Directory, true, out Level level))
             {
                 CoreHelper.Log($"Subscribed > Add level {level.path}.");
+                level.id = item.Id.Value.ToString();
                 SteamWorkshopManager.inst.Levels.Add(level);
 
                 if (onSubscribedLevel != null)
