@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using SimpleJSON;
@@ -45,7 +46,7 @@ namespace BetterLegacy.Core.Managers
         };
 
         /// <summary>
-        /// Inits ShapeManager.
+        /// Initializes ShapeManager.
         /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(ShapeManager), SystemManager.inst.transform).AddComponent<ShapeManager>();
 
@@ -73,10 +74,11 @@ namespace BetterLegacy.Core.Managers
                 for (int j = 0; j < jn["type"][i]["option"].Count; j++)
                 {
                     var fullPath = RTFile.ApplicationDirectory + ShapesPath + jn["type"][i]["option"][j]["path"];
+                    var iconPath = RTFile.CombinePaths(fullPath, $"icon{FileFormat.PNG.Dot()}");
 
                     // 2D
                     {
-                        var sjn = JSON.Parse(RTFile.ReadFromFile(fullPath + "/data.lssh"));
+                        var sjn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, $"data{FileFormat.LSSH.Dot()}")));
 
                         Mesh mesh = null;
                         if (i != 4 && i != 6 && sjn["verts"] != null && sjn["tris"] != null)
@@ -97,21 +99,18 @@ namespace BetterLegacy.Core.Managers
 
                         var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
 
-                        if (RTFile.FileExists(fullPath + "/icon.png"))
-                        {
-                            shape.Icon = SpriteHelper.LoadSprite(fullPath + "/icon.png");
-                        }
+                        if (RTFile.FileExists(iconPath))
+                            shape.icon = SpriteHelper.LoadSprite(iconPath);
 
-                        if (!StoredShapes2D.ContainsKey(shape.Vector))
-                            StoredShapes2D.Add(shape.Vector, shape);
+                        StoredShapes2D[shape.Vector] = shape;
 
                         Shapes2D[i].Add(shape);
                     }
 
                     // 3D
-                    if (RTFile.FileExists(fullPath + "/bg_data.lssh"))
+                    if (RTFile.FileExists(RTFile.CombinePaths(fullPath, $"bg_data{FileFormat.LSSH.Dot()}")))
                     {
-                        var sjn = JSON.Parse(RTFile.ReadFromFile(fullPath + "/bg_data.lssh"));
+                        var sjn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, $"bg_data{FileFormat.LSSH.Dot()}")));
 
                         Mesh mesh = null;
                         if (i != 4 && i != 6 && sjn["verts"] != null && sjn["tris"] != null)
@@ -132,13 +131,10 @@ namespace BetterLegacy.Core.Managers
 
                         var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
 
-                        if (RTFile.FileExists(fullPath + "/icon.png"))
-                        {
-                            shape.Icon = SpriteHelper.LoadSprite(fullPath + "/icon.png");
-                        }
+                        if (RTFile.FileExists(iconPath))
+                            shape.icon = SpriteHelper.LoadSprite(iconPath);
 
-                        if (!StoredShapes3D.ContainsKey(shape.Vector))
-                            StoredShapes3D.Add(shape.Vector, shape);
+                        StoredShapes3D[shape.Vector] = shape;
 
                         Shapes3D[i].Add(shape);
                     }
@@ -146,13 +142,10 @@ namespace BetterLegacy.Core.Managers
                     {
                         var shape = new Shape("null", i, j, null, null, i == 4 ? Shape.Property.TextObject : i == 6 ? Shape.Property.ImageObject : Shape.Property.RegularObject);
 
-                        if (RTFile.FileExists(fullPath + "/icon.png"))
-                        {
-                            shape.Icon = SpriteHelper.LoadSprite(fullPath + "/icon.png");
-                        }
+                        if (RTFile.FileExists(iconPath))
+                            shape.icon = SpriteHelper.LoadSprite(iconPath);
 
-                        if (!StoredShapes3D.ContainsKey(shape.Vector))
-                            StoredShapes3D.Add(shape.Vector, shape);
+                        StoredShapes3D[shape.Vector] = shape;
 
                         Shapes3D[i].Add(shape);
                     }
@@ -174,8 +167,7 @@ namespace BetterLegacy.Core.Managers
                     jn["type"][i]["option"][j]["path"] = $"beatmaps/shapes/{name}";
 
                     var fullPath = $"{RTFile.ApplicationDirectory}beatmaps/shapes/{name}";
-                    if (!RTFile.DirectoryExists(fullPath))
-                        Directory.CreateDirectory(fullPath);
+                    RTFile.CreateDirectory(fullPath);
 
                     var sjn = JSON.Parse("{}");
 
@@ -195,20 +187,16 @@ namespace BetterLegacy.Core.Managers
                         }
 
                         for (int k = 0; k < mesh.triangles.Length; k++)
-                        {
                             sjn["tris"][k] = mesh.triangles[k].ToString();
-                        }
                     }
                     else
-                    {
                         sjn["p"] = i == 4 ? 1 : i == 6 ? 2 : 3;
-                    }
 
-                    RTFile.WriteToFile(fullPath + "/data.lssh", jn.ToString());
+                    RTFile.WriteToFile(RTFile.CombinePaths(fullPath, $"data{FileFormat.LSSH.Dot()}"), jn.ToString());
                 }
             }
 
-            RTFile.WriteToFile(RTFile.ApplicationDirectory + "beatmaps/shapes/setup.lss", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.ApplicationDirectory + $"beatmaps/shapes/setup{FileFormat.LSS.Dot()}", jn.ToString(3));
         }
 
         /// <summary>
@@ -229,11 +217,7 @@ namespace BetterLegacy.Core.Managers
 
                 // Adds new shape group
                 if (ObjectManager.inst.objectPrefabs.Count < type + 1)
-                {
-                    var p = new ObjectManager.ObjectPrefabHolder();
-                    p.options = new List<GameObject>();
-                    ObjectManager.inst.objectPrefabs.Add(p);
-                }
+                    ObjectManager.inst.objectPrefabs.Add(new ObjectManager.ObjectPrefabHolder() { options = new List<GameObject>() });
 
                 // Creates new shape object
                 if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh != null)
@@ -262,7 +246,7 @@ namespace BetterLegacy.Core.Managers
                 if (type != 6)
                     continue;
 
-                if (CoreHelper.InEditor)
+                if (SceneHelper.CurrentSceneType == SceneType.Editor)
                 {
                     DestroyImmediate(ObjectManager.inst.objectPrefabs[6].options[0].transform.GetChild(0).GetComponent<Rigidbody2D>());
                     continue;

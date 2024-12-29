@@ -18,6 +18,8 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
+using Version = BetterLegacy.Core.Data.Version;
+
 namespace BetterLegacy
 {
     /// <summary>
@@ -30,7 +32,7 @@ namespace BetterLegacy
         public static LegacyPlugin inst;
         public static string className = "[<color=#0E36FD>Better</color> <color=#4FBDD1>Legacy</color>] " + PluginInfo.PLUGIN_VERSION + "\n";
         public static readonly Harmony harmony = new Harmony("BetterLegacy");
-        public static Core.Version ModVersion => new Core.Version(PluginInfo.PLUGIN_VERSION);
+        public static Version ModVersion => new Version(PluginInfo.PLUGIN_VERSION);
 
         static EditorPrefabHolder editorPrefabHolder;
         static CorePrefabHolder corePrefabHolder;

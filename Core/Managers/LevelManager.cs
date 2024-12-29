@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
+using Version = BetterLegacy.Core.Data.Version;
+
 namespace BetterLegacy.Core.Managers
 {
     public class LevelManager : MonoBehaviour

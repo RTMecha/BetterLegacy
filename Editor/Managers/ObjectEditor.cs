@@ -747,7 +747,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var objectIDs = new List<IDPair>();
                 for (int j = 0; j < prefab.objects.Count; j++)
-                    objectIDs.Add(new IDPair(prefab.objects[j].id, LSText.randomString(16)));
+                    objectIDs.Add(new IDPair(prefab.objects[j].id));
 
                 var pastedObjects = new List<BeatmapObject>();
                 var unparentedPastedObjects = new List<BeatmapObject>();
@@ -2908,7 +2908,7 @@ namespace BetterLegacy.Editor.Managers
                     var obj = shapeButtonPrefab.Duplicate(shape, (i + 1).ToString(), i);
                     if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
                     {
-                        image.sprite = ShapeManager.inst.Shapes2D[i][0].Icon;
+                        image.sprite = ShapeManager.inst.Shapes2D[i][0].icon;
                         EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
                     }
 
@@ -2966,7 +2966,7 @@ namespace BetterLegacy.Editor.Managers
                             var opt = shapeButtonPrefab.Duplicate(shapeSettings.GetChild(i), (j + 1).ToString(), j);
                             if (opt.transform.Find("Image") && opt.transform.Find("Image").gameObject.TryGetComponent(out Image image1))
                             {
-                                image1.sprite = ShapeManager.inst.Shapes2D[i][j].Icon;
+                                image1.sprite = ShapeManager.inst.Shapes2D[i][j].icon;
                                 EditorThemeManager.ApplyGraphic(image1, ThemeGroup.Toggle_1_Check);
                             }
 

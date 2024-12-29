@@ -6637,7 +6637,7 @@ namespace BetterLegacy.Editor.Managers
                     var obj = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shape, (i + 1).ToString(), i);
                     if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
                     {
-                        image.sprite = ShapeManager.inst.Shapes2D[i][0].Icon;
+                        image.sprite = ShapeManager.inst.Shapes2D[i][0].icon;
                         EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
                     }
 
@@ -6696,7 +6696,7 @@ namespace BetterLegacy.Editor.Managers
                             var opt = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shapeSettings.GetChild(i), (j + 1).ToString(), j);
                             if (opt.transform.Find("Image") && opt.transform.Find("Image").gameObject.TryGetComponent(out Image image1))
                             {
-                                image1.sprite = ShapeManager.inst.Shapes2D[i][j].Icon;
+                                image1.sprite = ShapeManager.inst.Shapes2D[i][j].icon;
                                 EditorThemeManager.ApplyGraphic(image1, ThemeGroup.Toggle_1_Check);
                             }
 
@@ -10582,7 +10582,7 @@ namespace BetterLegacy.Editor.Managers
                     var shape = Mathf.Clamp(beatmapObject.shape, 0, ShapeManager.inst.Shapes2D.Count - 1);
                     var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ShapeManager.inst.Shapes2D[shape].Count - 1);
 
-                    image.sprite = ShapeManager.inst.Shapes2D[shape][shapeOption].Icon;
+                    image.sprite = ShapeManager.inst.Shapes2D[shape][shapeOption].icon;
 
                     EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                     EditorThemeManager.ApplyLightText(buttonText);

@@ -933,7 +933,7 @@ namespace BetterLegacy.Editor.Managers
                                 for (int i = 0; i < ShapeManager.inst.Shapes2D[type].Count; i++)
                                 {
                                     var shape = ShapeManager.inst.Shapes2D[type][i].name.Replace("_", " ");
-                                    d.options.Add(new Dropdown.OptionData(shape, ShapeManager.inst.Shapes2D[type][i].Icon));
+                                    d.options.Add(new Dropdown.OptionData(shape, ShapeManager.inst.Shapes2D[type][i].icon));
                                 }
 
                                 d.value = Parser.TryParse(modifier.commands[2], 0);

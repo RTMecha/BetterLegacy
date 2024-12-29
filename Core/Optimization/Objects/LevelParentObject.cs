@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects

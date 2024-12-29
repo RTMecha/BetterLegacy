@@ -1,14 +1,14 @@
-﻿using BetterLegacy.Core.Optimization.Objects;
+﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Optimization.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace BetterLegacy.Core.Optimization.Level
-
-/// <summary>
-/// Contains level data.
-/// </summary>
 {
+    /// <summary>
+    /// Contains level data.
+    /// </summary>
     public class LevelStorage : Exists
     {
         public IReadOnlyList<ILevelObject> Objects => objects.AsReadOnly();

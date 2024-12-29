@@ -859,7 +859,7 @@ namespace BetterLegacy.Core.Optimization
                 {
                     var objectIDs = new List<IDPair>();
                     for (int j = 0; j < prefab.objects.Count; j++)
-                        objectIDs.Add(new IDPair(prefab.objects[j].id, LSText.randomString(16)));
+                        objectIDs.Add(new IDPair(prefab.objects[j].id));
 
                     string prefabObjectID = prefabObject.ID;
                     int num = 0;

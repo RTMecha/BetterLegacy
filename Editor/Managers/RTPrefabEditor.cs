@@ -1413,7 +1413,7 @@ namespace BetterLegacy.Editor.Managers
 
             var objectIDs = new List<IDPair>();
             for (int j = 0; j < prefab.objects.Count; j++)
-                objectIDs.Add(new IDPair(prefab.objects[j].id, LSText.randomString(16)));
+                objectIDs.Add(new IDPair(prefab.objects[j].id));
 
             EditorManager.inst.ClearDialogs();
 
