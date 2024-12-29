@@ -134,7 +134,9 @@ namespace BetterLegacy.Core.Data
 
             return Parser.TryParse(GetValue(index), defaultValue);
         }
-        
+
+        public string GetString(int index) => GetString(index, string.Empty);
+
         public string GetString(int index, string defaultValue)
         {
             if (index < 0 || index >= commands.Count)
