@@ -231,6 +231,18 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case EndLevelFunction.LoadLevelInCollection:
+                        {
+                            if (string.IsNullOrEmpty(endLevelData) || !LevelManager.CurrentLevelCollection)
+                                break;
+
+                            if (LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == endLevelData, out Level level))
+                                EndLoadLevel(level);
+                            else if (LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.id == endLevelData, out LevelInfo levelInfo))
+                                LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, LevelManager.Play);
+
+                            break;
+                        }
                     case EndLevelFunction.ParseInterface:
                         {
                             if (CoreHelper.IsEditing) // don't want interfaces to load in editor
