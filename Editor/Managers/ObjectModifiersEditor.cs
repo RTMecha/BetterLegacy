@@ -2478,6 +2478,11 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "setMusicPlaying":
+                        {
+                            BoolGenerator(modifier, layout, "Playing", 0, false);
+                            break;
+                        }
 
                     #endregion
 

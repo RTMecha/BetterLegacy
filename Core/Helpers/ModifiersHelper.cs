@@ -1792,6 +1792,11 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "setMusicPlaying":
+                        {
+                            SoundManager.inst.SetPlaying(modifier.GetBool(0, false));
+                            break;
+                        }
 
                     #endregion
                     #region Level
@@ -6779,6 +6784,17 @@ namespace BetterLegacy.Core.Helpers
                             InterfaceManager.inst.interfaces.Add(menu);
                             InterfaceManager.inst.SetCurrentInterface(menu);
 
+                            break;
+                        }
+                    case "pauseLevel":
+                        {
+                            if (CoreHelper.InEditor)
+                            {
+                                EditorManager.inst.DisplayNotification("Cannot pause in the editor. This modifier only works in the Arcade.", 3f, EditorManager.NotificationType.Warning);
+                                break;
+                            }
+
+                            PauseMenu.Pause();
                             break;
                         }
                     case "customCode": // unused for now... how could this be implemented? I want it to be like a C# evaluator but very limited to avoid possible security concerns.
