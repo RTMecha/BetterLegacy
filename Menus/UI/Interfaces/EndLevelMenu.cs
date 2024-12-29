@@ -208,9 +208,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     }
                 }
 
-                if (LevelManager.NextLevelInCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || LevelManager.NextLevelInCollection.playerData && LevelManager.NextLevelInCollection.playerData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice) || !LevelManager.IsNextEndOfQueue)
+                var nextLevel = LevelManager.NextLevelInCollection;
+                if (LevelManager.CurrentLevelCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || nextLevel && nextLevel.playerData && nextLevel.playerData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
                 {
-                    if (LevelManager.NextLevelInCollection != null)
+                    if (nextLevel)
                         CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
                     else
                         CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");

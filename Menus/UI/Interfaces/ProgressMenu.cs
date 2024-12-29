@@ -75,5 +75,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public MenuImage progressBar;
 
         public static void Init(string currentMessage) => Current = new ProgressMenu(currentMessage);
+
+        public override void UpdateTheme()
+        {
+            if (CoreHelper.InGame)
+                Theme = CoreHelper.CurrentBeatmapTheme;
+
+            base.UpdateTheme();
+        }
     }
 }

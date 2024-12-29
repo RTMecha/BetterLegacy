@@ -78,5 +78,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             InterfaceManager.inst.SetCurrentInterface(this);
         }
+
+        public static void Init(string currentMessage, Action confirm, Action cancel) => new ConfirmMenu(currentMessage, confirm, cancel);
+
+        public override void UpdateTheme()
+        {
+            if (CoreHelper.InGame)
+                Theme = CoreHelper.CurrentBeatmapTheme;
+
+            base.UpdateTheme();
+        }
     }
 }
