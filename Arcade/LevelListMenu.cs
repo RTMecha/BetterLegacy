@@ -402,7 +402,7 @@ namespace BetterLegacy.Arcade
 
                 if (!level)
                 {
-                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelCollection.LevelInfo levelInfo))
+                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelInfo levelInfo))
                     {
                         CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
                             $"Level Name: {levelInfo.name}\n" +

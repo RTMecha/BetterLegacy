@@ -221,7 +221,7 @@ namespace BetterLegacy.Arcade
                     if (!LevelManager.CurrentLevel)
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.blip);
-                        if (CurrentCollection.levelInformation.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelCollection.LevelInfo levelInfo))
+                        if (CurrentCollection.levelInformation.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelInfo levelInfo))
                         {
                             CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
                                 $"Level Name: {levelInfo.name}\n" +
