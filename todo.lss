@@ -83,7 +83,6 @@
 - Update the file browser UI to include more info / functions.
 - Make Example's animations read from a file.
 - Change how modifiers are saved for better consistency.
-- Make CursorManager a main manager that can properly manage cursor states.
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Rework Editor Dialogs to have custom ones under the BetterLegacy.Editor.Dialogs namespace.
