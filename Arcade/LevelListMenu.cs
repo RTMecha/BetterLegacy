@@ -334,6 +334,13 @@ namespace BetterLegacy.Arcade
             layer = 10000;
             defaultSelection = new Vector2Int(0, 2);
             InterfaceManager.inst.SetCurrentInterface(this);
+
+            var collection = LevelManager.CurrentLevelCollection;
+            if (collection && collection.previewAudio)
+            {
+                AudioManager.inst.PlayMusic(collection.name, collection.previewAudio);
+                return;
+            }
             InterfaceManager.inst.PlayMusic();
         }
 
