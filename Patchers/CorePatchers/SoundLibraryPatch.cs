@@ -26,27 +26,32 @@ namespace BetterLegacy.Patchers
                 return false; // only run once due to Awake being run every time a scene is loaded.
             ran = true;
 
-            var ost = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}ost{FileFormat.ASSET.Dot()}");
+            var ostFilePath = RTFile.GetAsset($"Story/ost{FileFormat.ASSET.Dot()}");
 
-            foreach (var asset in ost.GetAllAssetNames())
+            if (RTFile.FileExists(ostFilePath))
             {
-                var assetName = asset.Remove("assets/ost/");
-                var music = ost.LoadAsset<AudioClip>(assetName);
+                var ost = AssetBundle.LoadFromFile(ostFilePath);
 
-                if (music == null)
+                foreach (var asset in ost.GetAllAssetNames())
                 {
-                    Debug.LogError($"{__instance.className}The music ({assetName}) does not exist in the asset bundle for some reason.");
-                    continue;
+                    var assetName = asset.Remove("assets/ost/");
+                    var music = ost.LoadAsset<AudioClip>(assetName);
+
+                    if (music == null)
+                    {
+                        Debug.LogError($"{__instance.className}The music ({assetName}) does not exist in the asset bundle for some reason.");
+                        continue;
+                    }
+
+                    var name = GetMusicName(assetName);
+                    var groupName = GetGroupName(assetName);
+
+                    music.name = name;
+
+                    __instance.musicClips[groupName] = new AudioClip[] { music };
                 }
-
-                var name = GetMusicName(assetName);
-                var groupName = GetGroupName(assetName);
-
-                music.name = name;
-
-                __instance.musicClips[groupName] = new AudioClip[] { music };
+                ost.Unload(false);
             }
-            ost.Unload(false);
 
             foreach (var soundGroup in __instance.soundGroups)
                 __instance.soundClips[soundGroup.soundID] = soundGroup.group;
