@@ -825,10 +825,23 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "levelUnlocked":
                     case "loadLevelID":
+                    case "loadLevelInCollection":
                     case "levelCompletedOther":
                     case "levelExists":
                         {
                             StringGenerator(modifier, layout, "ID", 0);
+
+                            break;
+                        }
+
+                    case "downloadLevel":
+                        {
+                            StringGenerator(modifier, layout, "Arcade ID", 0);
+                            StringGenerator(modifier, layout, "Server ID", 1);
+                            StringGenerator(modifier, layout, "Workshop ID", 2);
+                            StringGenerator(modifier, layout, "Song Title", 3);
+                            StringGenerator(modifier, layout, "Level Name", 4);
+                            BoolGenerator(modifier, layout, "Play Level", 5, true);
 
                             break;
                         }

@@ -1916,6 +1916,25 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "loadLevelInCollection":
+                        {
+                            if (!CoreHelper.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == modifier.value, out Level level))
+                                LevelManager.Play(level);
+
+                            break;
+                        }
+                    case "downloadLevel":
+                        {
+                            var levelInfo = new LevelInfo(modifier.GetString(0), modifier.GetString(0), modifier.GetString(1), modifier.GetString(2), modifier.GetString(3), modifier.GetString(4));
+
+                            LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, level =>
+                            {
+                                if (modifier.GetBool(5, true))
+                                    LevelManager.Play(level);
+                            });
+
+                            break;
+                        }
                     case "endLevel":
                         {
                             if (CoreHelper.InEditor)
