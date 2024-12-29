@@ -362,8 +362,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 canvas.Canvas.scaleFactor = 1f;
                 canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
-                canvas.GameObject.AddComponent<CursorManager>();
-
                 if (!CoreHelper.InGame && allowEffects)
                 {
                     canvas.GameObject.layer = 5;

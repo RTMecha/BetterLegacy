@@ -351,6 +351,23 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Cursor
+
+        /// <summary>
+        /// How long the cursor should be visible when temporarily shown.
+        /// </summary>
+        public Setting<float> CursorVisibleTime { get; set; }
+        /// <summary>
+        /// If the cursor in the game / editor preview can show when the user moves their mouse.
+        /// </summary>
+        public Setting<bool> GameCursorCanShow { get; set; }
+        /// <summary>
+        /// If the cursor in the editor should always be visible and not hide after a few seconds.
+        /// </summary>
+        public Setting<bool> EditorCursorAlwaysVisible { get; set; }
+
+        #endregion
+
         #region Debugging
 
         /// <summary>
@@ -467,6 +484,14 @@ namespace BetterLegacy.Configs
 
             #endregion
 
+            #region Cursor
+
+            CursorVisibleTime = Bind(this, "Cursor", "Cursor Visible Time", 1f, "How long the cursor should be visible when temporarily shown.", 0f, 60f);
+            GameCursorCanShow = Bind(this, "Cursor", "Game Cursor Can Show", false, "If the cursor in the game / editor preview can show when the user moves their mouse.");
+            EditorCursorAlwaysVisible = Bind(this, "Cursor", "Editor Cursor Always Visible", true, "If the cursor in the editor should always be visible and not hide after a few seconds.");
+
+            #endregion
+
             #region Debugging
 
             DebugsOn = Bind(this, "Debugging", "Enabled", true, "If disabled, turns all Unity debug logs off. Might boost performance.");
@@ -509,7 +534,12 @@ namespace BetterLegacy.Configs
             FPSLimit.SettingChanged += FPSChanged;
 
             StoryFile.SettingChanged += Story.StoryMode.Init;
+
+            CursorManager.onScreenTime = CursorVisibleTime.Value;
+            CursorVisibleTime.SettingChanged += OnCursorChanged;
         }
+
+        void OnCursorChanged() => CursorManager.onScreenTime = CursorVisibleTime.Value;
 
         void FPSChanged()
         {

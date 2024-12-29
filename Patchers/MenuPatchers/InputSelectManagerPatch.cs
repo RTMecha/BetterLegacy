@@ -19,7 +19,6 @@ namespace BetterLegacy.Patchers
                 Menus.InterfaceManager.inst.CurrentInterface = null; // clear menu for now until Input Select scene is reworked to use the new menu system.
 
             InputDataManager.inst.ClearInputs();
-            LSHelpers.HideCursor();
             ArcadeHelper.fromLevel = false;
 
             if (MenuConfig.Instance.PlayInputSelectMusic.Value)

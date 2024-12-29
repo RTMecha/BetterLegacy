@@ -58,9 +58,6 @@ namespace BetterLegacy.Patchers
 
             DataManager.inst.UpdateSettingString("colon", ":");
 
-            if (!GameManager.inst)
-                LSHelpers.ShowCursor();
-
             if (!DataManager.inst.HasKey("MasterVolume"))
                 __instance.ResetAudioSettings();
 

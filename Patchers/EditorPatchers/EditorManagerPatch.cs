@@ -326,7 +326,7 @@ namespace BetterLegacy.Patchers
                     {
                         GameManager.inst.ResetCheckpoints(true);
                         GameManager.inst.playerGUI.SetActive(false);
-                        LSHelpers.ShowCursor();
+                        CursorManager.inst.ShowCursor();
                         Instance.GUI.SetActive(true);
                         Instance.ShowGUI();
                         Instance.SetPlayersInvinsible(true);
@@ -353,7 +353,7 @@ namespace BetterLegacy.Patchers
                     else if (Instance.ClosedEditor)
                     {
                         GameManager.inst.playerGUI.SetActive(true);
-                        LSHelpers.HideCursor();
+                        CursorManager.inst.HideCursor();
                         Instance.GUI.SetActive(false);
                         AudioManager.inst.CurrentAudioSource.Play();
                         Instance.SetNormalRenderArea();

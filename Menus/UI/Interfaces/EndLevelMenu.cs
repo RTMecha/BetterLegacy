@@ -38,7 +38,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             onGenerateUIFinish = () => InputDataManager.inst.SetAllControllerRumble(0f);
 
             GameManager.inst.timeline.gameObject.SetActive(false);
-            LSHelpers.ShowCursor();
             
             var metadata = LevelManager.CurrentLevel.metadata;
 

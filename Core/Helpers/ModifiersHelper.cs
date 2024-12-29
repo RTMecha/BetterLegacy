@@ -3128,13 +3128,13 @@ namespace BetterLegacy.Core.Helpers
                     #region Mouse Cursor
                     case "showMouse":
                         {
-                            LSHelpers.ShowCursor();
+                            CursorManager.inst.ShowCursor();
                             break;
                         }
                     case "hideMouse":
                         {
                             if (CoreHelper.InEditorPreview)
-                                LSHelpers.HideCursor();
+                                CursorManager.inst.HideCursor();
                             break;
                         }
                     case "setMousePosition":
@@ -6764,7 +6764,6 @@ namespace BetterLegacy.Core.Helpers
 
                             InterfaceManager.inst.MainDirectory = RTFile.BasePath;
 
-                            LSHelpers.ShowCursor();
                             AudioManager.inst.CurrentAudioSource.Pause();
                             InputDataManager.inst.SetAllControllerRumble(0f);
                             GameManager.inst.gameState = GameManager.State.Paused;

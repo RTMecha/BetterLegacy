@@ -271,7 +271,6 @@ namespace BetterLegacy.Core.Helpers
 
                             InterfaceManager.inst.MainDirectory = RTFile.BasePath;
 
-                            LSHelpers.ShowCursor();
                             AudioManager.inst.CurrentAudioSource.Pause();
                             InputDataManager.inst.SetAllControllerRumble(0f);
 

@@ -29,8 +29,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public static PauseMenu Current { get; set; }
 
-        static bool currentCursorVisibility;
-
         public PauseMenu() : base()
         {
             if (!CoreHelper.InGame || CoreHelper.InEditor)
@@ -406,8 +404,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         static void CountdownEnd(Action onCooldownEnd)
         {
             InterfaceManager.inst.CloseMenus();
-            if (!currentCursorVisibility)
-                LSHelpers.HideCursor();
+            CursorManager.inst.HideCursor();
             AudioManager.inst.CurrentAudioSource.UnPause();
             onCooldownEnd?.Invoke();
             GameManager.inst.gameState = GameManager.State.Playing;
@@ -423,8 +420,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!CoreHelper.Playing)
                 return;
 
-            currentCursorVisibility = Cursor.visible;
-            LSHelpers.ShowCursor();
             AudioManager.inst.CurrentAudioSource.Pause();
             InputDataManager.inst.SetAllControllerRumble(0f);
             GameManager.inst.gameState = GameManager.State.Paused;

@@ -350,7 +350,7 @@ namespace BetterLegacy.Core.Managers
             BackgroundManager.inst.UpdateBackgrounds();
             yield return inst.StartCoroutine(Updater.IUpdateObjects(true));
 
-            LSHelpers.HideCursor();
+            CursorManager.inst.HideCursor();
 
             Debug.Log($"{className}Done!");
 

@@ -358,7 +358,6 @@ namespace BetterLegacy.Patchers
             if (!CoreHelper.Playing)
                 return false;
 
-            LSHelpers.ShowCursor();
             MenuManager.inst.ic.SwitchBranch("main");
             Instance.menuUI.GetComponentInChildren<Image>().enabled = true;
             AudioManager.inst.CurrentAudioSource.Pause();
@@ -375,7 +374,7 @@ namespace BetterLegacy.Patchers
         {
             if (!CoreHelper.Paused)
                 return false;
-            LSHelpers.HideCursor();
+            CursorManager.inst.HideCursor();
             MenuManager.inst.ic.SwitchBranch("empty");
             Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
             AudioManager.inst.CurrentAudioSource.UnPause();

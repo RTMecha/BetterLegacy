@@ -59,6 +59,7 @@ namespace BetterLegacy.Patchers
             RTVideoManager.Init();
             ModifiersManager.Init();
             AchievementManager.Init();
+            CursorManager.Init();
 
             __instance.languagesToIndex.Add("japanese", 2);
             __instance.languagesToIndex.Add("thai", 3);
