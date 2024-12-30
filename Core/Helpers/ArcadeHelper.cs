@@ -438,7 +438,7 @@ namespace BetterLegacy.Core.Helpers
                 else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
                     metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))), false);
 
-                if (metadata == null)
+                if (!metadata)
                 {
                     if (LoadLevelsManager.inst)
                         LoadLevelsManager.inst.UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No metadata in {name}</color>", i, true);
@@ -474,8 +474,7 @@ namespace BetterLegacy.Core.Helpers
 
                 var level = new Level(path, metadata);
 
-                if (LevelManager.Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
-                    level.playerData = playerData;
+                LevelManager.AssignPlayerData(level);
 
                 if (LoadLevelsManager.inst)
                     LoadLevelsManager.inst.UpdateInfo(level.icon, $"Loading {name}", i);

@@ -233,8 +233,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 level.steamItem = item;
                 level.steamLevelInit = exists;
 
-                if (LevelManager.Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
-                    level.playerData = LevelManager.Saves[saveIndex];
+                LevelManager.AssignPlayerData(level);
 
                 onLoad?.Invoke(level, i);
 

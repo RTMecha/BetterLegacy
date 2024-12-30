@@ -557,6 +557,19 @@ namespace BetterLegacy.Core.Managers
 
         #region Player Data
 
+        /// <summary>
+        /// Finds and sets the levels' player data.
+        /// </summary>
+        /// <param name="level">Level to assign to.</param>
+        public static void AssignPlayerData(Level level)
+        {
+            if (!level || !Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
+                return;
+
+            level.playerData = playerData;
+            playerData.LevelName = level.metadata?.beatmap?.name;
+        }
+
         public static void UpdateCurrentLevelProgress()
         {
             if (!IsArcade || !CurrentLevel && !NextLevelInCollection)
