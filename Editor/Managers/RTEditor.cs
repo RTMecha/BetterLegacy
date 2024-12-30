@@ -11497,7 +11497,7 @@ namespace BetterLegacy.Editor.Managers
             bool failed;
             try
             {
-                var zipPath = currentPath + ".zip";
+                var zipPath = currentPath + FileFormat.ZIP.Dot();
                 RTFile.DeleteFile(zipPath);
 
                 System.IO.Compression.ZipFile.CreateFromDirectory(currentPath, zipPath);
@@ -11553,15 +11553,11 @@ namespace BetterLegacy.Editor.Managers
 
             RTFile.CreateDirectory(path);
 
-            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_OGG)))
-                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_OGG), RTFile.CombinePaths(path, Level.AUDIO_OGG));
-            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_WAV)))
-                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_WAV), RTFile.CombinePaths(path, Level.AUDIO_WAV));
-            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_MP3)))
-                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_MP3), RTFile.CombinePaths(path, Level.AUDIO_MP3));
+            RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_OGG), RTFile.CombinePaths(path, Level.AUDIO_OGG));
+            RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_WAV), RTFile.CombinePaths(path, Level.AUDIO_WAV));
+            RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_MP3), RTFile.CombinePaths(path, Level.AUDIO_MP3));
 
-            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, Level.LEVEL_JPG)))
-                RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_JPG), RTFile.CombinePaths(path, Level.COVER_JPG));
+            RTFile.CopyFile(RTFile.CombinePaths(currentPath, Level.LEVEL_JPG), RTFile.CombinePaths(path, Level.COVER_JPG));
 
             try
             {
