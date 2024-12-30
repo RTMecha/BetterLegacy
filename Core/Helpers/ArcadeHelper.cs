@@ -54,6 +54,14 @@ namespace BetterLegacy.Core.Helpers
             {
                 var prevIndex = LevelManager.currentLevelIndex;
                 LevelManager.currentLevelIndex = LevelManager.CurrentLevelCollection.EntryLevelIndex;
+                if (LevelManager.currentLevelIndex < 0)
+                    LevelManager.currentLevelIndex = 0;
+
+                while (LevelManager.currentLevelIndex < LevelManager.CurrentLevelCollection.Count - 1 && LevelManager.CurrentLevelCollection.levelInformation[LevelManager.currentLevelIndex].skip) // skip the level during normal playthrough
+                    LevelManager.currentLevelIndex++;
+
+                if (LevelManager.CurrentLevelCollection.Count > 1)
+                    LevelManager.CurrentLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
 
                 CoreHelper.Log($"Update collection index - Prev: {prevIndex} > Current: {LevelManager.currentLevelIndex}");
                 LevelManager.LevelEnded = false;
@@ -84,6 +92,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 var prevIndex = LevelManager.currentLevelIndex;
                 LevelManager.currentLevelIndex++;
+                while (LevelManager.currentLevelIndex < LevelManager.CurrentLevelCollection.Count - 1 && LevelManager.CurrentLevelCollection.levelInformation[LevelManager.currentLevelIndex].skip) // skip the level during normal playthrough
+                    LevelManager.currentLevelIndex++;
 
                 CoreHelper.Log($"Update collection index - Prev: {prevIndex} > Current: {LevelManager.currentLevelIndex}");
 
@@ -105,6 +115,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
+            // Arcade queue handling
             var prev = LevelManager.currentQueueIndex;
             LevelManager.currentQueueIndex++;
 

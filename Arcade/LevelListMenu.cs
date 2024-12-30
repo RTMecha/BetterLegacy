@@ -461,7 +461,7 @@ namespace BetterLegacy.Arcade
                 }
                 else
                 {
-                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelInfo levelInfo) && levelInfo.hidden)
+                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelInfo levelInfo) && levelInfo.hidden && (!levelInfo.showAfterUnlock || level.Locked))
                         continue;
                 }
 

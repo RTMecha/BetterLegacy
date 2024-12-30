@@ -215,6 +215,10 @@ namespace BetterLegacy.Arcade
                     LevelManager.currentLevelIndex = CurrentCollection.EntryLevelIndex;
                     if (LevelManager.currentLevelIndex < 0)
                         LevelManager.currentLevelIndex = 0;
+
+                    while (LevelManager.currentLevelIndex < CurrentCollection.Count - 1 && CurrentCollection.levelInformation[LevelManager.currentLevelIndex].skip) // skip the level during normal playthrough
+                        LevelManager.currentLevelIndex++;
+
                     if (CurrentCollection.Count > 1)
                         LevelManager.CurrentLevel = CurrentCollection[LevelManager.currentLevelIndex];
 

@@ -110,6 +110,16 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public bool hidden;
 
+        /// <summary>
+        /// If the level should show after it has been unlocked.
+        /// </summary>
+        public bool showAfterUnlock;
+
+        /// <summary>
+        /// If the level should be skipped when progressing. This is for levels that you don't want played during the normal collection playthrough, and instead want to load it via a modifier.
+        /// </summary>
+        public bool skip;
+
         #endregion
 
         #region Methods
@@ -160,6 +170,9 @@ namespace BetterLegacy.Core.Data.Level
             workshopID = jn["workshop_id"],
 
             hidden = jn["hidden"].AsBool,
+            showAfterUnlock = jn["show_after_unlock"].AsBool,
+            skip = jn["skip"].AsBool,
+
             requireUnlock = jn["require_unlock"].AsBool,
             overwriteRequireUnlock = jn["require_unlock"] != null,
             unlockAfterCompletion = jn["unlock_complete"].AsBool,
@@ -197,6 +210,11 @@ namespace BetterLegacy.Core.Data.Level
 
             if (hidden)
                 jn["hidden"] = hidden.ToString();
+            if (showAfterUnlock)
+                jn["show_after_unlock"] = showAfterUnlock.ToString();
+            if (skip)
+                jn["skip"] = skip.ToString();
+
             if (overwriteRequireUnlock && requireUnlock)
                 jn["require_unlock"] = requireUnlock.ToString();
             if (overwriteUnlockAfterCompletion && unlockAfterCompletion)
