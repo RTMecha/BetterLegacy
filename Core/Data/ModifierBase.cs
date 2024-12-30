@@ -93,8 +93,8 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Reference value indexes here since I was pretty stupid with how I implemented the value system initially.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">Index of the value.</param>
+        /// <returns>Returns a value.</returns>
         public string GetValue(int index) => index == 0 ? value : commands[index];
 
         public T GetValue<T>(int index, T defaultValue)
@@ -134,8 +134,6 @@ namespace BetterLegacy.Core.Data
 
             return Parser.TryParse(GetValue(index), defaultValue);
         }
-
-        public string GetString(int index) => GetString(index, string.Empty);
 
         public string GetString(int index, string defaultValue)
         {

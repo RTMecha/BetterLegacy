@@ -1607,17 +1607,17 @@ namespace BetterLegacy.Core.Helpers
                 #region Dev Only
 
                 case "storyLoadIntEqualsDEVONLY":
-                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) == modifier.GetInt(2, 0);
+                        return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) == modifier.GetInt(2, 0);
                 case "storyLoadIntLesserEqualsDEVONLY":
-                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) <= modifier.GetInt(2, 0);
+                        return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) <= modifier.GetInt(2, 0);
                 case "storyLoadIntGreaterEqualsDEVONLY":
-                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) >= modifier.GetInt(2, 0);
+                        return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) >= modifier.GetInt(2, 0);
                 case "storyLoadIntLesserDEVONLY":
-                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) < modifier.GetInt(2, 0);
+                        return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) < modifier.GetInt(2, 0);
                 case "storyLoadIntGreaterDEVONLY":
-                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) > modifier.GetInt(2, 0);
+                        return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) > modifier.GetInt(2, 0);
                 case "storyLoadBoolDEVONLY":
-                    return Story.StoryManager.inst.LoadBool(modifier.GetString(0, ""), modifier.GetBool(1, false));
+                    return Story.StoryManager.inst.LoadBool(modifier.GetValue(0), modifier.GetBool(1, false));
 
                     #endregion
             }
@@ -1930,7 +1930,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "downloadLevel":
                         {
-                            var levelInfo = new LevelInfo(modifier.GetString(0), modifier.GetString(0), modifier.GetString(1), modifier.GetString(2), modifier.GetString(3), modifier.GetString(4));
+                            var levelInfo = new LevelInfo(modifier.GetValue(0), modifier.GetValue(0), modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), modifier.GetValue(4));
 
                             LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, level =>
                             {
@@ -1955,7 +1955,7 @@ namespace BetterLegacy.Core.Helpers
                                 var endLevelUpdateProgress = modifier.GetBool(2, true);
 
                                 ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
-                                ArcadeHelper.endLevelData = modifier.GetString(1, "");
+                                ArcadeHelper.endLevelData = modifier.GetValue(1);
                             }
                             ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true);
 
@@ -1985,7 +1985,7 @@ namespace BetterLegacy.Core.Helpers
                                 var endLevelUpdateProgress = modifier.GetBool(2, true);
 
                                 ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
-                                ArcadeHelper.endLevelData = modifier.GetString(1, "");
+                                ArcadeHelper.endLevelData = modifier.GetValue(1);
                             }
                             ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true);
 
@@ -4475,7 +4475,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference.shape != 4 || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                                 break;
 
-                            var text = !string.IsNullOrEmpty(modifier.GetString(9, "")) ? modifier.GetString(9, "") : modifier.reference.text;
+                            var text = !string.IsNullOrEmpty(modifier.GetValue(9)) ? modifier.GetValue(9) : modifier.reference.text;
 
                             if (!modifier.setTimer)
                             {
@@ -4550,10 +4550,10 @@ namespace BetterLegacy.Core.Helpers
                                     break;
                                 }
 
-                                if (SoundManager.inst.TryGetSound(modifier.GetString(4, ""), out AudioClip audioClip))
+                                if (SoundManager.inst.TryGetSound(modifier.GetValue(4), out AudioClip audioClip))
                                     SoundManager.inst.PlaySound(audioClip, volume, pitch);
                                 else
-                                    ModifiersManager.GetSoundPath(modifier.reference.id, modifier.GetString(4, ""), modifier.GetBool(5, false), pitch, volume, false);
+                                    ModifiersManager.GetSoundPath(modifier.reference.id, modifier.GetValue(4), modifier.GetBool(5, false), pitch, volume, false);
 
                                 break;
                             }
@@ -6428,8 +6428,8 @@ namespace BetterLegacy.Core.Helpers
                             }
 
                             float time = AudioManager.inst.CurrentAudioSource.time;
-                            if (!string.IsNullOrEmpty(modifier.GetString(1, "")))
-                                time = RTMath.Parse(modifier.GetString(1, ""), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
+                            if (!string.IsNullOrEmpty(modifier.GetValue(1)))
+                                time = RTMath.Parse(modifier.GetValue(1), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
 
                             GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
                             break;
@@ -6462,8 +6462,8 @@ namespace BetterLegacy.Core.Helpers
                             }
 
                             float time = AudioManager.inst.CurrentAudioSource.time;
-                            if (!string.IsNullOrEmpty(modifier.GetString(1, "")))
-                                time = RTMath.Parse(modifier.GetString(1, ""), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
+                            if (!string.IsNullOrEmpty(modifier.GetValue(1)))
+                                time = RTMath.Parse(modifier.GetValue(1), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
 
                             GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
                             break;
@@ -6860,7 +6860,7 @@ namespace BetterLegacy.Core.Helpers
                             if (!CoreHelper.InStory)
                                 return;
 
-                            Story.StoryManager.inst.SaveInt(modifier.GetString(0, ""), modifier.reference.integerVariable);
+                            Story.StoryManager.inst.SaveInt(modifier.GetValue(0), modifier.reference.integerVariable);
 
                             break;
                         }
@@ -6870,7 +6870,7 @@ namespace BetterLegacy.Core.Helpers
                             if (!CoreHelper.InStory)
                                 return;
 
-                            Story.StoryManager.inst.SaveInt(modifier.GetString(0, ""), modifier.GetInt(1, 0));
+                            Story.StoryManager.inst.SaveInt(modifier.GetValue(0), modifier.GetInt(1, 0));
 
                             break;
                         }
