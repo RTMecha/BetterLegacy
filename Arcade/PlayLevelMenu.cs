@@ -361,12 +361,17 @@ namespace BetterLegacy.Arcade
                 playBlipSound = true,
                 func = () =>
                 {
-                    if (LevelManager.CurrentLevelCollection != null)
+                    var collection = LevelManager.CurrentLevelCollection;
+                    if (collection)
                     {
                         if (LevelManager.currentLevelIndex < 0)
                             LevelManager.currentLevelIndex = 0;
-                        if (LevelManager.CurrentLevelCollection.Count > 1)
-                            LevelManager.CurrentLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
+
+                        while (LevelManager.currentLevelIndex < collection.Count - 1 && collection.levelInformation[LevelManager.currentLevelIndex].skip) // skip the level during normal playthrough
+                            LevelManager.currentLevelIndex++;
+
+                        if (collection.Count > 1)
+                            LevelManager.CurrentLevel = collection[LevelManager.currentLevelIndex];
                         else
                             LevelManager.CurrentLevel = CurrentLevel;
                     }
