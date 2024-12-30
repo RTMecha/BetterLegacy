@@ -16,6 +16,12 @@ namespace BetterLegacy.Core.Data.Level
     {
         public PlayerData() { }
 
+        public PlayerData(Level level)
+        {
+            ID = level.id;
+            LevelName = level.metadata?.beatmap?.name;
+        }
+
         #region Properties
 
         /// <summary>

@@ -141,7 +141,8 @@ namespace BetterLegacy.Story
 
             var makeNewPlayerData = level.playerData == null;
             if (makeNewPlayerData)
-                level.playerData = new PlayerData { ID = level.id, LevelName = level.metadata?.beatmap?.name, };
+                level.playerData = new PlayerData(level);
+            level.playerData.LevelName = level.metadata?.beatmap?.name; // update level name
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewPlayerData}\n" +

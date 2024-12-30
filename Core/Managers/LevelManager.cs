@@ -590,7 +590,9 @@ namespace BetterLegacy.Core.Managers
         public static void SetLevelData(List<Level> levels, Level currentLevel, bool makeNewPlayerData, bool update)
         {
             if (makeNewPlayerData)
-                currentLevel.playerData = new PlayerData { ID = currentLevel.id, LevelName = currentLevel.metadata?.beatmap?.name, };
+                currentLevel.playerData = new PlayerData(currentLevel);
+            if (currentLevel && currentLevel.playerData)
+                currentLevel.playerData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
 
             if (update)
             {
