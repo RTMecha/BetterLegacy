@@ -459,6 +459,11 @@ namespace BetterLegacy.Arcade
 
                     continue;
                 }
+                else
+                {
+                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelInfo levelInfo) && levelInfo.hidden)
+                        continue;
+                }
 
                 var levelRank = LevelManager.GetLevelRank(level);
                 var isSSRank = levelRank.name == "SS";
