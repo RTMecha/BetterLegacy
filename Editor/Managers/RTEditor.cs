@@ -9173,7 +9173,7 @@ namespace BetterLegacy.Editor.Managers
                                     }, HideWarningPopup);
                                 }),
                                 new ButtonFunction(true),
-                                new ButtonFunction("ZIP Folder", () => ZIPLevel(path, name)),
+                                new ButtonFunction("ZIP Folder", () => ZIPLevel(path)),
                                 new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
                                 new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
                                 new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
@@ -9333,7 +9333,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
                             }),
                             new ButtonFunction(true),
-                            new ButtonFunction("ZIP Level", () => ZIPLevel(path, name)),
+                            new ButtonFunction("ZIP Level", () => ZIPLevel(path)),
                             new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
                             new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
                             new ButtonFunction("Open List in File Explorer", OpenLevelListFolder)
@@ -11485,19 +11485,19 @@ namespace BetterLegacy.Editor.Managers
         public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
         public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
 
-        public void ZIPLevel(string currentPath, string fileName)
+        public void ZIPLevel(string currentPath)
         {
-            EditorManager.inst.DisplayNotification($"Zipping {fileName}...", 2f, EditorManager.NotificationType.Warning);
+            EditorManager.inst.DisplayNotification($"Zipping {Path.GetFileName(RTFile.RemoveEndSlash(currentPath))}...", 2f, EditorManager.NotificationType.Warning);
 
-            IZIPLevel(currentPath, fileName).StartAsync();
+            IZIPLevel(currentPath).StartAsync();
         }
 
-        public IEnumerator IZIPLevel(string currentPath, string fileName)
+        public IEnumerator IZIPLevel(string currentPath)
         {
             bool failed;
+            var zipPath = RTFile.RemoveEndSlash(currentPath) + FileFormat.ZIP.Dot();
             try
             {
-                var zipPath = currentPath + FileFormat.ZIP.Dot();
                 RTFile.DeleteFile(zipPath);
 
                 System.IO.Compression.ZipFile.CreateFromDirectory(currentPath, zipPath);
@@ -11514,7 +11514,7 @@ namespace BetterLegacy.Editor.Managers
             if (failed)
                 EditorManager.inst.DisplayNotification($"Had an error with zipping the folder. Check the logs!", 2f, EditorManager.NotificationType.Error);
             else
-                EditorManager.inst.DisplayNotification($"Successfully zipped the folder to {fileName}.zip!", 2f, EditorManager.NotificationType.Success);
+                EditorManager.inst.DisplayNotification($"Successfully zipped the folder to {Path.GetFileName(zipPath)}!", 2f, EditorManager.NotificationType.Success);
             yield break;
         }
 
@@ -11624,7 +11624,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var recyclingPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "recycling");
             RTFile.CreateDirectory(recyclingPath);
-            Directory.Move(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash, level), RTFile.CombinePaths(recyclingPath, level));
+            RTFile.MoveDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash, level), RTFile.CombinePaths(recyclingPath, level));
         }
 
         public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value) - inst.bpmOffset;
@@ -11931,8 +11931,7 @@ namespace BetterLegacy.Editor.Managers
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.METADATA_LSB), RTFile.CombinePaths(saveTo, $"metadata{FileFormat.JSON.Dot()}"));
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.PLAYERS_LSB), RTFile.CombinePaths(saveTo, $"players{FileFormat.JSON.Dot()}"));
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_OGG), RTFile.CombinePaths(saveTo, $"song{FileFormat.OGG.Dot()}"));
-            if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
-                RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_JPG), RTFile.CombinePaths(saveTo, Level.COVER_JPG));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_JPG), RTFile.CombinePaths(saveTo, Level.COVER_JPG));
 
             EditorManager.inst.DisplayNotification("Saved the level to the story level compiler.", 2f, EditorManager.NotificationType.Success);
         }
