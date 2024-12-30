@@ -154,14 +154,12 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// If <see cref="currentQueueIndex"/> is at the end of the Arcade Queue list.
         /// </summary>
-        public static bool IsNextEndOfQueue
-            => ArcadeQueue.Count <= 1 || currentQueueIndex + 1 >= ArcadeQueue.Count;
+        public static bool IsNextEndOfQueue => ArcadeQueue.Count <= 1 || currentQueueIndex + 1 >= ArcadeQueue.Count;
 
         /// <summary>
         /// If <see cref="currentQueueIndex"/> is at the end of the Arcade Queue list.
         /// </summary>
-        public static bool IsEndOfQueue
-            => ArcadeQueue.Count <= 1 || currentQueueIndex >= ArcadeQueue.Count;
+        public static bool IsEndOfQueue => ArcadeQueue.Count <= 1 || currentQueueIndex >= ArcadeQueue.Count;
 
         /// <summary>
         /// The current index in <see cref="ArcadeQueue"/>
