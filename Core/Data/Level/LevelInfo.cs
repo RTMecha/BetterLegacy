@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Class used for obtaining info about a level even if the player doesn't have the level loaded in their arcade.
     /// </summary>
-    public class LevelInfo
+    public class LevelInfo : Exists
     {
         public LevelInfo() { }
 
@@ -27,6 +27,13 @@ namespace BetterLegacy.Core.Data.Level
         }
 
         #region Fields
+
+        #region Reference
+
+        /// <summary>
+        /// The level reference.
+        /// </summary>
+        public Level level;
 
         /// <summary>
         /// Index of the level in the <see cref="levels"/>.
@@ -72,10 +79,10 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public string workshopID;
 
-        /// <summary>
-        /// If the level should be hidden in the level collection list.
-        /// </summary>
-        public bool hidden;
+        #endregion
+
+        #region Overwrite
+
         /// <summary>
         /// If the level requires unlocking / completion in order to access the level in the level collection list.
         /// </summary>
@@ -87,14 +94,30 @@ namespace BetterLegacy.Core.Data.Level
         public bool overwriteRequireUnlock;
 
         /// <summary>
-        /// The level reference.
+        /// If the level unlocks after completion.
         /// </summary>
-        public Level level;
+        public bool unlockAfterCompletion = true;
+
+        /// <summary>
+        /// If true, overwrites <see cref="unlockAfterCompletion"/>.
+        /// </summary>
+        public bool overwriteUnlockAfterCompletion;
+
+        #endregion
+
+        /// <summary>
+        /// If the level should be hidden in the level collection list.
+        /// </summary>
+        public bool hidden;
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Overwrites some values of the level.
+        /// </summary>
+        /// <param name="level">Level to overwrite the data of.</param>
         public void Overwrite(Level level)
         {
             if (level.metadata)
@@ -103,14 +126,15 @@ namespace BetterLegacy.Core.Data.Level
                 level.metadata.arcadeID = id;
                 if (overwriteRequireUnlock)
                     level.metadata.requireUnlock = requireUnlock;
+                if (overwriteUnlockAfterCompletion)
+                    level.metadata.unlockAfterCompletion = unlockAfterCompletion;
             }
 
             // overwrites the original level ID so it doesn't conflict with the same level outside the collection.
             // So when the player plays the level inside the collection, it isn't already ranked.
             level.id = id;
 
-            if (LevelManager.Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
-                level.playerData = playerData;
+            LevelManager.AssignPlayerData(level);
         }
 
         /// <summary>
@@ -138,6 +162,8 @@ namespace BetterLegacy.Core.Data.Level
             hidden = jn["hidden"].AsBool,
             requireUnlock = jn["require_unlock"].AsBool,
             overwriteRequireUnlock = jn["require_unlock"] != null,
+            unlockAfterCompletion = jn["unlock_complete"].AsBool,
+            overwriteUnlockAfterCompletion = jn["unlock_complete"] != null,
         };
 
         /// <summary>
@@ -173,6 +199,8 @@ namespace BetterLegacy.Core.Data.Level
                 jn["hidden"] = hidden.ToString();
             if (overwriteRequireUnlock && requireUnlock)
                 jn["require_unlock"] = requireUnlock.ToString();
+            if (overwriteUnlockAfterCompletion && unlockAfterCompletion)
+                jn["unlock_complete"] = unlockAfterCompletion.ToString();
 
             return jn;
         }
@@ -197,6 +225,7 @@ namespace BetterLegacy.Core.Data.Level
 
             hidden = false,
             requireUnlock = level.metadata.requireUnlock,
+            unlockAfterCompletion = level.metadata.unlockAfterCompletion,
         };
 
         #endregion
