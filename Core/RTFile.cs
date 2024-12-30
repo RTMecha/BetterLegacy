@@ -152,7 +152,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns true if the file was successfully moved, otherwise returns false.</returns>
         public static bool MoveFile(string path, string destination)
         {
-            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            if (FileExists(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
             {
                 try
                 {
@@ -176,7 +176,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns true if the directory was successfully moved.</returns>
         public static bool MoveDirectory(string path, string destination)
         {
-            if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
+            if (DirectoryExists(path) && !string.IsNullOrEmpty(destination) && path.ToLower() != destination.ToLower())
             {
                 try
                 {
