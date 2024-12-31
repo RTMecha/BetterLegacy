@@ -140,7 +140,7 @@ namespace BetterLegacy.Editor
         /// </summary>
         public float Length => TimelineReference switch
         {
-            TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().GetObjectLifeLength(_takeCollapseIntoConsideration: true),
+            TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().GetObjectLifeLength(collapse: true),
             TimelineReferenceType.PrefabObject => GetData<PrefabObject>().GetPrefabLifeLength(true),
             _ => 0f
         };
@@ -425,7 +425,7 @@ namespace BetterLegacy.Editor
 
                 name = beatmapObject.name;
                 startTime = beatmapObject.StartTime;
-                length = beatmapObject.GetObjectLifeLength(_takeCollapseIntoConsideration: true);
+                length = beatmapObject.GetObjectLifeLength(collapse: true);
 
                 image.type = ObjectEditor.inst.GetObjectTypePattern(beatmapObject.objectType);
                 image.sprite = ObjectEditor.inst.GetObjectTypeSprite(beatmapObject.objectType);

@@ -336,7 +336,7 @@ namespace BetterLegacy.Core.Optimization
                             var spawner = levelProcessor.engine.objectSpawner;
 
                             levelObject.StartTime = beatmapObject.StartTime;
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                             spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
                             spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
@@ -357,7 +357,7 @@ namespace BetterLegacy.Core.Optimization
                             var spawner = levelProcessor.engine.objectSpawner;
 
                             levelObject.StartTime = beatmapObject.StartTime;
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                             levelObject.SetActive(beatmapObject.Alive);
 
@@ -375,7 +375,7 @@ namespace BetterLegacy.Core.Optimization
 
                             var spawner = levelProcessor.engine.objectSpawner;
 
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                             spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
                             spawner.RecalculateObjectStates();
@@ -486,7 +486,7 @@ namespace BetterLegacy.Core.Optimization
                     case "keyframe":
                     case "keyframes":
                         {
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             RecacheSequences(beatmapObject, levelProcessor.converter, true, true);
 
                             break;
@@ -732,7 +732,7 @@ namespace BetterLegacy.Core.Optimization
                                     if (TryGetObject(beatmapObject, out LevelObject levelObject))
                                     {
                                         levelObject.StartTime = beatmapObject.StartTime;
-                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                                         levelObject.SetActive(beatmapObject.Alive);
 
@@ -784,7 +784,7 @@ namespace BetterLegacy.Core.Optimization
                                     if (TryGetObject(beatmapObject, out LevelObject levelObject))
                                     {
                                         levelObject.StartTime = beatmapObject.StartTime;
-                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                                         levelObject.SetActive(beatmapObject.Alive);
 
@@ -808,7 +808,7 @@ namespace BetterLegacy.Core.Optimization
                     {
                         foreach (var beatmapObject in GameData.Current.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
-                            if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
+                            if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.SpawnDuration > prefabObject.autoKillOffset)
                             {
                                 beatmapObject.autoKillType = ObjectAutoKillType.SongTime;
                                 beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefabObject.Prefab?.Offset ?? 0f + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
@@ -907,7 +907,7 @@ namespace BetterLegacy.Core.Optimization
                             Debug.LogError($"{className}Failed to set event speed.\n{ex}");
                         }
 
-                        if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.Offset + beatmapObjectCopy.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
+                        if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.Offset + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
                         {
                             beatmapObjectCopy.autoKillType = ObjectAutoKillType.SongTime;
                             beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.Offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;

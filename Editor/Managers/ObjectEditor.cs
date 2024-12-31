@@ -326,7 +326,7 @@ namespace BetterLegacy.Editor.Managers
                 if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject))
                 {
                     levelObject.StartTime = beatmapObject.StartTime;
-                    levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                    levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                     levelObject.SetActive(beatmapObject.Alive);
 

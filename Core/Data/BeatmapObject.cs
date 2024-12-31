@@ -35,7 +35,7 @@ namespace BetterLegacy.Core.Data
             editorData = new ObjectEditorData();
         }
 
-        #region Object Values
+        #region Values
 
         string uniqueID;
         /// <summary>
@@ -207,6 +207,8 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string originalID;
 
+        public new ObjectEditorData editorData;
+
         /// <summary>
         /// Object spawn conditions.
         /// </summary>
@@ -257,7 +259,7 @@ namespace BetterLegacy.Core.Data
                 var st = StartTime;
                 var akt = autoKillType;
                 var ako = autoKillOffset;
-                var l = GetObjectLifeLength(_oldStyle: true);
+                var l = SpawnDuration;
                 return time >= st && (time <= l + st && akt != AutoKillType.OldStyleNoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.OldStyleNoAutokill || time < ako && akt == AutoKillType.SongTime);
             }
         }
@@ -267,6 +269,19 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public int KeyframeCount => events.Sum(x => x.Count);
 
+        /// <summary>
+        /// Total length of the objects' sequence.
+        /// </summary>
+        public float Length => events.Max(x => x.Max(x => x.eventTime));
+
+        /// <summary>
+        /// Gets the total time the object is alive for.
+        /// </summary>
+        public float SpawnDuration => GetObjectLifeLength(0.0f, true);
+
+        /// <summary>
+        /// Parent of the beatmap object.
+        /// </summary>
         public BeatmapObject Parent => GameData.Current.beatmapObjects.Find(x => x.id == parent);
 
         /// <summary>
@@ -301,13 +316,7 @@ namespace BetterLegacy.Core.Data
                 autoKillOffset = orig.autoKillOffset,
                 autoKillType = orig.autoKillType,
                 Depth = orig.Depth,
-                editorData = new ObjectEditorData()
-                {
-                    Bin = orig.editorData.Bin,
-                    layer = orig.editorData.layer,
-                    collapse = orig.editorData.collapse,
-                    locked = orig.editorData.locked
-                },
+                editorData = ObjectEditorData.DeepCopy(orig.editorData),
                 fromPrefab = orig.fromPrefab,
                 objectType = orig.objectType,
                 origin = orig.origin,
@@ -335,9 +344,7 @@ namespace BetterLegacy.Core.Data
             };
 
             for (int i = 0; i < beatmapObject.events.Count; i++)
-            {
                 beatmapObject.events[i].AddRange(orig.events[i].Select(x => EventKeyframe.DeepCopy((EventKeyframe)x)));
-            }
 
             beatmapObject.modifiers = new List<Modifier<BeatmapObject>>();
             beatmapObject.modifiers = orig.modifiers.Count > 0 ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, beatmapObject)).ToList() : new List<Modifier<BeatmapObject>>();
@@ -509,7 +516,7 @@ namespace BetterLegacy.Core.Data
 
             beatmapObject.events = events;
 
-            beatmapObject.id = jn["id"] != null ? jn["id"] : LSText.randomString(16);
+            beatmapObject.id = jn["id"] ?? LSText.randomString(16);
 
             beatmapObject.opacityCollision = true;
 
@@ -555,7 +562,7 @@ namespace BetterLegacy.Core.Data
 
             if (jn["so"] != null)
                 beatmapObject.shapeOption = jn["so"].AsInt;
-            
+
             if (jn["gt"] != null)
                 beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
 
@@ -572,9 +579,7 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.origin = new Vector2(jn["o"]["x"].AsFloat, jn["o"]["y"].AsFloat);
 
             if (jn["ed"] != null)
-            {
                 beatmapObject.editorData = ObjectEditorData.ParseVG(jn["ed"]);
-            }
 
             return beatmapObject;
         }
@@ -694,7 +699,7 @@ namespace BetterLegacy.Core.Data
 
                     if (kfjn["ct"] != null)
                         eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
-                    
+
                     // if gradient objects are implemented
                     // x - 0 = start color slot
                     // y - 1 = start opacity
@@ -706,18 +711,18 @@ namespace BetterLegacy.Core.Data
                     // y3 = end hue
                     // z3 = end saturation
                     // x4 = end value
-                    
-                    if(kfjn["z2"] != null) // check for gradient values
+
+                    if (kfjn["z2"] != null) // check for gradient values
                         eventKeyframe.SetEventValues(
                         kfjn["x"].AsFloat,
-                        kfjn["y"].AsFloat, 
+                        kfjn["y"].AsFloat,
                         kfjn["z"].AsFloat,
                         kfjn["x2"].AsFloat,
                         kfjn["y2"].AsFloat,
                         kfjn["z2"].AsFloat,
                         kfjn["x3"].AsFloat,
                         kfjn["y3"].AsFloat,
-                        kfjn["z3"].AsFloat, 
+                        kfjn["z3"].AsFloat,
                         kfjn["x4"].AsFloat);
                     else // no gradient values
                         eventKeyframe.SetEventValues(
@@ -731,7 +736,7 @@ namespace BetterLegacy.Core.Data
                             0f,
                             0f,
                             0f);
-                    
+
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat);
 
@@ -784,7 +789,7 @@ namespace BetterLegacy.Core.Data
 
             if (jn["iglif"] != null)
                 beatmapObject.ignoreLifespan = jn["iglif"].AsBool;
-            
+
             if (jn["ordmod"] != null)
                 beatmapObject.orderModifiers = jn["ordmod"].AsBool;
 
@@ -837,17 +842,8 @@ namespace BetterLegacy.Core.Data
             if (jn["o"] != null)
                 beatmapObject.origin = new Vector2(jn["o"]["x"].AsFloat, jn["o"]["y"].AsFloat);
 
-            if (jn["ed"]["locked"] != null)
-                beatmapObject.editorData.locked = jn["ed"]["locked"].AsBool;
-
-            if (jn["ed"]["shrink"] != null)
-                beatmapObject.editorData.collapse = jn["ed"]["shrink"].AsBool;
-
-            if (jn["ed"]["bin"] != null)
-                beatmapObject.editorData.Bin = jn["ed"]["bin"].AsInt;
-
-            if (jn["ed"]["layer"] != null)
-                beatmapObject.editorData.layer = Mathf.Clamp(jn["ed"]["layer"].AsInt, 0, int.MaxValue);
+            if (jn["ed"] != null)
+                beatmapObject.editorData = ObjectEditorData.Parse(jn["ed"]);
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
@@ -1017,7 +1013,7 @@ namespace BetterLegacy.Core.Data
                 for (int i = 0; i < parentOffsets.Count; i++)
                     jn["po"][i] = parentOffsets[i].ToString();
             }
-            
+
             if (parentAdditive != "000")
                 jn["pa"] = parentAdditive;
 
@@ -1100,6 +1096,23 @@ namespace BetterLegacy.Core.Data
         }
 
         /// <summary>
+        /// Gets the objects' lifetime based on its autokill type and offset.
+        /// </summary>
+        /// <param name="offset">Offset to apply to lifetime.</param>
+        /// <param name="oldStyle">If the autokill length should be considered.</param>
+        /// <param name="collapse">If the length should be collapsed.</param>
+        /// <returns>Returns the lifetime of the object.</returns>
+        public new float GetObjectLifeLength(float offset = 0f, bool oldStyle = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
+        {
+            AutoKillType.OldStyleNoAutokill => oldStyle ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
+            AutoKillType.LastKeyframe => Length + offset,
+            AutoKillType.LastKeyframeOffset => Length + autoKillOffset + offset,
+            AutoKillType.FixedTime => autoKillOffset,
+            AutoKillType.SongTime => (startTime >= autoKillOffset) ? 0.1f : (autoKillOffset - startTime),
+            _ => 0f,
+        };
+
+        /// <summary>
         /// Sets the parent additive value depending on the index.
         /// </summary>
         /// <param name="_index">The index to assign to.</param>
@@ -1118,8 +1131,9 @@ namespace BetterLegacy.Core.Data
             {
                 var parent = this.parent;
                 var beatmapObject = this;
+                var spawnDuration = SpawnDuration;
 
-                if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
+                if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < spawnDuration &&
                     (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
                     beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f) &&
                     beatmapObject.parentType[1] == '1')
@@ -1134,7 +1148,7 @@ namespace BetterLegacy.Core.Data
                     beatmapObject = beatmapObjects.Find(x => x.id == parent);
                     parent = beatmapObject.parent;
 
-                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
+                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < spawnDuration &&
                         (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
                         beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f) &&
                         beatmapObject.parentType[1] == '1')
@@ -1162,17 +1176,38 @@ namespace BetterLegacy.Core.Data
             return false;
         }
 
+        #region Prefab Reference
+
+        /// <summary>
+        /// Removes the Prefab and Prefab Object ID references.
+        /// </summary>
         public void RemovePrefabReference()
         {
             prefabID = "";
             prefabInstanceID = "";
         }
 
+        /// <summary>
+        /// Sets the Prefab and Prefab Object ID references from a Prefab Object.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object reference.</param>
         public void SetPrefabReference(PrefabObject prefabObject)
         {
             prefabID = prefabObject.prefabID;
             prefabInstanceID = prefabObject.ID;
         }
+
+        /// <summary>
+        /// Sets the Prefab and Prefab Object ID references from another object.
+        /// </summary>
+        /// <param name="beatmapObject">Object reference.</param>
+        public void SetPrefabReference(BeatmapObject beatmapObject)
+        {
+            prefabID = beatmapObject.prefabID;
+            prefabInstanceID = beatmapObject.prefabInstanceID;
+        }
+
+        #endregion
 
         #region Custom Interpolation
 
@@ -1204,35 +1239,17 @@ namespace BetterLegacy.Core.Data
             {
                 case 0:
                     {
-                        if (toAxis == 0)
-                            positionOffset.x = value;
-                        if (toAxis == 1)
-                            positionOffset.y = value;
-                        if (toAxis == 2)
-                            positionOffset.z = value;
-
+                        positionOffset[toAxis] = value;
                         break;
                     }
                 case 1:
                     {
-                        if (toAxis == 0)
-                            scaleOffset.x = value;
-                        if (toAxis == 1)
-                            scaleOffset.y = value;
-                        if (toAxis == 2)
-                            scaleOffset.z = value;
-
+                        scaleOffset[toAxis] = value;
                         break;
                     }
                 case 2:
                     {
-                        if (toAxis == 0)
-                            rotationOffset.x = value;
-                        if (toAxis == 1)
-                            rotationOffset.y = value;
-                        if (toAxis == 2)
-                            rotationOffset.z = value;
-
+                        rotationOffset[toAxis] = value;
                         break;
                     }
             }
@@ -1313,9 +1330,7 @@ namespace BetterLegacy.Core.Data
             parents.Reverse();
 
             for (int i = 0; i < parents.Count; i++)
-            {
                 result += parents[i].Interpolate(type, valueIndex, time);
-            }
 
             return result;
         }
@@ -1500,6 +1515,8 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
+        #region Evaluation
+
         public Dictionary<string, float> GetObjectVariables()
         {
             var variables = new Dictionary<string, float>();
@@ -1617,10 +1634,13 @@ namespace BetterLegacy.Core.Data
             };
         }
 
+        #endregion
+
+        #region Parent / Child
+
         /// <summary>
         /// Gets the entire parent chain, including the beatmap object itself.
         /// </summary>
-        /// <param name="beatmapObject"></param>
         /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
         public List<BeatmapObject> GetParentChain() => CoreHelper.GetParentChain(this);
 
@@ -1644,7 +1664,13 @@ namespace BetterLegacy.Core.Data
             return list;
         }
 
+        /// <summary>
+        /// Gets all children parented to this object.
+        /// </summary>
+        /// <returns>Returns a list of the objects' children.</returns>
         public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
+
+        #endregion
 
         #endregion
 

@@ -1697,7 +1697,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setMusicTimeAutokill":
                         {
-                            AudioManager.inst.SetMusicTime(modifier.reference.StartTime + modifier.reference.GetObjectLifeLength(_oldStyle: true));
+                            AudioManager.inst.SetMusicTime(modifier.reference.StartTime + modifier.reference.SpawnDuration);
                             break;
                         }
                     case "playSound":

@@ -76,14 +76,14 @@ namespace BetterLegacy.Core.Optimization.Objects
             visualObject = null;
         }
 
-        public LevelObject(Data.BeatmapObject beatmapObject, Sequence<Color> colorSequence, Sequence<Color> secondaryColorSequence, List<LevelParentObject> parentObjects, VisualObject visualObject,
+        public LevelObject(BeatmapObject beatmapObject, Sequence<Color> colorSequence, Sequence<Color> secondaryColorSequence, List<LevelParentObject> parentObjects, VisualObject visualObject,
             Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
         {
             this.beatmapObject = beatmapObject;
 
             ID = beatmapObject.id;
             StartTime = beatmapObject.StartTime;
-            KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(_oldStyle: true);
+            KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
             depth = beatmapObject.depth;
 
             this.parentObjects = parentObjects;

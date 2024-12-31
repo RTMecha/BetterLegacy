@@ -39,6 +39,8 @@ namespace BetterLegacy.Core.Data
             prefabID = prefabObject.prefabID;
         }
 
+        #region Values
+
         public float speed = 1f;
 
         /// <summary>
@@ -86,6 +88,10 @@ namespace BetterLegacy.Core.Data
 
         public TimelineObject timelineObject;
 
+        public new ObjectEditorData editorData;
+
+        #endregion
+
         #region Methods
 
         public static PrefabObject DeepCopy(PrefabObject orig, bool _newID = true)
@@ -98,13 +104,7 @@ namespace BetterLegacy.Core.Data
                 startTime = orig.StartTime,
                 repeatCount = orig.repeatCount,
                 repeatOffsetTime = orig.repeatOffsetTime,
-                editorData = new ObjectEditorData
-                {
-                    Bin = orig.editorData.Bin,
-                    layer = orig.editorData.layer,
-                    locked = orig.editorData.locked,
-                    collapse = orig.editorData.collapse
-                },
+                editorData = ObjectEditorData.DeepCopy(orig.editorData),
                 speed = orig.speed,
                 autoKillOffset = orig.autoKillOffset,
                 autoKillType = orig.autoKillType,
@@ -465,7 +465,7 @@ namespace BetterLegacy.Core.Data
                 return 0.2f;
 
             float time = prefab.objects.Select(x => x.StartTime).Min(x => x);
-            return prefab.objects.Max(x => x.StartTime + x.GetObjectLifeLength(_takeCollapseIntoConsideration: true) - time);
+            return prefab.objects.Max(x => x.StartTime + (x as BeatmapObject).GetObjectLifeLength(collapse: true) - time);
         }
 
         #endregion
