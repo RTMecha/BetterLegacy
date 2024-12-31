@@ -1558,7 +1558,10 @@ namespace BetterLegacy.Editor.Managers
         public void RenderTimelineObject(TimelineObject timelineObject)
         {
             if (!timelineObject.GameObject)
-                CreateTimelineObject(timelineObject);
+            {
+                timelineObject.AddToList();
+                timelineObject.Init();
+            }
 
             timelineObject.Render();
         }
@@ -1576,12 +1579,6 @@ namespace BetterLegacy.Editor.Managers
                 if (timelineObject.IsCurrentLayer)
                     timelineObject.RenderPosLength();
             }
-        }
-
-        public void CreateTimelineObject(TimelineObject timelineObject, bool forceAdd = false)
-        {
-            timelineObject.AddToList(forceAdd);
-            timelineObject.Init();
         }
 
         public IEnumerator ICreateTimelineObjects()
