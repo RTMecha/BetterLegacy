@@ -51,6 +51,8 @@ namespace BetterLegacy.Patchers
 
             FontManager.inst.ChangeAllFontsInEditor();
 
+            LevelManager.ClearData();
+
             InputDataManager.inst.BindMenuKeys();
             InputDataManager.inst.BindEditorKeys();
             __instance.ScreenScale = Screen.width / 1920f;

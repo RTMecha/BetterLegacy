@@ -417,6 +417,76 @@ namespace BetterLegacy.Core.Managers
         }
 
         /// <summary>
+        /// Clears all level data to save on memory.
+        /// </summary>
+        public static void ClearData()
+        {
+            try
+            {
+                if (CurrentLevelCollection && CurrentLevelCollection.previewAudio)
+                {
+                    CurrentLevelCollection.previewAudio.UnloadAudioData();
+                    CurrentLevelCollection.previewAudio = null;
+                }
+                CurrentLevelCollection = null;
+
+                if (CurrentLevel && CurrentLevel.music)
+                {
+                    CurrentLevel.music.UnloadAudioData();
+                    CurrentLevel.music = null;
+                }
+                CurrentLevel = null;
+
+                for (int i = 0; i < LevelCollections.Count; i++)
+                {
+                    var collection = LevelCollections[i];
+
+                    if (!collection)
+                        continue;
+
+                    collection.levelInformation.Clear();
+                    collection.levels.Clear();
+
+                    if (collection.previewAudio)
+                    {
+                        collection.previewAudio.UnloadAudioData();
+                        collection.previewAudio = null;
+                    }
+
+                    LevelCollections[i] = null;
+                }
+                LevelCollections.Clear();
+
+                for (int i = 0; i < Levels.Count; i++)
+                {
+                    var level = Levels[i];
+
+                    if (!level)
+                        continue;
+
+                    level.metadata = null;
+                    level.icon = null;
+                    level.playerData = null;
+                    if (level.achievements != null)
+                        level.achievements.Clear();
+
+                    if (level.music)
+                    {
+                        level.music.UnloadAudioData();
+                        level.music = null;
+                    }
+
+                    Levels[i] = null;
+                }
+                Levels.Clear();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        /// <summary>
         /// Sorts a Level list by a specific order and ascending / descending.
         /// </summary>
         /// <param name="levels">The Level list to sort.</param>
