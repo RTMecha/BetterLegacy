@@ -216,6 +216,11 @@ namespace BetterLegacy.Story
             /// </summary>
             public string returnLevel;
 
+            /// <summary>
+            /// If the level is from the <see cref="ChapterTransition"/>.
+            /// </summary>
+            public bool isChapterTransition;
+
             #endregion
 
             /// <summary>
@@ -278,7 +283,10 @@ namespace BetterLegacy.Story
                 if (!string.IsNullOrEmpty(jn["interface"]))
                     transition.interfacePath = jn["interface"];
                 if (jn["level"] != null)
+                {
                     transition.levelSequence = LevelSequence.Parse(jn["level"]);
+                    transition.levelSequence.isChapterTransition = true;
+                }
                 return transition;
             }
 

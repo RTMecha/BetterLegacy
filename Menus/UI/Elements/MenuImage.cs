@@ -3171,11 +3171,10 @@ namespace BetterLegacy.Menus.UI.Elements
                     {
                         var isArray = parameters.IsArray;
 
-                        StoryManager.inst.ContinueStory =
-                            parameters == null || (parameters.IsArray && parameters.Count >= 1 && parameters[0].AsBool || parameters.IsObject && parameters["continue"] != null && parameters["continue"].AsBool);
+                        StoryManager.inst.ContinueStory = true;
 
-                        int chapter = StoryManager.inst.LoadInt("Chapter", 0);
-                        StoryManager.inst.Play(chapter, StoryManager.inst.LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0));
+                        int chapter = StoryManager.inst.ChapterIndex;
+                        StoryManager.inst.Play(chapter, StoryManager.inst.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0), StoryManager.inst.inBonusChapter);
 
                         break;
                     }
@@ -3198,6 +3197,28 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "LoadStoryInterface":
                     {
                         InterfaceManager.inst.StartupStoryInterface(parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt, parameters.IsArray ? parameters[1].AsInt : parameters["level"].AsInt);
+
+                        break;
+                    }
+
+                #endregion
+
+                #region LoadChapterTransition
+
+                case "LoadChapterTransition":
+                    {
+                        if (!StoryManager.implementedChapterTransition)
+                        {
+                            SoundManager.inst.PlaySound(DefaultSounds.Block);
+                            break;
+                        }
+
+                        var isArray = parameters.IsArray;
+
+                        StoryManager.inst.ContinueStory = true;
+
+                        var chapter = StoryManager.inst.ChapterIndex;
+                        StoryManager.inst.Play(chapter, StoryMode.Instance.chapters[chapter].Count, StoryManager.inst.inBonusChapter);
 
                         break;
                     }

@@ -63,6 +63,8 @@ namespace BetterLegacy.Story
         /// </summary>
         public static StoryMode StoryModeDebugRef => StoryMode.Instance;
 
+        public static bool implementedChapterTransition;
+
         #endregion
 
         #region Save File
@@ -76,6 +78,7 @@ namespace BetterLegacy.Story
 
         public int currentPlayingChapterIndex;
         public int currentPlayingLevelSequenceIndex;
+        public bool inBonusChapter;
 
         /// <summary>
         /// The story mode chapter that is currently open.
@@ -84,7 +87,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// The story mode level that is selected.
         /// </summary>
-        public StoryMode.LevelSequence CurrentLevelSequence => CurrentChapter[currentPlayingLevelSequenceIndex];
+        public StoryMode.LevelSequence CurrentLevelSequence => currentPlayingLevelSequenceIndex < CurrentChapter.Count ? CurrentChapter[currentPlayingLevelSequenceIndex] : CurrentChapter.transition.levelSequence;
 
         /// <summary>
         /// The currently saved chapter.
@@ -937,7 +940,10 @@ namespace BetterLegacy.Story
         /// <param name="skipCutscenes">If cutscenes should be skipped.</param>
         public void Play(int chapter, int level, bool bonus = false, bool skipCutscenes = false)
         {
-            var storyLevel = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter].levels[level];
+            var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
+
+            // select transition level if the "level" parameter is greater than or equal to the chapter's level count.
+            var storyLevel = level < storyChapter.Count ? storyChapter.levels[level] : storyChapter.transition.levelSequence;
 
             currentPlayingChapterIndex = chapter;
             currentPlayingLevelSequenceIndex = level;
@@ -956,9 +962,8 @@ namespace BetterLegacy.Story
             var path = level.filePath;
             bool isCutscene = false;
 
-            int chapterIndex = LoadInt("Chapter", 0);
-            int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
-            var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
+            int chapterIndex = ChapterIndex;
+            int levelIndex = LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
 
             if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && cutsceneIndex != level.preCutscenes.Count)
             {
@@ -1138,8 +1143,8 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                int chapter = LoadInt("Chapter", 0);
-                int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                int chapter = ChapterIndex;
+                int level = LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0);
                 level++;
                 if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
                 {
@@ -1151,7 +1156,7 @@ namespace BetterLegacy.Story
                 chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
 
                 SaveInt("Chapter", chapter);
-                SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+                SaveInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", level);
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
@@ -1171,10 +1176,8 @@ namespace BetterLegacy.Story
                 int chapterIndex = currentPlayingChapterIndex;
                 int levelIndex = currentPlayingLevelSequenceIndex;
 
-                var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
-
-                if (!isCutscene)
-                    SaveBool(completeString, true);
+                if (!isCutscene && !level.isChapterTransition)
+                    SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}_{RTString.ToStoryNumber(levelIndex)}Complete", true);
 
                 if (!ContinueStory)
                 {
@@ -1186,20 +1189,25 @@ namespace BetterLegacy.Story
                 }
 
                 cutsceneIndex++;
+                levelIndex++;
+
                 if (cutsceneIndex < level.Count)
                 {
                     StartCoroutine(IPlay(level, cutsceneIndex));
                     return;
                 }
 
-                levelIndex++;
-                SaveInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", levelIndex);
-                if (levelIndex >= StoryMode.Instance.chapters[chapterIndex].levels.Count)
+                // chapter completion should only occur after beating the transition level.
+                if (!isCutscene && level.isChapterTransition)
                 {
                     UnlockChapterAchievement(chapterIndex);
+                    SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}Complete", true);
                     chapterIndex++;
                     levelIndex = 0;
                 }
+
+                SaveInt("Chapter", chapterIndex);
+                SaveInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", levelIndex);
 
                 if (chapterIndex >= StoryMode.Instance.chapters.Count)
                 {
@@ -1209,11 +1217,6 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadScene(SceneName.Main_Menu);
                     return;
                 }
-
-                chapterIndex = Mathf.Clamp(chapterIndex, 0, StoryMode.Instance.chapters.Count - 1);
-
-                SaveInt("Chapter", chapterIndex);
-                SaveInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", levelIndex);
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
