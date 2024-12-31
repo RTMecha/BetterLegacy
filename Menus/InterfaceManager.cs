@@ -513,8 +513,7 @@ namespace BetterLegacy.Menus
                     length = 1f,
                 });
 
-                CurrentInterface = changeLogMenu;
-                changeLogMenu.StartGeneration();
+                SetCurrentInterface(changeLogMenu);
                 PlayMusic();
 
                 if (CoreHelper.InEditor || SceneHelper.Loading)
@@ -574,6 +573,13 @@ namespace BetterLegacy.Menus
                 }
             }
         }
+
+        #endregion
+
+        // todo: move functions and text parsing here
+        #region Interface Functions
+
+
 
         #endregion
     }
