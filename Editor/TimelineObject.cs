@@ -365,7 +365,7 @@ namespace BetterLegacy.Editor
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object", index);
+            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object", Index);
             var storage = gameObject.GetComponent<TimelineObjectStorage>();
 
             Hover = storage.hoverUI;
@@ -565,7 +565,6 @@ namespace BetterLegacy.Editor
         /// Sets the text the timeline object displays.
         /// </summary>
         /// <param name="name">Name of the timeline object.</param>
-        /// <param name="nullName">Name to display if <paramref name="name"/> is null or empty.</param>
         public void RenderText(string name)
         {
             var textMeshNoob = Text; // ha! take that tmp
@@ -615,6 +614,10 @@ namespace BetterLegacy.Editor
                 Hover.size = ObjectEditor.TimelineObjectHoverSize;
         }
 
+        /// <summary>
+        /// Renders the keyframe sprite based on its type.
+        /// </summary>
+        /// <param name="events">Keyframe list reference.</param>
         public void RenderSprite(List<DataManager.GameData.EventKeyframe> events)
         {
             if (TryGetData(out EventKeyframe eventKeyframe))
@@ -654,7 +657,7 @@ namespace BetterLegacy.Editor
         #endregion
 
         /// <summary>
-        /// What type <see cref="TimelineObject.data"/> is.
+        /// What type <see cref="data"/> is.
         /// </summary>
         public enum TimelineReferenceType
         {
