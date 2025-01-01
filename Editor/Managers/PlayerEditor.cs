@@ -29,7 +29,7 @@ namespace BetterLegacy.Editor.Managers
     {
         public static PlayerEditor inst;
 
-        public Popup ModelsPopup { get; set; }
+        public EditorPopup ModelsPopup { get; set; }
         public string modelSearchTerm;
         public int playerModelIndex = 0;
         public Transform content;
@@ -2218,23 +2218,23 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                        new RTEditor.ButtonFunction("Open & Use", () =>
+                        new ButtonFunction("Open & Use", () =>
                         {
                             PlayerManager.SetPlayerModelIndex(playerModelIndex, index);
                             PlayerManager.RespawnPlayers();
                             StartCoroutine(RefreshEditor());
                         }),
-                        new RTEditor.ButtonFunction("Set to Global", () => { PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key; }),
-                        new RTEditor.ButtonFunction("Create New", CreateNewModel),
-                        new RTEditor.ButtonFunction("Save", Save),
-                        new RTEditor.ButtonFunction("Reload", Reload),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Duplicate", () =>
+                        new ButtonFunction("Set to Global", () => { PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key; }),
+                        new ButtonFunction("Create New", CreateNewModel),
+                        new ButtonFunction("Save", Save),
+                        new ButtonFunction("Reload", Reload),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Duplicate", () =>
                         {
                             PlayerManager.DuplicatePlayerModel(playerModel.Key);
                             PlayerManager.SetPlayerModelIndex(playerModelIndex, PlayerManager.PlayerModels.Count - 1);
                         }),
-                        new RTEditor.ButtonFunction("Delete", () =>
+                        new ButtonFunction("Delete", () =>
                         {
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                             {
@@ -2798,22 +2798,5 @@ namespace BetterLegacy.Editor.Managers
         public string searchTerm;
         public List<PlayerEditorUI> editorUIs = new List<PlayerEditorUI>();
         public List<PlayerEditorUI> EditorUIsActive => editorUIs.Where(x => x.GameObject.activeSelf).ToList();
-
-        public class PlayerEditorUI
-        {
-            public string Name { get; set; }
-            public GameObject GameObject { get; set; }
-            public Tab Tab { get; set; }
-            public ValueType ValueType { get; set; }
-            public int Index { get; set; }
-
-            public object Reference { get; set; }
-
-            public bool updatedShapes = false;
-            public List<Toggle> shapeToggles = new List<Toggle>();
-            public List<List<Toggle>> shapeOptionToggles = new List<List<Toggle>>();
-
-            public override string ToString() => $"{Tab} - {Name}";
-        }
     }
 }

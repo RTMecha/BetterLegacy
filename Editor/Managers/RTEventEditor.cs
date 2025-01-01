@@ -263,13 +263,13 @@ namespace BetterLegacy.Editor.Managers
                                     return;
 
                                 RTEditor.inst.ShowContextMenu(300f,
-                                    new RTEditor.ButtonFunction("Create folder", () =>
+                                    new ButtonFunction("Create folder", () =>
                                     {
                                         RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
                                     }),
-                                    new RTEditor.ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
-                                    new RTEditor.ButtonFunction(true),
-                                    new RTEditor.ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
+                                    new ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
                             };
                             themes.gameObject.AddComponent<Button>();
 

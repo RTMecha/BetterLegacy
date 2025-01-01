@@ -386,8 +386,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                new RTEditor.ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time); }),
-                new RTEditor.ButtonFunction("Set KF to Cursor", () =>
+                new ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time); }),
+                new ButtonFunction("Set KF to Cursor", () =>
                 {
                     var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
                     var selected = RTEventEditor.inst.SelectedKeyframes;
@@ -401,10 +401,10 @@ namespace BetterLegacy.Core.Helpers
                     ObjectEditor.inst.RenderKeyframes(beatmapObject);
                     Updater.UpdateObject(beatmapObject, "Keyframes");
                 }),
-                new RTEditor.ButtonFunction(true),
-                new RTEditor.ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
-                new RTEditor.ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
-                new RTEditor.ButtonFunction("Copy Data", () =>
+                new ButtonFunction(true),
+                new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
+                new ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
+                new ButtonFunction("Copy Data", () =>
                 {
                     var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
                     var firstKF = selected.ElementAt(0);
@@ -427,7 +427,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                     EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
                 }),
-                new RTEditor.ButtonFunction("Paste Data", () =>
+                new ButtonFunction("Paste Data", () =>
                 {
                     var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
                     var type = timelineObject.Type;
@@ -448,7 +448,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                     }
                 }),
-                new RTEditor.ButtonFunction("Delete", RTEditor.inst.Delete)
+                new ButtonFunction("Delete", RTEditor.inst.Delete)
                 );
         });
 
@@ -511,42 +511,42 @@ namespace BetterLegacy.Core.Helpers
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
                     RTEditor.inst.ShowContextMenu(300f,
-                        new RTEditor.ButtonFunction("Select", () => { ObjectEditor.inst.SetCurrentObject(timelineObject); }),
-                        new RTEditor.ButtonFunction("Add to Selection", () => { ObjectEditor.inst.AddSelectedObject(timelineObject); }),
-                        new RTEditor.ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
-                        new RTEditor.ButtonFunction("Update Object", () =>
+                        new ButtonFunction("Select", () => { ObjectEditor.inst.SetCurrentObject(timelineObject); }),
+                        new ButtonFunction("Add to Selection", () => { ObjectEditor.inst.AddSelectedObject(timelineObject); }),
+                        new ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
+                        new ButtonFunction("Update Object", () =>
                         {
                             if (timelineObject.isBeatmapObject)
                                 Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
                             if (timelineObject.isPrefabObject)
                                 Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Cut", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Cut", () =>
                         {
                             ObjEditor.inst.CopyObject();
                             CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
                         }),
-                        new RTEditor.ButtonFunction("Copy", ObjEditor.inst.CopyObject),
-                        new RTEditor.ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
-                        new RTEditor.ButtonFunction("Duplicate", () =>
+                        new ButtonFunction("Copy", ObjEditor.inst.CopyObject),
+                        new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
+                        new ButtonFunction("Duplicate", () =>
                         {
                             var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime);
                         }),
-                        new RTEditor.ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
-                        new RTEditor.ButtonFunction("Duplicate (Keep Prefab)", () =>
+                        new ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
+                        new ButtonFunction("Duplicate (Keep Prefab)", () =>
                         {
                             var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
-                        new RTEditor.ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Move Backwards", () =>
+                        new ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Move Backwards", () =>
                         {
                             switch (timelineObject.TimelineReference)
                             {
@@ -580,7 +580,7 @@ namespace BetterLegacy.Core.Helpers
                                     }
                             }
                         }),
-                        new RTEditor.ButtonFunction("Move Forwards", () =>
+                        new ButtonFunction("Move Forwards", () =>
                         {
                             switch (timelineObject.TimelineReference)
                             {
@@ -614,7 +614,7 @@ namespace BetterLegacy.Core.Helpers
                                     }
                             }
                         }),
-                        new RTEditor.ButtonFunction("Move to Back", () =>
+                        new ButtonFunction("Move to Back", () =>
                         {
                             switch (timelineObject.TimelineReference)
                             {
@@ -648,7 +648,7 @@ namespace BetterLegacy.Core.Helpers
                                     }
                             }
                         }),
-                        new RTEditor.ButtonFunction("Move to Front", () =>
+                        new ButtonFunction("Move to Front", () =>
                         {
                             switch (timelineObject.TimelineReference)
                             {
@@ -917,8 +917,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                new RTEditor.ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(timelineObject.Time); }),
-                new RTEditor.ButtonFunction("Set KF to Cursor", () =>
+                new ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(timelineObject.Time); }),
+                new ButtonFunction("Set KF to Cursor", () =>
                 {
                     var time = AudioManager.inst.CurrentAudioSource.time;
                     var selected = RTEventEditor.inst.SelectedKeyframes;
@@ -933,8 +933,8 @@ namespace BetterLegacy.Core.Helpers
                     RTEventEditor.inst.RenderEventObjects();
                     EventManager.inst.updateEvents();
                 }),
-                new RTEditor.ButtonFunction(true),
-                new RTEditor.ButtonFunction("Reset", () =>
+                new ButtonFunction(true),
+                new ButtonFunction("Reset", () =>
                 {
                     var eventKeyframe = timelineObject.GetData<EventKeyframe>();
                     var defaultKeyframe = GameData.DefaultKeyframes[timelineObject.Type];
@@ -944,12 +944,12 @@ namespace BetterLegacy.Core.Helpers
                             eventKeyframe.eventValues[i] = defaultKeyframe.eventValues[i];
                     }
                 }),
-                new RTEditor.ButtonFunction(true),
-                new RTEditor.ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
-                new RTEditor.ButtonFunction("Paste", () => RTEventEditor.inst.PasteEvents()),
-                new RTEditor.ButtonFunction("Copy Data", () => { RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe); }),
-                new RTEditor.ButtonFunction("Paste Data", () => { RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType); }),
-                new RTEditor.ButtonFunction("Delete", RTEditor.inst.Delete)
+                new ButtonFunction(true),
+                new ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
+                new ButtonFunction("Paste", () => RTEventEditor.inst.PasteEvents()),
+                new ButtonFunction("Copy Data", () => { RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe); }),
+                new ButtonFunction("Paste Data", () => { RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType); }),
+                new ButtonFunction("Delete", RTEditor.inst.Delete)
                 );
         });
 

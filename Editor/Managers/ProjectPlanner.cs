@@ -15,148 +15,17 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Data.Planners;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class ProjectPlannerManager : MonoBehaviour
+    public class ProjectPlanner : MonoBehaviour
     {
-        public static ProjectPlannerManager inst;
+        #region Init
 
-        #region Variables
+        public static ProjectPlanner inst;
 
-        public Transform plannerBase;
-        public Transform planner;
-        public Transform topBarBase;
-        public Transform contentBase;
-        public Transform contentScroll;
-        public Transform content;
-        public Transform notesParent;
-        public GridLayoutGroup contentLayout;
-
-        public Transform assetsParent;
-
-        public GameObject documentFullView;
-        public TMP_InputField documentInputField;
-        public TextMeshProUGUI documentTitle;
-
-        public AudioSource OSTAudioSource { get; set; }
-        public int currentOST;
-        public string currentOSTID;
-        public bool playing = false;
-
-        public List<Toggle> tabs = new List<Toggle>();
-
-        public int CurrentTab { get; set; }
-        public string SearchTerm { get; set; }
-
-        public string[] tabNames = new string[]
-        {
-            "Documents",
-            "TO DO",
-            "Characters",
-            "Timelines",
-            "Schedules",
-            "Notes",
-            "OST",
-        };
-
-        public Vector2[] tabCellSizes = new Vector2[]
-        {
-            new Vector2(232f, 400f),
-            new Vector2(1280f, 64f),
-            new Vector2(296f, 270f),
-            new Vector2(1280f, 250f),
-            new Vector2(1280f, 64f),
-            new Vector2(339f, 150f),
-            new Vector2(1280f, 64f),
-        };
-
-        public int[] tabConstraintCounts = new int[]
-        {
-            5,
-            1,
-            4,
-            1,
-            1,
-            3,
-            1,
-        };
-
-        public GameObject tagPrefab;
-
-        public GameObject tabPrefab;
-
-        public GameObject closePrefab;
-
-        public GameObject baseCardPrefab;
-
-        public List<GameObject> prefabs = new List<GameObject>();
-
-        public Sprite gradientSprite;
-
-        public List<PlannerItem> planners = new List<PlannerItem>();
-
-        public string PlannersPath { get; set; } = "planners";
-
-        public GameObject timelineButtonPrefab;
-
-        public GameObject timelineAddPrefab;
-
-        public Texture2D horizontalDrag;
-        public Texture2D verticalDrag;
-
-        #region Editor
-
-        public Image editorTitlePanel;
-
-        public InputField documentEditorName;
-        public InputField documentEditorText;
-
-        public InputField todoEditorText;
-
-        public InputField characterEditorName;
-        public InputField characterEditorGender;
-        public InputField characterEditorDescription;
-        public Button characterEditorProfileSelector;
-        public Transform characterEditorTraitsContent;
-        public Transform characterEditorLoreContent;
-        public Transform characterEditorAbilitiesContent;
-
-        public InputField timelineEditorName;
-        public InputField eventEditorName;
-        public InputField eventEditorDescription;
-        public InputField eventEditorPath;
-        public Dropdown eventEditorType;
-
-        public InputField scheduleEditorDescription;
-        public InputField scheduleEditorYear;
-        public Dropdown scheduleEditorMonth;
-        public InputField scheduleEditorDay;
-        public InputField scheduleEditorHour;
-        public InputField scheduleEditorMinute;
-
-        public InputField noteEditorName;
-        public InputField noteEditorText;
-        public Transform noteEditorColorsParent;
-        public Transform colorBase;
-        public List<Toggle> noteEditorColors = new List<Toggle>();
-        public Button noteEditorReset;
-
-        public InputField ostEditorPath;
-        public InputField ostEditorName;
-        public Button ostEditorPlay;
-        public Button ostEditorUseGlobal;
-        public Text ostEditorUseGlobalText;
-        public Button ostEditorStop;
-        public InputField ostEditorIndex;
-
-        public List<GameObject> editors = new List<GameObject>();
-
-        #endregion
-
-        #endregion
-
-        public static void Init() => Creator.NewGameObject("ProjectPlanner", EditorManager.inst.transform.parent).AddComponent<ProjectPlannerManager>();
+        public static void Init() => Creator.NewGameObject(nameof(ProjectPlanner), EditorManager.inst.transform.parent).AddComponent<ProjectPlanner>();
 
         void Awake()
         {
@@ -237,7 +106,7 @@ namespace BetterLegacy.Editor.Managers
             var handleImage = scrollBarVertical.Find("Sliding Area/Handle").GetComponent<Image>();
             handleImage.color = new Color(0.878f, 0.878f, 0.878f, 1f);
             handleImage.sprite = null;
-            
+
             EditorThemeManager.AddScrollbar(scrollBarVertical.GetComponent<Scrollbar>(), scrollBarVertical.GetComponent<Image>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
             contentBase.Find("Image").AsRT().anchoredPosition = new Vector2(690f, /*-94f*/ -104f);
@@ -282,57 +151,50 @@ namespace BetterLegacy.Editor.Managers
                     {
                         case 0:
                             {
-                                var list = planners.Where(x => x.PlannerType == PlannerItem.Type.Document && x is DocumentItem).Select(x => x as DocumentItem);
+                                var list = documents;
 
-                                var document = new DocumentItem();
-                                document.Name = $"New Story {list.Count() + 1}";
+                                var document = new DocumentPlanner();
+                                document.Name = $"New Story {list.Count + 1}";
                                 document.Text = "<align=center>Plan out your story!";
-                                planners.Add(document);
-                                GenerateDocument(document);
 
+                                AddPlanner(document);
                                 SaveDocuments();
 
                                 break;
                             } // Document
                         case 1:
                             {
-                                var list = planners.Where(x => x.PlannerType == PlannerItem.Type.TODO && x is TODOItem).Select(x => x as TODOItem);
+                                var list = todos;
 
-                                var todo = new TODOItem();
+                                var todo = new TODOPlanner();
                                 todo.Checked = false;
                                 todo.Text = "Do this.";
-                                todo.Priority = list.Count();
-                                planners.Add(todo);
-                                GenerateTODO(todo);
 
+                                AddPlanner(todo);
                                 SaveTODO();
 
                                 break;
                             } // TODO
                         case 2:
                             {
-                                var list = planners.Where(x => x.PlannerType == PlannerItem.Type.Character && x is CharacterItem).Select(x => x as CharacterItem);
-
                                 if (string.IsNullOrEmpty(Path.GetFileName(path)))
                                     return;
 
-                                if (!RTFile.DirectoryExists(path + "/characters"))
-                                {
-                                    Directory.CreateDirectory(path + "/characters");
-                                }
+                                var charactersPath = RTFile.CombinePaths(path, "characters");
+                                RTFile.CreateDirectory(charactersPath);
 
-                                var fullPath = path + "/characters/New Character";
+                                var fullPath = RTFile.CombinePaths(charactersPath, "New Character");
 
                                 int num = 1;
                                 while (RTFile.DirectoryExists(fullPath))
                                 {
-                                    fullPath = $"{path}/characters/New Character {num}";
+                                    fullPath = RTFile.CombinePaths(charactersPath, $"New Character {num}");
                                     num++;
                                 }
 
-                                Directory.CreateDirectory(fullPath);
+                                RTFile.CreateDirectory(fullPath);
 
-                                var character = new CharacterItem();
+                                var character = new CharacterPlanner();
 
                                 for (int i = 0; i < 3; i++)
                                 {
@@ -346,74 +208,70 @@ namespace BetterLegacy.Editor.Managers
                                 character.FullPath = fullPath;
                                 character.Gender = "He";
                                 character.Description = "This is the default description";
-                                planners.Add(character);
-                                GenerateCharacter(character);
+
+                                AddPlanner(character);
                                 character.Save();
 
                                 break;
                             } // Character
                         case 3:
                             {
-                                var timeline = new TimelineItem();
+                                var timeline = new TimelinePlanner();
                                 timeline.Name = "Classic Arrhythmia";
-                                timeline.Levels.Add(new TimelineItem.Event
+                                timeline.Levels.Add(new TimelinePlanner.Event
                                 {
                                     Name = "Beginning",
                                     Description = $"Introduces players / viewers to Hal.)",
-                                    ElementType = TimelineItem.Event.Type.Cutscene,
+                                    ElementType = TimelinePlanner.Event.Type.Cutscene,
                                     Path = ""
                                 });
-                                timeline.Levels.Add(new TimelineItem.Event
+                                timeline.Levels.Add(new TimelinePlanner.Event
                                 {
                                     Name = "Tokyo Skies",
                                     Description = $"Players learn very basic stuff about Classic Arrhythmia / Project Arrhythmia mechanics.{Environment.NewLine}{Environment.NewLine}(Click on this button to open the level.)",
-                                    ElementType = TimelineItem.Event.Type.Level,
+                                    ElementType = TimelinePlanner.Event.Type.Level,
                                     Path = ""
                                 });
 
-                                planners.Add(timeline);
-                                GenerateTimeline(timeline);
-
+                                AddPlanner(timeline);
                                 SaveTimelines();
 
                                 break;
                             } // Timeline
                         case 4:
                             {
-                                var schedule = new ScheduleItem();
+                                var schedule = new SchedulePlanner();
                                 schedule.Date = DateTime.Now.AddDays(1).ToString("g");
                                 schedule.Description = "Tomorrow!";
-                                planners.Add(schedule);
-                                GenerateSchedule(schedule);
 
+                                AddPlanner(schedule);
                                 SaveSchedules();
 
                                 break;
                             } // Schedule
                         case 5:
                             {
-                                var note = new NoteItem();
+                                var note = new NotePlanner();
                                 note.Active = true;
                                 note.Name = "New Note";
                                 note.Color = UnityEngine.Random.Range(0, MarkerEditor.inst.markerColors.Count);
                                 note.Position = new Vector2(Screen.width / 2, Screen.height / 2);
                                 note.Text = "This note appears in the editor and can be dragged to anywhere.";
-                                planners.Add(note);
-                                GenerateNote(note);
 
+                                AddPlanner(note);
                                 SaveNotes();
 
                                 break;
                             } // Note
                         case 6:
                             {
-                                var ost = new OSTItem();
+                                var ost = new OSTPlanner();
                                 ost.Name = "Kaixo - Fragments";
                                 ost.Path = "Set this path to wherever you have a song located.";
-                                planners.Add(ost);
-                                GenerateOST(ost);
 
-                                var list = planners.Where(x => x.PlannerType == PlannerItem.Type.OST && x is OSTItem).Select(x => x as OSTItem).OrderBy(x => x.Index).ToList();
+                                AddPlanner(ost);
+
+                                var list = osts.OrderBy(x => x.Index).ToList();
 
                                 ost.Index = list.Count - 1;
 
@@ -556,7 +414,7 @@ namespace BetterLegacy.Editor.Managers
                     tmpTitle.fontStyle = FontStyles.Normal;
                     tmpTitle.alignment = TextAlignmentOptions.TopLeft;
                     tmpTitle.enableWordWrapping = true;
-                    tmpTitle.text = CharacterItem.DefaultCharacterDescription;
+                    tmpTitle.text = CharacterPlanner.DefaultCharacterDescription;
 
                     var tmpArtist = artist.GetComponent<TextMeshProUGUI>();
                     tmpArtist.alignment = TextAlignmentOptions.TopRight;
@@ -981,6 +839,42 @@ namespace BetterLegacy.Editor.Managers
 
                     todoEditorText = text1.GetComponent<InputField>();
                     EditorThemeManager.AddInputField(todoEditorText);
+
+                    // Label
+                    {
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        label.transform.AsRT().pivot = new Vector2(0f, 1f);
+                        label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
+                        label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(334.4f, 32f);
+                        var labelText = label.transform.GetChild(0).GetComponent<Text>();
+                        labelText.text = "Change TODO Priority";
+                        EditorThemeManager.AddLightText(labelText);
+
+                        if (label.transform.childCount == 2)
+                            Destroy(label.transform.GetChild(1).gameObject);
+                    }
+
+                    var moveUp = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
+                    var moveUpStorage = moveUp.GetComponent<FunctionButtonStorage>();
+                    moveUp.SetActive(true);
+                    moveUp.name = "move up";
+                    moveUp.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
+                    moveUp.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+                    moveUpStorage.text.text = "Move Up";
+                    todoEditorMoveUpButton = moveUpStorage.button;
+                    EditorThemeManager.AddSelectable(todoEditorMoveUpButton, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(moveUpStorage.text, ThemeGroup.Function_2_Text);
+
+                    var moveDown = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
+                    var moveDownStorage = moveDown.GetComponent<FunctionButtonStorage>();
+                    moveDown.SetActive(true);
+                    moveDown.name = "move down";
+                    moveDown.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
+                    moveDown.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+                    moveDownStorage.text.text = "Move Down";
+                    todoEditorMoveDownButton = moveDownStorage.button;
+                    EditorThemeManager.AddSelectable(todoEditorMoveDownButton, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(moveDownStorage.text, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1811,7 +1705,7 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
-            foreach (var note in planners.Where(x => x.PlannerType == PlannerItem.Type.Note && x is NoteItem).Select(x => x as NoteItem))
+            foreach (var note in notes)
             {
                 note.TopBar?.SetColor(note.TopColor);
                 if (note.TitleUI)
@@ -1850,7 +1744,7 @@ namespace BetterLegacy.Editor.Managers
             if (OSTAudioSource)
                 OSTAudioSource.volume = AudioManager.inst.musicVol;
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.OST && x is OSTItem).Select(x => x as OSTItem).ToList();
+            var list = osts;
             if (OSTAudioSource && OSTAudioSource.clip && OSTAudioSource.time > OSTAudioSource.clip.length - 0.1f && playing)
             {
                 int num = 1;
@@ -1868,19 +1762,216 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        #endregion
+
+        #region Variables
+
+        public Transform plannerBase;
+        public Transform planner;
+        public Transform topBarBase;
+        public Transform contentBase;
+        public Transform contentScroll;
+        public Transform content;
+        public Transform notesParent;
+        public GridLayoutGroup contentLayout;
+
+        public Transform assetsParent;
+
+        public GameObject documentFullView;
+        public TMP_InputField documentInputField;
+        public TextMeshProUGUI documentTitle;
+
+        public AudioSource OSTAudioSource { get; set; }
+        public int currentOST;
+        public string currentOSTID;
+        public bool playing = false;
+
+        public List<Toggle> tabs = new List<Toggle>();
+
+        public int CurrentTab { get; set; }
+        public string SearchTerm { get; set; }
+
+        public string[] tabNames = new string[]
+        {
+            "Documents",
+            "TO DO",
+            "Characters",
+            "Timelines",
+            "Schedules",
+            "Notes",
+            "OST",
+        };
+
+        public Vector2[] tabCellSizes = new Vector2[]
+        {
+            new Vector2(232f, 400f),
+            new Vector2(1280f, 64f),
+            new Vector2(296f, 270f),
+            new Vector2(1280f, 250f),
+            new Vector2(1280f, 64f),
+            new Vector2(339f, 150f),
+            new Vector2(1280f, 64f),
+        };
+
+        public int[] tabConstraintCounts = new int[]
+        {
+            5,
+            1,
+            4,
+            1,
+            1,
+            3,
+            1,
+        };
+
+        public GameObject tagPrefab;
+
+        public GameObject tabPrefab;
+
+        public GameObject closePrefab;
+
+        public GameObject baseCardPrefab;
+
+        public List<GameObject> prefabs = new List<GameObject>();
+
+        public Sprite gradientSprite;
+
+        public List<DocumentPlanner> documents = new List<DocumentPlanner>();
+        public List<TODOPlanner> todos = new List<TODOPlanner>();
+        public List<CharacterPlanner> characters = new List<CharacterPlanner>();
+        public List<TimelinePlanner> timelines = new List<TimelinePlanner>();
+        public List<SchedulePlanner> schedules = new List<SchedulePlanner>();
+        public List<NotePlanner> notes = new List<NotePlanner>();
+        public List<OSTPlanner> osts = new List<OSTPlanner>();
+
+        public string PlannersPath { get; set; } = "planners";
+
+        public GameObject timelineButtonPrefab;
+
+        public GameObject timelineAddPrefab;
+
+        public Texture2D horizontalDrag;
+        public Texture2D verticalDrag;
+
+        #region Editor
+
+        public Image editorTitlePanel;
+
+        public InputField documentEditorName;
+        public InputField documentEditorText;
+
+        public InputField todoEditorText;
+        public Button todoEditorMoveUpButton;
+        public Button todoEditorMoveDownButton;
+
+        public InputField characterEditorName;
+        public InputField characterEditorGender;
+        public InputField characterEditorDescription;
+        public Button characterEditorProfileSelector;
+        public Transform characterEditorTraitsContent;
+        public Transform characterEditorLoreContent;
+        public Transform characterEditorAbilitiesContent;
+
+        public InputField timelineEditorName;
+        public InputField eventEditorName;
+        public InputField eventEditorDescription;
+        public InputField eventEditorPath;
+        public Dropdown eventEditorType;
+
+        public InputField scheduleEditorDescription;
+        public InputField scheduleEditorYear;
+        public Dropdown scheduleEditorMonth;
+        public InputField scheduleEditorDay;
+        public InputField scheduleEditorHour;
+        public InputField scheduleEditorMinute;
+
+        public InputField noteEditorName;
+        public InputField noteEditorText;
+        public Transform noteEditorColorsParent;
+        public Transform colorBase;
+        public List<Toggle> noteEditorColors = new List<Toggle>();
+        public Button noteEditorReset;
+
+        public InputField ostEditorPath;
+        public InputField ostEditorName;
+        public Button ostEditorPlay;
+        public Button ostEditorUseGlobal;
+        public Text ostEditorUseGlobalText;
+        public Button ostEditorStop;
+        public InputField ostEditorIndex;
+
+        public List<GameObject> editors = new List<GameObject>();
+
+        #endregion
+
+        #endregion
+
         #region Save / Load
+
+        public void AddPlanner(PlannerBase item)
+        {
+            switch (item.PlannerType)
+            {
+                case PlannerBase.Type.Document:
+                    {
+                        documents.Add(item as DocumentPlanner);
+                        break;
+                    }
+                case PlannerBase.Type.TODO:
+                    {
+                        todos.Add(item as TODOPlanner);
+                        break;
+                    }
+                case PlannerBase.Type.Character:
+                    {
+                        characters.Add(item as CharacterPlanner);
+                        break;
+                    }
+                case PlannerBase.Type.Timeline:
+                    {
+                        timelines.Add(item as TimelinePlanner);
+                        break;
+                    }
+                case PlannerBase.Type.Schedule:
+                    {
+                        schedules.Add(item as SchedulePlanner);
+                        break;
+                    }
+                case PlannerBase.Type.Note:
+                    {
+                        notes.Add(item as NotePlanner);
+                        break;
+                    }
+                case PlannerBase.Type.OST:
+                    {
+                        osts.Add(item as OSTPlanner);
+                        break;
+                    }
+            }
+            item.Init();
+        }
+
+        public void ClearPlanners()
+        {
+            documents.Clear();
+            todos.Clear();
+            characters.Clear();
+            timelines.Clear();
+            schedules.Clear();
+            notes.Clear();
+            osts.Clear();
+        }
 
         public void Load()
         {
-            planners.Clear();
+            ClearPlanners();
             LSHelpers.DeleteChildren(content);
 
             var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
             if (string.IsNullOrEmpty(Path.GetFileName(path)))
                 return;
 
-            if (!RTFile.DirectoryExists(path))
-                Directory.CreateDirectory(path);
+            RTFile.CreateDirectory(path);
 
             LoadDocuments();
             LoadTODO();
@@ -1889,23 +1980,13 @@ namespace BetterLegacy.Editor.Managers
             LoadNotes();
             LoadOST();
 
-            if (!RTFile.DirectoryExists(path + "/characters"))
-            {
-                Directory.CreateDirectory(path + "/characters");
-            }
-            else
-            {
-                var directories = Directory.GetDirectories(path + "/characters", "*", SearchOption.TopDirectoryOnly);
-                if (directories.Length > 0)
-                {
-                    foreach (var folder in directories)
-                    {
-                        var character = new CharacterItem(folder);
-                        planners.Add(character);
-                        GenerateCharacter(character);
-                    }
-                }
-            }
+            var characters = RTFile.CombinePaths(path, "characters");
+            RTFile.CreateDirectory(characters);
+
+            var directories = Directory.GetDirectories(characters, "*", SearchOption.TopDirectoryOnly);
+            if (directories.Length > 0)
+                foreach (var folder in directories)
+                    AddPlanner(new CharacterPlanner(folder));
 
             RefreshList();
         }
@@ -1918,7 +1999,7 @@ namespace BetterLegacy.Editor.Managers
 
             var jn = JSON.Parse("{}");
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.Document && x is DocumentItem).Select(x => x as DocumentItem).ToList();
+            var list = documents;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -1927,27 +2008,24 @@ namespace BetterLegacy.Editor.Managers
                 jn["documents"][i]["text"] = document.Text;
             }
 
-            RTFile.WriteToFile(path + "/documents.lsn", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"documents{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadDocuments()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
-            if (!RTFile.FileExists(path + "/documents.lsn"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"documents{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
                 return;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(path + "/documents.lsn"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["documents"].Count; i++)
             {
-                var document = new DocumentItem();
+                var document = new DocumentPlanner();
 
                 document.Name = jn["documents"][i]["name"];
                 document.Text = jn["documents"][i]["text"];
-
-                GenerateDocument(document);
-
-                planners.Add(document);
+                AddPlanner(document);
             }
         }
 
@@ -1959,47 +2037,32 @@ namespace BetterLegacy.Editor.Managers
 
             var jn = JSON.Parse("{}");
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.TODO && x is TODOItem).Select(x => x as TODOItem).OrderBy(x => x.Priority).ToList();
+            var list = todos;
 
             for (int i = 0; i < list.Count; i++)
             {
                 jn["todo"][i]["ch"] = list[i].Checked.ToString();
-                jn["todo"][i]["pr"] = list[i].Priority.ToString();
                 jn["todo"][i]["text"] = list[i].Text;
             }
 
-            RTFile.WriteToFile(path + "/todo.lsn", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"todo{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadTODO()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
-            if (!RTFile.FileExists(path + "/todo.lsn"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"todo{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
                 return;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(path + "/todo.lsn"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
-            var todos = new List<TODOItem>();
             for (int i = 0; i < jn["todo"].Count; i++)
             {
-                var todo = new TODOItem();
+                var todo = new TODOPlanner();
                 todo.Checked = jn["todo"][i]["ch"].AsBool;
-                todo.Priority = jn["todo"][i]["pr"].AsInt;
                 todo.Text = jn["todo"][i]["text"];
-                todos.Add(todo);
+                AddPlanner(todo);
             }
-
-            todos = todos.OrderBy(x => x.Priority).ToList();
-
-            todos.ForEach(x =>
-            {
-                GenerateTODO(x);
-            });
-
-            planners.AddRange(todos);
-
-            todos.Clear();
-            todos = null;
         }
 
         public void SaveTimelines()
@@ -2010,7 +2073,7 @@ namespace BetterLegacy.Editor.Managers
 
             var jn = JSON.Parse("{}");
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.Timeline && x is TimelineItem).Select(x => x as TimelineItem).ToList();
+            var list = timelines;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -2026,37 +2089,35 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            RTFile.WriteToFile(path + "/timelines.lsn", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"timeline{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadTimelines()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
-            if (!RTFile.FileExists(path + "/timelines.lsn"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"timelines{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
                 return;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(path + "/timelines.lsn"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["timelines"].Count; i++)
             {
-                var timeline = new TimelineItem();
+                var timeline = new TimelinePlanner();
 
                 timeline.Name = jn["timelines"][i]["name"];
 
                 for (int j = 0; j < jn["timelines"][i]["levels"].Count; j++)
                 {
-                    timeline.Levels.Add(new TimelineItem.Event
+                    timeline.Levels.Add(new TimelinePlanner.Event
                     {
                         Name = jn["timelines"][i]["levels"][j]["n"],
                         Path = jn["timelines"][i]["levels"][j]["p"],
-                        ElementType = (TimelineItem.Event.Type)jn["timelines"][i]["levels"][j]["t"].AsInt,
+                        ElementType = (TimelinePlanner.Event.Type)jn["timelines"][i]["levels"][j]["t"].AsInt,
                         Description = jn["timelines"][i]["levels"][j]["d"],
                     });
                 }
 
-                GenerateTimeline(timeline);
-
-                planners.Add(timeline);
+                AddPlanner(timeline);
             }
         }
 
@@ -2068,7 +2129,7 @@ namespace BetterLegacy.Editor.Managers
 
             var jn = JSON.Parse("{}");
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.Schedule && x is ScheduleItem).Select(x => x as ScheduleItem).ToList();
+            var list = schedules;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -2079,20 +2140,20 @@ namespace BetterLegacy.Editor.Managers
                     jn["schedules"][i]["checked"] = schedule.hasBeenChecked;
             }
 
-            RTFile.WriteToFile(path + "/schedules.lsn", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"schedules{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadSchedules()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
-            if (!RTFile.FileExists(path + "/schedules.lsn"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"schedules{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
                 return;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(path + "/schedules.lsn"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["schedules"].Count; i++)
             {
-                var schedule = new ScheduleItem();
+                var schedule = new SchedulePlanner();
                 schedule.Date = jn["schedules"][i]["date"];
                 schedule.Description = jn["schedules"][i]["desc"];
                 if (jn["schedules"][i]["checked"] != null)
@@ -2101,9 +2162,7 @@ namespace BetterLegacy.Editor.Managers
                 if (DateTime.TryParse(schedule.Date, out DateTime dateTime))
                     schedule.DateTime = dateTime;
 
-                GenerateSchedule(schedule);
-
-                planners.Add(schedule);
+                AddPlanner(schedule);
             }
         }
 
@@ -2115,7 +2174,7 @@ namespace BetterLegacy.Editor.Managers
 
             var jn = JSON.Parse("{}");
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.Note && x is NoteItem).Select(x => x as NoteItem).ToList();
+            var list = notes;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -2133,20 +2192,20 @@ namespace BetterLegacy.Editor.Managers
                 jn["notes"][i]["text"] = note.Text;
             }
 
-            RTFile.WriteToFile(path + "/notes.lsn", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"notes{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadNotes()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
-            if (!RTFile.FileExists(path + "/notes.lsn"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"notes{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
                 return;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(path + "/notes.lsn"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["notes"].Count; i++)
             {
-                var note = new NoteItem();
+                var note = new NotePlanner();
 
                 note.Active = jn["notes"][i]["active"].AsBool;
                 if (!string.IsNullOrEmpty(jn["notes"][i]["name"]))
@@ -2161,9 +2220,7 @@ namespace BetterLegacy.Editor.Managers
                 note.Text = jn["notes"][i]["text"];
                 note.Color = jn["notes"][i]["col"].AsInt;
 
-                GenerateNote(note);
-
-                planners.Add(note);
+                AddPlanner(note);
             }
         }
 
@@ -2175,7 +2232,7 @@ namespace BetterLegacy.Editor.Managers
 
             var jn = JSON.Parse("{}");
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.OST && x is OSTItem).Select(x => x as OSTItem).ToList();
+            var list = osts;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -2188,29 +2245,27 @@ namespace BetterLegacy.Editor.Managers
                 jn["ost"][i]["index"] = ost.Index.ToString();
             }
 
-            RTFile.WriteToFile(path + "/ost.lsn", jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"ost{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadOST()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
-            if (!RTFile.FileExists(path + "/ost.lsn"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"ost{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
                 return;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(path + "/ost.lsn"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["ost"].Count; i++)
             {
-                var ost = new OSTItem();
+                var ost = new OSTPlanner();
 
                 ost.Name = jn["ost"][i]["name"];
                 ost.Path = jn["ost"][i]["path"];
                 ost.UseGlobal = jn["ost"][i]["use_global"].AsBool;
                 ost.Index = jn["ost"][i]["index"].AsInt;
 
-                GenerateOST(ost);
-
-                planners.Add(ost);
+                AddPlanner(ost);
             }
         }
 
@@ -2244,16 +2299,60 @@ namespace BetterLegacy.Editor.Managers
 
         public void RefreshList()
         {
-            foreach (var plan in planners)
+            for (int i = 0; i < documents.Count; i++)
             {
-                plan.GameObject?.SetActive(plan.PlannerType == (PlannerItem.Type)CurrentTab && (string.IsNullOrEmpty(SearchTerm) ||
-                    plan is DocumentItem document && !string.IsNullOrEmpty(document.Name) && document.Name.ToLower().Contains(SearchTerm.ToLower()) ||
-                    plan is TODOItem todo && (CheckOn(SearchTerm.ToLower()) && todo.Checked || CheckOff(SearchTerm.ToLower()) && !todo.Checked || todo.Text.ToLower().Contains(SearchTerm.ToLower())) ||
-                    plan is CharacterItem character && (!string.IsNullOrEmpty(character.Name) && character.Name.ToLower().Contains(SearchTerm.ToLower()) || !string.IsNullOrEmpty(character.Description) && character.Description.ToLower().Contains(SearchTerm.ToLower())) ||
-                    plan is TimelineItem timeline && timeline.Levels.Has(x => x.Name.ToLower().Contains(SearchTerm.ToLower())) ||
-                    plan is ScheduleItem schedule && (!string.IsNullOrEmpty(schedule.Description) && schedule.Description.ToLower().Contains(SearchTerm.ToLower()) || schedule.Date.ToLower().Contains(SearchTerm.ToLower())) ||
-                    plan is NoteItem note && !string.IsNullOrEmpty(note.Text) && note.Text.ToLower().Contains(SearchTerm.ToLower()) ||
-                    plan is OSTItem ost && !string.IsNullOrEmpty(ost.Name) && ost.Name.ToLower().Contains(SearchTerm.ToLower())));
+                var planner = documents[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
+            }
+            
+            for (int i = 0; i < todos.Count; i++)
+            {
+                var planner = todos[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && (string.IsNullOrEmpty(SearchTerm) || CheckOn(SearchTerm.ToLower()) && planner.Checked || CheckOff(SearchTerm.ToLower()) && !planner.Checked || RTString.SearchString(SearchTerm, planner.Text)));
+            }
+            
+            for (int i = 0; i < characters.Count; i++)
+            {
+                var planner = characters[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name, planner.Description));
+            }
+            
+            for (int i = 0; i < timelines.Count; i++)
+            {
+                var planner = timelines[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && planner.Levels.Has(x => RTString.SearchString(SearchTerm, x.Name)));
+            }
+            
+            for (int i = 0; i < schedules.Count; i++)
+            {
+                var planner = schedules[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Description, planner.Date));
+            }
+            
+            for (int i = 0; i < notes.Count; i++)
+            {
+                var planner = notes[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name, planner.Text));
+            }
+            
+            for (int i = 0; i < osts.Count; i++)
+            {
+                var planner = osts[i];
+
+                if (planner && planner.GameObject)
+                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
             }
         }
 
@@ -2271,7 +2370,7 @@ namespace BetterLegacy.Editor.Managers
         }
 
         public bool DocumentFullViewActive { get; set; }
-        public void OpenDocumentEditor(DocumentItem document)
+        public void OpenDocumentEditor(DocumentPlanner document)
         {
             editors[0].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_1];
@@ -2285,13 +2384,13 @@ namespace BetterLegacy.Editor.Managers
                 document.NameUI.text = _val;
                 documentTitle.text = document.Name;
             });
-            documentEditorName.onEndEdit.AddListener(_val => { SaveDocuments(); });
+            documentEditorName.onEndEdit.AddListener(_val => SaveDocuments());
 
             HandleDocumentEditor(document);
             HandleDocumentEditorPreview(document);
         }
 
-        void HandleDocumentEditor(DocumentItem document)
+        void HandleDocumentEditor(DocumentPlanner document)
         {
             documentEditorText.onValueChanged.ClearAll();
             documentEditorText.onEndEdit.ClearAll();
@@ -2303,10 +2402,10 @@ namespace BetterLegacy.Editor.Managers
 
                 HandleDocumentEditorPreview(document);
             });
-            documentEditorText.onEndEdit.AddListener(_val => { SaveDocuments(); });
+            documentEditorText.onEndEdit.AddListener(_val => SaveDocuments());
         }
 
-        void HandleDocumentEditorPreview(DocumentItem document)
+        void HandleDocumentEditorPreview(DocumentPlanner document)
         {
             DocumentFullViewActive = true;
             documentFullView.SetActive(true);
@@ -2321,10 +2420,10 @@ namespace BetterLegacy.Editor.Managers
 
                 HandleDocumentEditor(document);
             });
-            documentInputField.onEndEdit.AddListener(_val => { SaveDocuments(); });
+            documentInputField.onEndEdit.AddListener(_val => SaveDocuments());
         }
 
-        public void OpenTODOEditor(TODOItem todo)
+        public void OpenTODOEditor(TODOPlanner todo)
         {
             editors[1].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_2];
@@ -2337,10 +2436,40 @@ namespace BetterLegacy.Editor.Managers
                 todo.TextUI.text = _val;
             });
             todoEditorText.onEndEdit.ClearAll();
-            todoEditorText.onEndEdit.AddListener(_val => { SaveTODO(); });
+            todoEditorText.onEndEdit.AddListener(_val => SaveTODO());
+            todoEditorMoveUpButton.onClick.ClearAll();
+            todoEditorMoveUpButton.onClick.AddListener(() =>
+            {
+                if (todos.TryFindIndex(x => x.ID == todo.ID, out int index))
+                    return;
+
+                if (index - 1 < 0)
+                    return;
+
+                todos.Move(index, index - 1);
+                SaveTODO();
+
+                foreach (var todo in todos)
+                    todo.Init();
+            });
+            todoEditorMoveDownButton.onClick.ClearAll();
+            todoEditorMoveDownButton.onClick.AddListener(() =>
+            {
+                if (!todos.TryFindIndex(x => x.ID == todo.ID, out int index))
+                    return;
+
+                if (index >= todos.Count - 1)
+                    return;
+
+                todos.Move(index, index + 1);
+                SaveTODO();
+
+                foreach (var todo in todos)
+                    todo.Init();
+            });
         }
 
-        public void OpenCharacterEditor(CharacterItem character)
+        public void OpenCharacterEditor(CharacterPlanner character)
         {
             editors[2].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_3];
@@ -2353,7 +2482,7 @@ namespace BetterLegacy.Editor.Managers
                 character.DetailsUI.text = character.FormatDetails;
             });
             characterEditorName.onEndEdit.ClearAll();
-            characterEditorName.onEndEdit.AddListener(_val => { character.Save(); });
+            characterEditorName.onEndEdit.AddListener(_val => character.Save());
 
             characterEditorGender.onValueChanged.ClearAll();
             characterEditorGender.text = character.Gender;
@@ -2363,7 +2492,7 @@ namespace BetterLegacy.Editor.Managers
                 character.DetailsUI.text = character.FormatDetails;
             });
             characterEditorGender.onEndEdit.ClearAll();
-            characterEditorGender.onEndEdit.AddListener(_val => { character.Save(); });
+            characterEditorGender.onEndEdit.AddListener(_val => character.Save());
 
             characterEditorDescription.onValueChanged.ClearAll();
             characterEditorDescription.text = character.Description;
@@ -2373,7 +2502,7 @@ namespace BetterLegacy.Editor.Managers
                 character.DescriptionUI.text = character.Description;
             });
             characterEditorDescription.onEndEdit.ClearAll();
-            characterEditorDescription.onEndEdit.AddListener(_val => { character.Save(); });
+            characterEditorDescription.onEndEdit.AddListener(_val => character.Save());
 
             characterEditorProfileSelector.onClick.ClearAll();
             characterEditorProfileSelector.onClick.AddListener(() =>
@@ -2544,7 +2673,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void OpenTimelineEditor(TimelineItem timeline)
+        public void OpenTimelineEditor(TimelinePlanner timeline)
         {
             SetEditorsInactive();
             editors[3].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2558,10 +2687,10 @@ namespace BetterLegacy.Editor.Managers
                 timeline.NameUI.text = _val;
             });
             timelineEditorName.onEndEdit.ClearAll();
-            timelineEditorName.onEndEdit.AddListener(_val => { SaveTimelines(); });
+            timelineEditorName.onEndEdit.AddListener(_val => SaveTimelines());
         }
 
-        public void OpenEventEditor(TimelineItem.Event level)
+        public void OpenEventEditor(TimelinePlanner.Event level)
         {
             SetEditorsInactive();
             editors[4].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2575,7 +2704,7 @@ namespace BetterLegacy.Editor.Managers
                 level.NameUI.text = $"{level.ElementType}: {level.Name}";
             });
             eventEditorName.onEndEdit.ClearAll();
-            eventEditorName.onEndEdit.AddListener(_val => { SaveTimelines(); });
+            eventEditorName.onEndEdit.AddListener(_val => SaveTimelines());
 
             eventEditorDescription.onValueChanged.ClearAll();
             eventEditorDescription.text = level.Description;
@@ -2585,25 +2714,25 @@ namespace BetterLegacy.Editor.Managers
                 level.DescriptionUI.text = _val;
             });
             eventEditorDescription.onEndEdit.ClearAll();
-            eventEditorDescription.onEndEdit.AddListener(_val => { SaveTimelines(); });
+            eventEditorDescription.onEndEdit.AddListener(_val => SaveTimelines());
 
             eventEditorPath.onValueChanged.ClearAll();
             eventEditorPath.text = level.Path == null ? "" : level.Path;
             eventEditorPath.onValueChanged.AddListener(_val => { level.Path = _val; });
             eventEditorPath.onEndEdit.ClearAll();
-            eventEditorPath.onEndEdit.AddListener(_val => { SaveTimelines(); });
+            eventEditorPath.onEndEdit.AddListener(_val => SaveTimelines());
 
             eventEditorType.onValueChanged.ClearAll();
             eventEditorType.value = (int)level.ElementType;
             eventEditorType.onValueChanged.AddListener(_val =>
             {
-                level.ElementType = (TimelineItem.Event.Type)_val;
+                level.ElementType = (TimelinePlanner.Event.Type)_val;
                 level.NameUI.text = $"{level.ElementType}: {level.Name}";
                 SaveTimelines();
             });
         }
 
-        public void OpenScheduleEditor(ScheduleItem schedule)
+        public void OpenScheduleEditor(SchedulePlanner schedule)
         {
             editors[5].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_5];
@@ -2617,7 +2746,7 @@ namespace BetterLegacy.Editor.Managers
                 schedule.hasBeenChecked = false;
             });
             scheduleEditorDescription.onEndEdit.ClearAll();
-            scheduleEditorDescription.onEndEdit.AddListener(_val => { SaveSchedules(); });
+            scheduleEditorDescription.onEndEdit.AddListener(_val => SaveSchedules());
 
             scheduleEditorYear.onValueChanged.ClearAll();
             scheduleEditorYear.text = schedule.DateTime.Year.ToString();
@@ -2709,7 +2838,7 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        public void OpenNoteEditor(NoteItem note)
+        public void OpenNoteEditor(NotePlanner note)
         {
             editors[6].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_6];
@@ -2722,7 +2851,7 @@ namespace BetterLegacy.Editor.Managers
                 note.TitleUI.text = $"Note - {note.Name}";
             });
             noteEditorName.onEndEdit.ClearAll();
-            noteEditorName.onEndEdit.AddListener(_val => { SaveNotes(); });
+            noteEditorName.onEndEdit.AddListener(_val => SaveNotes());
 
             noteEditorText.onValueChanged.ClearAll();
             noteEditorText.text = note.Text;
@@ -2732,7 +2861,7 @@ namespace BetterLegacy.Editor.Managers
                 note.TextUI.text = _val;
             });
             noteEditorText.onEndEdit.ClearAll();
-            noteEditorText.onEndEdit.AddListener(_val => { SaveNotes(); });
+            noteEditorText.onEndEdit.AddListener(_val => SaveNotes());
 
             noteEditorColors.Clear();
             LSHelpers.DeleteChildren(noteEditorColorsParent);
@@ -2755,7 +2884,7 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        public void SetNoteColors(NoteItem note)
+        public void SetNoteColors(NotePlanner note)
         {
             int num = 0;
             foreach (var toggle in noteEditorColors)
@@ -2777,7 +2906,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void OpenOSTEditor(OSTItem ost)
+        public void OpenOSTEditor(OSTPlanner ost)
         {
             editors[7].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_7];
@@ -2796,7 +2925,7 @@ namespace BetterLegacy.Editor.Managers
                 ost.Name = _val;
                 ost.TextUI.text = _val;
             });
-            ostEditorName.onEndEdit.AddListener(_val => { SaveOST(); });
+            ostEditorName.onEndEdit.AddListener(_val => SaveOST());
 
             ostEditorPlay.onClick.ClearAll();
             ostEditorPlay.onClick.AddListener(ost.Play);
@@ -2822,7 +2951,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     ost.Index = num;
 
-                    var list = planners.Where(x => x.PlannerType == PlannerItem.Type.OST && x is OSTItem).Select(x => x as OSTItem).OrderBy(x => x.Index).ToList();
+                    var list = osts.OrderBy(x => x.Index).ToList();
 
                     for (int i = 0; i < list.Count; i++)
                     {
@@ -2843,11 +2972,11 @@ namespace BetterLegacy.Editor.Managers
             ostEditorIndex.text = i.ToString();
         }
 
-        void StopOST()
+        public void StopOST()
         {
             Destroy(OSTAudioSource);
 
-            var list = planners.Where(x => x.PlannerType == PlannerItem.Type.OST && x is OSTItem).Select(x => x as OSTItem).ToList();
+            var list = osts.ToList();
 
             for (int i = 0; i < list.Count; i++)
                 list[i].playing = false;
@@ -2894,366 +3023,6 @@ namespace BetterLegacy.Editor.Managers
             return gameObject;
         }
 
-        public GameObject GenerateDocument(DocumentItem document)
-        {
-            var gameObject = prefabs[0].Duplicate(content, "document");
-            gameObject.transform.localScale = Vector3.one;
-            document.GameObject = gameObject;
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => { OpenDocumentEditor(document); });
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-
-            document.NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
-            document.NameUI.text = document.Name;
-            EditorThemeManager.ApplyLightText(document.NameUI);
-
-            document.TextUI = gameObject.transform.Find("words").GetComponent<TextMeshProUGUI>();
-            document.TextUI.text = document.Text;
-            EditorThemeManager.ApplyLightText(document.TextUI);
-
-            var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is DocumentItem && x.ID == document.ID);
-                SaveDocuments();
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-            EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);
-
-            return gameObject;
-        }
-
-        public GameObject GenerateTODO(TODOItem todo)
-        {
-            var gameObject = prefabs[1].Duplicate(content, "todo");
-            gameObject.transform.localScale = Vector3.one;
-            todo.GameObject = gameObject;
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => { OpenTODOEditor(todo); });
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-
-            todo.TextUI = gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>();
-            todo.TextUI.text = todo.Text;
-            EditorThemeManager.ApplyLightText(todo.TextUI);
-
-            var toggle = gameObject.transform.Find("checked").GetComponent<Toggle>();
-            todo.CheckedUI = toggle;
-            toggle.onValueChanged.ClearAll();
-            toggle.isOn = todo.Checked;
-            toggle.onValueChanged.AddListener(_val =>
-            {
-                todo.Checked = _val;
-                SaveTODO();
-            });
-
-            EditorThemeManager.ApplyToggle(toggle);
-
-            var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is TODOItem && x.ID == todo.ID);
-                SaveTODO();
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-            return gameObject;
-        }
-
-        public GameObject GenerateCharacter(CharacterItem character)
-        {
-            var gameObject = prefabs[2].Duplicate(content, "character");
-            gameObject.transform.localScale = Vector3.one;
-            character.GameObject = gameObject;
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() =>
-            {
-                OpenCharacterEditor(character);
-            });
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-
-            character.ProfileUI = gameObject.transform.Find("profile").GetComponent<Image>();
-
-            character.DetailsUI = gameObject.transform.Find("details").GetComponent<TextMeshProUGUI>();
-            EditorThemeManager.ApplyLightText(character.DetailsUI);
-
-            character.DescriptionUI = gameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
-            EditorThemeManager.ApplyLightText(character.DescriptionUI);
-
-            character.ProfileUI.sprite = character.CharacterSprite;
-            character.DetailsUI.overflowMode = TextOverflowModes.Truncate;
-            character.DetailsUI.text = character.Format(true);
-            character.DescriptionUI.text = character.Description;
-
-            var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is CharacterItem && x.ID == character.ID);
-
-                if (RTFile.DirectoryExists(character.FullPath))
-                {
-                    var directory = character.FullPath;
-                    var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
-                    var directories = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
-
-                    foreach (var file in files)
-                    {
-                        File.Delete(file);
-                    }
-
-                    foreach (var dir in directories)
-                    {
-                        Directory.Delete(dir);
-                    }
-
-                    Directory.Delete(directory);
-                }
-
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-            return gameObject;
-        }
-
-        public GameObject GenerateTimeline(TimelineItem timeline)
-        {
-            var gameObject = prefabs[3].Duplicate(content, "timeline");
-            gameObject.transform.localScale = Vector3.one;
-            timeline.GameObject = gameObject;
-
-            timeline.Content = gameObject.transform.Find("Scroll/Viewport/Content");
-
-            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
-
-            var scrollbar = gameObject.transform.Find("Scrollbar");
-            EditorThemeManager.ApplyScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, ThemeGroup.Scrollbar_1_Handle, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom);
-
-            timeline.NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
-            timeline.NameUI.text = timeline.Name;
-            EditorThemeManager.ApplyLightText(timeline.NameUI);
-
-            var edit = gameObject.transform.Find("edit").GetComponent<Button>();
-            edit.onClick.ClearAll();
-            edit.onClick.AddListener(() => { OpenTimelineEditor(timeline); });
-
-            EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_2_Normal, true);
-            EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_2_Text);
-
-            var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is TimelineItem && x.ID == timeline.ID);
-                SaveTimelines();
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-            timeline.UpdateTimeline();
-
-            return gameObject;
-        }
-
-        public GameObject GenerateSchedule(ScheduleItem schedule)
-        {
-            var gameObject = prefabs[4].Duplicate(content, "schedule");
-            gameObject.transform.localScale = Vector3.one;
-            schedule.GameObject = gameObject;
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => { OpenScheduleEditor(schedule); });
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-
-            schedule.TextUI = gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>();
-            schedule.TextUI.text = schedule.Text;
-            EditorThemeManager.ApplyLightText(schedule.TextUI);
-
-            var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is ScheduleItem && x.ID == schedule.ID);
-                SaveSchedules();
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-            return gameObject;
-        }
-
-        public static bool DisplayEdges { get; set; }
-        public GameObject GenerateNote(NoteItem note)
-        {
-            var gameObject = prefabs[5].Duplicate(content, "note");
-            gameObject.transform.localScale = Vector3.one;
-            note.GameObject = gameObject;
-
-            var noteDraggable = gameObject.AddComponent<NoteDraggable>();
-            noteDraggable.note = note;
-
-            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_3, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
-
-            string[] names = new string[] { "left", "right", "up", "down" };
-            for (int i = 0; i < 4; i++)
-            {
-                var anchoredPositon = Vector2.zero;
-                var anchorMax = Vector2.zero;
-                var anchorMin = Vector2.zero;
-                var sizeDelta = new Vector2(4f, 0f);
-
-                switch (i)
-                {
-                    case 0:
-                        anchorMax = Vector2.one;
-                        anchorMin = new Vector2(1f, 0f);
-                        break;
-                    case 1:
-                        anchorMax = new Vector2(0f, 1f);
-                        anchorMin = Vector2.zero;
-                        break;
-                    case 2:
-                        anchoredPositon = new Vector2(0f, 30f);
-                        anchorMax = Vector2.one;
-                        anchorMin = new Vector2(0f, 1f);
-                        sizeDelta = new Vector2(0f, 4f);
-                        break;
-                    case 3:
-                        anchorMax = new Vector2(1f, 0f);
-                        anchorMin = Vector2.zero;
-                        sizeDelta = new Vector2(0f, 4f);
-                        break;
-                }
-
-                var left = Creator.NewUIObject(names[i], gameObject.transform);
-                UIManager.SetRectTransform(left.transform.AsRT(), anchoredPositon, anchorMax, anchorMin, new Vector2(0.5f, 0.5f), sizeDelta);
-                var leftImage = left.AddComponent<Image>();
-                leftImage.color = new Color(1f, 1f, 1f, DisplayEdges ? 1f : 0f);
-                var noteDraggableLeft = left.AddComponent<NoteDraggable>();
-                noteDraggableLeft.part = (NoteDraggable.DragPart)(i + 1);
-                noteDraggableLeft.note = note;
-            }
-
-            var edit = gameObject.transform.Find("panel/edit").GetComponent<Button>();
-            edit.onClick.ClearAll();
-            edit.onClick.AddListener(() =>
-            {
-                CurrentTab = 5;
-                Open();
-                RenderTabs();
-                RefreshList();
-                OpenNoteEditor(note);
-            });
-
-            EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
-            EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-
-            note.TitleUI = gameObject.transform.Find("panel/title").GetComponent<TextMeshProUGUI>();
-            note.TitleUI.text = $"Note - {note.Name}";
-
-            note.ActiveUI = gameObject.transform.Find("panel/active").GetComponent<Toggle>();
-            note.TopBar = gameObject.transform.Find("panel").GetComponent<Image>();
-            note.TextUI = gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>();
-            note.TextUI.text = note.Text;
-            EditorThemeManager.ApplyLightText(note.TextUI);
-
-            EditorThemeManager.ApplyGraphic(note.TopBar, ThemeGroup.Background_3, true);
-            note.TitleUI.gameObject.AddComponent<ContrastColors>().Init(note.TitleUI, note.TopBar);
-
-            note.ActiveUI.onValueChanged.ClearAll();
-            note.ActiveUI.isOn = note.Active;
-            note.ActiveUI.onValueChanged.AddListener(_val =>
-            {
-                note.Active = _val;
-                SaveNotes();
-            });
-
-            EditorThemeManager.ApplyToggle(note.ActiveUI);
-
-            var delete = gameObject.transform.Find("panel/delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is NoteItem && x.ID == note.ID);
-                SaveNotes();
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-            var close = gameObject.transform.Find("panel/close").GetComponent<Button>();
-            close.onClick.ClearAll();
-            close.onClick.AddListener(() => { note.ActiveUI.isOn = false; });
-
-            EditorThemeManager.ApplySelectable(close, ThemeGroup.Close);
-            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-
-            gameObject.AddComponent<NoteCloseDelete>().Init(delete.gameObject, close.gameObject);
-
-            return gameObject;
-        }
-
-        public GameObject GenerateOST(OSTItem ost)
-        {
-            var gameObject = prefabs[6].Duplicate(content, "ost");
-            gameObject.transform.localScale = Vector3.one;
-            ost.GameObject = gameObject;
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => { OpenOSTEditor(ost); });
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-
-            ost.TextUI = gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>();
-            ost.TextUI.text = ost.Name;
-            EditorThemeManager.ApplyLightText(ost.TextUI);
-
-            var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
-            {
-                planners.RemoveAll(x => x is OSTItem && x.ID == ost.ID);
-                SaveOST();
-
-                if (currentOSTID == ost.ID)
-                    StopOST();
-
-                Destroy(gameObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-            return gameObject;
-        }
-
         #endregion
 
         #region Open / Close UI
@@ -3288,501 +3057,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (editorState == EditorManager.EditorState.Main)
                 StopOST();
-        }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Base Planner class. FullPath must be the directory without a slash at the end. For example: Application Directory/beatmaps/planners/to do/item
-        /// </summary>
-        public class PlannerItem
-        {
-            public PlannerItem()
-            {
-
-            }
-
-            public string ID { get; set; } = LSText.randomNumString(10);
-
-            public GameObject GameObject { get; set; }
-
-            public Type PlannerType { get; set; }
-
-            public enum Type
-            {
-                Document,
-                TODO,
-                Character,
-                Timeline,
-                Schedule,
-                Note,
-                OST
-            }
-        }
-
-        public class DocumentItem : PlannerItem
-        {
-            public DocumentItem()
-            {
-                PlannerType = Type.Document;
-            }
-
-            public string Name { get; set; }
-            public TextMeshProUGUI NameUI { get; set; }
-            public string Text { get; set; }
-            public TextMeshProUGUI TextUI { get; set; }
-        }
-
-        public class TODOItem : PlannerItem
-        {
-            public TODOItem()
-            {
-                PlannerType = Type.TODO;
-            }
-
-            public string Text { get; set; }
-            public TextMeshProUGUI TextUI { get; set; }
-            public bool Checked { get; set; }
-            public Toggle CheckedUI { get; set; }
-            public int Priority { get; set; }
-        }
-
-        public class CharacterItem : PlannerItem
-        {
-            public CharacterItem()
-            {
-                PlannerType = Type.Character;
-            }
-
-            public CharacterItem(string fullPath)
-            {
-                CharacterSprite = RTFile.FileExists(fullPath + "/profile.png") ? SpriteHelper.LoadSprite(fullPath + "/profile.png") : SteamWorkshop.inst.defaultSteamImageSprite;
-
-                if (RTFile.FileExists(fullPath + "/info.lsn"))
-                {
-                    var jn = JSON.Parse(RTFile.ReadFromFile(fullPath + "/info.lsn"));
-
-                    Name = jn["name"];
-                    Gender = jn["gender"];
-                    Description = jn["desc"];
-
-                    for (int i = 0; i < jn["tr"].Count; i++)
-                    {
-                        CharacterTraits.Add(jn["tr"][i]);
-                    }
-
-                    for (int i = 0; i < jn["lo"].Count; i++)
-                    {
-                        CharacterLore.Add(jn["lo"][i]);
-                    }
-
-                    for (int i = 0; i < jn["ab"].Count; i++)
-                    {
-                        CharacterAbilities.Add(jn["ab"][i]);
-                    }
-                }
-
-                FullPath = fullPath;
-                PlannerType = Type.Character;
-            }
-
-            public string Name { get; set; }
-            public string Gender { get; set; }
-            public List<string> CharacterTraits { get; set; } = new List<string>();
-            public List<string> CharacterLore { get; set; } = new List<string>();
-            public List<string> CharacterAbilities { get; set; } = new List<string>();
-            public string Description { get; set; }
-            public Sprite CharacterSprite { get; set; }
-
-            public string FullPath { get; set; }
-
-            public TextMeshProUGUI DetailsUI { get; set; }
-            public TextMeshProUGUI DescriptionUI { get; set; }
-            public Image ProfileUI { get; set; }
-
-            public string Format(bool clamp)
-            {
-                var str = "<b>Name</b>: " + Name + "<br><b>Gender</b>: " + Gender + "<br><b>Character Traits</b>:<br>";
-
-                for (int i = 0; i < CharacterTraits.Count; i++)
-                    str += "- " + CharacterTraits[i] + "<br>";
-
-                str += "<br><b>Lore</b>:<br>";
-
-                for (int i = 0; i < CharacterLore.Count; i++)
-                    str += "- " + CharacterLore[i] + "<br>";
-
-                str += "<br><b>Abilities</b>:<br>";
-
-                for (int i = 0; i < CharacterAbilities.Count; i++)
-                    str += "- " + CharacterAbilities[i] + (i == CharacterAbilities.Count - 1 ? "" : "<br>");
-
-                if (clamp)
-                    return LSText.ClampString(str, 252);
-                return str;
-            }
-
-            public string FormatDetails
-            {
-                get
-                {
-                    //var stringBuilder = new StringBuilder();
-
-                    //stringBuilder.AppendLine($"<b>Name</b>: {Name}<br>");
-                    //stringBuilder.AppendLine($"<b>Gender</b>: {Gender}<br>");
-
-                    //stringBuilder.AppendLine($"<b>Character Traits</b>:<br>");
-                    //for (int i = 0; i < CharacterTraits.Count; i++)
-                    //{
-                    //    stringBuilder.AppendLine($"- {CharacterTraits[i]}<br>");
-                    //}
-                    //stringBuilder.AppendLine($"<br>");
-
-                    //stringBuilder.AppendLine($"<b>Lore</b>:<br>");
-                    //for (int i = 0; i < CharacterLore.Count; i++)
-                    //{
-                    //    stringBuilder.AppendLine($"- {CharacterLore[i]}<br>");
-                    //}
-                    //stringBuilder.AppendLine($"<br>");
-
-                    //stringBuilder.AppendLine($"<b>Abilities</b>:<br>");
-                    //for (int i = 0; i < CharacterAbilities.Count; i++)
-                    //{
-                    //    stringBuilder.AppendLine($"- {CharacterAbilities[i]}<br>");
-                    //}
-
-                    var str = "";
-
-                    str += "<b>Name</b>: " + Name + "<br><b>Gender</b>: " + Gender + "<br><b>Character Traits</b>:<br>";
-
-                    for (int i = 0; i < CharacterTraits.Count; i++)
-                        str += "- " + CharacterTraits[i] + "<br>";
-
-                    str += "<br><b>Lore</b>:<br>";
-
-                    for (int i = 0; i < CharacterLore.Count; i++)
-                        str += "- " + CharacterLore[i] + "<br>";
-
-                    str += "<br><b>Abilities</b>:<br>";
-
-                    for (int i = 0; i < CharacterAbilities.Count; i++)
-                        str += "- " + CharacterAbilities[i] + (i == CharacterAbilities.Count - 1 ? "" : "<br>");
-
-                    return str;
-                }
-            }
-
-            public static string DefaultCharacterDescription => "<b>Name</b>: Viral Mecha" + Environment.NewLine +
-                                        "<b>Gender</b>: He" + Environment.NewLine + Environment.NewLine +
-                                        "<b>Character Traits</b>:" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine + Environment.NewLine +
-                                        "<b>Lore</b>:" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine + Environment.NewLine +
-                                        "<b>Abilities</b>:" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine +
-                                        "- ???" + Environment.NewLine +
-                                        "- ???";
-
-            public void Save()
-            {
-                var jn = JSON.Parse("{}");
-
-                jn["name"] = Name;
-                jn["gender"] = Gender;
-                jn["desc"] = Description;
-
-                for (int i = 0; i < CharacterTraits.Count; i++)
-                    jn["tr"][i] = CharacterTraits[i];
-
-                for (int i = 0; i < CharacterLore.Count; i++)
-                    jn["lo"][i] = CharacterLore[i];
-
-                for (int i = 0; i < CharacterAbilities.Count; i++)
-                    jn["ab"][i] = CharacterAbilities[i];
-
-                RTFile.WriteToFile(FullPath + "/info.lsn", jn.ToString(3));
-
-                SpriteHelper.SaveSprite(CharacterSprite, FullPath + "/profile.png");
-            }
-        }
-
-        public class TimelineItem : PlannerItem
-        {
-            public TimelineItem()
-            {
-                PlannerType = Type.Timeline;
-            }
-
-            public string Name { get; set; }
-
-            public TextMeshProUGUI NameUI { get; set; }
-
-            public List<Event> Levels { get; set; } = new List<Event>();
-
-            public Transform Content { get; set; }
-
-            public GameObject Add { get; set; }
-
-            public void UpdateTimeline(bool destroy = true)
-            {
-                if (destroy)
-                {
-                    LSHelpers.DeleteChildren(Content);
-                    int num = 0;
-                    foreach (var level in Levels)
-                    {
-                        int index = num;
-                        var gameObject = inst.timelineButtonPrefab.Duplicate(Content, "event");
-                        gameObject.transform.localScale = Vector3.one;
-                        level.GameObject = gameObject;
-
-                        level.Button = gameObject.GetComponent<Button>();
-                        level.Button.onClick.ClearAll();
-                        level.Button.onClick.AddListener(() =>
-                        {
-                            string path = $"{RTFile.ApplicationDirectory}beatmaps/{level.Path.Replace("\\", "/").Replace("/level.lsb", "")}";
-                            if (!string.IsNullOrEmpty(level.Path) && RTFile.DirectoryExists(path) &&
-                            (RTFile.FileExists(path + "/level.ogg") || RTFile.FileExists(path + "/level.wav") || RTFile.FileExists(path + "/level.mp3")))
-                            {
-                                inst.Close();
-                                RTEditor.inst.StartCoroutine(RTEditor.inst.LoadLevel(path));
-                            }
-                        });
-
-                        EditorThemeManager.ApplySelectable(level.Button, ThemeGroup.List_Button_1);
-
-                        level.NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
-                        level.NameUI.text = $"{level.ElementType}: {level.Name}";
-                        EditorThemeManager.ApplyLightText(level.NameUI);
-                        level.DescriptionUI = gameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
-                        level.DescriptionUI.text = level.Description;
-                        EditorThemeManager.ApplyLightText(level.DescriptionUI);
-
-                        var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-                        delete.button.onClick.ClearAll();
-                        delete.button.onClick.AddListener(() =>
-                        {
-                            Levels.RemoveAt(index);
-                            UpdateTimeline();
-                            inst.SaveTimelines();
-                        });
-
-                        EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-                        EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-                        var edit = gameObject.transform.Find("edit").GetComponent<Button>();
-                        edit.onClick.ClearAll();
-                        edit.onClick.AddListener(() =>
-                        {
-                            CoreHelper.Log($"Editing {Name}");
-                            inst.OpenEventEditor(level);
-                        });
-
-                        EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
-                        EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-
-                        num++;
-                    }
-
-                    Add = inst.timelineAddPrefab.Duplicate(Content, "add");
-                    Add.transform.localScale = Vector3.one;
-                    var button = Add.GetComponent<Button>();
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() =>
-                    {
-                        var level = new Event
-                        {
-                            Name = "New Level",
-                            Description = "Set my path to a level in your beatmaps folder and then click me!",
-                            Path = ""
-                        };
-
-                        Levels.Add(level);
-                        UpdateTimeline();
-                        inst.SaveTimelines();
-                    });
-
-                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                    EditorThemeManager.ApplyLightText(Add.transform.GetChild(0).GetComponent<TextMeshProUGUI>());
-                }
-                else
-                {
-                    foreach (var level in Levels)
-                    {
-                        if (!level.GameObject)
-                        {
-                            var gameObject = inst.timelineButtonPrefab.Duplicate(Content, "event");
-                            gameObject.transform.localScale = Vector3.one;
-                            level.GameObject = gameObject;
-                        }
-
-                        if (!level.NameUI)
-                            level.NameUI = level.GameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
-                        if (!level.DescriptionUI)
-                            level.DescriptionUI = level.GameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
-
-                        level.NameUI.text = $"{level.ElementType}: {level.Name}";
-                        level.DescriptionUI.text = level.Description;
-                    }
-                }
-            }
-
-            public class Event
-            {
-                public GameObject GameObject { get; set; }
-                public Button Button { get; set; }
-                public TextMeshProUGUI NameUI { get; set; }
-                public TextMeshProUGUI DescriptionUI { get; set; }
-
-                public string Name { get; set; }
-                public string Description { get; set; }
-                public string Path { get; set; }
-                public Type ElementType { get; set; }
-
-                public enum Type
-                {
-                    Level,
-                    Cutscene,
-                    Story
-                }
-            }
-        }
-
-        public class ScheduleItem : PlannerItem
-        {
-            public ScheduleItem()
-            {
-                PlannerType = Type.Schedule;
-            }
-
-            public TextMeshProUGUI TextUI { get; set; }
-            public string Text => $"{Date} - {Description}";
-            public string Date { get; set; } = DateTime.Now.AddDays(1).ToString("g");
-
-            public string FormatDateFull(int day, int month, int year, int hour, int minute)
-            {
-                return $"{day}/{(month < 10 ? "0" + month.ToString() : month.ToString())}/{year} {(hour > 12 ? hour - 12 : hour)}:{minute} {(hour > 12 ? "PM" : "AM")}";
-            }
-
-            public string FormatDate(int day, int month, int year, int hour, int minute, string apm)
-            {
-                return $"{day}/{(month < 10 ? "0" + month.ToString() : month.ToString())}/{year} {(hour)}:{minute} {apm}";
-            }
-
-            public string DateFormat => $"{DateTime.Day}/{(DateTime.Month < 10 ? "0" + DateTime.Month.ToString() : DateTime.Month.ToString())}/{DateTime.Year} {(DateTime.Hour > 12 ? DateTime.Hour - 12 : DateTime.Hour)}:{DateTime.Minute} {(DateTime.Hour > 12 ? "PM" : "AM")}";
-            public DateTime DateTime { get; set; } = DateTime.Now.AddDays(1);
-            public string Description { get; set; }
-
-            public bool IsActive => DateTime.Day == DateTime.Now.Day && DateTime.Month == DateTime.Now.Month && DateTime.Year == DateTime.Now.Year;
-            public bool hasBeenChecked;
-        }
-
-        public class NoteItem : PlannerItem
-        {
-            public NoteItem()
-            {
-                PlannerType = Type.Note;
-            }
-
-            public bool Dragging { get; set; }
-
-            public bool Active { get; set; }
-            public string Name { get; set; }
-            public Vector2 Position { get; set; } = Vector2.zero;
-            public Vector2 Scale { get; set; } = new Vector2(1f, 1f);
-            public Vector2 Size { get; set; } = new Vector2(300f, 150f);
-            public int Color { get; set; }
-            public string Text { get; set; }
-
-            public Toggle ActiveUI { get; set; }
-            public Image TopBar { get; set; }
-            public TextMeshProUGUI TitleUI { get; set; }
-            public TextMeshProUGUI TextUI { get; set; }
-
-            public Color TopColor => Color >= 0 && Color < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[Color] : LSColors.red700;
-        }
-
-        public class OSTItem : PlannerItem
-        {
-            public OSTItem()
-            {
-                PlannerType = Type.OST;
-            }
-
-            public string Path { get; set; }
-            public bool UseGlobal { get; set; }
-            public string Name { get; set; }
-
-            public int Index { get; set; }
-
-            public TextMeshProUGUI TextUI { get; set; }
-
-            public bool playing;
-
-            public bool Valid => RTFile.FileExists(UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}") && (Path.Contains(".ogg") || Path.Contains(".wav") || Path.Contains(".mp3"));
-
-            public void Play()
-            {
-                var filePath = UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}";
-
-                if (!RTFile.FileExists(filePath))
-                    return;
-
-                var audioType = RTFile.GetAudioType(Path);
-
-                if (audioType == AudioType.UNKNOWN)
-                    return;
-
-                if (audioType == AudioType.MPEG)
-                {
-                    var audioClip = LSAudio.CreateAudioClipUsingMP3File(filePath);
-
-                    inst.StopOST();
-
-                    var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-
-                    inst.OSTAudioSource = audioSource;
-                    inst.currentOSTID = ID;
-                    inst.currentOST = Index;
-                    inst.playing = true;
-
-                    audioSource.clip = audioClip;
-                    audioSource.playOnAwake = true;
-                    audioSource.loop = false;
-                    audioSource.volume = DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * AudioManager.inst.masterVol;
-                    audioSource.Play();
-
-                    playing = true;
-
-                    return;
-                }
-
-                inst.StartCoroutine(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip =>
-                {
-                    inst.StopOST();
-
-                    var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-
-                    inst.OSTAudioSource = audioSource;
-                    inst.currentOSTID = ID;
-                    inst.currentOST = Index;
-                    inst.playing = true;
-
-                    audioSource.clip = audioClip;
-                    audioSource.playOnAwake = true;
-                    audioSource.loop = false;
-                    audioSource.volume = DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * AudioManager.inst.masterVol;
-                    audioSource.Play();
-
-                    playing = true;
-                }));
-            }
         }
 
         #endregion

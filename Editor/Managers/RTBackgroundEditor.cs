@@ -17,6 +17,7 @@ using UnityEngine.UI;
 
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -1768,7 +1769,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (backgroundObject.reactive)
                 {
-                    backgroundObject.reactiveType = (DataManager.GameData.BackgroundObject.ReactiveType)UnityEngine.Random.Range(0, 4);
+                    backgroundObject.reactiveType = (BaseBackgroundObject.ReactiveType)UnityEngine.Random.Range(0, 4);
 
                     backgroundObject.reactiveScale = UnityEngine.Random.Range(0.01f, 0.04f);
                 }
@@ -2137,24 +2138,24 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    var buttonFunctions = new List<RTEditor.ButtonFunction>()
+                    var buttonFunctions = new List<ButtonFunction>()
                     {
-                        new RTEditor.ButtonFunction("Add", () =>
+                        new ButtonFunction("Add", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(backgroundObject);
                         }),
-                        new RTEditor.ButtonFunction("Add Above", () =>
+                        new ButtonFunction("Add Above", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(backgroundObject, index);
                         }),
-                        new RTEditor.ButtonFunction("Add Below", () =>
+                        new ButtonFunction("Add Below", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(backgroundObject, index + 1);
                         }),
-                        new RTEditor.ButtonFunction("Delete", () =>
+                        new ButtonFunction("Delete", () =>
                         {
                             backgroundObject.modifiers[currentPage].RemoveAt(index);
                             backgroundObject.positionOffset = Vector3.zero;
@@ -2166,14 +2167,14 @@ namespace BetterLegacy.Editor.Managers
 
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Copy", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () =>
                         {
                             copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Paste", () =>
+                        new ButtonFunction("Paste", () =>
                         {
                             if (copiedModifier == null)
                                 return;
@@ -2182,7 +2183,7 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Paste Above", () =>
+                        new ButtonFunction("Paste Above", () =>
                         {
                             if (copiedModifier == null)
                                 return;
@@ -2191,7 +2192,7 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Paste Below", () =>
+                        new ButtonFunction("Paste Below", () =>
                         {
                             if (copiedModifier == null)
                                 return;
@@ -2200,13 +2201,13 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Sort Modifiers", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Sort Modifiers", () =>
                         {
                             backgroundObject.modifiers[currentPage] = backgroundObject.modifiers[currentPage].OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
-                        new RTEditor.ButtonFunction("Move Up", () =>
+                        new ButtonFunction("Move Up", () =>
                         {
                             if (index <= 0)
                             {
@@ -2217,7 +2218,7 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.modifiers[currentPage].Move(index, index - 1);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
-                        new RTEditor.ButtonFunction("Move Down", () =>
+                        new ButtonFunction("Move Down", () =>
                         {
                             if (index >= backgroundObject.modifiers[currentPage].Count - 1)
                             {
@@ -2228,25 +2229,25 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.modifiers[currentPage].Move(index, index + 1);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
-                        new RTEditor.ButtonFunction("Move to Start", () =>
+                        new ButtonFunction("Move to Start", () =>
                         {
                             backgroundObject.modifiers[currentPage].Move(index, 0);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
-                        new RTEditor.ButtonFunction("Move to End", () =>
+                        new ButtonFunction("Move to End", () =>
                         {
                             backgroundObject.modifiers[currentPage].Move(index, backgroundObject.modifiers[currentPage].Count - 1);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Update Modifier", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Update Modifier", () =>
                         {
                             modifier.active = false;
                             modifier.Inactive?.Invoke(modifier);
                         })
                     };
                     if (ModCompatibility.UnityExplorerInstalled)
-                        buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => { ModCompatibility.Inspect(modifier); }));
+                        buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
 
                     RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
                 };
@@ -2376,7 +2377,7 @@ namespace BetterLegacy.Editor.Managers
                 int toggleIndex = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == i;
-                toggle.onValueChanged.AddListener(_val => { SetObjectColors(toggles, index, toggleIndex, modifier); });
+                toggle.onValueChanged.AddListener(_val => SetObjectColors(toggles, index, toggleIndex, modifier));
 
                 toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(toggleIndex);
 

@@ -25,9 +25,9 @@ namespace BetterLegacy.Editor.Components
         void Update()
         {
             // Delete should only be active when you're looking at the Note tab of the Project Planner.
-            delete?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Intro && ProjectPlannerManager.inst.CurrentTab == 5);
+            delete?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Intro && ProjectPlanner.inst.CurrentTab == 5);
             // Close should appear every BUT the Note tab.
-            close?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Main || ProjectPlannerManager.inst.CurrentTab != 5);
+            close?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Main || ProjectPlanner.inst.CurrentTab != 5);
         }
     }
 }

@@ -224,7 +224,7 @@ namespace BetterLegacy.Editor.Managers
             PlayerEditor.Init();
             ObjectModifiersEditor.Init();
             LevelCombiner.Init();
-            ProjectPlannerManager.Init();
+            ProjectPlanner.Init();
             UploadedLevelsManager.Init();
 
             mousePicker = Creator.NewUIObject("picker", EditorManager.inst.dialogs.parent);
@@ -633,7 +633,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Timeline
+        #region Game Timeline
 
         public Image timelinePreviewPlayer;
         public Image timelinePreviewLine;
@@ -654,13 +654,13 @@ namespace BetterLegacy.Editor.Managers
         public Text documentationTitle;
         public string documentationSearch;
         public Transform documentationContent;
-        public Popup documentationPopup;
+        public EditorPopup documentationPopup;
 
         #endregion
 
         #region Debugger
 
-        public Popup debuggerPopup;
+        public EditorPopup debuggerPopup;
         public List<string> debugs = new List<string>();
         public List<GameObject> customFunctions = new List<GameObject>();
         public string debugSearch;
@@ -2309,9 +2309,9 @@ namespace BetterLegacy.Editor.Managers
             return spacer;
         }
 
-        public Popup GeneratePopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        public EditorPopup GeneratePopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
         {
-            var popupInstance = new Popup();
+            var popupInstance = new EditorPopup();
             popupInstance.Name = name;
             var popup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(popups, name);
             popupInstance.GameObject = popup;
@@ -2330,9 +2330,9 @@ namespace BetterLegacy.Editor.Managers
             popupInstance.Grid.cellSize = new Vector2(inSize.x - 5f, 32f);
             popup.transform.Find("Scrollbar").AsRT().sizeDelta = new Vector2(32f, inSize.y);
 
-            popupInstance.Close = popupInstance.TopPanel.Find("x").GetComponent<Button>();
-            popupInstance.Close.onClick.ClearAll();
-            popupInstance.Close.onClick.AddListener(() =>
+            popupInstance.CloseButton = popupInstance.TopPanel.Find("x").GetComponent<Button>();
+            popupInstance.CloseButton.onClick.ClearAll();
+            popupInstance.CloseButton.onClick.AddListener(() =>
             {
                 EditorManager.inst.HideDialog(name);
                 close?.Invoke();
@@ -2350,9 +2350,9 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(popupInstance.TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
-            EditorThemeManager.AddSelectable(popupInstance.Close, ThemeGroup.Close);
+            EditorThemeManager.AddSelectable(popupInstance.CloseButton, ThemeGroup.Close);
 
-            EditorThemeManager.AddGraphic(popupInstance.Close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.AddGraphic(popupInstance.CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
             EditorThemeManager.AddLightText(text);
 
@@ -2854,7 +2854,7 @@ namespace BetterLegacy.Editor.Managers
             objectTemplatePopup = GeneratePopup("Object Templates Popup", "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
         }
 
-        Popup objectTemplatePopup;
+        EditorPopup objectTemplatePopup;
 
         public void ShowObjectTemplates()
         {
@@ -10926,7 +10926,7 @@ namespace BetterLegacy.Editor.Managers
             listToDelete = null;
         }
 
-        public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowserFile(".lsb", "level", x => StartCoroutine(LoadLevel(x.Replace("\\", "/").Replace("/level.lsb", ""))));
+        public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowserFile(FileFormat.LSB.Dot(), "level", x => StartCoroutine(LoadLevel(RTFile.ReplaceSlash(x).Remove("/" + Level.LEVEL_LSB))));
 
         public void RefreshDocumentation()
         {
@@ -11265,8 +11265,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var play = EditorConfig.Instance.PlayEditorAnimations.Value;
 
-            DialogAnimation dialogAnimation = null;
-            var hasAnimation = DialogAnimations.TryFind(x => x.name == dialogName, out dialogAnimation);
+            EditorAnimation dialogAnimation = null;
+            var hasAnimation = editorAnimations.TryFind(x => x.name == dialogName, out dialogAnimation);
 
             if (play && hasAnimation && gameObject.activeSelf != active)
             {
@@ -11448,6 +11448,842 @@ namespace BetterLegacy.Editor.Managers
                 }));
             }
         }
+
+        public List<EditorAnimation> editorAnimations = new List<EditorAnimation>
+        {
+            new EditorAnimation("Open File Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.OpenFilePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.OpenFilePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.OpenFilePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.OpenFilePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.OpenFilePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.OpenFilePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.OpenFilePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.OpenFilePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.OpenFilePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.OpenFilePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.OpenFilePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.OpenFilePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.OpenFilePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.OpenFilePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.OpenFilePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.OpenFilePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.OpenFilePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.OpenFilePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.OpenFilePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.OpenFilePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.OpenFilePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.OpenFilePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.OpenFilePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.OpenFilePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.OpenFilePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.OpenFilePopupRotCloseEase,
+            },
+            new EditorAnimation("New File Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.NewFilePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.NewFilePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.NewFilePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.NewFilePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.NewFilePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.NewFilePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.NewFilePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.NewFilePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.NewFilePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.NewFilePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.NewFilePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.NewFilePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.NewFilePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.NewFilePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.NewFilePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
+            },
+            new EditorAnimation("Save As Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.SaveAsPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.SaveAsPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.SaveAsPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.SaveAsPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.SaveAsPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.SaveAsPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.SaveAsPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.SaveAsPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.SaveAsPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.SaveAsPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.SaveAsPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.SaveAsPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.SaveAsPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.SaveAsPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.SaveAsPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.SaveAsPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.SaveAsPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.SaveAsPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.SaveAsPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.SaveAsPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.SaveAsPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.SaveAsPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.SaveAsPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.SaveAsPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.SaveAsPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.SaveAsPopupRotCloseEase,
+            },
+            new EditorAnimation("Quick Actions Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.NewFilePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.NewFilePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.NewFilePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.NewFilePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.NewFilePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.NewFilePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.NewFilePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.NewFilePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.NewFilePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.NewFilePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.NewFilePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.NewFilePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.NewFilePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.NewFilePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.NewFilePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
+            },
+            new EditorAnimation("Parent Selector")
+            {
+                ActiveConfig = EditorConfig.Instance.ParentSelectorPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.ParentSelectorPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.ParentSelectorPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.ParentSelectorPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.ParentSelectorPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.ParentSelectorPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.ParentSelectorPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.ParentSelectorPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.ParentSelectorPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.ParentSelectorPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.ParentSelectorPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.ParentSelectorPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.ParentSelectorPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.ParentSelectorPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.ParentSelectorPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.ParentSelectorPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupRotCloseEase,
+            },
+            new EditorAnimation("Prefab Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.PrefabPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.PrefabPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.PrefabPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.PrefabPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.PrefabPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.PrefabPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.PrefabPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.PrefabPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.PrefabPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.PrefabPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.PrefabPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.PrefabPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.PrefabPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.PrefabPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.PrefabPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.PrefabPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.PrefabPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.PrefabPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.PrefabPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.PrefabPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.PrefabPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.PrefabPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.PrefabPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.PrefabPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.PrefabPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.PrefabPopupRotCloseEase,
+            },
+            new EditorAnimation("Object Options Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.NewFilePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.NewFilePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.NewFilePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.NewFilePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.NewFilePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.NewFilePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.NewFilePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.NewFilePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.NewFilePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.NewFilePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.NewFilePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.NewFilePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.NewFilePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.NewFilePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.NewFilePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
+            },
+            new EditorAnimation("BG Options Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.BGOptionsPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.BGOptionsPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.BGOptionsPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.BGOptionsPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.BGOptionsPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.BGOptionsPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.BGOptionsPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.BGOptionsPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.BGOptionsPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.BGOptionsPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.BGOptionsPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.BGOptionsPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.BGOptionsPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.BGOptionsPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.BGOptionsPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.BGOptionsPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupRotCloseEase,
+            },
+            new EditorAnimation("Browser Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.BrowserPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.BrowserPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.BrowserPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.BrowserPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.BrowserPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.BrowserPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.BrowserPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.BrowserPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.BrowserPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.BrowserPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.BrowserPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.BrowserPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.BrowserPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.BrowserPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.BrowserPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.BrowserPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.BrowserPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.BrowserPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.BrowserPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.BrowserPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.BrowserPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.BrowserPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.BrowserPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.BrowserPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.BrowserPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.BrowserPopupRotCloseEase,
+            },
+            new EditorAnimation("Object Search Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.ObjectSearchPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.ObjectSearchPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.ObjectSearchPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.ObjectSearchPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.ObjectSearchPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.ObjectSearchPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.ObjectSearchPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.ObjectSearchPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.ObjectSearchPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.ObjectSearchPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.ObjectSearchPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.ObjectSearchPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.ObjectSearchPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.ObjectSearchPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.ObjectSearchPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.ObjectSearchPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotCloseEase,
+            },
+            new EditorAnimation("Warning Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.WarningPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.WarningPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.WarningPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.WarningPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.WarningPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.WarningPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.WarningPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.WarningPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.WarningPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.WarningPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.WarningPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.WarningPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.WarningPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.WarningPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.WarningPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.WarningPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.WarningPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.WarningPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.WarningPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.WarningPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.WarningPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.WarningPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.WarningPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.WarningPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.WarningPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.WarningPopupRotCloseEase,
+            },
+            new EditorAnimation("Folder Creator Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.FilePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.FilePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.FilePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.FilePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.FilePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.FilePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.FilePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.FilePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.FilePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.FilePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.FilePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.FilePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.FilePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.FilePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.FilePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.FilePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.FilePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.FilePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.FilePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.FilePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.FilePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.FilePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.FilePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.FilePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.FilePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.FilePopupRotCloseEase,
+            },
+            new EditorAnimation("Text Editor")
+            {
+                ActiveConfig = EditorConfig.Instance.TextEditorActive,
+
+                PosActiveConfig = EditorConfig.Instance.TextEditorPosActive,
+                PosOpenConfig = EditorConfig.Instance.TextEditorPosOpen,
+                PosCloseConfig = EditorConfig.Instance.TextEditorPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.TextEditorPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.TextEditorPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.TextEditorPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.TextEditorPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.TextEditorPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.TextEditorPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.TextEditorScaActive,
+                ScaOpenConfig = EditorConfig.Instance.TextEditorScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.TextEditorScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.TextEditorScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.TextEditorScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.TextEditorScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.TextEditorScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.TextEditorScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.TextEditorScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.TextEditorRotActive,
+                RotOpenConfig = EditorConfig.Instance.TextEditorRotOpen,
+                RotCloseConfig = EditorConfig.Instance.TextEditorRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.TextEditorRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.TextEditorRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.TextEditorRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.TextEditorRotCloseEase,
+            },
+            new EditorAnimation("Editor Properties Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.EditorPropertiesPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.EditorPropertiesPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.EditorPropertiesPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.EditorPropertiesPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.EditorPropertiesPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.EditorPropertiesPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.EditorPropertiesPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.EditorPropertiesPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.EditorPropertiesPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupRotCloseEase,
+            },
+            new EditorAnimation("Documentation Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.DocumentationPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.DocumentationPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.DocumentationPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.DocumentationPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.DocumentationPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.DocumentationPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.DocumentationPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.DocumentationPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.DocumentationPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.DocumentationPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.DocumentationPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.DocumentationPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.DocumentationPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.DocumentationPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.DocumentationPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.DocumentationPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.DocumentationPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.DocumentationPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.DocumentationPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.DocumentationPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.DocumentationPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.DocumentationPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.DocumentationPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.DocumentationPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.DocumentationPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.DocumentationPopupRotCloseEase,
+            },
+            new EditorAnimation("Debugger Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.DebuggerPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.DebuggerPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.DebuggerPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.DebuggerPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.DebuggerPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.DebuggerPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.DebuggerPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.DebuggerPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.DebuggerPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.DebuggerPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.DebuggerPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.DebuggerPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.DebuggerPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.DebuggerPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.DebuggerPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.DebuggerPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.DebuggerPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.DebuggerPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.DebuggerPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.DebuggerPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.DebuggerPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.DebuggerPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.DebuggerPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.DebuggerPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.DebuggerPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.DebuggerPopupRotCloseEase,
+            },
+            new EditorAnimation("Autosaves Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.AutosavesPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.AutosavesPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.AutosavesPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.AutosavesPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.AutosavesPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.AutosavesPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.AutosavesPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.AutosavesPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.AutosavesPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.AutosavesPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.AutosavesPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.AutosavesPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.AutosavesPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.AutosavesPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.AutosavesPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.AutosavesPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.AutosavesPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.AutosavesPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.AutosavesPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.AutosavesPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.AutosavesPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.AutosavesPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.AutosavesPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.AutosavesPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.AutosavesPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.AutosavesPopupRotCloseEase,
+            },
+            new EditorAnimation("Default Modifiers Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.DefaultModifiersPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.DefaultModifiersPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.DefaultModifiersPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.DefaultModifiersPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.DefaultModifiersPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.DefaultModifiersPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.DefaultModifiersPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.DefaultModifiersPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.DefaultModifiersPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.DefaultModifiersPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.DefaultModifiersPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.DefaultModifiersPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.DefaultModifiersPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.DefaultModifiersPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotCloseEase,
+            },
+            new EditorAnimation("Keybind List Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.KeybindListPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.KeybindListPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.KeybindListPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.KeybindListPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.KeybindListPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.KeybindListPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.KeybindListPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.KeybindListPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.KeybindListPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.KeybindListPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.KeybindListPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.KeybindListPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.KeybindListPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.KeybindListPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.KeybindListPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.KeybindListPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.KeybindListPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.KeybindListPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.KeybindListPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.KeybindListPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.KeybindListPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.KeybindListPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.KeybindListPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.KeybindListPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.KeybindListPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.KeybindListPopupRotCloseEase,
+            },
+            new EditorAnimation("Theme Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.ThemePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.ThemePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.ThemePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.ThemePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.ThemePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.ThemePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.ThemePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.ThemePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.ThemePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.ThemePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.ThemePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.ThemePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.ThemePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.ThemePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.ThemePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.ThemePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.ThemePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.ThemePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.ThemePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.ThemePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.ThemePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.ThemePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.ThemePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.ThemePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.ThemePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.ThemePopupRotCloseEase,
+            },
+            new EditorAnimation("Prefab Types Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.PrefabTypesPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.PrefabTypesPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.PrefabTypesPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.PrefabTypesPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.PrefabTypesPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.PrefabTypesPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.PrefabTypesPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.PrefabTypesPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.PrefabTypesPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.PrefabTypesPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.PrefabTypesPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.PrefabTypesPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.PrefabTypesPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.PrefabTypesPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.PrefabTypesPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.PrefabTypesPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupRotCloseEase,
+            },
+            new EditorAnimation("File Dropdown")
+            {
+                ActiveConfig = EditorConfig.Instance.FileDropdownActive,
+
+                PosActiveConfig = EditorConfig.Instance.FileDropdownPosActive,
+                PosOpenConfig = EditorConfig.Instance.FileDropdownPosOpen,
+                PosCloseConfig = EditorConfig.Instance.FileDropdownPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.FileDropdownPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.FileDropdownPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.FileDropdownPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.FileDropdownPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.FileDropdownPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.FileDropdownPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.FileDropdownScaActive,
+                ScaOpenConfig = EditorConfig.Instance.FileDropdownScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.FileDropdownScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.FileDropdownScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.FileDropdownScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.FileDropdownScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.FileDropdownScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.FileDropdownScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.FileDropdownScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.FileDropdownRotActive,
+                RotOpenConfig = EditorConfig.Instance.FileDropdownRotOpen,
+                RotCloseConfig = EditorConfig.Instance.FileDropdownRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.FileDropdownRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.FileDropdownRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.FileDropdownRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.FileDropdownRotCloseEase,
+            },
+            new EditorAnimation("Edit Dropdown")
+            {
+                ActiveConfig = EditorConfig.Instance.EditDropdownActive,
+
+                PosActiveConfig = EditorConfig.Instance.EditDropdownPosActive,
+                PosOpenConfig = EditorConfig.Instance.EditDropdownPosOpen,
+                PosCloseConfig = EditorConfig.Instance.EditDropdownPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.EditDropdownPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.EditDropdownPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.EditDropdownPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.EditDropdownPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.EditDropdownPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.EditDropdownPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.EditDropdownScaActive,
+                ScaOpenConfig = EditorConfig.Instance.EditDropdownScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.EditDropdownScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.EditDropdownScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.EditDropdownScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.EditDropdownScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.EditDropdownScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.EditDropdownScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.EditDropdownScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.EditDropdownRotActive,
+                RotOpenConfig = EditorConfig.Instance.EditDropdownRotOpen,
+                RotCloseConfig = EditorConfig.Instance.EditDropdownRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.EditDropdownRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.EditDropdownRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.EditDropdownRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.EditDropdownRotCloseEase,
+            },
+            new EditorAnimation("View Dropdown")
+            {
+                ActiveConfig = EditorConfig.Instance.ViewDropdownActive,
+
+                PosActiveConfig = EditorConfig.Instance.ViewDropdownPosActive,
+                PosOpenConfig = EditorConfig.Instance.ViewDropdownPosOpen,
+                PosCloseConfig = EditorConfig.Instance.ViewDropdownPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.ViewDropdownPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.ViewDropdownPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.ViewDropdownPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.ViewDropdownPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.ViewDropdownPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.ViewDropdownPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.ViewDropdownScaActive,
+                ScaOpenConfig = EditorConfig.Instance.ViewDropdownScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.ViewDropdownScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.ViewDropdownScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.ViewDropdownScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.ViewDropdownScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.ViewDropdownScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.ViewDropdownScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.ViewDropdownScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.ViewDropdownRotActive,
+                RotOpenConfig = EditorConfig.Instance.ViewDropdownRotOpen,
+                RotCloseConfig = EditorConfig.Instance.ViewDropdownRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.ViewDropdownRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.ViewDropdownRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.ViewDropdownRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.ViewDropdownRotCloseEase,
+            },
+            new EditorAnimation("Steam Dropdown")
+            {
+                ActiveConfig = EditorConfig.Instance.SteamDropdownActive,
+
+                PosActiveConfig = EditorConfig.Instance.SteamDropdownPosActive,
+                PosOpenConfig = EditorConfig.Instance.SteamDropdownPosOpen,
+                PosCloseConfig = EditorConfig.Instance.SteamDropdownPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.SteamDropdownPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.SteamDropdownPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.SteamDropdownPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.SteamDropdownPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.SteamDropdownPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.SteamDropdownPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.SteamDropdownScaActive,
+                ScaOpenConfig = EditorConfig.Instance.SteamDropdownScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.SteamDropdownScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.SteamDropdownScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.SteamDropdownScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.SteamDropdownScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.SteamDropdownScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.SteamDropdownScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.SteamDropdownScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.SteamDropdownRotActive,
+                RotOpenConfig = EditorConfig.Instance.SteamDropdownRotOpen,
+                RotCloseConfig = EditorConfig.Instance.SteamDropdownRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.SteamDropdownRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.SteamDropdownRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.SteamDropdownRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.SteamDropdownRotCloseEase,
+            },
+            new EditorAnimation("Help Dropdown")
+            {
+                ActiveConfig = EditorConfig.Instance.HelpDropdownActive,
+
+                PosActiveConfig = EditorConfig.Instance.HelpDropdownPosActive,
+                PosOpenConfig = EditorConfig.Instance.HelpDropdownPosOpen,
+                PosCloseConfig = EditorConfig.Instance.HelpDropdownPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.HelpDropdownPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.HelpDropdownPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.HelpDropdownPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.HelpDropdownPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.HelpDropdownPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.HelpDropdownPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.HelpDropdownScaActive,
+                ScaOpenConfig = EditorConfig.Instance.HelpDropdownScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.HelpDropdownScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.HelpDropdownScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.HelpDropdownScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.HelpDropdownScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.HelpDropdownScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.HelpDropdownScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.HelpDropdownScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.HelpDropdownRotActive,
+                RotOpenConfig = EditorConfig.Instance.HelpDropdownRotOpen,
+                RotCloseConfig = EditorConfig.Instance.HelpDropdownRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.HelpDropdownRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.HelpDropdownRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.HelpDropdownRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.HelpDropdownRotCloseEase,
+            },
+        };
 
         #endregion
 
@@ -11906,962 +12742,6 @@ namespace BetterLegacy.Editor.Managers
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_JPG), RTFile.CombinePaths(saveTo, Level.COVER_JPG));
 
             EditorManager.inst.DisplayNotification("Saved the level to the story level compiler.", 2f, EditorManager.NotificationType.Success);
-        }
-
-        #endregion
-
-        #region Constructors
-
-        public List<DialogAnimation> DialogAnimations { get; set; } = new List<DialogAnimation>
-        {
-            new DialogAnimation("Open File Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.OpenFilePopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.OpenFilePopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.OpenFilePopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.OpenFilePopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.OpenFilePopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.OpenFilePopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.OpenFilePopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.OpenFilePopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.OpenFilePopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.OpenFilePopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.OpenFilePopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.OpenFilePopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.OpenFilePopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.OpenFilePopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.OpenFilePopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.OpenFilePopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.OpenFilePopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.OpenFilePopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.OpenFilePopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.OpenFilePopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.OpenFilePopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.OpenFilePopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.OpenFilePopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.OpenFilePopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.OpenFilePopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.OpenFilePopupRotCloseEase,
-            },
-            new DialogAnimation("New File Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.NewFilePopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.NewFilePopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.NewFilePopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.NewFilePopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.NewFilePopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.NewFilePopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.NewFilePopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.NewFilePopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.NewFilePopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.NewFilePopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.NewFilePopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.NewFilePopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.NewFilePopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.NewFilePopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.NewFilePopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
-            },
-            new DialogAnimation("Save As Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.SaveAsPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.SaveAsPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.SaveAsPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.SaveAsPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.SaveAsPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.SaveAsPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.SaveAsPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.SaveAsPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.SaveAsPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.SaveAsPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.SaveAsPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.SaveAsPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.SaveAsPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.SaveAsPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.SaveAsPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.SaveAsPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.SaveAsPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.SaveAsPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.SaveAsPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.SaveAsPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.SaveAsPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.SaveAsPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.SaveAsPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.SaveAsPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.SaveAsPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.SaveAsPopupRotCloseEase,
-            },
-            new DialogAnimation("Quick Actions Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.NewFilePopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.NewFilePopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.NewFilePopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.NewFilePopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.NewFilePopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.NewFilePopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.NewFilePopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.NewFilePopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.NewFilePopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.NewFilePopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.NewFilePopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.NewFilePopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.NewFilePopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.NewFilePopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.NewFilePopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
-            },
-            new DialogAnimation("Parent Selector")
-            {
-                ActiveConfig = EditorConfig.Instance.ParentSelectorPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.ParentSelectorPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.ParentSelectorPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.ParentSelectorPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.ParentSelectorPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.ParentSelectorPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.ParentSelectorPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.ParentSelectorPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.ParentSelectorPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.ParentSelectorPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.ParentSelectorPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.ParentSelectorPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.ParentSelectorPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.ParentSelectorPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.ParentSelectorPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.ParentSelectorPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupRotCloseEase,
-            },
-            new DialogAnimation("Prefab Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.PrefabPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.PrefabPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.PrefabPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.PrefabPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.PrefabPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.PrefabPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.PrefabPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.PrefabPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.PrefabPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.PrefabPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.PrefabPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.PrefabPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.PrefabPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.PrefabPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.PrefabPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.PrefabPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.PrefabPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.PrefabPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.PrefabPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.PrefabPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.PrefabPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.PrefabPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.PrefabPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.PrefabPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.PrefabPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.PrefabPopupRotCloseEase,
-            },
-            new DialogAnimation("Object Options Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.NewFilePopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.NewFilePopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.NewFilePopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.NewFilePopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.NewFilePopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.NewFilePopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.NewFilePopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.NewFilePopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.NewFilePopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.NewFilePopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.NewFilePopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.NewFilePopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.NewFilePopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.NewFilePopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.NewFilePopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.NewFilePopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.NewFilePopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.NewFilePopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.NewFilePopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
-            },
-            new DialogAnimation("BG Options Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.BGOptionsPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.BGOptionsPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.BGOptionsPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.BGOptionsPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.BGOptionsPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.BGOptionsPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.BGOptionsPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.BGOptionsPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.BGOptionsPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.BGOptionsPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.BGOptionsPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.BGOptionsPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.BGOptionsPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.BGOptionsPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.BGOptionsPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.BGOptionsPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupRotCloseEase,
-            },
-            new DialogAnimation("Browser Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.BrowserPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.BrowserPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.BrowserPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.BrowserPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.BrowserPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.BrowserPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.BrowserPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.BrowserPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.BrowserPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.BrowserPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.BrowserPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.BrowserPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.BrowserPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.BrowserPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.BrowserPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.BrowserPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.BrowserPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.BrowserPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.BrowserPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.BrowserPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.BrowserPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.BrowserPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.BrowserPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.BrowserPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.BrowserPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.BrowserPopupRotCloseEase,
-            },
-            new DialogAnimation("Object Search Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.ObjectSearchPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.ObjectSearchPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.ObjectSearchPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.ObjectSearchPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.ObjectSearchPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.ObjectSearchPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.ObjectSearchPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.ObjectSearchPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.ObjectSearchPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.ObjectSearchPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.ObjectSearchPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.ObjectSearchPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.ObjectSearchPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.ObjectSearchPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.ObjectSearchPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.ObjectSearchPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotCloseEase,
-            },
-            new DialogAnimation("Warning Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.WarningPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.WarningPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.WarningPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.WarningPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.WarningPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.WarningPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.WarningPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.WarningPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.WarningPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.WarningPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.WarningPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.WarningPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.WarningPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.WarningPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.WarningPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.WarningPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.WarningPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.WarningPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.WarningPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.WarningPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.WarningPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.WarningPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.WarningPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.WarningPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.WarningPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.WarningPopupRotCloseEase,
-            },
-            new DialogAnimation("Folder Creator Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.FilePopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.FilePopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.FilePopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.FilePopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.FilePopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.FilePopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.FilePopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.FilePopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.FilePopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.FilePopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.FilePopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.FilePopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.FilePopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.FilePopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.FilePopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.FilePopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.FilePopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.FilePopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.FilePopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.FilePopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.FilePopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.FilePopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.FilePopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.FilePopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.FilePopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.FilePopupRotCloseEase,
-            },
-            new DialogAnimation("Text Editor")
-            {
-                ActiveConfig = EditorConfig.Instance.TextEditorActive,
-
-                PosActiveConfig = EditorConfig.Instance.TextEditorPosActive,
-                PosOpenConfig = EditorConfig.Instance.TextEditorPosOpen,
-                PosCloseConfig = EditorConfig.Instance.TextEditorPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.TextEditorPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.TextEditorPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.TextEditorPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.TextEditorPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.TextEditorPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.TextEditorPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.TextEditorScaActive,
-                ScaOpenConfig = EditorConfig.Instance.TextEditorScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.TextEditorScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.TextEditorScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.TextEditorScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.TextEditorScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.TextEditorScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.TextEditorScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.TextEditorScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.TextEditorRotActive,
-                RotOpenConfig = EditorConfig.Instance.TextEditorRotOpen,
-                RotCloseConfig = EditorConfig.Instance.TextEditorRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.TextEditorRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.TextEditorRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.TextEditorRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.TextEditorRotCloseEase,
-            },
-            new DialogAnimation("Editor Properties Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.EditorPropertiesPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.EditorPropertiesPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.EditorPropertiesPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.EditorPropertiesPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.EditorPropertiesPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.EditorPropertiesPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.EditorPropertiesPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.EditorPropertiesPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.EditorPropertiesPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupRotCloseEase,
-            },
-            new DialogAnimation("Documentation Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.DocumentationPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.DocumentationPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.DocumentationPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.DocumentationPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.DocumentationPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.DocumentationPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.DocumentationPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.DocumentationPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.DocumentationPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.DocumentationPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.DocumentationPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.DocumentationPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.DocumentationPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.DocumentationPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.DocumentationPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.DocumentationPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.DocumentationPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.DocumentationPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.DocumentationPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.DocumentationPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.DocumentationPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.DocumentationPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.DocumentationPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.DocumentationPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.DocumentationPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.DocumentationPopupRotCloseEase,
-            },
-            new DialogAnimation("Debugger Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.DebuggerPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.DebuggerPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.DebuggerPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.DebuggerPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.DebuggerPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.DebuggerPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.DebuggerPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.DebuggerPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.DebuggerPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.DebuggerPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.DebuggerPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.DebuggerPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.DebuggerPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.DebuggerPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.DebuggerPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.DebuggerPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.DebuggerPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.DebuggerPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.DebuggerPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.DebuggerPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.DebuggerPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.DebuggerPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.DebuggerPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.DebuggerPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.DebuggerPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.DebuggerPopupRotCloseEase,
-            },
-            new DialogAnimation("Autosaves Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.AutosavesPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.AutosavesPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.AutosavesPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.AutosavesPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.AutosavesPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.AutosavesPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.AutosavesPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.AutosavesPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.AutosavesPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.AutosavesPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.AutosavesPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.AutosavesPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.AutosavesPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.AutosavesPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.AutosavesPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.AutosavesPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.AutosavesPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.AutosavesPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.AutosavesPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.AutosavesPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.AutosavesPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.AutosavesPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.AutosavesPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.AutosavesPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.AutosavesPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.AutosavesPopupRotCloseEase,
-            },
-            new DialogAnimation("Default Modifiers Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.DefaultModifiersPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.DefaultModifiersPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.DefaultModifiersPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.DefaultModifiersPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.DefaultModifiersPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.DefaultModifiersPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.DefaultModifiersPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.DefaultModifiersPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.DefaultModifiersPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.DefaultModifiersPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.DefaultModifiersPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.DefaultModifiersPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.DefaultModifiersPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.DefaultModifiersPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotCloseEase,
-            },
-            new DialogAnimation("Keybind List Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.KeybindListPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.KeybindListPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.KeybindListPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.KeybindListPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.KeybindListPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.KeybindListPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.KeybindListPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.KeybindListPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.KeybindListPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.KeybindListPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.KeybindListPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.KeybindListPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.KeybindListPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.KeybindListPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.KeybindListPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.KeybindListPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.KeybindListPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.KeybindListPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.KeybindListPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.KeybindListPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.KeybindListPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.KeybindListPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.KeybindListPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.KeybindListPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.KeybindListPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.KeybindListPopupRotCloseEase,
-            },
-            new DialogAnimation("Theme Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.ThemePopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.ThemePopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.ThemePopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.ThemePopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.ThemePopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.ThemePopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.ThemePopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.ThemePopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.ThemePopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.ThemePopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.ThemePopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.ThemePopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.ThemePopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.ThemePopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.ThemePopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.ThemePopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.ThemePopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.ThemePopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.ThemePopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.ThemePopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.ThemePopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.ThemePopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.ThemePopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.ThemePopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.ThemePopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.ThemePopupRotCloseEase,
-            },
-            new DialogAnimation("Prefab Types Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.PrefabTypesPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.PrefabTypesPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.PrefabTypesPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.PrefabTypesPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.PrefabTypesPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.PrefabTypesPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.PrefabTypesPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.PrefabTypesPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.PrefabTypesPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.PrefabTypesPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.PrefabTypesPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.PrefabTypesPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.PrefabTypesPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.PrefabTypesPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.PrefabTypesPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.PrefabTypesPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupRotCloseEase,
-            },
-            new DialogAnimation("File Dropdown")
-            {
-                ActiveConfig = EditorConfig.Instance.FileDropdownActive,
-
-                PosActiveConfig = EditorConfig.Instance.FileDropdownPosActive,
-                PosOpenConfig = EditorConfig.Instance.FileDropdownPosOpen,
-                PosCloseConfig = EditorConfig.Instance.FileDropdownPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.FileDropdownPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.FileDropdownPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.FileDropdownPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.FileDropdownPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.FileDropdownPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.FileDropdownPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.FileDropdownScaActive,
-                ScaOpenConfig = EditorConfig.Instance.FileDropdownScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.FileDropdownScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.FileDropdownScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.FileDropdownScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.FileDropdownScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.FileDropdownScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.FileDropdownScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.FileDropdownScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.FileDropdownRotActive,
-                RotOpenConfig = EditorConfig.Instance.FileDropdownRotOpen,
-                RotCloseConfig = EditorConfig.Instance.FileDropdownRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.FileDropdownRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.FileDropdownRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.FileDropdownRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.FileDropdownRotCloseEase,
-            },
-            new DialogAnimation("Edit Dropdown")
-            {
-                ActiveConfig = EditorConfig.Instance.EditDropdownActive,
-
-                PosActiveConfig = EditorConfig.Instance.EditDropdownPosActive,
-                PosOpenConfig = EditorConfig.Instance.EditDropdownPosOpen,
-                PosCloseConfig = EditorConfig.Instance.EditDropdownPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.EditDropdownPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.EditDropdownPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.EditDropdownPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.EditDropdownPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.EditDropdownPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.EditDropdownPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.EditDropdownScaActive,
-                ScaOpenConfig = EditorConfig.Instance.EditDropdownScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.EditDropdownScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.EditDropdownScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.EditDropdownScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.EditDropdownScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.EditDropdownScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.EditDropdownScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.EditDropdownScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.EditDropdownRotActive,
-                RotOpenConfig = EditorConfig.Instance.EditDropdownRotOpen,
-                RotCloseConfig = EditorConfig.Instance.EditDropdownRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.EditDropdownRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.EditDropdownRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.EditDropdownRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.EditDropdownRotCloseEase,
-            },
-            new DialogAnimation("View Dropdown")
-            {
-                ActiveConfig = EditorConfig.Instance.ViewDropdownActive,
-
-                PosActiveConfig = EditorConfig.Instance.ViewDropdownPosActive,
-                PosOpenConfig = EditorConfig.Instance.ViewDropdownPosOpen,
-                PosCloseConfig = EditorConfig.Instance.ViewDropdownPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.ViewDropdownPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.ViewDropdownPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.ViewDropdownPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.ViewDropdownPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.ViewDropdownPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.ViewDropdownPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.ViewDropdownScaActive,
-                ScaOpenConfig = EditorConfig.Instance.ViewDropdownScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.ViewDropdownScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.ViewDropdownScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.ViewDropdownScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.ViewDropdownScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.ViewDropdownScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.ViewDropdownScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.ViewDropdownScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.ViewDropdownRotActive,
-                RotOpenConfig = EditorConfig.Instance.ViewDropdownRotOpen,
-                RotCloseConfig = EditorConfig.Instance.ViewDropdownRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.ViewDropdownRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.ViewDropdownRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.ViewDropdownRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.ViewDropdownRotCloseEase,
-            },
-            new DialogAnimation("Steam Dropdown")
-            {
-                ActiveConfig = EditorConfig.Instance.SteamDropdownActive,
-
-                PosActiveConfig = EditorConfig.Instance.SteamDropdownPosActive,
-                PosOpenConfig = EditorConfig.Instance.SteamDropdownPosOpen,
-                PosCloseConfig = EditorConfig.Instance.SteamDropdownPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.SteamDropdownPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.SteamDropdownPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.SteamDropdownPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.SteamDropdownPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.SteamDropdownPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.SteamDropdownPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.SteamDropdownScaActive,
-                ScaOpenConfig = EditorConfig.Instance.SteamDropdownScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.SteamDropdownScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.SteamDropdownScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.SteamDropdownScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.SteamDropdownScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.SteamDropdownScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.SteamDropdownScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.SteamDropdownScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.SteamDropdownRotActive,
-                RotOpenConfig = EditorConfig.Instance.SteamDropdownRotOpen,
-                RotCloseConfig = EditorConfig.Instance.SteamDropdownRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.SteamDropdownRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.SteamDropdownRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.SteamDropdownRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.SteamDropdownRotCloseEase,
-            },
-            new DialogAnimation("Help Dropdown")
-            {
-                ActiveConfig = EditorConfig.Instance.HelpDropdownActive,
-
-                PosActiveConfig = EditorConfig.Instance.HelpDropdownPosActive,
-                PosOpenConfig = EditorConfig.Instance.HelpDropdownPosOpen,
-                PosCloseConfig = EditorConfig.Instance.HelpDropdownPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.HelpDropdownPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.HelpDropdownPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.HelpDropdownPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.HelpDropdownPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.HelpDropdownPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.HelpDropdownPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.HelpDropdownScaActive,
-                ScaOpenConfig = EditorConfig.Instance.HelpDropdownScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.HelpDropdownScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.HelpDropdownScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.HelpDropdownScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.HelpDropdownScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.HelpDropdownScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.HelpDropdownScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.HelpDropdownScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.HelpDropdownRotActive,
-                RotOpenConfig = EditorConfig.Instance.HelpDropdownRotOpen,
-                RotCloseConfig = EditorConfig.Instance.HelpDropdownRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.HelpDropdownRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.HelpDropdownRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.HelpDropdownRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.HelpDropdownRotCloseEase,
-            },
-        };
-
-        class MultiColorButton
-        {
-            public Button Button { get; set; }
-            public Image Image { get; set; }
-            public GameObject Selected { get; set; }
-        }
-
-        public class ButtonFunction
-        {
-            public ButtonFunction(bool isSpacer, float spacerSize = 4f)
-            {
-                IsSpacer = isSpacer;
-                SpacerSize = spacerSize;
-            }
-
-            public ButtonFunction(string name, Action action)
-            {
-                Name = name;
-                Action = action;
-            }
-            
-            public ButtonFunction(string name, Action<PointerEventData> onClick)
-            {
-                Name = name;
-                OnClick = onClick;
-            }
-
-            public bool IsSpacer { get; set; }
-            public float SpacerSize { get; set; } = 4f;
-            public string Name { get; set; }
-            public int FontSize { get; set; } = 20;
-            public Action Action { get; set; }
-            public Action<PointerEventData> OnClick { get; set; }
-        }
-
-        public class DialogAnimation : Exists
-        {
-            public DialogAnimation(string name)
-            {
-                this.name = name;
-            }
-
-            public string name;
-
-            #region Configs
-
-            public Setting<bool> ActiveConfig { get; set; }
-
-            // Position
-            public Setting<bool> PosActiveConfig { get; set; }
-            public Setting<Vector2> PosOpenConfig { get; set; }
-            public Setting<Vector2> PosCloseConfig { get; set; }
-            public Setting<Vector2> PosOpenDurationConfig { get; set; }
-            public Setting<Vector2> PosCloseDurationConfig { get; set; }
-            public Setting<Easings> PosXOpenEaseConfig { get; set; }
-            public Setting<Easings> PosXCloseEaseConfig { get; set; }
-            public Setting<Easings> PosYOpenEaseConfig { get; set; }
-            public Setting<Easings> PosYCloseEaseConfig { get; set; }
-
-            // Scale
-            public Setting<bool> ScaActiveConfig { get; set; }
-            public Setting<Vector2> ScaOpenConfig { get; set; }
-            public Setting<Vector2> ScaCloseConfig { get; set; }
-            public Setting<Vector2> ScaOpenDurationConfig { get; set; }
-            public Setting<Vector2> ScaCloseDurationConfig { get; set; }
-            public Setting<Easings> ScaXOpenEaseConfig { get; set; }
-            public Setting<Easings> ScaXCloseEaseConfig { get; set; }
-            public Setting<Easings> ScaYOpenEaseConfig { get; set; }
-            public Setting<Easings> ScaYCloseEaseConfig { get; set; }
-
-            // Rotation
-            public Setting<bool> RotActiveConfig { get; set; }
-            public Setting<float> RotOpenConfig { get; set; }
-            public Setting<float> RotCloseConfig { get; set; }
-            public Setting<float> RotOpenDurationConfig { get; set; }
-            public Setting<float> RotCloseDurationConfig { get; set; }
-            public Setting<Easings> RotOpenEaseConfig { get; set; }
-            public Setting<Easings> RotCloseEaseConfig { get; set; }
-
-            #endregion
-
-            public bool Active => ActiveConfig.Value;
-
-            public bool PosActive => PosActiveConfig.Value;
-            public Vector2 PosStart => PosCloseConfig.Value;
-            public Vector2 PosEnd => PosOpenConfig.Value;
-            public float PosXStartDuration => PosOpenDurationConfig.Value.x;
-            public float PosXEndDuration => PosCloseDurationConfig.Value.x;
-            public string PosXStartEase => PosXOpenEaseConfig.Value.ToString();
-            public string PosXEndEase => PosXCloseEaseConfig.Value.ToString();
-            public float PosYStartDuration => PosOpenDurationConfig.Value.y;
-            public float PosYEndDuration => PosCloseDurationConfig.Value.y;
-            public string PosYStartEase => PosYOpenEaseConfig.Value.ToString();
-            public string PosYEndEase => PosYCloseEaseConfig.Value.ToString();
-
-            public bool ScaActive => ScaActiveConfig.Value;
-            public Vector2 ScaStart => ScaCloseConfig.Value;
-            public Vector2 ScaEnd => ScaOpenConfig.Value;
-            public float ScaXStartDuration => ScaOpenDurationConfig.Value.x;
-            public float ScaXEndDuration => ScaCloseDurationConfig.Value.x;
-            public string ScaXStartEase => ScaXOpenEaseConfig.Value.ToString();
-            public string ScaXEndEase => ScaXCloseEaseConfig.Value.ToString();
-            public float ScaYStartDuration => ScaOpenDurationConfig.Value.y;
-            public float ScaYEndDuration => ScaCloseDurationConfig.Value.y;
-            public string ScaYStartEase => ScaYOpenEaseConfig.Value.ToString();
-            public string ScaYEndEase => ScaYCloseEaseConfig.Value.ToString();
-
-            public bool RotActive => RotActiveConfig.Value;
-            public float RotStart => RotCloseConfig.Value;
-            public float RotEnd => RotOpenConfig.Value;
-            public float RotStartDuration => RotOpenDurationConfig.Value;
-            public float RotEndDuration => RotCloseDurationConfig.Value;
-            public string RotStartEase => RotOpenEaseConfig.Value.ToString();
-            public string RotEndEase => RotCloseEaseConfig.Value.ToString();
         }
 
         #endregion

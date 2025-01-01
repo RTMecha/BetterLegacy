@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -28,7 +29,7 @@ namespace BetterLegacy.Editor.Components
         /// <summary>
         /// The note reference.
         /// </summary>
-        public ProjectPlannerManager.NoteItem note;
+        public NotePlanner note;
 
         bool dragging;
         Vector3 startMousePos;
@@ -38,7 +39,7 @@ namespace BetterLegacy.Editor.Components
         /// <summary>
         /// Gets a true value if the note is in floating mode, otherwise gets a false value if it's in the Project Planner layout.
         /// </summary>
-        public static bool Free => ProjectPlannerManager.inst && (!ProjectPlannerManager.inst.PlannerActive || ProjectPlannerManager.inst.CurrentTab != 5);
+        public static bool Free => ProjectPlanner.inst && (!ProjectPlanner.inst.PlannerActive || ProjectPlanner.inst.CurrentTab != 5);
 
         public void OnPointerUp(PointerEventData eventData)
         {
@@ -53,7 +54,7 @@ namespace BetterLegacy.Editor.Components
                 note.Dragging = false;
             }
 
-            ProjectPlannerManager.inst?.SaveNotes();
+            ProjectPlanner.inst?.SaveNotes();
             dragging = false;
         }
 
@@ -80,7 +81,7 @@ namespace BetterLegacy.Editor.Components
             }
 
             if (!Free && part == DragPart.Base)
-                ProjectPlannerManager.inst?.OpenNoteEditor(note);
+                ProjectPlanner.inst?.OpenNoteEditor(note);
         }
 
         void Update()
@@ -180,10 +181,10 @@ namespace BetterLegacy.Editor.Components
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (Free && (part == DragPart.Left || part == DragPart.Right))
-                Cursor.SetCursor(ProjectPlannerManager.inst.horizontalDrag, CursorMode.Auto);
+                Cursor.SetCursor(ProjectPlanner.inst.horizontalDrag, CursorMode.Auto);
 
             if (Free && (part == DragPart.Up || part == DragPart.Down))
-                Cursor.SetCursor(ProjectPlannerManager.inst.verticalDrag, CursorMode.Auto);
+                Cursor.SetCursor(ProjectPlanner.inst.verticalDrag, CursorMode.Auto);
         }
 
         public void OnPointerExit(PointerEventData eventData)

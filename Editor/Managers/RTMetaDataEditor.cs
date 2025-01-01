@@ -21,6 +21,7 @@ using System.Net;
 using UnityEngine.Networking;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -161,8 +162,8 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                    new RTEditor.ButtonFunction("Upload / Update", UploadLevel),
-                    new RTEditor.ButtonFunction("Verify Level is on Server", () =>
+                    new ButtonFunction("Upload / Update", UploadLevel),
+                    new ButtonFunction("Verify Level is on Server", () =>
                     {
                         RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
                         {
@@ -171,7 +172,7 @@ namespace BetterLegacy.Editor.Managers
                             VerifyLevelIsOnServer();
                         }, RTEditor.inst.HideWarningPopup);
                     }),
-                    new RTEditor.ButtonFunction("Guidelines", () => { RTEditor.inst.ShowDocumentation("Uploading a Level"); })
+                    new ButtonFunction("Guidelines", () => { RTEditor.inst.ShowDocumentation("Uploading a Level"); })
                     );
             };
 

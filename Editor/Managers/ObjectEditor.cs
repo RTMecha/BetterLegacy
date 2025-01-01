@@ -2319,8 +2319,8 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                    new RTEditor.ButtonFunction("Open Parent Popup", EditorManager.inst.OpenParentPopup),
-                    new RTEditor.ButtonFunction("Parent to Camera", () =>
+                    new ButtonFunction("Open Parent Popup", EditorManager.inst.OpenParentPopup),
+                    new ButtonFunction("Parent to Camera", () =>
                     {
                         beatmapObject.parent = BeatmapObject.CAMERA_PARENT;
                         Updater.UpdateObject(beatmapObject);
@@ -2344,13 +2344,13 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                var list = new List<RTEditor.ButtonFunction>();
+                var list = new List<ButtonFunction>();
 
                 if (!string.IsNullOrEmpty(beatmapObject.parent))
                 {
                     var parentChain = beatmapObject.GetParentChain();
                     if (parentChain.Count > 0)
-                        list.Add(new RTEditor.ButtonFunction("View Parent Chain", () =>
+                        list.Add(new ButtonFunction("View Parent Chain", () =>
                         {
                             RTEditor.inst.ShowObjectSearch(x => SetCurrentObject(GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: parentChain);
                         }));
@@ -2360,7 +2360,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var childTree = beatmapObject.GetChildTree();
                     if (childTree.Count > 0)
-                        list.Add(new RTEditor.ButtonFunction("View Child Tree", () =>
+                        list.Add(new ButtonFunction("View Child Tree", () =>
                         {
                             RTEditor.inst.ShowObjectSearch(x => SetCurrentObject(GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: childTree);
                         }));
@@ -2721,7 +2721,7 @@ namespace BetterLegacy.Editor.Managers
         void OriginContextMenu(BeatmapObject beatmapObject)
         {
             RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                new RTEditor.ButtonFunction("Center", () =>
+                new ButtonFunction("Center", () =>
                 {
                     beatmapObject.origin = Vector2.zero;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
@@ -2729,7 +2729,7 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Top", () =>
+                new ButtonFunction("Top", () =>
                 {
                     beatmapObject.origin.y = -0.5f;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
@@ -2737,49 +2737,49 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Bottom", () =>
+                new ButtonFunction("Bottom", () =>
                 {
                     beatmapObject.origin.y = 0.5f;
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Left", () =>
+                new ButtonFunction("Left", () =>
                 {
                     beatmapObject.origin.x = -0.5f;
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Right", () =>
+                new ButtonFunction("Right", () =>
                 {
                     beatmapObject.origin.x = 0.5f;
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Top (Triangle)", () =>
+                new ButtonFunction("Top (Triangle)", () =>
                 {
                     beatmapObject.origin.y = -0.575f;
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Bottom (Triangle)", () =>
+                new ButtonFunction("Bottom (Triangle)", () =>
                 {
                     beatmapObject.origin.y = 0.2875f;
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Left (Triangle)", () =>
+                new ButtonFunction("Left (Triangle)", () =>
                 {
                     beatmapObject.origin.x = -0.497964993f;
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Origin");
                     RenderOrigin(beatmapObject);
                 }),
-                new RTEditor.ButtonFunction("Right (Triangle)", () =>
+                new ButtonFunction("Right (Triangle)", () =>
                 {
                     beatmapObject.origin.x = 0.497964993f;
                     if (UpdateObjects)

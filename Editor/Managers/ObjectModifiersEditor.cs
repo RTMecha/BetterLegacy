@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -396,24 +397,24 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    var buttonFunctions = new List<RTEditor.ButtonFunction>()
+                    var buttonFunctions = new List<ButtonFunction>()
                     {
-                        new RTEditor.ButtonFunction("Add", () =>
+                        new ButtonFunction("Add", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(beatmapObject);
                         }),
-                        new RTEditor.ButtonFunction("Add Above", () =>
+                        new ButtonFunction("Add Above", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(beatmapObject, index);
                         }),
-                        new RTEditor.ButtonFunction("Add Below", () =>
+                        new ButtonFunction("Add Below", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
                             RefreshDefaultModifiersList(beatmapObject, index + 1);
                         }),
-                        new RTEditor.ButtonFunction("Delete", () =>
+                        new ButtonFunction("Delete", () =>
                         {
                             beatmapObject.modifiers.RemoveAt(index);
                             beatmapObject.reactivePositionOffset = Vector3.zero;
@@ -422,14 +423,14 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(beatmapObject);
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Copy", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () =>
                         {
                             copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
                             StartCoroutine(RenderModifiers(beatmapObject));
                             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Paste", () =>
+                        new ButtonFunction("Paste", () =>
                         {
                             if (copiedModifier == null)
                                 return;
@@ -438,7 +439,7 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Paste Above", () =>
+                        new ButtonFunction("Paste Above", () =>
                         {
                             if (copiedModifier == null)
                                 return;
@@ -447,7 +448,7 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction("Paste Below", () =>
+                        new ButtonFunction("Paste Below", () =>
                         {
                             if (copiedModifier == null)
                                 return;
@@ -456,13 +457,13 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Sort Modifiers", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Sort Modifiers", () =>
                         {
                             beatmapObject.modifiers = beatmapObject.modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
-                        new RTEditor.ButtonFunction("Move Up", () =>
+                        new ButtonFunction("Move Up", () =>
                         {
                             if (index <= 0)
                             {
@@ -473,7 +474,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.modifiers.Move(index, index - 1);
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
-                        new RTEditor.ButtonFunction("Move Down", () =>
+                        new ButtonFunction("Move Down", () =>
                         {
                             if (index >= beatmapObject.modifiers.Count - 1)
                             {
@@ -484,25 +485,25 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.modifiers.Move(index, index + 1);
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
-                        new RTEditor.ButtonFunction("Move to Start", () =>
+                        new ButtonFunction("Move to Start", () =>
                         {
                             beatmapObject.modifiers.Move(index, 0);
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
-                        new RTEditor.ButtonFunction("Move to End", () =>
+                        new ButtonFunction("Move to End", () =>
                         {
                             beatmapObject.modifiers.Move(index, beatmapObject.modifiers.Count - 1);
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Update Modifier", () =>
+                        new ButtonFunction(true),
+                        new ButtonFunction("Update Modifier", () =>
                         {
                             modifier.active = false;
                             modifier.Inactive?.Invoke(modifier);
                         })
                     };
                     if (ModCompatibility.UnityExplorerInstalled)
-                        buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
+                        buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
 
                     RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
                 };
@@ -567,7 +568,7 @@ namespace BetterLegacy.Editor.Managers
                                     return;
 
                                 RTEditor.inst.ShowContextMenu(300f,
-                                    new RTEditor.ButtonFunction("Use Local Browser", () =>
+                                    new ButtonFunction("Use Local Browser", () =>
                                     {
                                         var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
                                         var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -596,7 +597,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                     }),
-                                    new RTEditor.ButtonFunction("Use In-game Browser", () =>
+                                    new ButtonFunction("Use In-game Browser", () =>
                                     {
                                         EditorManager.inst.ShowDialog("Browser Popup");
 
@@ -695,7 +696,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                                     return;
                                 RTEditor.inst.ShowContextMenu(300f,
-                                    new RTEditor.ButtonFunction("Use Local Browser", () =>
+                                    new ButtonFunction("Use Local Browser", () =>
                                     {
                                         var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
                                         var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -722,7 +723,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                     }),
-                                    new RTEditor.ButtonFunction("Use In-game Browser", () =>
+                                    new ButtonFunction("Use In-game Browser", () =>
                                     {
                                         EditorManager.inst.ShowDialog("Browser Popup");
 
@@ -2779,7 +2780,7 @@ namespace BetterLegacy.Editor.Managers
             return global;
         }
 
-        public GameObject StringGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, params RTEditor.ButtonFunction[] buttonFunctions)
+        public GameObject StringGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, params ButtonFunction[] buttonFunctions)
         {
             var path = stringInput.Duplicate(layout, label);
             path.transform.localScale = Vector3.one;

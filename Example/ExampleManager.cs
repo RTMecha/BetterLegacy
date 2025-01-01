@@ -8,6 +8,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using SimpleJSON;
@@ -536,14 +537,14 @@ namespace BetterLegacy.Example
             if (Input.GetKeyDown(ExampleConfig.Instance.ExampleVisiblityToggle.Value) && !CoreHelper.IsUsingInputField)
                 ExampleConfig.Instance.ExampleVisible.Value = !ExampleConfig.Instance.ExampleVisible.Value;
 
-            if (ProjectPlannerManager.inst && animationController.animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)
-                foreach (var schedule in ProjectPlannerManager.inst.planners.Where(x => x.PlannerType == ProjectPlannerManager.PlannerItem.Type.Schedule).Select(x => x as ProjectPlannerManager.ScheduleItem))
+            if (ProjectPlanner.inst && animationController.animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)
+                foreach (var schedule in ProjectPlanner.inst.schedules)
                 {
                     if (!schedule.hasBeenChecked && schedule.IsActive)
                     {
                         schedule.hasBeenChecked = true;
                         Say($"Reminding you about your schedule \"{schedule.Description}\" at {schedule.DateTime}");
-                        ProjectPlannerManager.inst.SaveSchedules();
+                        ProjectPlanner.inst.SaveSchedules();
                     }
                 }
 

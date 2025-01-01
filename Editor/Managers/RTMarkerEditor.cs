@@ -10,6 +10,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Planners;
 using LSFunctions;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -287,18 +288,15 @@ namespace BetterLegacy.Editor.Managers
             convertToNote.onClick.ClearAll();
             convertToNote.onClick.AddListener(() =>
             {
-                var note = new ProjectPlannerManager.NoteItem
+                ProjectPlanner.inst.AddPlanner(new NotePlanner
                 {
                     Active = true,
                     Name = marker.name,
                     Color = marker.color,
                     Position = new Vector2(Screen.width / 2, Screen.height / 2),
                     Text = marker.desc,
-                };
-                ProjectPlannerManager.inst.planners.Add(note);
-                ProjectPlannerManager.inst.GenerateNote(note);
-
-                ProjectPlannerManager.inst.SaveNotes();
+                });
+                ProjectPlanner.inst.SaveNotes();
             });
 
             CheckDescription(marker);
@@ -398,14 +396,14 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
-                        new RTEditor.ButtonFunction("Use", () =>
+                        new ButtonFunction("Use", () =>
                         {
                             Debug.Log($"{EditorManager.inst.className}Set Marker {colorIndex}'s color to {colorIndex}");
                             SetColor(colorIndex);
                             UpdateColorSelection();
                         }),
-                        new RTEditor.ButtonFunction("Set as Default", () => { EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex; }),
-                        new RTEditor.ButtonFunction("Edit Colors", SettingEditor.inst.Render)
+                        new ButtonFunction("Set as Default", () => { EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex; }),
+                        new ButtonFunction("Edit Colors", SettingEditor.inst.Render)
                         );
                 };
 
@@ -627,15 +625,15 @@ namespace BetterLegacy.Editor.Managers
         public void ShowMarkerContextMenu(TimelineMarker timelineMarker)
         {
             RTEditor.inst.ShowContextMenu(300f,
-                new RTEditor.ButtonFunction("Open", () => SetCurrentMarker(timelineMarker)),
-                new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
-                new RTEditor.ButtonFunction(true),
-                new RTEditor.ButtonFunction("Copy", () =>
+                new ButtonFunction("Open", () => SetCurrentMarker(timelineMarker)),
+                new ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
+                new ButtonFunction(true),
+                new ButtonFunction("Copy", () =>
                 {
                     markerCopy = Marker.DeepCopy(timelineMarker.Marker);
                     EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
                 }),
-                new RTEditor.ButtonFunction("Paste", () =>
+                new ButtonFunction("Paste", () =>
                 {
                     if (markerCopy == null)
                     {
@@ -650,12 +648,12 @@ namespace BetterLegacy.Editor.Managers
                     OrderMarkers();
                     EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
                 }),
-                new RTEditor.ButtonFunction("Delete", () => DeleteMarker(timelineMarker.Index)),
-                new RTEditor.ButtonFunction(true),
-                new RTEditor.ButtonFunction("Start Marker Looping", () => markerLooping = true),
-                new RTEditor.ButtonFunction("Stop Marker Looping", () => markerLooping = false),
-                new RTEditor.ButtonFunction("Set Begin Loop", () => markerLoopBegin = timelineMarker),
-                new RTEditor.ButtonFunction("Set End Loop", () => markerLoopEnd = timelineMarker)
+                new ButtonFunction("Delete", () => DeleteMarker(timelineMarker.Index)),
+                new ButtonFunction(true),
+                new ButtonFunction("Start Marker Looping", () => markerLooping = true),
+                new ButtonFunction("Stop Marker Looping", () => markerLooping = false),
+                new ButtonFunction("Set Begin Loop", () => markerLoopBegin = timelineMarker),
+                new ButtonFunction("Set End Loop", () => markerLoopEnd = timelineMarker)
                 );
         }
 

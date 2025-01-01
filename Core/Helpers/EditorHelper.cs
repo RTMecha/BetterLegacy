@@ -2,6 +2,7 @@
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using System.Collections;
 using System.Collections.Generic;
@@ -93,11 +94,11 @@ namespace BetterLegacy.Core.Helpers
                         return;
 
                     RTEditor.inst.ShowContextMenu(300f,
-                        new RTEditor.ButtonFunction("Flip Left/Right", () => { name.text = RTString.FlipLeftRight(name.text); }),
-                        new RTEditor.ButtonFunction("Flip Up/Down", () => { name.text = RTString.FlipUpDown(name.text); }),
-                        new RTEditor.ButtonFunction("Flip Upper/Lower", () => { name.text = RTString.FlipUpperLower(name.text); }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Flip Number", () =>
+                        new ButtonFunction("Flip Left/Right", () => { name.text = RTString.FlipLeftRight(name.text); }),
+                        new ButtonFunction("Flip Up/Down", () => { name.text = RTString.FlipUpDown(name.text); }),
+                        new ButtonFunction("Flip Upper/Lower", () => { name.text = RTString.FlipUpperLower(name.text); }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Flip Number", () =>
                         {
                             RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
@@ -106,7 +107,7 @@ namespace BetterLegacy.Core.Helpers
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
                         }),
-                        new RTEditor.ButtonFunction("Increase Number", () =>
+                        new ButtonFunction("Increase Number", () =>
                         {
                             RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
@@ -115,7 +116,7 @@ namespace BetterLegacy.Core.Helpers
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
                         }),
-                        new RTEditor.ButtonFunction("Decrease Number", () =>
+                        new ButtonFunction("Decrease Number", () =>
                         {
                             RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
@@ -124,9 +125,9 @@ namespace BetterLegacy.Core.Helpers
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
                         }),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("To Lower", () => name.text = name.text.ToLower()),
-                        new RTEditor.ButtonFunction("To Upper", () => name.text = name.text.ToUpper())
+                        new ButtonFunction(true),
+                        new ButtonFunction("To Lower", () => name.text = name.text.ToLower()),
+                        new ButtonFunction("To Upper", () => name.text = name.text.ToUpper())
                         );
                 };
             }

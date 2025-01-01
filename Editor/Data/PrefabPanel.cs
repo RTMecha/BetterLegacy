@@ -140,15 +140,15 @@ namespace BetterLegacy.Editor.Data
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
                     RTEditor.inst.ShowContextMenu(300f,
-                        new RTEditor.ButtonFunction("Open folder", () =>
+                        new ButtonFunction("Open folder", () =>
                         {
                             RTEditor.inst.prefabPathField.text = path.Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
                             RTEditor.inst.UpdatePrefabPath(false);
                         }),
-                        new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
-                        new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
-                        new RTEditor.ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
+                        new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                         {
                             RTFile.DeleteDirectory(path);
                             RTEditor.inst.UpdatePrefabPath(true);
@@ -393,22 +393,22 @@ namespace BetterLegacy.Editor.Data
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
                                 RTEditor.inst.ShowContextMenu(500f,
-                                    new RTEditor.ButtonFunction("Add to Level", () =>
+                                    new ButtonFunction("Add to Level", () =>
                                     {
                                         RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
                                         EditorManager.inst.HideDialog("Prefab Popup");
                                     }),
-                                    new RTEditor.ButtonFunction("Create Prefab", () =>
+                                    new ButtonFunction("Create Prefab", () =>
                                     {
                                         PrefabEditor.inst.OpenDialog();
                                         RTPrefabEditor.inst.createInternal = true;
                                     }),
-                                    new RTEditor.ButtonFunction("Assign to Quick Prefab", () =>
+                                    new ButtonFunction("Assign to Quick Prefab", () =>
                                     {
                                         RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
                                         PrefabEditor.inst.ReloadInternalPrefabsInPopup();
                                     }),
-                                    new RTEditor.ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                                    new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
                                         RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.ID);
                                         RTEditor.inst.HideWarningPopup();
@@ -462,37 +462,37 @@ namespace BetterLegacy.Editor.Data
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
                                 RTEditor.inst.ShowContextMenu(300f,
-                                    new RTEditor.ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab)),
-                                    new RTEditor.ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Prefab)),
-                                    new RTEditor.ButtonFunction("Open", () =>
+                                    new ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab)),
+                                    new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Prefab)),
+                                    new ButtonFunction("Open", () =>
                                     {
                                         EditorManager.inst.ShowDialog("Prefab External Dialog");
                                         RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                                     }),
-                                    new RTEditor.ButtonFunction(true),
-                                    new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
-                                    new RTEditor.ButtonFunction("Create Prefab", () =>
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                                    new ButtonFunction("Create Prefab", () =>
                                     {
                                         PrefabEditor.inst.OpenDialog();
                                         RTPrefabEditor.inst.createInternal = false;
                                     }),
-                                    new RTEditor.ButtonFunction(true),
-                                    new RTEditor.ButtonFunction("Cut", () =>
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Cut", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = true;
                                         RTPrefabEditor.inst.copiedPrefabPath = FilePath;
                                         EditorManager.inst.DisplayNotification($"Cut {prefab.Name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Cut prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
-                                    new RTEditor.ButtonFunction("Copy", () =>
+                                    new ButtonFunction("Copy", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = false;
                                         RTPrefabEditor.inst.copiedPrefabPath = FilePath;
                                         EditorManager.inst.DisplayNotification($"Copied {prefab.Name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
-                                    new RTEditor.ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab),
-                                    new RTEditor.ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                                    new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab),
+                                    new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
                                         RTPrefabEditor.inst.DeleteExternalPrefab(this);
                                         RTEditor.inst.HideWarningPopup();

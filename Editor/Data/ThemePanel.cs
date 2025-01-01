@@ -223,16 +223,16 @@ namespace BetterLegacy.Editor.Data
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         RTEditor.inst.ShowContextMenu(300f,
-                            new RTEditor.ButtonFunction("Open folder", () =>
+                            new ButtonFunction("Open folder", () =>
                             {
                                 RTEditor.inst.themePathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                 RTEditor.inst.UpdateThemePath(false);
                             }),
-                            new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new RTEditor.ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
-                            new RTEditor.ButtonFunction(true),
-                            new RTEditor.ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
-                            new RTEditor.ButtonFunction("Delete", () =>
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
+                            new ButtonFunction("Delete", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                                 {
@@ -289,7 +289,7 @@ namespace BetterLegacy.Editor.Data
                     return;
 
                 RTEditor.inst.ShowContextMenu(400f,
-                    new RTEditor.ButtonFunction("Use", () =>
+                    new ButtonFunction("Use", () =>
                     {
                         if (isDuplicate)
                         {
@@ -311,13 +311,13 @@ namespace BetterLegacy.Editor.Data
                         EventManager.inst.updateEvents();
                         EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);
                     }),
-                    new RTEditor.ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(Theme.id, 0))),
-                    new RTEditor.ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
-                    new RTEditor.ButtonFunction(true),
-                    new RTEditor.ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                    new RTEditor.ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
-                    new RTEditor.ButtonFunction(true),
-                    new RTEditor.ButtonFunction("Cut", () =>
+                    new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(Theme.id, 0))),
+                    new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                    new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Cut", () =>
                     {
                         if (isDuplicate)
                         {
@@ -330,7 +330,7 @@ namespace BetterLegacy.Editor.Data
                         EditorManager.inst.DisplayNotification($"Cut {Theme.name}!", 1.5f, EditorManager.NotificationType.Success);
                         CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
                     }),
-                    new RTEditor.ButtonFunction("Copy", () =>
+                    new ButtonFunction("Copy", () =>
                     {
                         if (isDuplicate)
                         {
@@ -343,16 +343,16 @@ namespace BetterLegacy.Editor.Data
                         EditorManager.inst.DisplayNotification($"Copied {Theme.name}!", 1.5f, EditorManager.NotificationType.Success);
                         CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
                     }),
-                    new RTEditor.ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
-                    new RTEditor.ButtonFunction("Delete", () =>
+                    new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
+                    new ButtonFunction("Delete", () =>
                     {
                         if (!isDuplicate)
                             RTThemeEditor.inst.DeleteThemeDelegate(Theme);
                         else
                             EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
                     }),
-                    new RTEditor.ButtonFunction(true),
-                    new RTEditor.ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Theme))
+                    new ButtonFunction(true),
+                    new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Theme))
                     );
             };
 
