@@ -156,7 +156,7 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            if (CurrentInterface != null && !CurrentInterface.allowCustomMusic)
+            if (CurrentInterface && !CurrentInterface.allowCustomMusic)
             {
                 CoreHelper.LogWarning("CurrentMenu does not allow custom music.");
                 CurrentInterface?.PlayDefaultMusic();
@@ -238,7 +238,7 @@ namespace BetterLegacy.Menus
         {
             CoreHelper.Log($"Attempting to play music: {name}");
             audioClip.name = name;
-            if (CurrentInterface != null)
+            if (CurrentInterface)
                 CurrentInterface.music = audioClip;
             PlayMusic(audioClip);
         }
@@ -319,7 +319,7 @@ namespace BetterLegacy.Menus
         /// <param name="stopGenerating">If the current interface should stop generating.</param>
         public void Clear(bool clearThemes = true, bool stopGenerating = true)
         {
-            if (CurrentInterface != null)
+            if (CurrentInterface)
             {
                 CurrentInterface.Clear();
                 CurrentInterface = null;

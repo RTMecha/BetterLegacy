@@ -229,7 +229,7 @@ namespace BetterLegacy.Configs
         {
             SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
 
-            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam)
+            if (ArcadeMenu.Current && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam)
             {
                 if (ArcadeMenu.ViewOnline)
                 {
@@ -246,7 +246,7 @@ namespace BetterLegacy.Configs
         {
             LevelManager.Sort(LocalLevelOrderby.Value, LocalLevelAscend.Value);
 
-            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Local)
+            if (ArcadeMenu.Current && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Local)
             {
                 ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Local] = 0;
                 ArcadeMenu.Current.RefreshLocalLevels(true);

@@ -599,7 +599,7 @@ namespace BetterLegacy.Core.Helpers
                             $"or find the level on the Steam Workshop: {jnQueue["workhsop_id"]}");
                 }
 
-                if (ArcadeMenu.Current != null)
+                if (ArcadeMenu.Current)
                     ArcadeMenu.Current.RefreshQueueLevels(true);
             }
             catch (Exception ex)

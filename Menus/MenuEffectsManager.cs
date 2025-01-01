@@ -404,7 +404,7 @@ namespace BetterLegacy.Menus
         public void UpdateBloomAnamorphicRatio(float anamorphicRatio) => bloom?.anamorphicRatio?.Override(anamorphicRatio);
         public void UpdateBloomColor(float colorSlot)
         {
-            if (!InterfaceManager.inst || InterfaceManager.inst.CurrentInterface == null)
+            if (!InterfaceManager.inst || !InterfaceManager.inst.CurrentInterface)
                 return;
             int slot = (int)colorSlot;
             UpdateBloomColor(slot == InterfaceManager.inst.CurrentInterface.Theme.effectColors.Count ? Color.white : InterfaceManager.inst.CurrentInterface.Theme.GetFXColor(slot));
@@ -433,7 +433,7 @@ namespace BetterLegacy.Menus
         public void UpdateVignetteCenterY(float y) => vignette?.center?.Override(new Vector2(vignette?.center?.value.x ?? 0f, y));
         public void UpdateVignetteColor(float colorSlot)
         {
-            if (!InterfaceManager.inst || InterfaceManager.inst.CurrentInterface == null)
+            if (!InterfaceManager.inst || !InterfaceManager.inst.CurrentInterface)
                 return;
             int slot = (int)colorSlot;
             UpdateVignetteColor(slot == InterfaceManager.inst.CurrentInterface.Theme.effectColors.Count ? Color.black : InterfaceManager.inst.CurrentInterface.Theme.GetFXColor(slot));

@@ -1389,7 +1389,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "PlaySound":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || InterfaceManager.inst.CurrentInterface == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || !InterfaceManager.inst.CurrentInterface)
                             break;
 
                         string sound = parameters.IsArray ? parameters[0] : parameters["sound"];
@@ -1570,7 +1570,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetElementActive":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || InterfaceManager.inst.CurrentInterface == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || !InterfaceManager.inst.CurrentInterface)
                             return;
 
                         if (InterfaceManager.inst.CurrentInterface.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
@@ -1608,7 +1608,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetLayoutActive":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["name"] == null || InterfaceManager.inst.CurrentInterface == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["name"] == null || !InterfaceManager.inst.CurrentInterface)
                             return;
 
                         if (InterfaceManager.inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["name"], out Layouts.MenuLayoutBase layout) &&
@@ -2045,7 +2045,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "SetText":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || InterfaceManager.inst.CurrentInterface == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || !InterfaceManager.inst.CurrentInterface)
                             return;
 
                         var isArray = parameters.IsArray;
