@@ -21,39 +21,35 @@ namespace BetterLegacy.Core.Helpers
         {
             if (complexity == Complexity.Simple || onlySpecificComplexity)
             {
-                gameObject?.SetActive(complexity == EditorConfig.Instance.EditorComplexity.Value);
-                EditorConfig.UpdateEditorComplexity += () => { gameObject?.SetActive(complexity == EditorConfig.Instance.EditorComplexity.Value); };
+                CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
+                EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
                 return;
             }
 
-            gameObject?.SetActive(complexity <= EditorConfig.Instance.EditorComplexity.Value);
-            EditorConfig.UpdateEditorComplexity += () => { gameObject?.SetActive(complexity <= EditorConfig.Instance.EditorComplexity.Value); };
+            CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
+            EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
         }
 
-        public static void AddEditorPopup(string _name, GameObject _go)
+        public static void AddEditorPopup(string name, GameObject gameObject)
         {
-            var editorPropertiesDialog = new EditorManager.EditorDialog
+            EditorManager.inst.EditorDialogs.Add(new EditorManager.EditorDialog
             {
-                Dialog = _go.transform,
-                Name = _name,
+                Dialog = gameObject.transform,
+                Name = name,
                 Type = EditorManager.EditorDialog.DialogType.Popup
-            };
-
-            EditorManager.inst.EditorDialogs.Add(editorPropertiesDialog);
-            EditorManager.inst.EditorDialogsDictionary.Add(_name, editorPropertiesDialog);
+            });
+            EditorManager.inst.RefreshDialogDictionary();
         }
 
-        public static void AddEditorDialog(string _name, GameObject _go)
+        public static void AddEditorDialog(string name, GameObject gameObject)
         {
-            var editorPropertiesDialog = new EditorManager.EditorDialog
+            EditorManager.inst.EditorDialogs.Add(new EditorManager.EditorDialog
             {
-                Dialog = _go.transform,
-                Name = _name,
-                Type = EditorManager.EditorDialog.DialogType.Object
-            };
-
-            EditorManager.inst.EditorDialogs.Add(editorPropertiesDialog);
-            EditorManager.inst.EditorDialogsDictionary.Add(_name, editorPropertiesDialog);
+                Dialog = gameObject.transform,
+                Name = name,
+                Type = EditorManager.EditorDialog.DialogType.Settings
+            });
+            EditorManager.inst.RefreshDialogDictionary();
         }
 
         public static GameObject AddEditorDropdown(string name, string key, string dropdown, Sprite sprite, UnityEngine.Events.UnityAction unityAction, int siblingIndex = -1)
