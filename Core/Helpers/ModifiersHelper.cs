@@ -1932,7 +1932,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var levelInfo = new LevelInfo(modifier.GetValue(0), modifier.GetValue(0), modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), modifier.GetValue(4));
 
-                            LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, level =>
+                            LevelCollection.DownloadLevel(null, levelInfo, level =>
                             {
                                 if (modifier.GetBool(5, true))
                                     LevelManager.Play(level);
