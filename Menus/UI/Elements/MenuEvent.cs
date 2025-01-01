@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BetterLegacy.Menus.UI.Elements
+﻿namespace BetterLegacy.Menus.UI.Elements
 {
     /// <summary>
     /// Element only used for automatically triggering a function when spawned.

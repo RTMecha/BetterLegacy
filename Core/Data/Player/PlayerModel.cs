@@ -1,5 +1,4 @@
-﻿using BetterLegacy.Components.Player;
-using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;

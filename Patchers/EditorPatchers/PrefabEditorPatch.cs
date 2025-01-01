@@ -1,16 +1,11 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
-using LSFunctions;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;

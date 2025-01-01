@@ -1,5 +1,5 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Core.Animation.Keyframe;
+﻿using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
 using LSFunctions;
 using System;
 using System.Collections.Generic;

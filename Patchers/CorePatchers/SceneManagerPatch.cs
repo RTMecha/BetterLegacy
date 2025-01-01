@@ -2,9 +2,7 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Example;
 using HarmonyLib;
-using LSFunctions;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;

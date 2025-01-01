@@ -1,5 +1,4 @@
-﻿using BetterLegacy.Core.Helpers;
-using SimpleJSON;
+﻿using SimpleJSON;
 using System;
 using System.Text.RegularExpressions;
 using UnityEngine;

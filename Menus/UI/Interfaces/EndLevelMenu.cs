@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
@@ -6,11 +7,8 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 using LSFunctions;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace BetterLegacy.Menus.UI.Interfaces

@@ -1,7 +1,4 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Example;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BetterLegacy.Configs
 {

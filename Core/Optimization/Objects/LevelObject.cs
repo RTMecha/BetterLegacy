@@ -2,7 +2,6 @@
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects

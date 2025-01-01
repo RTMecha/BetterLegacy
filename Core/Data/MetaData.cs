@@ -1,7 +1,5 @@
-﻿using BetterLegacy.Core.Helpers;
-using SimpleJSON;
+﻿using SimpleJSON;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using BaseArtist = DataManager.MetaData.Artist;
 using BaseBeatmap = DataManager.MetaData.Beatmap;

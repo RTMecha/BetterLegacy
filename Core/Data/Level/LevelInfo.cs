@@ -1,11 +1,6 @@
 ﻿using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterLegacy.Core.Data.Level
 {

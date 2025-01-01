@@ -1,5 +1,4 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Core;
+﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using LSFunctions;
 using SimpleJSON;

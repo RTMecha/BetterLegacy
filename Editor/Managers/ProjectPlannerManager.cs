@@ -1,9 +1,7 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
+﻿using BetterLegacy.Editor.Components;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
 using Crosstales.FB;
 using LSFunctions;
@@ -16,6 +14,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

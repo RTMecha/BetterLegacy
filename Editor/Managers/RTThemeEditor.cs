@@ -1,10 +1,11 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -186,8 +187,8 @@ namespace BetterLegacy.Editor.Managers
             themeKeyframe = dialog.Find("data/right/theme");
             themeKeyframeContent = themeKeyframe.Find("themes/viewport/content");
 
-            dialog.gameObject.AddComponent<Clickable>().onEnable = OnDialog;
-            dialog.Find("data/left/theme").gameObject.AddComponent<Clickable>().onEnable = OnDialog;
+            dialog.gameObject.AddComponent<ActiveState>().onStateChanged = OnDialog;
+            dialog.Find("data/left/theme").gameObject.AddComponent<ActiveState>().onStateChanged = OnDialog;
 
             StartCoroutine(RTEditor.inst.LoadThemes());
         }

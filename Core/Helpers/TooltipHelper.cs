@@ -1,4 +1,4 @@
-﻿using BetterLegacy.Components.Editor;
+﻿using BetterLegacy.Editor.Components;
 using System.Collections.Generic;
 using UnityEngine;
 using SimpleJSON;

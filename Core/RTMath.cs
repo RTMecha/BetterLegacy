@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using UnityEngine;
 
@@ -8,6 +7,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using ILMath;
+using BetterLegacy.Arcade.Managers;
 
 namespace BetterLegacy.Core
 {

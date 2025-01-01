@@ -1,19 +1,19 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
-using BetterLegacy.Components.Player;
+﻿using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Example;
 using CielaSpike;
 using Crosstales.FB;
@@ -33,11 +33,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using EventKeyframeSelection = EventEditor.KeyframeSelection;
 using MetadataWrapper = EditorManager.MetadataWrapper;
-using ObjectType = DataManager.GameData.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -373,14 +370,14 @@ namespace BetterLegacy.Editor.Managers
 
                 for (int i = 0; i < checkpointImages.Count; i++)
                 {
-                    if (GameStorageManager.inst.checkpointImages.Count > i)
-                        checkpointImages[i].color = GameStorageManager.inst.checkpointImages[i].color;
+                    if (RTGameManager.inst.checkpointImages.Count > i)
+                        checkpointImages[i].color = RTGameManager.inst.checkpointImages[i].color;
                 }
 
-                timelinePreviewPlayer.color = GameStorageManager.inst.timelinePlayer.color;
-                timelinePreviewLeftCap.color = GameStorageManager.inst.timelineLeftCap.color;
-                timelinePreviewRightCap.color = GameStorageManager.inst.timelineRightCap.color;
-                timelinePreviewLine.color = GameStorageManager.inst.timelineLine.color;
+                timelinePreviewPlayer.color = RTGameManager.inst.timelinePlayer.color;
+                timelinePreviewLeftCap.color = RTGameManager.inst.timelineLeftCap.color;
+                timelinePreviewRightCap.color = RTGameManager.inst.timelineRightCap.color;
+                timelinePreviewLine.color = RTGameManager.inst.timelineLine.color;
             }
 
             if (timeEditing > 36000f)
@@ -2976,32 +2973,6 @@ namespace BetterLegacy.Editor.Managers
                 ObjectEditor.inst.OpenDialog(bm);
             }),
         };
-
-        class ObjectOption
-        {
-            public ObjectOption(string name, string hint, Action<TimelineObject> action)
-            {
-                this.name = name;
-                this.hint = hint;
-                this.action = action;
-            }
-
-            public string name;
-            public string hint;
-            public Action<TimelineObject> action;
-
-            public void Create()
-            {
-                try
-                {
-                    ObjectEditor.inst.CreateNewObject(action);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-            }
-        }
 
         void GenerateObjectTemplate(string name, string hint, Action action)
         {
@@ -12776,17 +12747,6 @@ namespace BetterLegacy.Editor.Managers
                 RotCloseEaseConfig = EditorConfig.Instance.HelpDropdownRotCloseEase,
             },
         };
-
-        public class Popup
-        {
-            public string Name { get; set; }
-            public GameObject GameObject { get; set; }
-            public Button Close { get; set; }
-            public InputField SearchField { get; set; }
-            public Transform Content { get; set; }
-            public GridLayoutGroup Grid { get; set; }
-            public RectTransform TopPanel { get; set; }
-        }
 
         class MultiColorButton
         {

@@ -1,7 +1,6 @@
-﻿using BetterLegacy.Components.Editor;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Components;
 using LSFunctions;
 using System;
 using System.Collections;

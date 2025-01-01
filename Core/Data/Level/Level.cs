@@ -1,9 +1,6 @@
 ﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using SimpleJSON;
 using System;
 using System.Collections;

@@ -1,11 +1,7 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Arcade;
-using BetterLegacy.Core.Helpers;
+﻿using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
-using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Configs
 {

@@ -1,6 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
 using SteamworksFacepunch.Ugc;

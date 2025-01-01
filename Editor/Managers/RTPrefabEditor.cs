@@ -1,11 +1,12 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Example;
 using LSFunctions;
 using SimpleJSON;

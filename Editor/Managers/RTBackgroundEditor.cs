@@ -1,5 +1,4 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
+﻿using BetterLegacy.Editor.Components;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -17,6 +16,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

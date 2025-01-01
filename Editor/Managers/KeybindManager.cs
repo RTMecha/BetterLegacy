@@ -1,5 +1,4 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
+﻿using BetterLegacy.Editor.Components;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -18,6 +17,9 @@ using UnityEngine.UI;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 using ObjectType = BetterLegacy.Core.Data.BeatmapObject.ObjectType;
 using SelectionType = ObjEditor.ObjectSelection.SelectionType;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -464,8 +466,8 @@ namespace BetterLegacy.Editor.Managers
             editorDialog.Find("title/Text").GetComponent<Text>().text = "- Keybind Editor -";
             Destroy(editorDialog.Find("Text").gameObject);
 
-            var clickable = editorDialog.gameObject.AddComponent<Clickable>();
-            clickable.onEnable = enabled =>
+            var clickable = editorDialog.gameObject.AddComponent<ActiveState>();
+            clickable.onStateChanged = enabled =>
             {
                 if (enabled)
                     return;
@@ -1585,7 +1587,7 @@ namespace BetterLegacy.Editor.Managers
             if (currentMarker + 1 < 0)
                 return;
 
-            var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.beatmapData.markers.Count - 1)];
+            var marker = GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.beatmapData.markers.Count - 1)];
 
             if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
                 RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
@@ -1603,7 +1605,7 @@ namespace BetterLegacy.Editor.Managers
             if (currentMarker < 0)
                 return;
 
-            var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.beatmapData.markers.Count - 1)];
+            var marker = GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.beatmapData.markers.Count - 1)];
 
             if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
                 RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);

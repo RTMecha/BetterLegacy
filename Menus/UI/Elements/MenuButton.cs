@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
-using UnityEngine.UI;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Components;
 using BetterLegacy.Menus.UI.Interfaces;
 
 using TMPro;
 using SimpleJSON;
 using LSFunctions;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core;
 

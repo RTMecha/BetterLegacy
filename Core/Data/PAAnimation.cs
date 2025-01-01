@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using LSFunctions;
@@ -12,7 +9,6 @@ using SimpleJSON;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Player;
 

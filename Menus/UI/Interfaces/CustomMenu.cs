@@ -1,19 +1,10 @@
 ﻿using BetterLegacy.Core.Data;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SimpleJSON;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core;
 using UnityEngine;
 using BetterLegacy.Core.Helpers;
-using System.IO;
-using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Configs;
 using LSFunctions;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;

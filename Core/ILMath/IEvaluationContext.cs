@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ILMath
+﻿namespace ILMath
 {
     /// <summary>
     /// Provides context for evaluating a compiled expression.

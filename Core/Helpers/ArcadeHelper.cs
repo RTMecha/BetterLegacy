@@ -1,10 +1,9 @@
-﻿using BetterLegacy.Arcade;
+﻿using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Core.Optimization;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using InControl;
@@ -18,7 +17,6 @@ using System.Linq;
 using System.Windows.Forms;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Helpers
 {

@@ -1,5 +1,4 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Core.Helpers;
+﻿using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using System;

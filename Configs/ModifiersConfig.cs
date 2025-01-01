@@ -1,6 +1,4 @@
-﻿using BepInEx.Configuration;
-
-namespace BetterLegacy.Configs
+﻿namespace BetterLegacy.Configs
 {
     /// <summary>
     /// Modifiers Config for PA Legacy. Based on the ObjectModifiers mod.

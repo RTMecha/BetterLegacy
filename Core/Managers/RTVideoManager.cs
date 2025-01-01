@@ -1,5 +1,5 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using System;
 using System.Collections;

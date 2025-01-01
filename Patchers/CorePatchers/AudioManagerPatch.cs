@@ -1,6 +1,6 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Core.Managers;
 using HarmonyLib;
-using System.Collections;
 using UnityEngine;
 
 namespace BetterLegacy.Patchers

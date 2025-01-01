@@ -1,6 +1,4 @@
 ﻿using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual

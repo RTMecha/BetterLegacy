@@ -1,6 +1,4 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Menus;
+﻿using BetterLegacy.Core.Helpers;
 using HarmonyLib;
 using LSFunctions;
 using System.IO;

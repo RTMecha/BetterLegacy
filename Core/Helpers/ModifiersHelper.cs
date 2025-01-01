@@ -1,20 +1,20 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Components.Player;
+﻿using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
-using BetterLegacy.Patchers;
 using DG.Tweening;
 using LSFunctions;
 using SimpleJSON;
@@ -1842,7 +1842,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.value == "0" || modifier.value == "-1")
                                 break;
 
-                            if (CoreHelper.IsEditing && EditorManager.inst.loadedLevels.TryFind(x => x is Editor.EditorWrapper editorWrapper && editorWrapper.metadata is MetaData metaData && metaData.ID == modifier.value, out EditorManager.MetadataWrapper metadataWrapper))
+                            if (CoreHelper.IsEditing && EditorManager.inst.loadedLevels.TryFind(x => x is EditorWrapper editorWrapper && editorWrapper.metadata is MetaData metaData && metaData.ID == modifier.value, out EditorManager.MetadataWrapper metadataWrapper))
                             {
                                 if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
                                     break;
@@ -1970,7 +1970,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setIntroFade":
                         {
-                            GameStorageManager.doIntroFade = modifier.GetBool(0, true);
+                            RTGameManager.doIntroFade = modifier.GetBool(0, true);
                             break;
                         }
                     case "setLevelEndFunc":

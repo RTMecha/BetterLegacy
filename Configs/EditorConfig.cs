@@ -1,12 +1,10 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
-using BetterLegacy.Components.Player;
-using BetterLegacy.Core;
+﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using System;

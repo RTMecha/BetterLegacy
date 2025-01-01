@@ -1,6 +1,5 @@
 ﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers.Networking;
 using HarmonyLib;
 using System.Linq;
 using UnityEngine;

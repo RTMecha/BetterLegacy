@@ -1,4 +1,4 @@
-﻿using BetterLegacy.Editor;
+﻿using BetterLegacy.Editor.Data;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;

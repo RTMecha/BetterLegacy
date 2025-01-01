@@ -1,11 +1,9 @@
-﻿using BetterLegacy.Arcade;
-using BetterLegacy.Components;
+﻿using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -13,9 +11,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -257,7 +252,7 @@ namespace BetterLegacy.Editor.Managers
                                 iconImage.sprite = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}.jpg", bytes =>
+                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);

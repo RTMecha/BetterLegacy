@@ -2,7 +2,7 @@
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using System;

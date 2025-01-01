@@ -1,9 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core
 {

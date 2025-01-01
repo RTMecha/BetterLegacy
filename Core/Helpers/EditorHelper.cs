@@ -1,5 +1,5 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;

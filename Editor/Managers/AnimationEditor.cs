@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,13 +9,12 @@ using LSFunctions;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core;
-
-using BaseMarker = DataManager.GameData.BeatmapData.Marker;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Components;
 using UnityEngine.EventSystems;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

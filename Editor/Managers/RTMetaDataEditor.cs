@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,14 +15,12 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Components;
 using BetterLegacy.Configs;
 using System.IO.Compression;
 using System.Net;
 using UnityEngine.Networking;
-using HarmonyLib;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

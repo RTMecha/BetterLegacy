@@ -1,23 +1,20 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
-using BetterLegacy.Editor;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using CielaSpike;
 using InControl;
 using LSFunctions;
-using SimpleJSON;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
@@ -1120,9 +1117,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void SetAntiAliasing()
         {
-            if (GameStorageManager.inst && GameStorageManager.inst.postProcessLayer)
+            if (RTGameManager.inst && RTGameManager.inst.postProcessLayer)
             {
-                GameStorageManager.inst.postProcessLayer.antialiasingMode
+                RTGameManager.inst.postProcessLayer.antialiasingMode
                     = CoreConfig.Instance.AntiAliasing.Value ? PostProcessLayer.Antialiasing.FastApproximateAntialiasing : PostProcessLayer.Antialiasing.None;
             }
         }

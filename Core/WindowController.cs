@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using System;
@@ -53,10 +54,10 @@ namespace BetterLegacy.Core
 
         public static void ResetResolution(bool setPosition = true)
         {
-            if (!Managers.RTEventManager.windowPositionResolutionChanged)
+            if (!RTEventManager.windowPositionResolutionChanged)
                 return;
 
-            Managers.RTEventManager.windowPositionResolutionChanged = false;
+            RTEventManager.windowPositionResolutionChanged = false;
 
             if (setPosition)
                 SetPosition(WindowCenter.x, WindowCenter.y);

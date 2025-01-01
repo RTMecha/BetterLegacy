@@ -1,9 +1,7 @@
-﻿using BepInEx.Configuration;
-using BetterLegacy.Components.Player;
+﻿using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using InControl;
-using System;
 
 namespace BetterLegacy.Configs
 {

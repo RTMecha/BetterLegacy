@@ -1,13 +1,11 @@
 ﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
 using LSFunctions;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;

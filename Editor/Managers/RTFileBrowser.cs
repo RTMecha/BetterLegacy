@@ -1,13 +1,10 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
 using LSFunctions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;

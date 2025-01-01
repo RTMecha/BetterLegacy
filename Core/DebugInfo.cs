@@ -1,12 +1,10 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using System;
-using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -56,7 +54,7 @@ namespace BetterLegacy.Core.Managers
 
         public static SelectGUI InfoSelection { get; set; }
 
-        public static bool init = false;
+        public static bool init;
 
         public static UICanvas canvas;
 

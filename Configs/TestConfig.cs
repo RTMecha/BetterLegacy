@@ -1,29 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BetterLegacy.Arcade;
-using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
-using BetterLegacy.Components.Player;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Player;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Optimization.Objects;
-using BetterLegacy.Editor.Managers;
-using BetterLegacy.Menus;
-using InControl;
-using LSFunctions;
-using SimpleJSON;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace BetterLegacy.Configs
+﻿namespace BetterLegacy.Configs
 {
     public class TestConfig : BaseConfig
     {

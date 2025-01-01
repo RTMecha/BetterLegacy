@@ -1,4 +1,4 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Arcade.Managers;
 using HarmonyLib;
 using System;
 

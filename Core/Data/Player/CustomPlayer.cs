@@ -1,10 +1,7 @@
-﻿using BetterLegacy.Components.Player;
+﻿using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using InControl;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using XInputDotNetPure;
 using BaseCustomPlayer = InputDataManager.CustomPlayer;
@@ -27,9 +24,18 @@ namespace BetterLegacy.Core.Data.Player
 
         public RTPlayer Player { get; set; }
 
-        public string CurrentPlayerModel { get; set; } = "0";
+        string currentPlayerModel = "0";
+        public string CurrentPlayerModel
+        {
+            get => currentPlayerModel;
+            set
+            {
+                currentPlayerModel = value;
+                PlayerModel = PlayerManager.PlayerModels.TryGetValue(currentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
+            }
+        }
 
-        public PlayerModel PlayerModel => PlayerManager.PlayerModels.TryGetValue(CurrentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
+        public PlayerModel PlayerModel { get; set; }
 
         public new PlayerIndex GetPlayerIndex(int _index) => (PlayerIndex)_index;
 

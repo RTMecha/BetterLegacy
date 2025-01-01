@@ -1,6 +1,4 @@
-﻿using BetterLegacy.Core.Helpers;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;

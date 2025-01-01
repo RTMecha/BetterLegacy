@@ -1,4 +1,4 @@
-﻿using BetterLegacy.Arcade;
+﻿using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;

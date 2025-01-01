@@ -1,5 +1,4 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
+﻿using BetterLegacy.Editor.Components;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
@@ -11,10 +10,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

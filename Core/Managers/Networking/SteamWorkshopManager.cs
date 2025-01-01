@@ -1,12 +1,10 @@
-﻿using BetterLegacy.Arcade;
+﻿using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
-using LSFunctions;
-using SimpleJSON;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 using SteamworksFacepunch.Ugc;

@@ -8,14 +8,10 @@ using UnityEngine.UI;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Components;
-
-using TMPro;
 using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using LSFunctions;
 using System.IO;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -23,6 +19,8 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Story;
 using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -3034,7 +3032,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (string.IsNullOrEmpty(directory))
                             directory = InterfaceManager.inst.MainDirectory;
 
-                        Arcade.LevelListMenu.Init(Directory.GetDirectories(directory).Where(x => Level.Verify(x)).Select(x => new Level(RTFile.ReplaceSlash(x))).ToList());
+                        LevelListMenu.Init(Directory.GetDirectories(directory).Where(x => Level.Verify(x)).Select(x => new Level(RTFile.ReplaceSlash(x))).ToList());
                         break;
                     }
 

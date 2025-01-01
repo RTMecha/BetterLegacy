@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,11 +13,12 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Configs;
-using BetterLegacy.Components;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Components.Player;
 using Crosstales.FB;
 using System.IO;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -30,7 +29,7 @@ namespace BetterLegacy.Editor.Managers
     {
         public static PlayerEditor inst;
 
-        public RTEditor.Popup ModelsPopup { get; set; }
+        public Popup ModelsPopup { get; set; }
         public string modelSearchTerm;
         public int playerModelIndex = 0;
         public Transform content;
@@ -549,7 +548,6 @@ namespace BetterLegacy.Editor.Managers
 
                     var button = gameObject.AddComponent<Button>();
                     button.image = image;
-                    button.onClick.AddListener(RTPlayer.SetGameDataProperties);
 
                     EditorThemeManager.AddSelectable(button, ThemeGroup.List_Button_1);
 

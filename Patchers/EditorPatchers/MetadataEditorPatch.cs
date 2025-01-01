@@ -1,27 +1,7 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Core.Prefabs;
+﻿using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
-using LSFunctions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Net;
-using System.Text;
-using SimpleJSON;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Patchers
 {

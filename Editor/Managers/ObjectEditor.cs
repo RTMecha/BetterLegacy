@@ -1,14 +1,12 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Components.Editor;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Example;
 using Crosstales.FB;
 using HarmonyLib;
@@ -26,6 +24,7 @@ using UnityEngine.UI;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 using ObjectType = BetterLegacy.Core.Data.BeatmapObject.ObjectType;
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

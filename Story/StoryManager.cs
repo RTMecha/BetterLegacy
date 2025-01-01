@@ -1,19 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers.Networking;
-using System.IO.Compression;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Player;
-using UnityEngine.Video;
 using System;
 using BetterLegacy.Menus;
 using BetterLegacy.Core.Data.Level;

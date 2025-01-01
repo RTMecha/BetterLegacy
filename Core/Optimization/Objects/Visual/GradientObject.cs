@@ -1,5 +1,4 @@
 ﻿using System;
-using BetterLegacy.Patchers;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual

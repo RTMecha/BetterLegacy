@@ -1,7 +1,4 @@
-﻿
-using UnityEngine;
-
-namespace BetterLegacy.Editor
+﻿namespace BetterLegacy.Editor
 {
     /// <summary>
     /// Class to be used for hosting a PA editor session. (somehow)

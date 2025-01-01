@@ -1,17 +1,16 @@
-﻿using BetterLegacy.Components;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
-using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections;
@@ -2055,9 +2054,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyObjectPrefix()
         {
-            var a = new List<TimelineObject>();
-            foreach (var prefab in ObjectEditor.inst.SelectedObjects)
-                a.Add(prefab);
+            var a = new List<TimelineObject>(ObjectEditor.inst.SelectedObjects);
 
             a = (from x in a
                  orderby x.Time

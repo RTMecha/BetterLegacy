@@ -8,16 +8,13 @@ using UnityEngine.UI;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Components;
 using BetterLegacy.Core.Managers;
 
 using TMPro;
 using SimpleJSON;
 using BetterLegacy.Core;
-using BetterLegacy.Configs;
 using LSFunctions;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Menus.UI.Elements
 {

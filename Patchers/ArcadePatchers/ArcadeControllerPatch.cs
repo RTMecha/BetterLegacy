@@ -1,7 +1,4 @@
-﻿
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Core.Helpers;
 using HarmonyLib;
 
 namespace BetterLegacy.Patchers

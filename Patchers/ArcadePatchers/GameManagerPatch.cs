@@ -1,8 +1,9 @@
-﻿using BetterLegacy.Components;
+﻿using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
@@ -13,7 +14,6 @@ using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using HarmonyLib;
 using LSFunctions;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +92,7 @@ namespace BetterLegacy.Patchers
 
             PlayerManager.SetupImages(Instance);
 
-            Instance.gameObject.AddComponent<GameStorageManager>();
+            Instance.gameObject.AddComponent<RTGameManager>();
 
             ArcadeHelper.fromLevel = true;
 
@@ -277,17 +277,17 @@ namespace BetterLegacy.Patchers
         {
             BackgroundManagerPatch.bgColorToLerp = bgColorToLerp;
 
-            if (GameStorageManager.inst && EventManager.inst)
+            if (RTGameManager.inst && EventManager.inst)
             {
                 EventManager.inst.camPer.backgroundColor = bgColorToLerp;
-                if (GameStorageManager.inst.checkpointImages.Count > 0)
-                    foreach (var image in GameStorageManager.inst.checkpointImages)
+                if (RTGameManager.inst.checkpointImages.Count > 0)
+                    foreach (var image in RTGameManager.inst.checkpointImages)
                         image.color = timelineColorToLerp;
 
-                GameStorageManager.inst.timelinePlayer.color = timelineColorToLerp;
-                GameStorageManager.inst.timelineLeftCap.color = timelineColorToLerp;
-                GameStorageManager.inst.timelineRightCap.color = timelineColorToLerp;
-                GameStorageManager.inst.timelineLine.color = timelineColorToLerp;
+                RTGameManager.inst.timelinePlayer.color = timelineColorToLerp;
+                RTGameManager.inst.timelineLeftCap.color = timelineColorToLerp;
+                RTGameManager.inst.timelineRightCap.color = timelineColorToLerp;
+                RTGameManager.inst.timelineLine.color = timelineColorToLerp;
             }
 
             if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
@@ -395,8 +395,8 @@ namespace BetterLegacy.Patchers
             if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.beatmapData == null)
                 return false;
 
-            if (GameStorageManager.inst)
-                GameStorageManager.inst.checkpointImages.Clear();
+            if (RTGameManager.inst)
+                RTGameManager.inst.checkpointImages.Clear();
             var parent = Instance.timeline.transform.Find("elements");
             LSHelpers.DeleteChildren(parent);
             foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
@@ -407,8 +407,8 @@ namespace BetterLegacy.Patchers
                 var gameObject = Instance.checkpointPrefab.Duplicate(parent, $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
                 float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
                 gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
-                if (GameStorageManager.inst)
-                    GameStorageManager.inst.checkpointImages.Add(gameObject.GetComponent<Image>());
+                if (RTGameManager.inst)
+                    RTGameManager.inst.checkpointImages.Add(gameObject.GetComponent<Image>());
             }
 
             return false;

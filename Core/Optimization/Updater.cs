@@ -3,14 +3,12 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
-using BetterLegacy.Patchers;
 using LSFunctions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
-using BasePrefabObject = DataManager.GameData.PrefabObject;
 using ObjectAutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 
 namespace BetterLegacy.Core.Optimization

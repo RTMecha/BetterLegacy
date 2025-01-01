@@ -2,7 +2,6 @@
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Example;
 using HarmonyLib;
-using LSFunctions;
 using UnityEngine;
 
 namespace BetterLegacy.Patchers

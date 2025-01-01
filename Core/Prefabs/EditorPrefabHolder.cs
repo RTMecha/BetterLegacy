@@ -1,4 +1,4 @@
-﻿using BetterLegacy.Components;
+﻿using BetterLegacy.Core.Components;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
