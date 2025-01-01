@@ -229,7 +229,7 @@ namespace BetterLegacy.Example
 
         public static bool ApplicationNotFocused() => !Application.isFocused;
 
-        public static bool HasNotLoadedLevel() => EditorManager.inst && !EditorManager.inst.hasLoadedLevel && EditorManager.inst.loadedLevels.Count > 0;
+        public static bool HasNotLoadedLevel() => EditorManager.inst && !EditorManager.inst.hasLoadedLevel && RTEditor.inst.LevelPanels.Count > 0;
 
         public static bool HasLoadedLevel() => EditorManager.inst && EditorManager.inst.hasLoadedLevel;
 
@@ -244,15 +244,15 @@ namespace BetterLegacy.Example
         public static bool UserIsMecha() => CoreConfig.Instance.DisplayName.Value == "RTMecha";
 
         public static bool UserIsDiggy() =>
-            CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "diggy" ||
-            CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "diggydog" ||
-            CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "diggydog176";
+            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "diggy" ||
+            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "diggydog" ||
+            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "diggydog176";
 
         public static bool UserIsCubeCube() =>
-            CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "cubecube";
+            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "cubecube";
 
-        public static bool UserIsTori() => CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "karasutori";
-        public static bool UserIsPlayer() => CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "player";
+        public static bool UserIsTori() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "karasutori";
+        public static bool UserIsPlayer() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "player";
 
         public static bool TimeLongerThan10Hours() => Time.time > 36000f;
 
@@ -260,9 +260,9 @@ namespace BetterLegacy.Example
 
         public static bool ObjectsAliveCountHigherThan900() => GameData.IsValid && GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count > 900;
 
-        public static bool LevelCountIsZero() => EditorManager.inst && EditorManager.inst.loadedLevels.Count <= 0;
+        public static bool LevelCountIsZero() => CoreHelper.InEditor && RTEditor.inst.LevelPanels.Count <= 0;
 
-        public static bool UserIsMoNsTeR() => CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "monster";
+        public static bool UserIsMoNsTeR() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "monster";
 
         public void RepeatDialogues()
         {
@@ -2322,12 +2322,12 @@ namespace BetterLegacy.Example
         {
             var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
             if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask").AsRT())))
-                foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
+                foreach (var levelItem in RTEditor.inst.LevelPanels)
                 {
                     if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
                     {
-                        Debug.LogFormat("{0}Picked level: {1}", className, levelItem.folder);
-                        Say($"What's \"{System.IO.Path.GetFileName(levelItem.folder)}\"?");
+                        Debug.LogFormat("{0}Picked level: {1}", className, levelItem.FolderPath);
+                        Say($"What's \"{levelItem.Name}\"?");
                         break; // only select one level
                     }
                 }

@@ -47,11 +47,10 @@ namespace BetterLegacy.Editor.Data.Planners
                     level.Button.onClick.AddListener(() =>
                     {
                         string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(level.Path).Remove("/" + Level.LEVEL_LSB)}";
-                        if (!string.IsNullOrEmpty(level.Path) && RTFile.DirectoryExists(path) &&
-                        (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)) || RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)) || RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3))))
+                        if (Level.TryVerify(path, true, out Level actualLevel))
                         {
                             ProjectPlanner.inst.Close();
-                            RTEditor.inst.StartCoroutine(RTEditor.inst.LoadLevel(path));
+                            RTEditor.inst.StartCoroutine(RTEditor.inst.LoadLevel(actualLevel));
                         }
                     });
 

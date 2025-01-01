@@ -39,7 +39,11 @@ namespace BetterLegacy.Editor.Managers
 
         HttpListener _listener;
 
+        public Image iconImage;
+
         #endregion
+
+        #region Init
 
         public static void Init() => MetadataEditor.inst?.gameObject?.AddComponent<RTMetaDataEditor>();
 
@@ -58,6 +62,8 @@ namespace BetterLegacy.Editor.Managers
             var dialog = EditorManager.inst.GetDialog("Metadata Editor").Dialog;
 
             var content = dialog.Find("Scroll View/Viewport/Content");
+
+            iconImage = content.Find("creator/cover_art/image").GetComponent<Image>();
 
             difficultyToggle = content.Find("song/difficulty/toggles/easy").gameObject;
             difficultyToggle.transform.SetParent(transform);
@@ -376,6 +382,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddToggle(toggle.GetComponent<Toggle>());
         }
 
+        #endregion
+
         void RenderDifficultyToggles()
         {
             var content = EditorManager.inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content");
@@ -508,6 +516,22 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+        }
+
+        public void OpenEditor()
+        {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Load a level first before trying to upload!", 5f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            EditorManager.inst.ClearDialogs();
+            if (RTEditor.inst.CurrentLevel)
+                iconImage.sprite = RTEditor.inst.CurrentLevel.icon;
+
+            RenderEditor();
+            MetadataEditor.inst.OpenDialog();
         }
 
         public void RenderEditor()
@@ -829,6 +853,15 @@ namespace BetterLegacy.Editor.Managers
             RTFile.FileIsFormat(file, FileFormat.LSB, FileFormat.LSA, FileFormat.JPG, FileFormat.PNG, FileFormat.OGG, FileFormat.WAV, FileFormat.MP3, FileFormat.MP4);
 
         #region Functions
+
+        public void SetLevelCover(Sprite sprite)
+        {
+            if (RTEditor.inst.CurrentLevel)
+            {
+                RTEditor.inst.CurrentLevel.icon = sprite;
+                iconImage.sprite = RTEditor.inst.CurrentLevel.icon;
+            }
+        }
 
         public void VerifyLevelIsOnServer()
         {

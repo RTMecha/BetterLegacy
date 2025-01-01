@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
@@ -148,7 +149,7 @@ namespace BetterLegacy.Core.Helpers
         public static void LogIsNull<T>(string message, object obj) => Debug.Log($"{message}{typeof(T)} is null: {obj == null}");
 
         //EditorHelper.LoadLevel("C:/Users/Mecha/Desktop/Project Launcher/instances/Mod Testing/beatmaps/editor/RhythmTech/Apocrypha but Platformer")
-        public static void LoadLevel(string fullPath) => SceneHelper.LoadScene(SceneName.Editor, scene => CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath)));
+        public static void LoadLevel(string fullPath) => SceneHelper.LoadScene(SceneName.Editor, scene => CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(fullPath))));
 
         public static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
         {
@@ -158,7 +159,7 @@ namespace BetterLegacy.Core.Helpers
             if (delay != 0.0)
                 yield return new WaitForSeconds(delay);
 
-            CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath));
+            CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(fullPath)));
         }
 
         public static bool SelectAllObjects()

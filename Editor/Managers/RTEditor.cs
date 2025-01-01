@@ -58,24 +58,21 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + editorListPath))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + editorListPath);
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
+                RTFile.CreateDirectory(RTFile.ApplicationDirectory + editorListPath);
+                RTFile.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
+                RTFile.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
 
                 PrefabWatcher = new FileSystemWatcher
                 {
                     Path = RTFile.ApplicationDirectory + prefabListPath,
-                    Filter = "*.lsp",
+                    Filter = FileFormat.LSP.ToPattern(),
                 };
                 EnablePrefabWatcher();
 
                 ThemeWatcher = new FileSystemWatcher
                 {
                     Path = RTFile.ApplicationDirectory + themeListPath,
-                    Filter = "*.lst"
+                    Filter = FileFormat.LST.ToPattern()
                 };
                 EnableThemeWatcher();
             }
@@ -513,6 +510,11 @@ namespace BetterLegacy.Editor.Managers
         List<MultiColorButton> multiGradientColorButtons = new List<MultiColorButton>();
         int currentMultiColorSelection = -1;
         int currentMultiGradientColorSelection = -1;
+
+        public Level CurrentLevel { get; set; }
+        public List<LevelPanel> LevelPanels { get; set; } = new List<LevelPanel>();
+
+        public Transform editorLevelContent;
 
         #region Dragging
 
@@ -3145,12 +3147,11 @@ namespace BetterLegacy.Editor.Managers
 
                 ShowWarningPopup("Are you sure you want to reload the level?", () =>
                 {
-                    var path = RTFile.BasePath;
-                    if (RTFile.DirectoryExists(path))
+                    if (CurrentLevel)
                     {
                         if (GameData.IsValid)
-                            GameData.Current.SaveData(RTFile.CombinePaths(path, "reload-level-backup.lsb"));
-                        StartCoroutine(LoadLevel(RTFile.RemoveEndSlash(path)));
+                            GameData.Current.SaveData(RTFile.CombinePaths(CurrentLevel.path, "reload-level-backup.lsb"));
+                        StartCoroutine(LoadLevel(CurrentLevel));
                     }
                     else
                         EditorManager.inst.DisplayNotification("Level does not exist.", 2f, EditorManager.NotificationType.Error);
@@ -8869,11 +8870,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        Text folderCreatorTitle;
-        Text folderCreatorNameLabel;
-        InputField folderCreatorName;
-        Button folderCreatorSubmit;
-        Text folderCreatorSubmitText;
+        public Text folderCreatorTitle;
+        public Text folderCreatorNameLabel;
+        public InputField folderCreatorName;
+        public Button folderCreatorSubmit;
+        public Text folderCreatorSubmitText;
 
         void CreateFolderCreator()
         {
@@ -8996,62 +8997,36 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator LoadLevels()
         {
-            EditorManager.inst.loadedLevels.Clear();
+            LevelPanels.Clear();
 
-            var config = EditorConfig.Instance;
+            if (!editorLevelContent)
+                editorLevelContent = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask/content");
 
-            var olfnm = config.OpenLevelFolderNameMax;
-            var olsnm = config.OpenLevelSongNameMax;
-            var olanm = config.OpenLevelArtistNameMax;
-            var olcnm = config.OpenLevelCreatorNameMax;
-            var oldem = config.OpenLevelDescriptionMax;
-            var oldam = config.OpenLevelDateMax;
-
-            int foldClamp = olfnm.Value < 3 ? olfnm.Value : (int)olfnm.DefaultValue;
-            int songClamp = olsnm.Value < 3 ? olsnm.Value : (int)olsnm.DefaultValue;
-            int artiClamp = olanm.Value < 3 ? olanm.Value : (int)olanm.DefaultValue;
-            int creaClamp = olcnm.Value < 3 ? olcnm.Value : (int)olcnm.DefaultValue;
-            int descClamp = oldem.Value < 3 ? oldem.Value : (int)oldem.DefaultValue;
-            int dateClamp = oldam.Value < 3 ? oldam.Value : (int)oldam.DefaultValue;
-
-            var transform = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask/content");
             var close = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("Panel/x");
 
-            var horizontalOverflow = config.OpenLevelTextHorizontalWrap.Value;
-            var verticalOverflow = config.OpenLevelTextVerticalWrap.Value;
-            var fontSize = config.OpenLevelTextFontSize.Value;
-            var format = config.OpenLevelTextFormatting.Value;
-            var buttonHoverSize = config.OpenLevelButtonHoverSize.Value;
-
-            var iconPosition = config.OpenLevelCoverPosition.Value;
-            var iconScale = config.OpenLevelCoverScale.Value;
-
-            var showDeleteButton = config.OpenLevelShowDeleteButton.Value;
-
-            LSHelpers.DeleteChildren(transform);
+            LSHelpers.DeleteChildren(editorLevelContent);
 
             var list = new List<Coroutine>();
             var files = Directory.GetDirectories(RTFile.ApplicationDirectory + editorListPath);
-            var showLevelFolders = config.ShowFoldersInLevelList.Value;
             var currentPath = editorPath;
 
             // Back
-            if (showLevelFolders && Path.GetDirectoryName(RTFile.ApplicationDirectory + editorListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps")
+            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && Path.GetDirectoryName(RTFile.ApplicationDirectory + editorListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps")
             {
-                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "back");
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(editorLevelContent, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
                 var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
-                hoverUIFolder.size = buttonHoverSize;
+                hoverUIFolder.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
                 folderButtonStorageFolder.text.text = "< Up a folder";
 
-                folderButtonStorageFolder.text.horizontalOverflow = horizontalOverflow;
-                folderButtonStorageFolder.text.verticalOverflow = verticalOverflow;
-                folderButtonStorageFolder.text.fontSize = fontSize;
+                folderButtonStorageFolder.text.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
+                folderButtonStorageFolder.text.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
+                folderButtonStorageFolder.text.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
 
                 folderButtonStorageFolder.button.onClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
@@ -9083,307 +9058,30 @@ namespace BetterLegacy.Editor.Managers
                 var path = RTFile.ReplaceSlash(file);
                 var name = Path.GetFileName(path);
 
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)))
+                var levelPanel = new LevelPanel();
+
+                if (!Level.TryVerify(path, false, out Level level))
                 {
-                    if (!showLevelFolders)
+                    if (!EditorConfig.Instance.ShowFoldersInLevelList.Value)
                         continue;
 
-                    var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
-                    var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
-                    var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
-
-                    var editorWrapperFolder = new EditorWrapper(gameObjectFolder, null, path, null);
-                    editorWrapperFolder.isFolder = true;
-
-                    var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
-                    hoverUIFolder.size = buttonHoverSize;
-                    hoverUIFolder.animatePos = false;
-                    hoverUIFolder.animateSca = true;
-
-                    folderButtonStorageFolder.text.text = name;
-
-                    folderButtonStorageFolder.text.horizontalOverflow = horizontalOverflow;
-                    folderButtonStorageFolder.text.verticalOverflow = verticalOverflow;
-                    folderButtonStorageFolder.text.fontSize = fontSize;
-
-                    folderButtonStorageFolder.button.onClick.ClearAll();
-                    folderButtonFunctionFolder.onClick = eventData =>
-                    {
-                        if (!path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                        {
-                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        if (eventData.button == PointerEventData.InputButton.Right)
-                        {
-                            ShowContextMenu(300f,
-                                new ButtonFunction("Open folder", () =>
-                                {
-                                    editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                                    UpdateEditorPath(false);
-                                }),
-                                new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
-                                new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Rename", () => ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
-                                    {
-                                        RTFile.MoveDirectory(path, path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/"));
-
-                                        UpdateEditorPath(true);
-                                        HideNameEditor();
-                                    })),
-                                new ButtonFunction("Paste", PasteLevel),
-                                new ButtonFunction("Delete", () =>
-                                {
-                                    ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
-                                    {
-                                        RTFile.DeleteDirectory(path);
-                                        UpdateEditorPath(true);
-                                        EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                                        HideWarningPopup();
-                                    }, HideWarningPopup);
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("ZIP Folder", () => ZIPLevel(path)),
-                                new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
-                                new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
-                                new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
-
-                            return;
-                        }
-
-                        editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                        UpdateEditorPath(false);
-                    };
-
-                    EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-                    EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
-
-                    EditorManager.inst.loadedLevels.Add(editorWrapperFolder);
+                    levelPanel.Init(path);
+                    LevelPanels.Add(levelPanel);
 
                     continue;
                 }
 
-                var metadataJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_LSB));
+                levelPanel.Init(level);
 
-                if (string.IsNullOrEmpty(metadataJSON))
+                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
+                    list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
+                    list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                else
                 {
-                    Debug.LogError($"{EditorManager.inst.className}Could not load metadata for [{name}]!");
-                    continue;
+                    levelPanel.SetDefaultIcon();
+                    LevelPanels.Add(levelPanel);
                 }
-
-                var metadata = MetaData.Parse(JSON.Parse(metadataJSON));
-
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
-                var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
-
-                var editorWrapper = new EditorWrapper(gameObject, metadata, path, SteamWorkshop.inst.defaultSteamImageSprite);
-
-                var hoverUI = gameObject.AddComponent<HoverUI>();
-                hoverUI.size = buttonHoverSize;
-                hoverUI.animatePos = false;
-                hoverUI.animateSca = true;
-
-                folderButtonStorage.text.text = string.Format(format,
-                    LSText.ClampString(name, foldClamp),
-                    LSText.ClampString(metadata.song.title, songClamp),
-                    LSText.ClampString(metadata.artist.Name, artiClamp),
-                    LSText.ClampString(metadata.creator.steam_name, creaClamp),
-                    metadata.song.difficulty,
-                    LSText.ClampString(metadata.song.description, descClamp),
-                    LSText.ClampString(metadata.beatmap.date_edited, dateClamp),
-                    LSText.ClampString(metadata.beatmap.date_created, dateClamp),
-                    LSText.ClampString(metadata.beatmap.date_published, dateClamp));
-
-                folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
-                folderButtonStorage.text.verticalOverflow = verticalOverflow;
-                folderButtonStorage.text.fontSize = fontSize;
-
-                var difficultyColor = metadata.song.difficulty >= 0 && metadata.song.difficulty < DataManager.inst.difficulties.Count ?
-                    DataManager.inst.difficulties[metadata.song.difficulty].color : LSColors.themeColors["none"].color;
-
-                TooltipHelper.AssignTooltip(gameObject, "Level List Button", 3f);
-                gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
-                {
-                    desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title,
-                    hint = $"</color><br>Folder: {name}<br>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.beatmap.date_created}<br>Description: {metadata.song.description}",
-                });
-
-                folderButtonStorage.button.onClick.ClearAll();
-                folderButtonFunction.onClick = eventData =>
-                {
-                    if (choosingLevelTemplate)
-                    {
-                        CreateTemplate(path);
-
-                        return;
-                    }
-
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        ShowContextMenu(300f,
-                            new ButtonFunction("Open", () =>
-                            {
-                                StartCoroutine(LoadLevel(path));
-                                EditorManager.inst.HideDialog("Open File Popup");
-                            }),
-                            new ButtonFunction("Show Autosaves", () =>
-                            {
-                                EditorManager.inst.ShowDialog("Autosave Popup");
-                                RefreshAutosaveList(editorWrapper);
-                            }),
-                            new ButtonFunction("Convert to VG", () => ConvertLevel(path, name)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
-                            new ButtonFunction("Create template", () => CreateTemplate(path)),
-                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Rename", () => ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
-                                {
-                                    var destination = RTFile.ReplaceSlash(path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)));
-                                    RTFile.MoveDirectory(path, destination);
-                                    metadata.beatmap.name = folderCreatorName.text;
-                                    RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), metadata.ToJSON().ToString());
-
-                                    UpdateEditorPath(true);
-                                    HideNameEditor();
-                                })),
-                            new ButtonFunction("Cut", () =>
-                            {
-                                shouldCutLevel = true;
-                                copiedLevelPath = editorWrapper.folder;
-                                EditorManager.inst.DisplayNotification($"Cut {name}!", 1.5f, EditorManager.NotificationType.Success);
-                                CoreHelper.Log($"Cut level: {copiedLevelPath}");
-                            }),
-                            new ButtonFunction("Copy", () =>
-                            {
-                                shouldCutLevel = false;
-                                copiedLevelPath = editorWrapper.folder;
-                                EditorManager.inst.DisplayNotification($"Copied {name}!", 1.5f, EditorManager.NotificationType.Success);
-                                CoreHelper.Log($"Copied level: {copiedLevelPath}");
-                            }),
-                            new ButtonFunction("Paste", PasteLevel),
-                            new ButtonFunction("Delete", () =>
-                            {
-                                ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
-                                {
-                                    RTFile.DeleteDirectory(editorWrapper.folder);
-                                    UpdateEditorPath(true);
-                                    EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
-                                    HideWarningPopup();
-                                }, HideWarningPopup);
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Copy Arcade ID", () =>
-                            {
-                                if (editorWrapper.metadata is MetaData metadata)
-                                {
-                                    if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
-                                        return;
-                                    }
-
-                                    LSText.CopyToClipboard(metadata.arcadeID);
-                                    EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                                }
-                            }),
-                            new ButtonFunction("Copy Server ID", () =>
-                            {
-                                if (editorWrapper.metadata is MetaData metadata)
-                                {
-                                    if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
-                                        return;
-                                    }
-
-                                    LSText.CopyToClipboard(metadata.serverID);
-                                    EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                                }
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("ZIP Level", () => ZIPLevel(path)),
-                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
-                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
-                            new ButtonFunction("Open List in File Explorer", OpenLevelListFolder)
-                        );
-
-                        return;
-                    }
-
-                    StartCoroutine(LoadLevel(path));
-                    EditorManager.inst.HideDialog("Open File Popup");
-                };
-
-                EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorage.text);
-
-                var iconBase = new GameObject("icon base");
-                iconBase.transform.SetParent(gameObject.transform);
-                iconBase.transform.localScale = Vector3.one;
-                var iconBaseRT = iconBase.AddComponent<RectTransform>();
-                var iconBaseImage = iconBase.AddComponent<Image>();
-                iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                iconBaseRT.anchoredPosition = iconPosition;
-                iconBaseRT.sizeDelta = iconScale;
-                EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
-
-                var icon = new GameObject("icon");
-                icon.transform.SetParent(iconBaseRT);
-                icon.transform.localScale = Vector3.one;
-                var iconRT = icon.AddComponent<RectTransform>();
-                var iconImage = icon.AddComponent<Image>();
-
-                iconRT.anchoredPosition = Vector3.zero;
-                iconRT.sizeDelta = iconScale;
-
-                // Delete
-                if (showDeleteButton)
-                {
-                    var delete = close.gameObject.Duplicate(gameObject.transform, "delete");
-
-                    delete.transform.AsRT().anchoredPosition = new Vector2(-5f, 0f);
-
-                    string levelName = path;
-
-                    var deleteButton = delete.GetComponent<Button>();
-                    deleteButton.onClick.ClearAll();
-                    deleteButton.onClick.AddListener(() =>
-                    {
-                        ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", () =>
-                        {
-                            DeleteLevelFunction(levelName);
-                            EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
-                            EditorManager.inst.GetLevelList();
-                            HideWarningPopup();
-                        }, HideWarningPopup);
-                    });
-                }
-                
-                list.Add(StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(path, Level.LEVEL_JPG)}", cover =>
-                {
-                    if (!cover)
-                    {
-                        iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                        editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
-                        EditorManager.inst.loadedLevels.Add(editorWrapper);
-                        return;
-                    }
-
-                    var sprite = SpriteHelper.CreateSprite(cover);
-                    iconImage.sprite = sprite;
-                    editorWrapper.albumArt = sprite;
-
-                    EditorManager.inst.loadedLevels.Add(editorWrapper);
-                }, (errorMsg, handlerText) =>
-                {
-                    iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                    editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
-                    EditorManager.inst.loadedLevels.Add(editorWrapper);
-                })));
             }
 
             if (list.Count >= 1)
@@ -9394,7 +9092,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        void CreateTemplate(string file)
+        public void CreateTemplate(string file)
         {
             if (string.IsNullOrEmpty(nameInput.text))
             {
@@ -9428,7 +9126,7 @@ namespace BetterLegacy.Editor.Managers
 
         void OpenLevelPopup()
         {
-            if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || EditorManager.inst.loadedLevels.Count > 0)
+            if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || LevelPanels.Count > 0)
             {
                 EditorManager.inst.ShowDialog("Open File Popup");
                 EditorManager.inst.RenderOpenBeatmapPopup();
@@ -9437,20 +9135,16 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.OpenNewLevelPopup();
         }
 
+        /// <summary>
+        /// Loads a level in the editor.
+        /// </summary>
+        /// <param name="level">Level to load and edit.</param>
         public IEnumerator LoadLevel(Level level)
         {
-            yield return LoadLevel(RTFile.RemoveEndSlash(level.path));
-        }
-
-        /// <summary>
-        /// Loads a level in the editor from a full path. For example: E:/4.1.16/beatmaps/editor/New Awesome Beatmap.
-        /// </summary>
-        /// <param name="fullPath"></param>
-        /// <param name="autosave"></param>
-        /// <returns></returns>
-        public IEnumerator LoadLevel(string fullPath, string autosave = "")
-        {
-            // i have no idea what is causing the memory issue here
+            CurrentLevel = level;
+            var fullPath = RTFile.RemoveEndSlash(level.path);
+            var currentFile = level.CurrentFile;
+            level.currentFile = null; // reset since autosave loading should be temporary.
 
             EditorManager.inst.loading = true;
             var sw = CoreHelper.StartNewStopwatch();
@@ -9544,14 +9238,13 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.ClearDialogs();
             EditorManager.inst.ShowDialog("File Info Popup");
 
-            var previousLevel = GameManager.inst.path.Replace(Level.LEVEL_LSB, "");
-            if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.DirectoryExists(previousLevel))
+            if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.FileExists(GameManager.inst.path))
             {
                 CoreHelper.Log("Backing up previous level...");
 
-                SetFileInfo($"Backing up previous level [ {Path.GetFileName(RTFile.RemoveEndSlash(previousLevel))} ]");
+                SetFileInfo($"Backing up previous level [ {Path.GetFileName(RTFile.RemoveEndSlash(GameManager.inst.path))} ]");
 
-                GameData.Current.SaveData(GameManager.inst.path.Replace(Level.LEVEL_LSB, $"level-open-backup{FileFormat.LSB.Dot()}"));
+                GameData.Current.SaveData(RTFile.CombinePaths(RTFile.BasePath, $"level-open-backup{FileFormat.LSB.Dot()}"));
 
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
@@ -9560,90 +9253,14 @@ namespace BetterLegacy.Editor.Managers
 
             SetFileInfo($"Loading Level Data for [ {name} ]");
 
-            string rawJSON = null;
-            string rawMetadataJSON = null;
-            AudioClip song = null;
-
-            var fromFile = (string.IsNullOrEmpty(autosave) ? Level.LEVEL_LSB : autosave);
-            CoreHelper.Log($"Loading {fromFile}...");
-            rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, fromFile));
-            rawMetadataJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, Level.METADATA_LSB));
-
-            if (string.IsNullOrEmpty(rawMetadataJSON))
-            {
-                DataManager.inst.SaveMetadata(RTFile.CombinePaths(fullPath, Level.METADATA_LSB));
-                rawMetadataJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, Level.METADATA_LSB));
-            }
+            CoreHelper.Log($"Loading {currentFile}...");
 
             GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
             RTFile.BasePath = RTFile.AppendEndSlash(fullPath);
             GameManager.inst.levelName = name;
             SetFileInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
 
-            string errorMessage = "";
-            bool hadError = false;
-            if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)))
-                yield return this.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)}", AudioType.OGGVORBIS, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
-            else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)))
-                yield return this.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)}", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
-            else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3)))
-            {
-                Exception e = null;
-                yield return this.StartCoroutineAsync(CoreHelper.DoAction(() =>
-                {
-                    try
-                    {
-                        song = LSAudio.CreateAudioClipUsingMP3File(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3));
-                    }
-                    catch (Exception ex)
-                    {
-                        e = ex;
-                        hadError = true;
-                    }
-                }));
-
-                if (hadError)
-                {
-                    if (e != null)
-                        CoreHelper.LogException(e);
-
-                    if (!RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3)))
-                        SetFileInfo("Song does not exist.");
-                    else
-                    {
-                        try
-                        {
-                            var file = new FileInfo(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3));
-                            SetFileInfo($"There was a problem with loading the MP3 file. Could it be due to the filesize of [{file.Length}]?");
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreHelper.LogException(ex);
-                        }
-                    }
-
-                    yield break;
-                }
-            }
-
-            if (hadError)
-            {
-                bool audioExists = RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG)) || RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV)) || RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3));
-
-                if (audioExists)
-                    SetFileInfo($"Something went wrong when loading the song file. Either the file is corrupt or something went wrong internally.");
-                else
-                    SetFileInfo($"Song file does not exist.");
-
-                EditorManager.inst.DisplayNotification($"Song file could not load due to {errorMessage}", 3f, EditorManager.NotificationType.Error);
-
-                CoreHelper.LogError($"Level loading caught an error: {errorMessage}\n" +
-                    $"level.ogg exists: {RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_OGG))}\n" +
-                    $"level.wav exists: {RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_WAV))}\n" +
-                    $"level.mp3 exists: {RTFile.FileExists(RTFile.CombinePaths(fullPath, Level.LEVEL_MP3))}\n");
-
-                yield break;
-            }
+            yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
@@ -9654,56 +9271,52 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.gameState = GameManager.State.Parsing;
             CoreHelper.Log("Parsing data...");
             SetFileInfo($"Parsing Level Data for [ {name} ]");
-            if (!string.IsNullOrEmpty(rawJSON) && !string.IsNullOrEmpty(rawMetadataJSON))
+            string rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, currentFile));
+            if (string.IsNullOrEmpty(rawJSON))
             {
-                try
-                {
-                    MetaData.Current = null;
-                    MetaData.Current = MetaData.Parse(JSON.Parse(rawMetadataJSON));
-
-                    if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
-                        MetaData.Current.arcadeID = LSText.randomNumString(16);
-
-                    if (ProjectArrhythmia.RequireUpdate(MetaData.Current.beatmap.game_version))
-                        rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.game_version);
-
-                    GameData.Current = null;
-                    GameData.Current = GameData.Parse(JSON.Parse(rawJSON), false);
-                }
-                catch (Exception ex)
-                {
-                    SetFileInfo($"Something went wrong when parsing the level data. Press the open log folder key ({CoreConfig.Instance.OpenPAPersistentFolder.Value}) and send the Player.log file to Mecha.");
-
-                    EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
-
-                    CoreHelper.LogError($"Level loading caught an error: {ex}");
-
-                    yield break;
-                }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(rawJSON) && !string.IsNullOrEmpty(rawMetadataJSON))
-                    SetFileInfo($"level.lsb is empty or corrupt.");
-
-                if (!string.IsNullOrEmpty(rawJSON) && string.IsNullOrEmpty(rawMetadataJSON))
-                    SetFileInfo($"metadata.lsb is empty or corrupt.");
-
-                if (string.IsNullOrEmpty(rawJSON) && string.IsNullOrEmpty(rawMetadataJSON))
-                    SetFileInfo($"Both level.lsb and metadata.lsb are empty or corrupt.");
-
+                SetFileInfo($"{currentFile} is empty or corrupt.");
                 EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
 
                 yield break;
             }
+
+            try
+            {
+                MetaData.Current = null;
+                MetaData.Current = level.metadata;
+
+                if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
+                    MetaData.Current.arcadeID = LSText.randomNumString(16);
+
+                if (ProjectArrhythmia.RequireUpdate(MetaData.Current.beatmap.game_version))
+                    rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.game_version);
+
+                GameData.Current = null;
+                GameData.Current = level.IsVG ?
+                    GameData.ParseVG(JSON.Parse(rawJSON), false, new Core.Data.Version(MetaData.Current.beatmap.game_version)) :
+                    GameData.Parse(JSON.Parse(rawJSON), false);
+            }
+            catch (Exception ex)
+            {
+                SetFileInfo($"Something went wrong when parsing the level data. Press the open log folder key ({CoreConfig.Instance.OpenPAPersistentFolder.Value}) and send the Player.log file to Mecha.");
+
+                EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
+
+                CoreHelper.LogError($"Level loading caught an error: {ex}");
+
+                yield break;
+            }
+
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
-            PreviewCover?.gameObject?.SetActive(false);
+            if (PreviewCover != null && PreviewCover.gameObject)
+                PreviewCover.gameObject.SetActive(false);
 
             CoreHelper.Log("Playing level music...");
             SetFileInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
-            AudioManager.inst.PlayMusic(null, song, true, 0f, true);
+            SetCurrentAudio(level.music);
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
             if (EditorConfig.Instance.WaveformGenerate.Value)
             {
                 CoreHelper.Log("Assigning waveform textures...");
@@ -9724,7 +9337,7 @@ namespace BetterLegacy.Editor.Managers
             SetFileInfo($"Updating Timeline for [ {name} ]");
             EditorManager.inst.UpdateTimelineSizes();
             GameManager.inst.UpdateTimeline();
-            MetadataEditor.inst.Render();
+            RTMetaDataEditor.inst.RenderEditor();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.CreateGhostCheckpoints();
@@ -9746,7 +9359,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log("Updating timeline objects...");
             EventEditor.inst.CreateEventObjects();
             BackgroundManager.inst.UpdateBackgrounds();
-            GameManager.inst.UpdateTheme();
+            //GameManager.inst.UpdateTheme();
 
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;
@@ -9797,14 +9410,18 @@ namespace BetterLegacy.Editor.Managers
             fromNewLevel = false;
 
             rawJSON = null;
-            rawMetadataJSON = null;
-            song = null;
 
             CoreHelper.StopAndLogStopwatch(sw, $"Finished loading {name}");
             sw = null;
 
             yield break;
         }
+
+        /// <summary>
+        /// Sets the current audio the editor should use.
+        /// </summary>
+        /// <param name="audioClip">Audio to set.</param>
+        public void SetCurrentAudio(AudioClip audioClip) => AudioManager.inst.PlayMusic(null, audioClip, true, 0f, true);
 
         GameObject themeUpFolderButton;
         public IEnumerator LoadThemes(bool refreshGUI = false)
@@ -10318,7 +9935,11 @@ namespace BetterLegacy.Editor.Managers
 
             fromNewLevel = true;
             DataManager.inst.SaveMetadata(RTFile.CombinePaths(path, Level.METADATA_LSB));
-            StartCoroutine(LoadLevel(path));
+
+            var levelPanel = new LevelPanel();
+            levelPanel.Init(new Level(path));
+            LevelPanels.Add(levelPanel);
+            StartCoroutine(LoadLevel(levelPanel.Level));
             EditorManager.inst.HideDialog("New File Popup");
         }
 
@@ -10664,57 +10285,57 @@ namespace BetterLegacy.Editor.Managers
 
             #region Sorting
 
-            Func<MetadataWrapper, bool> editorFolderSelector = x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder;
-            var loadedLevels = EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper);
+            Func<LevelPanel, bool> editorFolderSelector = x => x is LevelPanel editorWrapper && !editorWrapper.isFolder;
+            var loadedLevels = LevelPanels;
 
             switch (levelFilter)
             {
                 case 0:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite) :
-                            loadedLevels.OrderByDescending(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level && x.Level.icon != SteamWorkshop.inst.defaultSteamImageSprite) :
+                            loadedLevels.OrderByDescending(x => x.Level && x.Level.icon != SteamWorkshop.inst.defaultSteamImageSprite)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 1:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.artist?.Name) :
-                            loadedLevels.OrderByDescending(x => x.metadata?.artist?.Name)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level?.metadata?.artist?.Name) :
+                            loadedLevels.OrderByDescending(x => x.Level?.metadata?.artist?.Name)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 2:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.creator?.steam_name) :
-                            loadedLevels.OrderByDescending(x => x.metadata?.creator?.steam_name)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level?.metadata?.creator?.steam_name) :
+                            loadedLevels.OrderByDescending(x => x.Level?.metadata?.creator?.steam_name)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 3:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.folder) :
-                            loadedLevels.OrderByDescending(x => x.folder)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.FolderPath) :
+                            loadedLevels.OrderByDescending(x => x.FolderPath)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 4:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.song?.title) :
-                            loadedLevels.OrderByDescending(x => x.metadata?.song?.title)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level?.metadata?.song?.title) :
+                            loadedLevels.OrderByDescending(x => x.Level?.metadata?.song?.title)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 5:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.song?.difficulty) :
-                            loadedLevels.OrderByDescending(x => x.metadata?.song?.difficulty)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level?.metadata?.song?.difficulty) :
+                            loadedLevels.OrderByDescending(x => x.Level?.metadata?.song?.difficulty)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 6:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.beatmap?.date_edited) :
-                            loadedLevels.OrderByDescending(x => x.metadata?.beatmap?.date_edited)).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level?.metadata?.beatmap?.date_edited) :
+                            loadedLevels.OrderByDescending(x => x.Level?.metadata?.beatmap?.date_edited)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
                 case 7:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata is MetaData metadata ? metadata.beatmap.date_created : "") :
-                            loadedLevels.OrderByDescending(x => x.metadata is MetaData metadata ? metadata.beatmap.date_created : "")).OrderBy(editorFolderSelector).ToList();
+                        LevelPanels = (levelAscend ? loadedLevels.OrderBy(x => x.Level?.metadata?.beatmap?.date_created) :
+                            loadedLevels.OrderByDescending(x => x.Level?.metadata?.beatmap?.date_created)).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
             }
@@ -10722,22 +10343,10 @@ namespace BetterLegacy.Editor.Managers
             #endregion
 
             int num = 0;
-            foreach (var editorWrapper in EditorManager.inst.loadedLevels.Where(x => x is EditorWrapper).Select(x => x as EditorWrapper))
+            foreach (var editorWrapper in LevelPanels)
             {
-                var folder = editorWrapper.folder;
-                var metadata = editorWrapper.metadata;
-
-                string[] difficultyNames = new string[]
-                {
-                    "easy",
-                    "normal",
-                    "hard",
-                    "expert",
-                    "expert+",
-                    "master",
-                    "animation",
-                    "Unknown difficulty",
-                };
+                var folder = editorWrapper.FolderPath;
+                var metadata = editorWrapper.Level?.metadata;
 
                 editorWrapper.SetActive(editorWrapper.isFolder && RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
                     !editorWrapper.isFolder && (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
@@ -10746,7 +10355,7 @@ namespace BetterLegacy.Editor.Managers
                         RTString.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
                         RTString.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
                         RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)]))));
+                        RTString.SearchString(EditorManager.inst.openFileSearch, LevelPanel.difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]))));
 
                 editorWrapper.GameObject.transform.SetSiblingIndex(num);
                 num++;
@@ -10926,7 +10535,7 @@ namespace BetterLegacy.Editor.Managers
             listToDelete = null;
         }
 
-        public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowserFile(FileFormat.LSB.Dot(), "level", x => StartCoroutine(LoadLevel(RTFile.ReplaceSlash(x).Remove("/" + Level.LEVEL_LSB))));
+        public void RefreshFileBrowserLevels() => RTFileBrowser.inst.UpdateBrowserFile(FileFormat.LSB.Dot(), "level", x => StartCoroutine(LoadLevel(new Level(RTFile.ReplaceSlash(x).Remove("/" + Level.LEVEL_LSB)))));
 
         public void RefreshDocumentation()
         {
@@ -11096,7 +10705,7 @@ namespace BetterLegacy.Editor.Managers
                 debuggerPopup.Content.GetChild(i).gameObject.SetActive(RTString.SearchString(debugSearch, debugs[i]));
         }
 
-        public void RefreshAutosaveList(EditorWrapper editorWrapper)
+        public void RefreshAutosaveList(LevelPanel editorWrapper)
         {
             autosaveSearchField.onValueChanged.ClearAll();
             autosaveSearchField.onValueChanged.AddListener(_val =>
@@ -11109,10 +10718,11 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(autosaveContent);
 
-            var files = Directory.GetFiles(editorWrapper.folder, "autosave_*.lsb", SearchOption.AllDirectories).Union(Directory.GetFiles(editorWrapper.folder, "backup_*.lsb", SearchOption.AllDirectories));
+            var files = Directory.GetFiles(editorWrapper.Level.path, "autosave_*.lsb", SearchOption.AllDirectories).Union(Directory.GetFiles(editorWrapper.Level.path, "backup_*.lsb", SearchOption.AllDirectories));
 
             foreach (var file in files)
             {
+                var path = RTFile.ReplaceSlash(file);
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(autosaveContent, $"Folder [{Path.GetFileName(file)}]");
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
 
@@ -11126,7 +10736,9 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorage.button.onClick.ClearAll();
                 folderButtonStorage.button.onClick.AddListener(() =>
                 {
-                    StartCoroutine(LoadLevel(editorWrapper.folder, file.Replace("\\", "/").Replace(editorWrapper.folder + "/", "")));
+                    editorWrapper.Level.currentFile = path;
+
+                    StartCoroutine(LoadLevel(editorWrapper.Level));
                     EditorManager.inst.HideDialog("Open File Popup");
                 });
 
@@ -11154,7 +10766,9 @@ namespace BetterLegacy.Editor.Managers
                     folderButtonStorage.button.onClick.ClearAll();
                     folderButtonStorage.button.onClick.AddListener(() =>
                     {
-                        StartCoroutine(LoadLevel(editorWrapper.folder, tmpFile.Replace("\\", "/").Replace(editorWrapper.folder + "/", "")));
+                        editorWrapper.Level.currentFile = path;
+
+                        StartCoroutine(LoadLevel(editorWrapper.Level));
                         EditorManager.inst.HideDialog("Open File Popup");
                     });
                 });
@@ -11365,11 +10979,11 @@ namespace BetterLegacy.Editor.Managers
                     dialog.gameObject.SetActive(active);
 
                     if (dialogAnimation.PosActive)
-                        dialog.localPosition = new Vector3(dialogAnimation.PosEnd.x, dialogAnimation.PosEnd.y, 0f);
+                        dialog.localPosition = new Vector3(active ? dialogAnimation.PosEnd.x : dialogAnimation.PosStart.x, active ? dialogAnimation.PosEnd.y : dialogAnimation.PosStart.y, 0f);
                     if (dialogAnimation.ScaActive)
-                        dialog.localScale = new Vector3(dialogAnimation.ScaEnd.x, dialogAnimation.ScaEnd.y, 1f);
+                        dialog.localScale = new Vector3(active ? dialogAnimation.ScaEnd.x : dialogAnimation.ScaStart.x, dialogAnimation.ScaEnd.y, 1f);
                     if (dialogAnimation.RotActive)
-                        dialog.localRotation = Quaternion.Euler(0f, 0f, dialogAnimation.RotEnd);
+                        dialog.localRotation = Quaternion.Euler(0f, 0f, active ? dialogAnimation.RotEnd : dialogAnimation.RotStart);
 
                     AnimationManager.inst.Remove(animation.id);
                 };

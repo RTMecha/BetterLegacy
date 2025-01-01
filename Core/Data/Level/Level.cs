@@ -37,16 +37,17 @@ namespace BetterLegacy.Core.Data.Level
             UpdateDefaults();
         }
 
-        public Level(string path, MetaData metadata)
+        public Level(string path, MetaData metadata, bool loadIcon = true)
         {
             this.path = path;
 
             this.metadata = metadata;
 
-            icon =
-                RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
-                RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
-                SteamWorkshop.inst.defaultSteamImageSprite;
+            if (loadIcon)
+                icon =
+                    RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
+                    RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
+                    SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
@@ -62,6 +63,11 @@ namespace BetterLegacy.Core.Data.Level
         /// The path to the level folder.
         /// </summary>
         public string path;
+
+        /// <summary>
+        /// The current level file to load.
+        /// </summary>
+        public string currentFile;
 
         /// <summary>
         /// Icon of the level.
@@ -101,6 +107,11 @@ namespace BetterLegacy.Core.Data.Level
         public bool isStory;
 
         /// <summary>
+        /// If level is loaded from the editor.
+        /// </summary>
+        public bool isEditor;
+
+        /// <summary>
         /// Steam Workshop item reference.
         /// </summary>
         public SteamworksFacepunch.Ugc.Item steamItem;
@@ -112,6 +123,11 @@ namespace BetterLegacy.Core.Data.Level
         /// If steamItem was initialized.
         /// </summary>
         public bool steamLevelInit;
+
+        /// <summary>
+        /// The editor level wrapper.
+        /// </summary>
+        public Editor.Data.LevelPanel editorLevelPanel;
 
         #endregion
 
@@ -136,7 +152,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// The current selected level file.
         /// </summary>
-        public string CurrentFile => LevelFiles[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelFiles.Length - 1)];
+        public string CurrentFile => !string.IsNullOrEmpty(currentFile) ? currentFile : LevelFiles[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelFiles.Length - 1)];
 
         /// <summary>
         /// The type of Project Arrhythmia the level comes from.
@@ -256,16 +272,18 @@ namespace BetterLegacy.Core.Data.Level
                     id = "-1";
             }
 
+            var defaultFile = (!CoreHelper.InEditor || !RTFile.FileExists(GetFile(LEVEL_LSB))) && CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
+
             if (RTFile.FileExists(GetFile(FILES_LSF)))
             {
                 var jn = JSON.Parse(RTFile.ReadFromFile(GetFile(FILES_LSF)));
                 LevelFiles = new string[jn["paths"].Count + 1];
-                LevelFiles[0] = CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
+                LevelFiles[0] = defaultFile;
                 for (int i = 1; i < jn["paths"].Count + 1; i++)
                     LevelFiles[i] = jn["paths"][i - 1];
             }
             else
-                LevelFiles = new string[1] { CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB, };
+                LevelFiles = new string[1] { defaultFile, };
         }
 
         /// <summary>

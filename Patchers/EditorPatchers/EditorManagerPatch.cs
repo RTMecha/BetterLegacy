@@ -530,7 +530,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadLevelPrefix(ref IEnumerator __result, string __0)
         {
-            __result = RTEditor.inst.LoadLevel($"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{__0}");
+            __result = RTEditor.inst.LoadLevel(new Level($"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{__0}"));
             return false;
         }
 
@@ -858,13 +858,9 @@ namespace BetterLegacy.Patchers
                 string jpgFileLocation = RTFile.ApplicationDirectory + RTEditor.editorListSlash + Instance.currentLoadedLevel + "/level.jpg";
                 CoreHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
                 {
-                    File.Copy(jpgFile, jpgFileLocation, true);
-                    Instance.GetDialog("Metadata Editor").Dialog.transform.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
-                    MetadataEditor.inst.currentLevelCover = cover;
-                }, errorFile =>
-                {
-                    Instance.DisplayNotification("Please resize your image to be less then or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error);
-                }));
+                    RTFile.CopyFile(jpgFile, jpgFileLocation);
+                    RTMetaDataEditor.inst.SetLevelCover(cover);
+                }, errorFile => Instance.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
             }
             return false;
         }
@@ -924,6 +920,8 @@ namespace BetterLegacy.Patchers
                 DG.Tweening.DOTween.KillAll(false);
                 DG.Tweening.DOTween.Clear(true);
                 Instance.loadedLevels.Clear();
+                if (RTEditor.inst)
+                    RTEditor.inst.LevelPanels.Clear();
                 GameData.Current = null;
                 GameData.Current = new GameData();
                 CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
@@ -1058,9 +1056,7 @@ namespace BetterLegacy.Patchers
         {
             bool flag = !__0.activeSelf;
             foreach (var gameObject in Instance.DropdownMenus)
-            {
                 RTEditor.inst.PlayDialogAnimation(gameObject, gameObject.name, false);
-            }
 
             RTEditor.inst.PlayDialogAnimation(__0, __0.name, flag);
 
@@ -1072,9 +1068,7 @@ namespace BetterLegacy.Patchers
         static bool HideAllDropdownsPrefix()
         {
             foreach (var gameObject in Instance.DropdownMenus)
-            {
                 RTEditor.inst.PlayDialogAnimation(gameObject, gameObject.name, false);
-            }
             EventSystem.current.SetSelectedGameObject(null);
             return false;
         }
@@ -1144,28 +1138,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenMetadataPrefix()
         {
-            var inst = Instance;
-
-            if (!inst.hasLoadedLevel)
-            {
-                inst.DisplayNotification("Load a level first before trying to upload!", 5f, EditorManager.NotificationType.Error);
-                return false;
-            }
-
-            inst.ClearDialogs();
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_JPG)}", x =>
-            {
-                var cover = SpriteHelper.CreateSprite(x);
-                inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
-                MetadataEditor.inst.currentLevelCover = cover;
-            }, onError =>
-            {
-                inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = LegacyPlugin.AtanPlaceholder;
-                MetadataEditor.inst.currentLevelCover = LegacyPlugin.AtanPlaceholder;
-            }));
-
-            MetadataEditor.inst.Render();
-            MetadataEditor.inst.OpenDialog();
+            RTMetaDataEditor.inst.OpenEditor();
             return false;
         }
 

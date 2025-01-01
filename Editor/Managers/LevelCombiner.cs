@@ -196,144 +196,10 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RenderDialog()
         {
-            var config = EditorConfig.Instance;
-
-            #region Clamping
-
-            var olfnm = config.OpenLevelFolderNameMax;
-            var olsnm = config.OpenLevelSongNameMax;
-            var olanm = config.OpenLevelArtistNameMax;
-            var olcnm = config.OpenLevelCreatorNameMax;
-            var oldem = config.OpenLevelDescriptionMax;
-            var oldam = config.OpenLevelDateMax;
-
-            int foldClamp = olfnm.Value < 3 ? olfnm.Value : (int)olfnm.DefaultValue;
-            int songClamp = olsnm.Value < 3 ? olsnm.Value : (int)olsnm.DefaultValue;
-            int artiClamp = olanm.Value < 3 ? olanm.Value : (int)olanm.DefaultValue;
-            int creaClamp = olcnm.Value < 3 ? olcnm.Value : (int)olcnm.DefaultValue;
-            int descClamp = oldem.Value < 3 ? oldem.Value : (int)oldem.DefaultValue;
-            int dateClamp = oldam.Value < 3 ? oldam.Value : (int)oldam.DefaultValue;
-
-            #endregion
-
             LSHelpers.DeleteChildren(editorDialogContent);
 
-            var horizontalOverflow = config.OpenLevelTextHorizontalWrap.Value;
-            var verticalOverflow = config.OpenLevelTextVerticalWrap.Value;
-            var fontSize = config.OpenLevelTextFontSize.Value;
-            var format = config.OpenLevelTextFormatting.Value;
-            var buttonHoverSize = config.OpenLevelButtonHoverSize.Value;
-
-            var iconPosition = config.OpenLevelCoverPosition.Value;
-            var iconScale = config.OpenLevelCoverScale.Value;
-            iconPosition.x += -75f;
-
-            string[] difficultyNames = new string[]
-            {
-                "easy",
-                "normal",
-                "hard",
-                "expert",
-                "expert+",
-                "master",
-                "animation",
-                "Unknown difficulty",
-            };
-
-            int num = 0;
-            foreach (var editorWrapper in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
-            {
-                if (editorWrapper.isFolder)
-                    continue;
-
-                var folder = editorWrapper.folder;
-                var metadata = editorWrapper.metadata;
-
-                DestroyImmediate(editorWrapper.CombinerGameObject);
-
-                var gameObjectBase = new GameObject($"Folder [{Path.GetFileName(editorWrapper.folder)}]");
-                gameObjectBase.transform.SetParent(editorDialogContent);
-                gameObjectBase.transform.localScale = Vector3.one;
-                var rectTransform = gameObjectBase.AddComponent<RectTransform>();
-
-                var image = gameObjectBase.AddComponent<Image>();
-
-                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Function_1, true);
-
-                rectTransform.sizeDelta = new Vector2(750f, 42f);
-
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(rectTransform, "Button");
-                UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(740f, 32f));
-                editorWrapper.CombinerGameObject = gameObjectBase;
-                var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-
-                var hoverUI = gameObject.AddComponent<HoverUI>();
-                hoverUI.size = buttonHoverSize;
-                hoverUI.animatePos = false;
-                hoverUI.animateSca = true;
-
-                folderButtonStorage.text.text = string.Format(format,
-                    LSText.ClampString(Path.GetFileName(editorWrapper.folder), foldClamp),
-                    LSText.ClampString(metadata.song.title, songClamp),
-                    LSText.ClampString(metadata.artist.Name, artiClamp),
-                    LSText.ClampString(metadata.creator.steam_name, creaClamp),
-                    metadata.song.difficulty,
-                    LSText.ClampString(metadata.song.description, descClamp),
-                    LSText.ClampString(metadata.beatmap.date_edited, dateClamp));
-
-                folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
-                folderButtonStorage.text.verticalOverflow = verticalOverflow;
-                folderButtonStorage.text.fontSize = fontSize;
-
-                var difficultyColor = metadata.song.difficulty >= 0 && metadata.song.difficulty < DataManager.inst.difficulties.Count ?
-                    DataManager.inst.difficulties[metadata.song.difficulty].color : LSColors.themeColors["none"].color;
-
-                gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
-                {
-                    desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title,
-                    hint = "</color>" + metadata.song.description
-                });
-
-                folderButtonStorage.button.onClick.AddListener(() =>
-                {
-                    editorWrapper.combinerSelected = !editorWrapper.combinerSelected;
-                    image.enabled = editorWrapper.combinerSelected;
-                });
-                image.enabled = editorWrapper.combinerSelected;
-
-                var icon = new GameObject("icon");
-                icon.transform.SetParent(gameObject.transform);
-                icon.transform.localScale = Vector3.one;
-                icon.layer = 5;
-                var iconRT = icon.AddComponent<RectTransform>();
-                icon.AddComponent<CanvasRenderer>();
-                var iconImage = icon.AddComponent<Image>();
-
-                iconRT.anchoredPosition = iconPosition;
-                iconRT.sizeDelta = iconScale;
-
-                iconImage.sprite = editorWrapper.albumArt ?? SteamWorkshop.inst.defaultSteamImageSprite;
-
-                EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorage.text);
-
-                string difficultyName = difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)];
-
-                editorWrapper.CombinerSetActive((RTFile.FileExists(folder + "/level.ogg") ||
-                    RTFile.FileExists(folder + "/level.wav") ||
-                    RTFile.FileExists(folder + "/level.mp3")) &&
-                    RTString.SearchString(searchTerm,
-                        Path.GetFileName(folder),
-                        metadata.song.title,
-                        metadata.artist.Name,
-                        metadata.creator.steam_name,
-                        metadata.song.description,
-                        difficultyName));
-
-                editorWrapper.CombinerGameObject.transform.SetSiblingIndex(num);
-
-                num++;
-            }
+            foreach (var editorWrapper in RTEditor.inst.LevelPanels)
+                editorWrapper.InitLevelCombiner();
 
             yield break;
         }
@@ -345,17 +211,17 @@ namespace BetterLegacy.Editor.Managers
             var combineList = new List<GameData>();
             var list = new List<string>();
             var paths = new List<string>();
-            var selected = EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper).Where(x => x.combinerSelected);
+            var selected = RTEditor.inst.LevelPanels.Where(x => x.combinerSelected);
 
             foreach (var editorWrapper in selected)
             {
-                var levelPath = RTFile.CombinePaths(editorWrapper.folder, Level.LEVEL_LSB);
+                var levelPath = RTFile.CombinePaths(editorWrapper.FolderPath, Level.LEVEL_LSB);
                 if (!RTFile.FileExists(levelPath))
                     continue;
 
-                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {Path.GetFileName(editorWrapper.folder)}");
+                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {Path.GetFileName(editorWrapper.FolderPath)}");
                 paths.Add(levelPath);
-                list.Add(Path.GetFileName(editorWrapper.folder));
+                list.Add(editorWrapper.Name);
                 combineList.Add(GameData.Parse(SimpleJSON.JSON.Parse(RTFile.ReadFromFile(levelPath))));
             }
 
