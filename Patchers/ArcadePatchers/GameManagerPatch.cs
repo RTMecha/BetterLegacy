@@ -301,12 +301,14 @@ namespace BetterLegacy.Patchers
                 if (introActive && __instance.introArtist.color != timelineColorToLerp)
                     __instance.introArtist.color = timelineColorToLerp;
             }
+
             if (__instance.guiImages.Length > 0)
                 foreach (var image in __instance.guiImages)
                     image.color = timelineColorToLerp;
 
-            if (!__instance.menuUI.activeInHierarchy)
+            if (!__instance.menuUI || !__instance.menuUI.activeInHierarchy)
                 return false;
+
             var componentsInChildren2 = __instance.menuUI.GetComponentsInChildren<TextMeshProUGUI>();
             for (int i = 0; i < componentsInChildren2.Length; i++)
                 componentsInChildren2[i].color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(bgColorToLerp));
