@@ -44,6 +44,7 @@
 ### Misc
 - Color picker rework. > 1.8.0
 - Multi language support.
+- Rework the level combiner into just a selection system.
 - Some kind of way to change the timing and length of the Game Timeline.
 - Add rank display to level buttons. (Idk why they don't have them already...)
 - Rework controller shake to be properly toggleable and have a separate variable.
@@ -75,6 +76,7 @@
 - Think about maybe replacing the Editor Popup Animation system with a fully customizable one where animations can be more in-depth.
 - Change the Settings menu to a dropdown to be more consistent with the other title bar buttons.
 - ApplyElement function that parses a JSON from the parameters and applies it to an element.
+- Prefab object multi editing.
 - Possible multi object editor rework???
 
 ### Internal
