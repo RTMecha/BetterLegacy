@@ -516,6 +516,8 @@ namespace BetterLegacy.Editor.Managers
 
         public Transform editorLevelContent;
 
+        public List<EditorPopup> editorPopups = new List<EditorPopup>();
+
         #region Dragging
 
         public float dragOffset = -1f;
@@ -2313,58 +2315,10 @@ namespace BetterLegacy.Editor.Managers
 
         public EditorPopup GeneratePopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
         {
-            var popupInstance = new EditorPopup();
-            popupInstance.Name = name;
-            var popup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(popups, name);
-            popupInstance.GameObject = popup;
-            popup.transform.localPosition = Vector3.zero;
-
-            var inSize = size == Vector2.zero ? new Vector2(600f, 450f) : size;
-            popup.transform.AsRT().anchoredPosition = defaultPosition;
-            popup.transform.AsRT().sizeDelta = inSize;
-            popupInstance.TopPanel = popup.transform.Find("Panel").AsRT();
-            popupInstance.TopPanel.sizeDelta = new Vector2(inSize.x + 32f, 32f);
-            var text = popupInstance.TopPanel.Find("Text").GetComponent<Text>();
-            text.text = title;
-
-            popup.transform.Find("search-box").AsRT().sizeDelta = new Vector2(inSize.x, 32f);
-            popupInstance.Grid = popup.transform.Find("mask/content").GetComponent<GridLayoutGroup>();
-            popupInstance.Grid.cellSize = new Vector2(inSize.x - 5f, 32f);
-            popup.transform.Find("Scrollbar").AsRT().sizeDelta = new Vector2(32f, inSize.y);
-
-            popupInstance.CloseButton = popupInstance.TopPanel.Find("x").GetComponent<Button>();
-            popupInstance.CloseButton.onClick.ClearAll();
-            popupInstance.CloseButton.onClick.AddListener(() =>
-            {
-                EditorManager.inst.HideDialog(name);
-                close?.Invoke();
-            });
-
-            popupInstance.SearchField = popup.transform.Find("search-box/search").GetComponent<InputField>();
-            popupInstance.SearchField.onValueChanged.ClearAll();
-            popupInstance.SearchField.onValueChanged.AddListener(_val => refreshSearch?.Invoke(_val));
-            popupInstance.SearchField.GetPlaceholderText().text = placeholderText;
-            popupInstance.Content = popup.transform.Find("mask/content");
-
-            EditorHelper.AddEditorPopup(name, popup);
-
-            EditorThemeManager.AddGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
-
-            EditorThemeManager.AddGraphic(popupInstance.TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-
-            EditorThemeManager.AddSelectable(popupInstance.CloseButton, ThemeGroup.Close);
-
-            EditorThemeManager.AddGraphic(popupInstance.CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-
-            EditorThemeManager.AddLightText(text);
-
-            var scrollbar = popup.transform.Find("Scrollbar").GetComponent<Scrollbar>();
-            scrollbar.value = 1f;
-            EditorThemeManager.AddScrollbar(scrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
-
-            EditorThemeManager.AddInputField(popup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
-
-            return popupInstance;
+            var editorPopup = new EditorPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
+            editorPopup.Init();
+            editorPopups.Add(editorPopup);
+            return editorPopup;
         }
 
         void SetupTimelineBar()
@@ -2675,53 +2629,51 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelineTriggers()
         {
-            var tltrig = EditorManager.inst.timeline.GetComponent<EventTrigger>();
+            TriggerHelper.AddEventTriggers(EditorManager.inst.timeline,
+                TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => isOverMainTimeline = true),
+                TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => isOverMainTimeline = false),
+                TriggerHelper.StartDragTrigger(),
+                TriggerHelper.DragTrigger(),
+                TriggerHelper.EndDragTrigger(),
+                TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+                {
+                    if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
+                        return;
 
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverMainTimeline = true; }));
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverMainTimeline = false; }));
-            tltrig.triggers.Add(TriggerHelper.StartDragTrigger());
-            tltrig.triggers.Add(TriggerHelper.DragTrigger());
-            tltrig.triggers.Add(TriggerHelper.EndDragTrigger());
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
-            {
-                if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
-                    return;
+                    ShowContextMenu(300f,
+                        new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
+                        new ButtonFunction("Update Everything", () =>
+                        {
+                            BackgroundManager.inst.UpdateBackgrounds();
+                            EventManager.inst.updateEvents();
+                            Updater.UpdateObjects();
+                        }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Cut", () =>
+                        {
+                            ObjEditor.inst.CopyObject();
+                            CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                        }),
+                        new ButtonFunction("Copy", ObjEditor.inst.CopyObject),
+                        new ButtonFunction("Paste", () => ObjectEditor.inst.PasteObject()),
+                        new ButtonFunction("Duplicate", () =>
+                        {
+                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
 
-                ShowContextMenu(300f,
-                    new ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
-                    new ButtonFunction("Update Everything", () =>
-                    {
-                        BackgroundManager.inst.UpdateBackgrounds();
-                        EventManager.inst.updateEvents();
-                        Updater.UpdateObjects();
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Cut", () =>
-                    {
-                        ObjEditor.inst.CopyObject();
-                        CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
-                    }),
-                    new ButtonFunction("Copy", ObjEditor.inst.CopyObject),
-                    new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
-                    new ButtonFunction("Duplicate", () =>
-                    {
-                        var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.PasteObject(offsetTime);
+                        }),
+                        new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
+                        new ButtonFunction("Duplicate (Keep Prefab)", () =>
+                        {
+                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
 
-                        ObjEditor.inst.CopyObject();
-                        ObjectEditor.inst.PasteObject(offsetTime);
-                    }),
-                    new ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
-                    new ButtonFunction("Duplicate (Keep Prefab)", () =>
-                    {
-                        var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
-
-                        ObjEditor.inst.CopyObject();
-                        ObjectEditor.inst.PasteObject(offsetTime, false);
-                    }),
-                    new ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); })
-                    );
-
-            }));
+                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.PasteObject(offsetTime, false);
+                        }),
+                        new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start)
+                        );
+                }));
 
             for (int i = 0; i < EventEditor.inst.EventHolders.transform.childCount - 1; i++)
             {
@@ -2737,26 +2689,18 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
-                    var layer = Layer + 1;
-                    int max = RTEventEditor.EVENT_LIMIT * layer;
-                    int min = max - RTEventEditor.EVENT_LIMIT;
-                    var currentEvent = min + type;
+                    var currentEvent = (RTEventEditor.EVENT_LIMIT * (Layer + 1)) - RTEventEditor.EVENT_LIMIT + type;
 
-                    CoreHelper.Log($"EventHolder: {type}\nMax: {max}\nMin: {min}\nCurrent Event: {currentEvent}");
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    switch (pointerEventData.button)
                     {
-                        if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
-                            RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
-                    }
-                    if (pointerEventData.button == PointerEventData.InputButton.Middle)
-                    {
-                        if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
-                        {
-                            var index = GameData.Current.eventObjects.allEvents[currentEvent].FindLastIndex(x => x.eventTime < RTEditor.inst.GetTimelineTime());
-
-                            if (index >= 0)
+                        case PointerEventData.InputButton.Right:
+                                if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
+                                    RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
+                                break;
+                        case PointerEventData.InputButton.Middle:
+                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent) && GameData.Current.eventObjects.allEvents[currentEvent].TryFindLastIndex(x => x.eventTime < GetTimelineTime(), out int index))
                                 RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
-                        }
+                            break;
                     }
                 }));
             }
@@ -2819,39 +2763,39 @@ namespace BetterLegacy.Editor.Managers
             var persistent = dialog.Find("persistent").gameObject.GetComponent<Button>();
             dialog.Find("persistent/text").gameObject.GetComponent<Text>().text = "No Autokill";
             persistent.onClick.ClearAll();
-            persistent.onClick.AddListener(() => { ObjectEditor.inst.CreateNewNoAutokillObject(); });
+            persistent.onClick.AddListener(() => ObjectEditor.inst.CreateNewNoAutokillObject());
 
             var empty = dialog.Find("empty").gameObject.GetComponent<Button>();
             empty.onClick.ClearAll();
-            empty.onClick.AddListener(() => { ObjectEditor.inst.CreateNewEmptyObject(); });
+            empty.onClick.AddListener(() => ObjectEditor.inst.CreateNewEmptyObject());
 
             var decoration = dialog.Find("decoration").gameObject.GetComponent<Button>();
             decoration.onClick.ClearAll();
-            decoration.onClick.AddListener(() => { ObjectEditor.inst.CreateNewDecorationObject(); });
+            decoration.onClick.AddListener(() => ObjectEditor.inst.CreateNewDecorationObject());
 
             var helper = dialog.Find("helper").gameObject.GetComponent<Button>();
             helper.onClick.ClearAll();
-            helper.onClick.AddListener(() => { ObjectEditor.inst.CreateNewHelperObject(); });
+            helper.onClick.AddListener(() => ObjectEditor.inst.CreateNewHelperObject());
 
             var normal = dialog.Find("normal").gameObject.GetComponent<Button>();
             normal.onClick.ClearAll();
-            normal.onClick.AddListener(() => { ObjectEditor.inst.CreateNewNormalObject(); });
+            normal.onClick.AddListener(() => ObjectEditor.inst.CreateNewNormalObject());
 
             var circle = dialog.Find("shapes/circle").gameObject.GetComponent<Button>();
             circle.onClick.ClearAll();
-            circle.onClick.AddListener(() => { ObjectEditor.inst.CreateNewCircleObject(); });
+            circle.onClick.AddListener(() => ObjectEditor.inst.CreateNewCircleObject());
 
             var triangle = dialog.Find("shapes/triangle").gameObject.GetComponent<Button>();
             triangle.onClick.ClearAll();
-            triangle.onClick.AddListener(() => { ObjectEditor.inst.CreateNewTriangleObject(); });
+            triangle.onClick.AddListener(() => ObjectEditor.inst.CreateNewTriangleObject());
 
             var text = dialog.Find("shapes/text").gameObject.GetComponent<Button>();
             text.onClick.ClearAll();
-            text.onClick.AddListener(() => { ObjectEditor.inst.CreateNewTextObject(); });
+            text.onClick.AddListener(() => ObjectEditor.inst.CreateNewTextObject());
 
             var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
             hexagon.onClick.ClearAll();
-            hexagon.onClick.AddListener(() => { ObjectEditor.inst.CreateNewHexagonObject(); });
+            hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
 
             objectTemplatePopup = GeneratePopup("Object Templates Popup", "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
         }
@@ -2980,15 +2924,11 @@ namespace BetterLegacy.Editor.Managers
         {
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(objectTemplatePopup.Content, "Function");
 
-            gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = name,
-                hint = hint
-            });
+            gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(() => { action?.Invoke(); });
+            button.onClick.AddListener(() => action?.Invoke());
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             var text = gameObject.transform.GetChild(0).GetComponent<Text>();
@@ -3324,10 +3264,13 @@ namespace BetterLegacy.Editor.Managers
             fileInfoPopup.transform.AsRT().sizeDelta = new Vector2(500f, 320f);
         }
 
+        public EditorPopup openLevelPopup;
+
         void SetupPaths()
         {
-            var sortList = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
-                .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog);
+            var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
+
+            var sortList = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").Duplicate(openFilePopup);
 
             levelOrderDropdown = sortList.GetComponent<Dropdown>();
             EditorThemeManager.AddDropdown(levelOrderDropdown);
@@ -3362,8 +3305,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(sortList, Complexity.Normal);
 
-            var checkDes = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle")
-                .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog);
+            var checkDes = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle").Duplicate(openFilePopup);
 
             var checkDesRT = checkDes.GetComponent<RectTransform>();
             checkDesRT.anchoredPosition = config.OpenLevelTogglePosition.Value;
@@ -3386,7 +3328,7 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AddHoverTooltip(levelAscendToggle.gameObject, new List<HoverTooltip.Tooltip> { sortListTip.tooltipLangauges[0] });
             EditorHelper.SetComplexity(checkDes, Complexity.Normal);
 
-            var contextClickable = EditorManager.inst.GetDialog("Open File Popup").Dialog.gameObject.AddComponent<ContextClickable>();
+            var contextClickable = openFilePopup.gameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = eventData =>
             {
                 if (eventData.button != PointerEventData.InputButton.Right)
@@ -3404,7 +3346,7 @@ namespace BetterLegacy.Editor.Managers
 
             #region Level Path
 
-            var levelPathGameObject = defaultIF.Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "editor path");
+            var levelPathGameObject = defaultIF.Duplicate(openFilePopup, "editor path");
             ((RectTransform)levelPathGameObject.transform).anchoredPosition = config.OpenLevelEditorPathPos.Value;
             ((RectTransform)levelPathGameObject.transform).sizeDelta = new Vector2(config.OpenLevelEditorPathLength.Value, 32f);
 
@@ -3423,8 +3365,8 @@ namespace BetterLegacy.Editor.Managers
             editorPathField.textComponent.alignment = TextAnchor.MiddleLeft;
             editorPathField.textComponent.fontSize = 16;
             editorPathField.text = EditorPath;
-            editorPathField.onValueChanged.AddListener(_val => { EditorPath = _val; });
-            editorPathField.onEndEdit.AddListener(_val => { UpdateEditorPath(false); });
+            editorPathField.onValueChanged.AddListener(_val => EditorPath = _val);
+            editorPathField.onEndEdit.AddListener(_val => UpdateEditorPath(false));
 
             EditorThemeManager.AddInputField(editorPathField);
 
@@ -3469,7 +3411,7 @@ namespace BetterLegacy.Editor.Managers
 
             var levelListReloaderButton = levelListReloader.GetComponent<Button>();
             levelListReloaderButton.onClick.ClearAll();
-            levelListReloaderButton.onClick.AddListener(() => { UpdateEditorPath(true); });
+            levelListReloaderButton.onClick.AddListener(() => UpdateEditorPath(true));
 
             EditorThemeManager.AddSelectable(levelListReloaderButton, ThemeGroup.Function_2, false);
 
@@ -3500,8 +3442,8 @@ namespace BetterLegacy.Editor.Managers
             themePathField.textComponent.alignment = TextAnchor.MiddleLeft;
             themePathField.textComponent.fontSize = 16;
             themePathField.text = ThemePath;
-            themePathField.onValueChanged.AddListener(_val => { ThemePath = _val; });
-            themePathField.onEndEdit.AddListener(_val => { UpdateThemePath(false); });
+            themePathField.onValueChanged.AddListener(_val => ThemePath = _val);
+            themePathField.onEndEdit.AddListener(_val => UpdateThemePath(false));
 
             EditorThemeManager.AddInputField(themePathField);
 
@@ -3546,7 +3488,7 @@ namespace BetterLegacy.Editor.Managers
 
             var themeListReloadButton = themeListReload.GetComponent<Button>();
             themeListReloadButton.onClick.ClearAll();
-            themeListReloadButton.onClick.AddListener(() => { UpdateThemePath(true); });
+            themeListReloadButton.onClick.AddListener(() => UpdateThemePath(true));
 
             EditorThemeManager.AddSelectable(themeListReloadButton, ThemeGroup.Function_2, false);
 
@@ -3573,7 +3515,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             themePageStorage.leftGreaterButton.onClick.ClearAll();
-            themePageStorage.leftGreaterButton.onClick.AddListener(() => { themePageStorage.inputField.text = "0"; });
+            themePageStorage.leftGreaterButton.onClick.AddListener(() => themePageStorage.inputField.text = "0");
 
             themePageStorage.leftButton.onClick.ClearAll();
             themePageStorage.leftButton.onClick.AddListener(() =>
@@ -3590,10 +3532,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             themePageStorage.rightGreaterButton.onClick.ClearAll();
-            themePageStorage.rightGreaterButton.onClick.AddListener(() =>
-            {
-                themePageStorage.inputField.text = (RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
-            });
+            themePageStorage.rightGreaterButton.onClick.AddListener(() => themePageStorage.inputField.text = (RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
 
             Destroy(themePageStorage.middleButton.gameObject);
 
@@ -3626,8 +3565,8 @@ namespace BetterLegacy.Editor.Managers
             prefabPathField.textComponent.alignment = TextAnchor.MiddleLeft;
             prefabPathField.textComponent.fontSize = 16;
             prefabPathField.text = PrefabPath;
-            prefabPathField.onValueChanged.AddListener(_val => { PrefabPath = _val; });
-            prefabPathField.onEndEdit.AddListener(_val => { UpdatePrefabPath(false); });
+            prefabPathField.onValueChanged.AddListener(_val => PrefabPath = _val);
+            prefabPathField.onEndEdit.AddListener(_val => UpdatePrefabPath(false));
 
             EditorThemeManager.AddInputField(prefabPathField);
 
@@ -3673,13 +3612,23 @@ namespace BetterLegacy.Editor.Managers
 
             var prefabListReloadButton = prefabListReload.GetComponent<Button>();
             prefabListReloadButton.onClick.ClearAll();
-            prefabListReloadButton.onClick.AddListener(() => { UpdatePrefabPath(true); } );
+            prefabListReloadButton.onClick.AddListener(() => UpdatePrefabPath(true));
 
             EditorThemeManager.AddSelectable(prefabListReloadButton, ThemeGroup.Function_2, false);
 
             prefabListReloadButton.image.sprite = ReloadSprite;
 
             #endregion
+
+            try
+            {
+                openLevelPopup = EditorPopup.FromGameObject("Open File Popup", openFilePopup.gameObject);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+                openLevelPopup = null;
+            }
         }
 
         void SetupFileBrowser()

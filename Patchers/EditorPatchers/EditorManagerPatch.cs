@@ -309,7 +309,7 @@ namespace BetterLegacy.Patchers
             Instance.ScreenScale = Screen.width / 1920f;
             Instance.ScreenScaleInverse = 1f / Instance.ScreenScale;
 
-            if (GameManager.inst.gameState == GameManager.State.Playing)
+            if (CoreHelper.Playing)
             {
                 if (Instance.canEdit)
                 {
@@ -1162,6 +1162,22 @@ namespace BetterLegacy.Patchers
                 callback?.Invoke(_texture);
             }, error => { onError?.Invoke(_path); }));
             yield break;
+        }
+
+        [HarmonyPatch(nameof(EditorManager.RefreshDialogDictionary))]
+        [HarmonyPrefix]
+        static bool RefreshDialogDictionary()
+        {
+            foreach (var dialog in Instance.EditorDialogs)
+            {
+                Instance.EditorDialogsDictionary[dialog.Name] = dialog;
+
+                if (dialog.Type == EditorManager.EditorDialog.DialogType.Timeline)
+                    continue;
+
+                TriggerHelper.AddEventTriggers(dialog.Dialog.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => Instance.SetDialogStatus(dialog.Name, dialog.Dialog.gameObject.activeSelf, true)));
+            }
+            return false;
         }
 
         [HarmonyPatch(nameof(EditorManager.SetMainTimelineZoom))]
