@@ -383,12 +383,12 @@ namespace BetterLegacy.Core.Helpers
         }
 
         public static bool currentlyLoading = false;
-        public static IEnumerator GetLevelList()
+        public static IEnumerator GetLevelList(Action onLoadingEnd = null)
         {
             float delay = 0f;
             if (currentlyLoading)
             {
-                LoadLevelsManager.inst?.End();
+                onLoadingEnd?.Invoke();
                 yield break;
             }
 
@@ -405,7 +405,7 @@ namespace BetterLegacy.Core.Helpers
 
             var directories = Directory.GetDirectories(levelsDirectory, "*", SearchOption.TopDirectoryOnly);
 
-            if (LoadLevelsManager.inst != null)
+            if (LoadLevelsManager.inst)
                 LoadLevelsManager.totalLevelCount = directories.Length;
 
             LevelManager.Levels.Clear();
@@ -427,6 +427,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     SceneHelper.LoadInputSelect();
                     currentlyLoading = false;
+                    LevelManager.ClearData();
                     yield break;
                 }
 
@@ -507,7 +508,10 @@ namespace BetterLegacy.Core.Helpers
                 }));
 
                 if (!currentlyLoading)
+                {
+                    onLoadingEnd?.Invoke();
                     yield break;
+                }
 
                 CoreHelper.Log($"Finished loading Steam levels at {sw.Elapsed}");
             }
@@ -536,7 +540,8 @@ namespace BetterLegacy.Core.Helpers
 
             currentlyLoading = false;
 
-            LoadLevelsManager.inst?.End();
+            onLoadingEnd?.Invoke();
+
             yield break;
         }
 

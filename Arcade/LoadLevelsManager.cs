@@ -158,7 +158,7 @@ namespace BetterLegacy.Arcade
 
             ((Image)loader["Image"]).color = new Color(0.14f, 0.14f, 0.14f, 1f);
 
-            StartCoroutine(ArcadeHelper.GetLevelList());
+            StartCoroutine(ArcadeHelper.GetLevelList(End));
 
             yield break;
         }
