@@ -9002,8 +9002,6 @@ namespace BetterLegacy.Editor.Managers
             if (!editorLevelContent)
                 editorLevelContent = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask/content");
 
-            var close = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("Panel/x");
-
             LSHelpers.DeleteChildren(editorLevelContent);
 
             var list = new List<Coroutine>();
@@ -9056,7 +9054,6 @@ namespace BetterLegacy.Editor.Managers
             foreach (var file in files)
             {
                 var path = RTFile.ReplaceSlash(file);
-                var name = Path.GetFileName(path);
 
                 var levelPanel = new LevelPanel();
 
