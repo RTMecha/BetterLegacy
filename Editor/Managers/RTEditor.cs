@@ -3759,9 +3759,10 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelinePreview()
         {
-            GameManager.inst.playerGUI.transform.Find("Interface").gameObject.SetActive(false); // Set the Interface inactive so the duplicate doesn't get in the way of the editor.
+            if (GameManager.inst.playerGUI.transform.TryFind("Interface", out Transform ic))
+                Destroy(ic.gameObject); // Destroys the Interface so the duplicate doesn't get in the way of the editor.
+
             var gui = GameManager.inst.playerGUI.Duplicate(EditorManager.inst.dialogs.parent);
-            GameManager.inst.playerGUI.transform.Find("Interface").gameObject.SetActive(true);
             gui.transform.SetSiblingIndex(0);
 
             Destroy(gui.transform.Find("Health").gameObject);

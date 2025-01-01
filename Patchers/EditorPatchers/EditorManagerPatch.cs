@@ -87,15 +87,11 @@ namespace BetterLegacy.Patchers
 
             RTEditor.EasingDropdowns = easingDropdowns;
 
-            if (Updater.levelProcessor)
-            {
-                Updater.levelProcessor.Dispose();
-                Updater.levelProcessor = null;
-            }
+            Updater.OnLevelEnd();
 
-            Menus.InterfaceManager.inst.StopMusic();
-            Menus.InterfaceManager.inst.CloseMenus();
-            Menus.InterfaceManager.inst.Clear();
+            InterfaceManager.inst.StopMusic();
+            InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
             if (ExampleManager.inst)
                 ExampleManager.inst.SetActive(true); // if Example was disabled
@@ -218,19 +214,20 @@ namespace BetterLegacy.Patchers
             levelButtonPrefabStorage.text = levelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
             __instance.folderButtonPrefab = levelButtonPrefab;
 
-            RTEditor.Init(__instance);
+            // New Level Name input field contains text but newLevelName does not, so people might end up making an empty named level if they don't name it anything else.
+            __instance.newLevelName = "New Awesome Beatmap";
 
             try
             {
-                GameManager.inst.playerGUI.transform.Find("Interface").gameObject.SetActive(false);
+                if (GameManager.inst.playerGUI.transform.TryFind("Interface", out Transform ic))
+                    CoreHelper.Destroy(ic.gameObject);
             }
             catch (Exception ex)
             {
-                CoreHelper.LogError($"Could not set interface inactive.\n{ex}");
+                CoreHelper.LogError($"Could not destroy the interface.\n{ex}");
             }
 
-            // New Level Name input field contains text but newLevelName does not, so people might end up making an empty named level if they don't name it anything else.
-            __instance.newLevelName = "New Awesome Beatmap";
+            RTEditor.Init(__instance);
 
             __instance.hasLoadedLevel = false;
             __instance.loading = false;
