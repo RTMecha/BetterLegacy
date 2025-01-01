@@ -256,8 +256,7 @@ namespace BetterLegacy.Editor.Data
             if (!string.IsNullOrEmpty(Theme.filePath))
                 FilePath = RTFile.ReplaceSlash(Theme.filePath);
 
-            for (int j = 0; j < Colors.Count; j++)
-                Colors[j].color = Theme.GetObjColor(j);
+            RenderColors();
 
             UseButton.onClick.ClearAll();
             UseButton.onClick.AddListener(() =>
@@ -377,6 +376,35 @@ namespace BetterLegacy.Editor.Data
         public void RenderName(string name) => Name.text = name;
 
         /// <summary>
+        /// Renders the theme panel colors.
+        /// </summary>
+        public void RenderColors()
+        {
+            for (int j = 0; j < Colors.Count; j++)
+                Colors[j].color = Theme.GetObjColor(j);
+        }
+
+        /// <summary>
+        /// Renders a color of the theme panel.
+        /// </summary>
+        /// <param name="i">Color index.</param>
+        public void RenderColor(int i) => RenderColor(i, Theme.GetObjColor(i));
+
+        /// <summary>
+        /// Renders a color of the theme panel.
+        /// </summary>
+        /// <param name="i">Color index.</param>
+        /// <param name="color">Color to set.</param>
+        public void RenderColor(int i, Color color) => GetColorSlot(i).color = color;
+
+        /// <summary>
+        /// Gets an image from the theme panel.
+        /// </summary>
+        /// <param name="i">Index of the color slot.</param>
+        /// <returns>Returns an image representing a color slot.</returns>
+        public Image GetColorSlot(int i) => Colors[Mathf.Clamp(i, 0, Colors.Count - 1)];
+
+        /// <summary>
         /// Sets the theme panel active state.
         /// </summary>
         /// <param name="active">Active state to set.</param>
@@ -385,6 +413,8 @@ namespace BetterLegacy.Editor.Data
             if (GameObject)
                 GameObject.SetActive(active);
         }
+
+        public override string ToString() => isFolder ? Path.GetFileName(FilePath) : Theme?.ToString();
 
         #endregion
     }
