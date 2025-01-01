@@ -926,8 +926,7 @@ namespace BetterLegacy.Patchers
                 Instance.loadedLevels.Clear();
                 GameData.Current = null;
                 GameData.Current = new GameData();
-                DiscordController.inst.OnIconChange("");
-                DiscordController.inst.OnStateChange("");
+                CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
                 Debug.Log($"{Instance.className}Quit to Main Menu");
                 InputDataManager.inst.players.Clear();
                 SceneHelper.LoadScene(SceneName.Main_Menu);
@@ -954,8 +953,7 @@ namespace BetterLegacy.Patchers
                     return;
                 }
 
-                DiscordController.inst.OnIconChange("");
-                DiscordController.inst.OnStateChange("");
+                CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
                 Debug.Log($"{Instance.className}Quit Game");
                 Application.Quit();
             }, RTEditor.inst.HideWarningPopup);
