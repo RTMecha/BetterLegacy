@@ -219,6 +219,17 @@ namespace BetterLegacy.Core.Helpers
                 Destroy(objects[i], instant, t);
         }
 
+        /// <summary>
+        /// Sets the game object active / inactive.
+        /// </summary>
+        /// <param name="gameObject">Game object to set the active state of.</param>
+        /// <param name="active">Active state to set.</param>
+        public static void SetGameObjectActive(GameObject gameObject, bool active)
+        {
+            if (gameObject)
+                gameObject.SetActive(active);
+        }
+
         public static IEnumerator FixUIText()
         {
             var texts = Resources.FindObjectsOfTypeAll<Text>();
