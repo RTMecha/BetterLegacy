@@ -1,3 +1,15 @@
+snapshot-2025.1.1 - (pre-1.7.0) > [Jan 3, 2025]
+- First snapshot of the new year! I really hope to get this update done soon...
+- Fixed SS rank shine not working in some cases.
+- Added rank display to level buttons in the Arcade menus.
+- Changed Difficulty mode in the Pause menu to Challenge mode.
+- Player data now updates its level name.
+- Fixed the interface Dark theme not being great.
+- Hopefully fixed editor crash by clearing levels list from the arcade when loading the editor.
+- Fixed objects appearing behind others when created.
+- Reworked some Project Planner code.
+- Made levels in the editor consistent with other editor data and also use the same level system as the arcade.
+- Modifiers are now collapse-able in the editor.
 snapshot-2024.12.7 - (pre-1.7.0) > [Dec 30, 2024]
 - Scene loading screen now uses the current interface theme instead of the old interface colors.
 - Arcade level player data now saves in a non-encrypted arcade_saves.lss file. Since BetterLegacy doesn't have leaderboards (and likely never will), the encryption wasn't necessary.
