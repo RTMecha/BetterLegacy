@@ -9,7 +9,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Name of the modifier.
         /// </summary>
-        public string Name => commands != null && commands.Count > 0 ? commands[0] : "Null";
+        public string Name => commands != null && commands.Count > 0 ? commands[0] : "Invalid Modifier";
 
         /// <summary>
         /// Function type.
@@ -32,6 +32,11 @@ namespace BetterLegacy.Core.Data
         /// If the modifier group functions should only target objects in the prefab the object was spawned from, if it is from a prefab.
         /// </summary>
         public bool prefabInstanceOnly = false;
+
+        /// <summary>
+        /// If the modifier should be collapsed in the editor.
+        /// </summary>
+        public bool collapse;
 
         /// <summary>
         /// Function type of the modifier.
@@ -141,6 +146,14 @@ namespace BetterLegacy.Core.Data
                 return defaultValue;
 
             return GetValue(index);
+        }
+
+        public void SetValue(int index, string value)
+        {
+            if (index == 0)
+                this.value = value;
+            else if (index < commands.Count)
+                commands[index] = value;
         }
 
         #endregion

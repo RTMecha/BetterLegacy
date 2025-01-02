@@ -45,6 +45,7 @@ namespace BetterLegacy.Core.Data
             elseIf = orig.elseIf,
             constant = orig.constant,
             prefabInstanceOnly = orig.prefabInstanceOnly,
+            collapse = orig.collapse,
         };
 
         public static Modifier<T> Parse(JSONNode jn, T reference = default)
@@ -83,6 +84,8 @@ namespace BetterLegacy.Core.Data
 
             modifier.value = string.IsNullOrEmpty(jn["value"]) ? "" : jn["value"];
 
+            modifier.collapse = jn["collapse"].AsBool;
+
             return modifier;
         }
 
@@ -93,20 +96,23 @@ namespace BetterLegacy.Core.Data
             jn["type"] = (int)type;
 
             if (not)
-                jn["not"] = not.ToString();
+                jn["not"] = not;
 
             if (elseIf)
-                jn["else"] = elseIf.ToString();
+                jn["else"] = elseIf;
 
             for (int i = 0; i < commands.Count; i++)
                 jn["commands"][i] = commands[i];
 
             jn["value"] = value;
 
-            jn["const"] = constant.ToString();
+            jn["const"] = constant;
 
             if (prefabInstanceOnly)
-                jn["po"] = prefabInstanceOnly.ToString();
+                jn["po"] = prefabInstanceOnly;
+
+            if (collapse)
+                jn["collapse"] = collapse;
 
             return jn;
         }
