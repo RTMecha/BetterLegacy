@@ -106,7 +106,7 @@ namespace BetterLegacy.Patchers
 
             var openFilePopupClose = openFilePopupPanel.transform.Find("x").gameObject;
             var openFilePopupCloseButton = openFilePopupClose.GetComponent<Button>();
-            openFilePopupCloseButton.onClick.AddListener(() => { RTEditor.inst.choosingLevelTemplate = false; });
+            openFilePopupCloseButton.onClick.AddListener(() => LevelTemplateEditor.inst.choosingLevelTemplate = false);
             EditorThemeManager.AddSelectable(openFilePopupCloseButton, ThemeGroup.Close);
 
             EditorThemeManager.AddGraphic(openFilePopupClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
@@ -793,7 +793,7 @@ namespace BetterLegacy.Patchers
             if (Instance.openFileSearch == null)
                 Instance.openFileSearch = "";
 
-            RTEditor.inst.choosingLevelTemplate = false;
+            LevelTemplateEditor.inst.choosingLevelTemplate = false;
             component.text = Instance.openFileSearch;
             Instance.ClearDialogs(EditorManager.EditorDialog.DialogType.Popup);
             Instance.RenderOpenBeatmapPopup();

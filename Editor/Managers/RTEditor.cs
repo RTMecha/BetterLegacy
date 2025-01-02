@@ -701,18 +701,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region New level creator
 
-        public bool choosingLevelTemplate;
-        public int currentLevelTemplate = -1;
-
-        public Transform newLevelTemplateContent;
-        public GameObject newLevelTemplatePrefab;
-        public Sprite newLevelTemplateBaseSprite;
-        public InputField nameInput;
-        public Sprite currentTemplateSprite;
-
         public bool fromNewLevel;
-
-        public List<string> NewLevelTemplates { get; set; } = new List<string>();
 
         #endregion
 
@@ -3835,10 +3824,10 @@ namespace BetterLegacy.Editor.Managers
                 if (_val)
                     return;
 
-                if (choosingLevelTemplate)
+                if (LevelTemplateEditor.inst.choosingLevelTemplate)
                     EditorManager.inst.HideDialog("Open File Popup");
 
-                choosingLevelTemplate = false;
+                LevelTemplateEditor.inst.choosingLevelTemplate = false;
                 EditorManager.inst.HideDialog("New Level Template Dialog");
             };
 
@@ -3911,7 +3900,7 @@ namespace BetterLegacy.Editor.Managers
             chooseTemplateButton.onClick.ClearAll();
             chooseTemplateButton.onClick.AddListener(() =>
             {
-                RefreshNewLevelTemplates();
+                LevelTemplateEditor.inst.RefreshNewLevelTemplates();
                 EditorManager.inst.ShowDialog("New Level Template Dialog");
             });
             chooseTemplate.transform.AsRT().sizeDelta = new Vector2(384f, 32f);
@@ -3959,191 +3948,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(create.transform.Find("text").GetComponent<Text>(), ThemeGroup.Add_Text);
 
-            CreateNewLevelTemplateDialog();
-        }
-
-        void CreateNewLevelTemplateDialog()
-        {
-            var editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
-            var editorDialogTransform = editorDialogObject.transform;
-            editorDialogObject.name = "NewLevelTemplateDialog";
-            editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs").transform);
-            editorDialogTransform.localScale = Vector3.one;
-            editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
-
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
-
-            var editorDialogTitle = editorDialogTransform.GetChild(0);
-            var editorDialogTitleImage = editorDialogTitle.GetComponent<Image>();
-            var editorDialogTitleText = editorDialogTitle.GetChild(0).GetComponent<Text>();
-            editorDialogTitleText.text = "- New Level Template -";
-
-            EditorThemeManager.AddGraphic(editorDialogTitleImage, ThemeGroup.Add);
-            EditorThemeManager.AddGraphic(editorDialogTitleText, ThemeGroup.Add_Text);
-
-            var editorDialogSpacer = editorDialogTransform.GetChild(1);
-            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
-
-            Destroy(editorDialogTransform.GetChild(2).gameObject);
-
-            EditorHelper.AddEditorDialog("New Level Template Dialog", editorDialogObject);
-
-            var scrollView = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View"));
-            newLevelTemplateContent = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.SetParent(editorDialogTransform);
-            scrollView.transform.localScale = Vector3.one;
-            scrollView.name = "Scroll View";
-
-            LSHelpers.DeleteChildren(newLevelTemplateContent);
-
-            var scrollViewLE = scrollView.AddComponent<LayoutElement>();
-            scrollViewLE.ignoreLayout = true;
-
-            scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 280f);
-            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 542f);
-
-            newLevelTemplatePrefab = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "Template");
-
-            newLevelTemplatePrefab.transform.AsRT().sizeDelta = new Vector2(734f, 200f);
-
-            var newLevelTemplatePrefabPreviewBase = new GameObject("Preview Base");
-            newLevelTemplatePrefabPreviewBase.transform.SetParent(newLevelTemplatePrefab.transform);
-            newLevelTemplatePrefabPreviewBase.transform.localScale = Vector3.one;
-            var newLevelTemplatePrefabPreviewBaseRT = newLevelTemplatePrefabPreviewBase.AddComponent<RectTransform>();
-            var newLevelTemplatePrefabPreviewBaseImage = newLevelTemplatePrefabPreviewBase.AddComponent<Image>();
-            var newLevelTemplatePrefabPreviewBaseMask = newLevelTemplatePrefabPreviewBase.AddComponent<Mask>();
-            newLevelTemplatePrefabPreviewBaseMask.showMaskGraphic = false;
-
-            newLevelTemplatePrefabPreviewBaseRT.anchoredPosition = new Vector2(-200f, 0f);
-            newLevelTemplatePrefabPreviewBaseRT.sizeDelta = new Vector2(312f, 175.5f);
-
-            var newLevelTemplatePrefabPreview = new GameObject("Preview");
-            newLevelTemplatePrefabPreview.transform.SetParent(newLevelTemplatePrefabPreviewBaseRT);
-            newLevelTemplatePrefabPreview.transform.localScale = Vector3.one;
-            var newLevelTemplatePrefabPreviewRT = newLevelTemplatePrefabPreview.AddComponent<RectTransform>();
-            var newLevelTemplatePrefabPreviewImage = newLevelTemplatePrefabPreview.AddComponent<Image>();
-
-            newLevelTemplatePrefabPreviewRT.anchoredPosition = Vector2.zero;
-            newLevelTemplatePrefabPreviewRT.anchorMax = Vector2.one;
-            newLevelTemplatePrefabPreviewRT.anchorMin = Vector2.zero;
-            newLevelTemplatePrefabPreviewRT.sizeDelta = Vector2.zero;
-
-            var newLevelTemplatePrefabTitle = newLevelTemplatePrefab.transform.GetChild(0);
-            newLevelTemplatePrefabTitle.name = "Title";
-            newLevelTemplatePrefabTitle.AsRT().anchoredPosition = new Vector2(350f, 0f);
-            newLevelTemplatePrefabTitle.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-            var noLevel = newLevelTemplatePrefabTitle.gameObject.Duplicate(newLevelTemplatePrefab.transform, "No Preview");
-            noLevel.transform.AsRT().anchoredPosition = new Vector2(-200f, 0f);
-            noLevel.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-            var noLevelText = noLevel.GetComponent<Text>();
-            noLevelText.alignment = TextAnchor.MiddleCenter;
-            noLevelText.fontSize = 20;
-            noLevelText.text = "No Preview";
-            noLevel.SetActive(false);
-
-            StartCoroutine(AlephNetwork.DownloadImageTexture($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_template.png", texture2D =>
-            {
-                newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D);
-            }));
-
-            var gameObject = new GameObject("create");
-            gameObject.transform.SetParent(editorDialogTransform);
-            gameObject.transform.SetSiblingIndex(2);
-            gameObject.transform.localScale = Vector3.one;
-            var rectTransform = gameObject.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(765f, 32f);
-
-            var createLevelTemplateButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(rectTransform, "create");
-            UIManager.SetRectTransform(createLevelTemplateButton.transform.AsRT(), new Vector2(200f, 42f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(322f, 32f));
-            var createLevelTemplateButtonStorage = createLevelTemplateButton.GetComponent<FunctionButtonStorage>();
-            createLevelTemplateButtonStorage.text.text = "Create a new template";
-            createLevelTemplateButtonStorage.button.onClick.ClearAll();
-            createLevelTemplateButtonStorage.button.onClick.AddListener(() =>
-            {
-                choosingLevelTemplate = true;
-                EditorManager.inst.ShowDialog("Open File Popup");
-                EditorManager.inst.RenderOpenBeatmapPopup();
-
-                EditorManager.inst.DisplayNotification("Choose a level to create a template from.", 4f, EditorManager.NotificationType.Info);
-            });
-
-            var gameObject2 = new GameObject("name");
-            gameObject2.transform.SetParent(editorDialogTransform);
-            gameObject2.transform.SetSiblingIndex(3);
-            gameObject2.transform.localScale = Vector3.one;
-            var rectTransform2 = gameObject2.AddComponent<RectTransform>();
-            rectTransform2.sizeDelta = new Vector2(765f, 32f);
-
-            nameInput = EditorPrefabHolder.Instance.NumberInputField.GetComponent<InputFieldStorage>().inputField.gameObject.Duplicate(rectTransform2, "name").GetComponent<InputField>();
-            nameInput.onValueChanged.ClearAll();
-            nameInput.text = "New Level Template";
-            UIManager.SetRectTransform(nameInput.image.rectTransform, new Vector2(160f, 42f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 32f));
-
-            var gameObject3 = new GameObject("preview");
-            gameObject3.transform.SetParent(editorDialogTransform);
-            gameObject3.transform.SetSiblingIndex(4);
-            gameObject3.transform.localScale = Vector3.one;
-            var rectTransform3 = gameObject3.AddComponent<RectTransform>();
-            rectTransform3.sizeDelta = new Vector2(765f, 32f);
-
-            var preview = new GameObject("preview");
-            preview.transform.SetParent(rectTransform3);
-            preview.transform.localScale = Vector3.one;
-
-            var previewImage = preview.AddComponent<Image>();
-            UIManager.SetRectTransform(previewImage.rectTransform, new Vector2(-200f, 76f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(240f, 135f));
-
-            var choosePreviewButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(rectTransform3, "choose");
-            UIManager.SetRectTransform(choosePreviewButton.transform.AsRT(), new Vector2(200f, 42f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(322f, 32f));
-            var choosePreviewButtonStorage = choosePreviewButton.GetComponent<FunctionButtonStorage>();
-            choosePreviewButtonStorage.text.text = "Select a preview";
-            choosePreviewButtonStorage.button.onClick.ClearAll();
-            choosePreviewButtonStorage.button.onClick.AddListener(() =>
-            {
-                ShowWarningPopup("Select a file browser.", () =>
-                {
-                    string text = FileBrowser.OpenSingleFile("Select a preview image to use!", RTFile.ApplicationDirectory, "png");
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        var sprite = SpriteHelper.LoadSprite(text);
-
-                        if (sprite.texture.width != 480 || sprite.texture.height != 270)
-                        {
-                            EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
-                            EditorManager.inst.HideDialog("Warning Popup");
-                            return;
-                        }
-
-                        currentTemplateSprite = sprite;
-                        previewImage.sprite = currentTemplateSprite;
-                    }
-                    HideWarningPopup();
-                }, () =>
-                {
-                    EditorManager.inst.ShowDialog("Browser Popup");
-                    RTFileBrowser.inst.UpdateBrowserFile(new string[] { ".png" }, onSelectFile: _val =>
-                    {
-                        if (string.IsNullOrEmpty(_val))
-                            return;
-
-                        EditorManager.inst.HideDialog("Browser Popup");
-                        var sprite = SpriteHelper.LoadSprite(_val);
-
-                        if (sprite.texture.width != 480 || sprite.texture.height != 270)
-                        {
-                            EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        currentTemplateSprite = sprite;
-                        previewImage.sprite = currentTemplateSprite;
-                    });
-                    HideWarningPopup();
-                }, "System Browser", "Editor Browser");
-            });
+            LevelTemplateEditor.Init();
         }
 
         void CreatePreviewCover()
@@ -9038,38 +8843,6 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void CreateTemplate(string file)
-        {
-            if (string.IsNullOrEmpty(nameInput.text))
-            {
-                EditorManager.inst.DisplayNotification($"Level template name is empty. Name it something unique via the input field in the Level Template editor.", 3f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            EditorManager.inst.HideDialog("Open File Popup");
-
-            ShowWarningPopup("Are you sure you want to make a new level template?", () =>
-            {
-                choosingLevelTemplate = false;
-
-                var copyTo = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/templates", RTFile.ValidateDirectory(nameInput.text));
-
-                RTFile.CreateDirectory(copyTo);
-                RTFile.CopyFile(RTFile.CombinePaths(file, Level.LEVEL_LSB), RTFile.CombinePaths(copyTo, Level.LEVEL_LSB));
-
-                if (currentTemplateSprite)
-                    currentTemplateSprite.Save(RTFile.CombinePaths(copyTo, "preview.png"));
-
-                RefreshNewLevelTemplates();
-                HideWarningPopup();
-            }, () =>
-            {
-                EditorManager.inst.ShowDialog("Open File Popup");
-                HideWarningPopup();
-            });
-
-        }
-
         void OpenLevelPopup()
         {
             if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || LevelPanels.Count > 0)
@@ -9861,11 +9634,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTFile.CopyFile(EditorManager.inst.newAudioFile, RTFile.CombinePaths(path, $"level{audioFormat.Dot()}"));
 
-            var json =
-                currentLevelTemplate >= 0 && currentLevelTemplate < NewLevelTemplates.Count && RTFile.FileExists(NewLevelTemplates[currentLevelTemplate]) ?
-                    RTFile.ReadFromFile(NewLevelTemplates[currentLevelTemplate]) : null;
-
-            var gameData = !string.IsNullOrEmpty(json) ? GameData.Parse(JSON.Parse(json), false) : CreateBaseBeatmap();
+            var gameData = LevelTemplateEditor.inst.CurrentTemplate.GetGameData();
 
             gameData.SaveData(RTFile.CombinePaths(path, Level.LEVEL_LSB));
             var metaData = new MetaData();
@@ -10722,102 +10491,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyGraphic(backupHolder.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(backupHolder.text, ThemeGroup.Function_1_Text);
-            }
-        }
-
-        public void RefreshNewLevelTemplates()
-        {
-            NewLevelTemplates.Clear();
-            LSHelpers.DeleteChildren(newLevelTemplateContent);
-            var texts = new List<Text>();
-
-            var baseLevelTemplateGameObject = newLevelTemplatePrefab.Duplicate(newLevelTemplateContent);
-            var basePreviewBase = baseLevelTemplateGameObject.transform.Find("Preview Base");
-            basePreviewBase.Find("Preview").GetComponent<Image>().sprite = newLevelTemplateBaseSprite;
-
-            var baseTitle = baseLevelTemplateGameObject.transform.Find("Title").GetComponent<Text>();
-            baseTitle.text = $"Default Template{(currentLevelTemplate == -1 ? " [SELECTED]" : "")}";
-
-            var baseButton = baseLevelTemplateGameObject.GetComponent<Button>();
-            baseButton.onClick.ClearAll();
-            baseButton.onClick.AddListener(() =>
-            {
-                currentLevelTemplate = -1;
-                EditorManager.inst.DisplayNotification($"Set level template to default.", 1.6f, EditorManager.NotificationType.Success);
-
-                UpdateSelectedTemplate(baseTitle, texts);
-            });
-
-            EditorThemeManager.ApplySelectable(baseButton, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyGraphic(basePreviewBase.GetComponent<Image>(), ThemeGroup.Null, true);
-            EditorThemeManager.ApplyLightText(baseTitle);
-
-            var baseDirectory = $"{RTFile.ApplicationDirectory}beatmaps/templates";
-
-            if (!RTFile.DirectoryExists(baseDirectory))
-                return;
-
-            int num = 0;
-            var directories = Directory.GetDirectories(baseDirectory, "*", SearchOption.TopDirectoryOnly);
-            for (int i = 0; i < directories.Length; i++)
-            {
-                var directory = directories[i];
-
-                if (!RTFile.FileExists(directory + "/level.lsb"))
-                    continue;
-
-                var fileName = Path.GetFileName(directory);
-                int index = num;
-
-                var levelTemplateGameObject = newLevelTemplatePrefab.Duplicate(newLevelTemplateContent);
-
-                var previewBase = levelTemplateGameObject.transform.Find("Preview Base");
-                var previewImage = previewBase.Find("Preview").GetComponent<Image>();
-
-                var button = levelTemplateGameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
-                {
-                    currentLevelTemplate = index;
-                    EditorManager.inst.DisplayNotification($"Set level template to {fileName} [{currentLevelTemplate}]", 2f, EditorManager.NotificationType.Success);
-
-                    UpdateSelectedTemplate(baseTitle, texts);
-                });
-
-                var title = levelTemplateGameObject.transform.Find("Title").GetComponent<Text>();
-                title.text = $"{fileName}{(currentLevelTemplate == index ? " [SELECTED]" : "")}";
-                texts.Add(title);
-
-                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyGraphic(previewBase.GetComponent<Image>(), ThemeGroup.Null, true);
-                EditorThemeManager.ApplyLightText(title);
-
-                if (RTFile.FileExists(directory + "/preview.png"))
-                    previewImage.sprite = SpriteHelper.LoadSprite(directory + "/preview.png");
-                else
-                {
-                    previewImage.color = new Color(1f, 1f, 1f, 0.1f);
-                    previewImage.sprite = newLevelTemplateBaseSprite;
-                    levelTemplateGameObject.transform.Find("No Preview").gameObject.SetActive(true);
-                }
-
-                NewLevelTemplates.Add(directory + "/level.lsb");
-                num++;
-            }
-
-            currentLevelTemplate = Mathf.Clamp(currentLevelTemplate, -1, NewLevelTemplates.Count - 1);
-
-            UpdateSelectedTemplate(baseTitle, texts);
-        }
-
-        void UpdateSelectedTemplate(Text baseTitle, List<Text> texts)
-        {
-            baseTitle.text = $"Default Template{(currentLevelTemplate == -1 ? " [SELECTED]" : "")}";
-            for (int i = 0; i < texts.Count; i++)
-            {
-                var fileName = Path.GetFileName(Path.GetDirectoryName(NewLevelTemplates[i]));
-
-                texts[i].text = $"{fileName}{(currentLevelTemplate == i ? " [SELECTED]" : "")}";
             }
         }
 

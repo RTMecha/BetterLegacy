@@ -448,9 +448,9 @@ namespace BetterLegacy.Editor.Data
 
             Button.onClick = eventData =>
             {
-                if (RTEditor.inst.choosingLevelTemplate)
+                if (LevelTemplateEditor.inst.choosingLevelTemplate)
                 {
-                    RTEditor.inst.CreateTemplate(Level.path);
+                    LevelTemplateEditor.inst.CreateTemplate(Level.path);
 
                     return;
                 }
@@ -471,7 +471,7 @@ namespace BetterLegacy.Editor.Data
                         new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName)),
                         new ButtonFunction(true),
                         new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", () => { RTEditor.inst.UpdateEditorPath(true); RTEditor.inst.HideNameEditor(); })),
-                        new ButtonFunction("Create template", () => RTEditor.inst.CreateTemplate(Level.path)),
+                        new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path)),
                         new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                         new ButtonFunction(true),
                         new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
