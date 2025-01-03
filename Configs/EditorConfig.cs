@@ -2586,6 +2586,19 @@ namespace BetterLegacy.Configs
 
             UserPreference.SettingChanged += UserPreferenceChanged;
             ShowMarkers.SettingChanged += ShowMarkersChanged;
+
+            NotificationWidth.SettingChanged += NotificationChanged;
+            NotificationSize.SettingChanged += NotificationChanged;
+            NotificationDirection.SettingChanged += NotificationChanged;
+
+            TimelineCursorColor.SettingChanged += TimelineColorsChanged;
+            KeyframeCursorColor.SettingChanged += TimelineColorsChanged;
+        }
+
+        void NotificationChanged()
+        {
+            if (CoreHelper.InEditor)
+                RTEditor.inst.UpdateNotificationConfig();
         }
 
         void ShowMarkersChanged()
@@ -2818,10 +2831,8 @@ namespace BetterLegacy.Configs
             if (!CoreHelper.InEditor)
                 return;
 
-            SetNotificationProperties();
             EditorManager.inst.zoomBounds = MainZoomBounds.Value;
 
-            SetTimelineColors();
             AdjustPositionInputsChanged?.Invoke();
 
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
@@ -2848,33 +2859,10 @@ namespace BetterLegacy.Configs
             ObjectConverter.ShowDamagable = OnlyShowDamagable.Value;
         }
 
-        void SetTimelineColors()
+        void TimelineColorsChanged()
         {
-            var timelineCursorColor = TimelineCursorColor.Value;
-            var keyframeCursorColor = KeyframeCursorColor.Value;
-
-            RTEditor.inst.timelineSliderHandle.color = timelineCursorColor;
-
-            RTEditor.inst.timelineSliderRuler.color = timelineCursorColor;
-
-            RTEditor.inst.keyframeTimelineSliderHandle.color = keyframeCursorColor;
-            RTEditor.inst.keyframeTimelineSliderRuler.color = keyframeCursorColor;
-        }
-
-        void SetNotificationProperties()
-        {
-            if (!CoreHelper.InEditor)
-                return;
-
-            var notifyRT = EditorManager.inst.notification.transform.AsRT();
-            var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
-            notifyRT.sizeDelta = new Vector2(NotificationWidth.Value, 632f);
-            EditorManager.inst.notification.transform.localScale = new Vector3(NotificationSize.Value, NotificationSize.Value, 1f);
-
-            var direction = NotificationDirection.Value;
-
-            notifyRT.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
-            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
+            if (CoreHelper.InEditor)
+                RTEditor.inst.UpdateTimelineColors();
         }
 
         void UpdateDefaultThemeValues()

@@ -88,6 +88,20 @@ namespace BetterLegacy.Editor.Managers
             var prefabHolder = EditorPrefabHolder.Instance;
             prefabHolder.PrefabParent = prefabParent.transform;
 
+            timelineBar = EditorManager.inst.playButton.transform.parent.gameObject;
+            timeDefault = timelineBar.transform.GetChild(0).gameObject;
+            timeDefault.name = "Time Default";
+
+            var defaultInputField = timelineBar.transform.Find("Time");
+            defaultIF = defaultInputField.gameObject;
+            defaultIF.SetActive(true);
+            defaultInputField.SetParent(transform);
+            defaultInputField.localScale = Vector3.one;
+            EditorManager.inst.speedText.transform.parent.SetParent(transform);
+
+            if (defaultIF.TryGetComponent(out InputField frick))
+                frick.textComponent.fontSize = 18;
+
             if (ObjEditor.inst)
             {
                 prefabHolder.NumberInputField = ObjEditor.inst.ObjectView.transform.Find("time").gameObject.Duplicate(prefabHolder.PrefabParent, "float input");
@@ -137,20 +151,6 @@ namespace BetterLegacy.Editor.Managers
                 deleteButtonStorage.baseImage = deleteButtonStorage.button.image;
                 deleteButtonStorage.image = prefabHolder.DeleteButton.transform.GetChild(0).GetComponent<Image>();
 
-                timelineBar = GameObject.Find("TimelineBar/GameObject");
-                timeDefault = timelineBar.transform.GetChild(0).gameObject;
-                timeDefault.name = "Time Default";
-
-                var defaultInputField = timelineBar.transform.Find("Time");
-                defaultIF = defaultInputField.gameObject;
-                defaultIF.SetActive(true);
-                defaultInputField.SetParent(transform);
-                defaultInputField.localScale = Vector3.one;
-                EditorManager.inst.speedText.transform.parent.SetParent(transform);
-
-                if (defaultIF.TryGetComponent(out InputField frick))
-                    frick.textComponent.fontSize = 18;
-
                 tagPrefab = Creator.NewUIObject("Tag", transform);
                 var tagPrefabImage = tagPrefab.AddComponent<Image>();
                 tagPrefabImage.color = new Color(1f, 1f, 1f, 1f);
@@ -185,6 +185,7 @@ namespace BetterLegacy.Editor.Managers
             else
                 LoadGlobalSettings();
 
+            CacheEditor();
             SetupNotificationValues();
             SetupTimelineBar();
             SetupTimelineTriggers();
@@ -538,6 +539,9 @@ namespace BetterLegacy.Editor.Managers
 
         #region Timeline
 
+        public Image timelineImage;
+        public Image timelineOverlayImage;
+
         public Slider timelineSlider;
 
         public Image timelineSliderHandle;
@@ -814,6 +818,8 @@ namespace BetterLegacy.Editor.Managers
 
         public List<string> notifications = new List<string>();
 
+        public RectTransform notificationsParent;
+
         public void DisplayNotification(string name, string text, float time, EditorManager.NotificationType type)
         {
             StartCoroutine(DisplayNotificationLoop(name, text, time, type));
@@ -915,25 +921,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupNotificationValues()
         {
-            var config = EditorConfig.Instance;
-
-            var notifyRT = EditorManager.inst.notification.GetComponent<RectTransform>();
-            var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
-            notifyRT.sizeDelta = new Vector2(config.NotificationWidth.Value, 632f);
-            EditorManager.inst.notification.transform.localScale =
-                new Vector3(config.NotificationSize.Value, config.NotificationSize.Value, 1f);
-
-            if (config.NotificationDirection.Value == VerticalDirection.Down)
-            {
-                notifyRT.anchoredPosition = new Vector2(8f, 408f);
-                notifyGroup.childAlignment = TextAnchor.LowerLeft;
-            }
-
-            if (config.NotificationDirection.Value == VerticalDirection.Up)
-            {
-                notifyRT.anchoredPosition = new Vector2(8f, 410f);
-                notifyGroup.childAlignment = TextAnchor.UpperLeft;
-            }
+            notificationsParent = EditorManager.inst.notification.transform.AsRT();
 
             tooltipText = EditorManager.inst.tooltip.GetComponent<TextMeshProUGUI>();
             var tooltip = EditorManager.inst.tooltip.transform.parent.gameObject;
@@ -942,33 +930,25 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(tooltipText);
             EditorThemeManager.AddGraphic(tooltip.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(tooltip.transform.Find("bg/title").GetComponent<Text>());
+
+            UpdateNotificationConfig();
+        }
+
+        public void UpdateNotificationConfig()
+        {
+            var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
+            notificationsParent.sizeDelta = new Vector2(EditorConfig.Instance.NotificationWidth.Value, 632f);
+            EditorManager.inst.notification.transform.localScale = new Vector3(EditorConfig.Instance.NotificationSize.Value, EditorConfig.Instance.NotificationSize.Value, 1f);
+
+            var direction = EditorConfig.Instance.NotificationDirection.Value;
+
+            notificationsParent.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
+            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
         }
 
         #endregion
 
         #region Timeline
-
-        Image timelineImage;
-        public Image TimelineImage
-        {
-            get
-            {
-                if (!timelineImage)
-                    timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
-                return timelineImage;
-            }
-        }
-
-        Image timelineOverlayImage;
-        public Image TimelineOverlayImage
-        {
-            get
-            {
-                if (!timelineOverlayImage)
-                    timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
-                return timelineOverlayImage;
-            }
-        }
 
         /// <summary>
         /// Sets the main timeline zoom and position.
@@ -1030,10 +1010,22 @@ namespace BetterLegacy.Editor.Managers
             return num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom + _offset;
         }
 
+        public void UpdateTimelineColors()
+        {
+            var timelineCursorColor = EditorConfig.Instance.TimelineCursorColor.Value;
+            var keyframeCursorColor = EditorConfig.Instance.KeyframeCursorColor.Value;
+
+            timelineSliderHandle.color = timelineCursorColor;
+            timelineSliderRuler.color = timelineCursorColor;
+
+            keyframeTimelineSliderHandle.color = keyframeCursorColor;
+            keyframeTimelineSliderRuler.color = keyframeCursorColor;
+        }
+
         #endregion
 
         #region Timeline Objects
-        
+
         public List<TimelineObject> timelineObjects = new List<TimelineObject>();
         public List<TimelineObject> timelineKeyframes = new List<TimelineObject>();
 
@@ -1044,7 +1036,6 @@ namespace BetterLegacy.Editor.Managers
         {
             if (timelineObjects.TryFindIndex(x => x.ID == timelineObject.ID, out int a))
             {
-                timelineObject.Selected = false;
                 Destroy(timelineObject.GameObject);
                 timelineObjects.RemoveAt(a);
             }
@@ -1141,7 +1132,7 @@ namespace BetterLegacy.Editor.Managers
             var path = !EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
                     RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}") :
                     RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
-            var bytes = TimelineImage.sprite.texture.EncodeToPNG();
+            var bytes = timelineImage.sprite.texture.EncodeToPNG();
 
             File.WriteAllBytes(path, bytes);
 
@@ -1150,8 +1141,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetTimelineSprite(Sprite sprite)
         {
-            TimelineImage.sprite = sprite;
-            TimelineOverlayImage.sprite = TimelineImage.sprite;
+            timelineImage.sprite = sprite;
+            timelineOverlayImage.sprite = timelineImage.sprite;
         }
 
         public IEnumerator Beta(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
@@ -2158,8 +2149,8 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public int Layer
         {
-            get => Mathf.Clamp(EditorManager.inst.layer, 0, int.MaxValue);
-            set => EditorManager.inst.layer = Mathf.Clamp(value, 0, int.MaxValue);
+            get => GetLayer(EditorManager.inst.layer);
+            set => EditorManager.inst.layer = GetLayer(value);
         }
 
         int prevLayer;
@@ -2172,11 +2163,11 @@ namespace BetterLegacy.Editor.Managers
             Events
         }
 
-        public static int GetLayer(int _layer) => Mathf.Clamp(_layer, 0, int.MaxValue);
+        public static int GetLayer(int layer) => Mathf.Clamp(layer, 0, int.MaxValue);
 
-        public static string GetLayerString(int _layer) => (_layer + 1).ToString();
+        public static string GetLayerString(int layer) => (layer + 1).ToString();
 
-        public static Color GetLayerColor(int _layer) => _layer < EditorManager.inst.layerColors.Count ? EditorManager.inst.layerColors[_layer] : Color.white;
+        public static Color GetLayerColor(int layer) => layer < EditorManager.inst.layerColors.Count ? EditorManager.inst.layerColors[layer] : Color.white;
 
         public void SetLayer(LayerType layerType) => SetLayer(0, layerType);
 
@@ -2201,7 +2192,7 @@ namespace BetterLegacy.Editor.Managers
 
             Layer = layer;
             this.layerType = layerType;
-            TimelineOverlayImage.color = GetLayerColor(layer);
+            timelineOverlayImage.color = GetLayerColor(layer);
             editorLayerImage.color = GetLayerColor(layer);
 
             editorLayerField.onValueChanged.RemoveAllListeners();
@@ -2259,7 +2250,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     CoreHelper.Log($"Undone layer: {oldLayer}");
                     SetLayer(oldLayer, oldLayerType, false);
-                }), false);
+                }));
             }
         }
 
@@ -2283,6 +2274,12 @@ namespace BetterLegacy.Editor.Managers
             return editorPopup;
         }
 
+        void CacheEditor()
+        {
+            timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
+            timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
+        }
+
         void SetupTimelineBar()
         {
             if (EditorManager.inst.markerTimeline)
@@ -2291,9 +2288,8 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 1; i <= 5; i++)
                 timelineBar.transform.Find(i.ToString()).SetParent(transform);
 
-            Destroy(GameObject.Find("TimelineBar/GameObject/6").GetComponent<EventTrigger>());
-
-            eventLayerToggle = GameObject.Find("TimelineBar/GameObject/6").GetComponent<Toggle>();
+            eventLayerToggle = timelineBar.transform.Find("6").GetComponent<Toggle>();
+            Destroy(eventLayerToggle.GetComponent<EventTrigger>());
 
             var timeObj = defaultIF.Duplicate(timelineBar.transform, "Time Input", 0);
             timeObj.transform.localScale = Vector3.one;
@@ -2486,7 +2482,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 ShowContextMenu(
-                    new ButtonFunction("Show Markers", () =>
+                    new ButtonFunction("Open Marker Editor", () =>
                     {
                         if (!RTMarkerEditor.inst.CurrentMarker)
                         {
@@ -2502,6 +2498,17 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             RTMarkerEditor.inst.CreateNewMarker(ObjectEditor.inst.CurrentSelection.Time);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Show Markers", () =>
+                    {
+                        EditorConfig.Instance.ShowMarkers.Value = true;
+                        EditorManager.inst.DisplayNotification("Markers will now display.", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Hide Markers", () =>
+                    {
+                        EditorConfig.Instance.ShowMarkers.Value = false;
+                        EditorManager.inst.DisplayNotification("Markers will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
                     })
                     );
             };
@@ -2513,7 +2520,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 ShowContextMenu(
-                    new ButtonFunction("Show Checkpoints", () =>
+                    new ButtonFunction("Open Checkpoint Editor", () =>
                     {
                         if (Patchers.CheckpointEditorPatch.currentCheckpoint == null || !GameData.IsValid || CheckpointEditor.inst.currentObj < 0 || CheckpointEditor.inst.currentObj >= GameData.Current.beatmapData.checkpoints.Count)
                         {
@@ -2540,10 +2547,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 ShowContextMenu(
-                    new ButtonFunction("Playtest", () =>
-                    {
-                        EditorManager.inst.ToggleEditor();
-                    }),
+                    new ButtonFunction("Playtest", EditorManager.inst.ToggleEditor),
                     new ButtonFunction("Playtest Zen", () =>
                     {
                         EditorConfig.Instance.EditorZenMode.Value = true;
@@ -2564,9 +2568,9 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 ShowContextMenu(
-                    new ButtonFunction("Toggle Layer Type", () => { SetLayer(Layer, layerType == LayerType.Events ? LayerType.Objects : LayerType.Events); }),
-                    new ButtonFunction("View Objects", () => { SetLayer(Layer, LayerType.Objects); }),
-                    new ButtonFunction("View Events", () => { SetLayer(Layer, LayerType.Events); })
+                    new ButtonFunction("Toggle Layer Type", () => SetLayer(Layer, layerType == LayerType.Events ? LayerType.Objects : LayerType.Events)),
+                    new ButtonFunction("View Objects", () => SetLayer(Layer, LayerType.Objects)),
+                    new ButtonFunction("View Events", () => SetLayer(Layer, LayerType.Events))
                     );
             };
 
@@ -3675,17 +3679,12 @@ namespace BetterLegacy.Editor.Managers
                 var wholeTimeline = EditorManager.inst.timeline.transform.parent.parent;
 
                 timelineSliderHandle = wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
-                timelineSliderHandle.color = config.TimelineCursorColor.Value;
-
                 timelineSliderRuler = wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
-                timelineSliderRuler.color = config.TimelineCursorColor.Value;
-
                 var keyframeTimelineHandle = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("timeline/Scroll View/Viewport/Content/time_slider/Handle Slide Area/Handle");
                 keyframeTimelineSliderHandle = keyframeTimelineHandle.Find("Image").GetComponent<Image>();
-                keyframeTimelineSliderHandle.color = config.KeyframeCursorColor.Value;
-
                 keyframeTimelineSliderRuler = keyframeTimelineHandle.GetComponent<Image>();
-                keyframeTimelineSliderRuler.color = config.KeyframeCursorColor.Value;
+
+                UpdateTimelineColors();
             }
             catch (Exception ex)
             {
