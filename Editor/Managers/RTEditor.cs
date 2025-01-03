@@ -5559,7 +5559,8 @@ namespace BetterLegacy.Editor.Managers
             if (transform.Find("back"))
             {
                 yield return null;
-                transform.Find("back").SetAsFirstSibling();
+                if (transform.Find("back"))
+                    transform.Find("back").SetAsFirstSibling();
             }
 
             yield break;
