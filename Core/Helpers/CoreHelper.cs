@@ -220,6 +220,21 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
+        /// Deletes all children from a transform.
+        /// </summary>
+        /// <param name="transform">Transform to delete the children of.</param>
+        public static void DeleteChildren(Transform transform)
+        {
+            var listToDelete = new List<GameObject>();
+            for (int i = 0; i < transform.childCount; i++)
+                listToDelete.Add(transform.GetChild(i).gameObject);
+            for (int i = 0; i < listToDelete.Count; i++)
+                Destroy(listToDelete[i], true);
+            listToDelete.Clear();
+            listToDelete = null;
+        }
+
+        /// <summary>
         /// Sets the game object active / inactive.
         /// </summary>
         /// <param name="gameObject">Game object to set the active state of.</param>
