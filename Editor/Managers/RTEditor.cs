@@ -216,7 +216,7 @@ namespace BetterLegacy.Editor.Managers
 
             MultiObjectEditor.Init();
             TextEditor.Init();
-            KeybindManager.Init();
+            KeybindEditor.Init();
             PlayerEditor.Init();
             ObjectModifiersEditor.Init();
             LevelCombiner.Init();

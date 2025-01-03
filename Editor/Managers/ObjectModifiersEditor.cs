@@ -2818,7 +2818,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(path.transform, "edit");
             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = KeybindManager.inst.editSprite;
+            buttonStorage.image.sprite = KeybindEditor.inst.editSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
             buttonStorage.button.onClick.ClearAll();

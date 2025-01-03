@@ -154,12 +154,12 @@ namespace BetterLegacy.Editor.Managers
 
             var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
 
-            while (!KeybindManager.inst || !KeybindManager.inst.editSprite)
+            while (!KeybindEditor.inst || !KeybindEditor.inst.editSprite)
                 yield return null;
 
             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(desc.transform, "edit");
             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = KeybindManager.inst.editSprite;
+            buttonStorage.image.sprite = KeybindEditor.inst.editSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
             buttonStorage.button.onClick.ClearAll();

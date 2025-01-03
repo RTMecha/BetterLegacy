@@ -37,7 +37,7 @@ namespace BetterLegacy.Editor.Data
                     dictionary.Add(jn["settings"][i]["type"], jn["settings"][i]["value"]);
             }
 
-            var setting = KeybindManager.inst.Settings[actionType];
+            var setting = KeybindEditor.inst.Settings[actionType];
             if (setting != null)
             {
                 foreach (var keyValuePair in setting)
@@ -75,7 +75,7 @@ namespace BetterLegacy.Editor.Data
 
         public void Activate()
         {
-            if (KeybindManager.inst.KeyCodeHandler(this))
+            if (KeybindEditor.inst.KeyCodeHandler(this))
                 Action?.Invoke(this);
         }
 
@@ -88,14 +88,14 @@ namespace BetterLegacy.Editor.Data
         {
             get
             {
-                if (ActionType < 0 || ActionType > KeybindManager.KeybinderMethods.Count - 1)
-                    return keybind => { Debug.LogError($"{KeybindManager.className}No action assigned to key!"); };
+                if (ActionType < 0 || ActionType > KeybindEditor.KeybinderMethods.Count - 1)
+                    return keybind => { Debug.LogError($"{KeybindEditor.className}No action assigned to key!"); };
 
-                return KeybindManager.KeybinderMethods[ActionType];
+                return KeybindEditor.KeybinderMethods[ActionType];
             }
         }
 
-        public string Name => ActionType >= 0 && ActionType < KeybindManager.KeybinderMethods.Count ? KeybindManager.KeybinderMethods[ActionType].Method.Name : "Invalid method";
+        public string Name => ActionType >= 0 && ActionType < KeybindEditor.KeybinderMethods.Count ? KeybindEditor.KeybinderMethods[ActionType].Method.Name : "Invalid method";
 
         public bool watchingKeybind;
 

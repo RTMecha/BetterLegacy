@@ -23,10 +23,10 @@ using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class KeybindManager : MonoBehaviour
+    public class KeybindEditor : MonoBehaviour
     {
         public static string className = "[<color=#F44336>KeybindManager</color>] \n";
-        public static KeybindManager inst;
+        public static KeybindEditor inst;
 
         public static string FilePath => $"{RTFile.ApplicationDirectory}settings/keybinds.lss";
 
@@ -36,7 +36,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool AllowKeys { get; set; }
 
-        public static void Init() => Creator.NewGameObject(nameof(KeybindManager), EditorManager.inst.transform.parent).AddComponent<KeybindManager>();
+        public static void Init() => Creator.NewGameObject(nameof(KeybindEditor), EditorManager.inst.transform.parent).AddComponent<KeybindEditor>();
 
         void Awake()
         {
