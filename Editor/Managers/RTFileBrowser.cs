@@ -58,7 +58,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(300f,
+                RTEditor.inst.ShowContextMenu(
                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))));
             };
 
@@ -105,7 +105,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(300f,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Open", () => UpdateBrowserFile(folder, fileExtensions, onSelectFile)),
                         new ButtonFunction(true),
                         new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))),
@@ -141,7 +141,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     if (fileExtensions.Any(x => RTFile.FileIsAudio(x)))
-                        RTEditor.inst.ShowContextMenu(300f,
+                        RTEditor.inst.ShowContextMenu(
                             new ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
                             new ButtonFunction("Preview", () => PreviewAudio(fileInfoFolder.FullName)),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))),
@@ -149,7 +149,7 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(fileName)))
                             );
                     else
-                        RTEditor.inst.ShowContextMenu(300f,
+                        RTEditor.inst.ShowContextMenu(
                             new ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtensions, onSelectFile))),
                             new ButtonFunction(true),
@@ -181,7 +181,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(300f,
+                RTEditor.inst.ShowContextMenu(
                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))));
             };
 
@@ -229,7 +229,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(300f,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Open", () => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile)),
                         new ButtonFunction(true),
                         new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))),
@@ -266,7 +266,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var fileFormat = RTFile.GetFileFormat(fileName);
                     if (RTFile.ValidAudio(fileFormat))
-                        RTEditor.inst.ShowContextMenu(300f,
+                        RTEditor.inst.ShowContextMenu(
                             new ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
                             new ButtonFunction("Preview", () => PreviewAudio(fileInfoFolder.FullName)),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))),
@@ -274,7 +274,7 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(RTFile.ReplaceSlash(fileName)))
                             );
                     else
-                        RTEditor.inst.ShowContextMenu(300f,
+                        RTEditor.inst.ShowContextMenu(
                             new ButtonFunction("Use", () => onSelectFile?.Invoke(fileInfoFolder.FullName)),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFile(selectedPath, fileExtension, specificName, onSelectFile))),
                             new ButtonFunction(true),
@@ -306,7 +306,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(300f,
+                RTEditor.inst.ShowContextMenu(
                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(selectedPath, () => UpdateBrowserFolder(selectedPath, specificName, onSelectFolder))));
             };
 
@@ -353,7 +353,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(300f,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Use", () => onSelectFolder?.Invoke(folder)),
                         new ButtonFunction("Open", () => UpdateBrowserFolder(folder, specificName, onSelectFolder)),
                         new ButtonFunction(true),

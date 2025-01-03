@@ -404,7 +404,7 @@ namespace BetterLegacy.Editor.Data
 
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RTEditor.inst.ShowContextMenu(300f,
+                        RTEditor.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
                                 RTEditor.inst.editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
@@ -457,7 +457,7 @@ namespace BetterLegacy.Editor.Data
 
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
-                    RTEditor.inst.ShowContextMenu(300f,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Open", () =>
                         {
                             CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));

@@ -90,7 +90,7 @@ namespace BetterLegacy.Core.Helpers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(300f,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Flip Left/Right", () => { name.text = RTString.FlipLeftRight(name.text); }),
                         new ButtonFunction("Flip Up/Down", () => { name.text = RTString.FlipUpDown(name.text); }),
                         new ButtonFunction("Flip Upper/Lower", () => { name.text = RTString.FlipUpperLower(name.text); }),

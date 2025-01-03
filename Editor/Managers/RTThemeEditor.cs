@@ -247,7 +247,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(300f,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                         new ButtonFunction("Create theme", () => RenderThemeEditor()),
                         new ButtonFunction(true),
@@ -283,7 +283,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (eventData.button == PointerEventData.InputButton.Right)
                         {
-                            RTEditor.inst.ShowContextMenu(300f,
+                            RTEditor.inst.ShowContextMenu(
                                 new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                                 new ButtonFunction("Create theme", () => RenderThemeEditor()),
                                 new ButtonFunction("Paste", PasteTheme));

@@ -395,7 +395,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                    RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Use", () =>
                         {
                             Debug.Log($"{EditorManager.inst.className}Set Marker {colorIndex}'s color to {colorIndex}");
@@ -624,7 +624,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="timelineMarker">Timeline marker to use.</param>
         public void ShowMarkerContextMenu(TimelineMarker timelineMarker)
         {
-            RTEditor.inst.ShowContextMenu(300f,
+            RTEditor.inst.ShowContextMenu(
                 new ButtonFunction("Open", () => SetCurrentMarker(timelineMarker)),
                 new ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
                 new ButtonFunction(true),

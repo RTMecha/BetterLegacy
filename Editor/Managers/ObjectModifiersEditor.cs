@@ -479,7 +479,7 @@ namespace BetterLegacy.Editor.Managers
                     if (ModCompatibility.UnityExplorerInstalled)
                         buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
 
-                    RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
+                    RTEditor.inst.ShowContextMenu(buttonFunctions);
                 };
 
                 if (modifier.collapse)
@@ -617,7 +617,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                                     return;
 
-                                RTEditor.inst.ShowContextMenu(300f,
+                                RTEditor.inst.ShowContextMenu(
                                     new ButtonFunction("Use Local Browser", () =>
                                     {
                                         var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
@@ -745,7 +745,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                                     return;
-                                RTEditor.inst.ShowContextMenu(300f,
+                                RTEditor.inst.ShowContextMenu(
                                     new ButtonFunction("Use Local Browser", () =>
                                     {
                                         var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);

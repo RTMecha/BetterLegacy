@@ -167,7 +167,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != UnityEngine.EventSystems.PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                RTEditor.inst.ShowContextMenu(
                     new ButtonFunction("Upload / Update", UploadLevel),
                     new ButtonFunction("Verify Level is on Server", () =>
                     {

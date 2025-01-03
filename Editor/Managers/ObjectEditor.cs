@@ -2318,7 +2318,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                RTEditor.inst.ShowContextMenu(
                     new ButtonFunction("Open Parent Popup", EditorManager.inst.OpenParentPopup),
                     new ButtonFunction("Parent to Camera", () =>
                     {
@@ -2366,7 +2366,7 @@ namespace BetterLegacy.Editor.Managers
                         }));
                 }
 
-                RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, list);
+                RTEditor.inst.ShowContextMenu(list);
             };
 
             if (string.IsNullOrEmpty(parent))
@@ -2720,7 +2720,7 @@ namespace BetterLegacy.Editor.Managers
 
         void OriginContextMenu(BeatmapObject beatmapObject)
         {
-            RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+            RTEditor.inst.ShowContextMenu(
                 new ButtonFunction("Center", () =>
                 {
                     beatmapObject.origin = Vector2.zero;
