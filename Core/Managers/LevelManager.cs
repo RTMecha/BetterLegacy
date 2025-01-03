@@ -263,20 +263,15 @@ namespace BetterLegacy.Core.Managers
 
             CoreHelper.InStory = level.isStory;
             if (level.isStory && storyLevel)
-                GameData.Current = GameData.Parse(JSON.Parse(UpdateBeatmap(storyLevel.json, level.metadata.beatmap.game_version)));
+                GameData.Current = storyLevel.LoadGameData();
             else
             {
-                var levelMode = level.CurrentFile;
-                Debug.Log($"{className}Level Mode: {levelMode}...");
-
-                var rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(level.path, levelMode));
-                if (ProjectArrhythmia.RequireUpdate(level.metadata.beatmap.game_version))
-                    rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
+                Debug.Log($"{className}Level Mode: {level.CurrentFile}...");
 
                 if (level.IsVG)
                     AchievementManager.inst.UnlockAchievement("time_traveler");
 
-                GameData.Current = level.IsVG ? GameData.ParseVG(JSON.Parse(rawJSON), version: level.metadata.Version) : GameData.Parse(JSONNode.Parse(rawJSON));
+                GameData.Current = level.LoadGameData();
             }
 
             Debug.Log($"{className}Setting paths...");

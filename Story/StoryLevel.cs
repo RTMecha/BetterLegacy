@@ -2,6 +2,7 @@
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using System;
 using System.Collections;
@@ -106,5 +107,11 @@ namespace BetterLegacy.Story
 
             return storyLevel;
         }
+
+        /// <summary>
+        /// Loads the story levels' game data.
+        /// </summary>
+        /// <returns>Returns the loaded game data.</returns>
+        public GameData LoadGameData() => GameData.Parse(JSON.Parse(json));
     }
 }

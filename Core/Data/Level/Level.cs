@@ -337,6 +337,22 @@ namespace BetterLegacy.Core.Data.Level
         }
 
         /// <summary>
+        /// Loads the levels' game data.
+        /// </summary>
+        /// <param name="parseThemes">If the theme list should be replaced with the game datas' themes.</param>
+        /// <returns>Returns a parsed game data from the level folder.</returns>
+        public GameData LoadGameData(bool parseThemes = true)
+        {
+            var path = GetFile(CurrentFile);
+            var rawJSON = RTFile.ReadFromFile(path);
+            if (ProjectArrhythmia.RequireUpdate(metadata.beatmap.game_version))
+                rawJSON = LevelManager.UpdateBeatmap(rawJSON, metadata.beatmap.game_version);
+
+            var jn = JSON.Parse(rawJSON);
+            return IsVG ? GameData.ParseVG(jn, parseThemes, metadata.Version) : GameData.Parse(jn, parseThemes);
+        }
+
+        /// <summary>
         /// Loads the levels' achievements.
         /// </summary>
         public void LoadAchievements()
