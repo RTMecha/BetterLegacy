@@ -41,7 +41,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static EditorManager.MetadataWrapper first;
         public static EditorManager.MetadataWrapper second;
-        public static string savePath;
+        public static string savePath = "Combined Level";
 
         #endregion
 
@@ -119,7 +119,7 @@ namespace BetterLegacy.Editor.Managers
             editorDialogContent.GetComponent<VerticalLayoutGroup>().spacing = 4f;
 
 
-            scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 392f);
+            scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 320f);
 
             EditorHelper.AddEditorDialog("Level Combiner", editorDialogObject);
 
@@ -146,13 +146,25 @@ namespace BetterLegacy.Editor.Managers
                 UIManager.SetRectTransform(saveField.image.rectTransform, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(700f, 32f));
                 saveField.onValueChanged.ClearAll();
                 saveField.characterLimit = 0;
-                saveField.text = RTFile.ApplicationDirectory + RTEditor.editorListSlash + "Combined Level/level.lsb";
-                savePath = RTFile.ApplicationDirectory + RTEditor.editorListSlash + "Combined Level/level.lsb";
-                saveField.onValueChanged.AddListener(_val => { savePath = _val; });
+                saveField.text = savePath;
+                saveField.onValueChanged.AddListener(_val => savePath = _val);
 
                 EditorThemeManager.AddInputField(saveField);
 
                 ((Text)saveField.placeholder).text = "Set a path...";
+
+                // Dropdown
+                {
+                    var dropdownBase = Creator.NewUIObject("save type", editorDialogTransform);
+                    dropdownBase.transform.AsRT().sizeDelta = new Vector2(765f, 64f);
+
+                    var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(dropdownBase.transform, "dropdown").GetComponent<Dropdown>();
+                    RectValues.Default.SizeDelta(400f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
+                    dropdown.onValueChanged.ClearAll();
+                    dropdown.options = CoreHelper.StringToOptionData("LS", "VG");
+                    dropdown.value = 0;
+                    dropdown.onValueChanged.AddListener(_val => EditorConfig.Instance.CombinerOutputFormat.Value = (ArrhythmiaType)(_val + 1));
+                }
 
                 //Button 1
                 {
@@ -206,23 +218,36 @@ namespace BetterLegacy.Editor.Managers
 
         public GameData combinedGameData;
 
-        public void Combine()
+        /// <summary>
+        /// Combines all selected editor levels into one.
+        /// </summary>
+        public void Combine() => Combine(savePath);
+
+        /// <summary>
+        /// Combines all selected editor levels into one.
+        /// </summary>
+        /// <param name="savePath">Path to save the level to.</param>
+        public void Combine(string savePath) => Combine(savePath, RTEditor.inst.LevelPanels.Where(x => x.combinerSelected && x.Level && RTFile.FileExists(x.Level.GetFile(x.Level.CurrentFile))));
+
+        /// <summary>
+        /// Combines editor levels into one.
+        /// </summary>
+        /// <param name="selected">Editor levels to combine.</param>
+        public void Combine(IEnumerable<LevelPanel> selected) => Combine(savePath, selected);
+
+        /// <summary>
+        /// Combines editor levels into one.
+        /// </summary>
+        /// <param name="savePath">Path to save the level to.</param>
+        /// <param name="selected">Editor levels to combine.</param>
+        public void Combine(string savePath, IEnumerable<LevelPanel> selected)
         {
             var combineList = new List<GameData>();
-            var list = new List<string>();
-            var paths = new List<string>();
-            var selected = RTEditor.inst.LevelPanels.Where(x => x.combinerSelected);
 
             foreach (var editorWrapper in selected)
             {
-                var levelPath = RTFile.CombinePaths(editorWrapper.FolderPath, Level.LEVEL_LSB);
-                if (!RTFile.FileExists(levelPath))
-                    continue;
-
-                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {Path.GetFileName(editorWrapper.FolderPath)}");
-                paths.Add(levelPath);
-                list.Add(editorWrapper.Name);
-                combineList.Add(GameData.Parse(SimpleJSON.JSON.Parse(RTFile.ReadFromFile(levelPath))));
+                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {editorWrapper.Level.FolderName}");
+                combineList.Add(editorWrapper.Level.LoadGameData(false));
             }
 
             Debug.Log($"{EditorManager.inst.className}Can Combine: {combineList.Count > 0 && !string.IsNullOrEmpty(savePath)}" +
@@ -244,19 +269,27 @@ namespace BetterLegacy.Editor.Managers
             var combinedGameData = GameData.Combiner.Combine(combineList.ToArray());
             this.combinedGameData = combinedGameData;
 
+            var levelFile = EditorConfig.Instance.CombinerOutputFormat.Value switch
+            {
+                ArrhythmiaType.LS => Level.LEVEL_LSB,
+                ArrhythmiaType.VG => Level.LEVEL_VGD,
+                _ => "",
+            };
+
             string save = savePath;
-            if (!save.Contains(Level.LEVEL_LSB) && save.LastIndexOf('/') == save.Length - 1)
-                save += Level.LEVEL_LSB;
-            else if (!save.Contains("/" + Level.LEVEL_LSB))
-                save += "/" + Level.LEVEL_LSB;
+            if (!save.Contains(levelFile) && save.LastIndexOf('/') == save.Length - 1)
+                save += levelFile;
+            else if (!save.Contains("/" + levelFile))
+                save += "/" + levelFile;
 
             if (!save.Contains(RTFile.ApplicationDirectory) && !save.Contains(RTEditor.editorListSlash))
                 save = RTFile.ApplicationDirectory + RTEditor.editorListSlash + save;
             else if (!save.Contains(RTFile.ApplicationDirectory))
                 save = RTFile.ApplicationDirectory + save;
 
-            foreach (var file in paths)
+            foreach (var levelPanel in selected)
             {
+                var file = levelPanel.Level.GetFile(levelPanel.Level.CurrentFile);
                 if (!RTFile.FileExists(file))
                     return;
 
@@ -270,21 +303,39 @@ namespace BetterLegacy.Editor.Managers
                     string dir = Path.GetDirectoryName(file2);
                     RTFile.CreateDirectory(dir);
 
-                    if (Path.GetFileName(file2) != Level.LEVEL_LSB && !RTFile.FileExists(file2.Replace(Path.GetDirectoryName(file), directory)))
-                        File.Copy(file2, file2.Replace(Path.GetDirectoryName(file), directory));
+                    var copyTo = file2.Replace(Path.GetDirectoryName(file), directory);
+                    if (EditorConfig.Instance.CombinerOutputFormat.Value == ArrhythmiaType.VG)
+                        copyTo = copyTo
+                            .Replace(Level.LEVEL_OGG, Level.AUDIO_OGG)
+                            .Replace(Level.LEVEL_WAV, Level.AUDIO_WAV)
+                            .Replace(Level.LEVEL_MP3, Level.AUDIO_MP3)
+                            .Replace(Level.LEVEL_JPG, Level.COVER_JPG)
+                            ;
+
+                    var fileName = Path.GetFileName(file2);
+                    if (fileName != Level.LEVEL_LSB && fileName != Level.LEVEL_VGD && fileName != Level.METADATA_LSB && fileName != Level.METADATA_VGM && !RTFile.FileExists(copyTo))
+                        File.Copy(file2, copyTo);
                 }
             }
 
             if (EditorConfig.Instance.CombinerOutputFormat.Value == ArrhythmiaType.LS)
+            {
+                selected.First().Level.metadata?.WriteToFile(save.Replace(Level.LEVEL_LSB, Level.METADATA_LSB));
+
                 combinedGameData.SaveData(save, () =>
                 {
-                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the LS format!", 3f, EditorManager.NotificationType.Success);
                 }, true);
+            }
             else
+            {
+                selected.First().Level.metadata?.WriteToFileVG(save.Replace(Level.LEVEL_VGD, Level.METADATA_VGM).Replace(Level.LEVEL_LSB, Level.METADATA_VGM));
+
                 combinedGameData.SaveDataVG(save.Replace(FileFormat.LSB.Dot(), FileFormat.VGD.Dot()), () =>
                 {
-                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the VG format!", 3f, EditorManager.NotificationType.Success);
                 });
+            }
         }
     }
 }
