@@ -1772,6 +1772,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to edit.</param>
         public void OpenDialog(BeatmapObject beatmapObject)
         {
+            if (!EditorManager.inst.hasLoadedLevel || string.IsNullOrEmpty(beatmapObject.id))
+                return;
+
             if (!CurrentSelection.isBeatmapObject)
             {
                 EditorManager.inst.DisplayNotification("Cannot edit non-object!", 2f, EditorManager.NotificationType.Error);
@@ -1786,7 +1789,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (CurrentSelection.ID != beatmapObject.id)
                 for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
-                    LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
+                    LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i], true);
 
             StartCoroutine(RefreshObjectGUI(beatmapObject));
         }
@@ -1796,50 +1799,52 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         /// <returns></returns>
-        public static IEnumerator RefreshObjectGUI(BeatmapObject beatmapObject)
+        public IEnumerator RefreshObjectGUI(BeatmapObject beatmapObject)
         {
             if (!EditorManager.inst.hasLoadedLevel || string.IsNullOrEmpty(beatmapObject.id))
                 yield break;
 
-            inst.CurrentSelection = inst.GetTimelineObject(beatmapObject);
-            inst.CurrentSelection.Selected = true;
+            CurrentSelection = GetTimelineObject(beatmapObject);
+            CurrentSelection.Selected = true;
 
-            inst.RenderIDLDM(beatmapObject);
-            inst.RenderName(beatmapObject);
-            inst.RenderObjectType(beatmapObject);
+            RenderID(beatmapObject);
+            RenderLDM(beatmapObject);
+            RenderName(beatmapObject);
+            RenderTags(beatmapObject);
+            RenderObjectType(beatmapObject);
 
-            inst.RenderStartTime(beatmapObject);
-            inst.RenderAutokill(beatmapObject);
+            RenderStartTime(beatmapObject);
+            RenderAutokill(beatmapObject);
 
-            inst.RenderParent(beatmapObject);
+            RenderParent(beatmapObject);
 
-            inst.RenderEmpty(beatmapObject);
+            RenderEmpty(beatmapObject);
 
             if (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty)
             {
-                inst.RenderOrigin(beatmapObject);
-                inst.RenderGradient(beatmapObject);
-                inst.RenderShape(beatmapObject);
-                inst.RenderDepth(beatmapObject);
+                RenderOrigin(beatmapObject);
+                RenderGradient(beatmapObject);
+                RenderShape(beatmapObject);
+                RenderDepth(beatmapObject);
             }
 
-            inst.RenderLayers(beatmapObject);
-            inst.RenderBin(beatmapObject);
+            RenderLayers(beatmapObject);
+            RenderBin(beatmapObject);
 
-            inst.RenderGameObjectInspector(beatmapObject);
+            RenderGameObjectInspector(beatmapObject);
 
             bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
-            ((GameObject)inst.ObjectUIElements["Collapse Label"]).SetActive(fromPrefab);
-            ((GameObject)inst.ObjectUIElements["Collapse Prefab"]).SetActive(fromPrefab);
+            ((GameObject)ObjectUIElements["Collapse Label"]).SetActive(fromPrefab);
+            ((GameObject)ObjectUIElements["Collapse Prefab"]).SetActive(fromPrefab);
 
-            inst.SetTimeline(inst.CurrentSelection.Zoom, inst.CurrentSelection.TimelinePosition);
+            SetTimeline(CurrentSelection.Zoom, CurrentSelection.TimelinePosition);
 
-            inst.RenderObjectKeyframesDialog(beatmapObject);
+            RenderObjectKeyframesDialog(beatmapObject);
 
             try
             {
                 if (EditorConfig.Instance.ShowMarkersInObjectEditor.Value)
-                    inst.RenderMarkers(beatmapObject);
+                    RenderMarkers(beatmapObject);
             }
             catch (Exception ex)
             {
@@ -1847,7 +1852,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (ObjectModifiersEditor.inst)
-                inst.StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
+                StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
 
             yield break;
         }
@@ -1918,16 +1923,16 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTEditor.ShowModdedUI && !tagsActive)
             {
-                RenderIDLDM(beatmapObject);
-                RenderName(beatmapObject);
+                RenderLDM(beatmapObject);
+                RenderTags(beatmapObject);
             }
         }
 
         /// <summary>
-        /// Renders the ID Text and LDM Toggle.
+        /// Renders the ID Text.
         /// </summary>
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
-        public void RenderIDLDM(BeatmapObject beatmapObject)
+        public void RenderID(BeatmapObject beatmapObject)
         {
             var idText = (Text)ObjectUIElements["ID Text"];
             idText.text = $"ID: {beatmapObject.id}";
@@ -1941,7 +1946,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Copied ID from {beatmapObject.name}!", 2f, EditorManager.NotificationType.Success);
                 LSText.CopyToClipboard(beatmapObject.id);
             };
+        }
 
+        /// <summary>
+        /// Renders the LDM Toggle.
+        /// </summary>
+        /// <param name="beatmapObject">The Beatmap Object to set.</param>
+        public void RenderLDM(BeatmapObject beatmapObject)
+        {
             var ldmToggle = (Toggle)ObjectUIElements["LDM Toggle"];
             ldmToggle.onValueChanged.ClearAll();
             ldmToggle.isOn = beatmapObject.LDM;
@@ -1978,13 +1990,20 @@ namespace BetterLegacy.Editor.Managers
                 // Since name has no effect on the physical object, we will only need to update the timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
             });
+        }
 
+        /// <summary>
+        /// Renders the Tags list.
+        /// </summary>
+        /// <param name="beatmapObject">The Beatmap Object to set.</param>
+        public void RenderTags(BeatmapObject beatmapObject)
+        {
             var tagsParent = (Transform)ObjectUIElements["Tags Content"];
+
+            LSHelpers.DeleteChildren(tagsParent);
 
             if (!RTEditor.ShowModdedUI)
                 return;
-
-            LSHelpers.DeleteChildren(tagsParent);
 
             int num = 0;
             foreach (var tag in beatmapObject.tags)
@@ -1995,7 +2014,7 @@ namespace BetterLegacy.Editor.Managers
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
                 input.onValueChanged.ClearAll();
                 input.text = tag;
-                input.onValueChanged.AddListener(_val => { beatmapObject.tags[index] = _val; });
+                input.onValueChanged.AddListener(_val => beatmapObject.tags[index] = _val);
 
                 var inputFieldSwapper = gameObject.AddComponent<InputFieldSwapper>();
                 inputFieldSwapper.Init(input, InputFieldSwapper.Type.String);
@@ -2005,7 +2024,7 @@ namespace BetterLegacy.Editor.Managers
                 deleteStorage.button.onClick.AddListener(() =>
                 {
                     beatmapObject.tags.RemoveAt(index);
-                    RenderName(beatmapObject);
+                    RenderTags(beatmapObject);
                 });
 
                 EditorHelper.AddInputFieldContextMenu(input);
@@ -2029,7 +2048,7 @@ namespace BetterLegacy.Editor.Managers
             addButton.onClick.AddListener(() =>
             {
                 beatmapObject.tags.Add("New Tag");
-                RenderName(beatmapObject);
+                RenderTags(beatmapObject);
             });
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
@@ -3618,8 +3637,7 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        void UpdateKeyframeRandomDialog(Transform kfdialog, Transform randomValueLabel, Transform randomValue, int type,
-            IEnumerable<TimelineObject> selected, TimelineObject firstKF, BeatmapObject beatmapObject, string typeName, int randomType)
+        void UpdateKeyframeRandomDialog(Transform kfdialog, Transform randomValueLabel, Transform randomValue, int type, int randomType)
         {
             if (kfdialog.Find("r_axis"))
                 kfdialog.Find("r_axis").gameObject.SetActive(RTEditor.ShowModdedUI && (randomType == 5 || randomType == 6));
@@ -3704,7 +3722,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(beatmapObject, "Keyframes");
                     }
 
-                    UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, selected, firstKF, beatmapObject, typeName, buttonTmp);
+                    UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, buttonTmp);
                 });
                 if (!toggle.GetComponent<HoverUI>())
                 {
@@ -3715,7 +3733,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, selected, firstKF, beatmapObject, typeName, random);
+            UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, random);
 
             float num = 0f;
             if (firstKF.GetData<EventKeyframe>().eventRandomValues.Length > 2)

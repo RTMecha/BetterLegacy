@@ -191,7 +191,7 @@ namespace BetterLegacy.Editor.Components
                     currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
 
                     ObjectEditor.inst.RenderTimelineObject(currentSelection);
-                    CoreHelper.StartCoroutine(ObjectEditor.RefreshObjectGUI(currentBeatmapObject));
+                    CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(currentBeatmapObject));
                 }
 
                 RTEditor.inst.prefabPickerEnabled = false;

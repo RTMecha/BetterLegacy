@@ -2144,7 +2144,7 @@ namespace BetterLegacy.Patchers
         static bool RefreshKeyframeGUIPrefix()
         {
             if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
+                ObjectEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
             return false;
         }
 

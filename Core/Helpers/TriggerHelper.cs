@@ -495,7 +495,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
-                RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
         });
 
         public static EventTrigger.Entry CreateBeatmapObjectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerUp, eventData =>
@@ -857,7 +857,7 @@ namespace BetterLegacy.Core.Helpers
                 currentSelection.GetData<BeatmapObject>().parent = timelineObjectToParentTo.ID;
                 Updater.UpdateObject(currentSelection.GetData<BeatmapObject>());
 
-                RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(currentSelection.GetData<BeatmapObject>()));
+                RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(currentSelection.GetData<BeatmapObject>()));
             }
 
             return canBeParented;

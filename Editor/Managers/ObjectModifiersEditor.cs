@@ -155,7 +155,7 @@ namespace BetterLegacy.Editor.Managers
                     showModifiers = _val;
                     scrollView.gameObject.SetActive(showModifiers);
                     if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                        RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
+                        RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
                 });
 
                 EditorThemeManager.AddToggle(activeToggle, graphic: activeText);
@@ -3015,7 +3015,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.modifiers.Add(modifier);
                         else
                             beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
-                        RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(beatmapObject));
+                        RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(beatmapObject));
                         EditorManager.inst.HideDialog("Default Modifiers Popup");
                     });
 

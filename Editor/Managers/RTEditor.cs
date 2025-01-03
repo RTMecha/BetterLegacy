@@ -5599,7 +5599,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.HideDialog("Parent Selector");
                 if (list.Count == 1 && timelineObject.isBeatmapObject)
-                    StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                    StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                 if (list.Count == 1 && timelineObject.isPrefabObject)
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
             });
@@ -5636,7 +5636,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.HideDialog("Parent Selector");
                     if (list.Count == 1 && timelineObject.isBeatmapObject)
-                        StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                        StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                     if (list.Count == 1 && timelineObject.isPrefabObject)
                         RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
                 });
@@ -5704,7 +5704,7 @@ namespace BetterLegacy.Editor.Managers
 
                         EditorManager.inst.HideDialog("Parent Selector");
                         if (list.Count == 1 && timelineObject.isBeatmapObject)
-                            StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                            StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                         if (list.Count == 1 && timelineObject.isPrefabObject)
                             RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
 
