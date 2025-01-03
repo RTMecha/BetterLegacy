@@ -6,6 +6,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Example;
 using LSFunctions;
@@ -85,7 +86,7 @@ namespace BetterLegacy.Editor.Managers
             // A
             {
                 loadingPrefabTypes = true;
-                PrefabEditor.inst.StartCoroutine(RTEditor.inst.LoadPrefabs());
+                PrefabEditor.inst.StartCoroutine(LoadPrefabs());
                 PrefabEditor.inst.OffsetLine = PrefabEditor.inst.OffsetLinePrefab.Duplicate(EditorManager.inst.timeline.transform, "offset line");
                 PrefabEditor.inst.OffsetLine.transform.AsRT().pivot = Vector2.one;
 
@@ -1906,6 +1907,180 @@ namespace BetterLegacy.Editor.Managers
 
         public InputField externalNameField;
         public InputField externalDescriptionField;
+
+        public bool prefabsLoading;
+
+        GameObject prefabExternalUpAFolderButton;
+        public GameObject prefabExternalAddButton;
+
+        public IEnumerator LoadPrefabs()
+        {
+            if (prefabsLoading)
+                yield break;
+
+            prefabsLoading = true;
+
+            while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
+                yield return null;
+
+            for (int i = PrefabPanels.Count - 1; i >= 0; i--)
+            {
+                var prefabPanel = PrefabPanels[i];
+                if (prefabPanel.Dialog == PrefabDialog.External)
+                {
+                    Destroy(prefabPanel.GameObject);
+                    PrefabPanels.RemoveAt(i);
+                }
+            }
+
+            var config = EditorConfig.Instance;
+
+            var hoverSize = config.PrefabButtonHoverSize.Value;
+
+            if (!prefabExternalAddButton)
+            {
+                CoreHelper.DeleteChildren(PrefabEditor.inst.externalContent);
+
+                prefabExternalAddButton = CreatePrefabButton(PrefabEditor.inst.externalContent, "New External Prefab", eventData =>
+                {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RTEditor.inst.ShowContextMenu(300f,
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create prefab", () =>
+                            {
+                                PrefabEditor.inst.OpenDialog();
+                                createInternal = false;
+                            }),
+                            new ButtonFunction("Paste Prefab", PastePrefab)
+                            );
+
+                        return;
+                    }
+
+                    if (savingToPrefab && prefabToSaveFrom != null)
+                    {
+                        savingToPrefab = false;
+                        SavePrefab(RTPrefabEditor.inst.prefabToSaveFrom);
+
+                        EditorManager.inst.HideDialog("Prefab Popup");
+
+                        prefabToSaveFrom = null;
+
+                        EditorManager.inst.DisplayNotification("Applied all changes to new External Prefab.", 2f, EditorManager.NotificationType.Success);
+
+                        return;
+                    }
+
+                    PrefabEditor.inst.OpenDialog();
+                    createInternal = false;
+                });
+            }
+            else
+            {
+                var hover = prefabExternalAddButton.GetComponent<HoverUI>();
+                hover.animateSca = true;
+                hover.animatePos = false;
+                hover.size = hoverSize;
+            }
+
+            bool isExternal = true;
+
+            var nameHorizontalOverflow = isExternal ? config.PrefabExternalNameHorizontalWrap.Value : config.PrefabInternalNameHorizontalWrap.Value;
+
+            var nameVerticalOverflow = isExternal ? config.PrefabExternalNameVerticalWrap.Value : config.PrefabInternalNameVerticalWrap.Value;
+
+            var nameFontSize = isExternal ? config.PrefabExternalNameFontSize.Value : config.PrefabInternalNameFontSize.Value;
+
+            var typeHorizontalOverflow = isExternal ? config.PrefabExternalTypeHorizontalWrap.Value : config.PrefabInternalTypeHorizontalWrap.Value;
+
+            var typeVerticalOverflow = isExternal ? config.PrefabExternalTypeVerticalWrap.Value : config.PrefabInternalTypeVerticalWrap.Value;
+
+            var typeFontSize = isExternal ? config.PrefabExternalTypeFontSize.Value : config.PrefabInternalTypeFontSize.Value;
+
+            var deleteAnchoredPosition = isExternal ? config.PrefabExternalDeleteButtonPos.Value : config.PrefabInternalDeleteButtonPos.Value;
+            var deleteSizeDelta = isExternal ? config.PrefabExternalDeleteButtonSca.Value : config.PrefabInternalDeleteButtonSca.Value;
+
+            while (loadingPrefabTypes)
+                yield return null;
+
+            // Back
+            if (!prefabExternalUpAFolderButton)
+            {
+                prefabExternalUpAFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, "back");
+                var folderButtonStorageFolder = prefabExternalUpAFolderButton.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = prefabExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = prefabExternalUpAFolderButton.AddComponent<HoverUI>();
+                hoverUIFolder.size = hoverSize;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.text.text = "< Up a folder";
+
+                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonFunctionFolder.onClick = eventData =>
+                {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RTEditor.inst.ShowContextMenu(300f,
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Paste Prefab", PastePrefab));
+
+                        return;
+                    }
+
+                    if (RTEditor.inst.prefabPathField.text == RTEditor.PrefabPath)
+                    {
+                        RTEditor.inst.prefabPathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.prefabListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        RTEditor.inst.UpdatePrefabPath(false);
+                    }
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+            }
+
+            prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.prefabListPath) != RTFile.ApplicationDirectory + "beatmaps");
+
+            var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + RTEditor.prefabListPath, "*", SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < directories.Length; i++)
+            {
+                var directory = directories[i];
+                var prefabPanel = new PrefabPanel(i);
+                prefabPanel.Init(directory);
+                PrefabPanels.Add(prefabPanel);
+            }
+
+            var files = Directory.GetFiles(RTFile.ApplicationDirectory + RTEditor.prefabListPath, FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                var jn = JSON.Parse(RTFile.ReadFromFile(file));
+
+                var prefab = Prefab.Parse(jn);
+                prefab.objects.ForEach(x => (x as BeatmapObject).RemovePrefabReference());
+                prefab.filePath = RTFile.ReplaceSlash(file);
+
+                var prefabPanel = new PrefabPanel(PrefabDialog.External, i);
+                prefabPanel.Init(prefab);
+                PrefabPanels.Add(prefabPanel);
+            }
+
+            prefabsLoading = false;
+
+            yield break;
+        }
+
+        public IEnumerator UpdatePrefabs()
+        {
+            yield return inst.StartCoroutine(LoadPrefabs());
+            PrefabEditor.inst.ReloadExternalPrefabsInPopup();
+            EditorManager.inst.DisplayNotification("Updated external prefabs!", 2f, EditorManager.NotificationType.Success);
+            yield break;
+        }
 
         void CreatePrefabExternalDialog()
         {

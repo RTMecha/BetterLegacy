@@ -565,13 +565,6 @@ namespace BetterLegacy.Editor.Managers
         public InputField themePathField;
         public InputField prefabPathField;
 
-        public bool themesLoading = false;
-
-        public GameObject themeAddButton;
-
-        public bool prefabsLoading = false;
-        public GameObject prefabExternalAddButton;
-
         #endregion
 
         #region Mouse Picker
@@ -1565,7 +1558,7 @@ namespace BetterLegacy.Editor.Managers
 
                     SaveGlobalSettings();
 
-                    StartCoroutine(LoadThemes(true));
+                    StartCoroutine(RTThemeEditor.inst.LoadThemes(true));
                     EventEditor.inst.RenderEventsDialog();
 
                     HideWarningPopup();
@@ -1581,7 +1574,7 @@ namespace BetterLegacy.Editor.Managers
 
             SaveGlobalSettings();
 
-            StartCoroutine(LoadThemes(true));
+            StartCoroutine(RTThemeEditor.inst.LoadThemes(true));
             EventEditor.inst.RenderEventsDialog();
         }
 
@@ -1615,7 +1608,7 @@ namespace BetterLegacy.Editor.Managers
 
                     SaveGlobalSettings();
 
-                    StartCoroutine(UpdatePrefabs());
+                    StartCoroutine(RTPrefabEditor.inst.UpdatePrefabs());
 
                     HideWarningPopup();
                     prefabPathField.interactable = true;
@@ -1630,7 +1623,7 @@ namespace BetterLegacy.Editor.Managers
 
             SaveGlobalSettings();
 
-            StartCoroutine(UpdatePrefabs());
+            StartCoroutine(RTPrefabEditor.inst.UpdatePrefabs());
         }
 
         public void UpdateOrderDropdown()
@@ -1867,7 +1860,7 @@ namespace BetterLegacy.Editor.Managers
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log($"------- [UPDATING THEME FILEWATCHER] -------");
-            StartCoroutine(LoadThemes(EventEditor.inst.dialogRight.GetChild(4).gameObject.activeInHierarchy));
+            StartCoroutine(RTThemeEditor.inst.LoadThemes(EventEditor.inst.dialogRight.GetChild(4).gameObject.activeInHierarchy));
             yield break;
         }
 
@@ -1875,7 +1868,7 @@ namespace BetterLegacy.Editor.Managers
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log($"------- [UPDATING PREFAB FILEWATCHER] -------");
-            StartCoroutine(UpdatePrefabs());
+            StartCoroutine(RTPrefabEditor.inst.UpdatePrefabs());
             yield break;
         }
 
@@ -4979,358 +4972,6 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="audioClip">Audio to set.</param>
         public void SetCurrentAudio(AudioClip audioClip) => AudioManager.inst.PlayMusic(null, audioClip, true, 0f, true);
 
-        GameObject themeUpFolderButton;
-        public IEnumerator LoadThemes(bool refreshGUI = false)
-        {
-            if (themesLoading)
-                yield break;
-
-            themesLoading = true;
-
-            while (!EventEditor.inst || !EventEditor.inst.dialogRight || !GameData.IsValid)
-                yield return null;
-
-            DataManager.inst.CustomBeatmapThemes.Clear();
-            DataManager.inst.BeatmapThemeIDToIndex.Clear();
-            DataManager.inst.BeatmapThemeIndexToID.Clear();
-
-            if (GameData.IsValid)
-                GameData.Current.beatmapThemes.Clear();
-
-            var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
-            var parent = dialogTmp.Find("themes/viewport/content");
-
-            if (RTThemeEditor.inst.ThemePanels.Count > 0)
-                RTThemeEditor.inst.ThemePanels.ForEach(x => Destroy(x.GameObject));
-            RTThemeEditor.inst.ThemePanels.Clear();
-
-            if (!themeAddButton)
-            {
-                themeAddButton = EventEditor.inst.ThemeAdd.Duplicate(parent, "Create New");
-                var tf = themeAddButton.transform;
-                themeAddButton.SetActive(true);
-                tf.localScale = Vector2.one;
-                var button = themeAddButton.GetComponent<Button>();
-                button.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor());
-
-                var contextClickable = themeAddButton.AddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    ShowContextMenu(300f,
-                        new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); })),
-                        new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
-                };
-
-                EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
-                EditorThemeManager.AddGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);
-                EditorThemeManager.AddGraphic(themeAddButton.transform.Find("text").GetComponent<Text>(), ThemeGroup.List_Button_2_Text);
-            }
-
-            int themePanelIndex = 0;
-            try
-            {
-                var hoverSize = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
-
-                // Back
-                if (!themeUpFolderButton)
-                {
-                    themeUpFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, "back");
-                    var folderButtonStorageFolder = themeUpFolderButton.GetComponent<FunctionButtonStorage>();
-                    var folderButtonFunctionFolder = themeUpFolderButton.AddComponent<FolderButtonFunction>();
-
-                    var hoverUIFolder = themeUpFolderButton.AddComponent<HoverUI>();
-                    hoverUIFolder.size = hoverSize;
-                    hoverUIFolder.animatePos = false;
-                    hoverUIFolder.animateSca = true;
-
-                    folderButtonStorageFolder.text.text = "< Up a folder";
-
-                    folderButtonStorageFolder.button.onClick.ClearAll();
-                    folderButtonFunctionFolder.onClick = eventData =>
-                    {
-                        if (eventData.button == PointerEventData.InputButton.Right)
-                        {
-                            ShowContextMenu(300f,
-                                new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{themeListPath}", () => { UpdateThemePath(true); HideNameEditor(); })),
-                                new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
-                                new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
-
-                            return;
-                        }
-
-                        if (themePathField.text == themePath)
-                        {
-                            themePathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + themeListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
-                            UpdateThemePath(false);
-                        }
-                    };
-
-                    EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
-                    EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.text, ThemeGroup.List_Button_2_Text);
-                }
-
-                themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + themeListPath) != RTFile.ApplicationDirectory + "beatmaps");
-
-                foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + themeListPath, "*", SearchOption.TopDirectoryOnly))
-                {
-                    RTThemeEditor.inst.SetupThemePanel(directory, true, themePanelIndex);
-                    themePanelIndex++;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-
-            int num = 0;
-            foreach (var beatmapTheme in DataManager.inst.BeatmapThemes.Select(x => x as BeatmapTheme))
-            {
-                DataManager.inst.BeatmapThemeIDToIndex.Add(num, num);
-                DataManager.inst.BeatmapThemeIndexToID.Add(num, num);
-
-                RTThemeEditor.inst.SetupThemePanel(beatmapTheme, true, index: themePanelIndex);
-
-                num++;
-                themePanelIndex++;
-            }
-
-            var search = EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text;
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + themeListPath, FileFormat.LST.ToPattern());
-            foreach (var file in files)
-            {
-                var jn = JSON.Parse(RTFile.ReadFromFile(file));
-                var orig = BeatmapTheme.Parse(jn);
-                orig.filePath = file.Replace("\\", "/");
-                DataManager.inst.CustomBeatmapThemes.Add(orig);
-
-                if (jn["id"] != null && GameData.IsValid && GameData.Current.beatmapThemes != null && !GameData.Current.beatmapThemes.ContainsKey(jn["id"]))
-                    GameData.Current.beatmapThemes.Add(jn["id"], orig);
-
-                if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(orig.id)))
-                {
-                    var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == orig.id).Select(x => x.name).ToArray();
-                    var str = RTString.ArrayToString(array);
-
-                    if (CoreHelper.InEditor)
-                        EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] due to conflicting themes: {str}", 2f * array.Length, EditorManager.NotificationType.Error);
-
-                    RTThemeEditor.inst.SetupThemePanel(orig, false, true, index: themePanelIndex);
-                }
-                else
-                {
-                    DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(orig.id));
-                    DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(orig.id), DataManager.inst.AllThemes.Count - 1);
-
-                    try
-                    {
-                        RTThemeEditor.inst.SetupThemePanel(orig, false, index: themePanelIndex);
-                    }
-                    catch (Exception ex)
-                    {
-                        EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] for some reason. Press {CoreConfig.Instance.OpenPAPersistentFolder.Value} key to open the log folder and give the Player.log file to RTMecha.", 8f, EditorManager.NotificationType.Error);
-                        CoreHelper.LogException(ex);
-                    }
-                }
-
-                if (jn["id"] == null)
-                {
-                    var beatmapTheme = BeatmapTheme.DeepCopy(orig);
-                    beatmapTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
-                    DataManager.inst.CustomBeatmapThemes.Remove(orig);
-                    RTFile.DeleteFile(file);
-                    RTThemeEditor.inst.SaveTheme(beatmapTheme);
-                    DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
-                }
-
-                themePanelIndex++;
-            }
-            themesLoading = false;
-
-            if (refreshGUI)
-            {
-                var themeSearch = dialogTmp.Find("theme-search").GetComponent<InputField>();
-                yield return StartCoroutine(RTThemeEditor.inst.RenderThemeList(themeSearch.text));
-            }
-
-            yield break;
-        }
-
-        GameObject prefabExternalUpAFolderButton;
-        public IEnumerator LoadPrefabs()
-        {
-            if (prefabsLoading)
-                yield break;
-
-            prefabsLoading = true;
-
-            while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
-                yield return null;
-
-            for (int i = RTPrefabEditor.inst.PrefabPanels.Count - 1; i >= 0; i--)
-            {
-                var prefabPanel = RTPrefabEditor.inst.PrefabPanels[i];
-                if (prefabPanel.Dialog == PrefabDialog.External)
-                {
-                    Destroy(prefabPanel.GameObject);
-                    RTPrefabEditor.inst.PrefabPanels.RemoveAt(i);
-                }
-            }
-
-            var config = EditorConfig.Instance;
-
-            var hoverSize = config.PrefabButtonHoverSize.Value;
-
-            if (!prefabExternalAddButton)
-            {
-                DeleteChildren(PrefabEditor.inst.externalContent);
-
-                prefabExternalAddButton = RTPrefabEditor.inst.CreatePrefabButton(PrefabEditor.inst.externalContent, "New External Prefab", eventData =>
-                {
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        ShowContextMenu(300f,
-                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); })),
-                            new ButtonFunction("Create prefab", () =>
-                            {
-                                PrefabEditor.inst.OpenDialog();
-                                RTPrefabEditor.inst.createInternal = false;
-                            }),
-                            new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab)
-                            );
-
-                        return;
-                    }
-
-                    if (RTPrefabEditor.inst.savingToPrefab && RTPrefabEditor.inst.prefabToSaveFrom != null)
-                    {
-                        RTPrefabEditor.inst.savingToPrefab = false;
-                        RTPrefabEditor.inst.SavePrefab(RTPrefabEditor.inst.prefabToSaveFrom);
-
-                        EditorManager.inst.HideDialog("Prefab Popup");
-
-                        RTPrefabEditor.inst.prefabToSaveFrom = null;
-
-                        EditorManager.inst.DisplayNotification("Applied all changes to new External Prefab.", 2f, EditorManager.NotificationType.Success);
-
-                        return;
-                    }
-
-                    PrefabEditor.inst.OpenDialog();
-                    RTPrefabEditor.inst.createInternal = false;
-                });
-            }
-            else
-            {
-                var hover = prefabExternalAddButton.GetComponent<HoverUI>();
-                hover.animateSca = true;
-                hover.animatePos = false;
-                hover.size = hoverSize;
-            }
-
-            bool isExternal = true;
-
-            var nameHorizontalOverflow = isExternal ? config.PrefabExternalNameHorizontalWrap.Value : config.PrefabInternalNameHorizontalWrap.Value;
-
-            var nameVerticalOverflow = isExternal ? config.PrefabExternalNameVerticalWrap.Value : config.PrefabInternalNameVerticalWrap.Value;
-
-            var nameFontSize = isExternal ? config.PrefabExternalNameFontSize.Value : config.PrefabInternalNameFontSize.Value;
-
-            var typeHorizontalOverflow = isExternal ? config.PrefabExternalTypeHorizontalWrap.Value : config.PrefabInternalTypeHorizontalWrap.Value;
-
-            var typeVerticalOverflow = isExternal ? config.PrefabExternalTypeVerticalWrap.Value : config.PrefabInternalTypeVerticalWrap.Value;
-
-            var typeFontSize = isExternal ? config.PrefabExternalTypeFontSize.Value : config.PrefabInternalTypeFontSize.Value;
-
-            var deleteAnchoredPosition = isExternal ? config.PrefabExternalDeleteButtonPos.Value : config.PrefabInternalDeleteButtonPos.Value;
-            var deleteSizeDelta = isExternal ? config.PrefabExternalDeleteButtonSca.Value : config.PrefabInternalDeleteButtonSca.Value;
-
-            while (RTPrefabEditor.loadingPrefabTypes)
-                yield return null;
-
-            // Back
-            if (!prefabExternalUpAFolderButton)
-            {
-                prefabExternalUpAFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, "back");
-                var folderButtonStorageFolder = prefabExternalUpAFolderButton.GetComponent<FunctionButtonStorage>();
-                var folderButtonFunctionFolder = prefabExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
-
-                var hoverUIFolder = prefabExternalUpAFolderButton.AddComponent<HoverUI>();
-                hoverUIFolder.size = hoverSize;
-                hoverUIFolder.animatePos = false;
-                hoverUIFolder.animateSca = true;
-
-                folderButtonStorageFolder.text.text = "< Up a folder";
-
-                folderButtonStorageFolder.button.onClick.ClearAll();
-                folderButtonFunctionFolder.onClick = eventData =>
-                {
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        ShowContextMenu(300f,
-                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); })),
-                            new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab));
-
-                        return;
-                    }
-
-                    if (prefabPathField.text == prefabPath)
-                    {
-                        prefabPathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + prefabListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
-                        UpdatePrefabPath(false);
-                    }
-                };
-
-                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
-            }
-
-            prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + prefabListPath) != RTFile.ApplicationDirectory + "beatmaps");
-
-            var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + prefabListPath, "*", SearchOption.TopDirectoryOnly);
-
-            for (int i = 0; i < directories.Length; i++)
-            {
-                var directory = directories[i];
-                var prefabPanel = new PrefabPanel(i);
-                prefabPanel.Init(directory);
-                RTPrefabEditor.inst.PrefabPanels.Add(prefabPanel);
-            }
-
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
-
-            for (int i = 0; i < files.Length; i++)
-            {
-                var file = files[i];
-                var jn = JSON.Parse(RTFile.ReadFromFile(file));
-
-                var prefab = Prefab.Parse(jn);
-                prefab.objects.ForEach(x => (x as BeatmapObject).RemovePrefabReference());
-                prefab.filePath = RTFile.ReplaceSlash(file);
-
-                var prefabPanel = new PrefabPanel(PrefabDialog.External, i);
-                prefabPanel.Init(prefab);
-                RTPrefabEditor.inst.PrefabPanels.Add(prefabPanel);
-            }
-
-            prefabsLoading = false;
-
-            yield break;
-        }
-
-        public IEnumerator UpdatePrefabs()
-        {
-            yield return inst.StartCoroutine(LoadPrefabs());
-            PrefabEditor.inst.ReloadExternalPrefabsInPopup();
-            EditorManager.inst.DisplayNotification("Updated external prefabs!", 2f, EditorManager.NotificationType.Success);
-            yield break;
-        }
-
         public void SetAutoSave()
         {
             var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
@@ -5575,9 +5216,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh Popups / Dialogs
 
-        public float contextButtonHeight = 37f;
-        public float contextSpacerHeight = 6f;
-
         public void ShowContextMenu(float width, List<ButtonFunction> buttonFunctions) => ShowContextMenu(width, buttonFunctions.ToArray());
         public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
         {
@@ -5594,7 +5232,7 @@ namespace BetterLegacy.Editor.Managers
                     var image = g.AddComponent<Image>();
                     image.rectTransform.sizeDelta = new Vector2(0f, buttonFunction.SpacerSize);
                     EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3);
-                    height += contextSpacerHeight;
+                    height += 6f;
                     continue;
                 }
 
@@ -5613,7 +5251,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
-                height += contextButtonHeight;
+                height += 37f;
             }
 
             var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
@@ -6074,17 +5712,6 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyLightText(objectToParentText);
                 }
             }
-        }
-
-        void DeleteChildren(Transform transform)
-        {
-            var listToDelete = new List<GameObject>();
-            for (int i = 0; i < transform.childCount; i++)
-                listToDelete.Add(transform.GetChild(i).gameObject);
-            for (int i = 0; i < listToDelete.Count; i++)
-                DestroyImmediate(listToDelete[i]);
-            listToDelete.Clear();
-            listToDelete = null;
         }
 
         public void RefreshFileBrowserLevels() => RTFileBrowser.inst.UpdateBrowserFile(FileFormat.LSB.Dot(), "level", x => StartCoroutine(LoadLevel(new Level(RTFile.ReplaceSlash(x).Remove("/" + Level.LEVEL_LSB)))));

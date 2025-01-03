@@ -58,7 +58,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadThemesPrefix(ref IEnumerator __result)
         {
-            __result = RTEditor.inst.LoadThemes();
+            __result = RTThemeEditor.inst.LoadThemes();
             return false;
         }
     }
