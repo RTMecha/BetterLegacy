@@ -178,7 +178,7 @@ namespace BetterLegacy.Editor.Managers
                             VerifyLevelIsOnServer();
                         }, RTEditor.inst.HideWarningPopup);
                     }),
-                    new ButtonFunction("Guidelines", () => { RTEditor.inst.ShowDocumentation("Uploading a Level"); })
+                    new ButtonFunction("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
                     );
             };
 
@@ -799,7 +799,7 @@ namespace BetterLegacy.Editor.Managers
             agreementText.onClick = eventData =>
             {
                 EditorManager.inst.ClearDialogs();
-                RTEditor.inst.ShowDocumentation("Uploading a Level");
+                EditorDocumentation.inst.OpenDocument("Uploading a Level");
             };
 
             content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
