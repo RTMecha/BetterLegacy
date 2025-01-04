@@ -25,8 +25,8 @@ namespace BetterLegacy.Editor.Data
         public string text;
         public int fontSize = 20;
         public FontStyle fontStyle = FontStyle.Normal;
-        public HorizontalWrapMode horizontalWrap = HorizontalWrapMode.Overflow;
-        public VerticalWrapMode verticalWrap = VerticalWrapMode.Truncate;
+        public HorizontalWrapMode horizontalWrap = HorizontalWrapMode.Wrap;
+        public VerticalWrapMode verticalWrap = VerticalWrapMode.Overflow;
 
         public void Apply(Text text)
         {
