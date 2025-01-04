@@ -1951,6 +1951,9 @@ namespace BetterLegacy.Editor.Managers
 
                                     Destroy(x.GetComponent<HoverTooltip>());
                                     Destroy(x.GetComponent<HideDropdownOptions>());
+                                    var layoutElement = x.GetComponent<LayoutElement>();
+                                    layoutElement.minWidth = 200f;
+                                    layoutElement.preferredWidth = 400f;
 
                                     var dropdown = x.GetComponent<Dropdown>();
                                     dropdown.template.sizeDelta = new Vector2(120f, 192f);
