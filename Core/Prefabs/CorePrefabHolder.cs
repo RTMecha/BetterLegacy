@@ -5,10 +5,9 @@ namespace BetterLegacy.Core.Prefabs
     public class CorePrefabHolder
     {
         public static CorePrefabHolder Instance { get; set; }
+
         public CorePrefabHolder()
         {
-            Instance = this;
-
             var gameObject = new GameObject("Core Prefab Holder");
             UnityEngine.Object.DontDestroyOnLoad(gameObject);
             PrefabParent = gameObject.transform;
@@ -16,6 +15,8 @@ namespace BetterLegacy.Core.Prefabs
             NumberInputField = new GameObject("Input Field");
             NumberInputField.transform.SetParent(PrefabParent);
         }
+
+        public static void Init() => Instance = new CorePrefabHolder();
 
         public Transform PrefabParent { get; set; }
 
