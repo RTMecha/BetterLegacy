@@ -2142,7 +2142,7 @@ namespace BetterLegacy.Editor.Managers
                     if (timelineObject.Locked)
                         continue;
 
-                    int binCalc = Mathf.Clamp(binOffset + timelineObject.binOffset, 0, 14);
+                    int binCalc = Mathf.Clamp(binOffset + timelineObject.binOffset, 0, RTEditor.inst.BinCount);
 
                     if (timelineObject.Bin != binCalc)
                         hasChanged = true;
@@ -5179,10 +5179,11 @@ namespace BetterLegacy.Editor.Managers
         {
             var editorBin = (Slider)ObjectUIElements["Bin Slider"];
             editorBin.onValueChanged.ClearAll();
+            editorBin.maxValue = RTEditor.inst.BinCount;
             editorBin.value = beatmapObject.editorData.Bin;
             editorBin.onValueChanged.AddListener(_val =>
             {
-                beatmapObject.editorData.Bin = Mathf.Clamp((int)_val, 0, 14);
+                beatmapObject.editorData.Bin = Mathf.Clamp((int)_val, 0, RTEditor.inst.BinCount);
 
                 // Since bin has no effect on the physical object, we will only need to update the timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));

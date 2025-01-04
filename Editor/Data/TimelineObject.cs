@@ -609,7 +609,7 @@ namespace BetterLegacy.Editor.Data
             length = length <= ObjectEditor.TimelineCollapseLength ? ObjectEditor.TimelineCollapseLength * zoom : length * zoom;
 
             rectTransform.sizeDelta = new Vector2(length, 20f);
-            rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, 14)));
+            rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, RTEditor.inst.BinCount)));
             if (Hover)
                 Hover.size = ObjectEditor.TimelineObjectHoverSize;
         }

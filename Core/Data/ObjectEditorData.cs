@@ -1,4 +1,5 @@
-﻿using SimpleJSON;
+﻿using BetterLegacy.Editor.Managers;
+using SimpleJSON;
 using UnityEngine;
 using BaseEditorData = DataManager.GameData.BeatmapObject.EditorData;
 
@@ -17,6 +18,12 @@ namespace BetterLegacy.Core.Data
             Layer = layer;
             this.collapse = collapse;
             this.locked = locked;
+        }
+
+        public new int Bin
+        {
+            get => Mathf.Clamp(bin, 0, RTEditor.MAX_BINS);
+            set => bin = Mathf.Clamp(value, 0, RTEditor.MAX_BINS);
         }
 
         public new int Layer

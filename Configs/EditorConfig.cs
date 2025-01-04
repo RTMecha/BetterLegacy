@@ -85,6 +85,9 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> KeyframeZoomBounds { get; set; }
         public Setting<float> MainZoomAmount { get; set; }
         public Setting<float> KeyframeZoomAmount { get; set; }
+        public Setting<KeyCode> BinControlKey { get; set; }
+        public Setting<BinSliderControlActive> BinControlActiveBehavior { get; set; }
+        public Setting<float> BinControlScrollAmount { get; set; }
         public Setting<float> KeyframeEndLengthOffset { get; set; }
         public Setting<float> TimelineCollapseLength { get; set; }
         public Setting<bool> TimelineObjectPrefabTypeIcon { get; set; }
@@ -1284,6 +1287,9 @@ namespace BetterLegacy.Configs
             KeyframeZoomBounds = Bind(this, "Timeline", "Keyframe Zoom Bounds", new Vector2(1f, 512f), "The limits of the keyframe timeline zoom.");
             MainZoomAmount = Bind(this, "Timeline", "Main Zoom Amount", 0.05f, "Sets the zoom in & out amount for the main timeline.");
             KeyframeZoomAmount = Bind(this, "Timeline", "Keyframe Zoom Amount", 0.05f, "Sets the zoom in & out amount for the keyframe timeline.");
+            BinControlKey = BindEnum(this, "Timeline", "Bin Control Key", KeyCode.Tab, "The key to be held when you want to enable bin controls.");
+            BinControlActiveBehavior = BindEnum(this, "Timeline", "Bin Control Active Behavior", BinSliderControlActive.KeyToggled, "How the visibility of the Bin Slider should be treated.");
+            BinControlScrollAmount = Bind(this, "Timeline", "Bin Control Scroll Amount", 0.02f, "How much the bins should scroll.");
             KeyframeEndLengthOffset = Bind(this, "Timeline", "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
             TimelineCollapseLength = Bind(this, "Timeline", "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
             TimelineObjectPrefabTypeIcon = Bind(this, "Timeline", "Timeline Object Prefab Type Icon", true, "Shows the object's prefab type's icon.");

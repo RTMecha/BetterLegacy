@@ -115,6 +115,7 @@ namespace BetterLegacy.Editor.Managers
                 "Prefab Internal Count",
                 "Prefab Objects Count",
 
+                "Timeline Bin Count",
                 "Timeline Objects in Current Layer Count",
                 "Markers Count",
             };
@@ -286,6 +287,7 @@ namespace BetterLegacy.Editor.Managers
                     SetText("Prefab Internal Count", GameData.Current.prefabs.Count.ToString());
                     SetText("Prefab Objects Count", GameData.Current.prefabObjects.Count.ToString());
 
+                    SetText("Timeline Bin Count", RTEditor.inst.BinCount.ToString());
                     SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
                     SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
                 }

@@ -576,12 +576,20 @@ namespace BetterLegacy.Patchers
             var config = EditorConfig.Instance;
             float multiply = Input.GetKey(KeyCode.LeftControl) ? 2f : Input.GetKey(KeyCode.LeftShift) ? 0.1f : 1f;
 
+            if (Input.GetKey(EditorConfig.Instance.BinControlKey.Value))
+            {
+                if (InputDataManager.inst.editorActions.ZoomIn.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadPlus) || Input.GetKeyDown(KeyCode.Plus)))
+                    RTEditor.inst.SetBinScroll(Mathf.Clamp01(RTEditor.inst.BinScroll - config.BinControlScrollAmount.Value * multiply));
+                if (InputDataManager.inst.editorActions.ZoomOut.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadMinus) || Input.GetKeyDown(KeyCode.Minus)))
+                    RTEditor.inst.SetBinScroll(Mathf.Clamp01(RTEditor.inst.BinScroll + config.BinControlScrollAmount.Value * multiply));
+                return false;
+            }
+
             if (Instance.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Object)
                 && Instance.IsOverObjTimeline
                 && !CoreHelper.IsUsingInputField
                 && !RTEditor.inst.isOverMainTimeline)
             {
-
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat + config.KeyframeZoomAmount.Value * multiply;
                 if (InputDataManager.inst.editorActions.ZoomOut.WasPressed)
@@ -706,8 +714,7 @@ namespace BetterLegacy.Patchers
 
             DataManager.inst.SaveMetadata(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
             CoreHelper.StartCoroutine(SaveData(GameManager.inst.path));
-            PlayerManager.SaveLocalModels();
-
+            CoreHelper.StartCoroutine(SavePlayers());
             RTEditor.inst.SaveSettings();
 
             return false;
@@ -715,7 +722,7 @@ namespace BetterLegacy.Patchers
 
         public static IEnumerator SaveData(string _path)
         {
-            if (Instance != null)
+            if (Instance)
             {
                 Instance.DisplayNotification("Saving Beatmap!", 1f, EditorManager.NotificationType.Warning);
                 Instance.savingBeatmap = true;
@@ -731,12 +738,31 @@ namespace BetterLegacy.Patchers
                 yield return CoreHelper.StartCoroutine(gameData.ISaveData(_path));
 
             yield return new WaitForSeconds(0.5f);
-            if (Instance != null)
+            if (Instance)
             {
                 Instance.DisplayNotification("Saved Beatmap!", 2f, EditorManager.NotificationType.Success);
                 Instance.savingBeatmap = false;
             }
             yield break;
+        }
+
+        public static IEnumerator SavePlayers()
+        {
+            if (Instance)
+                Instance.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
+
+            if (EditorConfig.Instance.SaveAsync.Value)
+                yield return CoreHelper.StartCoroutineAsync(CoreHelper.DoAction(() => RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Main.ToJSON().ToString())));
+            else
+                RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Main.ToJSON().ToString());
+
+            PlayersData.Save();
+
+            yield return new WaitForSeconds(0.5f);
+            if (Instance)
+            {
+                EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
+            }
         }
 
         [HarmonyPatch(nameof(EditorManager.OpenSaveAs))]
