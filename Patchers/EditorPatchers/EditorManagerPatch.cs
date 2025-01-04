@@ -522,7 +522,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetFileInfoPopupTextPrefix(string __0)
         {
-            RTEditor.inst.fileInfoText?.SetText(__0);
+            RTEditor.inst.InfoPopup.SetInfo(__0);
             return false;
         }
 
@@ -1201,9 +1201,12 @@ namespace BetterLegacy.Patchers
                 inst.currentLoadingSprite = 0;
 
             var sprite = inst.loadingSprites[inst.currentLoadingSprite];
-            if (RTEditor.inst.doggoImage)
-                RTEditor.inst.doggoImage.sprite = sprite;
+            if (RTEditor.inst.InfoPopup && RTEditor.inst.InfoPopup.Doggo)
+                RTEditor.inst.InfoPopup.Doggo.sprite = sprite;
+            if (RTSettingEditor.inst && RTSettingEditor.inst.doggo)
+                RTSettingEditor.inst.doggo.sprite = sprite;
             inst.loadingImage.sprite = sprite;
+
             inst.currentLoadingSprite++;
 
             return false;

@@ -154,12 +154,9 @@ namespace BetterLegacy.Editor.Managers
 
             var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
 
-            while (!KeybindEditor.inst || !KeybindEditor.inst.editSprite)
-                yield return null;
-
             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(desc.transform, "edit");
             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = KeybindEditor.inst.editSprite;
+            buttonStorage.image.sprite = EditorSprites.EditSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
             buttonStorage.button.onClick.ClearAll();
@@ -245,21 +242,8 @@ namespace BetterLegacy.Editor.Managers
             if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
                 return;
 
-            int markerStart = markerLoopBegin.Index;
-            int markerEnd = markerLoopEnd.Index;
-
-            if (markerStart < 0)
-                markerStart = 0;
-            if (markerStart > GameData.Current.beatmapData.markers.Count - 1)
-                markerStart = GameData.Current.beatmapData.markers.Count - 1;
-
-            if (markerEnd < 0)
-                markerEnd = 0;
-            if (markerEnd > GameData.Current.beatmapData.markers.Count - 1)
-                markerEnd = GameData.Current.beatmapData.markers.Count - 1;
-
-            if (AudioManager.inst.CurrentAudioSource.time > GameData.Current.beatmapData.markers[markerEnd].time)
-                AudioManager.inst.SetMusicTime(GameData.Current.beatmapData.markers[markerStart].time);
+            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
+                AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
         }
 
         #region Editor Rendering

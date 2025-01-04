@@ -457,7 +457,7 @@ namespace BetterLegacy.Editor.Managers
 
                 themesPopup.Grid.cellSize = new Vector2(600f, 362f);
 
-                EditorHelper.AddEditorDropdown("View Themes", "", "View", RTEditor.inst.SearchSprite, () =>
+                EditorHelper.AddEditorDropdown("View Themes", "", "View", EditorSprites.SearchSprite, () =>
                 {
                     EditorManager.inst.ShowDialog("Theme Popup");
                     RefreshThemeSearch();

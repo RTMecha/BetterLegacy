@@ -29,11 +29,9 @@ namespace BetterLegacy.Editor.Managers
     {
         public static PlayerEditor inst;
 
-        public EditorPopup ModelsPopup { get; set; }
         public string modelSearchTerm;
         public int playerModelIndex = 0;
         public Transform content;
-        public Sprite PlayerSprite { get; set; }
         public string CustomObjectID { get; set; }
 
         GameObject labelPrefab;
@@ -143,15 +141,13 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(dialog.transform, "Scroll View");
-            var boolInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle");
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(dialog.transform, "Scroll View");
+            var boolInput = EditorPrefabHolder.Instance.Toggle;
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 512f);
 
-            PlayerSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
-
             EditorHelper.AddEditorDialog("Player Editor", dialog);
-            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, () =>
+            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", EditorSprites.PlayerSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Player Editor");
                 StartCoroutine(RefreshEditor());
@@ -1195,7 +1191,7 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.SetActiveChildren(content, false);
 
-            ModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, _val =>
+            RTEditor.inst.PlayerModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, _val =>
             {
                 modelSearchTerm = _val;
                 StartCoroutine(RefreshModels());
@@ -2188,7 +2184,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshModels()
         {
-            LSHelpers.DeleteChildren(ModelsPopup.Content);
+            LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
 
             int num = 0;
             foreach (var playerModel in PlayerManager.PlayerModels)
@@ -2201,7 +2197,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                var model = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(ModelsPopup.Content, name);
+                var model = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, name);
                 var modelButton = model.GetComponent<Button>();
                 modelButton.onClick.ClearAll();
                 modelButton.onClick.AddListener(() =>
@@ -2255,7 +2251,7 @@ namespace BetterLegacy.Editor.Managers
                 text.text = name;
 
                 var image = model.transform.Find("Image").GetComponent<Image>();
-                image.sprite = PlayerSprite;
+                image.sprite = EditorSprites.PlayerSprite;
 
                 EditorThemeManager.ApplySelectable(modelButton, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Light_Text);
@@ -2297,7 +2293,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshCustomObjects()
         {
-            LSHelpers.DeleteChildren(ModelsPopup.Content);
+            LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
 
             var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
             var currentModel = PlayerManager.PlayerModels[currentIndex];
@@ -2307,7 +2303,7 @@ namespace BetterLegacy.Editor.Managers
             if (isDefault)
                 yield break;
 
-            var createNew = PrefabEditor.inst.CreatePrefab.Duplicate(ModelsPopup.Content, "Create");
+            var createNew = PrefabEditor.inst.CreatePrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, "Create");
             var createNewButton = createNew.GetComponent<Button>();
             createNewButton.onClick.ClearAll();
             createNewButton.onClick.AddListener(() =>
@@ -2334,7 +2330,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var customObject in currentModel.customObjects)
             {
                 int index = num;
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.Content, customObject.Value.name);
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, customObject.Value.name);
                 var text = gameObject.transform.GetChild(0).GetComponent<Text>();
                 text.text = customObject.Value.name;
 
@@ -2601,9 +2597,9 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = type == index;
-                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length);
+                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
 
-                if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length)
+                if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length)
                     toggle.onValueChanged.AddListener(_val =>
                     {
                         if (_val)
@@ -2632,9 +2628,9 @@ namespace BetterLegacy.Editor.Managers
                     int index = num;
                     toggle.onValueChanged.ClearAll();
                     toggle.isOn = option == index;
-                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[type]);
+                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type]);
 
-                    if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[type])
+                    if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type])
                         toggle.onValueChanged.AddListener(_val =>
                         {
                             if (_val)
@@ -2674,7 +2670,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var select = shapeSettings.Find("7/select").GetComponent<Button>();
                     select.onClick.ClearAll();
-                    select.onClick.AddListener(() => { OpenImageSelector(ui); });
+                    select.onClick.AddListener(() => OpenImageSelector(ui));
                     shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(customObject.text) ? "No image selected" : customObject.text;
 
                     if (shapeSettings.Find("7/set"))

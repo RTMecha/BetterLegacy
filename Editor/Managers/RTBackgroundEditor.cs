@@ -213,31 +213,13 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < bgLeft.transform.childCount; i++)
                     listtoadd.Add(bgLeft.transform.GetChild(i));
 
-                var bmb = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View");
-
-                var e = Instantiate(bmb);
+                var e = EditorPrefabHolder.Instance.ScrollView.Duplicate(bgLeft.transform, "Object Scroll View");
 
                 var scrollView2 = e.transform;
 
-                scrollView2.SetParent(bgLeft.transform);
-                scrollView2.localScale = Vector3.one;
-                scrollView2.name = "Object Scroll View";
-
                 var content = scrollView2.Find("Viewport/Content");
-                var contentChildren = new List<Transform>();
-                for (int i = 0; i < content.childCount; i++)
-                    contentChildren.Add(content.GetChild(i));
 
-                foreach (var child in contentChildren)
-                {
-                    DestroyImmediate(child.gameObject);
-                }
-
-                int num = 0;
-                while (num < 20)
-                    num++;
-
-                var scrollViewRT = scrollView2.GetComponent<RectTransform>();
+                var scrollViewRT = scrollView2.AsRT();
                 scrollViewRT.anchoredPosition = new Vector2(188f, -353f);
                 scrollViewRT.sizeDelta = new Vector2(370f, 690f);
 
@@ -1120,8 +1102,6 @@ namespace BetterLegacy.Editor.Managers
 
             // Modifiers
             {
-                var eventButton = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event");
-
                 var iLabel = Instantiate(label);
                 iLabel.transform.SetParent(BackgroundEditor.inst.left);
                 iLabel.transform.localScale = Vector3.one;
@@ -1134,14 +1114,14 @@ namespace BetterLegacy.Editor.Managers
                 iterations.name = "block";
                 DestroyImmediate(iterations.transform.GetChild(1).gameObject);
 
-                var addBlock = eventButton.Duplicate(iterations.transform.Find("x"), "add");
+                var addBlock = EditorPrefabHolder.Instance.Function1Button.Duplicate(iterations.transform.Find("x"), "add");
                 addBlock.transform.localScale = Vector3.one;
                 addBlock.transform.AsRT().sizeDelta = new Vector2(80f, 32f);
 
                 var addBlockText = addBlock.transform.GetChild(0).GetComponent<Text>();
                 addBlockText.text = "Add";
 
-                var removeBlock = eventButton.Duplicate(iterations.transform.Find("x"), "del");
+                var removeBlock = EditorPrefabHolder.Instance.Function1Button.Duplicate(iterations.transform.Find("x"), "del");
                 removeBlock.transform.localScale = Vector3.one;
                 removeBlock.transform.AsRT().sizeDelta = new Vector2(80f, 32f);
 
@@ -1821,48 +1801,36 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreateModifiersOnAwake()
         {
-            var bmb = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View");
-            var togglePrefab = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored");
+            var orderMatters = EditorPrefabHolder.Instance.ToggleButton.Duplicate(BackgroundEditor.inst.left, "order");
+            var orderMattersToggleButton = orderMatters.GetComponent<ToggleButtonStorage>();
+            orderMattersToggleButton.label.text = "Order Matters";
 
-            var order = togglePrefab.Duplicate(BackgroundEditor.inst.left, "order");
-            order.transform.localScale = Vector3.one;
-            var orderText = order.transform.Find("Text").GetComponent<Text>();
-            orderText.text = "Order Matters";
+            modifiersOrderToggle = orderMattersToggleButton.toggle;
 
-            modifiersOrderToggle = order.GetComponent<Toggle>();
-
-            EditorThemeManager.AddToggle(modifiersOrderToggle, graphic: orderText);
+            EditorThemeManager.AddToggle(modifiersOrderToggle, graphic: orderMattersToggleButton.label);
             
-            var act = togglePrefab.Duplicate(BackgroundEditor.inst.left, "active");
-            act.transform.localScale = Vector3.one;
-            var activeText = act.transform.Find("Text").GetComponent<Text>();
-            activeText.text = "Show Modifiers";
+            var showModifiers = EditorPrefabHolder.Instance.ToggleButton.Duplicate(BackgroundEditor.inst.left, "active");
+            var showModifiersToggleButton = showModifiers.GetComponent<ToggleButtonStorage>();
+            showModifiersToggleButton.label.text = "Show Modifiers";
 
-            modifiersActiveToggle = act.GetComponent<Toggle>();
+            modifiersActiveToggle = showModifiersToggleButton.toggle;
             modifiersActiveToggle.onValueChanged.ClearAll();
-            modifiersActiveToggle.isOn = showModifiers;
+            modifiersActiveToggle.isOn = this.showModifiers;
             modifiersActiveToggle.onValueChanged.AddListener(_val =>
             {
-                showModifiers = _val;
-                scrollView.gameObject.SetActive(showModifiers);
+                this.showModifiers = _val;
+                scrollView.gameObject.SetActive(this.showModifiers);
                 if (CurrentSelectedBG)
                     StartCoroutine(RenderModifiers(CurrentSelectedBG));
             });
 
-            EditorThemeManager.AddToggle(modifiersActiveToggle, graphic: activeText);
+            EditorThemeManager.AddToggle(modifiersActiveToggle, graphic: showModifiersToggleButton.label);
 
-            var e = Instantiate(bmb);
-
-            scrollView = e.transform;
-
-            scrollView.SetParent(BackgroundEditor.inst.left);
-            scrollView.localScale = Vector3.one;
-            scrollView.name = "Modifiers Scroll View";
+            scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(BackgroundEditor.inst.left, "Modifiers Scroll View").transform;
 
             content = scrollView.Find("Viewport/Content");
-            LSHelpers.DeleteChildren(content);
 
-            scrollView.gameObject.SetActive(showModifiers);
+            scrollView.gameObject.SetActive(this.showModifiers);
 
             modifierCardPrefab = Creator.NewUIObject("Modifier Prefab", transform);
             modifierCardPrefab.transform.AsRT().sizeDelta = new Vector2(336f, 128f);
@@ -2594,8 +2562,7 @@ namespace BetterLegacy.Editor.Managers
 
             ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(146f, 32f);
 
-            var dropdownInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
-                .Duplicate(rectTransform, "Dropdown");
+            var dropdownInput = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(rectTransform, "Dropdown");
             dropdownInput.transform.localScale = Vector2.one;
 
             return gameObject;

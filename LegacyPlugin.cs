@@ -34,9 +34,6 @@ namespace BetterLegacy
         public static readonly Harmony harmony = new Harmony("BetterLegacy");
         public static Version ModVersion => new Version(PluginInfo.PLUGIN_VERSION);
 
-        static EditorPrefabHolder editorPrefabHolder;
-        static CorePrefabHolder corePrefabHolder;
-
         public static List<BaseConfig> configs = new List<BaseConfig>();
 
         public static Sprite PALogoSprite { get; set; }
@@ -157,8 +154,8 @@ namespace BetterLegacy
             {
                 CoreHelper.Log("Creating prefabs...");
 
-                editorPrefabHolder = new EditorPrefabHolder();
-                corePrefabHolder = new CorePrefabHolder();
+                EditorPrefabHolder.Init();
+                CorePrefabHolder.Init();
             }
             catch (Exception ex)
             {

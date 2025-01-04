@@ -107,17 +107,11 @@ namespace BetterLegacy.Editor.Managers
 
             search.transform.GetChild(0).Find("Placeholder").GetComponent<Text>().text = "Search for level...";
 
-            var scrollView = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View"));
-            scrollView.transform.SetParent(editorDialogTransform);
-            scrollView.transform.localScale = Vector3.one;
-            scrollView.name = "Scroll View";
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogTransform, "Scroll View");
 
             editorDialogContent = scrollView.transform.Find("Viewport/Content");
 
-            LSHelpers.DeleteChildren(editorDialogContent);
-
             editorDialogContent.GetComponent<VerticalLayoutGroup>().spacing = 4f;
-
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 320f);
 

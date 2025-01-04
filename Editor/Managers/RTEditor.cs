@@ -43,6 +43,8 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class RTEditor : MonoBehaviour
     {
+        #region Init
+
         public static RTEditor inst;
         public List<EditorThemeManager.EditorTheme> EditorThemes => EditorThemeManager.EditorThemes;
 
@@ -81,149 +83,26 @@ namespace BetterLegacy.Editor.Managers
                 Debug.LogError(ex);
             }
 
-            popups = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups").transform;
-            wholeTimeline = EditorManager.inst.timelineSlider.transform.parent.parent;
-
-            var prefabParent = Creator.NewGameObject("prefabs", transform);
-            var prefabHolder = EditorPrefabHolder.Instance;
-            prefabHolder.PrefabParent = prefabParent.transform;
-
-            timelineBar = EditorManager.inst.playButton.transform.parent.gameObject;
-            timeDefault = timelineBar.transform.GetChild(0).gameObject;
-            timeDefault.name = "Time Default";
-
-            var defaultInputField = timelineBar.transform.Find("Time");
-            defaultIF = defaultInputField.gameObject;
-            defaultIF.SetActive(true);
-            defaultInputField.SetParent(transform);
-            defaultInputField.localScale = Vector3.one;
-            EditorManager.inst.speedText.transform.parent.SetParent(transform);
-
-            if (defaultIF.TryGetComponent(out InputField frick))
-                frick.textComponent.fontSize = 18;
-
-            if (ObjEditor.inst)
-            {
-                prefabHolder.NumberInputField = ObjEditor.inst.ObjectView.transform.Find("time").gameObject.Duplicate(prefabHolder.PrefabParent, "float input");
-
-                var floatInputFieldStorage = prefabHolder.NumberInputField.AddComponent<InputFieldStorage>();
-                floatInputFieldStorage.leftGreaterButton = prefabHolder.NumberInputField.transform.Find("<<").GetComponent<Button>();
-                DestroyImmediate(floatInputFieldStorage.leftGreaterButton.GetComponent<Animator>());
-                floatInputFieldStorage.leftGreaterButton.transition = Selectable.Transition.ColorTint;
-                floatInputFieldStorage.leftButton = prefabHolder.NumberInputField.transform.Find("<").GetComponent<Button>();
-                DestroyImmediate(floatInputFieldStorage.leftButton.GetComponent<Animator>());
-                floatInputFieldStorage.leftButton.transition = Selectable.Transition.ColorTint;
-                floatInputFieldStorage.middleButton = prefabHolder.NumberInputField.transform.Find("|").GetComponent<Button>();
-                DestroyImmediate(floatInputFieldStorage.middleButton.GetComponent<Animator>());
-                floatInputFieldStorage.middleButton.transition = Selectable.Transition.ColorTint;
-                floatInputFieldStorage.rightButton = prefabHolder.NumberInputField.transform.Find(">").GetComponent<Button>();
-                DestroyImmediate(floatInputFieldStorage.rightButton.GetComponent<Animator>());
-                floatInputFieldStorage.rightButton.transition = Selectable.Transition.ColorTint;
-                floatInputFieldStorage.rightGreaterButton = prefabHolder.NumberInputField.transform.Find(">>").GetComponent<Button>();
-                DestroyImmediate(floatInputFieldStorage.rightGreaterButton.GetComponent<Animator>());
-                floatInputFieldStorage.rightGreaterButton.transition = Selectable.Transition.ColorTint;
-                floatInputFieldStorage.inputField = prefabHolder.NumberInputField.transform.Find("time").GetComponent<InputField>();
-                floatInputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-                floatInputFieldStorage.inputField.characterLimit = 0;
-                prefabHolder.NumberInputField.transform.Find("time").gameObject.name = "input";
-
-                if (prefabHolder.NumberInputField.transform.Find("lock"))
-                    DestroyImmediate(prefabHolder.NumberInputField.transform.Find("lock").gameObject);
-
-                prefabHolder.StringInputField = floatInputFieldStorage.inputField.gameObject.Duplicate(prefabHolder.PrefabParent, "string input");
-
-                prefabHolder.Function2Button = ObjEditor.inst.ObjectView.transform.Find("applyprefab").gameObject.Duplicate(prefabHolder.PrefabParent, "function 2 button");
-
-                var functionButtonStorage = prefabHolder.Function2Button.AddComponent<FunctionButtonStorage>();
-                functionButtonStorage.button = prefabHolder.Function2Button.GetComponent<Button>();
-                functionButtonStorage.text = prefabHolder.Function2Button.transform.GetChild(0).GetComponent<Text>();
-                Destroy(prefabHolder.Function2Button.GetComponent<Animator>());
-                functionButtonStorage.button.transition = Selectable.Transition.ColorTint;
-
-                prefabHolder.Dropdown = ObjEditor.inst.KeyframeDialogs[0].transform.Find("curves").gameObject.Duplicate(prefabHolder.PrefabParent, "dropdown");
-            }
-
-            if (PrefabEditor.inst)
-            {
-                prefabHolder.DeleteButton = PrefabEditor.inst.AddPrefab.transform.Find("delete").gameObject.Duplicate(prefabHolder.PrefabParent, "delete");
-                var deleteButtonStorage = prefabHolder.DeleteButton.AddComponent<DeleteButtonStorage>();
-                deleteButtonStorage.button = prefabHolder.DeleteButton.GetComponent<Button>();
-                deleteButtonStorage.baseImage = deleteButtonStorage.button.image;
-                deleteButtonStorage.image = prefabHolder.DeleteButton.transform.GetChild(0).GetComponent<Image>();
-
-                tagPrefab = Creator.NewUIObject("Tag", transform);
-                var tagPrefabImage = tagPrefab.AddComponent<Image>();
-                tagPrefabImage.color = new Color(1f, 1f, 1f, 1f);
-                var tagPrefabLayout = tagPrefab.AddComponent<HorizontalLayoutGroup>();
-                tagPrefabLayout.childControlWidth = false;
-                tagPrefabLayout.childForceExpandWidth = false;
-
-                var input = defaultIF.Duplicate(tagPrefab.transform, "Input");
-                input.transform.localScale = Vector3.one;
-                input.transform.AsRT().sizeDelta = new Vector2(136f, 32f);
-                var text = input.transform.Find("Text").GetComponent<Text>();
-                text.alignment = TextAnchor.MiddleCenter;
-                text.fontSize = 17;
-
-                var delete = prefabHolder.DeleteButton.Duplicate(tagPrefab.transform, "Delete");
-                UIManager.SetRectTransform(delete.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
-            }
-
-            prefabHolder.Toggle = EditorManager.inst.GetDialog("Settings Editor").Dialog.Find("snap/toggle/toggle").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle");
-
-            prefabHolder.Function1Button = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event").Duplicate(prefabHolder.PrefabParent, "function 1 button");
-            var functionButton1Storage = prefabHolder.Function1Button.AddComponent<FunctionButtonStorage>();
-            functionButton1Storage.button = prefabHolder.Function1Button.GetComponent<Button>();
-            functionButton1Storage.button.onClick.ClearAll();
-            functionButton1Storage.text = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
-
-            CloseSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
-            ReloadSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_refresh-white.png");
-
             if (!RTFile.FileExists(EditorSettingsPath))
                 CreateGlobalSettings();
             else
                 LoadGlobalSettings();
 
+            try
+            {
+                ShapeManager.inst.SetupShapes();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"There was an error with loading the shapes in the editor: {ex}");
+            }
+
             CacheEditor();
-            SetupNotificationValues();
-            SetupTimelineBar();
-            SetupTimelineTriggers();
-            SetupSelectGUI();
-            SetupCreateObjects();
-            SetupDropdowns();
-            SetupDoggo();
-            SetupFileBrowser();
-            SetupPaths();
-            SetupTimelinePreview();
-            SetupTimelineElements();
-            SetupGrid();
-            SetupTimelineGrid();
-            SetupNewFilePopup();
-            CreatePreviewCover();
-            CreateObjectSearch();
-            CreateWarningPopup();
-            CreateDebug();
-            CreateAutosavePopup();
-            SetupMiscEditorThemes();
-            CreateScreenshotsView();
-
-            // Editor initializations
-            RTMarkerEditor.Init();
-            RTMetaDataEditor.Init();
-            RTEventEditor.Init();
-            RTThemeEditor.Init();
-            RTPrefabEditor.Init();
-
-            MultiObjectEditor.Init();
-            TextEditor.Init();
-            KeybindEditor.Init();
-            PlayerEditor.Init();
-            ObjectModifiersEditor.Init();
-            LevelCombiner.Init();
-            ProjectPlanner.Init();
-            UploadedLevelsManager.Init();
-            EditorDocumentation.Init();
+            CacheSprites();
+            RegisterPopups();
+            InitPrefabs();
+            InitUI();
+            InitEditors();
 
             mousePicker = Creator.NewUIObject("picker", EditorManager.inst.dialogs.parent);
             mousePicker.transform.localScale = Vector3.one;
@@ -237,8 +116,7 @@ namespace BetterLegacy.Editor.Managers
 
             var image = img.AddComponent<Image>();
 
-            dropperSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_dropper.png");
-            image.sprite = dropperSprite;
+            image.sprite = EditorSprites.DropperSprite;
 
             timelineTime = EditorManager.inst.timelineTime.GetComponent<Text>();
             SetNotificationProperties();
@@ -419,12 +297,15 @@ namespace BetterLegacy.Editor.Managers
         {
             tooltipTime = Time.time - tooltipTimeOffset;
 
+            if (!mouseTooltip)
+                return;
+
             if (showTootip && tooltipTime >= EditorConfig.Instance.MouseTooltipHoverTime.Value)
             {
                 showTootip = false;
                 tooltipActive = true;
 
-                mouseTooltip?.SetActive(true);
+                mouseTooltip.SetActive(true);
 
                 if (mouseTooltipText)
                     LayoutRebuilder.ForceRebuildLayoutImmediate(mouseTooltipText.rectTransform);
@@ -458,26 +339,273 @@ namespace BetterLegacy.Editor.Managers
             if (tooltipTime - EditorConfig.Instance.MouseTooltipHoverTime.Value > maxTooltipTime && tooltipActive)
             {
                 tooltipActive = false;
-                mouseTooltip?.SetActive(false);
+                mouseTooltip.SetActive(false);
             }
 
-            if (!EditorConfig.Instance.MouseTooltipDisplay.Value || !EditorManager.inst.showHelp)
-            {
-                mouseTooltip?.SetActive(false);
-            }
+            if (!EditorConfig.Instance.MouseTooltipDisplay.Value || !EditorManager.inst.showHelp && EditorConfig.Instance.MouseTooltipRequiresHelp.Value)
+                mouseTooltip.SetActive(false);
         }
 
         void OnDestroy()
         {
             CoreHelper.LogError($"RTEditor was destroyed!");
             EditorConfig.UpdateEditorComplexity = null;
+            EditorConfig.AdjustPositionInputsChanged = null;
         }
 
-        #region Variables
+        // 1 - cache editor values
+        void CacheEditor()
+        {
+            titleBar = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TitleBar").transform;
+            popups = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups").transform;
+            wholeTimeline = EditorManager.inst.timelineSlider.transform.parent.parent;
+            timelineBar = EditorManager.inst.playButton.transform.parent.gameObject;
+            timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
+            timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
+
+            // Here we fix the naming issues with unmodded Legacy.
+            EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/level-name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
+            GameObject.Find("Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
+            GameObject.Find("Editor GUI/sizer/main/EditorDialogs/PrefabDialog/data/name/input").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
+        }
+
+        // 2 - cache sprites
+        void CacheSprites()
+        {
+            EditorSprites.AddSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_add{FileFormat.PNG.Dot()}"));
+            EditorSprites.EditSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_edit{FileFormat.PNG.Dot()}"));
+            EditorSprites.CloseSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_close{FileFormat.PNG.Dot()}"));
+            EditorSprites.DropperSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_dropper{FileFormat.PNG.Dot()}"));
+            EditorSprites.SearchSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_search{FileFormat.PNG.Dot()}"));
+            EditorSprites.ReloadSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_refresh-white{FileFormat.PNG.Dot()}"));
+            EditorSprites.CheckmarkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_checkmark{FileFormat.PNG.Dot()}"));
+            EditorSprites.PlayerSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_player{FileFormat.PNG.Dot()}"));
+        }
+
+        // 3 - register existing popups
+        void RegisterPopups()
+        {
+            try
+            {
+                NewLevelPopup = new EditorPopup(EditorPopup.NEW_FILE_POPUP);
+                NewLevelPopup.Assign(NewLevelPopup.GetLegacyDialog().Dialog.gameObject);
+                NewLevelPopup.title = NewLevelPopup.TMPTitle.text;
+                NewLevelPopup.size = NewLevelPopup.GameObject.transform.GetChild(0).AsRT().sizeDelta;
+
+                OpenLevelPopup = new ContentPopup(EditorPopup.OPEN_FILE_POPUP);
+                OpenLevelPopup.Assign(OpenLevelPopup.GetLegacyDialog().Dialog.gameObject);
+                OpenLevelPopup.title = OpenLevelPopup.Title.text;
+                OpenLevelPopup.size = OpenLevelPopup.GameObject.transform.AsRT().sizeDelta;
+                OpenLevelPopup.refreshSearch = EditorManager.inst.UpdateOpenBeatmapSearch;
+
+                InfoPopup = new InfoPopup(EditorPopup.FILE_INFO_POPUP);
+                InfoPopup.Assign(InfoPopup.GetLegacyDialog().Dialog.gameObject);
+
+                ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
+                ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
+                ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
+                ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
+                ParentSelectorPopup.refreshSearch = EditorManager.inst.UpdateParentSearch;
+
+                SaveAsPopup = new EditorPopup(EditorPopup.SAVE_AS_POPUP);
+                SaveAsPopup.Assign(SaveAsPopup.GetLegacyDialog().Dialog.gameObject);
+                SaveAsPopup.title = SaveAsPopup.Title.text;
+                SaveAsPopup.size = SaveAsPopup.GameObject.transform.AsRT().sizeDelta;
+
+                PrefabPopups = new PrefabPopup(EditorPopup.PREFAB_POPUP);
+                var prefabDialog = PrefabPopups.GetLegacyDialog().Dialog;
+                PrefabPopups.GameObject = prefabDialog.gameObject;
+                PrefabPopups.InternalPrefabs = new ContentPopup("internal prefabs");
+                PrefabPopups.InternalPrefabs.Assign(prefabDialog.Find("internal prefabs").gameObject);
+                PrefabPopups.ExternalPrefabs = new ContentPopup("external prefabs");
+                PrefabPopups.ExternalPrefabs.Assign(prefabDialog.Find("external prefabs").gameObject);
+
+                editorPopups.Add(NewLevelPopup);
+                editorPopups.Add(OpenLevelPopup);
+                editorPopups.Add(InfoPopup);
+                editorPopups.Add(ParentSelectorPopup);
+                editorPopups.Add(SaveAsPopup);
+                editorPopups.Add(PrefabPopups);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        // 4 - create editor prefabs
+        void InitPrefabs()
+        {
+            var prefabParent = Creator.NewGameObject("prefabs", transform);
+            var prefabHolder = EditorPrefabHolder.Instance;
+            prefabHolder.PrefabParent = prefabParent.transform;
+
+            timeDefault = timelineBar.transform.GetChild(0).gameObject;
+            timeDefault.name = "Time Default";
+
+            var defaultInputField = timelineBar.transform.Find("Time");
+            defaultIF = defaultInputField.gameObject;
+            defaultIF.SetActive(true);
+            defaultInputField.SetParent(transform);
+            defaultInputField.localScale = Vector3.one;
+            EditorManager.inst.speedText.transform.parent.SetParent(transform);
+
+            if (defaultIF.TryGetComponent(out InputField frick))
+                frick.textComponent.fontSize = 18;
+
+            if (ObjEditor.inst)
+            {
+                prefabHolder.NumberInputField = ObjEditor.inst.ObjectView.transform.Find("time").gameObject.Duplicate(prefabHolder.PrefabParent, "float input");
+
+                var floatInputFieldStorage = prefabHolder.NumberInputField.AddComponent<InputFieldStorage>();
+                floatInputFieldStorage.Assign(prefabHolder.NumberInputField);
+                DestroyImmediate(floatInputFieldStorage.leftGreaterButton.GetComponent<Animator>());
+                floatInputFieldStorage.leftGreaterButton.transition = Selectable.Transition.ColorTint;
+                DestroyImmediate(floatInputFieldStorage.leftButton.GetComponent<Animator>());
+                floatInputFieldStorage.leftButton.transition = Selectable.Transition.ColorTint;
+                DestroyImmediate(floatInputFieldStorage.middleButton.GetComponent<Animator>());
+                floatInputFieldStorage.middleButton.transition = Selectable.Transition.ColorTint;
+                DestroyImmediate(floatInputFieldStorage.rightButton.GetComponent<Animator>());
+                floatInputFieldStorage.rightButton.transition = Selectable.Transition.ColorTint;
+                DestroyImmediate(floatInputFieldStorage.rightGreaterButton.GetComponent<Animator>());
+                floatInputFieldStorage.rightGreaterButton.transition = Selectable.Transition.ColorTint;
+                floatInputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                floatInputFieldStorage.inputField.characterLimit = 0;
+                prefabHolder.NumberInputField.transform.Find("time").gameObject.name = "input";
+
+                if (prefabHolder.NumberInputField.transform.Find("lock"))
+                    DestroyImmediate(prefabHolder.NumberInputField.transform.Find("lock").gameObject);
+
+                prefabHolder.StringInputField = floatInputFieldStorage.inputField.gameObject.Duplicate(prefabHolder.PrefabParent, "string input");
+
+                prefabHolder.Function2Button = ObjEditor.inst.ObjectView.transform.Find("applyprefab").gameObject.Duplicate(prefabHolder.PrefabParent, "function 2 button");
+
+                var functionButtonStorage = prefabHolder.Function2Button.AddComponent<FunctionButtonStorage>();
+                functionButtonStorage.button = prefabHolder.Function2Button.GetComponent<Button>();
+                functionButtonStorage.text = prefabHolder.Function2Button.transform.GetChild(0).GetComponent<Text>();
+                Destroy(prefabHolder.Function2Button.GetComponent<Animator>());
+                functionButtonStorage.button.transition = Selectable.Transition.ColorTint;
+
+                prefabHolder.Dropdown = ObjEditor.inst.KeyframeDialogs[0].transform.Find("curves").gameObject.Duplicate(prefabHolder.PrefabParent, "dropdown");
+
+                prefabHolder.Labels = ObjEditor.inst.ObjectView.transform.ChildList().First(x => x.name == "label").gameObject.Duplicate(prefabHolder.PrefabParent, "label");
+                if (prefabHolder.Labels.transform.childCount > 1)
+                    CoreHelper.Destroy(prefabHolder.Labels.transform.GetChild(1).gameObject, true);
+
+                prefabHolder.CollapseToggle = ObjEditor.inst.ObjectView.transform.Find("autokill/collapse").gameObject.Duplicate(prefabHolder.PrefabParent, "collapse");
+
+                prefabHolder.ScrollView = ObjEditor.inst.ObjectView.transform.parent.parent.gameObject.Duplicate(prefabHolder.PrefabParent, "Scroll View");
+                CoreHelper.DestroyChildren(prefabHolder.ScrollView.transform.Find("Viewport/Content"));
+
+                prefabHolder.CurvesDropdown = ObjEditor.inst.KeyframeDialogs[0].transform.Find("curves").gameObject.Duplicate(prefabHolder.PrefabParent, "curves");
+                prefabHolder.ColorsLayout = ObjEditor.inst.KeyframeDialogs[3].transform.Find("color").gameObject.Duplicate(prefabHolder.PrefabParent, "color");
+            }
+
+            if (PrefabEditor.inst)
+            {
+                prefabHolder.DeleteButton = PrefabEditor.inst.AddPrefab.transform.Find("delete").gameObject.Duplicate(prefabHolder.PrefabParent, "delete");
+                var deleteButtonStorage = prefabHolder.DeleteButton.AddComponent<DeleteButtonStorage>();
+                deleteButtonStorage.button = prefabHolder.DeleteButton.GetComponent<Button>();
+                deleteButtonStorage.baseImage = deleteButtonStorage.button.image;
+                deleteButtonStorage.image = prefabHolder.DeleteButton.transform.GetChild(0).GetComponent<Image>();
+
+                tagPrefab = Creator.NewUIObject("Tag", transform);
+                var tagPrefabImage = tagPrefab.AddComponent<Image>();
+                tagPrefabImage.color = new Color(1f, 1f, 1f, 1f);
+                var tagPrefabLayout = tagPrefab.AddComponent<HorizontalLayoutGroup>();
+                tagPrefabLayout.childControlWidth = false;
+                tagPrefabLayout.childForceExpandWidth = false;
+
+                var input = defaultIF.Duplicate(tagPrefab.transform, "Input");
+                input.transform.localScale = Vector3.one;
+                input.transform.AsRT().sizeDelta = new Vector2(136f, 32f);
+                var text = input.transform.Find("Text").GetComponent<Text>();
+                text.alignment = TextAnchor.MiddleCenter;
+                text.fontSize = 17;
+
+                var delete = prefabHolder.DeleteButton.Duplicate(tagPrefab.transform, "Delete");
+                new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f)).AssignToRectTransform(delete.transform.AsRT());
+            }
+
+            prefabHolder.Toggle = EditorManager.inst.GetDialog("Settings Editor").Dialog.Find("snap/toggle/toggle").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle");
+
+            prefabHolder.Function1Button = timelineBar.transform.Find("event").gameObject.Duplicate(prefabHolder.PrefabParent, "function 1 button");
+            var functionButton1Storage = prefabHolder.Function1Button.AddComponent<FunctionButtonStorage>();
+            functionButton1Storage.button = prefabHolder.Function1Button.GetComponent<Button>();
+            functionButton1Storage.button.onClick.ClearAll();
+            functionButton1Storage.text = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
+
+            prefabHolder.ToggleButton = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/grain/colored").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle button");
+            var toggleButtonStorage = prefabHolder.ToggleButton.AddComponent<ToggleButtonStorage>();
+            toggleButtonStorage.label = prefabHolder.ToggleButton.transform.Find("Text").GetComponent<Text>();
+            toggleButtonStorage.toggle = prefabHolder.ToggleButton.GetComponent<Toggle>();
+
+            prefabHolder.CloseButton = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("Panel/x").gameObject.Duplicate(prefabHolder.PrefabParent, "x");
+        }
+
+        // 5 - setup misc editor UI
+        void InitUI()
+        {
+            SetupNotificationValues();
+            SetupTimelineBar();
+            SetupTimelineTriggers();
+            SetupSelectGUI();
+            SetupCreateObjects();
+            SetupDropdowns();
+            SetupDoggo();
+            SetupFileBrowser();
+            SetupPaths();
+            SetupTimelinePreview();
+            SetupTimelineElements();
+            SetupGrid();
+            SetupTimelineGrid();
+            SetupNewFilePopup();
+            CreatePreviewCover();
+            CreateObjectSearch();
+            CreateWarningPopup();
+            CreateDebug();
+            CreateAutosavePopup();
+            SetupMiscEditorThemes();
+            CreateScreenshotsView();
+        }
+
+        // 6 - initialize editors
+        void InitEditors()
+        {
+            RTSettingEditor.Init();
+            RTMarkerEditor.Init();
+            RTMetaDataEditor.Init();
+            RTEventEditor.Init();
+            RTThemeEditor.Init();
+            RTPrefabEditor.Init();
+            ObjectEditor.Init();
+
+            MultiObjectEditor.Init();
+            TextEditor.Init();
+            KeybindEditor.Init();
+            PlayerEditor.Init();
+            ObjectModifiersEditor.Init();
+            LevelCombiner.Init();
+            ProjectPlanner.Init();
+            UploadedLevelsManager.Init();
+            EditorDocumentation.Init();
+        }
+
+        #endregion
+
+        #region Constants
 
         public const float DEFAULT_CONTEXT_MENU_WIDTH = 300f;
         public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
         public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
+        public const string SYSTEM_BROWSER = "System Browser";
+        public const string EDITOR_BROWSER = "Editor Browser";
+
+        #endregion
+
+        #region Variables
+
+        #region Misc
 
         public Action<TimelineObject> onSelectTimelineObject;
 
@@ -512,9 +640,111 @@ namespace BetterLegacy.Editor.Managers
 
         public Transform editorLevelContent;
 
+        public bool fromNewLevel;
+
+        List<ObjectOption> objectOptions = new List<ObjectOption>()
+        {
+            new ObjectOption("Normal", "A regular square object that hits the player.", null),
+            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Helper;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+            }),
+            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
+            }),
+            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = nameof(BeatmapObject.ObjectType.Solid);
+            }),
+            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+                bm.events[3][0].eventValues[1] = 0.65f;
+            }),
+            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Normal;
+                bm.name = "Collision";
+                bm.events[3][0].eventValues[1] = 1f;
+            }),
+            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = "Collision";
+                bm.events[3][0].eventValues[1] = 1f;
+            }),
+            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+            }),
+            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
+                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
+            }),
+        };
+
+        GameObject contextMenu;
+        RectTransform contextMenuLayout;
+
+        public Text folderCreatorTitle;
+        public Text folderCreatorNameLabel;
+        public InputField folderCreatorName;
+        public Button folderCreatorSubmit;
+        public Text folderCreatorSubmitText;
+
+        #endregion
+
+        #region Popups
+
         public List<EditorPopup> editorPopups = new List<EditorPopup>();
 
-        public bool fromNewLevel;
+        public EditorPopup NewLevelPopup { get; set; }
+
+        public ContentPopup OpenLevelPopup { get; set; }
+
+        public InfoPopup InfoPopup { get; set; }
+
+        public ContentPopup ParentSelectorPopup { get; set; }
+
+        public EditorPopup SaveAsPopup { get; set; }
+
+        public PrefabPopup PrefabPopups { get; set; }
+
+        public ContentPopup ObjectTemplatePopup { get; set; }
+
+        public ContentPopup DebuggerPopup { get; set; }
+
+        public ContentPopup AutosavePopup { get; set; }
+        public ContentPopup PlayerModelsPopup { get; set; }
+
+        public ContentPopup DocumentationPopup { get; set; }
+
+        public EditorPopup WarningPopup { get; set; }
+
+        #endregion
 
         #region Dragging
 
@@ -596,33 +826,6 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region File Info
-
-        public Text fileInfoText;
-        public Image doggoImage;
-
-        #endregion
-
-        #region Sprites
-
-        public Sprite dropperSprite;
-
-        Sprite searchSprite;
-        public Sprite SearchSprite
-        {
-            get
-            {
-                if (!searchSprite)
-                    searchSprite = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/parent/parent/image").GetComponent<Image>().sprite;
-                return searchSprite;
-            }
-        }
-
-        public static Sprite CloseSprite { get; set; }
-        public static Sprite ReloadSprite { get; set; }
-
-        #endregion
-
         #region Key selection
 
         public bool selectingKey = false;
@@ -647,7 +850,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Debugger
 
-        public EditorPopup debuggerPopup;
         public List<string> debugs = new List<string>();
         public List<GameObject> customFunctions = new List<GameObject>();
         public string debugSearch;
@@ -2266,18 +2468,35 @@ namespace BetterLegacy.Editor.Managers
             return spacer;
         }
 
-        public EditorPopup GeneratePopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        public static GameObject GenerateLabels(string name, Transform parent, params LabelSettings[] labels) => GenerateLabels(name, parent, -1, labels);
+
+        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, params LabelSettings[] labels)
         {
-            var editorPopup = new EditorPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
+            var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);
+            var first = label.transform.GetChild(0);
+
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var labelSetting = labels[i];
+                if (i >= label.transform.childCount)
+                    first.gameObject.Duplicate(label.transform, first.name);
+
+                var child = label.transform.GetChild(i);
+                var labelText = child.GetComponent<Text>();
+                labelSetting.Apply(labelText);
+
+                EditorThemeManager.AddLightText(labelText);
+            }
+
+            return label;
+        }
+
+        public ContentPopup GeneratePopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        {
+            var editorPopup = new ContentPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
             editorPopup.Init();
             editorPopups.Add(editorPopup);
             return editorPopup;
-        }
-
-        void CacheEditor()
-        {
-            timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
-            timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
         }
 
         void SetupTimelineBar()
@@ -2763,132 +2982,27 @@ namespace BetterLegacy.Editor.Managers
             hexagon.onClick.ClearAll();
             hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
 
-            objectTemplatePopup = GeneratePopup("Object Templates Popup", "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
+            ObjectTemplatePopup = GeneratePopup("Object Templates Popup", "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
         }
-
-        EditorPopup objectTemplatePopup;
 
         public void ShowObjectTemplates()
         {
             EditorManager.inst.ShowDialog("Object Templates Popup");
-            RefreshObjectTemplates(objectTemplatePopup.SearchField.text);
+            RefreshObjectTemplates(ObjectTemplatePopup.SearchField.text);
         }
 
         void RefreshObjectTemplates(string search)
         {
-            LSHelpers.DeleteChildren(objectTemplatePopup.Content);
+            LSHelpers.DeleteChildren(ObjectTemplatePopup.Content);
             
             for (int i = 0; i < objectOptions.Count; i++)
                 if (RTString.SearchString(search, objectOptions[i].name))
                     GenerateObjectTemplate(objectOptions[i].name, objectOptions[i].hint, objectOptions[i].Create);
         }
 
-        List<ObjectOption> objectOptions = new List<ObjectOption>()
-        {
-            new ObjectOption("Normal", "A regular square object that hits the player.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Helper;
-                bm.name = nameof(BeatmapObject.ObjectType.Helper);
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Solid;
-                bm.name = nameof(BeatmapObject.ObjectType.Solid);
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = nameof(BeatmapObject.ObjectType.Helper);
-                bm.events[3][0].eventValues[1] = 0.65f;
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Normal;
-                bm.name = "Collision";
-                bm.events[3][0].eventValues[1] = 1f;
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Solid;
-                bm.name = "Collision";
-                bm.events[3][0].eventValues[1] = 1f;
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = "Text";
-                bm.text = "A text object that can be used for dialogue.";
-                bm.shape = 4;
-                bm.shapeOption = 0;
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = "Text";
-                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
-                bm.shape = 4;
-                bm.shapeOption = 0;
-                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
-                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
-
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                ObjectEditor.inst.OpenDialog(bm);
-            }),
-        };
-
         void GenerateObjectTemplate(string name, string hint, Action action)
         {
-            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(objectTemplatePopup.Content, "Function");
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ObjectTemplatePopup.Content, "Function");
 
             gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
 
@@ -2904,14 +3018,6 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupDropdowns()
         {
-            titleBar = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TitleBar").transform;
-
-            // Here we fix the naming issues with unmodded Legacy.
-            var saveAs = EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup");
-            EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/level-name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
-            GameObject.Find("Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
-            GameObject.Find("Editor GUI/sizer/main/EditorDialogs/PrefabDialog/data/name/input").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
-
             var quitToArcade = EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
@@ -2959,7 +3065,7 @@ namespace BetterLegacy.Editor.Managers
             }, 7);
             EditorHelper.SetComplexity(copyLevelToArcade, Complexity.Normal);
 
-            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", "File", ReloadSprite, () =>
+            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", "File", EditorSprites.ReloadSprite, () =>
             {
                 DG.Tweening.DOTween.Clear();
                 Updater.UpdateObjects(false);
@@ -2977,10 +3083,10 @@ namespace BetterLegacy.Editor.Managers
             }, 3);
             EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
 
-            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, ConvertVGToLS, 4);
+            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", EditorSprites.SearchSprite, ConvertVGToLS, 4);
             EditorHelper.SetComplexity(convertVGToLS, Complexity.Normal);
 
-            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", "File", SearchSprite, () =>
+            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", "File", EditorSprites.SearchSprite, () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3043,7 +3149,7 @@ namespace BetterLegacy.Editor.Managers
             }, 5);
             EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
 
-            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", "", "File", ReloadSprite, () =>
+            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", "", "File", EditorSprites.ReloadSprite, () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3101,7 +3207,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(clearModifierPrefabs, Complexity.Advanced);
 
-            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", CloseSprite, () =>
+            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", EditorSprites.CloseSprite, () =>
             {
                 RTEventManager.inst?.SetResetOffsets();
 
@@ -3109,7 +3215,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetEventOffsets, Complexity.Advanced);
 
-            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", "Edit", ReloadSprite, () =>
+            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", "Edit", EditorSprites.ReloadSprite, () =>
             {
                 if (EditorConfig.Instance.WaveformGenerate.Value)
                 {
@@ -3121,7 +3227,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(renderWaveform, Complexity.Normal);
 
-            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", CloseSprite, () =>
+            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", EditorSprites.CloseSprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -3149,7 +3255,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(deactivateModifiers, Complexity.Advanced);
 
-            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", CloseSprite, () =>
+            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", EditorSprites.CloseSprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -3203,11 +3309,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupDoggo()
         {
-            var fileInfoPopup = EditorManager.inst.GetDialog("File Info Popup").Dialog;
-
-            fileInfoText = fileInfoPopup.Find("text").GetComponent<Text>();
-
-            var doggoBase = Creator.NewUIObject("loading base", fileInfoPopup);
+            var doggoBase = Creator.NewUIObject("loading base", InfoPopup.GameObject.transform);
             var doggoLayout = doggoBase.AddComponent<LayoutElement>();
             doggoLayout.ignoreLayout = true;
             doggoBase.transform.AsRT().anchoredPosition = new Vector2(0f, -75f);
@@ -3221,42 +3323,30 @@ namespace BetterLegacy.Editor.Managers
             var doggoObject = Creator.NewUIObject("loading", doggoBase.transform);
             doggoObject.transform.localScale = Vector3.one;
 
-            doggoImage = doggoObject.AddComponent<Image>();
+            InfoPopup.Doggo = doggoObject.AddComponent<Image>();
 
             doggoObject.transform.AsRT().anchoredPosition = Vector2.zero;
             doggoObject.transform.AsRT().sizeDelta = new Vector2(122f, 122f);
-            doggoImage.sprite = EditorManager.inst.loadingImage.sprite;
+            InfoPopup.Doggo.sprite = EditorManager.inst.loadingImage.sprite;
 
-            fileInfoPopup.transform.AsRT().sizeDelta = new Vector2(500f, 320f);
+            InfoPopup.RenderSize(new Vector2(500f, 320f));
         }
-
-        public EditorPopup openLevelPopup;
 
         void SetupPaths()
         {
             var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
+            var panel = openFilePopup.Find("Panel");
 
-            var sortList = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").Duplicate(openFilePopup);
+            var sortList = EditorPrefabHolder.Instance.Dropdown.Duplicate(panel, "level sort");
+            new RectValues(new Vector2(-132f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(200f, 32f)).AssignToRectTransform(sortList.transform.AsRT());
 
             levelOrderDropdown = sortList.GetComponent<Dropdown>();
             EditorThemeManager.AddDropdown(levelOrderDropdown);
 
             var config = EditorConfig.Instance;
 
-            var sortListRT = sortList.transform.AsRT();
-            sortListRT.anchoredPosition = config.OpenLevelDropdownPosition.Value;
-            var sortListTip = sortList.GetComponent<HoverTooltip>();
-            sortListTip.tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = "Sort the order of your levels.",
-                hint = "<b>Cover</b> Sort by if level has a set cover. (Default)" +
-                    "<br><b>Artist</b> Sort by song artist." +
-                    "<br><b>Creator</b> Sort by level creator." +
-                    "<br><b>Folder</b> Sort by level folder name." +
-                    "<br><b>Title</b> Sort by song title." +
-                    "<br><b>Difficulty</b> Sort by level difficulty." +
-                    "<br><b>Date Edited</b> Sort by date edited / created."
-            });
+            TooltipHelper.RemoveTooltip(sortList);
+            TooltipHelper.AssignTooltip(sortList, "Level Sort Dropdown");
 
             Destroy(sortList.GetComponent<HideDropdownOptions>());
             levelOrderDropdown.onValueChanged.ClearAll();
@@ -3271,15 +3361,13 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(sortList, Complexity.Normal);
 
-            var checkDes = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle").Duplicate(openFilePopup);
+            var checkDes = EditorPrefabHolder.Instance.Toggle.Duplicate(panel, "ascend");
+            new RectValues(new Vector2(-252f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(32f, 32f)).AssignToRectTransform(checkDes.transform.AsRT());
 
-            var checkDesRT = checkDes.GetComponent<RectTransform>();
-            checkDesRT.anchoredPosition = config.OpenLevelTogglePosition.Value;
+            TooltipHelper.RemoveTooltip(checkDes);
+            TooltipHelper.AssignTooltip(checkDes, "Level Ascend Toggle");
 
-            checkDes.transform.Find("title").GetComponent<Text>().enabled = false;
-            checkDes.transform.Find("title").AsRT().sizeDelta = new Vector2(110f, 32f);
-
-            levelAscendToggle = checkDes.transform.Find("toggle").GetComponent<Toggle>();
+            levelAscendToggle = checkDes.GetComponent<Toggle>();
             levelAscendToggle.onValueChanged.ClearAll();
             levelAscendToggle.isOn = levelAscend;
             levelAscendToggle.onValueChanged.AddListener(_val =>
@@ -3291,7 +3379,6 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddToggle(levelAscendToggle);
 
-            TooltipHelper.AddHoverTooltip(levelAscendToggle.gameObject, new List<HoverTooltip.Tooltip> { sortListTip.tooltipLangauges[0] });
             EditorHelper.SetComplexity(checkDes, Complexity.Normal);
 
             var contextClickable = openFilePopup.gameObject.AddComponent<ContextClickable>();
@@ -3381,7 +3468,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddSelectable(levelListReloaderButton, ThemeGroup.Function_2, false);
 
-            levelListReloaderButton.image.sprite = ReloadSprite;
+            levelListReloaderButton.image.sprite = EditorSprites.ReloadSprite;
 
             #endregion
 
@@ -3458,7 +3545,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddSelectable(themeListReloadButton, ThemeGroup.Function_2, false);
 
-            themeListReloadButton.image.sprite = ReloadSprite;
+            themeListReloadButton.image.sprite = EditorSprites.ReloadSprite;
 
             var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
             UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -3582,19 +3669,9 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddSelectable(prefabListReloadButton, ThemeGroup.Function_2, false);
 
-            prefabListReloadButton.image.sprite = ReloadSprite;
+            prefabListReloadButton.image.sprite = EditorSprites.ReloadSprite;
 
             #endregion
-
-            try
-            {
-                openLevelPopup = EditorPopup.FromGameObject("Open File Popup", openFilePopup.gameObject);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-                openLevelPopup = null;
-            }
         }
 
         void SetupFileBrowser()
@@ -3671,8 +3748,6 @@ namespace BetterLegacy.Editor.Managers
         void SetupTimelineElements()
         {
             CoreHelper.Log($"Setting Timeline Cursor Colors");
-
-            var config = EditorConfig.Instance;
 
             try
             {
@@ -3837,7 +3912,7 @@ namespace BetterLegacy.Editor.Managers
 
             var browseLocal = browseBase.transform.Find("browse");
             var browseLocalText = browseLocal.Find("Text").GetComponent<Text>();
-            browseLocalText.text = "Local Browser";
+            browseLocalText.text = SYSTEM_BROWSER;
             var browseLocalButton = browseLocal.GetComponent<Button>();
             browseLocalButton.onClick.ClearAll();
             browseLocalButton.onClick.AddListener(() =>
@@ -3849,7 +3924,7 @@ namespace BetterLegacy.Editor.Managers
 
             var browseInternal = browseLocal.gameObject.Duplicate(browseBase.transform, "internal browse");
             var browseInternalText = browseInternal.transform.Find("Text").GetComponent<Text>();
-            browseInternalText.text = "In-game Browser";
+            browseInternalText.text = EDITOR_BROWSER;
             var browseInternalButton = browseInternal.GetComponent<Button>();
             browseInternalButton.onClick.ClearAll();
             browseInternalButton.onClick.AddListener(() =>
@@ -3947,7 +4022,7 @@ namespace BetterLegacy.Editor.Managers
                 RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             }, placeholderText: "Search for object...");
 
-            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", SearchSprite, () =>
+            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", EditorSprites.SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Object Search Popup");
                 RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
@@ -3958,8 +4033,7 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateWarningPopup()
         {
-            var warningPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog.gameObject
-                .Duplicate(EditorManager.inst.GetDialog("Save As Popup").Dialog.GetParent(), "Warning Popup");
+            var warningPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "Warning Popup");
             warningPopup.transform.localPosition = Vector3.zero;
 
             var main = warningPopup.transform.GetChild(0);
@@ -4009,7 +4083,7 @@ namespace BetterLegacy.Editor.Managers
 
             var close = panel.Find("x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(() => { EditorManager.inst.HideDialog("Warning Popup"); });
+            close.onClick.AddListener(() => EditorManager.inst.HideDialog("Warning Popup"));
 
             var title = panel.Find("Text").GetComponent<Text>();
             title.text = "Warning!";
@@ -4029,11 +4103,22 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(submit1Button.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
             EditorThemeManager.AddGraphic(submit2Image, ThemeGroup.Warning_Cancel, true);
             EditorThemeManager.AddGraphic(submit2Image.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
+
+            try
+            {
+                WarningPopup = new EditorPopup(EditorPopup.WARNING_POPUP);
+                WarningPopup.Assign(warningPopup);
+                editorPopups.Add(WarningPopup);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         public GameObject GenerateDebugButton(string name, string hint, Action action)
         {
-            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(debuggerPopup.Content, "Function");
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DebuggerPopup.Content, "Function");
             debugs.Add(name);
 
             gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
@@ -4058,14 +4143,14 @@ namespace BetterLegacy.Editor.Managers
             if (!ModCompatibility.UnityExplorerInstalled)
                 return;
 
-            debuggerPopup = GeneratePopup("Debugger Popup", "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
+            DebuggerPopup = GeneratePopup("Debugger Popup", "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 debugSearch = _val;
                 RefreshDebugger();
             }, placeholderText: "Search for function...");
 
             var reload = GameObject.Find("TimelineBar/GameObject/play")
-                .Duplicate(debuggerPopup.TopPanel, "reload");
+                .Duplicate(DebuggerPopup.TopPanel, "reload");
             UIManager.SetRectTransform(reload.transform.AsRT(), new Vector2(-42f, 0f), Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
 
             (reload.GetComponent<HoverTooltip>() ?? reload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
@@ -4076,11 +4161,11 @@ namespace BetterLegacy.Editor.Managers
 
             var reloadButton = reload.GetComponent<Button>();
             reloadButton.onClick.ClearAll();
-            reloadButton.onClick.AddListener(() => { ReloadFunctions(); });
+            reloadButton.onClick.AddListener(ReloadFunctions);
 
             EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
 
-            reloadButton.image.sprite = ReloadSprite;
+            reloadButton.image.sprite = EditorSprites.ReloadSprite;
 
             EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger.png"), () =>
             {
@@ -4088,72 +4173,72 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDebugger();
             });
 
-            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", SearchSprite, ModCompatibility.ShowExplorer);
+            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", EditorSprites.SearchSprite, ModCompatibility.ShowExplorer);
 
             GenerateDebugButton(
                 "Inspect DataManager",
                 "DataManager is a pretty important storage component of Project Arrhythmia. It contains the GameData, all the external Beatmap Themes, etc.",
-                () => { ModCompatibility.Inspect(DataManager.inst); });
+                () => ModCompatibility.Inspect(DataManager.inst));
 
             GenerateDebugButton(
                 "Inspect EditorManager",
                 "EditorManager handles the main unmodded editor related things.",
-                () => { ModCompatibility.Inspect(EditorManager.inst); });
+                () => ModCompatibility.Inspect(EditorManager.inst));
 
             GenerateDebugButton(
                 "Inspect RTEditor",
                 "EditorManager handles the main modded editor related things.",
-                () => { ModCompatibility.Inspect(inst); });
+                () => ModCompatibility.Inspect(inst));
 
             GenerateDebugButton(
                 "Inspect ObjEditor",
                 "ObjEditor is the component that handles regular object editor stuff.",
-                () => { ModCompatibility.Inspect(ObjEditor.inst); });
+                () => ModCompatibility.Inspect(ObjEditor.inst));
 
             GenerateDebugButton(
                 "Inspect ObjectEditor",
                 "ObjectEditor is the component that handles modded object editor stuff.",
-                () => { ModCompatibility.Inspect(ObjectEditor.inst); });
+                () => ModCompatibility.Inspect(ObjectEditor.inst));
 
             GenerateDebugButton(
                 "Inspect ObjectManager",
                 "ObjectManager is the component that handles regular object stuff.",
-                () => { ModCompatibility.Inspect(ObjectManager.inst); });
+                () => ModCompatibility.Inspect(ObjectManager.inst));
 
             GenerateDebugButton(
                 "Inspect GameManager",
                 "GameManager normally handles all the level loading, however now it's handled by LevelManager.",
-                () => { ModCompatibility.Inspect(GameManager.inst); });
+                () => ModCompatibility.Inspect(GameManager.inst));
 
             GenerateDebugButton(
                 "Inspect Example",
                 "ExampleManager handles everything to do with Example, your little companion.",
-                () => { ModCompatibility.Inspect(ExampleManager.inst); });
+                () => ModCompatibility.Inspect(ExampleManager.inst));
 
             GenerateDebugButton(
                 "Inspect Object Editor UI",
                 "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
-                () => { ModCompatibility.Inspect(ObjEditor.inst.ObjectView); });
+                () => ModCompatibility.Inspect(ObjEditor.inst.ObjectView));
 
             GenerateDebugButton(
                 "Inspect LevelProcessor",
                 "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
-                () => { ModCompatibility.Inspect(Updater.levelProcessor); });
+                () => ModCompatibility.Inspect(Updater.levelProcessor));
 
             GenerateDebugButton(
                 "Inspect Current GameData",
                 "GameData stores all the main level data.",
-                () => { ModCompatibility.Inspect(GameData.Current); });
+                () => ModCompatibility.Inspect(GameData.Current));
 
             GenerateDebugButton(
                 "Inspect Current MetaData",
                 "MetaData stores all the extra level info.",
-                () => { ModCompatibility.Inspect(MetaData.Current); });
+                () => ModCompatibility.Inspect(MetaData.Current));
 
             GenerateDebugButton(
                 "Current Event Keyframe",
                 "The current selected Event Keyframe. Based on the type and index number.",
-                () => { ModCompatibility.Inspect(RTEventEditor.inst.CurrentSelectedKeyframe); });
+                () => ModCompatibility.Inspect(RTEventEditor.inst.CurrentSelectedKeyframe));
 
             ReloadFunctions();
         }
@@ -4194,9 +4279,9 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateAutosavePopup()
         {
-            var autosavePopup = GeneratePopup("Autosave Popup", "Autosaves", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
-            autosaveSearchField = autosavePopup.SearchField;
-            autosaveContent = autosavePopup.Content;
+            AutosavePopup = GeneratePopup("Autosave Popup", "Autosaves", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
+            autosaveSearchField = AutosavePopup.SearchField;
+            autosaveContent = AutosavePopup.Content;
         }
 
         void SetupMiscEditorThemes()
@@ -4398,7 +4483,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
-            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(editorDialogObject.transform, "Scroll View");
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             screenshotContent = scrollView.transform.Find("Viewport/Content");
             scrollView.transform.localScale = Vector3.one;
 
@@ -4412,15 +4497,12 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorHelper.AddEditorDropdown("View Screenshots", "", "View", SearchSprite, () =>
+            EditorHelper.AddEditorDropdown("View Screenshots", "", "View", EditorSprites.SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Screenshot Dialog");
                 RefreshScreenshots();
             });
         }
-
-        GameObject contextMenu;
-        RectTransform contextMenuLayout;
 
         void CreateContextMenu()
         {
@@ -4428,7 +4510,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var parent = EditorManager.inst.dialogs.parent;
 
-                contextMenu = Creator.NewUIObject("Context Menu", parent);
+                contextMenu = Creator.NewUIObject("Context Menu", parent, parent.childCount - 2);
                 RectValues.Default.AnchorMax(0f, 0f).AnchorMin(0f, 0f).Pivot(0f, 1f).SizeDelta(126f, 300f).AssignToRectTransform(contextMenu.transform.AsRT());
                 var contextMenuImage = contextMenu.AddComponent<Image>();
 
@@ -4452,12 +4534,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
         }
-
-        public Text folderCreatorTitle;
-        public Text folderCreatorNameLabel;
-        public InputField folderCreatorName;
-        public Button folderCreatorSubmit;
-        public Text folderCreatorSubmitText;
 
         void CreateFolderCreator()
         {
@@ -4514,14 +4590,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Saving / Loading
-
-        public void SetFileInfo(string text)
-        {
-            if (EditorConfig.Instance.Debug.Value)
-                CoreHelper.Log(text);
-
-            fileInfoText?.SetText(text);
-        }
 
         public void PasteLevel()
         {
@@ -4665,14 +4733,14 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (list.Count >= 1)
-                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, OpenLevelPopup));
+                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, OpenLevelPopupOnFinish));
             else
-                OpenLevelPopup();
+                OpenLevelPopupOnFinish();
 
             yield break;
         }
 
-        void OpenLevelPopup()
+        void OpenLevelPopupOnFinish()
         {
             if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || LevelPanels.Count > 0)
             {
@@ -4790,7 +4858,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.Log("Backing up previous level...");
 
-                SetFileInfo($"Backing up previous level [ {Path.GetFileName(RTFile.RemoveEndSlash(GameManager.inst.path))} ]");
+                InfoPopup.SetInfo($"Backing up previous level [ {Path.GetFileName(RTFile.RemoveEndSlash(GameManager.inst.path))} ]");
 
                 GameData.Current.SaveData(RTFile.CombinePaths(RTFile.BasePath, $"level-open-backup{FileFormat.LSB.Dot()}"));
 
@@ -4799,14 +4867,14 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Loading data...");
 
-            SetFileInfo($"Loading Level Data for [ {name} ]");
+            InfoPopup.SetInfo($"Loading Level Data for [ {name} ]");
 
             CoreHelper.Log($"Loading {currentFile}...");
 
             GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
             RTFile.BasePath = RTFile.AppendEndSlash(fullPath);
             GameManager.inst.levelName = name;
-            SetFileInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
+            InfoPopup.SetInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
 
             yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
@@ -4818,11 +4886,11 @@ namespace BetterLegacy.Editor.Managers
 
             GameManager.inst.gameState = GameManager.State.Parsing;
             CoreHelper.Log("Parsing data...");
-            SetFileInfo($"Parsing Level Data for [ {name} ]");
+            InfoPopup.SetInfo($"Parsing Level Data for [ {name} ]");
             string rawJSON = RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, currentFile));
             if (string.IsNullOrEmpty(rawJSON))
             {
-                SetFileInfo($"{currentFile} is empty or corrupt.");
+                InfoPopup.SetInfo($"{currentFile} is empty or corrupt.");
                 EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
 
                 yield break;
@@ -4846,7 +4914,7 @@ namespace BetterLegacy.Editor.Managers
             }
             catch (Exception ex)
             {
-                SetFileInfo($"Something went wrong when parsing the level data. Press the open log folder key ({CoreConfig.Instance.OpenPAPersistentFolder.Value}) and send the Player.log file to Mecha.");
+                InfoPopup.SetInfo($"Something went wrong when parsing the level data. Press the open log folder key ({CoreConfig.Instance.OpenPAPersistentFolder.Value}) and send the Player.log file to Mecha.");
 
                 EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
 
@@ -4861,14 +4929,14 @@ namespace BetterLegacy.Editor.Managers
                 PreviewCover.gameObject.SetActive(false);
 
             CoreHelper.Log("Playing level music...");
-            SetFileInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
+            InfoPopup.SetInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             SetCurrentAudio(level.music);
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             if (EditorConfig.Instance.WaveformGenerate.Value)
             {
                 CoreHelper.Log("Assigning waveform textures...");
-                SetFileInfo($"Assigning Waveform Textures for [ {name} ]");
+                InfoPopup.SetInfo($"Assigning Waveform Textures for [ {name} ]");
                 SetTimelineSprite(null);
                 StartCoroutine(AssignTimelineTexture());
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
@@ -4876,13 +4944,13 @@ namespace BetterLegacy.Editor.Managers
             else
             {
                 CoreHelper.Log("Skipping waveform textures...");
-                SetFileInfo($"Skipping Waveform Textures for [ {name} ]");
+                InfoPopup.SetInfo($"Skipping Waveform Textures for [ {name} ]");
                 SetTimelineSprite(null);
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
 
             CoreHelper.Log("Updating timeline...");
-            SetFileInfo($"Updating Timeline for [ {name} ]");
+            InfoPopup.SetInfo($"Updating Timeline for [ {name} ]");
             EditorManager.inst.UpdateTimelineSizes();
             GameManager.inst.UpdateTimeline();
             RTMetaDataEditor.inst.RenderEditor();
@@ -4890,7 +4958,7 @@ namespace BetterLegacy.Editor.Managers
 
             CheckpointEditor.inst.CreateGhostCheckpoints();
 
-            SetFileInfo($"Updating states for [ {name} ]");
+            InfoPopup.SetInfo($"Updating states for [ {name} ]");
             CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.song.title}", "In Editor", "editor");
 
             CoreHelper.Log("Spawning players...");
@@ -4920,13 +4988,13 @@ namespace BetterLegacy.Editor.Managers
             RTEventManager.inst.SetResetOffsets();
 
             CoreHelper.Log("Creating timeline objects...");
-            SetFileInfo($"Setting first object of [ {name} ]");
+            InfoPopup.SetInfo($"Setting first object of [ {name} ]");
             StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects());
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.SetCurrentCheckpoint(0);
 
-            SetFileInfo("Done!");
+            InfoPopup.SetInfo("Done!");
             EditorManager.inst.HideDialog("File Info Popup");
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
 
@@ -5062,6 +5130,34 @@ namespace BetterLegacy.Editor.Managers
             GameData.Current.SaveData(autosavePath);
 
             EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
+
+            autoSaving = false;
+        }
+
+        public void SaveBackup(LevelPanel levelPanel)
+        {
+            if (EditorManager.inst.loading)
+                return;
+
+            autoSaving = true;
+
+            if (EditorManager.inst.savingBeatmap)
+            {
+                EditorManager.inst.DisplayNotification("Already attempting to save the beatmap!", 2f, EditorManager.NotificationType.Error);
+                autoSaving = false;
+                return;
+            }
+
+            var autosavesDirectory = RTFile.CombinePaths(levelPanel.FolderPath, "autosaves");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
+
+            RTFile.CreateDirectory(autosavesDirectory);
+
+            EditorManager.inst.DisplayNotification("Saving backup...", 2f, EditorManager.NotificationType.Warning);
+
+            RTFile.CopyFile(levelPanel.Level.GetFile(levelPanel.Level.CurrentFile), autosavePath);
+
+            EditorManager.inst.DisplayNotification("Saved backup!", 2f, EditorManager.NotificationType.Success);
 
             autoSaving = false;
         }
@@ -5250,6 +5346,9 @@ namespace BetterLegacy.Editor.Managers
                 buttonStorage.text.alignment = TextAnchor.MiddleLeft;
                 buttonStorage.text.text = buttonFunction.Name;
                 buttonStorage.text.rectTransform.sizeDelta = new Vector2(-12f, 0f);
+
+                if (!string.IsNullOrEmpty(buttonFunction.TooltipGroup))
+                    TooltipHelper.AssignTooltip(gameObject, buttonFunction.TooltipGroup);
 
                 EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
@@ -5722,47 +5821,92 @@ namespace BetterLegacy.Editor.Managers
         public void RefreshDebugger()
         {
             for (int i = 0; i < debugs.Count; i++)
-                debuggerPopup.Content.GetChild(i).gameObject.SetActive(RTString.SearchString(debugSearch, debugs[i]));
+                DebuggerPopup.Content.GetChild(i).gameObject.SetActive(RTString.SearchString(debugSearch, debugs[i]));
         }
 
-        public void RefreshAutosaveList(LevelPanel editorWrapper)
+        public void RefreshAutosaveList(LevelPanel levelPanel)
         {
             autosaveSearchField.onValueChanged.ClearAll();
             autosaveSearchField.onValueChanged.AddListener(_val =>
             {
                 autosaveSearch = _val;
-                RefreshAutosaveList(editorWrapper);
+                RefreshAutosaveList(levelPanel);
             });
-
-            var buttonHoverSize = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
 
             LSHelpers.DeleteChildren(autosaveContent);
 
-            var files = Directory.GetFiles(editorWrapper.Level.path, "autosave_*.lsb", SearchOption.AllDirectories).Union(Directory.GetFiles(editorWrapper.Level.path, "backup_*.lsb", SearchOption.AllDirectories));
+            if (levelPanel.isFolder)
+            {
+                EditorManager.inst.DisplayNotification("Folders can't have autosaves / backups.", 1.5f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var files =
+                Directory.GetFiles(levelPanel.FolderPath, $"autosave_{FileFormat.LSB.ToPattern()}", SearchOption.AllDirectories)
+                .Union(Directory.GetFiles(levelPanel.FolderPath, $"backup_{FileFormat.LSB.ToPattern()}", SearchOption.AllDirectories));
 
             foreach (var file in files)
             {
                 var path = RTFile.ReplaceSlash(file);
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(autosaveContent, $"Folder [{Path.GetFileName(file)}]");
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                folderButtonStorage.button.onClick.ClearAll();
+
+                string tmpFile = path;
+
+                var contextMenu = gameObject.AddComponent<FolderButtonFunction>();
+                contextMenu.onClick = eventData =>
+                {
+                    switch (eventData.button)
+                    {
+                        // just realized I could collapse the switch case blocks like this
+                        case PointerEventData.InputButton.Left: {
+                                levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));
+
+                                StartCoroutine(LoadLevel(levelPanel.Level));
+                                EditorManager.inst.HideDialog("Open File Popup");
+                                break;
+                            }
+                        case PointerEventData.InputButton.Right: {
+                                ShowContextMenu(
+                                    new ButtonFunction("Open", () =>
+                                    {
+                                        levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));
+
+                                        StartCoroutine(LoadLevel(levelPanel.Level));
+                                        EditorManager.inst.HideDialog("Open File Popup");
+                                    }),
+                                    new ButtonFunction("Toggle Backup State", () =>
+                                    {
+                                        var fi = new FileInfo(tmpFile);
+
+                                        tmpFile = tmpFile.Contains("autosave_") ? tmpFile.Replace("autosave_", "backup_") : tmpFile.Replace("backup_", "autosave_");
+
+                                        if (fi.Exists)
+                                            fi.MoveTo(tmpFile);
+
+                                        RefreshAutosaveList(levelPanel);
+                                    }, "Autosave Toggle Backup State"),
+                                    new ButtonFunction("Delete", () =>
+                                    {
+                                        ShowWarningPopup("Are you sure you want to delete this autosave? This is permanent!", () =>
+                                        {
+                                            RTFile.DeleteFile(tmpFile);
+                                            RefreshAutosaveList(levelPanel);
+                                        }, HideWarningPopup);
+                                    })
+                                    );
+                                break;
+                            }
+                    }
+                };
 
                 var hoverUI = gameObject.AddComponent<HoverUI>();
-                hoverUI.size = buttonHoverSize;
+                hoverUI.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
                 hoverUI.animatePos = false;
                 hoverUI.animateSca = true;
 
                 folderButtonStorage.text.text = Path.GetFileName(file);
-
-                folderButtonStorage.button.onClick.ClearAll();
-                folderButtonStorage.button.onClick.AddListener(() =>
-                {
-                    editorWrapper.Level.currentFile = path;
-
-                    StartCoroutine(LoadLevel(editorWrapper.Level));
-                    EditorManager.inst.HideDialog("Open File Popup");
-                });
-
-                string tmpFile = file;
 
                 var backup = EditorPrefabHolder.Instance.Function1Button.Duplicate(gameObject.transform, "backup");
                 var backupHolder = backup.GetComponent<FunctionButtonStorage>();
@@ -5779,19 +5923,10 @@ namespace BetterLegacy.Editor.Managers
                     if (fi.Exists)
                         fi.MoveTo(tmpFile);
 
-                    var fileName = Path.GetFileName(tmpFile);
-                    folderButtonStorage.text.text = fileName;
-                    gameObject.name = $"Folder [{fileName}]";
-
-                    folderButtonStorage.button.onClick.ClearAll();
-                    folderButtonStorage.button.onClick.AddListener(() =>
-                    {
-                        editorWrapper.Level.currentFile = path;
-
-                        StartCoroutine(LoadLevel(editorWrapper.Level));
-                        EditorManager.inst.HideDialog("Open File Popup");
-                    });
+                    RefreshAutosaveList(levelPanel);
                 });
+
+                TooltipHelper.AssignTooltip(backup, "Autosave Toggle Backup State");
 
                 EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyGraphic(backupHolder.button.image, ThemeGroup.Function_1, true);

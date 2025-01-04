@@ -40,6 +40,29 @@ namespace BetterLegacy.Editor.Managers
             GenerateUI();
         }
 
+        /// <summary>
+        /// Text to update.
+        /// </summary>
+        public Text Text { get; set; }
+
+        /// <summary>
+        /// String to format from.
+        /// </summary>
+        public const string DEFAULT_TEXT = "You are currently editing multiple objects.\n\nObject Count: {0}/{3}\nPrefab Object Count: {1}/{4}\nTotal: {2}";
+
+        void Update()
+        {
+            if (!Text || !Text.isActiveAndEnabled)
+                return;
+
+            Text.text = string.Format(DEFAULT_TEXT,
+                ObjectEditor.inst.SelectedObjects.Count,
+                ObjectEditor.inst.SelectedPrefabObjects.Count,
+                ObjectEditor.inst.SelectedObjects.Count + ObjectEditor.inst.SelectedPrefabObjects.Count,
+                GameData.Current.beatmapObjects.Count,
+                GameData.Current.prefabObjects.Count);
+        }
+
         #endregion
 
         #region Values
@@ -49,7 +72,6 @@ namespace BetterLegacy.Editor.Managers
         int currentMultiColorSelection = -1;
         int currentMultiGradientColorSelection = -1;
 
-        int shapeSiblingIndex = 42;
         bool updatedShapes;
         bool updatedText;
         public List<Toggle> shapeToggles = new List<Toggle>();
@@ -66,8 +88,6 @@ namespace BetterLegacy.Editor.Managers
 
         void GenerateUI()
         {
-            var eventButton = EditorPrefabHolder.Instance.Function1Button;
-
             var multiObjectEditorDialog = EditorManager.inst.GetDialog("Multi Object Editor").Dialog;
 
             EditorThemeManager.AddGraphic(multiObjectEditorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
@@ -76,33 +96,25 @@ namespace BetterLegacy.Editor.Managers
 
             dataLeft.gameObject.SetActive(true);
 
-            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(dataLeft);
+            CoreHelper.DestroyChildren(dataLeft);
+
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(dataLeft, "Scroll View");
+            scrollView.transform.AsRT().anchoredPosition = new Vector2(240f, 345f);
+            scrollView.transform.AsRT().sizeDelta = new Vector2(410f, 690f);
 
             var parent = scrollView.transform.Find("Viewport/Content");
             multiObjectContent = parent;
 
-            LSHelpers.DeleteChildren(parent);
-
-            scrollView.transform.AsRT().anchoredPosition = new Vector2(240f, 345f);
-            scrollView.transform.AsRT().sizeDelta = new Vector2(410f, 690f);
-
-            dataLeft.Find("Object Editor Title").AsRT().anchoredPosition = new Vector2(405f, -16f);
-            dataLeft.Find("Object Editor Title").AsRT().sizeDelta = new Vector2(760f, 32f);
-            multiObjectEditorDialog.Find("data/right/Object Editor Title").gameObject.SetActive(false);
-
-            var list = new List<GameObject>();
-            list.Add(dataLeft.GetChild(1).gameObject);
-            list.Add(dataLeft.GetChild(3).gameObject);
-            for (int i = 0; i < list.Count; i++)
-                Destroy(list[i]);
+            var title = multiObjectEditorDialog.Find("data/right/Object Editor Title");
+            title.SetParent(multiObjectEditorDialog);
+            RectValues.FullAnchored.AnchoredPosition(0f, -16f).AnchorMin(0f, 1f).SizeDelta(0f, 32f).AssignToRectTransform(title.AsRT());
 
             var textHolder = multiObjectEditorDialog.Find("data/right/text holder/Text");
             var textHolderText = textHolder.GetComponent<Text>();
 
             EditorThemeManager.AddLightText(textHolderText);
 
-            var updateMultiObjectInfo = textHolder.gameObject.AddComponent<UpdateMultiObjectInfo>();
-            updateMultiObjectInfo.Text = textHolderText;
+            Text = textHolderText;
 
             textHolderText.fontSize = 22;
 
@@ -117,7 +129,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 GenerateLabels(parent, 32f, "Set Group Editor Layer");
 
-                var inputFieldStorage = GenerateInputField(parent, "layer", "1", "Enter layer...", true, true);
+                var inputFieldStorage = GenerateInputField(parent, "layer", "1", "Enter layer...", true, true, true);
                 inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
                 inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
                 {
@@ -145,15 +157,15 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue);
                 });
-                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
-
-                EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Normal);
-
-                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Move to Current Editor Layer", () =>
+                inputFieldStorage.rightGreaterButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_down{FileFormat.PNG.Dot()}"));
+                inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         timelineObject.Layer = RTEditor.inst.Layer;
-                }));
+                });
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Normal);
             }
 
             // Depth
@@ -341,10 +353,7 @@ namespace BetterLegacy.Editor.Managers
 
                 inputFieldStorage.rightButton.name = "+";
 
-                var addFilePath = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png";
-
-                if (RTFile.FileExists(addFilePath))
-                    inputFieldStorage.rightButton.image.sprite = SpriteHelper.LoadSprite(addFilePath);
+                inputFieldStorage.rightButton.image.sprite = EditorSprites.AddSprite;
 
                 var mtnLeftLE = inputFieldStorage.rightButton.gameObject.AddComponent<LayoutElement>();
                 mtnLeftLE.ignoreLayout = true;
@@ -391,10 +400,7 @@ namespace BetterLegacy.Editor.Managers
 
                 inputFieldStorage.rightButton.name = "+";
 
-                var addFilePath = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png";
-
-                if (RTFile.FileExists(addFilePath))
-                    inputFieldStorage.rightButton.image.sprite = SpriteHelper.LoadSprite(addFilePath);
+                inputFieldStorage.rightButton.image.sprite = EditorSprites.AddSprite;
 
                 var mtnLeftLE = inputFieldStorage.rightButton.gameObject.AddComponent<LayoutElement>();
                 mtnLeftLE.ignoreLayout = true;
@@ -1559,334 +1565,54 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.SetComplexity(replaceLabels, Complexity.Advanced);
 
             // Replace Name
+            SetupReplaceStrings(parent, "Replace Name", "Old Name", "Enter old name...", "New Name", "Enter new name...", (oldNameIF, newNameIF) =>
             {
-                var labels = GenerateLabels(parent, 32f, "Replace Name");
-
-                var replaceName = Creator.NewUIObject("replace name", parent);
-                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-                var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
-                multiSyncGLG.spacing = new Vector2(8f, 8f);
-                multiSyncGLG.cellSize = new Vector2(124f, 32f);
-
-                var oldName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "old name");
-
-                Destroy(oldName.GetComponent<EventTrigger>());
-                var oldNameIF = oldName.GetComponent<InputField>();
-                oldNameIF.characterValidation = InputField.CharacterValidation.None;
-                oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                oldNameIF.textComponent.fontSize = 16;
-                oldNameIF.text = "Old Name";
-                oldNameIF.GetPlaceholderText().text = "Enter old name...";
-                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.GetPlaceholderText().fontSize = 16;
-                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                oldNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(oldNameIF);
-                var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
-                oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(oldNameIF);
-
-                var newName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "new name");
-
-                Destroy(newName.GetComponent<EventTrigger>());
-                var newNameIF = newName.GetComponent<InputField>();
-                newNameIF.characterValidation = InputField.CharacterValidation.None;
-                newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                newNameIF.textComponent.fontSize = 16;
-                newNameIF.text = "New Name";
-                newNameIF.GetPlaceholderText().text = "Enter new name...";
-                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.GetPlaceholderText().fontSize = 16;
-                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                newNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(newNameIF);
-                var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
-                newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(newNameIF);
-
-                var replace = eventButton.Duplicate(replaceName.transform, "replace");
-                replace.transform.localScale = Vector3.one;
-                replace.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
-                replace.GetComponent<LayoutElement>().minWidth = 32f;
-
-                var replaceText = replace.transform.GetChild(0).GetComponent<Text>();
-
-                replaceText.text = "Replace";
-
-                EditorThemeManager.AddGraphic(replace.GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(replaceText, ThemeGroup.Function_1_Text);
-
-                var button = replace.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.name = bm.name.Replace(oldNameIF.text, newNameIF.text);
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    }
-                });
-
-                EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
-            }
+                    var bm = timelineObject.GetData<BeatmapObject>();
+                    bm.name = bm.name.Replace(oldNameIF.text, newNameIF.text);
+                    ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                }
+            });
 
             // Replace Tags
+            SetupReplaceStrings(parent, "Replace Tags", "Old Tag", "Enter old tag...", "New Tag", "Enter new tag...", (oldNameIF, newNameIF) =>
             {
-                var labels = GenerateLabels(parent, 32f, "Replace Tags");
-
-                var replaceName = Creator.NewUIObject("replace tags", parent);
-                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-                var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
-                multiSyncGLG.spacing = new Vector2(8f, 8f);
-                multiSyncGLG.cellSize = new Vector2(124f, 32f);
-
-                var oldName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "old tag");
-
-                Destroy(oldName.GetComponent<EventTrigger>());
-                var oldNameIF = oldName.GetComponent<InputField>();
-                oldNameIF.characterValidation = InputField.CharacterValidation.None;
-                oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                oldNameIF.textComponent.fontSize = 16;
-                oldNameIF.text = "Old Tag";
-                oldNameIF.GetPlaceholderText().text = "Enter old tag...";
-                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.GetPlaceholderText().fontSize = 16;
-                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                oldNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(oldNameIF);
-                var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
-                oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(oldNameIF);
-
-                var newName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "new tag");
-
-                Destroy(newName.GetComponent<EventTrigger>());
-                var newNameIF = newName.GetComponent<InputField>();
-                newNameIF.characterValidation = InputField.CharacterValidation.None;
-                newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                newNameIF.textComponent.fontSize = 16;
-                newNameIF.text = "New Tag";
-                newNameIF.GetPlaceholderText().text = "Enter new tag...";
-                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.GetPlaceholderText().fontSize = 16;
-                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                newNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(newNameIF);
-                var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
-                newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(newNameIF);
-
-                var replace = eventButton.Duplicate(replaceName.transform, "replace");
-                replace.transform.localScale = Vector3.one;
-                replace.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
-                replace.GetComponent<LayoutElement>().minWidth = 32f;
-
-                var replaceText = replace.transform.GetChild(0).GetComponent<Text>();
-
-                replaceText.text = "Replace";
-
-                EditorThemeManager.AddGraphic(replace.GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(replaceText, ThemeGroup.Function_1_Text);
-
-                var button = replace.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        for (int i = 0; i < bm.tags.Count; i++)
-                        {
-                            bm.tags[i] = bm.tags[i].Replace(oldNameIF.text, newNameIF.text);
-                        }
-                    }
-                });
-
-                EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
-            }
+                    var bm = timelineObject.GetData<BeatmapObject>();
+                    for (int i = 0; i < bm.tags.Count; i++)
+                        bm.tags[i] = bm.tags[i].Replace(oldNameIF.text, newNameIF.text);
+                }
+            });
 
             // Replace Text
+            SetupReplaceStrings(parent, "Replace Text", "Old Text", "Enter old text...", "New Text", "Enter new text...", (oldNameIF, newNameIF) =>
             {
-                var labels = GenerateLabels(parent, 32f, "Replace Text");
-
-                var replaceName = Creator.NewUIObject("replace text", parent);
-                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-                var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
-                multiSyncGLG.spacing = new Vector2(8f, 8f);
-                multiSyncGLG.cellSize = new Vector2(124f, 32f);
-
-                var oldName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "old text");
-
-                Destroy(oldName.GetComponent<EventTrigger>());
-                var oldNameIF = oldName.GetComponent<InputField>();
-                oldNameIF.characterValidation = InputField.CharacterValidation.None;
-                oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                oldNameIF.textComponent.fontSize = 16;
-                oldNameIF.text = "Old Text";
-                oldNameIF.GetPlaceholderText().text = "Enter old text...";
-                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.GetPlaceholderText().fontSize = 16;
-                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                oldNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(oldNameIF);
-                var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
-                oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(oldNameIF);
-
-                var newName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "new text");
-
-                Destroy(newName.GetComponent<EventTrigger>());
-                var newNameIF = newName.GetComponent<InputField>();
-                newNameIF.characterValidation = InputField.CharacterValidation.None;
-                newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                newNameIF.textComponent.fontSize = 16;
-                newNameIF.text = "New Text";
-                newNameIF.GetPlaceholderText().text = "Enter new text...";
-                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.GetPlaceholderText().fontSize = 16;
-                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                newNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(newNameIF);
-                var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
-                newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(newNameIF);
-
-                var replace = eventButton.Duplicate(replaceName.transform, "replace");
-                replace.transform.localScale = Vector3.one;
-                replace.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
-                replace.GetComponent<LayoutElement>().minWidth = 32f;
-
-                var replaceText = replace.transform.GetChild(0).GetComponent<Text>();
-
-                replaceText.text = "Replace";
-
-                EditorThemeManager.AddGraphic(replace.GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(replaceText, ThemeGroup.Function_1_Text);
-
-                var button = replace.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
-                        Updater.UpdateObject(bm, "Shape");
-                    }
-                });
-
-                EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
-            }
+                    var bm = timelineObject.GetData<BeatmapObject>();
+                    bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
+                    Updater.UpdateObject(bm, "Shape");
+                }
+            });
 
             // Replace Modifier
+            SetupReplaceStrings(parent, "Replace Modifier values", "Old Value", "Enter old value...", "New Value", "Enter new value...", (oldNameIF, newNameIF) =>
             {
-                var labels = GenerateLabels(parent, 32f, "Replace Modifier values");
-
-                var replaceName = Creator.NewUIObject("replace modifier", parent);
-                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-                var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
-                multiSyncGLG.spacing = new Vector2(8f, 8f);
-                multiSyncGLG.cellSize = new Vector2(124f, 32f);
-
-                var oldName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "old modifier");
-
-                Destroy(oldName.GetComponent<EventTrigger>());
-                var oldNameIF = oldName.GetComponent<InputField>();
-                oldNameIF.characterValidation = InputField.CharacterValidation.None;
-                oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                oldNameIF.textComponent.fontSize = 16;
-                oldNameIF.text = "Old Modifier";
-                oldNameIF.GetPlaceholderText().text = "Enter old modifier...";
-                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.GetPlaceholderText().fontSize = 16;
-                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                oldNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(oldNameIF);
-                var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
-                oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(oldNameIF);
-
-                var newName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, "new modifier");
-
-                Destroy(newName.GetComponent<EventTrigger>());
-                var newNameIF = newName.GetComponent<InputField>();
-                newNameIF.characterValidation = InputField.CharacterValidation.None;
-                newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-                newNameIF.textComponent.fontSize = 16;
-                newNameIF.text = "New Modifier";
-                newNameIF.GetPlaceholderText().text = "Enter new modifier...";
-                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.GetPlaceholderText().fontSize = 16;
-                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-                newNameIF.onValueChanged.ClearAll();
-
-                EditorHelper.AddInputFieldContextMenu(newNameIF);
-                var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
-                newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.AddInputField(newNameIF);
-
-                var replace = eventButton.Duplicate(replaceName.transform, "replace");
-                replace.transform.localScale = Vector3.one;
-                replace.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
-                replace.GetComponent<LayoutElement>().minWidth = 32f;
-
-                var replaceText = replace.transform.GetChild(0).GetComponent<Text>();
-
-                replaceText.text = "Replace";
-
-                EditorThemeManager.AddGraphic(replace.GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(replaceText, ThemeGroup.Function_1_Text);
-
-                var button = replace.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                 {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                    var bm = timelineObject.GetData<BeatmapObject>();
+
+                    foreach (var modifier in bm.modifiers)
                     {
-                        var bm = timelineObject.GetData<BeatmapObject>();
+                        for (int i = 1; i < modifier.commands.Count; i++)
+                            modifier.commands[i] = modifier.commands[i].Replace(oldNameIF.text, newNameIF.text);
 
-                        foreach (var modifier in bm.modifiers)
-                        {
-                            for (int i = 1; i < modifier.commands.Count; i++)
-                            {
-                                modifier.commands[i] = modifier.commands[i].Replace(oldNameIF.text, newNameIF.text);
-                            }
-
-                            modifier.value = modifier.value.Replace(oldNameIF.text, newNameIF.text);
-                        }
+                        modifier.value = modifier.value.Replace(oldNameIF.text, newNameIF.text);
                     }
-                });
-
-                EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
-            }
+                }
+            });
 
             GeneratePad(parent);
 
@@ -1899,7 +1625,7 @@ namespace BetterLegacy.Editor.Managers
                 var disable = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
                 var disableX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disable.transform, "x");
                 var disableXImage = disableX.GetComponent<Image>();
-                disableXImage.sprite = RTEditor.CloseSprite;
+                disableXImage.sprite = EditorSprites.CloseSprite;
                 RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableXImage.rectTransform);
                 var disableButtonStorage = disable.GetComponent<FunctionButtonStorage>();
                 disableButtonStorage.button.onClick.ClearAll();
@@ -1974,7 +1700,7 @@ namespace BetterLegacy.Editor.Managers
                 var disableGradient = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
                 var disableGradientX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disableGradient.transform, "x");
                 var disableGradientXImage = disableGradientX.GetComponent<Image>();
-                disableGradientXImage.sprite = RTEditor.CloseSprite;
+                disableGradientXImage.sprite = EditorSprites.CloseSprite;
                 RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableGradientXImage.rectTransform);
                 var disableGradientButtonStorage = disableGradient.GetComponent<FunctionButtonStorage>();
                 disableGradientButtonStorage.button.onClick.ClearAll();
@@ -2046,7 +1772,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var labels10 = GenerateLabels(parent, 32f, "Ease Type");
 
-                var curvesObject = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/position/curves").Duplicate(parent, "curves");
+                var curvesObject = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(parent, "curves");
                 var curves = curvesObject.GetComponent<Dropdown>();
                 curves.onValueChanged.ClearAll();
                 curves.options.Insert(0, new Dropdown.OptionData("None (Doesn't Set Easing)"));
@@ -2512,18 +2238,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderMultiShape()
         {
-            CoreHelper.Log($"Running {nameof(RenderMultiShape)}");
-            if (!ObjectEditor.inst || !ObjectEditor.inst.shapeButtonPrefab || !ShapeManager.inst.loadedShapes)
-            {
-                CoreHelper.Log($"{nameof(RenderMultiShape)}: Shapes weren't loaded yet, so will need to wait.");
-                CoreHelper.WaitUntil(() => ObjectEditor.inst && ObjectEditor.inst.shapeButtonPrefab && ShapeManager.inst.loadedShapes, RenderMultiShape);
-                return;
-            }
-
             if (!multiShapes)
             {
-                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape", shapeSiblingIndex);
-                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings", shapeSiblingIndex + 1);
+                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape");
+                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings");
                 multiShapes = shapes.transform;
                 multiShapeSettings = shapeOption.transform;
 
@@ -2754,20 +2472,8 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.SetActiveChildren(shapeSettings, false);
 
-            if (multiShapeSelection.x == 4)
-            {
-                shapeSettings.AsRT().sizeDelta = new Vector2(351f, 74f);
-                var child = shapeSettings.GetChild(4);
-                child.AsRT().sizeDelta = new Vector2(351f, 74f);
-                child.Find("Text").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
-                child.Find("Placeholder").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
-                child.GetComponent<InputField>().lineType = InputField.LineType.MultiLineNewline;
-            }
-            else
-            {
-                shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
-                shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 32f);
-            }
+            shapeSettings.AsRT().sizeDelta = new Vector2(351f, multiShapeSelection.x == 4 ? 74f : 32f);
+            shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, multiShapeSelection.x == 4 ? 74f : 32f);
 
             shapeSettings.GetChild(multiShapeSelection.x).gameObject.SetActive(true);
 
@@ -2777,9 +2483,9 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = multiShapeSelection.x == index;
-                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length);
+                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
 
-                if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length)
+                if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length)
                     toggle.onValueChanged.AddListener(_val =>
                     {
                         multiShapeSelection = new Vector2Int(index, 0);
@@ -2802,118 +2508,204 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            if (multiShapeSelection.x != 4 && multiShapeSelection.x != 6)
+            switch (multiShapeSelection.x)
             {
-                num = 0;
-                foreach (var toggle in shapeOptionToggles[multiShapeSelection.x])
-                {
-                    int index = num;
-                    toggle.onValueChanged.ClearAll();
-                    toggle.isOn = multiShapeSelection.y == index;
-                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[multiShapeSelection.x]);
-
-                    if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[multiShapeSelection.x])
-                        toggle.onValueChanged.AddListener(_val =>
+                case 4:
+                    {
+                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                        textIF.onValueChanged.ClearAll();
+                        if (!updatedText)
                         {
-                            multiShapeSelection.y = index;
+                            updatedText = true;
+                            textIF.textComponent.alignment = TextAnchor.UpperLeft;
+                            textIF.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
+                            textIF.GetPlaceholderText().text = "Enter text...";
+                            textIF.lineType = InputField.LineType.MultiLineNewline;
 
+                            textIF.text = "";
+                        }
+                        textIF.onValueChanged.AddListener(_val =>
+                        {
                             foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                             {
-                                beatmapObject.shape = multiShapeSelection.x;
-                                beatmapObject.shapeOption = multiShapeSelection.y;
-
-                                if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
-                                    beatmapObject.shape = 0;
+                                beatmapObject.text = _val;
 
                                 Updater.UpdateObject(beatmapObject, "Shape");
                             }
-
-                            RenderMultiShape();
                         });
 
-                    num++;
-                }
-            }
-            else if (multiShapeSelection.x == 4)
-            {
-                var textIF = shapeSettings.Find("5").GetComponent<InputField>();
-                textIF.onValueChanged.ClearAll();
-                if (!updatedText)
-                {
-                    updatedText = true;
-                    textIF.text = "";
-                }
-                textIF.onValueChanged.AddListener(_val =>
-                {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
-                    {
-                        beatmapObject.text = _val;
-
-                        Updater.UpdateObject(beatmapObject, "Shape");
-                    }
-                });
-
-                if (!textIF.transform.Find("edit"))
-                {
-                    var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(textIF.transform, "edit");
-                    var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-                    buttonStorage.image.sprite = KeybindEditor.inst.editSprite;
-                    EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-                    EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-                    buttonStorage.button.onClick.ClearAll();
-                    buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(textIF); });
-                    UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
-                    EditorHelper.SetComplexity(button, Complexity.Advanced);
-                }
-                else
-                {
-                    var button = textIF.transform.Find("edit").gameObject;
-                    var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-                    buttonStorage.button.onClick.ClearAll();
-                    buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(textIF); });
-                }
-            }
-            else if (multiShapeSelection.x == 6)
-            {
-                var select = shapeSettings.Find("7/select").GetComponent<Button>();
-                select.onClick.ClearAll();
-                select.onClick.AddListener(() =>
-                {
-                    var editorPath = RTFile.ApplicationDirectory + RTEditor.editorListSlash + EditorManager.inst.currentLoadedLevel;
-                    string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
-                    CoreHelper.Log($"Selected file: {jpgFile}");
-                    if (!string.IsNullOrEmpty(jpgFile))
-                    {
-                        string jpgFileLocation = editorPath + "/" + Path.GetFileName(jpgFile);
-                        CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
-
-                        var levelPath = jpgFile.Replace("\\", "/").Replace(editorPath + "/", "");
-                        CoreHelper.Log($"levelPath: {levelPath}");
-
-                        if (!RTFile.FileExists(jpgFileLocation) && !jpgFile.Replace("\\", "/").Contains(editorPath))
+                        if (!textIF.transform.Find("edit"))
                         {
-                            RTFile.CopyFile(jpgFile, jpgFileLocation);
-                            CoreHelper.Log($"Copied file to : {jpgFileLocation}");
+                            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(textIF.transform, "edit");
+                            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+                            buttonStorage.image.sprite = EditorSprites.EditSprite;
+                            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+                            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
+                            buttonStorage.button.onClick.ClearAll();
+                            buttonStorage.button.onClick.AddListener(() => TextEditor.inst.SetInputField(textIF));
+                            UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
+                            EditorHelper.SetComplexity(button, Complexity.Advanced);
                         }
                         else
-                            jpgFileLocation = editorPath + "/" + levelPath;
-
-                        CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
-
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                         {
-                            beatmapObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
-
-                            Updater.UpdateObject(beatmapObject, "Shape");
+                            var button = textIF.transform.Find("edit").gameObject;
+                            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+                            buttonStorage.button.onClick.ClearAll();
+                            buttonStorage.button.onClick.AddListener(() => TextEditor.inst.SetInputField(textIF));
                         }
-                        RenderMultiShape();
-                    }
-                });
-                shapeSettings.Find("7/text").GetComponent<Text>().text = "Select an image";
 
-                if (shapeSettings.Find("7/set"))
-                    CoreHelper.Destroy(shapeSettings.Find("7/set").gameObject);
+                        break;
+                    }
+                case 6:
+                    {
+                        var select = shapeSettings.Find("7/select").GetComponent<Button>();
+                        select.onClick.ClearAll();
+                        select.onClick.AddListener(() =>
+                        {
+                            var editorPath = RTFile.ApplicationDirectory + RTEditor.editorListSlash + EditorManager.inst.currentLoadedLevel;
+                            string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
+                            CoreHelper.Log($"Selected file: {jpgFile}");
+                            if (!string.IsNullOrEmpty(jpgFile))
+                            {
+                                string jpgFileLocation = editorPath + "/" + Path.GetFileName(jpgFile);
+                                CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
+
+                                var levelPath = jpgFile.Replace("\\", "/").Replace(editorPath + "/", "");
+                                CoreHelper.Log($"levelPath: {levelPath}");
+
+                                if (!RTFile.FileExists(jpgFileLocation) && !jpgFile.Replace("\\", "/").Contains(editorPath))
+                                {
+                                    RTFile.CopyFile(jpgFile, jpgFileLocation);
+                                    CoreHelper.Log($"Copied file to : {jpgFileLocation}");
+                                }
+                                else
+                                    jpgFileLocation = editorPath + "/" + levelPath;
+
+                                CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
+
+                                foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                {
+                                    beatmapObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
+
+                                    Updater.UpdateObject(beatmapObject, "Shape");
+                                }
+                                RenderMultiShape();
+                            }
+                        });
+                        shapeSettings.Find("7/text").GetComponent<Text>().text = "Select an image";
+
+                        if (shapeSettings.Find("7/set"))
+                            CoreHelper.Destroy(shapeSettings.Find("7/set").gameObject);
+
+                        break;
+                    }
+                default:
+                    {
+                        num = 0;
+                        foreach (var toggle in shapeOptionToggles[multiShapeSelection.x])
+                        {
+                            int index = num;
+                            toggle.onValueChanged.ClearAll();
+                            toggle.isOn = multiShapeSelection.y == index;
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[multiShapeSelection.x]);
+
+                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[multiShapeSelection.x])
+                                toggle.onValueChanged.AddListener(_val =>
+                                {
+                                    multiShapeSelection.y = index;
+
+                                    foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                    {
+                                        beatmapObject.shape = multiShapeSelection.x;
+                                        beatmapObject.shapeOption = multiShapeSelection.y;
+
+                                        if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                            beatmapObject.shape = 0;
+
+                                        Updater.UpdateObject(beatmapObject, "Shape");
+                                    }
+
+                                    RenderMultiShape();
+                                });
+
+                            num++;
+                        }
+
+                        break;
+                    }
             }
+        }
+
+        void SetupReplaceStrings(Transform parent, string name, string oldNameStr, string oldNamePlaceholder, string newNameStr, string newNamePlaceholder, Action<InputField, InputField> replacer)
+        {
+            var labels = GenerateLabels(parent, 32f, name);
+
+            var replaceName = Creator.NewUIObject(name.ToLower(), parent);
+            replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
+            var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
+            multiSyncGLG.spacing = new Vector2(8f, 8f);
+            multiSyncGLG.cellSize = new Vector2(124f, 32f);
+
+            var oldName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, oldNameStr.ToLower());
+
+            Destroy(oldName.GetComponent<EventTrigger>());
+            var oldNameIF = oldName.GetComponent<InputField>();
+            oldNameIF.characterValidation = InputField.CharacterValidation.None;
+            oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
+            oldNameIF.textComponent.fontSize = 16;
+            oldNameIF.text = oldNameStr;
+            oldNameIF.GetPlaceholderText().text = oldNamePlaceholder;
+            oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+            oldNameIF.GetPlaceholderText().fontSize = 16;
+            oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+
+            oldNameIF.onValueChanged.ClearAll();
+
+            EditorHelper.AddInputFieldContextMenu(oldNameIF);
+            var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
+            oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
+
+            EditorThemeManager.AddInputField(oldNameIF);
+
+            var newName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, newNameStr.ToLower());
+
+            Destroy(newName.GetComponent<EventTrigger>());
+            var newNameIF = newName.GetComponent<InputField>();
+            newNameIF.characterValidation = InputField.CharacterValidation.None;
+            newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
+            newNameIF.textComponent.fontSize = 16;
+            newNameIF.text = newNameStr;
+            newNameIF.GetPlaceholderText().text = newNamePlaceholder;
+            newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+            newNameIF.GetPlaceholderText().fontSize = 16;
+            newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+
+            newNameIF.onValueChanged.ClearAll();
+
+            EditorHelper.AddInputFieldContextMenu(newNameIF);
+            var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
+            newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
+
+            EditorThemeManager.AddInputField(newNameIF);
+
+            var replace = EditorPrefabHolder.Instance.Function1Button.Duplicate(replaceName.transform, "replace");
+            replace.transform.localScale = Vector3.one;
+            replace.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
+            replace.GetComponent<LayoutElement>().minWidth = 32f;
+
+            var replaceText = replace.transform.GetChild(0).GetComponent<Text>();
+
+            replaceText.text = "Replace";
+
+            EditorThemeManager.AddGraphic(replace.GetComponent<Image>(), ThemeGroup.Function_1, true);
+            EditorThemeManager.AddGraphic(replaceText, ThemeGroup.Function_1_Text);
+
+            var button = replace.GetComponent<Button>();
+            button.onClick.ClearAll();
+            button.onClick.AddListener(() => replacer?.Invoke(oldNameIF, newNameIF));
+
+            EditorHelper.SetComplexity(labels, Complexity.Advanced);
+            EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
         }
 
         void GeneratePad(Transform parent)

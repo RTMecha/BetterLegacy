@@ -39,7 +39,7 @@ namespace BetterLegacy.Editor.Managers
             var editorDialogTransform = editorDialogObject.transform;
             editorDialogObject.name = "NewLevelTemplateDialog";
             editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs").transform);
+            editorDialogTransform.SetParent(EditorManager.inst.dialogs);
             editorDialogTransform.localScale = Vector3.one;
             editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
             editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
@@ -61,13 +61,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDialog("New Level Template Dialog", editorDialogObject);
 
-            var scrollView = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View"));
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogTransform, "Scroll View");
             newLevelTemplateContent = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.SetParent(editorDialogTransform);
-            scrollView.transform.localScale = Vector3.one;
-            scrollView.name = "Scroll View";
-
-            LSHelpers.DeleteChildren(newLevelTemplateContent);
 
             var scrollViewLE = scrollView.AddComponent<LayoutElement>();
             scrollViewLE.ignoreLayout = true;

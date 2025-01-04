@@ -54,11 +54,9 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < tabNames.Length; i++)
                 GenerateTab(tabNames[i]);
 
-            closePrefab = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups/Open File Popup/Panel/x").Duplicate(assetsParent, "x");
-
             Spacer("topbar spacer", topBarBase, new Vector2(195f, 32f));
 
-            var close = closePrefab.Duplicate(topBarBase, "close");
+            var close = EditorPrefabHolder.Instance.CloseButton.Duplicate(topBarBase, "close");
             close.transform.localScale = Vector3.one;
 
             close.transform.AsRT().sizeDelta = new Vector2(48f, 48f);
@@ -368,7 +366,7 @@ namespace BetterLegacy.Editor.Managers
                     title.AsRT().anchoredPosition = Vector2.zero;
                     title.AsRT().sizeDelta = new Vector2(-120f, 64f);
 
-                    var toggle = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle").Duplicate(prefab.transform, "checked");
+                    var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(prefab.transform, "checked");
                     toggle.transform.AsRT().anchoredPosition = new Vector2(32f, -32f);
                     toggle.transform.AsRT().sizeDelta = Vector2.zero;
                     toggle.transform.GetChild(0).AsRT().pivot = new Vector2(0.5f, 0.5f);
@@ -436,7 +434,7 @@ namespace BetterLegacy.Editor.Managers
                     var prefabImage = prefab.AddComponent<Image>();
                     prefabImage.color = new Color(0f, 0f, 0f, 0.2f);
 
-                    var editPrefab = closePrefab.Duplicate(prefab.transform, "edit");
+                    var editPrefab = EditorPrefabHolder.Instance.CloseButton.Duplicate(prefab.transform, "edit");
                     UIManager.SetRectTransform(editPrefab.transform.AsRT(), new Vector2(-38f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
                     editPrefab.transform.GetChild(0).AsRT().sizeDelta = new Vector2(0f, 0f);
                     var editPrefabButton = editPrefab.GetComponent<Button>();
@@ -505,7 +503,7 @@ namespace BetterLegacy.Editor.Managers
                     tmpArtist.enableWordWrapping = true;
                     tmpArtist.text = $"Players learn very basic stuff about Classic Arrhythmia / Project Arrhythmia mechanics.{Environment.NewLine}{Environment.NewLine}(Click on this button to open the level.)";
 
-                    var edit = closePrefab.Duplicate(timelineButtonPrefab.transform, "edit");
+                    var edit = EditorPrefabHolder.Instance.CloseButton.Duplicate(timelineButtonPrefab.transform, "edit");
                     edit.transform.AsRT().anchoredPosition = new Vector2(-46f, -16f);
                     edit.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
                     edit.transform.AsRT().sizeDelta = new Vector2(24f, 24f);
@@ -601,11 +599,11 @@ namespace BetterLegacy.Editor.Managers
                     tmpNoteTitle.enableWordWrapping = false;
                     tmpNoteTitle.fontSize = 16;
 
-                    var toggle = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle").Duplicate(prefabPanel.transform, "active");
+                    var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(prefabPanel.transform, "active");
                     UIManager.SetRectTransform(toggle.transform.AsRT(), Vector2.zero, new Vector2(0.87f, 0.5f), new Vector2(0.87f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero);
                     UIManager.SetRectTransform(toggle.transform.GetChild(0).AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f));
 
-                    var editPrefab = closePrefab.Duplicate(prefabPanel.transform, "edit");
+                    var editPrefab = EditorPrefabHolder.Instance.CloseButton.Duplicate(prefabPanel.transform, "edit");
                     UIManager.SetRectTransform(editPrefab.transform.AsRT(), new Vector2(-44f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
                     editPrefab.transform.GetChild(0).AsRT().sizeDelta = new Vector2(4f, 4f);
                     var editPrefabButton = editPrefab.GetComponent<Button>();
@@ -614,7 +612,7 @@ namespace BetterLegacy.Editor.Managers
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
                     spritePrefabImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
-                    var closeB = closePrefab.Duplicate(prefabPanel.transform, "close");
+                    var closeB = EditorPrefabHolder.Instance.CloseButton.Duplicate(prefabPanel.transform, "close");
                     UIManager.SetRectTransform(closeB.transform.AsRT(), new Vector2(-16f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabPanel.transform, "delete");
@@ -762,7 +760,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -783,7 +781,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -821,7 +819,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -842,7 +840,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(334.4f, 32f);
@@ -892,7 +890,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -913,7 +911,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -934,7 +932,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -958,7 +956,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -983,7 +981,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1033,7 +1031,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1083,7 +1081,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1167,7 +1165,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1202,7 +1200,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1223,7 +1221,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1247,7 +1245,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1268,7 +1266,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1280,7 +1278,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var renderType = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(g1.transform, "type");
+                    var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(g1.transform, "type");
                     eventEditorType = renderType.GetComponent<Dropdown>();
                     eventEditorType.options = CoreHelper.StringToOptionData("Level", "Cutscene", "Story");
                     EditorThemeManager.AddDropdown(eventEditorType);
@@ -1301,7 +1299,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1322,7 +1320,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1343,7 +1341,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1362,7 +1360,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1383,7 +1381,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1404,7 +1402,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1439,7 +1437,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1460,7 +1458,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1484,7 +1482,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1496,7 +1494,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var colorBase = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color");
+                    var colorBase = EditorPrefabHolder.Instance.ColorsLayout;
                     this.colorBase = colorBase.transform;
                     var colors = colorBase.Duplicate(g1.transform, "colors");
                     noteEditorColorsParent = colors.transform;
@@ -1517,7 +1515,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(300f, 32f);
@@ -1827,8 +1825,6 @@ namespace BetterLegacy.Editor.Managers
         public GameObject tagPrefab;
 
         public GameObject tabPrefab;
-
-        public GameObject closePrefab;
 
         public GameObject baseCardPrefab;
 

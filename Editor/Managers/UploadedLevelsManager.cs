@@ -118,7 +118,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(searchButtonStorage.button, ThemeGroup.Function_2);
 
-            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(editorDialogObject.transform, "Scroll View");
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             content = scrollView.transform.Find("Viewport/Content");
             scrollView.transform.localScale = Vector3.one;
 

@@ -85,14 +85,10 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreateModifiersOnAwake()
         {
-            var labelPrefab = ObjEditor.inst.ObjectView.transform.ChildList().First(x => x.name == "label").gameObject;
-
             // Label
             {
-                var label = labelPrefab.Duplicate(ObjEditor.inst.ObjectView.transform, "label");
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(ObjEditor.inst.ObjectView.transform, "label");
 
-                if (label.transform.childCount > 1)
-                    Destroy(label.transform.GetChild(1).gameObject);
                 modifiersLabel = label.transform.GetChild(0).GetComponent<Text>();
                 modifiersLabel.text = "Modifiers";
                 EditorThemeManager.AddLightText(modifiersLabel);
@@ -100,75 +96,68 @@ namespace BetterLegacy.Editor.Managers
             
             // Integer variable
             {
-                var label = labelPrefab.Duplicate(ObjEditor.inst.ObjectView.transform, "int_variable");
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(ObjEditor.inst.ObjectView.transform, "int_variable");
 
-                if (label.transform.childCount > 1)
-                    Destroy(label.transform.GetChild(1).gameObject);
                 intVariable = label.transform.GetChild(0).GetComponent<Text>();
                 intVariable.text = "Integer Variable: [ null ]";
                 intVariable.fontSize = 18;
                 EditorThemeManager.AddLightText(intVariable);
+                label.AddComponent<Image>().color = LSColors.transparent;
+                TooltipHelper.AssignTooltip(label, "Modifiers Integer Variable");
             }
 
             // Ignored Lifespan
             {
-                var ignoreGameObject = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored"));
-                ignoreGameObject.transform.SetParent(ObjEditor.inst.ObjectView.transform);
-                ignoreGameObject.transform.localScale = Vector3.one;
-                ignoreGameObject.name = "ignore life";
-                var ignoreLifeText = ignoreGameObject.transform.Find("Text").GetComponent<Text>();
-                ignoreLifeText.text = "Ignore Lifespan";
+                var ignoreLifespan = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.ObjectView.transform, "ignore life");
+                var ignoreLifespanToggleButton = ignoreLifespan.GetComponent<ToggleButtonStorage>();
+                ignoreLifespanToggleButton.label.text = "Ignore Lifespan";
 
-                ignoreToggle = ignoreGameObject.GetComponent<Toggle>();
+                ignoreToggle = ignoreLifespanToggleButton.toggle;
 
-                EditorThemeManager.AddToggle(ignoreToggle, graphic: ignoreLifeText);
+                EditorThemeManager.AddToggle(ignoreToggle, graphic: ignoreLifespanToggleButton.label);
+                TooltipHelper.AssignTooltip(ignoreLifespan, "Modifiers Ignore Lifespan");
             }
             
             // Order Modifiers
             {
-                var orderGameObject = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored"));
-                orderGameObject.transform.SetParent(ObjEditor.inst.ObjectView.transform);
-                orderGameObject.transform.localScale = Vector3.one;
-                orderGameObject.name = "order modifiers";
-                var orderText = orderGameObject.transform.Find("Text").GetComponent<Text>();
-                orderText.text = "Order Matters";
+                var orderMatters = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.ObjectView.transform, "order modifiers");
+                var orderMattersToggleButton = orderMatters.GetComponent<ToggleButtonStorage>();
+                orderMattersToggleButton.label.text = "Order Matters";
 
-                orderToggle = orderGameObject.GetComponent<Toggle>();
+                orderToggle = orderMattersToggleButton.toggle;
 
-                EditorThemeManager.AddToggle(orderToggle, graphic: orderText);
+                EditorThemeManager.AddToggle(orderToggle, graphic: orderMattersToggleButton.label);
+                TooltipHelper.AssignTooltip(orderMatters, "Modifiers Order Matters");
             }
 
             // Active
             {
-                var act = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored"));
-                act.transform.SetParent(ObjEditor.inst.ObjectView.transform);
-                act.transform.localScale = Vector3.one;
-                act.name = "active";
-                var activeText = act.transform.Find("Text").GetComponent<Text>();
-                activeText.text = "Show Modifiers";
+                var showModifiers = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.ObjectView.transform, "active");
+                var showModifiersToggleButton = showModifiers.GetComponent<ToggleButtonStorage>();
+                showModifiersToggleButton.label.text = "Show Modifiers";
 
-                activeToggle = act.GetComponent<Toggle>();
+                activeToggle = showModifiersToggleButton.toggle;
                 activeToggle.onValueChanged.ClearAll();
-                activeToggle.isOn = showModifiers;
+                activeToggle.isOn = this.showModifiers;
                 activeToggle.onValueChanged.AddListener(_val =>
                 {
-                    showModifiers = _val;
-                    scrollView.gameObject.SetActive(showModifiers);
+                    this.showModifiers = _val;
+                    scrollView.gameObject.SetActive(this.showModifiers);
                     if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
                         RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
                 });
 
-                EditorThemeManager.AddToggle(activeToggle, graphic: activeText);
+                EditorThemeManager.AddToggle(activeToggle, graphic: showModifiersToggleButton.label);
+                TooltipHelper.AssignTooltip(showModifiers, "Show Modifiers");
             }
 
-            var scrollObj = ObjEditor.inst.ObjectView.transform.parent.parent.gameObject.Duplicate(ObjEditor.inst.ObjectView.transform, "Modifiers Scroll View");
+            var scrollObj = EditorPrefabHolder.Instance.ScrollView.Duplicate(ObjEditor.inst.ObjectView.transform, "Modifiers Scroll View");
 
             scrollView = scrollObj.transform;
 
             scrollView.localScale = Vector3.one;
 
             content = scrollView.Find("Viewport/Content");
-            LSHelpers.DeleteChildren(content);
 
             scrollView.gameObject.SetActive(showModifiers);
 
@@ -203,7 +192,7 @@ namespace BetterLegacy.Editor.Managers
             mcpTextText.fontSize = 19;
             mcpTextText.color = new Color(0.9373f, 0.9216f, 0.9373f);
 
-            var collapse = EditorPrefabHolder.Instance.Toggle.Duplicate(mcpLabel.transform, "Collapse");
+            var collapse = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(mcpLabel.transform, "Collapse");
             collapse.transform.localScale = Vector3.one;
             var collapseLayoutElement = collapse.GetComponent<LayoutElement>() ?? collapse.AddComponent<LayoutElement>();
             collapseLayoutElement.minWidth = 32f;
@@ -290,7 +279,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var gameObject = modifierCardPrefab.Duplicate(content, name);
 
-                TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(name + " (" + modifier.type.ToString() + ")")}", 1.5f);
+                TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(name + " (" + modifier.type.ToString() + ")")}");
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
@@ -308,6 +297,11 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(RenderModifiers(beatmapObject));
                 });
                 TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
+
+                EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
+
+                for (int i = 0; i < collapse.transform.Find("dots").childCount; i++)
+                    EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
                 var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
                 delete.button.onClick.ClearAll();
@@ -2818,7 +2812,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(path.transform, "edit");
             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = KeybindEditor.inst.editSprite;
+            buttonStorage.image.sprite = EditorSprites.EditSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
             buttonStorage.button.onClick.ClearAll();
@@ -3176,8 +3170,7 @@ namespace BetterLegacy.Editor.Managers
 
             ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(146f, 32f);
 
-            var dropdownInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
-                .Duplicate(rectTransform, "Dropdown");
+            var dropdownInput = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(rectTransform, "Dropdown");
             dropdownInput.transform.localScale = Vector2.one;
 
             return gameObject;

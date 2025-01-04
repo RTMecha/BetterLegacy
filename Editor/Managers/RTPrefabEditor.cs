@@ -1530,7 +1530,7 @@ namespace BetterLegacy.Editor.Managers
             UIManager.SetRectTransform(refresh.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(32f, 32f));
 
             var refreshImage = refresh.AddComponent<Image>();
-            refreshImage.sprite = RTEditor.ReloadSprite;
+            refreshImage.sprite = EditorSprites.ReloadSprite;
 
             prefabTypeReloadButton = refresh.AddComponent<Button>();
             prefabTypeReloadButton.image = refreshImage;
@@ -1642,7 +1642,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorPopup("Prefab Types Popup", gameObject);
             gameObject.SetActive(false);
 
-            EditorHelper.AddEditorDropdown("View Prefab Types", "", "View", RTEditor.inst.SearchSprite, () =>
+            EditorHelper.AddEditorDropdown("View Prefab Types", "", "View", EditorSprites.SearchSprite, () =>
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {

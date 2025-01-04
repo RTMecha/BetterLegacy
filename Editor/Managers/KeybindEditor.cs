@@ -436,7 +436,6 @@ namespace BetterLegacy.Editor.Managers
         #region Dialog
 
         public Transform content;
-        public Sprite editSprite;
         public Transform editorDialog;
         public Dropdown actionDropdown;
         public RectTransform keysContent;
@@ -455,8 +454,6 @@ namespace BetterLegacy.Editor.Managers
                 RefreshKeybindPopup();
             }, placeholderText: "Search for keybind...");
             content = popup.Content;
-
-            editSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
             var dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog;
             editorDialog = dialog.gameObject.Duplicate(dialog.parent, "KeybindEditor").transform;
@@ -495,8 +492,7 @@ namespace BetterLegacy.Editor.Managers
                 .Duplicate(action.transform, "title");
             title.GetComponent<Text>().text = "Action";
 
-            var actionDropdown = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
-                .Duplicate(action.transform, "dropdown");
+            var actionDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(action.transform, "dropdown");
 
             actionDropdown.transform.AsRT().sizeDelta = new Vector2(632f, 32f);
 
@@ -580,8 +576,7 @@ namespace BetterLegacy.Editor.Managers
                 horizontalLayoutGroup.childForceExpandWidth = false;
                 horizontalLayoutGroup.spacing = 4;
 
-                var keyTypeDropdown = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
-                .Duplicate(keyPrefab.transform, "Key Type");
+                var keyTypeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(keyPrefab.transform, "Key Type");
 
                 keyTypeDropdown.transform.AsRT().sizeDelta = new Vector2(220f, 32f);
 
@@ -595,8 +590,7 @@ namespace BetterLegacy.Editor.Managers
                 text.text = "Set Key";
                 watchKey.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
 
-                var keyCodeDropdown = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
-                .Duplicate(keyPrefab.transform, "Key Code");
+                var keyCodeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(keyPrefab.transform, "Key Code");
 
                 keyCodeDropdown.transform.AsRT().sizeDelta = new Vector2(360f, 32f);
 
@@ -703,7 +697,7 @@ namespace BetterLegacy.Editor.Managers
                 hover.size = 1.1f;
 
                 var image = ed1.AddComponent<Image>();
-                image.sprite = editSprite;
+                image.sprite = EditorSprites.EditSprite;
                 image.color = Color.black;
 
                 if (keybind.keys != null && keybind.keys.Count > 0)
@@ -877,13 +871,8 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(settingsContent);
 
-            var label = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content").transform.GetChild(3).gameObject;
             var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
             var vector2Input = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position");
-            var boolInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle");
-            var dropdownInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown");
-            var sliderFullInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/bpm");
-            var stringInput = RTEditor.inst.defaultIF;
 
             num = 0;
             foreach (var setting in keybind.settings)
@@ -912,7 +901,7 @@ namespace BetterLegacy.Editor.Managers
 
                             TooltipHelper.AddHoverTooltip(bar, setting.Key, "");
 
-                            var l = label.Duplicate(bar.transform, "", 0);
+                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "", 0);
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
@@ -923,9 +912,7 @@ namespace BetterLegacy.Editor.Managers
                             image.enabled = true;
                             image.color = new Color(1f, 1f, 1f, 0.03f);
 
-                            var x = Instantiate(boolInput);
-                            x.transform.SetParent(bar.transform);
-                            x.transform.localScale = Vector3.one;
+                            var x = EditorPrefabHolder.Instance.Toggle.Duplicate(bar.transform);
 
                             var xt = x.GetComponent<Toggle>();
                             xt.onValueChanged.RemoveAllListeners();
@@ -958,7 +945,7 @@ namespace BetterLegacy.Editor.Managers
 
                             TooltipHelper.AddHoverTooltip(bar, setting.Key, "");
 
-                            var l = label.Duplicate(bar.transform, "", 0);
+                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "", 0);
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(354f, 20f);
@@ -969,7 +956,7 @@ namespace BetterLegacy.Editor.Managers
                             image.enabled = true;
                             image.color = new Color(1f, 1f, 1f, 0.03f);
 
-                            var x = Instantiate(stringInput);
+                            var x = Instantiate(RTEditor.inst.defaultIF);
                             x.transform.SetParent(bar.transform);
                             x.transform.localScale = Vector3.one;
                             Destroy(x.GetComponent<HoverTooltip>());
@@ -984,7 +971,7 @@ namespace BetterLegacy.Editor.Managers
                             xif.text = setting.Value;
                             xif.textComponent.fontSize = 18;
                             xif.onValueChanged.AddListener(_val => { keybind.settings[setting.Key] = _val; });
-                            xif.onEndEdit.AddListener(_val => { Save(); });
+                            xif.onEndEdit.AddListener(_val => Save());
 
                             EditorThemeManager.ApplyInputField(xif, ThemeGroup.Input_Field);
 
@@ -1005,7 +992,7 @@ namespace BetterLegacy.Editor.Managers
                             x.transform.localScale = Vector3.one;
                             x.transform.GetChild(0).localScale = Vector3.one;
 
-                            var l = label.Duplicate(x.transform, "", 0);
+                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(x.transform, "", 0);
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
@@ -1032,7 +1019,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (int.TryParse(_val, out int result) && keybind.settings.ContainsKey(setting.Key))
                                     keybind.settings[setting.Key] = result.ToString();
                             });
-                            xif.onEndEdit.AddListener(_val => { Save(); });
+                            xif.onEndEdit.AddListener(_val => Save());
 
                             TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDeltaInt(xif));
 
@@ -1058,7 +1045,7 @@ namespace BetterLegacy.Editor.Managers
                             x.transform.localScale = Vector3.one;
                             x.transform.GetChild(0).localScale = Vector3.one;
 
-                            var l = label.Duplicate(x.transform, "", 0);
+                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(x.transform, "", 0);
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(541f, 20f);
@@ -1085,7 +1072,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (float.TryParse(_val, out float result) && keybind.settings.ContainsKey(setting.Key))
                                     keybind.settings[setting.Key] = result.ToString();
                             });
-                            xif.onEndEdit.AddListener(_val => { Save(); });
+                            xif.onEndEdit.AddListener(_val => Save());
 
                             TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDelta(xif));
 
