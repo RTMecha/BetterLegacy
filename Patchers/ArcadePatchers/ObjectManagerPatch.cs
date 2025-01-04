@@ -19,7 +19,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void AwakePostfix(ObjectManager __instance)
         {
-            ShapeManager.inst.SetupShapes();
+            if (SceneHelper.CurrentSceneType != SceneType.Editor)
+                ShapeManager.inst.SetupShapes();
 
             // Fixes Text being red.
             __instance.objectPrefabs[4].options[0].GetComponentInChildren<TextMeshPro>().color = new Color(0f, 0f, 0f, 0f);
@@ -27,6 +28,8 @@ namespace BetterLegacy.Patchers
             // Fixes Hexagons being solid.
             foreach (var option in __instance.objectPrefabs[5].options)
                 option.GetComponentInChildren<Collider2D>().isTrigger = true;
+
+            CoreHelper.LogInit($"{nameof(ObjectManager)} - {SceneHelper.CurrentSceneType}\n");
         }
 
         [HarmonyPatch(nameof(ObjectManager.AddPrefabToLevel))]
