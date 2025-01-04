@@ -455,8 +455,7 @@ namespace BetterLegacy.Editor.Managers
             }, placeholderText: "Search for keybind...");
             content = popup.Content;
 
-            var dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog;
-            editorDialog = dialog.gameObject.Duplicate(dialog.parent, "KeybindEditor").transform;
+            editorDialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "KeybindEditor").transform;
             editorDialog.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
             ((RectTransform)editorDialog).sizeDelta = new Vector2(0f, 32f);
 
