@@ -18,16 +18,18 @@ namespace BetterLegacy.Editor.Data
             SpacerSize = spacerSize;
         }
 
-        public ButtonFunction(string name, Action action)
+        public ButtonFunction(string name, Action action, string tooltipGroup = null)
         {
             Name = name;
             Action = action;
+            TooltipGroup = tooltipGroup;
         }
 
-        public ButtonFunction(string name, Action<PointerEventData> onClick)
+        public ButtonFunction(string name, Action<PointerEventData> onClick, string tooltipGroup = null)
         {
             Name = name;
             OnClick = onClick;
+            TooltipGroup = tooltipGroup;
         }
 
         public bool IsSpacer { get; set; }
@@ -36,5 +38,7 @@ namespace BetterLegacy.Editor.Data
         public int FontSize { get; set; } = 20;
         public Action Action { get; set; }
         public Action<PointerEventData> OnClick { get; set; }
+
+        public string TooltipGroup { get; set; }
     }
 }

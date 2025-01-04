@@ -371,7 +371,7 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public void RenderTooltip()
         {
-            TooltipHelper.AssignTooltip(GameObject, "Level List Button", 3f);
+            TooltipHelper.AssignTooltip(GameObject, "Level Panel", 3f);
 
             if (isFolder)
             {
@@ -409,8 +409,8 @@ namespace BetterLegacy.Editor.Data
                             {
                                 RTEditor.inst.editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                 RTEditor.inst.UpdateEditorPath(false);
-                            }),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", () => { RTEditor.inst.UpdateEditorPath(true); RTEditor.inst.HideNameEditor(); })),
+                            }, "Level Panel Open Folder"),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", EndFolderCreation), "Level Panel Create Folder"),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction(true),
                             new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
@@ -419,8 +419,8 @@ namespace BetterLegacy.Editor.Data
 
                                 RTEditor.inst.UpdateEditorPath(true);
                                 RTEditor.inst.HideNameEditor();
-                            })),
-                            new ButtonFunction("Paste", RTEditor.inst.PasteLevel),
+                            }), "Level Panel Rename Folder"),
+                            new ButtonFunction("Paste", RTEditor.inst.PasteLevel, "Level Panel Paste"),
                             new ButtonFunction("Delete", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
@@ -430,12 +430,12 @@ namespace BetterLegacy.Editor.Data
                                     EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                                     RTEditor.inst.HideWarningPopup();
                                 }, RTEditor.inst.HideWarningPopup);
-                            }),
+                            }, "Level Panel Delete"),
                             new ButtonFunction(true),
-                            new ButtonFunction("ZIP Folder", () => RTEditor.inst.ZIPLevel(path)),
-                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path)),
-                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path)),
-                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder));
+                            new ButtonFunction("ZIP Folder", () => RTEditor.inst.ZIPLevel(path), "Level Panel ZIP"),
+                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
+                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
+                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"));
 
                         return;
                     }
@@ -462,19 +462,20 @@ namespace BetterLegacy.Editor.Data
                         {
                             CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
                             EditorManager.inst.HideDialog("Open File Popup");
-                        }),
+                        }, "Level Panel Open"),
                         new ButtonFunction("Show Autosaves", () =>
                         {
                             EditorManager.inst.ShowDialog("Autosave Popup");
                             RTEditor.inst.RefreshAutosaveList(this);
-                        }),
-                        new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName)),
+                        }, "Level Panel Show Autosaves"),
+                        new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName), "Convert Level VG"),
                         new ButtonFunction(true),
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", () => { RTEditor.inst.UpdateEditorPath(true); RTEditor.inst.HideNameEditor(); })),
-                        new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path)),
-                        new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
+                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", EndFolderCreation), "Level Panel Create Folder"),
+                        new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path), "Level Panel Create Template"),
+                        new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
+                        new ButtonFunction("Create backup", () => RTEditor.inst.SaveBackup(this), "Level Panel Create Backup"),
                         new ButtonFunction(true),
-                        new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                        new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
                         {
                             var destination = RTFile.ReplaceSlash(Level.path.Replace(Level.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
                             RTFile.MoveDirectory(Level.path, destination);
@@ -483,22 +484,22 @@ namespace BetterLegacy.Editor.Data
 
                             RTEditor.inst.UpdateEditorPath(true);
                             RTEditor.inst.HideNameEditor();
-                        })),
+                        }), "Level Panel Rename Level"),
                         new ButtonFunction("Cut", () =>
                         {
                             RTEditor.inst.shouldCutLevel = true;
                             RTEditor.inst.copiedLevelPath = Level.path;
                             EditorManager.inst.DisplayNotification($"Cut {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
                             CoreHelper.Log($"Cut level: {RTEditor.inst.copiedLevelPath}");
-                        }),
+                        }, "Level Panel Cut"),
                         new ButtonFunction("Copy", () =>
                         {
                             RTEditor.inst.shouldCutLevel = false;
                             RTEditor.inst.copiedLevelPath = Level.path;
                             EditorManager.inst.DisplayNotification($"Copied {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
                             CoreHelper.Log($"Copied level: {RTEditor.inst.copiedLevelPath}");
-                        }),
-                        new ButtonFunction("Paste", RTEditor.inst.PasteLevel),
+                        }, "Level Panel Copy"),
+                        new ButtonFunction("Paste", RTEditor.inst.PasteLevel, "Level Panel Paste"),
                         new ButtonFunction("Delete", () =>
                         {
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
@@ -521,7 +522,7 @@ namespace BetterLegacy.Editor.Data
 
                             LSText.CopyToClipboard(metadata.arcadeID);
                             EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                        }),
+                        }, "Copy Arcade ID"),
                         new ButtonFunction("Copy Server ID", () =>
                         {
                             var metadata = Level.metadata;
@@ -533,12 +534,12 @@ namespace BetterLegacy.Editor.Data
 
                             LSText.CopyToClipboard(metadata.serverID);
                             EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                        }),
+                        }, "Copy Server ID"),
                         new ButtonFunction(true),
-                        new ButtonFunction("ZIP Level", () => RTEditor.inst.ZIPLevel(Level.path)),
-                        new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Level.path)),
-                        new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Level.path)),
-                        new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder)
+                        new ButtonFunction("ZIP Level", () => RTEditor.inst.ZIPLevel(Level.path), "Level Panel ZIP"),
+                        new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Level.path), "Level Panel Copy Folder"),
+                        new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Level.path), "Level Panel Open Explorer"),
+                        new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer")
                     );
 
                     return;
@@ -632,6 +633,12 @@ namespace BetterLegacy.Editor.Data
         }));
 
         public void SetDefaultIcon() => SetIcon(SteamWorkshop.inst.defaultSteamImageSprite);
+
+        void EndFolderCreation()
+        {
+            RTEditor.inst.UpdateEditorPath(true);
+            RTEditor.inst.HideNameEditor();
+        }
 
         public override string ToString() => isFolder ? Path.GetFileName(FolderPath) : Level?.ToString();
 
