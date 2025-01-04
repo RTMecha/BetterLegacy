@@ -2248,14 +2248,14 @@ namespace BetterLegacy.Core.Components.Player
                 customObj.gameObject.transform.localScale = Vector3.one;
                 customObj.gameObject.transform.localRotation = Quaternion.identity;
 
-                var delayTracker = customObj.gameObject.AddComponent<PlayerDelayTracker>();
-                delayTracker.offset = 0;
-                delayTracker.positionOffset = reference.positionOffset;
-                delayTracker.scaleOffset = reference.scaleOffset;
-                delayTracker.rotationOffset = reference.rotationOffset;
-                delayTracker.scaleParent = reference.scaleParent;
-                delayTracker.rotationParent = reference.rotationParent;
-                delayTracker.player = this;
+                customObj.delayTracker = customObj.gameObject.AddComponent<PlayerDelayTracker>();
+                customObj.delayTracker.offset = 0;
+                customObj.delayTracker.positionOffset = reference.positionOffset;
+                customObj.delayTracker.scaleOffset = reference.scaleOffset;
+                customObj.delayTracker.rotationOffset = reference.rotationOffset;
+                customObj.delayTracker.scaleParent = reference.scaleParent;
+                customObj.delayTracker.rotationParent = reference.rotationParent;
+                customObj.delayTracker.player = this;
 
                 var child = customObj.gameObject.transform.GetChild(0);
                 child.localPosition = new Vector3(pos.x, pos.y, depth);
