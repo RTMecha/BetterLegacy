@@ -278,6 +278,16 @@ namespace BetterLegacy.Core.Data
             23
         };
 
+        public static int[] unmoddedMaxShapes = new int[]
+        {
+            3,
+            9,
+            4,
+            2,
+            1,
+            6
+        };
+
         public enum Property
         {
             RegularObject,
