@@ -44,7 +44,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void AssignTooltip(GameObject gameObject, string group, float time = 2f)
+        public static void AssignTooltip(GameObject gameObject, string group, float time = 4f)
         {
             if (!Tooltips.TryGetValue(group, out List<HoverTooltip.Tooltip> tooltips))
                 return;
@@ -103,6 +103,17 @@ namespace BetterLegacy.Core.Helpers
             keys = tooltip.keys.Clone(),
             language = tooltip.language
         };
+
+        /// <summary>
+        /// Removes the vanilla tooltip system from a game object.
+        /// </summary>
+        /// <param name="gameObject">Game object to remove from.</param>
+        public static void RemoveTooltip(GameObject gameObject)
+        {
+            var hoverTooltip = gameObject.GetComponent<HoverTooltip>();
+            if (hoverTooltip)
+                CoreHelper.Destroy(hoverTooltip);
+        }
     }
 
     public class Tooltip : HoverTooltip.Tooltip
