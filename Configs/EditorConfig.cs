@@ -157,8 +157,9 @@ namespace BetterLegacy.Configs
         public Setting<bool> ImportPrefabsDirectly { get; set; }
         public Setting<int> ThemesPerPage { get; set; }
         public Setting<int> ThemesEventKeyframePerPage { get; set; }
-        public Setting<bool> MouseTooltipDisplay { get; set; }
         public Setting<bool> ShowHelpOnStartup { get; set; }
+        public Setting<bool> MouseTooltipDisplay { get; set; }
+        public Setting<bool> MouseTooltipRequiresHelp { get; set; }
         public Setting<float> MouseTooltipHoverTime { get; set; }
         public Setting<bool> HideMouseTooltipOnExit { get; set; }
         public Setting<float> MouseTooltipDisplayTime { get; set; }
@@ -1355,8 +1356,9 @@ namespace BetterLegacy.Configs
             ImportPrefabsDirectly = Bind(this, "Editor GUI", "Import Prefabs Directly", false, "When clicking on an External Prefab, instead of importing it directly it'll bring up a Prefab External View Dialog if this config is off.");
             ThemesPerPage = Bind(this, "Editor GUI", "Themes Per Page", 10, "How many themes are shown per page in the Beatmap Themes popup.");
             ThemesEventKeyframePerPage = Bind(this, "Editor GUI", "Themes (Event Keyframe) Per Page", 30, "How many themes are shown per page in the theme event keyframe.");
-            MouseTooltipDisplay = Bind(this, "Editor GUI", "Mouse Tooltip Display", true, "If the mouse tooltip should display.");
             ShowHelpOnStartup = Bind(this, "Editor GUI", "Show Help on Startup", true, "If the help info box should appear on startup.");
+            MouseTooltipDisplay = Bind(this, "Editor GUI", "Mouse Tooltip Display", true, "If the mouse tooltip should display.");
+            MouseTooltipRequiresHelp = Bind(this, "Editor GUI", "Mouse Tooltip Requires Help", false, "If the mouse tooltip should only display when the help info box is active.");
             MouseTooltipHoverTime = Bind(this, "Editor GUI", "Mouse Tooltip Hover Time", 0.45f, "How long you have to hover your cursor over an element to show the mouse tooltip.", 0f, 20f);
             HideMouseTooltipOnExit = Bind(this, "Editor GUI", "Hide Mouse Tooltip on Exit", true, "If the mouse tooltip should hide when the mouse exits the element.");
             MouseTooltipDisplayTime = Bind(this, "Editor GUI", "Mouse Tooltip Display Time", 1f, "The multiplied length of time mouse tooltips stay on screen for.", 0f, 20f);
