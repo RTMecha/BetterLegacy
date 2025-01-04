@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Story;
@@ -324,7 +325,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Spawning...");
             BoostCount = 0;
 
-            PlayerManager.LoadLocalModels();
+            PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
             PlayerManager.ValidatePlayers();
             PlayerManager.AssignPlayerModels();
 

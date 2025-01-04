@@ -558,14 +558,63 @@ namespace BetterLegacy.Core.Managers
             {
                 type = ModifierBase.Type.Trigger,
                 constant = true,
-                commands = new List<string> { "actionPress" },
+                commands = new List<string> { "keyPressDown" },
                 value = "0"
             },
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Trigger,
                 constant = true,
-                commands = new List<string> { "actionDown" },
+                commands = new List<string> { "keyPress" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "keyPressUp" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "mouseButtonDown" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "mouseButton" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "mouseButtonUp" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "controlPress" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "controlPressDown" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "controlPressUp" },
                 value = "0"
             },
             new Modifier<CustomPlayer>

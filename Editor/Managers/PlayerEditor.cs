@@ -19,6 +19,8 @@ using System.IO;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -44,7 +46,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                PlayerManager.LoadGlobalModels();
+                PlayersData.Load(null);
             }
             catch (Exception ex)
             {
@@ -190,7 +192,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -253,7 +255,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
-                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Regular", "Platformer");
 
@@ -283,7 +285,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -318,7 +320,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -353,7 +355,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -388,7 +390,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -423,7 +425,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -487,7 +489,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
-                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-4f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputXStorage = inputX.GetComponent<InputFieldStorage>();
 
@@ -500,7 +502,7 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(inputXStorage.rightGreaterButton.gameObject);
 
                     var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
-                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(246f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputYStorage = inputY.GetComponent<InputFieldStorage>();
 
@@ -559,6 +561,8 @@ namespace BetterLegacy.Editor.Managers
                 "Respawn Players",
                 "Update Properties"
                 );
+
+
             }
 
             for (int i = 0; i < PlayerModel.Values.Count; i++)
@@ -626,7 +630,7 @@ namespace BetterLegacy.Editor.Managers
                         valueType = ValueType.Float;
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -645,7 +649,7 @@ namespace BetterLegacy.Editor.Managers
                     valueType = ValueType.Vector2;
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
-                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-4f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputXStorage = inputX.GetComponent<InputFieldStorage>();
 
@@ -658,7 +662,7 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(inputXStorage.rightGreaterButton.gameObject);
 
                     var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
-                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(246f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputYStorage = inputY.GetComponent<InputFieldStorage>();
 
@@ -676,7 +680,7 @@ namespace BetterLegacy.Editor.Managers
                     valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
-                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Legacy", "Dev+");
 
@@ -688,7 +692,7 @@ namespace BetterLegacy.Editor.Managers
                     valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
-                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Face Direction", "None", "Flip X", "Flip Y", "Rotate Reset", "Rotate Flip X", "Rotate Flip Y");
 
@@ -700,7 +704,7 @@ namespace BetterLegacy.Editor.Managers
                     valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
-                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Images", "Text", "Equals Bar", "Bar");
 
@@ -712,7 +716,7 @@ namespace BetterLegacy.Editor.Managers
                     valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
-                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.options.Clear();
                     dropdown.onValueChanged.RemoveAllListeners();
 
@@ -811,7 +815,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Position", Tab.Custom, ValueType.Vector2);
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
-                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-4f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputXStorage = inputX.GetComponent<InputFieldStorage>();
 
@@ -824,7 +828,7 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(inputXStorage.rightGreaterButton.gameObject);
 
                     var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
-                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(246f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputYStorage = inputY.GetComponent<InputFieldStorage>();
 
@@ -842,7 +846,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Scale", Tab.Custom, ValueType.Vector2);
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
-                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-4f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputXStorage = inputX.GetComponent<InputFieldStorage>();
 
@@ -855,7 +859,7 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(inputXStorage.rightGreaterButton.gameObject);
 
                     var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
-                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(246f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
 
                     var inputYStorage = inputY.GetComponent<InputFieldStorage>();
 
@@ -873,7 +877,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Rotation", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -890,7 +894,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Depth", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -938,7 +942,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Opacity", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -955,7 +959,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Parent", Tab.Custom, ValueType.Enum);
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
-                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.options.Clear();
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Head", "Boost", "Boost Tail", "Tail 1", "Tail 2", "Tail 3", "Face");
@@ -963,12 +967,22 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddDropdown(dropdown);
                 }
 
+                // Custom Parent
+                {
+                    var gameObject = GenerateUIPart("Custom Parent", Tab.Custom, ValueType.String);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
+
+                    EditorThemeManager.AddInputField(input.GetComponent<InputField>());
+                }
+
                 // Position Offset
                 {
                     var gameObject = GenerateUIPart("Position Offset", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -985,7 +999,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Scale Offset", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -1002,7 +1016,7 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = GenerateUIPart("Rotation Offset", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
-                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(214f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                     var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
@@ -1101,6 +1115,38 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
+            // todo: figure out how adding / removing tail model elements works with the health system. maybe consider also reworking the UI a little too?
+            // Misc
+            {
+                // Add Tail
+                //{
+                //    var gameObject = Creator.NewUIObject("Add Tail", content);
+                //    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                //    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                //    var labelText = label.GetComponent<Text>();
+                //    labelText.text = name;
+                //    EditorThemeManager.AddLightText(labelText);
+                //    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                //    var image = gameObject.AddComponent<Image>();
+
+                //    var button = gameObject.AddComponent<Button>();
+                //    button.image = image;
+
+                //    EditorThemeManager.AddSelectable(button, ThemeGroup.List_Button_1);
+
+                //    editorUIs.Add(new PlayerEditorUI
+                //    {
+                //        Name = name,
+                //        GameObject = gameObject,
+                //        Tab = Tab.Tail,
+                //        ValueType = ValueType.Function,
+                //        Index = -1,
+                //    });
+                //}
+            }
+
             // Functions
             {
                 var spacer = Creator.NewUIObject("spacer", dialog.transform);
@@ -1183,7 +1229,7 @@ namespace BetterLegacy.Editor.Managers
                 setToGlobalStorage.text.fontSize = 16;
                 setToGlobalStorage.text.text = "Set to Global";
                 setToGlobalStorage.button.onClick.ClearAll();
-                setToGlobalStorage.button.onClick.AddListener(() => PlayerManager.PlayerIndexes[playerModelIndex].Value = PlayerManager.GetPlayerModelIndex(playerModelIndex));
+                setToGlobalStorage.button.onClick.AddListener(() => PlayerManager.PlayerIndexes[playerModelIndex].Value = PlayersData.Main.playerModelsIndex[playerModelIndex]);
 
                 EditorThemeManager.AddSelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(setToGlobalStorage.text, ThemeGroup.Function_2_Text);
@@ -1225,8 +1271,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshEditor()
         {
-            var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
-            var currentModel = PlayerManager.PlayerModels[currentIndex];
+            var currentModel = PlayersData.Main.GetPlayerModel(playerModelIndex);
 
             var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
             content.Find("handler").gameObject.SetActive(isDefault && CurrentTab != Tab.Global);
@@ -1641,7 +1686,7 @@ namespace BetterLegacy.Editor.Managers
                 if (ui.Tab == Tab.Custom)
                 {
                     PlayerModel.CustomObject customObject = null;
-                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && currentModel.customObjects.TryGetValue(CustomObjectID, out customObject);
+                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && currentModel.customObjects.TryFind(x => x.id == CustomObjectID, out customObject);
                     ui.GameObject?.SetActive(customActive);
                     if (!customActive)
                         continue;
@@ -1667,14 +1712,17 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case "Name":
                         case "Custom Color":
+                        case "Custom Parent":
                             {
                                 var inputField = ui.GameObject.transform.Find("input").GetComponent<InputField>();
                                 inputField.onValueChanged.ClearAll();
-                                inputField.text = ui.Name == "Name" ? customObject.name : customObject.customColor;
+                                inputField.text = ui.Name == "Name" ? customObject.name : ui.Name == "Custom Parent" ? customObject.customParent : customObject.customColor;
                                 inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (ui.Name == "Name")
                                         customObject.name = _val;
+                                    else if (ui.Name == "Custom Parent")
+                                        customObject.customParent = _val;
                                     else
                                         customObject.customColor = _val;
                                 });
@@ -1712,7 +1760,7 @@ namespace BetterLegacy.Editor.Managers
                                         if (ui.Name == "Rotation Offset")
                                             customObject.rotationOffset = result;
 
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -1743,7 +1791,7 @@ namespace BetterLegacy.Editor.Managers
                                         else
                                             customObject.scale = new Vector2(result, vector.y);
                                         
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -1760,7 +1808,7 @@ namespace BetterLegacy.Editor.Managers
                                         else
                                             customObject.scale = new Vector2(vector.x, result);
 
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -1802,7 +1850,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     customObject.parent = _val;
 
-                                    PlayerManager.UpdatePlayers();
+                                    PlayerManager.UpdatePlayerModels();
                                 });
 
                                 TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
@@ -1838,7 +1886,7 @@ namespace BetterLegacy.Editor.Managers
                                     else
                                         customObject.rotationParent = _val;
 
-                                    PlayerManager.UpdatePlayers();
+                                    PlayerManager.UpdatePlayerModels();
                                 });
 
                                 break;
@@ -1858,7 +1906,8 @@ namespace BetterLegacy.Editor.Managers
                                 LSHelpers.DeleteChildren(content);
 
                                 var add = PrefabEditor.inst.CreatePrefab.Duplicate(content, "Add");
-                                add.transform.Find("Text").GetComponent<Text>().text = "Add Visiblity Setting";
+                                var addText = add.transform.Find("Text").GetComponent<Text>();
+                                addText.text = "Add Visiblity Setting";
                                 ((RectTransform)add.transform).sizeDelta = new Vector2(760f, 32f);
                                 var addButton = add.GetComponent<Button>();
                                 addButton.onClick.ClearAll();
@@ -1869,6 +1918,8 @@ namespace BetterLegacy.Editor.Managers
                                     customObject.visibilitySettings.Add(newVisibility);
                                     StartCoroutine(RefreshEditor());
                                 });
+                                EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add);
+                                EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
                                 int num = 0;
                                 foreach (var visibility in customObject.visibilitySettings)
@@ -1899,14 +1950,15 @@ namespace BetterLegacy.Editor.Managers
                                     x.transform.localScale = Vector3.one;
 
                                     Destroy(x.GetComponent<HoverTooltip>());
-
                                     Destroy(x.GetComponent<HideDropdownOptions>());
 
                                     var dropdown = x.GetComponent<Dropdown>();
+                                    dropdown.template.sizeDelta = new Vector2(120f, 192f);
                                     dropdown.onValueChanged.ClearAll();
                                     dropdown.options = CoreHelper.StringToOptionData("Is Boosting", "Is Taking Hit", "Is Zen Mode", "Is Health Percentage Greater", "Is Health Greater Equals", "Is Health Equals", "Is Health Greater", "Is Pressing Key");
                                     dropdown.value = VisibilityToInt(visibility.command);
-                                    dropdown.onValueChanged.AddListener(_val => { visibility.command = IntToVisibility(_val); });
+                                    dropdown.onValueChanged.AddListener(_val => visibility.command = IntToVisibility(_val));
+                                    EditorThemeManager.ApplyDropdown(dropdown);
 
                                     // Value
                                     {
@@ -1927,6 +1979,9 @@ namespace BetterLegacy.Editor.Managers
 
                                         TriggerHelper.AddEventTriggers(value, TriggerHelper.ScrollDelta(valueStorage.inputField));
                                         TriggerHelper.IncreaseDecreaseButtons(valueStorage);
+                                        EditorThemeManager.ApplyInputField(valueStorage.inputField);
+                                        EditorThemeManager.ApplySelectable(valueStorage.leftButton, ThemeGroup.Function_2, false);
+                                        EditorThemeManager.ApplySelectable(valueStorage.rightButton, ThemeGroup.Function_2, false);
                                     }
 
                                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(bar.transform, "delete");
@@ -1956,7 +2011,7 @@ namespace BetterLegacy.Editor.Managers
 
                 try
                 {
-                    var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                    var value = PlayersData.Main.playerModels[PlayersData.Main.playerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
                     var key = PlayerModel.Values[ui.Index];
 
                     switch (ui.Tab)
@@ -2028,6 +2083,13 @@ namespace BetterLegacy.Editor.Managers
                         continue;
                     }
                     
+                    //if (key == "Add Tail")
+                    //{
+                    //    //currentModel.AddTail();
+
+                    //    break;
+                    //}
+
                     switch (ui.ValueType)
                     {
                         case ValueType.Bool:
@@ -2038,7 +2100,7 @@ namespace BetterLegacy.Editor.Managers
                                 toggle.onValueChanged.AddListener(_val =>
                                 {
                                     currentModel[key] = _val;
-                                    PlayerManager.UpdatePlayers();
+                                    PlayerManager.UpdatePlayerModels();
                                 });
 
                                 break;
@@ -2055,7 +2117,7 @@ namespace BetterLegacy.Editor.Managers
                                     else
                                         currentModel[key] = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(LSColors.pink500);
 
-                                    PlayerManager.UpdatePlayers();
+                                    PlayerManager.UpdatePlayerModels();
                                 });
 
                                 break;
@@ -2070,7 +2132,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (int.TryParse(_val, out int result))
                                     {
                                         currentModel[key] = result;
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -2089,7 +2151,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (float.TryParse(_val, out float result))
                                     {
                                         currentModel[key] = result;
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -2109,9 +2171,9 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                                        var value = PlayersData.Main.playerModels[PlayersData.Main.playerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
                                         currentModel[key] = new Vector2(result, ((Vector2)value).y);
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -2121,9 +2183,9 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                                        var value = PlayersData.Main.playerModels[PlayersData.Main.playerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
                                         currentModel[key] = new Vector2(((Vector2)value).x, result);
-                                        PlayerManager.UpdatePlayers();
+                                        PlayerManager.UpdatePlayerModels();
                                     }
                                 });
 
@@ -2164,7 +2226,7 @@ namespace BetterLegacy.Editor.Managers
                                 dropdown.onValueChanged.AddListener(_val =>
                                 {
                                     currentModel[key] = _val;
-                                    PlayerManager.UpdatePlayers();
+                                    PlayerManager.UpdatePlayerModels();
                                 });
 
                                 TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
@@ -2187,7 +2249,7 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
 
             int num = 0;
-            foreach (var playerModel in PlayerManager.PlayerModels)
+            foreach (var playerModel in PlayersData.Main.playerModels)
             {
                 int index = num;
                 var name = playerModel.Value.basePart.name;
@@ -2202,7 +2264,7 @@ namespace BetterLegacy.Editor.Managers
                 modelButton.onClick.ClearAll();
                 modelButton.onClick.AddListener(() =>
                 {
-                    PlayerManager.SetPlayerModelIndex(playerModelIndex, index);
+                    PlayersData.Main.SetPlayerModel(playerModelIndex, playerModel.Key);
                     PlayerManager.RespawnPlayers();
                     StartCoroutine(RefreshEditor());
                 });
@@ -2216,26 +2278,27 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Open & Use", () =>
                         {
-                            PlayerManager.SetPlayerModelIndex(playerModelIndex, index);
+                            PlayersData.Main.SetPlayerModel(playerModelIndex, playerModel.Key);
                             PlayerManager.RespawnPlayers();
                             StartCoroutine(RefreshEditor());
                         }),
-                        new ButtonFunction("Set to Global", () => { PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key; }),
+                        new ButtonFunction("Set to Global", () => PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key),
                         new ButtonFunction("Create New", CreateNewModel),
                         new ButtonFunction("Save", Save),
                         new ButtonFunction("Reload", Reload),
                         new ButtonFunction(true),
                         new ButtonFunction("Duplicate", () =>
                         {
-                            PlayerManager.DuplicatePlayerModel(playerModel.Key);
-                            PlayerManager.SetPlayerModelIndex(playerModelIndex, PlayerManager.PlayerModels.Count - 1);
+                            var dup = PlayersData.Main.DuplicatePlayerModel(playerModel.Key);
+                            if (dup)
+                                PlayersData.Main.SetPlayerModel(playerModelIndex, dup.basePart.id);
                         }),
                         new ButtonFunction("Delete", () =>
                         {
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                             {
-                                PlayerManager.SetPlayerModelIndex(playerModelIndex, 0);
-                                PlayerManager.PlayerModels.Remove(playerModel.Key);
+                                PlayersData.Main.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
+                                PlayersData.Main.playerModels.Remove(playerModel.Key);
                                 PlayerManager.RespawnPlayers();
                                 StartCoroutine(RefreshEditor());
                                 StartCoroutine(RefreshModels());
@@ -2271,8 +2334,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                     {
-                        PlayerManager.SetPlayerModelIndex(playerModelIndex, 0);
-                        PlayerManager.PlayerModels.Remove(playerModel.Key);
+                        PlayersData.Main.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
+                        PlayersData.Main.playerModels.Remove(playerModel.Key);
                         PlayerManager.RespawnPlayers();
                         StartCoroutine(RefreshEditor());
                         StartCoroutine(RefreshModels());
@@ -2295,8 +2358,7 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
 
-            var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
-            var currentModel = PlayerManager.PlayerModels[currentIndex];
+            var currentModel = PlayersData.Main.GetPlayerModel(playerModelIndex);
 
             var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
 
@@ -2311,13 +2373,13 @@ namespace BetterLegacy.Editor.Managers
                 var customObject = new PlayerModel.CustomObject(currentModel);
                 var id = LSText.randomNumString(16);
                 customObject.id = id;
-                currentModel.customObjects.Add(id, customObject);
+                currentModel.customObjects.Add(customObject);
 
                 CustomObjectID = id;
 
                 StartCoroutine(RefreshCustomObjects());
                 StartCoroutine(RefreshEditor());
-                PlayerManager.UpdatePlayers();
+                PlayerManager.UpdatePlayerModels();
             });
 
             var createNewText = createNew.transform.GetChild(0).GetComponent<Text>();
@@ -2330,18 +2392,86 @@ namespace BetterLegacy.Editor.Managers
             foreach (var customObject in currentModel.customObjects)
             {
                 int index = num;
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, customObject.Value.name);
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-                text.text = customObject.Value.name;
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, customObject.name);
+                var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+                var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                folderButtonStorage.text.text = customObject.name;
+                EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorage.text);
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                folderButtonFunction.onClick = eventData =>
                 {
-                    CustomObjectID = customObject.Value.id;
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RTEditor.inst.ShowContextMenu(
+                            new ButtonFunction("Open", () =>
+                            {
+                                CustomObjectID = customObject.id;
+                                StartCoroutine(RefreshEditor());
+                            }),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
+                                {
+                                    currentModel.customObjects.RemoveAll(x => x.id == CustomObjectID);
+                                    StartCoroutine(RefreshCustomObjects());
+                                    StartCoroutine(RefreshEditor());
+                                    PlayerManager.UpdatePlayerModels();
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
+                            }),
+                            new ButtonFunction("Duplicate", () =>
+                            {
+                                var duplicateObject = PlayerModel.CustomObject.DeepCopy(currentModel, customObject);
+                                while (currentModel.customObjects.Has(x => x.id == duplicateObject.id)) // Ensure ID is not in list.
+                                    duplicateObject.id = LSText.randomNumString(16);
+
+                                var id = duplicateObject.id;
+                                currentModel.customObjects.Add(duplicateObject);
+
+                                CustomObjectID = id;
+
+                                StartCoroutine(RefreshCustomObjects());
+                                StartCoroutine(RefreshEditor());
+                                PlayerManager.UpdatePlayerModels();
+                            }),
+                            new ButtonFunction("Copy", () =>
+                            {
+                                copiedCustomObject = PlayerModel.CustomObject.DeepCopy(currentModel, customObject, false);
+                                EditorManager.inst.DisplayNotification("Copied custom player object!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction("Paste", () =>
+                            {
+                                if (!copiedCustomObject)
+                                {
+                                    EditorManager.inst.DisplayNotification("No copied object yet.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                var duplicateObject = PlayerModel.CustomObject.DeepCopy(currentModel, copiedCustomObject);
+                                while (currentModel.customObjects.Has(x => x.id == duplicateObject.id)) // Ensure ID is not in list.
+                                    duplicateObject.id = LSText.randomNumString(16);
+
+                                var id = duplicateObject.id;
+                                currentModel.customObjects.Add(duplicateObject);
+
+                                CustomObjectID = id;
+
+                                StartCoroutine(RefreshCustomObjects());
+                                StartCoroutine(RefreshEditor());
+                                PlayerManager.UpdatePlayerModels();
+                                EditorManager.inst.DisplayNotification("Pasted custom player object!", 2f, EditorManager.NotificationType.Success);
+                            })
+                            );
+                        return;
+                    }
+
+                    CustomObjectID = customObject.id;
                     StartCoroutine(RefreshEditor());
                     EditorManager.inst.HideDialog("Player Models Popup");
-                });
+                };
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
@@ -2351,14 +2481,13 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                     {
-                        currentModel.customObjects.Remove(customObject.Key);
+                        currentModel.customObjects.RemoveAll(x => x.id == CustomObjectID);
                         StartCoroutine(RefreshCustomObjects());
                         StartCoroutine(RefreshEditor());
-                        PlayerManager.UpdatePlayers();
+                        PlayerManager.UpdatePlayerModels();
                         RTEditor.inst.HideWarningPopup();
                     }, RTEditor.inst.HideWarningPopup);
                 });
-
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
                 EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
 
@@ -2368,18 +2497,18 @@ namespace BetterLegacy.Editor.Managers
                 duplicateStorage.button.onClick.ClearAll();
                 duplicateStorage.button.onClick.AddListener(() =>
                 {
-                    var duplicateObject = PlayerModel.CustomObject.DeepCopy(currentModel, customObject.Value);
-                    while (currentModel.customObjects.ContainsKey(duplicateObject.id)) // Ensure ID is not in list.
+                    var duplicateObject = PlayerModel.CustomObject.DeepCopy(currentModel, customObject);
+                    while (currentModel.customObjects.Has(x => x.id == duplicateObject.id)) // Ensure ID is not in list.
                         duplicateObject.id = LSText.randomNumString(16);
 
                     var id = duplicateObject.id;
-                    currentModel.customObjects.Add(id, duplicateObject);
+                    currentModel.customObjects.Add(duplicateObject);
 
                     CustomObjectID = id;
 
                     StartCoroutine(RefreshCustomObjects());
                     StartCoroutine(RefreshEditor());
-                    PlayerManager.UpdatePlayers();
+                    PlayerManager.UpdatePlayerModels();
                 });
 
                 duplicateStorage.text.text = "Duplicate";
@@ -2392,6 +2521,8 @@ namespace BetterLegacy.Editor.Managers
 
             yield break;
         }
+
+        public PlayerModel.CustomObject copiedCustomObject;
 
         public void RenderShape(PlayerEditorUI ui)
         {
@@ -2570,7 +2701,7 @@ namespace BetterLegacy.Editor.Managers
                 if (bullet != null)
                     bullet.shape = ShapeManager.inst.Shapes2D[shapeSettings.childCount - 1][0];
 
-                PlayerManager.UpdatePlayers();
+                PlayerManager.UpdatePlayerModels();
                 RenderShape(ui);
             }
 
@@ -2612,7 +2743,7 @@ namespace BetterLegacy.Editor.Managers
                             if (bullet != null)
                                 bullet.shape = ShapeManager.inst.Shapes2D[index][0];
 
-                            PlayerManager.UpdatePlayers();
+                            PlayerManager.UpdatePlayerModels();
                             RenderShape(ui);
                         }
                     });
@@ -2643,7 +2774,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (bullet != null)
                                     bullet.shape = ShapeManager.inst.Shapes2D[type][index];
 
-                                PlayerManager.UpdatePlayers();
+                                PlayerManager.UpdatePlayerModels();
                                 RenderShape(ui);
                             }
                         });
@@ -2663,7 +2794,7 @@ namespace BetterLegacy.Editor.Managers
                         CoreHelper.Log($"Set text to {_val}");
                         customObject.text = _val;
 
-                        PlayerManager.UpdatePlayers();
+                        PlayerManager.UpdatePlayerModels();
                     });
                 }
                 else if (customObject.shape.type == 6)
@@ -2687,7 +2818,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pulse != null)
                     pulse.shape = ShapeManager.inst.Shapes2D[0][0];
 
-                PlayerManager.UpdatePlayers();
+                PlayerManager.UpdatePlayerModels();
                 RenderShape(ui);
             }
         }
@@ -2718,49 +2849,41 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
                 customObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
 
-                PlayerManager.UpdatePlayers();
+                PlayerManager.UpdatePlayerModels();
                 RenderShape(ui);
             }
         }
 
-        public int VisibilityToInt(string vis)
+        public int VisibilityToInt(string vis) => vis switch
         {
-            switch (vis)
-            {
-                case "isBoosting": return 0;
-                case "isTakingHit": return 1;
-                case "isZenMode": return 2;
-                case "isHealthPercentageGreater": return 3;
-                case "isHealthGreaterEquals": return 4;
-                case "isHealthEquals": return 5;
-                case "isHealthGreater": return 6;
-                case "isPressingKey": return 7;
-                default: return 0;
-            }
-        }
+            "isBoosting" => 0,
+            "isTakingHit" => 1,
+            "isZenMode" => 2,
+            "isHealthPercentageGreater" => 3,
+            "isHealthGreaterEquals" => 4,
+            "isHealthEquals" => 5,
+            "isHealthGreater" => 6,
+            "isPressingKey" => 7,
+            _ => 0,
+        };
 
-        public string IntToVisibility(int val)
+        public string IntToVisibility(int val) => val switch
         {
-            switch (val)
-            {
-                case 0: return "isBoosting";
-                case 1: return "isTakingHit";
-                case 2: return "isZenMode";
-                case 3: return "isHealthPercentageGreater";
-                case 4: return "isHealthGreaterEquals";
-                case 5: return "isHealthEquals";
-                case 6: return "isHealthGreater";
-                case 7: return "isPressingKey";
-                default: return "isBoosting";
-            }
-        }
+            0 => "isBoosting",
+            1 => "isTakingHit",
+            2 => "isZenMode",
+            3 => "isHealthPercentageGreater",
+            4 => "isHealthGreaterEquals",
+            5 => "isHealthEquals",
+            6 => "isHealthGreater",
+            7 => "isPressingKey",
+            _ => "isBoosting",
+        };
 
         public void CreateNewModel()
         {
-            var num = PlayerManager.PlayerModels.Count;
-
-            PlayerManager.CreateNewPlayerModel();
-            PlayerManager.SetPlayerModel(playerModelIndex, PlayerManager.PlayerModels.ElementAt(num).Key);
+            var playerModel = PlayersData.Main.CreateNewPlayerModel();
+            PlayersData.Main.SetPlayerModel(playerModelIndex, playerModel.basePart.id);
             PlayerManager.RespawnPlayers();
             StartCoroutine(RefreshEditor());
             EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
@@ -2770,7 +2893,9 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                if (!PlayerManager.SaveGlobalModels())
+                if (PlayersData.Save())
+                    EditorManager.inst.DisplayNotification("Successfully saved player models!.", 2f, EditorManager.NotificationType.Success);
+                else
                     EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
             }
             catch (Exception ex)
@@ -2782,7 +2907,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void Reload()
         {
-            PlayerManager.LoadGlobalModels();
+            PlayersData.Load(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
             PlayerManager.RespawnPlayers();
             StartCoroutine(RefreshEditor());
             EditorManager.inst.HideDialog("Player Models Popup");

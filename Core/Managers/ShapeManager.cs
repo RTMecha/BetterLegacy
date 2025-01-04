@@ -287,8 +287,6 @@ namespace BetterLegacy.Core.Managers
                 var gameObject = PlayerManager.SpawnPlayer(PlayerModel.DefaultModels[i], parent.transform, 0, Vector3.zero);
                 gameObject.SetActive(false);
                 objectPrefab.options.Add(gameObject);
-
-                PlayerManager.PlayerModels[PlayerModel.DefaultModels[i].basePart.id] = PlayerModel.DefaultModels[i];
             }
 
             ObjectManager.inst.objectPrefabs.Add(objectPrefab);

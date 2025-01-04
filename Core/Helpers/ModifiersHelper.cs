@@ -376,8 +376,8 @@ namespace BetterLegacy.Core.Helpers
                         if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                                .Where(x => x.Player && x.Player.rb)
+                                .OrderBy(x => Vector2.Distance(x.Player.rb.position, levelObject.visualObject.GameObject.transform.position)).ToList();
 
                             if (orderedList.Count > 0)
                             {
@@ -2691,7 +2691,7 @@ namespace BetterLegacy.Core.Helpers
                             if (!player)
                                 break;
 
-                            var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                            var tf = player.Player.rb.transform;
                             if (modifier.constant)
                                 tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
                             else
@@ -2708,7 +2708,7 @@ namespace BetterLegacy.Core.Helpers
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
-                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                var tf = player.Player.rb.transform;
                                 if (modifier.constant)
                                     tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
                                 else
@@ -2732,7 +2732,7 @@ namespace BetterLegacy.Core.Helpers
                             if (!player)
                                 break;
 
-                            var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                            var tf = player.Player.rb.transform;
                             if (modifier.constant)
                             {
                                 var v = tf.localPosition;
@@ -2751,7 +2751,7 @@ namespace BetterLegacy.Core.Helpers
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
-                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                var tf = player.Player.rb.transform;
                                 if (modifier.constant)
                                 {
                                     var v = tf.localPosition;
@@ -2779,7 +2779,7 @@ namespace BetterLegacy.Core.Helpers
                             if (!player)
                                 break;
 
-                            var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                            var tf = player.Player.rb.transform;
                             if (modifier.constant)
                             {
                                 var v = tf.localPosition;
@@ -2798,7 +2798,7 @@ namespace BetterLegacy.Core.Helpers
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
-                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                var tf = player.Player.rb.transform;
                                 if (modifier.constant)
                                 {
                                     var v = tf.localPosition;
@@ -2828,12 +2828,12 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.constant)
                             {
-                                var v = player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation.eulerAngles;
+                                var v = player.Player.rb.transform.localRotation.eulerAngles;
                                 v.z += Parser.TryParse(modifier.value, 1f);
-                                player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation = Quaternion.Euler(v);
+                                player.Player.rb.transform.localRotation = Quaternion.Euler(v);
                             }
                             else
-                                player.Player.playerObjects["RB Parent"].gameObject.transform
+                                player.Player.rb.transform
                                     .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
                                     .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
 
@@ -2846,12 +2846,12 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (modifier.constant)
                                 {
-                                    var v = player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation.eulerAngles;
+                                    var v = player.Player.rb.transform.localRotation.eulerAngles;
                                     v.z += Parser.TryParse(modifier.value, 1f);
-                                    player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation = Quaternion.Euler(v);
+                                    player.Player.rb.transform.localRotation = Quaternion.Euler(v);
                                 }
                                 else
-                                    player.Player.playerObjects["RB Parent"].gameObject.transform
+                                    player.Player.rb.transform
                                         .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
                                         .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                             }
@@ -3107,17 +3107,17 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setPlayerModel":
                         {
-                            if (modifier.constant || !int.TryParse(modifier.commands[1], out int index) || !PlayerManager.PlayerModels.ContainsKey(modifier.value))
+                            if (modifier.constant || !int.TryParse(modifier.commands[1], out int index) || !PlayersData.Main.playerModels.ContainsKey(modifier.value))
                                 break;
 
-                            PlayerManager.SetPlayerModel(index, modifier.value);
+                            PlayersData.Main.SetPlayerModel(index, modifier.value);
                             PlayerManager.AssignPlayerModels();
 
                             if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player)
                                 break;
 
                             PlayerManager.Players[index].Player.playerNeedsUpdating = true;
-                            PlayerManager.Players[index].Player.UpdatePlayer();
+                            PlayerManager.Players[index].Player.UpdateModel();
 
                             break;
                         }
@@ -3783,12 +3783,10 @@ namespace BetterLegacy.Core.Helpers
 
                             var player = PlayerManager.Players[0].Player;
 
-                            if (!player || !player.playerObjects.TryGetValue("RB Parent", out RTPlayer.PlayerObject playerObject))
+                            if (!player || !player.rb)
                                 break;
 
-                            var rb = playerObject.gameObject;
-
-                            var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.transform.position);
+                            var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
 
                             var indexArray = 7;
                             var indexXValue = 4;
@@ -3808,12 +3806,10 @@ namespace BetterLegacy.Core.Helpers
 
                             var player = PlayerManager.Players[0].Player;
 
-                            if (!player || !player.playerObjects.TryGetValue("RB Parent", out RTPlayer.PlayerObject playerObject))
+                            if (!player || !player.rb)
                                 break;
 
-                            var rb = playerObject.gameObject;
-
-                            var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.transform.position);
+                            var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
 
                             var indexArray = 8;
                             var indexXValue = 1;
@@ -7521,7 +7517,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(null);
             }
             
-            if (modifier.commands.Count < 0 || modifier.reference == null)
+            if (modifier.commands.Count < 0 || !modifier.reference)
                 return false;
 
             modifier.hasChanged = false;
@@ -7554,71 +7550,44 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "controlPress":
                     {
-                        var type = Parser.TryParse(modifier.value, 0);
+                        var type = modifier.GetInt(0, 0);
                         var device = modifier.reference.device;
-                        //return type switch
-                        //{
-                        //    0 => device.Action1.IsPressed,
-                        //    1 => device.Action2.IsPressed,
-                        //    2 => device.Action3.IsPressed,
-                        //    3 => device.Action4.IsPressed,
-                        //    4 => device.GetControl(InControl.InputControlType.Start).IsPressed,
-                        //    5 => device.GetControl(InControl.InputControlType.Start).IsPressed,
-                        //};
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
                     }
                 case "controlPressDown":
                     {
-                        var type = Parser.TryParse(modifier.value, 0);
+                        var type = modifier.GetInt(0, 0);
                         var device = modifier.reference.device;
-                        //return type switch
-                        //{
-                        //    0 => device.Action1.IsPressed,
-                        //    1 => device.Action2.IsPressed,
-                        //    2 => device.Action3.IsPressed,
-                        //    3 => device.Action4.IsPressed,
-                        //    4 => device.GetControl(InControl.InputControlType.Start).IsPressed,
-                        //    5 => device.GetControl(InControl.InputControlType.Start).IsPressed,
-                        //};
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
                     }
                 case "controlPressUp":
                     {
-                        var type = Parser.TryParse(modifier.value, 0);
+                        var type = modifier.GetInt(0, 0);
                         var device = modifier.reference.device;
-                        //return type switch
-                        //{
-                        //    0 => device.Action1.IsPressed,
-                        //    1 => device.Action2.IsPressed,
-                        //    2 => device.Action3.IsPressed,
-                        //    3 => device.Action4.IsPressed,
-                        //    4 => device.GetControl(InControl.InputControlType.Start).IsPressed,
-                        //    5 => device.GetControl(InControl.InputControlType.Start).IsPressed,
-                        //};
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
                     }
                 case "healthEquals":
                     {
-                        return modifier.reference.Health == Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health == modifier.GetInt(0, 3);
                     }
                 case "healthGreaterEquals":
                     {
-                        return modifier.reference.Health >= Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health >= modifier.GetInt(0, 3);
                     }
                 case "healthLesserEquals":
                     {
-                        return modifier.reference.Health <= Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health <= modifier.GetInt(0, 3);
                     }
                 case "healthGreater":
                     {
-                        return modifier.reference.Health > Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health > modifier.GetInt(0, 3);
                     }
                 case "healthLesser":
                     {
-                        return modifier.reference.Health < Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health < modifier.GetInt(0, 3);
                     }
                 case "healthPerEquals":
                     {
@@ -7652,11 +7621,11 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "isDead":
                     {
-                        return modifier.reference.Player.isDead;
+                        return modifier.reference.Player && modifier.reference.Player.isDead;
                     }
                 case "isBoosting":
                     {
-                        return modifier.reference.Player.isBoosting;
+                        return modifier.reference.Player && modifier.reference.Player.isBoosting;
                     }
             }
 
@@ -7675,7 +7644,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (modifier.commands.Count < 0 || modifier.reference == null)
+            if (modifier.commands.Count < 0 || !modifier.reference)
                 return;
 
             modifier.hasChanged = false;
@@ -7684,10 +7653,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 case "setCustomActive":
                     {
-                        var s = modifier.commands[1];
-
-                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryGetValue(s, out RTPlayer.CustomGameObject customGameObject))
-                            customGameObject.active = Parser.TryParse(modifier.value, false);
+                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.CustomObject customObject))
+                            customObject.active = Parser.TryParse(modifier.value, false);
 
                         break;
                     }
@@ -7733,10 +7700,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 case "setCustomActive":
                     {
-                        var s = modifier.commands[1];
-
-                        if (Parser.TryParse(modifier.commands[2], true) && modifier.reference.Player.customObjects.TryGetValue(s, out RTPlayer.CustomGameObject customGameObject))
-                            customGameObject.active = !Parser.TryParse(modifier.value, false);
+                        if (modifier.GetBool(2, true) && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.CustomObject customObject))
+                            customObject.active = !Parser.TryParse(modifier.value, false);
 
                         break;
                     }

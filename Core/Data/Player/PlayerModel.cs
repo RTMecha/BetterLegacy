@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Managers;
+using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,11 @@ namespace BetterLegacy.Core.Data.Player
                 }
             }
         }
+
+        public Version Version { get; set; } = LegacyPlugin.ModVersion;
+        public bool needsUpdate;
+
+        public bool IsDefault => DefaultModels.Has(x => x.basePart.id == basePart.id);
 
         static List<PlayerModel> defaultModels;
         public static List<PlayerModel> DefaultModels
@@ -211,15 +217,12 @@ namespace BetterLegacy.Core.Data.Player
             playerModel.tailBase = TailBase.DeepCopy(playerModel, orig.tailBase);
             playerModel.boostTailPart = Generic.DeepCopy(playerModel, orig.boostTailPart);
             for (int i = 0; i < orig.tailParts.Count; i++)
-            {
                 playerModel.tailParts.Add(Generic.DeepCopy(playerModel, orig.tailParts[i]));
-            }
             for (int i = 0; i < orig.customObjects.Count; i++)
-            {
-                var customObject = CustomObject.DeepCopy(playerModel, orig.customObjects.ElementAt(i).Value, false);
+                playerModel.customObjects.Add(CustomObject.DeepCopy(playerModel, orig.customObjects[i], false));
 
-                playerModel.customObjects.Add(customObject.id, customObject);
-            }
+            for (int i = 0; i < orig.modifiers.Count; i++)
+                playerModel.modifiers.Add(Modifier<CustomPlayer>.DeepCopy(orig.modifiers[i]));
 
             return playerModel;
         }
@@ -227,6 +230,10 @@ namespace BetterLegacy.Core.Data.Player
         public static PlayerModel Parse(JSONNode jn)
         {
             var playerModel = new PlayerModel(false);
+            if (!string.IsNullOrEmpty(jn["version"]))
+                playerModel.Version = new Version(jn["version"]);
+            else
+                playerModel.needsUpdate = true;
 
             playerModel.basePart = Base.Parse(jn["base"], playerModel);
             playerModel.stretchPart = Stretch.Parse(jn["stretch"], playerModel);
@@ -247,12 +254,9 @@ namespace BetterLegacy.Core.Data.Player
 
             if (jn["tail"] != null && jn["tail"].Count > 0)
                 for (int i = 0; i < jn["tail"].Count; i++)
-                {
                     playerModel.tailParts.Add(Generic.Parse(jn["tail"][i], playerModel));
-                }
             else
             {
-
                 float t = 0.5f;
                 for (int i = 0; i < 3; i++)
                 {
@@ -275,9 +279,11 @@ namespace BetterLegacy.Core.Data.Player
                 for (int i = 0; i < jn["custom_objects"].Count; i++)
                 {
                     var customObject = CustomObject.Parse(jn["custom_objects"][i], playerModel);
-                    if (!playerModel.customObjects.ContainsKey(customObject.id))
-                        playerModel.customObjects.Add(customObject.id, customObject);
+                    if (!string.IsNullOrEmpty(customObject.id))
+                        playerModel.customObjects.Add(customObject);
                 }
+
+            playerModel.needsUpdate = false;
 
             return playerModel;
         }
@@ -286,6 +292,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             var jn = JSON.Parse("{}");
 
+            jn["version"] = Version.ToString();
             if (basePart != null)
                 jn["base"] = basePart.ToJSON();
             if (stretchPart != null)
@@ -317,7 +324,7 @@ namespace BetterLegacy.Core.Data.Player
 
             if (customObjects != null && customObjects.Count > 0)
                 for (int i = 0; i < customObjects.Count; i++)
-                    jn["custom_objects"][i] = customObjects.ElementAt(i).Value.ToJSON();
+                    jn["custom_objects"][i] = customObjects[i].ToJSON();
 
             return jn;
         }
@@ -1360,7 +1367,7 @@ namespace BetterLegacy.Core.Data.Player
 
                     #endregion
 
-                    case "Custom Objects": customObjects = (Dictionary<string, CustomObject>)value; // 246
+                    case "Custom Objects": customObjects = (List<CustomObject>)value; // 246
                         break;
 
                     default: throw new ArgumentOutOfRangeException($"Key \"{s}\" does not exist in Player Model.");
@@ -1774,13 +1781,20 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<Generic> tailParts = new List<Generic>();
 
-        public Dictionary<string, CustomObject> customObjects = new Dictionary<string, CustomObject>();
+        public void AddTail() => tailParts.Add(Generic.DeepCopy(this, tailParts.Last()));
+
+        public void RemoveTail(int index)
+        {
+            if (tailParts.Count > 1 || index >= tailParts.Count)
+                return;
+            tailParts.RemoveAt(index);
+        }
+
+        public List<CustomObject> customObjects = new List<CustomObject>();
 
         public List<Modifier<CustomPlayer>> modifiers = new List<Modifier<CustomPlayer>>();
 
-        public static implicit operator bool(PlayerModel exists) => exists != null;
-
-        public class Base
+        public class Base : Exists
         {
             public Base(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -1861,7 +1875,13 @@ namespace BetterLegacy.Core.Data.Player
 
                 if (!string.IsNullOrEmpty(name))
                     jn["name"] = name;
-                jn["id"] = id;
+                if (!string.IsNullOrEmpty(id))
+                    jn["id"] = id;
+                else
+                {
+                    id = LSText.randomNumString(16);
+                    jn["id"] = id;
+                }
 
                 if (health != 3)
                     jn["health"] = health.ToString();
@@ -1949,7 +1969,7 @@ namespace BetterLegacy.Core.Data.Player
             public PAAnimation hitAnimation;
         }
 
-        public class Stretch
+        public class Stretch : Exists
         {
             public Stretch(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -1994,7 +2014,7 @@ namespace BetterLegacy.Core.Data.Player
             public int easing = 6;
         }
 
-        public class GUI
+        public class GUI : Exists
         {
             public GUI(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -2083,7 +2103,7 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
-        public class Generic
+        public class Generic : Exists
         {
             public Generic(PlayerModel playerModelRef)
             {
@@ -2171,7 +2191,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 jn["col"]["x"] = color.ToString();
 
-                if (color == 24 && customColor != "FFFFFF")
+                if (color == 24 && customColor != "FFFFFF" && !string.IsNullOrEmpty(customColor))
                     jn["col"]["hex"] = customColor;
 
                 if (opacity != 1f)
@@ -2203,7 +2223,7 @@ namespace BetterLegacy.Core.Data.Player
             public Particles Particles { get; set; }
         }
 
-        public class Trail
+        public class Trail : Exists
         {
             public Trail(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -2212,6 +2232,7 @@ namespace BetterLegacy.Core.Data.Player
             public static Trail DeepCopy(PlayerModel playerModelRef, Trail orig) => new Trail(playerModelRef)
             {
                 emitting = orig.emitting,
+                time = orig.time,
                 startWidth = orig.startWidth,
                 endWidth = orig.endWidth,
                 startColor = orig.startColor,
@@ -2272,8 +2293,10 @@ namespace BetterLegacy.Core.Data.Player
                 jn["w"]["end"] = endWidth.ToString();
                 jn["c"]["start"] = startColor.ToString();
                 jn["c"]["end"] = endColor.ToString();
-                jn["c"]["starthex"] = startCustomColor.ToString();
-                jn["c"]["endhex"] = endCustomColor.ToString();
+                if (!string.IsNullOrEmpty(startCustomColor))
+                    jn["c"]["starthex"] = startCustomColor.ToString();
+                if (!string.IsNullOrEmpty(endCustomColor))
+                    jn["c"]["endhex"] = endCustomColor.ToString();
                 jn["o"]["start"] = startOpacity.ToString();
                 jn["o"]["end"] = endOpacity.ToString();
                 jn["pos"]["x"] = positionOffset.x.ToString();
@@ -2305,7 +2328,7 @@ namespace BetterLegacy.Core.Data.Player
             public Vector2 positionOffset = Vector2.zero;
         }
 
-        public class Particles
+        public class Particles : Exists
         {
             public Particles(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -2326,6 +2349,7 @@ namespace BetterLegacy.Core.Data.Player
                 speed = orig.speed,
                 force = orig.force,
                 trailEmitting = orig.trailEmitting,
+                amount = orig.amount,
             };
 
             public static Particles Parse(JSONNode jn, PlayerModel playerModel)
@@ -2396,7 +2420,8 @@ namespace BetterLegacy.Core.Data.Player
                     jn["so"] = shape.option.ToString();
 
                 jn["col"] = color.ToString();
-                jn["colhex"] = customColor;
+                if (!string.IsNullOrEmpty(customColor))
+                    jn["colhex"] = customColor;
 
                 jn["opa"]["start"] = startOpacity.ToString();
                 jn["opa"]["end"] = endOpacity.ToString();
@@ -2446,7 +2471,7 @@ namespace BetterLegacy.Core.Data.Player
             public bool trailEmitting = false;
         }
 
-        public class Pulse
+        public class Pulse : Exists
         {
             public Pulse(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -2578,9 +2603,11 @@ namespace BetterLegacy.Core.Data.Player
                 jn["rothead"] = rotateToHead.ToString();
 
                 jn["col"]["start"] = startColor.ToString();
-                jn["col"]["starthex"] = startCustomColor.ToString();
+                if (!string.IsNullOrEmpty(startCustomColor))
+                    jn["col"]["starthex"] = startCustomColor.ToString();
                 jn["col"]["end"] = endColor.ToString();
-                jn["col"]["endhex"] = endCustomColor.ToString();
+                if (!string.IsNullOrEmpty(endCustomColor))
+                    jn["col"]["endhex"] = endCustomColor.ToString();
                 jn["col"]["easing"] = easingColor.ToString();
 
                 jn["opa"]["start"] = startOpacity.ToString();
@@ -2651,7 +2678,7 @@ namespace BetterLegacy.Core.Data.Player
             public float duration = 1f;
         }
 
-        public class Bullet
+        public class Bullet : Exists
         {
             public Bullet(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -2660,6 +2687,43 @@ namespace BetterLegacy.Core.Data.Player
             public static Bullet DeepCopy(PlayerModel playerModelRef, Bullet orig) => new Bullet(playerModelRef)
             {
                 active = orig.active,
+                autoKill = orig.autoKill,
+                speed = orig.speed,
+                lifeTime = orig.lifeTime,
+                delay = orig.delay,
+                constant = orig.constant,
+                hurtPlayers = orig.hurtPlayers,
+                origin = orig.origin,
+                shape = Shape.DeepCopy(orig.shape),
+                startColor = orig.startColor,
+                endColor = orig.endColor,
+                easingColor = orig.easingColor,
+                durationColor = orig.durationColor,
+
+                startOpacity = orig.startOpacity,
+                endOpacity = orig.endOpacity,
+                easingOpacity = orig.easingOpacity,
+                durationOpacity = orig.durationOpacity,
+
+                startCustomColor = orig.startCustomColor,
+                endCustomColor = orig.endCustomColor,
+
+                depth = orig.depth,
+
+                startPosition = orig.startPosition,
+                endPosition = orig.endPosition,
+                easingPosition = orig.easingPosition,
+                durationPosition = orig.durationPosition,
+
+                startScale = orig.startScale,
+                endScale = orig.endScale,
+                easingScale = orig.easingScale,
+                durationScale = orig.durationScale,
+
+                startRotation = orig.startRotation,
+                endRotation = orig.endRotation,
+                easingRotation = orig.easingRotation,
+                durationRotation = orig.durationRotation,
             };
 
             public static Bullet Parse(JSONNode jn, PlayerModel playerModel)
@@ -2712,6 +2776,11 @@ namespace BetterLegacy.Core.Data.Player
                     bullet.easingOpacity = jn["opa"]["easing"].AsInt;
                 if (!string.IsNullOrEmpty(jn["opa"]["dur"]))
                     bullet.durationOpacity = jn["opa"]["dur"].AsFloat;
+
+                if (!string.IsNullOrEmpty(jn["col"]["starthex"]))
+                    bullet.startCustomColor = jn["col"]["starthex"];
+                if (!string.IsNullOrEmpty(jn["col"]["endhex"]))
+                    bullet.endCustomColor = jn["col"]["endhex"];
 
                 if (!string.IsNullOrEmpty(jn["d"]))
                     bullet.depth = jn["d"].AsFloat;
@@ -2773,9 +2842,11 @@ namespace BetterLegacy.Core.Data.Player
                     jn["so"] = shape.option.ToString();
 
                 jn["col"]["start"] = startColor.ToString();
-                jn["col"]["starthex"] = startCustomColor;
+                if (!string.IsNullOrEmpty(startCustomColor))
+                    jn["col"]["starthex"] = startCustomColor;
                 jn["col"]["end"] = endColor.ToString();
-                jn["col"]["endhex"] = endCustomColor;
+                if (!string.IsNullOrEmpty(endCustomColor))
+                    jn["col"]["endhex"] = endCustomColor;
                 jn["col"]["easing"] = easingColor.ToString();
                 jn["col"]["dur"] = durationColor.ToString();
 
@@ -2994,7 +3065,7 @@ namespace BetterLegacy.Core.Data.Player
             public float durationRotation = 1f;
         }
 
-        public class TailBase
+        public class TailBase : Exists
         {
             public TailBase(PlayerModel playerModelRef) => this.playerModelRef = playerModelRef;
 
@@ -3081,11 +3152,15 @@ namespace BetterLegacy.Core.Data.Player
                 name = orig.name,
                 depth = orig.depth,
                 parent = orig.parent,
+                customParent = orig.customParent,
                 positionOffset = orig.positionOffset,
                 scaleOffset = orig.scaleOffset,
                 rotationOffset = orig.rotationOffset,
+                rotationParent = orig.rotationParent,
+                scaleParent = orig.scaleParent,
                 active = orig.active,
                 text = orig.text,
+                requireAll = orig.requireAll,
                 visibilitySettings = new List<Visiblity>(orig.visibilitySettings.Select(x => new Visiblity
                 {
                     command = x.command,
@@ -3140,10 +3215,10 @@ namespace BetterLegacy.Core.Data.Player
 
                 if (!string.IsNullOrEmpty(jn["d"]))
                     customObject.depth = jn["d"].AsFloat;
-                
-                if (!string.IsNullOrEmpty(jn["p"]))
-                    customObject.parent = jn["p"].AsInt;
-                
+
+                customObject.parent = jn["p"].AsInt;
+                customObject.customParent = jn["idp"];
+
                 if (!string.IsNullOrEmpty(jn["ppo"]))
                     customObject.positionOffset = jn["ppo"].AsFloat;
                 
@@ -3309,7 +3384,9 @@ namespace BetterLegacy.Core.Data.Player
                 jn["id"] = id;
                 jn["n"] = name;
                 jn["d"] = depth.ToString();
-                jn["p"] = parent.ToString();
+                jn["p"] = parent;
+                if (!string.IsNullOrEmpty(customParent))
+                    jn["idp"] = customParent;
                 jn["ppo"] = positionOffset.ToString();
                 jn["pso"] = scaleOffset.ToString();
                 jn["pro"] = rotationOffset.ToString();
@@ -3333,6 +3410,7 @@ namespace BetterLegacy.Core.Data.Player
 
             public float depth = 0.1f;
 
+            public string customParent;
             public int parent;
 
             public float positionOffset = 1f;
@@ -3352,10 +3430,7 @@ namespace BetterLegacy.Core.Data.Player
             public List<Visiblity> visibilitySettings = new List<Visiblity>();
             public class Visiblity
             {
-                public Visiblity()
-                {
-
-                }
+                public Visiblity() { }
 
                 public bool not;
                 public string command = "";

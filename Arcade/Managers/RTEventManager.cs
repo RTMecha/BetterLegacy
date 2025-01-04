@@ -674,9 +674,9 @@ namespace BetterLegacy.Arcade.Managers
 
                 foreach (var customPlayer in PlayerManager.Players)
                 {
-                    if (customPlayer.Player && customPlayer.Player.playerObjects.TryGetValue("RB Parent", out RTPlayer.PlayerObject rbParent))
+                    if (customPlayer.Player && customPlayer.Player.rb)
                     {
-                        var player = rbParent.gameObject.transform;
+                        var player = customPlayer.Player.rb.transform;
                         if (!inst.playersCanMove)
                         {
                             player.localPosition = new Vector3(inst.playerPositionX, inst.playerPositionY, 0f);

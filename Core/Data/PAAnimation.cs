@@ -164,21 +164,21 @@ namespace BetterLegacy.Core.Data
                                                 case AnimationBin.TransformType.Position:
                                                     {
                                                         var sequence = Updater.levelProcessor.converter.GetVector3Sequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
-                                                        animation.animationHandlers.Add(new AnimationHandler<Vector3>(sequence, vector3 => customPlayer.Player.head.Transform.localPosition = vector3));
+                                                        animation.animationHandlers.Add(new AnimationHandler<Vector3>(sequence, vector3 => customPlayer.Player.head.gameObject.transform.localPosition = vector3));
 
                                                         break;
                                                     }
                                                 case AnimationBin.TransformType.Scale:
                                                     {
                                                         var sequence = Updater.levelProcessor.converter.GetVector2Sequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), new Vector2Keyframe(0f, Vector2.one, Ease.Linear));
-                                                        animation.animationHandlers.Add(new AnimationHandler<Vector2>(sequence, vector2 => customPlayer.Player.head.Transform.localScale = new Vector3(vector2.x, vector2.y, 1f)));
+                                                        animation.animationHandlers.Add(new AnimationHandler<Vector2>(sequence, vector2 => customPlayer.Player.head.gameObject.transform.localScale = new Vector3(vector2.x, vector2.y, 1f)));
 
                                                         break;
                                                     }
                                                 case AnimationBin.TransformType.Rotation:
                                                     {
                                                         var sequence = Updater.levelProcessor.converter.GetFloatSequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), 0, new FloatKeyframe(0f, 0f, Ease.Linear), null, false);
-                                                        animation.animationHandlers.Add(new AnimationHandler<float>(sequence, x => customPlayer.Player.head.Transform.localRotation = Quaternion.Euler(0f, 0f, x)));
+                                                        animation.animationHandlers.Add(new AnimationHandler<float>(sequence, x => customPlayer.Player.head.gameObject.transform.localRotation = Quaternion.Euler(0f, 0f, x)));
 
                                                         break;
                                                     }

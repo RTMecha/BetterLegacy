@@ -153,7 +153,7 @@ namespace BetterLegacy.Patchers
             {
                 CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
                 __instance.playingCheckpointAnimation = true;
-                __instance.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
+                PlayerManager.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
                 __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
             }
         }
@@ -223,7 +223,7 @@ namespace BetterLegacy.Patchers
 
             yield return new WaitForSeconds(0.1f);
 
-            __instance.SpawnPlayers(checkpoint.pos);
+            PlayerManager.SpawnPlayers(checkpoint.pos);
             __instance.playingCheckpointAnimation = false;
             checkpoint = null;
 
@@ -320,11 +320,11 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GoToNextLevelLoopPrefix(GameManager __instance, ref IEnumerator __result)
         {
-            __result = GoToNextLevelLoop(__instance);
+            __result = GoToNextLevelLoop();
             return false;
         }
 
-        static IEnumerator GoToNextLevelLoop(GameManager __instance)
+        static IEnumerator GoToNextLevelLoop()
         {
             LevelManager.EndLevel();
             yield break;
@@ -334,22 +334,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SpawnPlayersPrefix(Vector3 __0)
         {
-            bool spawned = false;
-            foreach (var customPlayer in InputDataManager.inst.players.Select(x => x as CustomPlayer))
-            {
-                if (customPlayer.Player == null)
-                {
-                    spawned = true;
-                    PlayerManager.SpawnPlayer(customPlayer, __0);
-                    continue;
-                }
-
-                CoreHelper.Log($"Player {customPlayer.index} already exists!");
-            }
-
-            if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
-                SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
-
+            PlayerManager.SpawnPlayers(__0);
             return false;
         }
 

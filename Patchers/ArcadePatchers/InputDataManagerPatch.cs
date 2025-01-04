@@ -54,7 +54,7 @@ namespace BetterLegacy.Patchers
             {
                 Instance.StopControllerRumble(index);
                 customPlayer.Player.Actions = null;
-                customPlayer.Player.faceController = null;
+                customPlayer.Player.FaceController = null;
                 if (customPlayer.Player.gameObject)
                 {
                     Destroy(customPlayer.Player.gameObject);

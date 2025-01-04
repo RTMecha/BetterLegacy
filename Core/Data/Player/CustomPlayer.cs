@@ -10,32 +10,41 @@ namespace BetterLegacy.Core.Data.Player
 {
     public class CustomPlayer : BaseCustomPlayer
     {
-        public CustomPlayer(bool _active, int _index, InputDevice _device) : base(_active, _index, _device)
-        {
+        public CustomPlayer(bool _active, int _index, InputDevice _device) : base(_active, _index, _device) { }
 
-        }
+        public CustomPlayer(bool _active, int _index) : base(_active, _index) { }
 
-        public CustomPlayer(bool _active, int _index) : base(_active, _index)
-        {
+        public static CustomPlayer Main => InputDataManager.inst.players[0] as CustomPlayer;
 
-        }
-
-        public GameObject GameObject { get; set; }
+        /// <summary>
+        /// If the player is currently alive.
+        /// </summary>
+        public bool Alive => Player;
 
         public RTPlayer Player { get; set; }
 
-        string currentPlayerModel = "0";
-        public string CurrentPlayerModel
+        public string currentPlayerModel = PlayerModel.DEFAULT_ID;
+        public void SetPlayerModel(string id)
         {
-            get => currentPlayerModel;
-            set
-            {
-                currentPlayerModel = value;
-                PlayerModel = PlayerManager.PlayerModels.TryGetValue(currentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
-            }
+            id = !CoreHelper.InEditor && PlayersData.AllowCustomModels ? PlayerManager.PlayerIndexes[index].Value : id;
+            currentPlayerModel = id;
+            UpdatePlayerModel();
         }
 
-        public PlayerModel PlayerModel { get; set; }
+        
+        public void UpdatePlayerModel()
+        {
+            PlayerModel = PlayerModel.DeepCopy(PlayersData.Main.playerModels.TryGetValue(currentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer, false);
+            if (Player)
+                Player.PlayerModel = PlayerModel;
+        }
+
+        public void Test()
+        {
+            PlayerModel.modifiers.Add(ModifiersManager.defaultPlayerModifiers.Find(x => x.Name == "kill"));
+        }
+
+        public PlayerModel PlayerModel { get; set; } = PlayerModel.DefaultPlayer;
 
         public new PlayerIndex GetPlayerIndex(int _index) => (PlayerIndex)_index;
 
@@ -93,7 +102,10 @@ namespace BetterLegacy.Core.Data.Player
             if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.Count <= 0)
                 return;
 
-            ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, true);
+            for (int i = 0; i < PlayerModel.modifiers.Count; i++)
+                PlayerModel.modifiers[i].reference = this;
+
+            ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, Alive);
         }
 
         public static int MaxHealth { get; set; } = 3;

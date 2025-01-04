@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
@@ -35,9 +36,6 @@ namespace BetterLegacy.Core.Managers
         void Awake()
         {
             inst = this;
-
-            for (int i = 0; i < 5; i++)
-                PlayerModels.Add(i.ToString(), null);
         }
 
         #endregion
@@ -45,22 +43,6 @@ namespace BetterLegacy.Core.Managers
         #region Main
 
         #region Properties
-
-        /// <summary>
-        /// All player models that is currently loaded.
-        /// </summary>
-        public static Dictionary<string, PlayerModel> PlayerModels { get; set; } = new Dictionary<string, PlayerModel>();
-
-        /// <summary>
-        /// Player model ID indexer.
-        /// </summary>
-        public static Dictionary<int, string> PlayerModelsIndex { get; set; } = new Dictionary<int, string>
-        {
-            { 0, "0" },
-            { 1, "0" },
-            { 2, "0" },
-            { 3, "0" },
-        };
 
         /// <summary>
         /// Player model custom IDs.
@@ -290,6 +272,38 @@ namespace BetterLegacy.Core.Managers
 
         #region Spawning
 
+        // todo: implement new checkpoint system
+        public static void SpawnPlayers(DataManager.GameData.BeatmapData.Checkpoint checkpoint)
+        {
+            SpawnPlayers(checkpoint.pos);
+        }
+
+        /// <summary>
+        /// Spawns all players at a position.
+        /// </summary>
+        /// <param name="pos">Position to spawn at.</param>
+        public static void SpawnPlayers(Vector2 pos)
+        {
+            AssignPlayerModels();
+
+            bool spawned = false;
+            foreach (var customPlayer in Players)
+            {
+                if (!customPlayer.Player)
+                {
+                    spawned = true;
+                    SpawnPlayer(customPlayer, pos);
+                    continue;
+                }
+
+                CoreHelper.Log($"Player {customPlayer.index} already exists!");
+            }
+
+            if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
+                SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
+
+        }
+
         /// <summary>
         /// Spawns a player at a position.
         /// </summary>
@@ -297,6 +311,8 @@ namespace BetterLegacy.Core.Managers
         /// <param name="pos">Position to spawn at.</param>
         public static void SpawnPlayer(CustomPlayer customPlayer, Vector3 pos)
         {
+            if (customPlayer.PlayerModel && customPlayer.PlayerModel.basePart)
+                customPlayer.Health = customPlayer.PlayerModel.basePart.health;
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (customPlayer.index + 1));
             gameObject.layer = 8;
             gameObject.SetActive(true);
@@ -315,13 +331,13 @@ namespace BetterLegacy.Core.Managers
             player.CustomPlayer = customPlayer;
             player.PlayerModel = customPlayer.PlayerModel;
             player.playerIndex = customPlayer.index;
+            player.initialHealthCount = customPlayer.Health;
             customPlayer.Player = player;
-            customPlayer.GameObject = player.gameObject;
 
             if (GameManager.inst.players.activeSelf)
             {
                 player.Spawn();
-                player.UpdatePlayer();
+                player.UpdateModel();
             }
             else
                 player.playerNeedsUpdating = true;
@@ -331,7 +347,7 @@ namespace BetterLegacy.Core.Managers
                 var setBoth = (CoreHelper.InEditor || allowController) && IsSingleplayer;
                 player.Actions = setBoth ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
                 player.isKeyboard = true;
-                player.faceController = setBoth ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
+                player.FaceController = setBoth ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
             }
             else
             {
@@ -342,7 +358,7 @@ namespace BetterLegacy.Core.Managers
 
                 var faceController = FaceController.CreateWithJoystickBindings();
                 faceController.Device = customPlayer.device;
-                player.faceController = faceController;
+                player.FaceController = faceController;
             }
 
             foreach (var path in player.path)
@@ -431,7 +447,7 @@ namespace BetterLegacy.Core.Managers
             if (transform.gameObject.activeInHierarchy)
             {
                 player.Spawn();
-                player.UpdatePlayer();
+                player.UpdateModel();
             }
             else
                 player.playerNeedsUpdating = true;
@@ -457,7 +473,7 @@ namespace BetterLegacy.Core.Managers
             DestroyPlayers();
 
             if (!GameData.IsValid || GameData.Current.beatmapData is not LevelBeatmapData beatmapData || beatmapData.levelData is not LevelData levelData || levelData.spawnPlayers)
-                GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
+                SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
         }
 
         /// <summary>
@@ -470,7 +486,7 @@ namespace BetterLegacy.Core.Managers
                 if (!player.Player)
                     continue;
 
-                DestroyImmediate(player.Player.health);
+                DestroyImmediate(player.Player.healthText);
                 DestroyImmediate(player.Player.gameObject);
                 player.Player = null;
             }
@@ -489,7 +505,7 @@ namespace BetterLegacy.Core.Managers
             if (!player.Player)
                 return;
 
-            DestroyImmediate(player.Player.health);
+            DestroyImmediate(player.Player.healthText);
             DestroyImmediate(player.Player.gameObject);
             player.Player = null;
         }
@@ -506,7 +522,7 @@ namespace BetterLegacy.Core.Managers
         {
             DestroyPlayers();
             AssignPlayerModels();
-            GameManager.inst.SpawnPlayers(pos);
+            SpawnPlayers(pos);
         }
 
         /// <summary>
@@ -528,14 +544,13 @@ namespace BetterLegacy.Core.Managers
             var player = Players[index];
             if (player.Player)
             {
-                DestroyImmediate(player.Player.health);
+                DestroyImmediate(player.Player.healthText);
                 DestroyImmediate(player.Player.gameObject);
             }
 
-            if (PlayerModelsIndex.TryGetValue(index, out string id) && PlayerModels.ContainsKey(id))
-                player.CurrentPlayerModel = id;
+            player.SetPlayerModel(PlayersData.Main.GetPlayerModel(index).basePart.id);
 
-            GameManager.inst.SpawnPlayers(pos);
+            SpawnPlayers(pos);
         }
 
         // TODO: replace this with Checkpoint.ActiveCheckpoint.
@@ -564,325 +579,29 @@ namespace BetterLegacy.Core.Managers
         public const string PLAYERS_PATH = "beatmaps/players";
 
         /// <summary>
-        /// Saves all models to a JSON file in the level folder.
-        /// </summary>
-        public static void SaveLocalModels()
-        {
-            string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
-
-            var jn = JSON.Parse("{}");
-
-            for (int i = 0; i < 4; i++)
-                jn["indexes"][i] = PlayerModelsIndex[i];
-
-            if (PlayerModels.Count > 5)
-                for (int i = 5; i < PlayerModels.Count; i++)
-                {
-                    var current = PlayerModels.ElementAt(i).Value;
-                    jn["models"][i - 5] = current.ToJSON();
-                }
-
-            RTFile.WriteToFile(location, jn.ToString());
-        }
-
-        /// <summary>
-        /// Loads the models from a JSON file in the level folder if global loading is not allowed.
-        /// </summary>
-        public static void LoadLocalModels()
-        {
-            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value && GameData.IsValid && GameData.Current.beatmapData.levelData.allowCustomPlayerModels)
-                inst.StartCoroutine(ILoadGlobalModels());
-            else
-                inst.StartCoroutine(ILoadLocalModels());
-        }
-
-        /// <summary>
-        /// Internal load coroutine.
-        /// </summary>
-        public static IEnumerator ILoadLocalModels()
-        {
-            if (CoreHelper.InStory && LevelManager.CurrentLevel is Story.StoryLevel storyLevel && !string.IsNullOrEmpty(storyLevel.jsonPlayers))
-            {
-                LoadPlayerJSON(storyLevel.jsonPlayers);
-
-                yield break;
-            }
-
-            string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
-            if (!RTFile.FileExists(location))
-            {
-                for (int i = 0; i < PlayerModelsIndex.Count; i++)
-                    PlayerModelsIndex[i] = CoreHelper.InEditor ? "0" : LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.IsVG ? "4" : "0";
-                yield break;
-            }
-
-            var json = FileManager.inst.LoadJSONFileRaw(location);
-            LoadPlayerJSON(json);
-            yield break;
-        }
-
-        /// <summary>
-        /// Clears and destroys all player models that aren't defaults.
-        /// </summary>
-        public static void ClearModels()
-        {
-            var list = new List<string>();
-
-            foreach (var modelPair in PlayerModels)
-                if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == modelPair.Key))
-                    list.Add(modelPair.Key);
-
-            foreach (var str in list)
-                PlayerModels.Remove(str);
-
-            for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
-                if (GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
-                    Destroy(GameManager.inst.PlayerPrefabs[i]);
-        }
-
-        static void LoadPlayerJSON(string json)
-        {
-            ClearModels();
-
-            var jn = JSON.Parse(json);
-
-            for (int i = 0; i < jn["indexes"].Count; i++)
-                PlayerModelsIndex[i] = jn["indexes"][i];
-
-            for (int i = 0; i < jn["models"].Count; i++)
-            {
-                var model = PlayerModel.Parse(jn["models"][i]);
-                string id = model.basePart.id;
-
-                if (!PlayerModels.ContainsKey(id))
-                    PlayerModels.Add(id, model);
-            }
-
-            try
-            {
-                if (PlayerModelsIndex.Any(x => x.Value != "0") && (!MetaData.IsValid || MetaData.Current.song == null || MetaData.Current.song.difficulty != 6))
-                    AchievementManager.inst.UnlockAchievement("costume_party");
-            }
-            catch (System.Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-        }
-
-        /// <summary>
-        /// Creates a new player model.
-        /// </summary>
-        public static void CreateNewPlayerModel()
-        {
-            var model = new PlayerModel(true);
-            model.basePart.name = "New Model";
-            model.basePart.id = LSText.randomNumString(16);
-
-            PlayerModels[model.basePart.id] = model;
-        }
-
-        /// <summary>
-        /// Saves all the global player models that are loaded.
-        /// </summary>
-        /// <returns>Returns true if it was sucessful, otherwise returns false.</returns>
-        public static bool SaveGlobalModels()
-        {
-            bool success = true;
-            if (CoreHelper.InEditor)
-                EditorManager.inst.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
-
-            foreach (var model in PlayerModels)
-            {
-                if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == model.Key))
-                {
-                    try
-                    {
-                        RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(model.Value.basePart.name)}{FileFormat.LSPL.Dot()}"), model.Value.ToJSON().ToString(3));
-                    }
-                    catch (System.Exception ex)
-                    {
-                        success = false;
-                        CoreHelper.LogException(ex);
-                    }
-                }
-            }
-            if (CoreHelper.InEditor)
-                EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
-            return success;
-        }
-
-        /// <summary>
-        /// Loads the player models from the global player models folder.
-        /// </summary>
-        public static void LoadGlobalModels()
-        {
-            inst.StartCoroutine(ILoadGlobalModels());
-        }
-
-        /// <summary>
-        /// Internal load coroutine.
-        /// </summary>
-        public static IEnumerator ILoadGlobalModels()
-        {
-            var fullPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, PLAYERS_PATH);
-            RTFile.CreateDirectory(fullPath);
-
-            var files = Directory.GetFiles(fullPath);
-
-            if (files.Length > 0)
-            {
-                ClearModels();
-
-                foreach (var file in files)
-                {
-                    if (!Path.GetFileName(file).EndsWith(FileFormat.LSPL.Dot()))
-                        continue;
-
-                    var model = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
-                    string id = model.basePart.id;
-
-                    if (id != "0")
-                    PlayerModels[id] = model;
-                }
-
-                if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
-                    LoadIndexes();
-                else if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
-                    for (int i = 0; i < PlayerModelsIndex.Count; i++)
-                        PlayerModelsIndex[i] = PlayerIndexes[i].Value;
-            }
-
-            if (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
-                AssignPlayerModels();
-
-            yield break;
-        }
-
-        /// <summary>
-        /// Loads the model IDs that should be used in the level.
-        /// </summary>
-        public static void LoadIndexes()
-        {
-            string location = RTFile.CombinePaths(RTFile.BasePath, Level.PLAYERS_LSB);
-
-            if (RTFile.FileExists(location))
-            {
-                var json = FileManager.inst.LoadJSONFileRaw(location);
-                var jn = JSON.Parse(json);
-
-                for (int i = 0; i < jn["indexes"].Count; i++)
-                {
-                    if (PlayerModels.ContainsKey(jn["indexes"][i]))
-                    {
-                        PlayerModelsIndex[i] = jn["indexes"][i];
-                        CoreHelper.Log($"Loaded PlayerModel Index: {jn["indexes"][i]}");
-                    }
-                    else
-                        CoreHelper.LogError($"Failed to load PlayerModel Index: {jn["indexes"][i]}\nPlayer with that ID does not exist");
-                }
-            }
-            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels))
-            {
-                CoreHelper.LogError("player.lsb file does not exist, setting to default player");
-                for (int i = 0; i < PlayerModelsIndex.Count; i++)
-                    PlayerModelsIndex[i] = CoreHelper.InEditor ? "0" : LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.IsVG ? "4" : "0";
-            }
-
-            AssignPlayerModels();
-        }
-
-        /// <summary>
-        /// Clears all models.
-        /// </summary>
-        public static void ClearPlayerModels()
-        {
-            var list = new List<string>();
-            foreach (var keyValue in PlayerModels)
-            {
-                var key = keyValue.Key;
-                if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == key))
-                {
-                    list.Add(keyValue.Key);
-                }
-            }
-
-            foreach (var key in list)
-            {
-                PlayerModels.Remove(key);
-            }
-
-            LoadLocalModels();
-        }
-
-        /// <summary>
-        /// Sets the current player model.
-        /// </summary>
-        /// <param name="index">Index of the player to assign to.</param>
-        /// <param name="id">Model ID to set.</param>
-        public static void SetPlayerModel(int index, string id)
-        {
-            if (!PlayerModels.ContainsKey(id))
-                return;
-
-            PlayerModelsIndex[index] = id;
-            if (Players.Count > index && Players[index])
-            {
-                Players[index].CurrentPlayerModel = id;
-                Players[index].Player?.UpdatePlayer();
-            }
-        }
-
-        /// <summary>
-        /// Duplicates a player model.
-        /// </summary>
-        /// <param name="id">Model ID to duplicate.</param>
-        public static void DuplicatePlayerModel(string id)
-        {
-            if (PlayerModels.TryGetValue(id, out PlayerModel orig))
-            {
-                var model = PlayerModel.DeepCopy(orig);
-                model.basePart.name += " Clone";
-                model.basePart.id = LSText.randomNumString(16);
-
-                PlayerModels[model.basePart.id] = model;
-            }
-        }
-
-        /// <summary>
         /// Updates all players.
         /// </summary>
-        public static void UpdatePlayers()
+        public static void UpdatePlayerModels()
         {
             if (InputDataManager.inst)
-                foreach (var player in Players.Where(x => x.Player).Select(x => x.Player))
+                foreach (var player in Players.Where(x => x && x.Player))
                 {
                     if (CoreHelper.InEditor || IsZenMode)
-                        player.UpdatePlayer();
+                    {
+                        player.UpdatePlayerModel();
+                        player.Player.UpdateModel();
+                    }
                 }
         }
-
-        public static string GetPlayerModelIndex(int index) => PlayerModelsIndex[index];
-
-        public static void SetPlayerModelIndex(int index, int _id)
-        {
-            string e = PlayerModels.ElementAt(_id).Key;
-
-            PlayerModelsIndex[index] = e;
-        }
-
-        public static int GetPlayerModelInt(PlayerModel _model) => PlayerModels.Values.ToList().IndexOf(_model);
 
         public static void AssignPlayerModels()
         {
-            if (Players.Count > 0)
-                for (int i = 0; i < Players.Count; i++)
+            var players = Players;
+            if (players.Count > 0)
+                for (int i = 0; i < players.Count; i++)
                 {
-                    if (PlayerModelsIndex.Count > i && PlayerModels.ContainsKey(PlayerModelsIndex[i]) && Players[i] != null)
-                    {
-                        Players[i].CurrentPlayerModel = PlayerModelsIndex[i];
-                        if (Players[i].Player)
-                            Players[i].Player.PlayerModel = Players[i].PlayerModel;
-                    }
+                    var playerModel = PlayersData.Main.GetPlayerModel(i);
+                    players[i].SetPlayerModel(playerModel.basePart.id);
                 }
         }
 
