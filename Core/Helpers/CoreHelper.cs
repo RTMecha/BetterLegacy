@@ -235,6 +235,23 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
+        /// Removes all children from the transform and destroys them. This is done due to Unity's Destroy method not working in some cases.
+        /// </summary>
+        /// <param name="transform">Transform to delete the children of.</param>
+        public static void DestroyChildren(Transform transform)
+        {
+            var listToDestroy = new List<GameObject>();
+            while (transform.childCount > 0)
+            {
+                var child = transform.GetChild(0);
+                child.SetParent(null);
+                listToDestroy.Add(child.gameObject);
+            }
+            foreach (var child in listToDestroy)
+                Destroy(child);
+        }
+
+        /// <summary>
         /// Sets the game object active / inactive.
         /// </summary>
         /// <param name="gameObject">Game object to set the active state of.</param>
