@@ -361,6 +361,8 @@ namespace BetterLegacy
         anna_speak,
         para_speak,
         t_speak,
+
+        pop
     }
 
     /// <summary>
@@ -1046,6 +1048,14 @@ namespace BetterLegacy
         /// Prefab comes from external prefabs folder.
         /// </summary>
         External
+    }
+
+    public enum BinSliderControlActive
+    {
+        KeyHeld,
+        KeyToggled,
+        Always,
+        Never
     }
 
     #endregion
