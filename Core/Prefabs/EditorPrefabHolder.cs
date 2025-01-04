@@ -10,7 +10,8 @@ namespace BetterLegacy.Core.Prefabs
     public class EditorPrefabHolder
     {
         public static EditorPrefabHolder Instance { get; set; }
-        public EditorPrefabHolder() { Instance = this; }
+        public EditorPrefabHolder() { }
+        public static void Init() => Instance = new EditorPrefabHolder();
 
         public Transform PrefabParent { get; set; }
         public GameObject StringInputField { get; set; }
@@ -19,7 +20,24 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject Function1Button { get; set; }
         public GameObject Function2Button { get; set; }
         public GameObject Dropdown { get; set; }
+        public GameObject CurvesDropdown { get; set; }
         public GameObject Toggle { get; set; }
+        public GameObject ToggleButton { get; set; }
+        public GameObject Labels { get; set; }
+        public GameObject ScrollView { get; set; }
+
+        public GameObject CollapseToggle { get; set; }
+        public GameObject CloseButton { get; set; }
+        public GameObject ColorsLayout { get; set; }
+    }
+
+    public class ToggleButtonStorage : MonoBehaviour
+    {
+        [SerializeField]
+        public Toggle toggle;
+
+        [SerializeField]
+        public Text label;
     }
 
     public class DeleteButtonStorage : MonoBehaviour
@@ -57,6 +75,31 @@ namespace BetterLegacy.Core.Prefabs
         public Button rightGreaterButton;
         [SerializeField]
         public InputField inputField;
+
+        public void Assign(GameObject gameObject)
+        {
+            if (gameObject.transform.TryFind("<<", out Transform leftGreater))
+                leftGreaterButton = leftGreater.GetComponent<Button>();
+
+            if (gameObject.transform.TryFind("<", out Transform left))
+                leftButton = left.GetComponent<Button>();
+
+            if (gameObject.transform.TryFind("|", out Transform middle))
+                middleButton = middle.GetComponent<Button>();
+
+            if (gameObject.transform.TryFind(">", out Transform right))
+                rightButton = right.GetComponent<Button>();
+
+            if (gameObject.transform.TryFind(">>", out Transform rightGreater))
+                rightGreaterButton = rightGreater.GetComponent<Button>();
+
+            if (gameObject.transform.TryFind("input", out Transform input))
+                inputField = input.GetComponent<InputField>();
+            else if (gameObject.transform.TryFind("time", out Transform time))
+                inputField = time.GetComponent<InputField>();
+            else if (gameObject.TryGetComponent(out InputField baseInput))
+                inputField = baseInput;
+        }
     }
 
     public class PrefabPanelStorage : MonoBehaviour
