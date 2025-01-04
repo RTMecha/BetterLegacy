@@ -2,12 +2,14 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,22 +18,11 @@ namespace BetterLegacy.Editor.Data
     /// <summary>
     /// Represents a popup in the editor.
     /// </summary>
-    public class EditorPopup
+    public class EditorPopup : Exists
     {
         public EditorPopup() { }
 
         public EditorPopup(string name) => Name = name;
-
-        public EditorPopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
-        {
-            Name = name;
-            this.title = title;
-            this.defaultPosition = defaultPosition;
-            this.size = size;
-            this.refreshSearch = refreshSearch;
-            this.close = close;
-            this.placeholderText = placeholderText;
-        }
 
         #region Properties
 
@@ -48,18 +39,6 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public Button CloseButton { get; set; }
         /// <summary>
-        /// Search field of the editor popup.
-        /// </summary>
-        public InputField SearchField { get; set; }
-        /// <summary>
-        /// Content transform of the editor popup.
-        /// </summary>
-        public Transform Content { get; set; }
-        /// <summary>
-        /// Grid layout of the editor popups' content.
-        /// </summary>
-        public GridLayoutGroup Grid { get; set; }
-        /// <summary>
         /// Top panel of the editor popup.
         /// </summary>
         public RectTransform TopPanel { get; set; }
@@ -67,16 +46,39 @@ namespace BetterLegacy.Editor.Data
         /// Title of the editor popup.
         /// </summary>
         public Text Title { get; set; }
-
-        /// <summary>
-        /// Scrollbar of the editor popups' content.
-        /// </summary>
-        public Scrollbar ContentScrollbar { get; set; }
+        public TextMeshProUGUI TMPTitle { get; set; }
 
         /// <summary>
         /// If the editor popup is open.
         /// </summary>
         public bool IsOpen => GameObject && GameObject.activeInHierarchy;
+
+        #endregion
+
+        #region Constants
+
+        public const string NEW_FILE_POPUP = "New File Popup";
+        public const string FILE_INFO_POPUP = "File Info Popup";
+        public const string SAVE_AS_POPUP = "Save As Popup";
+        public const string OPEN_FILE_POPUP = "Open File Popup";
+        public const string QUICK_ACTIONS_POPUP = "Quick Actions Popup";
+        public const string PARENT_SELECTOR = "Parent Selector";
+        public const string PREFAB_POPUP = "Prefab Popup";
+        public const string COLOR_PICKER = "Color Picker";
+        public const string OBJECT_OPTIONS_POPUP = "Object Options Popup";
+        public const string BG_OPTIONS_POPUP = "BG Options Popup";
+        public const string OBJECT_TEMPLATES_POPUP = "Object Templates Popup";
+        public const string BROWSER_POPUP = "Browser Popup";
+        public const string OBJECT_SEARCH_POPUP = "Object Search Popup";
+        public const string WARNING_POPUP = "Warning Popup";
+        public const string DEBUGGER_POPUP = "Debugger Popup";
+        public const string AUTOSAVE_POPUP = "Autosave Popup";
+        public const string THEME_POPUP = "Theme Popup";
+        public const string KEYBIND_LIST_POPUP = "Keybind List Popup";
+        public const string PLAYER_MODELS_POPUP = "Player Models Popup";
+        public const string DEFAULT_MODIFIERS_POPUP = "Default Modifiers Popup";
+        public const string DOCUMENTATION_POPUP = "Documentation Popup";
+        public const string FOLDER_CREATOR_POPUP = "Folder Creator Popup";
 
         #endregion
 
@@ -103,46 +105,13 @@ namespace BetterLegacy.Editor.Data
         public Vector2 size;
 
         /// <summary>
-        /// Refresh search function.
-        /// </summary>
-        public Action<string> refreshSearch;
-
-        /// <summary>
         /// Close editor popup function.
         /// </summary>
         public Action close;
 
-        /// <summary>
-        /// The placeholder string of the editor popups' search field.
-        /// </summary>
-        public string placeholderText = "Search...";
-
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Creates an editor popup from an existing popup game object.
-        /// </summary>
-        /// <param name="name">Name of the popup.</param>
-        /// <param name="gameObject">Game object reference.</param>
-        /// <returns>Returns an editor popup made from a game object.</returns>
-        public static EditorPopup FromGameObject(string name, GameObject gameObject)
-        {
-            var editorPopup = new EditorPopup(name);
-            editorPopup.Assign(gameObject);
-
-            try
-            {
-                if (editorPopup.Title)
-                    editorPopup.title = editorPopup.Title.text;
-                if (editorPopup.SearchField)
-                    editorPopup.placeholderText = editorPopup.SearchField.GetPlaceholderText().text;
-            }
-            catch { }
-
-            return editorPopup;
-        }
 
         /// <summary>
         /// Opens the editor popup.
@@ -286,36 +255,39 @@ namespace BetterLegacy.Editor.Data
         /// Assigns the elements of a game object to this editor popup.
         /// </summary>
         /// <param name="popup">Poppup game object to assign from.</param>
-        public void Assign(GameObject popup)
+        public virtual void Assign(GameObject popup)
         {
             GameObject = popup;
+            if (popup.transform.TryFind("New File Popup", out Transform n))
+                popup = n.gameObject;
+
             if (popup.transform.TryFind("Panel", out Transform topPanel))
             {
                 TopPanel = topPanel.AsRT();
-                if (topPanel.TryFind("Text", out Transform title) && title.gameObject.TryGetComponent(out Text titleText))
-                    Title = titleText;
+                if (topPanel.TryFind("Text", out Transform text))
+                {
+                    if (text.gameObject.TryGetComponent(out Text textText))
+                        Title = textText;
+                    else if (text.gameObject.TryGetComponent(out TextMeshProUGUI textTmp))
+                        TMPTitle = textTmp;
+                }
+                else if (topPanel.TryFind("Title", out Transform title))
+                {
+                    if (title.gameObject.TryGetComponent(out Text textText))
+                        Title = textText;
+                    else if (title.gameObject.TryGetComponent(out TextMeshProUGUI textTmp))
+                        TMPTitle = textTmp;
+                }
 
                 if (topPanel.TryFind("x", out Transform close) && close.gameObject.TryGetComponent(out Button closeButton))
                     CloseButton = closeButton;
             }
-
-            if (popup.transform.TryFind("search-box/search", out Transform searchBox) && searchBox.gameObject.TryGetComponent(out InputField searchField))
-                SearchField = searchField;
-
-            if (popup.transform.TryFind("mask/content", out Transform content))
-            {
-                Content = content;
-                Grid = content.GetComponent<GridLayoutGroup>();
-            }
-
-            if (popup.transform.TryFind("Scrollbar", out Transform sidebar) && sidebar.gameObject.TryGetComponent(out Scrollbar contentScrollbar))
-                ContentScrollbar = contentScrollbar;
         }
 
         /// <summary>
         /// Initializes the editor popup.
         /// </summary>
-        public void Init()
+        public virtual void Init()
         {
             var name = Name;
             var popup = GameObject;
@@ -333,8 +305,6 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.AddSelectable(CloseButton, ThemeGroup.Close);
             EditorThemeManager.AddGraphic(CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
             EditorThemeManager.AddLightText(Title);
-            EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
-            EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
             Render();
         }
@@ -342,12 +312,10 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Renders the whole editor popup.
         /// </summary>
-        public void Render()
+        public virtual void Render()
         {
             RenderTitle();
             RenderSize();
-            RenderPlaceholderText();
-            UpdateSearchFunction(refreshSearch);
             UpdateCloseFunction(close);
         }
 
@@ -375,7 +343,166 @@ namespace BetterLegacy.Editor.Data
         /// Renders the editor popup position and size.
         /// </summary>
         /// <param name="size">Size of the editor popup.</param>
-        public void RenderSize(Vector2 size)
+        public virtual void RenderSize(Vector2 size)
+        {
+            if (!GameObject)
+                return;
+
+            var inSize = size == Vector2.zero ? new Vector2(600f, 450f) : size;
+            GameObject.transform.AsRT().anchoredPosition = defaultPosition;
+            GameObject.transform.AsRT().sizeDelta = inSize;
+            if (TopPanel)
+                TopPanel.sizeDelta = new Vector2(inSize.x + 32f, 32f);
+        }
+
+        /// <summary>
+        /// Updates the close button.
+        /// </summary>
+        /// <param name="close">Runs when the user clicks the close popup button.</param>
+        public void UpdateCloseFunction(Action close)
+        {
+            CloseButton.onClick.ClearAll();
+            CloseButton.onClick.AddListener(() =>
+            {
+                EditorManager.inst.HideDialog(Name);
+                close?.Invoke();
+            });
+        }
+
+        public EditorManager.EditorDialog GetLegacyDialog() => EditorManager.inst.GetDialog(Name);
+
+        public override string ToString() => $"{Name} - {title}";
+
+        #endregion
+    }
+
+    public class InfoPopup : EditorPopup
+    {
+        public InfoPopup(string name) => Name = name;
+
+        public Text Info { get; set; }
+        public Image Doggo { get; set; }
+
+        public override void Assign(GameObject popup)
+        {
+            GameObject = popup;
+            Title = popup.transform.Find("title").GetComponent<Text>();
+            Info = popup.transform.Find("text").GetComponent<Text>();
+        }
+
+        public void SetInfo(string text)
+        {
+            if (Info)
+                Info.text = text;
+        }
+    }
+    
+    public class ContentPopup : EditorPopup
+    {
+        public ContentPopup(string name) => Name = name;
+
+        public ContentPopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        {
+            Name = name;
+            this.title = title;
+            this.defaultPosition = defaultPosition;
+            this.size = size;
+            this.refreshSearch = refreshSearch;
+            this.close = close;
+            this.placeholderText = placeholderText;
+        }
+
+        /// <summary>
+        /// Search field of the editor popup.
+        /// </summary>
+        public InputField SearchField { get; set; }
+        /// <summary>
+        /// Content transform of the editor popup.
+        /// </summary>
+        public Transform Content { get; set; }
+        /// <summary>
+        /// Grid layout of the editor popups' content.
+        /// </summary>
+        public GridLayoutGroup Grid { get; set; }
+        /// <summary>
+        /// Scrollbar of the editor popups' content.
+        /// </summary>
+        public Scrollbar ContentScrollbar { get; set; }
+
+        /// <summary>
+        /// Refresh search function.
+        /// </summary>
+        public Action<string> refreshSearch;
+
+        /// <summary>
+        /// The placeholder string of the editor popups' search field.
+        /// </summary>
+        public string placeholderText = "Search...";
+
+        /// <summary>
+        /// Assigns the elements of a game object to this editor popup.
+        /// </summary>
+        /// <param name="popup">Poppup game object to assign from.</param>
+        public override void Assign(GameObject popup)
+        {
+            GameObject = popup;
+            if (popup.transform.TryFind("Panel", out Transform topPanel))
+            {
+                TopPanel = topPanel.AsRT();
+                if (topPanel.TryFind("Text", out Transform title) && title.gameObject.TryGetComponent(out Text titleText))
+                    Title = titleText;
+
+                if (topPanel.TryFind("x", out Transform close) && close.gameObject.TryGetComponent(out Button closeButton))
+                    CloseButton = closeButton;
+            }
+
+            if (popup.transform.TryFind("search-box/search", out Transform searchBox) && searchBox.gameObject.TryGetComponent(out InputField searchField))
+                SearchField = searchField;
+
+            if (popup.transform.TryFind("mask/content", out Transform content))
+            {
+                Content = content;
+                Grid = content.GetComponent<GridLayoutGroup>();
+            }
+
+            if (popup.transform.TryFind("Scrollbar", out Transform sidebar) && sidebar.gameObject.TryGetComponent(out Scrollbar contentScrollbar))
+                ContentScrollbar = contentScrollbar;
+        }
+
+        public override void Init()
+        {
+            var name = Name;
+            var popup = GameObject;
+            if (popup)
+                CoreHelper.Destroy(popup);
+
+            popup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(RTEditor.inst.popups, name);
+            Assign(popup);
+            popup.transform.localPosition = Vector3.zero;
+
+            EditorHelper.AddEditorPopup(name, popup);
+
+            EditorThemeManager.AddGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.AddGraphic(TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.AddSelectable(CloseButton, ThemeGroup.Close);
+            EditorThemeManager.AddGraphic(CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.AddLightText(Title);
+            EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
+
+            Render();
+        }
+
+        public override void Render()
+        {
+            RenderTitle();
+            RenderSize();
+            RenderPlaceholderText();
+            UpdateSearchFunction(refreshSearch);
+            UpdateCloseFunction(close);
+        }
+
+        public override void RenderSize(Vector2 size)
         {
             if (!GameObject)
                 return;
@@ -435,23 +562,13 @@ namespace BetterLegacy.Editor.Data
             SearchField.text = searchTerm;
             SearchField.onValueChanged.AddListener(_val => onSearch?.Invoke(_val));
         }
+    }
 
-        /// <summary>
-        /// Updates the close button.
-        /// </summary>
-        /// <param name="close">Runs when the user clicks the close popup button.</param>
-        public void UpdateCloseFunction(Action close)
-        {
-            CloseButton.onClick.ClearAll();
-            CloseButton.onClick.AddListener(() =>
-            {
-                EditorManager.inst.HideDialog(Name);
-                close?.Invoke();
-            });
-        }
+    public class PrefabPopup : EditorPopup
+    {
+        public PrefabPopup(string name) => Name = name;
 
-        public override string ToString() => $"{Name} - {title}";
-
-        #endregion
+        public ContentPopup InternalPrefabs { get; set; }
+        public ContentPopup ExternalPrefabs { get; set; }
     }
 }

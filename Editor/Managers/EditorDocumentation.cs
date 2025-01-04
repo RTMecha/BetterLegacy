@@ -16,6 +16,7 @@ using BetterLegacy.Core.Managers;
 using UnityEngine.EventSystems;
 using TMPro;
 using System.IO;
+using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -35,7 +36,7 @@ namespace BetterLegacy.Editor.Managers
 
         void GenerateUI() // NEED TO UPDATE!
         {
-            documentationPopup = RTEditor.inst.GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
+            RTEditor.inst.DocumentationPopup = RTEditor.inst.GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 documentationSearch = _val;
                 RefreshDocumentation();
@@ -51,7 +52,7 @@ namespace BetterLegacy.Editor.Managers
             var editorDialogTransform = editorDialogObject.transform;
             editorDialogObject.name = "DocumentationDialog";
             editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs").transform);
+            editorDialogTransform.SetParent(EditorManager.inst.dialogs);
             editorDialogTransform.localScale = Vector3.one;
             editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
             editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
@@ -68,13 +69,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDialog("Documentation Dialog", editorDialogObject);
 
-            var scrollView = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View"));
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogTransform, "Scroll View");
             documentationContent = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.SetParent(editorDialogTransform);
-            scrollView.transform.localScale = Vector3.one;
-            scrollView.name = "Scroll View";
-
-            LSHelpers.DeleteChildren(documentationContent);
 
             var scrollViewLE = scrollView.AddComponent<LayoutElement>();
             scrollViewLE.ignoreLayout = true;
@@ -1026,7 +1022,6 @@ namespace BetterLegacy.Editor.Managers
         public Text documentationTitle;
         public string documentationSearch;
         public Transform documentationContent;
-        public EditorPopup documentationPopup;
 
         #endregion
 
@@ -1191,7 +1186,7 @@ namespace BetterLegacy.Editor.Managers
 
         EditorDocument GenerateDocument(string name, string description, List<EditorDocument.Element> elements)
         {
-            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.DocumentationPopup.Content, "Document");
             var documentation = new EditorDocument(gameObject, name, description);
 
             EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
