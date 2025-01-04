@@ -16,7 +16,7 @@ namespace BetterLegacy.Editor.Components
     {
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!EditorConfig.Instance.MouseTooltipDisplay.Value || !EditorManager.inst.showHelp)
+            if (!EditorConfig.Instance.MouseTooltipDisplay.Value || !EditorManager.inst.showHelp && EditorConfig.Instance.MouseTooltipRequiresHelp.Value)
                 return;
 
             int index = tooltips.FindIndex(x => (int)((Tooltip)x).language == (int)CoreConfig.Instance.Language.Value);
@@ -46,13 +46,15 @@ namespace BetterLegacy.Editor.Components
 
             RTEditor.inst.tooltipActive = false;
 
-            RTEditor.inst.mouseTooltip?.SetActive(false);
+            if (RTEditor.inst.mouseTooltip)
+                RTEditor.inst.mouseTooltip.SetActive(false);
         }
 
         /// <summary>
         /// Amount of time to display the mouse tooltip for.
         /// </summary>
         public float time = 2f;
+
         [NonSerialized]
         public List<HoverTooltip.Tooltip> tooltips = new List<HoverTooltip.Tooltip>();
     }
