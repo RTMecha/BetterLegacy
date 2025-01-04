@@ -29,6 +29,9 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject CollapseToggle { get; set; }
         public GameObject CloseButton { get; set; }
         public GameObject ColorsLayout { get; set; }
+
+        public GameObject Scrollbar { get; set; }
+        public GameObject Slider { get; set; }
     }
 
     public class ToggleButtonStorage : MonoBehaviour
