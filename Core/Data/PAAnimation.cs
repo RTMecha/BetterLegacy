@@ -20,21 +20,42 @@ namespace BetterLegacy.Core.Data
         public PAAnimation()
         {
             id = LSText.randomNumString(16);
-            objects = new List<AnimationObject>();
             markers = new List<Marker>();
+
+            positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
+            scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
+            rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
+            colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
         }
 
-        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<Marker> markers, AnimationReferenceType animationReferenceType = AnimationReferenceType.Player)
+        public PAAnimation(string name, string desc)
+        {
+            id = LSText.randomNumString(16);
+            this.name = name;
+            this.desc = desc;
+            StartTime = 0f;
+            markers = new List<Marker>();
+
+            positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
+            scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
+            rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
+            colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+        }
+        
+        public PAAnimation(string name, string desc, float startTime)
         {
             id = LSText.randomNumString(16);
             this.name = name;
             this.desc = desc;
             StartTime = startTime;
-            this.objects = objects;
-            this.markers = markers;
-            this.animationReferenceType = animationReferenceType;
-        }
+            markers = new List<Marker>();
 
+            positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
+            scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
+            rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
+            colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+        }
+        
         #region Fields
 
         /// <summary>
@@ -59,56 +80,119 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public List<Marker> markers;
 
-        public List<AnimationObject> objects;
+        /// <summary>
+        /// ID used for comparing objects with their associated animations.
+        /// </summary>
+        public string ReferenceID { get; set; }
+
+        public List<DataManager.GameData.EventKeyframe> positionKeyframes = new List<DataManager.GameData.EventKeyframe>();
+        public List<DataManager.GameData.EventKeyframe> scaleKeyframes = new List<DataManager.GameData.EventKeyframe>();
+        public List<DataManager.GameData.EventKeyframe> rotationKeyframes = new List<DataManager.GameData.EventKeyframe>();
+        public List<DataManager.GameData.EventKeyframe> colorKeyframes = new List<DataManager.GameData.EventKeyframe>();
 
         /// <summary>
-        /// What type of object should the animation be applied to.
+        /// If this is on, the values of the first keyframes will be replaced with the transition values.
         /// </summary>
-        public AnimationReferenceType animationReferenceType;
+        public bool transition;
+
+        public bool animatePosition = true;
+        public bool animateScale = true;
+        public bool animateRotation = true;
+        public bool animateColor;
 
         #endregion
 
         #region Methods
 
-        public float GetLength(int current)
+        public float GetLength()
         {
-            if (current >= objects.Count || current < 0)
-                return 0f;
-
-            var objectsLength = objects[current].animationBins.Max(x => x.events.Max(x => x.eventTime));
-            var markersLength = markers.Max(x => x.time);
+            var objectsLength = GetLength(0) + GetLength(1) + GetLength(2) + GetLength(3);
+            var markersLength = markers.Empty() ? 0f : markers.Max(x => x.time);
 
             return objectsLength > markersLength ? objectsLength : markersLength;
         }
 
+        public float GetLength(int type) => type switch
+        {
+            0 => positionKeyframes.Empty() ? 0f : positionKeyframes.Max(x => x.eventTime),
+            1 => scaleKeyframes.Empty() ? 0f : scaleKeyframes.Max(x => x.eventTime),
+            2 => rotationKeyframes.Empty() ? 0f : rotationKeyframes.Max(x => x.eventTime),
+            3 => colorKeyframes.Empty() ? 0f : colorKeyframes.Max(x => x.eventTime),
+            _ => 0f,
+        };
+
+        public static PAAnimation DeepCopy(PAAnimation orig, bool newID = true) => new PAAnimation
+        {
+            id = newID ? LSText.randomNumString(16) : orig.id,
+            name = orig.name,
+            desc = orig.desc,
+            markers = orig.markers.Select(x => Marker.DeepCopy(x)).ToList(),
+            ReferenceID = orig.ReferenceID,
+            StartTime = orig.StartTime,
+
+            positionKeyframes = orig.positionKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
+            scaleKeyframes = orig.scaleKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
+            rotationKeyframes = orig.rotationKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
+            colorKeyframes = orig.colorKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
+
+            animatePosition = orig.animatePosition,
+            animateScale = orig.animateScale,
+            animateRotation = orig.animateRotation,
+            animateColor = orig.animateColor,
+            transition = orig.transition,
+        };
+
         public static PAAnimation Parse(JSONNode jn)
         {
-            var markers = new List<Marker>();
-            for (int i = 0; i < jn["markers"].Count; i++)
-                markers.Add(Marker.Parse(jn["markers"][i]));
-
-            var list = new List<AnimationObject>();
-            for (int i = 0; i < jn["objs"].Count; i++)
-            {
-                var animationObject = new AnimationObject();
-
-                for (int j = 0; j < jn["objs"][i]["bins"].Count; j++)
-                {
-                    var animationBin = new AnimationBin();
-                    animationBin.name = jn["objs"][i]["bins"][j]["name"];
-                    animationBin.transformType = Parser.TryParse(jn["objs"][i]["bins"][j]["type"], AnimationBin.TransformType.Null);
-                    var defaultValueCount = jn["objs"][i]["bins"][j]["defval"].AsInt;
-                    for (int k = 0; k < jn["objs"][i]["bins"][j]["kf"].Count; k++)
-                        animationBin.events.Add(EventKeyframe.Parse(jn["objs"][i]["bins"][j]["kf"][k], 0, defaultValueCount));
-                }
-
-                list.Add(animationObject);
-            }
-
-            return new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat, list, markers, Parser.TryParse(jn["ref_type"], AnimationReferenceType.Player))
+            var animation = new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat)
             {
                 id = jn["id"] ?? LSText.randomNumString(16),
             };
+
+            for (int i = 0; i < jn["markers"].Count; i++)
+                animation.markers.Add(Marker.Parse(jn["markers"][i]));
+
+            if (!string.IsNullOrEmpty(jn["ref_id"]))
+                animation.ReferenceID = jn["ref_id"];
+
+            if (jn["tr"] != null)
+                animation.transition = jn["tr"].AsBool;
+
+            if (jn["anim"]["pos"] != null)
+                animation.animatePosition = jn["anim"]["pos"].AsBool;
+            if (jn["anim"]["sca"] != null)
+                animation.animateScale = jn["anim"]["sca"].AsBool;
+            if (jn["anim"]["rot"] != null)
+                animation.animateRotation = jn["anim"]["rot"].AsBool;
+            if (jn["anim"]["col"] != null)
+                animation.animateColor = jn["anim"]["col"].AsBool;
+
+            if (jn["pos"] != null)
+            {
+                animation.positionKeyframes.Clear();
+                for (int i = 0; i < jn["pos"].Count; i++)
+                    animation.positionKeyframes.Add(EventKeyframe.Parse(jn["pos"][i], 0, 3));
+            }
+            if (jn["sca"] != null)
+            {
+                animation.scaleKeyframes.Clear();
+                for (int i = 0; i < jn["sca"].Count; i++)
+                    animation.scaleKeyframes.Add(EventKeyframe.Parse(jn["sca"][i], 0, 2));
+            }
+            if (jn["rot"] != null)
+            {
+                animation.rotationKeyframes.Clear();
+                for (int i = 0; i < jn["rot"].Count; i++)
+                    animation.rotationKeyframes.Add(EventKeyframe.Parse(jn["rot"][i], 0, 1));
+            }
+            if (jn["col"] != null)
+            {
+                animation.colorKeyframes.Clear();
+                for (int i = 0; i < jn["col"].Count; i++)
+                    animation.colorKeyframes.Add(EventKeyframe.Parse(jn["col"][i], 0, 5));
+            }
+
+            return animation;
         }
 
         public JSONNode ToJSON()
@@ -117,143 +201,33 @@ namespace BetterLegacy.Core.Data
             jn["id"] = id;
             jn["name"] = name;
             jn["st"] = StartTime.ToString();
-            jn["ref_type"] = animationReferenceType.ToString();
             for (int i = 0; i < markers.Count; i++)
                 jn["markers"][i] = markers[i].ToJSON();
 
-            for (int i = 0; i < objects.Count; i++)
-            {
-                for (int j = 0; j < objects[i].animationBins.Count; j++)
-                {
-                    jn["objs"][i]["bins"][j]["name"] = objects[i].animationBins[j].name;
-                    jn["objs"][i]["bins"][j]["type"] = objects[i].animationBins[j].transformType.ToString();
-                    jn["objs"][i]["bins"][j]["defval"] = objects[i].animationBins[j].events[0].eventValues.Length;
+            if (!string.IsNullOrEmpty(ReferenceID))
+                jn["ref_id"] = ReferenceID;
 
-                    for (int k = 0; k < objects[i].animationBins[j].events.Count; k++)
-                        jn["objs"][i]["bins"][j]["kf"][k] = objects[i].animationBins[j].events[k].ToJSON();
-                }
-            }
+            if (!animatePosition)
+                jn["anim"]["pos"] = animatePosition;
+            if (!animateScale)
+                jn["anim"]["sca"] = animateScale;
+            if (!animateRotation)
+                jn["anim"]["rot"] = animateRotation;
+            if (animateColor)
+                jn["anim"]["col"] = animateColor;
+
+            for (int i = 0; i < positionKeyframes.Count; i++)
+                jn["pos"][i] = (positionKeyframes[i] as EventKeyframe).ToJSON();
+            for (int i = 0; i < scaleKeyframes.Count; i++)
+                jn["sca"][i] = (scaleKeyframes[i] as EventKeyframe).ToJSON();
+            for (int i = 0; i < rotationKeyframes.Count; i++)
+                jn["rot"][i] = (rotationKeyframes[i] as EventKeyframe).ToJSON();
+            for (int i = 0; i < colorKeyframes.Count; i++)
+                jn["col"][i] = (colorKeyframes[i] as EventKeyframe).ToJSON();
 
             return jn;
         }
 
-        public RTAnimation ToRTAnimation(object reference)
-        {
-            switch (animationReferenceType)
-            {
-                case AnimationReferenceType.Player:
-                    {
-                        if (reference is not CustomPlayer customPlayer || !customPlayer.Player)
-                            break;
-
-                        var animation = new RTAnimation($"PA Animation [ {name} ]");
-                        animation.animationHandlers = new List<AnimationHandlerBase>();
-                        for (int i = 0; i < objects.Count; i++)
-                        {
-                            var animationObject = objects[i];
-                            switch (animationObject.ReferenceID)
-                            {
-                                case "HEAD":
-                                    {
-                                        for (int j = 0; j < animationObject.animationBins.Count; j++)
-                                        {
-                                            var animationBin = animationObject.animationBins[j];
-
-                                            switch (animationBin.transformType)
-                                            {
-                                                case AnimationBin.TransformType.Position:
-                                                    {
-                                                        var sequence = Updater.levelProcessor.converter.GetVector3Sequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
-                                                        animation.animationHandlers.Add(new AnimationHandler<Vector3>(sequence, vector3 => customPlayer.Player.head.gameObject.transform.localPosition = vector3));
-
-                                                        break;
-                                                    }
-                                                case AnimationBin.TransformType.Scale:
-                                                    {
-                                                        var sequence = Updater.levelProcessor.converter.GetVector2Sequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), new Vector2Keyframe(0f, Vector2.one, Ease.Linear));
-                                                        animation.animationHandlers.Add(new AnimationHandler<Vector2>(sequence, vector2 => customPlayer.Player.head.gameObject.transform.localScale = new Vector3(vector2.x, vector2.y, 1f)));
-
-                                                        break;
-                                                    }
-                                                case AnimationBin.TransformType.Rotation:
-                                                    {
-                                                        var sequence = Updater.levelProcessor.converter.GetFloatSequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), 0, new FloatKeyframe(0f, 0f, Ease.Linear), null, false);
-                                                        animation.animationHandlers.Add(new AnimationHandler<float>(sequence, x => customPlayer.Player.head.gameObject.transform.localRotation = Quaternion.Euler(0f, 0f, x)));
-
-                                                        break;
-                                                    }
-                                            }
-                                        }
-
-                                        break;
-                                    }
-                            }
-                        }
-
-                        return animation;
-                    }
-            }
-
-            return null;
-        }
-
         #endregion
-
-        #region Sub Types
-
-        public class AnimationObject
-        {
-            /// <summary>
-            /// ID used for comparing objects with their associated animations.
-            /// </summary>
-            public string ReferenceID { get; set; }
-            public List<AnimationBin> animationBins = new List<AnimationBin>();
-        }
-
-        public class AnimationBin
-        {
-            public string name;
-            public List<EventKeyframe> events = new List<EventKeyframe>();
-            public TransformType transformType;
-
-            public enum TransformType
-            {
-                Null,
-                Position,
-                Scale,
-                Rotation,
-                Color
-            }
-        }
-
-        /// <summary>
-        /// What type of object should the animation be applied to.
-        /// </summary>
-        public enum AnimationReferenceType
-        {
-            /// <summary>
-            /// Applies animation to players.
-            /// </summary>
-            Player,
-            /// <summary>
-            /// Applies animation to <see cref="BeatmapObject"/>.
-            /// </summary>
-            BeatmapObject,
-            /// <summary>
-            /// Applies animation to <see cref="BackgroundObject"/>.
-            /// </summary>
-            BackgroundObject,
-            /// <summary>
-            /// Applies animation to the game timeline.
-            /// </summary>
-            Timeline,
-        }
-
-        #endregion
-
-        public static Dictionary<string, string[]> DefaultBinNames { get; set; } = new Dictionary<string, string[]>
-        {
-            { "Default", new string[] { "Position", "Scale", "Rotation" } }
-        };
     }
 }
