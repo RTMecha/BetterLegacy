@@ -225,7 +225,7 @@ namespace BetterLegacy.Patchers
                 CoreHelper.LogError($"Could not destroy the interface.\n{ex}");
             }
 
-            RTEditor.Init(__instance);
+            RTEditor.Init();
 
             __instance.hasLoadedLevel = false;
             __instance.loading = false;
@@ -869,7 +869,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderParentSearchListPrefix()
         {
-            RTEditor.inst.RefreshParentSearch(Instance, ObjectEditor.inst.CurrentSelection);
+            RTEditor.inst.RefreshParentSearch(ObjectEditor.inst.CurrentSelection);
             return false;
         }
 
@@ -1103,7 +1103,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetTimelineTimePrefix(ref float __result, float __0)
         {
-            __result = RTEditor.inst.GetTimelineTime(__0);
+            __result = RTEditor.inst.GetTimelineTime() + __0;
             return false;
         }
 
