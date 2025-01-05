@@ -63,7 +63,6 @@ namespace BetterLegacy.Core.Animation
                     if (anim.interpolateOnComplete)
                         anim.Interpolate(localTime);
 
-                    anim.completed = true;
                     anim.Completed();
                 }
             }
