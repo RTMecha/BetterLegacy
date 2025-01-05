@@ -88,6 +88,7 @@ namespace BetterLegacy.Configs
         public Setting<KeyCode> BinControlKey { get; set; }
         public Setting<BinSliderControlActive> BinControlActiveBehavior { get; set; }
         public Setting<float> BinControlScrollAmount { get; set; }
+        public Setting<bool> BinControlsPlaysSounds { get; set; }
         public Setting<float> KeyframeEndLengthOffset { get; set; }
         public Setting<float> TimelineCollapseLength { get; set; }
         public Setting<bool> TimelineObjectPrefabTypeIcon { get; set; }
@@ -1290,6 +1291,7 @@ namespace BetterLegacy.Configs
             BinControlKey = BindEnum(this, "Timeline", "Bin Control Key", KeyCode.Tab, "The key to be held when you want to enable bin controls.");
             BinControlActiveBehavior = BindEnum(this, "Timeline", "Bin Control Active Behavior", BinSliderControlActive.KeyToggled, "How the visibility of the Bin Slider should be treated.");
             BinControlScrollAmount = Bind(this, "Timeline", "Bin Control Scroll Amount", 0.02f, "How much the bins should scroll.");
+            BinControlsPlaysSounds = Bind(this, "Timeline", "Bin Controls Plays Sounds", true, "If using the bin controls can play sounds.");
             KeyframeEndLengthOffset = Bind(this, "Timeline", "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
             TimelineCollapseLength = Bind(this, "Timeline", "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
             TimelineObjectPrefabTypeIcon = Bind(this, "Timeline", "Timeline Object Prefab Type Icon", true, "Shows the object's prefab type's icon.");
@@ -2734,7 +2736,7 @@ namespace BetterLegacy.Configs
         void AutosaveChanged()
         {
             if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
-                RTEditor.inst.SetAutoSave();
+                RTEditor.inst.SetAutosave();
         }
 
         void EditorThemeChanged()
