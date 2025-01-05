@@ -1739,10 +1739,15 @@ namespace BetterLegacy.Editor.Managers
 
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text =
-                                    (ui.Name == "Rotation" ? customObject.rotation : ui.Name == "Depth" ? customObject.depth :
-                                    ui.Name == "Opacity" ? customObject.opacity : ui.Name == "Position Offset" ? customObject.positionOffset :
-                                    ui.Name == "Scale Offset" ? customObject.scaleOffset : customObject.rotationOffset).ToString();
+                                inputFieldStorage.inputField.text = (ui.Name switch
+                                {
+                                    "Rotation" => customObject.rotation,
+                                    "Depth" => customObject.depth,
+                                    "Opacity" => customObject.opacity,
+                                    "Position Offset" => customObject.positionOffset,
+                                    "Scale Offset" => customObject.scaleOffset,
+                                    _ => customObject.rotationOffset,
+                                }).ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
