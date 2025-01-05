@@ -1,16 +1,18 @@
 ﻿using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using LSFunctions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SimpleJSON;
 
 namespace BetterLegacy.Core.Animation
 {
     /// <summary>
     /// Animation wrapper for handling multiple movements.
     /// </summary>
-    public class RTAnimation
+    public class RTAnimation : Exists
     {
         public RTAnimation(string name)
         {
@@ -26,11 +28,24 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         public void Update()
         {
-            Time += (GlobalTime - startTime - timeOffset) * speed;
+            Time += (GlobalTime - startTime - timeOffset) * speed * globalSpeed;
 
             timeOffset = GlobalTime - startTime;
 
-            if (animationHandlers == null || animationHandlers.Count < 1)
+            if (events != null && !events.Empty())
+            {
+                for (int i = 0; i < events.Count; i++)
+                {
+                    var animEvent = events[i];
+                    if (time > animEvent.time && !animEvent.completed)
+                    {
+                        animEvent.completed = true;
+                        animEvent.Run();
+                    }
+                }
+            }
+
+            if (animationHandlers == null || animationHandlers.Empty())
                 return;
 
             for (int i = 0; i < animationHandlers.Count; i++)
@@ -113,6 +128,11 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         public List<AnimationHandlerBase> animationHandlers = new List<AnimationHandlerBase>();
 
+        /// <summary>
+        /// A list of events within the animation.
+        /// </summary>
+        public List<AnimationEvent> events = new List<AnimationEvent>();
+
         #endregion
 
         #region Timing
@@ -159,6 +179,8 @@ namespace BetterLegacy.Core.Animation
         /// The current speed of the animation. Applied per frame the animation is run on, so if you want to animate it you will need to create a separate sequence for it.
         /// </summary>
         public float speed = 1f;
+
+        public float globalSpeed = 1f;
 
         /// <summary>
         /// Total length of all sequences in the animation.
@@ -286,7 +308,12 @@ namespace BetterLegacy.Core.Animation
         /// <summary>
         /// If all sequences have completed.
         /// </summary>
-        public bool Completed => animationHandlers.All(x => x.completed);
+        public bool Completed => animationHandlers.All(x => x.completed) && (events == null || events.Empty() || events.All(x => x.completed));
+
+        /// <summary>
+        /// ID of the command to run when the animation is completed.
+        /// </summary>
+        public string CompletionID { get; set; }
 
         #endregion
 
@@ -298,16 +325,18 @@ namespace BetterLegacy.Core.Animation
     /// </summary>
     public class AnimationHandler<T> : AnimationHandlerBase
     {
-        public AnimationHandler(Sequence<T> sequence, Action<T> interpolation, Action onComplete = null) : base(onComplete)
+        public AnimationHandler(Sequence<T> sequence, Action<T> interpolation, Action onComplete = null, bool interpolateOnComplete = false) : base(onComplete)
         {
             this.sequence = sequence;
             this.interpolation = interpolation;
+            this.interpolateOnComplete = interpolateOnComplete;
         }
 
-        public AnimationHandler(List<IKeyframe<T>> keyframes, Action<T> interpolation, Action onComplete = null) : base(onComplete)
+        public AnimationHandler(List<IKeyframe<T>> keyframes, Action<T> interpolation, Action onComplete = null, bool interpolateOnComplete = false) : base(onComplete)
         {
             sequence = new Sequence<T>(keyframes);
             this.interpolation = interpolation;
+            this.interpolateOnComplete = interpolateOnComplete;
         }
 
         /// <summary>
@@ -320,15 +349,8 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         public Action<T> interpolation;
 
-        /// <summary>
-        /// Interpolates the animation sequence.
-        /// </summary>
-        /// <param name="t">Time scale.</param>
         public override void Interpolate(float t) => interpolation?.Invoke(sequence.Interpolate(t));
 
-        /// <summary>
-        /// Total length of the animation handler.
-        /// </summary>
         public override float Length => sequence.keyframes.Max(x => x.Time);
     }
 
@@ -371,7 +393,44 @@ namespace BetterLegacy.Core.Animation
             onComplete?.Invoke();
         }
 
+        /// <summary>
+        /// Interpolates the animation sequence.
+        /// </summary>
+        /// <param name="t">Time scale.</param>
         public abstract void Interpolate(float t);
+
+        /// <summary>
+        /// Total length of the animation handler.
+        /// </summary>
         public abstract float Length { get; }
+    }
+
+    /// <summary>
+    /// Animation event. Used for running specific actions after a perioud of time during an animation.
+    /// </summary>
+    public class AnimationEvent
+    {
+        public AnimationEvent(float time, Action func)
+        {
+            this.time = time;
+            this.func = func;
+        }
+
+        /// <summary>
+        /// Time of the event.
+        /// </summary>
+        public float time;
+
+        /// <summary>
+        /// Function to run.
+        /// </summary>
+        readonly Action func;
+
+        /// <summary>
+        /// If the event has completed.
+        /// </summary>
+        public bool completed;
+
+        public void Run() => func?.Invoke();
     }
 }
