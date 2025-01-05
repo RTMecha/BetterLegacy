@@ -105,6 +105,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Ease = ease;
         }
 
+        public void SetValue(float value)
+        {
+            Value = value;
+        }
+
         public float Interpolate(IKeyframe<float> other, float time)
         {
             var secondValue = other is DynamicFloatKeyframe keyframe ? keyframe.Value : other is StaticFloatKeyframe staticKeyframe ? staticKeyframe.Value : ((FloatKeyframe)other).Value;

@@ -41,6 +41,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetEase(EaseFunction ease) => Ease = ease;
 
+        public void SetValue(Color value) { }
+
         public Color Interpolate(IKeyframe<Color> other, float time)
         {
             var second = (ThemeKeyframe)other;

@@ -36,6 +36,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Ease = ease;
         }
 
+        public void SetValue(Vector2 value)
+        {
+            Value = value;
+        }
+
         public Vector2 Interpolate(IKeyframe<Vector2> other, float time)
         {
             var second = (Vector2Keyframe)other;
