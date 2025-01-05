@@ -2646,7 +2646,7 @@ namespace BetterLegacy.Editor.Managers
             multiSyncGLG.spacing = new Vector2(8f, 8f);
             multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-            var oldName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, oldNameStr.ToLower());
+            var oldName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(replaceName.transform, oldNameStr.ToLower());
 
             Destroy(oldName.GetComponent<EventTrigger>());
             var oldNameIF = oldName.GetComponent<InputField>();
@@ -2667,7 +2667,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddInputField(oldNameIF);
 
-            var newName = RTEditor.inst.defaultIF.Duplicate(replaceName.transform, newNameStr.ToLower());
+            var newName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(replaceName.transform, newNameStr.ToLower());
 
             Destroy(newName.GetComponent<EventTrigger>());
             var newNameIF = newName.GetComponent<InputField>();

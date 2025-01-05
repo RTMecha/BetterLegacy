@@ -192,7 +192,7 @@ namespace BetterLegacy.Editor.Managers
             tagPrefabLayout.childControlWidth = false;
             tagPrefabLayout.childForceExpandWidth = false;
 
-            var input = RTEditor.inst.defaultIF.Duplicate(colorPrefab.transform, "Input");
+            var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(colorPrefab.transform, "Input");
             input.transform.localScale = Vector3.one;
             input.transform.AsRT().sizeDelta = new Vector2(136f, 32f);
             var text = input.transform.Find("Text").GetComponent<Text>();

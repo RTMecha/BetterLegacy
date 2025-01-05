@@ -400,7 +400,7 @@ namespace BetterLegacy.Editor.Managers
                     CoreHelper.LogError($"Why name label {ex}");
                 }
 
-                var prefabName = RTEditor.inst.defaultIF.Duplicate(prefabSelectorRight, "name");
+                var prefabName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(prefabSelectorRight, "name");
                 prefabName.transform.localScale = Vector3.one;
 
                 var prefabNameInputField = prefabName.GetComponent<InputField>();
@@ -547,8 +547,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(offsetSlider.image, ThemeGroup.Slider_2_Handle, true);
                 EditorThemeManager.AddInputField(prefabEditorData.Find("offset/input").GetComponent<InputField>());
 
-                var prefabType = RTEditor.inst.timelineBar.transform.Find("event").gameObject
-                    .Duplicate(prefabEditorData.Find("type"), "Show Type Editor");
+                var prefabType = EditorPrefabHolder.Instance.Function1Button.gameObject.Duplicate(prefabEditorData.Find("type"), "Show Type Editor");
 
                 Destroy(prefabEditorData.Find("type/types").gameObject);
 
@@ -1606,7 +1605,7 @@ namespace BetterLegacy.Editor.Managers
 
             var iconImage = icon.AddComponent<Image>();
 
-            var nameGO = RTEditor.inst.defaultIF.Duplicate(prefabTypePrefab.transform, "Name");
+            var nameGO = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(prefabTypePrefab.transform, "Name");
             nameGO.transform.localScale = Vector3.one;
             var nameRT = nameGO.GetComponent<RectTransform>();
             nameRT.sizeDelta = new Vector2(132f, 32f);
@@ -1617,7 +1616,7 @@ namespace BetterLegacy.Editor.Managers
 
             nameTextRT.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
 
-            var colorGO = RTEditor.inst.defaultIF.Duplicate(prefabTypePrefab.transform, "Color");
+            var colorGO = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(prefabTypePrefab.transform, "Color");
             colorGO.transform.localScale = Vector3.one;
             var colorRT = colorGO.GetComponent<RectTransform>();
             colorRT.sizeDelta = new Vector2(90f, 32f);
@@ -2145,7 +2144,7 @@ namespace BetterLegacy.Editor.Managers
             var nameTextBase1 = Creator.NewUIObject("Text Base 1", editorDialog.transform);
             nameTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
-            var name = RTEditor.inst.defaultIF.Duplicate(nameTextBase1.transform);
+            var name = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(nameTextBase1.transform);
             name.transform.localScale = Vector3.one;
             UIManager.SetRectTransform(name.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(740f, 32f));
 
@@ -2173,7 +2172,7 @@ namespace BetterLegacy.Editor.Managers
             var descriptionTextBase1 = Creator.NewUIObject("Text Base 1", editorDialog.transform);
             descriptionTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 300f);
 
-            var description = RTEditor.inst.defaultIF.Duplicate(descriptionTextBase1.transform);
+            var description = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(descriptionTextBase1.transform);
             description.transform.localScale = Vector3.one;
             UIManager.SetRectTransform(description.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(740f, 300f));
 

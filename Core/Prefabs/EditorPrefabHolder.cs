@@ -16,6 +16,8 @@ namespace BetterLegacy.Core.Prefabs
         public Transform PrefabParent { get; set; }
         public GameObject StringInputField { get; set; }
         public GameObject NumberInputField { get; set; }
+        public GameObject DefaultInputField { get; set; }
+
         public GameObject DeleteButton { get; set; }
         public GameObject Function1Button { get; set; }
         public GameObject Function2Button { get; set; }
@@ -32,6 +34,8 @@ namespace BetterLegacy.Core.Prefabs
 
         public GameObject Scrollbar { get; set; }
         public GameObject Slider { get; set; }
+
+        public GameObject Tag { get; set; }
     }
 
     public class ToggleButtonStorage : MonoBehaviour

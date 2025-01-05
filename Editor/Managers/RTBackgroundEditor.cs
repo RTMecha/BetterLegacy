@@ -1237,7 +1237,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var tag in backgroundObject.tags)
             {
                 int index = num;
-                var gameObject = RTEditor.inst.tagPrefab.Duplicate(tagsParent, index.ToString());
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(tagsParent, index.ToString());
                 gameObject.transform.localScale = Vector3.one;
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
                 input.onValueChanged.ClearAll();
@@ -2519,7 +2519,7 @@ namespace BetterLegacy.Editor.Managers
 
             ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(146f, 32f);
 
-            var input = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Input");
+            var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(rectTransform, "Input");
             input.transform.localScale = Vector2.one;
             ((RectTransform)input.transform.Find("Text")).sizeDelta = Vector2.zero;
 
@@ -2546,7 +2546,7 @@ namespace BetterLegacy.Editor.Managers
 
             ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(146f, 32f);
 
-            var input = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Input");
+            var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(rectTransform, "Input");
             input.transform.localScale = Vector2.one;
             ((RectTransform)input.transform).sizeDelta = new Vector2(152f, 32f);
             ((RectTransform)input.transform.Find("Text")).sizeDelta = Vector2.zero;

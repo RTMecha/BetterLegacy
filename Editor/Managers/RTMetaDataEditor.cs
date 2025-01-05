@@ -433,13 +433,13 @@ namespace BetterLegacy.Editor.Managers
             {
                 int index = i;
                 var tag = moddedMetadata.song.tags[i];
-                var gameObject = RTEditor.inst.tagPrefab.Duplicate(parent, index.ToString());
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(parent, index.ToString());
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
                 input.onValueChanged.ClearAll();
                 input.text = tag;
                 input.onValueChanged.AddListener(_val =>
                 {
-                    _val = _val.Replace(" ", "_");
+                    _val = RTString.ReplaceSpace(_val);
                     var oldVal = moddedMetadata.song.tags[index];
                     moddedMetadata.song.tags[index] = _val;
 

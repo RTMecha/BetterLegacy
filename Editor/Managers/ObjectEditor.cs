@@ -3873,7 +3873,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var tag in beatmapObject.tags)
             {
                 int index = num;
-                var gameObject = RTEditor.inst.tagPrefab.Duplicate(tagsParent, index.ToString());
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(tagsParent, index.ToString());
                 gameObject.transform.localScale = Vector3.one;
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
                 input.onValueChanged.ClearAll();

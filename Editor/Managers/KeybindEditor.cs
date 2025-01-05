@@ -470,8 +470,6 @@ namespace BetterLegacy.Editor.Managers
 
                 RTEditor.inst.selectingKey = false;
                 RTEditor.inst.setKey = null;
-
-                RTEditor.inst.onKeySet = null;
             };
 
             var data = Creator.NewUIObject("data", editorDialog);
@@ -819,10 +817,7 @@ namespace BetterLegacy.Editor.Managers
                         RefreshKeybindPopup();
                         Save();
                         text.text = "Set Key";
-                    };
 
-                    RTEditor.inst.onKeySet = () =>
-                    {
                         code.onValueChanged.ClearAll();
                         code.value = (int)key.KeyCode;
                         code.onValueChanged.AddListener(_val =>
@@ -955,9 +950,7 @@ namespace BetterLegacy.Editor.Managers
                             image.enabled = true;
                             image.color = new Color(1f, 1f, 1f, 0.03f);
 
-                            var x = Instantiate(RTEditor.inst.defaultIF);
-                            x.transform.SetParent(bar.transform);
-                            x.transform.localScale = Vector3.one;
+                            var x = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(bar.transform);
                             Destroy(x.GetComponent<HoverTooltip>());
 
                             x.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(366f, 32f);
