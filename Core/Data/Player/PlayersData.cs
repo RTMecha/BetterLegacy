@@ -25,19 +25,14 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
-        /// If the <see cref="Current"/> should be used instead of the <see cref="Main"/>.
-        /// </summary>
-        public static bool LoadLocal => CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.beatmapData.levelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value;
-
-        /// <summary>
         /// If custom models should be used instead of the loaded ones.
         /// </summary>
-        public static bool AllowCustomModels => GameData.IsValid && GameData.Current.beatmapData.levelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value;
+        public static bool AllowCustomModels => GameData.IsValid && GameData.Current.beatmapData.levelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || CoreHelper.InEditor;
 
         /// <summary>
         /// The main <see cref="PlayersData"/> to use for the level.
         /// </summary>
-        public static PlayersData Main => LoadLocal && IsValid ? Current : Global;
+        public static PlayersData Main => AllowCustomModels && IsValid ? Current : Global;
 
         public static bool IsValid => Current;
         public static PlayersData Current { get; set; }
@@ -190,12 +185,15 @@ namespace BetterLegacy.Core.Data.Player
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
-            jn["receive_type"] = ((int)maxBehavior);
+            jn["max"] = ((int)maxBehavior);
             for (int i = 0; i < playerModelsIndex.Count; i++)
                 jn["indexes"][i] = playerModelsIndex[i];
             int index = 0;
             foreach (var keyValuePair in playerModels)
             {
+                if (keyValuePair.Value.IsDefault)
+                    continue;
+                
                 jn["models"][index] = keyValuePair.Value.ToJSON();
                 index++;
             }

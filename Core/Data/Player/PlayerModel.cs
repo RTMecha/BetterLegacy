@@ -60,7 +60,7 @@ namespace BetterLegacy.Core.Data.Player
         public Version Version { get; set; } = LegacyPlugin.ModVersion;
         public bool needsUpdate;
 
-        public bool IsDefault => DefaultModels.Has(x => x.basePart.id == basePart.id);
+        public bool IsDefault { get; set; }
 
         static List<PlayerModel> defaultModels;
         public static List<PlayerModel> DefaultModels
@@ -92,6 +92,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!defaultPlayer)
                 {
                     defaultPlayer = new PlayerModel();
+                    defaultPlayer.IsDefault = true;
                     defaultPlayer.basePart.id = DEFAULT_ID;
                     defaultPlayer.basePart.name = "Regular";
                 }
@@ -110,6 +111,7 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     circlePlayer = new PlayerModel();
                     var circle = new Shape("Circle", 1, 0);
+                    circlePlayer.IsDefault = true;
                     circlePlayer.basePart.id = CIRCLE_ID;
                     circlePlayer.basePart.name = "Circle";
                     circlePlayer.headPart.shape = circle;
@@ -137,6 +139,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!alphaPlayer)
                 {
                     alphaPlayer = new PlayerModel();
+                    alphaPlayer.IsDefault = true;
                     alphaPlayer.basePart.id = ALPHA_ID;
                     alphaPlayer.basePart.name = "Alpha";
                     alphaPlayer.guiPart.active = true;
@@ -167,6 +170,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!betaPlayer)
                 {
                     betaPlayer = new PlayerModel();
+                    betaPlayer.IsDefault = true;
                     betaPlayer.basePart.id = BETA_ID;
                     betaPlayer.basePart.name = "Beta";
                     betaPlayer.boostTailPart.active = true;
@@ -194,6 +198,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (!devPlayer)
                 {
                     devPlayer = new PlayerModel();
+                    devPlayer.IsDefault = true;
                     devPlayer.basePart.id = DEV_ID;
                     devPlayer.basePart.name = "DevPlus";
                     devPlayer.tailBase.mode = TailBase.TailMode.DevPlus;
@@ -2135,16 +2140,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (jn["active"] != null)
                     generic.active = jn["active"].AsBool;
 
-                int s = 0;
-                int so = 0;
-
-                if (!string.IsNullOrEmpty(jn["s"]))
-                    s = jn["s"].AsInt;
-
-                if (!string.IsNullOrEmpty(jn["so"]))
-                    so = jn["so"].AsInt;
-
-                generic.shape = ShapeManager.inst.Shapes2D[s][so];
+                generic.shape = ShapeManager.inst.Shapes2D[jn["s"].AsInt][jn["so"].AsInt];
 
                 if (jn["pos"] != null && !string.IsNullOrEmpty(jn["pos"]["x"]) && !string.IsNullOrEmpty(jn["pos"]["y"]))
                     generic.position = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
@@ -2241,6 +2237,7 @@ namespace BetterLegacy.Core.Data.Player
                 endCustomColor = orig.endCustomColor,
                 startOpacity = orig.startOpacity,
                 endOpacity = orig.endOpacity,
+                positionOffset = orig.positionOffset,
             };
 
             public static Trail Parse(JSONNode jn, PlayerModel playerModel)
@@ -3148,7 +3145,7 @@ namespace BetterLegacy.Core.Data.Player
                 opacity = orig.opacity,
                 Trail = Trail.DeepCopy(playerModelRef, orig.Trail),
                 Particles = Particles.DeepCopy(playerModelRef, orig.Particles),
-                id = newID ? LSFunctions.LSText.randomNumString(16) : orig.id,
+                id = newID ? LSText.randomNumString(16) : orig.id,
                 name = orig.name,
                 depth = orig.depth,
                 parent = orig.parent,
@@ -3166,7 +3163,8 @@ namespace BetterLegacy.Core.Data.Player
                     command = x.command,
                     not = x.not,
                     value = x.value
-                }))
+                })),
+                animations = orig.animations.Select(x => PAAnimation.DeepCopy(x)).ToList(),
             };
 
             public static new CustomObject Parse(JSONNode jn, PlayerModel playerModel)
@@ -3349,6 +3347,12 @@ namespace BetterLegacy.Core.Data.Player
                     visiblity.value = jn["visible"][i]["val"].AsFloat;
                     customObject.visibilitySettings.Add(visiblity);
                 }
+
+                if (jn["anims"] != null)
+                {
+                    for (int i = 0; i < jn["anims"].Count; i++)
+                        customObject.animations.Add(PAAnimation.Parse(jn["anims"][i]));
+                }
                 
                 return customObject;
             }
@@ -3382,7 +3386,8 @@ namespace BetterLegacy.Core.Data.Player
                 jn["particles"] = Particles.ToJSON();
 
                 jn["id"] = id;
-                jn["n"] = name;
+                if (!string.IsNullOrEmpty(name))
+                    jn["n"] = name;
                 jn["d"] = depth.ToString();
                 jn["p"] = parent;
                 if (!string.IsNullOrEmpty(customParent))
@@ -3401,6 +3406,9 @@ namespace BetterLegacy.Core.Data.Player
                     jn["visible"][i]["not"] = visibilitySettings[i].not.ToString();
                     jn["visible"][i]["val"] = visibilitySettings[i].value.ToString();
                 }
+
+                for (int i = 0; i < animations.Count; i++)
+                    jn["anims"][i] = animations[i].ToJSON();
 
                 return jn;
             }
@@ -3436,6 +3444,8 @@ namespace BetterLegacy.Core.Data.Player
                 public string command = "";
                 public float value;
             }
+
+            public List<PAAnimation> animations = new List<PAAnimation>();
         }
     }
 }
