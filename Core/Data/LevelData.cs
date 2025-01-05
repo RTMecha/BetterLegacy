@@ -29,7 +29,7 @@ namespace BetterLegacy.Core.Data
         public Vector2 limitBoostCooldown = new Vector2(0.1f, 0.1f);
         public Vector2 limitBoostMinTime = new Vector2(0.07f, 0.07f);
         public Vector2 limitBoostMaxTime = new Vector2(0.18f, 0.18f);
-        public Vector2 limitHitCooldown = new Vector2(2.5f, 2.5f);
+        public Vector2 limitHitCooldown = new Vector2(0.001f, 2.5f);
 
         public static LevelData Parse(JSONNode jn)
         {
