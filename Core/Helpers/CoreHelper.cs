@@ -556,6 +556,15 @@ namespace BetterLegacy.Core.Helpers
             return Color.white - invertedColorSum / colors.Count;
         }
 
+        public static Color MixColors(params Color[] colors)
+        {
+            var invertedColorSum = Color.black;
+            foreach (var color in colors)
+                invertedColorSum += Color.white - color;
+
+            return Color.white - invertedColorSum / colors.Length;
+        }
+
         public static bool ColorMatch(Color a, Color b, float range, bool alpha = false)
             => alpha ? a.r < b.r + range && a.r > b.r - range && a.g < b.g + range && a.g > b.g - range && a.b < b.b + range && a.b > b.b - range && a.a < b.a + range && a.a > b.a - range :
                 a.r < b.r + range && a.r > b.r - range && a.g < b.g + range && a.g > b.g - range && a.b < b.b + range && a.b > b.b - range;
