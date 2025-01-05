@@ -22,12 +22,17 @@ namespace BetterLegacy.Core.Animation
 
         public List<RTAnimation> animations = new List<RTAnimation>();
 
+        public float speed = 1f;
+
         void Update()
         {
             for (int i = 0; i < animations.Count; i++)
             {
                 if (animations[i].playing)
+                {
+                    animations[i].globalSpeed = speed;
                     animations[i].Update();
+                }
             }
         }
 
