@@ -15,6 +15,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data.Player;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -214,185 +215,169 @@ namespace BetterLegacy.Editor.Managers
 
         public static string NoEventLabel => "??? (No event yet)";
 
-        public PAAnimation testAnimation;
-
         public PAAnimation CurrentAnimation { get; set; }
 
         public void Test()
         {
-            if (testAnimation == null)
-                testAnimation = new PAAnimation("Test", "Test description", 0f, new List<PAAnimation.AnimationObject>
-                {
-                    new PAAnimation.AnimationObject
-                    {
-                        animationBins = new List<PAAnimation.AnimationBin>
-                        {
-                            new PAAnimation.AnimationBin
-                            {
-                                name = "Test bin",
-                                events = new List<EventKeyframe>
-                                {
-                                    new EventKeyframe(0f, new float[] { 0f, 0f, 0f }, new float[] { 0f, 0f, 0f }),
-                                }, // Test bin
-                            },
-                            new PAAnimation.AnimationBin
-                            {
-                                name = "Scale Test",
-                                events = new List<EventKeyframe>
-                                {
-                                    new EventKeyframe(0f, new float[] { 0f, 0f, 0f }, new float[] { 0f, 0f, 0f }),
-                                }, // Scale Test
-                            },
-                        }
-                    }
-                },
-                new List<Marker>
-                {
-                    new Marker("Test marker", "Test description for a marker", 0, 2f)
-                });
-            RenderEditor(testAnimation);
+            var boostAnimation = new PAAnimation("Test", "Test description");
+            boostAnimation.ReferenceID = "boost";
+            boostAnimation.positionKeyframes.Add(new EventKeyframe(0.3f, new float[] { 10f, 0f, 0f }, "OutSine"));
+            boostAnimation.positionKeyframes.Add(new EventKeyframe(0.4f, new float[] { 0f, 0f, 0f }, "InSine"));
+
+            var idleAnimation = new PAAnimation("Test", "Test description");
+            idleAnimation.ReferenceID = "idle";
+            idleAnimation.positionKeyframes.Add(new EventKeyframe(1f, new float[] { 3f, 0f, 0f }, "InOutSine"));
+            idleAnimation.positionKeyframes.Add(new EventKeyframe(2f, new float[] { 0f, 0f, 0f }, "InOutSine"));
+
+            if (PlayerManager.Players.TryGetAt(0, out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.PlayerModel && customPlayer.Player.Model.customObjects.TryGetAt(0, out PlayerModel.CustomObject customObject))
+            {
+                customObject.animations.Clear();
+                customObject.animations.Add(boostAnimation);
+                customObject.animations.Add(idleAnimation);
+                customPlayer.Player.UpdateModel();
+            }
         }
 
         public void RenderEditor(PAAnimation animation)
         {
-            CurrentAnimation = animation;
-            var id = content.Find("id/text").GetComponent<Text>();
-            id.text = $"ID: {animation.id}";
+            //CurrentAnimation = animation;
+            //var id = content.Find("id/text").GetComponent<Text>();
+            //id.text = $"ID: {animation.id}";
 
-            var clickable = content.Find("id").gameObject.GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
+            //var clickable = content.Find("id").gameObject.GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
 
-            clickable.onClick = pointerEventData =>
-            {
-                EditorManager.inst.DisplayNotification($"Copied ID from {animation.name}!", 2f, EditorManager.NotificationType.Success);
-                LSText.CopyToClipboard(animation.id);
-            };
+            //clickable.onClick = pointerEventData =>
+            //{
+            //    EditorManager.inst.DisplayNotification($"Copied ID from {animation.name}!", 2f, EditorManager.NotificationType.Success);
+            //    LSText.CopyToClipboard(animation.id);
+            //};
 
-            var name = content.Find("name/name").GetComponent<InputField>();
-            name.onValueChanged.ClearAll();
-            name.text = animation.name;
-            name.onValueChanged.AddListener(_val => { animation.name = _val; });
+            //var name = content.Find("name/name").GetComponent<InputField>();
+            //name.onValueChanged.ClearAll();
+            //name.text = animation.name;
+            //name.onValueChanged.AddListener(_val => { animation.name = _val; });
             
-            var desc = content.Find("desc/name").GetComponent<InputField>();
-            desc.onValueChanged.ClearAll();
-            desc.text = animation.desc;
-            desc.onValueChanged.AddListener(_val => { animation.desc = _val; });
+            //var desc = content.Find("desc/name").GetComponent<InputField>();
+            //desc.onValueChanged.ClearAll();
+            //desc.text = animation.desc;
+            //desc.onValueChanged.AddListener(_val => { animation.desc = _val; });
             
-            var time = content.Find("time/time").GetComponent<InputField>();
-            time.onValueChanged.ClearAll();
-            time.text = animation.StartTime.ToString();
-            time.onValueChanged.AddListener(_val =>
-            {
-                if (float.TryParse(_val, out float result))
-                    animation.StartTime = result;
-            });
+            //var time = content.Find("time/time").GetComponent<InputField>();
+            //time.onValueChanged.ClearAll();
+            //time.text = animation.StartTime.ToString();
+            //time.onValueChanged.AddListener(_val =>
+            //{
+            //    if (float.TryParse(_val, out float result))
+            //        animation.StartTime = result;
+            //});
 
-            TriggerHelper.IncreaseDecreaseButtons(time, max: float.MaxValue, t: content.Find("time"));
-            TriggerHelper.AddEventTriggers(content.Find("time").gameObject, TriggerHelper.ScrollDelta(time, max: float.MaxValue));
+            //TriggerHelper.IncreaseDecreaseButtons(time, max: float.MaxValue, t: content.Find("time"));
+            //TriggerHelper.AddEventTriggers(content.Find("time").gameObject, TriggerHelper.ScrollDelta(time, max: float.MaxValue));
 
-            var layers = content.Find("editor/layers").GetComponent<InputField>();
-            var layersImage = content.Find("editor/layers").GetComponent<Image>();
+            //var layers = content.Find("editor/layers").GetComponent<InputField>();
+            //var layersImage = content.Find("editor/layers").GetComponent<Image>();
 
-            layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
-            layers.onValueChanged.ClearAll();
-            layers.text = Layer.ToString();
-            layers.onValueChanged.AddListener(_val =>
-            {
-                if (int.TryParse(_val, out int result))
-                {
-                    Layer = result;
-                    layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
+            //layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
+            //layers.onValueChanged.ClearAll();
+            //layers.text = Layer.ToString();
+            //layers.onValueChanged.AddListener(_val =>
+            //{
+            //    if (int.TryParse(_val, out int result))
+            //    {
+            //        Layer = result;
+            //        layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
 
-                    RenderBins(animation);
-                }
-            });
+            //        RenderBins(animation);
+            //    }
+            //});
 
-            TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, max: int.MaxValue));
+            //TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, max: int.MaxValue));
 
-            RenderBins(animation);
-            RenderMarkers(animation);
-            ResizeKeyframeTimeline(animation);
+            //RenderBins(animation);
+            //RenderMarkers(animation);
+            //ResizeKeyframeTimeline(animation);
         }
 
         public void RenderBins(PAAnimation animation)
         {
-            var layer = Layer + 1;
+            //var layer = Layer + 1;
 
-            for (int i = 0; i < Mathf.Clamp(animation.objects[CurrentObject].animationBins.Count, 4, int.MaxValue); i++)
-            {
-                var child = i % 4;
-                var num = Mathf.Clamp(layer * 4, 0, layer * 4);
+            //for (int i = 0; i < Mathf.Clamp(animation.objects[CurrentObject].animationBins.Count, 4, int.MaxValue); i++)
+            //{
+            //    var child = i % 4;
+            //    var num = Mathf.Clamp(layer * 4, 0, layer * 4);
 
-                if (child >= timelineLeft.childCount)
-                    return;
+            //    if (child >= timelineLeft.childCount)
+            //        return;
 
-                var text = timelineLeft.GetChild(child).GetComponent<Text>();
+            //    var text = timelineLeft.GetChild(child).GetComponent<Text>();
 
-                if (i >= num - 4 && i < num && i < animation.objects[CurrentObject].animationBins.Count)
-                    text.text = animation.objects[CurrentObject].animationBins[i].name;
-                else if (i < num)
-                    text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
-            }
+            //    if (i >= num - 4 && i < num && i < animation.objects[CurrentObject].animationBins.Count)
+            //        text.text = animation.objects[CurrentObject].animationBins[i].name;
+            //    else if (i < num)
+            //        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
+            //}
         }
 
         public void RenderMarkers(PAAnimation animation)
         {
-            var dottedLine = ObjEditor.inst.KeyframeEndPrefab.GetComponent<Image>().sprite;
-            LSHelpers.DeleteChildren(markers);
+            //var dottedLine = ObjEditor.inst.KeyframeEndPrefab.GetComponent<Image>().sprite;
+            //LSHelpers.DeleteChildren(markers);
 
-            timelineMarkers.Clear();
+            //timelineMarkers.Clear();
 
-            for (int i = 0; i < animation.markers.Count; i++)
-            {
-                var marker = (Marker)animation.markers[i];
+            //for (int i = 0; i < animation.markers.Count; i++)
+            //{
+            //    var marker = (Marker)animation.markers[i];
 
-                if (marker.time < 0f)
-                    continue;
+            //    if (marker.time < 0f)
+            //        continue;
 
-                int index = i;
+            //    int index = i;
 
-                var gameObject = MarkerEditor.inst.markerPrefab.Duplicate(markers, $"Marker {index}");
-                var pos = marker.time;
-                UIManager.SetRectTransform(gameObject.transform.AsRT(), new Vector2(0f, -12f), new Vector2(pos, 1f), new Vector2(pos, 1f), new Vector2(0.5f, 1f), new Vector2(12f, 12f));
+            //    var gameObject = MarkerEditor.inst.markerPrefab.Duplicate(markers, $"Marker {index}");
+            //    var pos = marker.time;
+            //    UIManager.SetRectTransform(gameObject.transform.AsRT(), new Vector2(0f, -12f), new Vector2(pos, 1f), new Vector2(pos, 1f), new Vector2(0.5f, 1f), new Vector2(12f, 12f));
 
-                var timelineMarker = new TimelineMarker
-                {
-                    GameObject = gameObject,
-                    Handle = gameObject.GetComponent<Image>(),
-                    Line = gameObject.transform.Find("line").GetComponent<Image>(),
-                    Marker = marker,
-                    Index = index,
-                    RectTransform = gameObject.transform.AsRT(),
-                    Text = gameObject.GetComponentInChildren<Text>(),
-                };
+            //    var timelineMarker = new TimelineMarker
+            //    {
+            //        GameObject = gameObject,
+            //        Handle = gameObject.GetComponent<Image>(),
+            //        Line = gameObject.transform.Find("line").GetComponent<Image>(),
+            //        Marker = marker,
+            //        Index = index,
+            //        RectTransform = gameObject.transform.AsRT(),
+            //        Text = gameObject.GetComponentInChildren<Text>(),
+            //    };
 
-                timelineMarker.Handle.color = MarkerEditor.inst.markerColors[Mathf.Clamp(marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
-                timelineMarker.Text.text = marker.name;
-                timelineMarker.Line.rectTransform.sizeDelta = new Vector2(5f, 301f);
-                timelineMarker.Line.sprite = dottedLine;
-                timelineMarker.Line.type = Image.Type.Tiled;
+            //    timelineMarker.Handle.color = MarkerEditor.inst.markerColors[Mathf.Clamp(marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
+            //    timelineMarker.Text.text = marker.name;
+            //    timelineMarker.Line.rectTransform.sizeDelta = new Vector2(5f, 301f);
+            //    timelineMarker.Line.sprite = dottedLine;
+            //    timelineMarker.Line.type = Image.Type.Tiled;
 
-                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
-                {
-                    var pointerEventData = (PointerEventData)eventData;
+            //    TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+            //    {
+            //        var pointerEventData = (PointerEventData)eventData;
 
-                    if (pointerEventData.button == PointerEventData.InputButton.Left)
-                    {
-                        CoreHelper.Log($"Select marker: {index}");
-                        //RTMarkerEditor.inst.SetCurrentMarker(timelineMarker);
-                        //AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
-                    }
+            //        if (pointerEventData.button == PointerEventData.InputButton.Left)
+            //        {
+            //            CoreHelper.Log($"Select marker: {index}");
+            //            //RTMarkerEditor.inst.SetCurrentMarker(timelineMarker);
+            //            //AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+            //        }
 
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                        CoreHelper.Log($"Delete marker: {index}");
-                        //RTMarkerEditor.inst.DeleteMarker(index);
+            //        if (pointerEventData.button == PointerEventData.InputButton.Right)
+            //            CoreHelper.Log($"Delete marker: {index}");
+            //            //RTMarkerEditor.inst.DeleteMarker(index);
 
-                    if (pointerEventData.button == PointerEventData.InputButton.Middle)
-                        CoreHelper.Log($"Set time to marker: {index}");
-                        //AudioManager.inst.SetMusicTime(marker.time);
-                }));
+            //        if (pointerEventData.button == PointerEventData.InputButton.Middle)
+            //            CoreHelper.Log($"Set time to marker: {index}");
+            //            //AudioManager.inst.SetMusicTime(marker.time);
+            //    }));
 
-                timelineMarkers.Add(timelineMarker);
-            }
+            //    timelineMarkers.Add(timelineMarker);
+            //}
         }
 
         /// <summary>
@@ -403,39 +388,39 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="render">If the timeline should render.</param>
         public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
         {
-            float prevZoom = zoomFloat;
-            zoomFloat = Mathf.Clamp01(zoom);
-            zoomVal =
-                LSMath.InterpolateOverCurve(ObjEditor.inst.ZoomCurve, ObjEditor.inst.zoomBounds.x, ObjEditor.inst.zoomBounds.y, zoomFloat);
+            //float prevZoom = zoomFloat;
+            //zoomFloat = Mathf.Clamp01(zoom);
+            //zoomVal =
+            //    LSMath.InterpolateOverCurve(ObjEditor.inst.ZoomCurve, ObjEditor.inst.zoomBounds.x, ObjEditor.inst.zoomBounds.y, zoomFloat);
 
-            if (render)
-            {
-                ResizeKeyframeTimeline(CurrentAnimation);
-                RenderKeyframes(CurrentAnimation);
-            }
+            //if (render)
+            //{
+            //    ResizeKeyframeTimeline(CurrentAnimation);
+            //    RenderKeyframes(CurrentAnimation);
+            //}
 
-            float timelineCalc = timelineSlider.value;
-            if (AudioManager.inst.CurrentAudioSource.clip != null)
-            {
-                float time = CurrentTime;
-                float objectLifeLength = CurrentAnimation.GetLength(CurrentObject) + ObjEditor.inst.ObjectLengthOffset;
+            //float timelineCalc = timelineSlider.value;
+            //if (AudioManager.inst.CurrentAudioSource.clip != null)
+            //{
+            //    float time = CurrentTime;
+            //    float objectLifeLength = CurrentAnimation.GetLength(CurrentObject) + ObjEditor.inst.ObjectLengthOffset;
 
-                timelineCalc = time / objectLifeLength;
-            }
+            //    timelineCalc = time / objectLifeLength;
+            //}
 
-            timelinePosScrollbar.value =
-                position >= 0f ? position : timelineCalc;
+            //timelinePosScrollbar.value =
+            //    position >= 0f ? position : timelineCalc;
 
-            zoomSlider.onValueChanged.ClearAll();
-            zoomSlider.value = zoomFloat;
-            zoomSlider.onValueChanged.AddListener(_val => { Zoom = _val; });
+            //zoomSlider.onValueChanged.ClearAll();
+            //zoomSlider.value = zoomFloat;
+            //zoomSlider.onValueChanged.AddListener(_val => { Zoom = _val; });
 
-            if (log)
-                CoreHelper.Log($"SET ANIMATION ZOOM\n" +
-                    $"ZoomFloat: {zoomFloat}\n" +
-                    $"ZoomVal: {zoomVal}\n" +
-                    $"ZoomBounds: {ObjEditor.inst.zoomBounds}\n" +
-                    $"Timeline Position: {timelinePosScrollbar.value}");
+            //if (log)
+            //    CoreHelper.Log($"SET ANIMATION ZOOM\n" +
+            //        $"ZoomFloat: {zoomFloat}\n" +
+            //        $"ZoomVal: {zoomVal}\n" +
+            //        $"ZoomBounds: {ObjEditor.inst.zoomBounds}\n" +
+            //        $"Timeline Position: {timelinePosScrollbar.value}");
         }
 
         public float TimeTimelineCalc(float _time) => _time * 14f * zoomVal + 5f;
@@ -444,24 +429,24 @@ namespace BetterLegacy.Editor.Managers
         public void ResizeKeyframeTimeline(PAAnimation animation)
         {
             // ObjEditor.inst.ObjectLengthOffset is the offset from the last keyframe. Could allow for more timeline space.
-            float objectLifeLength = animation.GetLength(CurrentObject) + ObjEditor.inst.ObjectLengthOffset;
-            float x = TimeTimelineCalc(objectLifeLength);
+            //float objectLifeLength = animation.GetLength(CurrentObject) + ObjEditor.inst.ObjectLengthOffset;
+            //float x = TimeTimelineCalc(objectLifeLength);
 
-            timeline.Find("Content").AsRT().sizeDelta = new Vector2(x, 0f);
-            timelineGrid.sizeDelta = new Vector2(x, 122f);
+            //timeline.Find("Content").AsRT().sizeDelta = new Vector2(x, 0f);
+            //timelineGrid.sizeDelta = new Vector2(x, 122f);
 
-            timelineSlider.minValue = animation.StartTime + 0.001f;
-            timelineSlider.maxValue = animation.StartTime + objectLifeLength;
+            //timelineSlider.minValue = animation.StartTime + 0.001f;
+            //timelineSlider.maxValue = animation.StartTime + objectLifeLength;
 
-            if (!keyframeEnd)
-            {
-                timelineGrid.DeleteChildren();
-                keyframeEnd = ObjEditor.inst.KeyframeEndPrefab.Duplicate(timelineGrid, "end keyframe");
-            }
+            //if (!keyframeEnd)
+            //{
+            //    timelineGrid.DeleteChildren();
+            //    keyframeEnd = ObjEditor.inst.KeyframeEndPrefab.Duplicate(timelineGrid, "end keyframe");
+            //}
 
-            var rectTransform = keyframeEnd.transform.AsRT();
-            rectTransform.sizeDelta = new Vector2(4f, 122f);
-            rectTransform.anchoredPosition = new Vector2(animation.GetLength(CurrentObject) * Zoom * 14f, 0f);
+            //var rectTransform = keyframeEnd.transform.AsRT();
+            //rectTransform.sizeDelta = new Vector2(4f, 122f);
+            //rectTransform.anchoredPosition = new Vector2(animation.GetLength(CurrentObject) * Zoom * 14f, 0f);
         }
 
         public void RenderKeyframes(PAAnimation animation)
