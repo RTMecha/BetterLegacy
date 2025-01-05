@@ -5,6 +5,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor.Components;
 using DG.Tweening;
 using LSFunctions;
@@ -64,7 +65,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Player model reference.
         /// </summary>
-        public PlayerModel PlayerModel { get; set; }
+        public PlayerModel Model { get; set; }
 
         /// <summary>
         /// Current index of the player in the players list.
@@ -116,7 +117,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// The collider that is currently being used.
         /// </summary>
-        public Collider2D CurrentCollider => PlayerModel != null && PlayerModel.basePart.collisionAccurate ? polygonCollider2D : circleCollider2D;
+        public Collider2D CurrentCollider => Model != null && Model.basePart.collisionAccurate ? polygonCollider2D : circleCollider2D;
 
         public Transform customObjectParent;
 
@@ -388,6 +389,8 @@ namespace BetterLegacy.Core.Components.Player
 
         public bool isSpawning;
 
+        public float time;
+
         /// <summary>
         /// If the player can take damage.
         /// </summary>
@@ -420,7 +423,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanBoost
         {
-            get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
+            get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (Model == null || Model.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -461,6 +464,8 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         #region Internal
+
+        float timeOffset;
 
         float timeHit;
         float timeHitOffset;
@@ -1055,6 +1060,7 @@ namespace BetterLegacy.Core.Components.Player
                 particleSystem = boostParticleSystem,
                 particleSystemRenderer = boostParticleSystemRenderer,
             };
+            playerObjects.Add(this.boost);
 
             var boostTail = boostBase.Duplicate(transform.Find("trail"), "Boost Tail");
             boostTail.layer = 8;
@@ -1072,8 +1078,12 @@ namespace BetterLegacy.Core.Components.Player
                 gameObject = child.gameObject,
                 meshFilter = child.GetComponent<MeshFilter>(),
                 renderer = child.GetComponent<MeshRenderer>(),
+                trailRenderer = boostTail.GetComponentInChildren<TrailRenderer>(),
+                particleSystem = boostTail.GetComponentInChildren<ParticleSystem>(),
+                particleSystemRenderer = boostTail.GetComponentInChildren<ParticleSystemRenderer>(),
                 delayTracker = boostDelayTracker,
             };
+            playerObjects.Add(this.boostTail);
 
             path.Add(new MovementPath(spawnPos, Quaternion.identity, boostTail.transform, showBoostTail));
 
@@ -1120,6 +1130,7 @@ namespace BetterLegacy.Core.Components.Player
                     particleSystemRenderer = tailParticleSystemRenderer,
                 };
                 tailParts.Add(tailPart);
+                playerObjects.Add(tailPart);
                 tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
                 path.Add(new MovementPath(spawnPos, Quaternion.identity, tailBase.transform));
             }
@@ -1169,6 +1180,10 @@ namespace BetterLegacy.Core.Components.Player
 
         void Update()
         {
+            time += Time.time - timeOffset;
+
+            timeOffset = Time.time;
+
             if (UpdateMode == TailUpdateMode.Update)
                 UpdateTailDistance();
 
@@ -1188,16 +1203,16 @@ namespace BetterLegacy.Core.Components.Player
                 }
             }
 
-            if (!PlayerModel)
+            if (!Model)
                 return;
 
-            if (boost.trailRenderer && PlayerModel.boostPart.Trail.emitting)
+            if (boost.trailRenderer && Model.boostPart.Trail.emitting)
             {
                 var tf = boost.gameObject.transform;
                 Vector2 v = new Vector2(tf.localScale.x, tf.localScale.y);
 
-                boost.trailRenderer.startWidth = PlayerModel.boostPart.Trail.startWidth * v.magnitude / 1.414213f;
-                boost.trailRenderer.endWidth = PlayerModel.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
+                boost.trailRenderer.startWidth = Model.boostPart.Trail.startWidth * v.magnitude / 1.414213f;
+                boost.trailRenderer.endWidth = Model.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
             }
 
             if (!Alive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
@@ -1209,7 +1224,7 @@ namespace BetterLegacy.Core.Components.Player
             if (UpdateMode == TailUpdateMode.FixedUpdate)
                 UpdateTailDistance();
 
-            healthText?.SetActive(PlayerModel && PlayerModel.guiPart.active && GameManager.inst.timeline.activeSelf);
+            healthText?.SetActive(Model && Model.guiPart.active && GameManager.inst.timeline.activeSelf);
         }
 
         void LateUpdate()
@@ -1237,11 +1252,11 @@ namespace BetterLegacy.Core.Components.Player
                 }
             }
 
-            if (!PlayerModel || !PlayerModel.FaceControlActive || FaceController == null)
+            if (!Model || !Model.FaceControlActive || FaceController == null)
                 return;
 
             var vector = new Vector2(FaceController.Move.Vector.x, FaceController.Move.Vector.y);
-            var fp = PlayerModel.FacePosition;
+            var fp = Model.FacePosition;
             if (vector.magnitude > 1f)
                 vector = vector.normalized;
 
@@ -1263,15 +1278,15 @@ namespace BetterLegacy.Core.Components.Player
             //anim.speed = pitch;
             animationController.speed = pitch;
 
-            if (!PlayerModel)
+            if (!Model)
                 return;
 
-            var idleSpeed = PlayerModel.basePart.moveSpeed;
-            var boostSpeed = PlayerModel.basePart.boostSpeed;
-            var boostCooldown = PlayerModel.basePart.boostCooldown;
-            var minBoostTime = PlayerModel.basePart.minBoostTime;
-            var maxBoostTime = PlayerModel.basePart.maxBoostTime;
-            var hitCooldown = PlayerModel.basePart.hitCooldown;
+            var idleSpeed = Model.basePart.moveSpeed;
+            var boostSpeed = Model.basePart.boostSpeed;
+            var boostCooldown = Model.basePart.boostCooldown;
+            var minBoostTime = Model.basePart.minBoostTime;
+            var maxBoostTime = Model.basePart.maxBoostTime;
+            var hitCooldown = Model.basePart.hitCooldown;
 
             if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && levelData.limitPlayer)
             {
@@ -1338,7 +1353,7 @@ namespace BetterLegacy.Core.Components.Player
             if (tailMode == 1 || CoreHelper.Paused)
                 return;
 
-            var tailBaseTime = PlayerModel.tailBase.time;
+            var tailBaseTime = Model.tailBase.time;
             float num = Time.deltaTime * (tailBaseTime == 0f ? 200f : tailBaseTime);
             for (int i = 1; i < path.Count; i++)
             {
@@ -1384,15 +1399,15 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTailSizes()
         {
-            if (!PlayerModel)
+            if (!Model)
                 return;
 
-            for (int i = 0; i < PlayerModel.tailParts.Count; i++)
+            for (int i = 0; i < Model.tailParts.Count; i++)
             {
                 if (i >= tailParts.Count)
                     continue;
 
-                var t2 = PlayerModel.tailParts[i].scale;
+                var t2 = Model.tailParts[i].scale;
 
                 tailParts[i].gameObject.transform.localScale = new Vector3(t2.x, t2.y, 1f);
             }
@@ -1400,7 +1415,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTrailLengths()
         {
-            if (!PlayerModel)
+            if (!Model)
                 return;
 
             var pitch = CoreHelper.ForwardPitch;
@@ -1408,16 +1423,16 @@ namespace BetterLegacy.Core.Components.Player
             var headTrail = head.trailRenderer;
             var boostTrail = boost.trailRenderer;
 
-            headTrail.time = PlayerModel.headPart.Trail.time / pitch;
-            boostTrail.time = PlayerModel.boostPart.Trail.time / pitch;
+            headTrail.time = Model.headPart.Trail.time / pitch;
+            boostTrail.time = Model.boostPart.Trail.time / pitch;
 
             for (int i = 0; i < tailParts.Count; i++)
-                tailParts[i].trailRenderer.time = PlayerModel.GetTail(i).Trail.time / pitch;
+                tailParts[i].trailRenderer.time = Model.GetTail(i).Trail.time / pitch;
         }
 
         void UpdateControls()
         {
-            if (!CustomPlayer || !PlayerModel || !Alive)
+            if (!CustomPlayer || !Model || !Alive)
             {
                 rb.velocity = Vector2.zero;
                 return;
@@ -1453,9 +1468,9 @@ namespace BetterLegacy.Core.Components.Player
                     InitMidBoost(true);
             }
 
-            if (Alive && FaceController != null && PlayerModel.bulletPart.active &&
-                (!PlayerModel.bulletPart.constant && FaceController.Shoot.WasPressed && canShoot ||
-                    PlayerModel.bulletPart.constant && FaceController.Shoot.IsPressed && canShoot))
+            if (Alive && FaceController != null && Model.bulletPart.active &&
+                (!Model.bulletPart.constant && FaceController.Shoot.WasPressed && canShoot ||
+                    Model.bulletPart.constant && FaceController.Shoot.IsPressed && canShoot))
                 CreateBullet();
 
             var player = rb.gameObject;
@@ -1499,7 +1514,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (x != 0f)
                     lastMoveHorizontal = x;
 
-                var sp = PlayerModel.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+                var sp = Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
 
                 velocity.x = x * idleSpeed * pitch * sp * SpeedMultiplier;
 
@@ -1551,7 +1566,7 @@ namespace BetterLegacy.Core.Components.Player
                     if (vector.magnitude > 1f)
                         vector = vector.normalized;
 
-                    var sp = PlayerModel.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+                    var sp = Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
 
                     rb.velocity = PlayerForce + vector * idleSpeed * pitch * sp * SpeedMultiplier;
                     if (stretch && rb.velocity.magnitude > 0f)
@@ -1901,7 +1916,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTheme()
         {
-            if (!PlayerModel)
+            if (!Model)
                 return;
 
             var index = PlayersData.Main.GetMaxIndex(playerIndex);
@@ -1909,13 +1924,13 @@ namespace BetterLegacy.Core.Components.Player
             if (head.gameObject)
             {
                 if (head.renderer)
-                    head.renderer.material.color = CoreHelper.GetPlayerColor(index, PlayerModel.headPart.color, PlayerModel.headPart.opacity, PlayerModel.headPart.customColor);
+                    head.renderer.material.color = CoreHelper.GetPlayerColor(index, Model.headPart.color, Model.headPart.opacity, Model.headPart.customColor);
 
                 try
                 {
-                    int colStart = PlayerModel.headPart.color;
-                    var colStartHex = PlayerModel.headPart.customColor;
-                    float alphaStart = PlayerModel.headPart.opacity;
+                    int colStart = Model.headPart.color;
+                    var colStartHex = Model.headPart.customColor;
+                    float alphaStart = Model.headPart.opacity;
 
                     var main1 = burst.main;
                     var main2 = death.main;
@@ -1931,19 +1946,19 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             if (boost.renderer)
-                boost.renderer.material.color = CoreHelper.GetPlayerColor(index, PlayerModel.boostPart.color, PlayerModel.boostPart.opacity, PlayerModel.boostPart.customColor);
+                boost.renderer.material.color = CoreHelper.GetPlayerColor(index, Model.boostPart.color, Model.boostPart.opacity, Model.boostPart.customColor);
 
             if (boostTail.renderer)
-                boostTail.renderer.material.color = CoreHelper.GetPlayerColor(index, PlayerModel.boostTailPart.color, PlayerModel.boostTailPart.opacity, PlayerModel.boostTailPart.customColor);
+                boostTail.renderer.material.color = CoreHelper.GetPlayerColor(index, Model.boostTailPart.color, Model.boostTailPart.opacity, Model.boostTailPart.customColor);
 
             //GUI Bar
             {
-                int baseCol = PlayerModel.guiPart.baseColor;
-                int topCol = PlayerModel.guiPart.topColor;
-                string baseColHex = PlayerModel.guiPart.baseCustomColor;
-                string topColHex = PlayerModel.guiPart.topCustomColor;
-                float baseAlpha = PlayerModel.guiPart.baseOpacity;
-                float topAlpha = PlayerModel.guiPart.topOpacity;
+                int baseCol = Model.guiPart.baseColor;
+                int topCol = Model.guiPart.topColor;
+                string baseColHex = Model.guiPart.baseCustomColor;
+                string topColHex = Model.guiPart.topCustomColor;
+                float baseAlpha = Model.guiPart.baseOpacity;
+                float topAlpha = Model.guiPart.topOpacity;
 
                 for (int i = 0; i < healthObjects.Count; i++)
                     if (healthObjects[i].image)
@@ -1955,7 +1970,7 @@ namespace BetterLegacy.Core.Components.Player
 
             for (int i = 0; i < tailParts.Count; i++)
             {
-                var modelPart = PlayerModel.GetTail(i);
+                var modelPart = Model.GetTail(i);
 
                 var tailPart = tailParts[i];
 
@@ -1969,31 +1984,31 @@ namespace BetterLegacy.Core.Components.Player
                 tailPart.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, modelPart.Trail.endColor, modelPart.Trail.endOpacity, modelPart.Trail.endCustomColor);
             }
 
-            if (PlayerModel.headPart.Trail.emitting && head.trailRenderer)
+            if (Model.headPart.Trail.emitting && head.trailRenderer)
             {
-                head.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, PlayerModel.headPart.Trail.startColor, PlayerModel.headPart.Trail.startOpacity, PlayerModel.headPart.Trail.startCustomColor);
-                head.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, PlayerModel.headPart.Trail.endColor, PlayerModel.headPart.Trail.endOpacity, PlayerModel.headPart.Trail.endCustomColor);
+                head.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, Model.headPart.Trail.startColor, Model.headPart.Trail.startOpacity, Model.headPart.Trail.startCustomColor);
+                head.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, Model.headPart.Trail.endColor, Model.headPart.Trail.endOpacity, Model.headPart.Trail.endCustomColor);
             }
 
-            if (PlayerModel.headPart.Particles.emitting && head.particleSystem)
+            if (Model.headPart.Particles.emitting && head.particleSystem)
             {
-                var colStart = PlayerModel.headPart.Particles.color;
-                var colStartHex = PlayerModel.headPart.Particles.customColor;
+                var colStart = Model.headPart.Particles.color;
+                var colStartHex = Model.headPart.Particles.customColor;
 
                 var main = head.particleSystem.main;
                 main.startColor = CoreHelper.GetPlayerColor(index, colStart, 1f, colStartHex);
             }
 
-            if (PlayerModel.boostPart.Trail.emitting && boost.trailRenderer)
+            if (Model.boostPart.Trail.emitting && boost.trailRenderer)
             {
-                boost.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, PlayerModel.boostPart.Trail.startColor, PlayerModel.boostPart.Trail.startOpacity, PlayerModel.boostPart.Trail.startCustomColor);
-                boost.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, PlayerModel.boostPart.Trail.endColor, PlayerModel.boostPart.Trail.endOpacity, PlayerModel.boostPart.Trail.endCustomColor);
+                boost.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, Model.boostPart.Trail.startColor, Model.boostPart.Trail.startOpacity, Model.boostPart.Trail.startCustomColor);
+                boost.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, Model.boostPart.Trail.endColor, Model.boostPart.Trail.endOpacity, Model.boostPart.Trail.endCustomColor);
             }
 
-            if (PlayerModel.boostPart.Particles.emitting && boost.particleSystem)
+            if (Model.boostPart.Particles.emitting && boost.particleSystem)
             {
                 var main = boost.particleSystem.main;
-                main.startColor = CoreHelper.GetPlayerColor(index, PlayerModel.boostPart.Particles.color, 1f, PlayerModel.boostPart.Particles.customColor);
+                main.startColor = CoreHelper.GetPlayerColor(index, Model.boostPart.Particles.color, 1f, Model.boostPart.Particles.customColor);
             }
         }
 
@@ -2029,6 +2044,39 @@ namespace BetterLegacy.Core.Components.Player
                     customObject.text.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
                 else if (customObject.renderer)
                     customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+
+                if (!customObject.idle)
+                    continue;
+
+                for (int i = 0; i < reference.animations.Count; i++)
+                {
+                    var animation = reference.animations[i];
+                    if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != "idle")
+                        continue;
+
+                    var length = animation.GetLength();
+
+                    if (animation.animatePosition)
+                    {
+                        var position = CoreHelper.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
+                        var origPos = reference.position;
+                        customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position);
+                    }
+
+                    if (animation.animateScale)
+                    {
+                        var scale = CoreHelper.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
+                        var origSca = reference.scale;
+                        customObject.gameObject.transform.localScale = (new Vector3(origSca.x * scale.x, origSca.y * scale.y, 1f));
+                    }
+
+                    if (animation.animateRotation)
+                    {
+                        var rotation = CoreHelper.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
+                        var origRot = reference.rotation;
+                        customObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, origRot + rotation);
+                    }
+                }
             }
         }
 
@@ -2193,12 +2241,10 @@ namespace BetterLegacy.Core.Components.Player
             var ps = boost.particleSystem;
             var emission = ps.emission;
 
-            var headTrail = boost.trailRenderer;
-
             if (emission.enabled)
                 ps.Play();
-            if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
-                headTrail.emitting = true;
+            if (Model && Model.boostPart.Trail.emitting)
+                boost.trailRenderer.emitting = true;
 
             if (PlayBoostSound)
                 SoundManager.inst.PlaySound(DefaultSounds.boost);
@@ -2264,7 +2310,7 @@ namespace BetterLegacy.Core.Components.Player
         IEnumerator BoostCooldownLoop()
         {
             var headTrail = boost.trailRenderer;
-            if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
+            if (Model && Model.boostPart.Trail.emitting)
                 headTrail.emitting = false;
 
             animationController.Play(new RTAnimation("Player Stretch")
@@ -2438,10 +2484,11 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void UpdateModel()
         {
-            if (!PlayerModel)
+            time = 0f;
+            if (!Model)
                 return;
 
-            var currentModel = PlayerModel;
+            var currentModel = Model;
 
             InitNametag();
 
@@ -2449,7 +2496,7 @@ namespace BetterLegacy.Core.Components.Player
                 Assign(tailParts[i], currentModel.GetTail(i));
 
             Assign(head, currentModel.headPart);
-            Assign(boost, currentModel.boostPart);
+            Assign(boost, currentModel.boostPart, true);
 
             var fp = currentModel.FacePosition;
             face.gameObject.transform.localPosition = new Vector3(fp.x, fp.y, 0f);
@@ -2460,21 +2507,26 @@ namespace BetterLegacy.Core.Components.Player
 
             showBoostTail = currentModel.boostTailPart.active;
 
-            boostTail.parent.gameObject.SetActive(showBoostTail);
-            if (showBoostTail)
-                boostTail.meshFilter.mesh = GetShape(currentModel.boostTailPart.shape.type, currentModel.boostTailPart.shape.option).mesh;
-
             if (!isBoosting)
                 path[1].active = showBoostTail;
 
-            boostTail.gameObject.SetActive(showBoostTail);
+            Assign(boostTail, currentModel.boostTailPart);
 
-            if (showBoostTail)
-            {
-                boostTail.gameObject.transform.localPosition = new Vector3(currentModel.boostTailPart.position.x, currentModel.boostTailPart.position.y, 0.1f);
-                boostTail.gameObject.transform.localScale = new Vector3(currentModel.boostTailPart.scale.x, currentModel.boostTailPart.scale.y, 1f);
-                boostTail.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, currentModel.boostTailPart.rotation);
-            }
+            //boostTail.parent.gameObject.SetActive(showBoostTail);
+            //if (showBoostTail)
+            //    boostTail.meshFilter.mesh = GetShape(currentModel.boostTailPart.shape.type, currentModel.boostTailPart.shape.option).mesh;
+
+            //if (!isBoosting)
+            //    path[1].active = showBoostTail;
+
+            //boostTail.gameObject.SetActive(showBoostTail);
+
+            //if (showBoostTail)
+            //{
+            //    boostTail.gameObject.transform.localPosition = new Vector3(currentModel.boostTailPart.position.x, currentModel.boostTailPart.position.y, 0.1f);
+            //    boostTail.gameObject.transform.localScale = new Vector3(currentModel.boostTailPart.scale.x, currentModel.boostTailPart.scale.y, 1f);
+            //    boostTail.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, currentModel.boostTailPart.rotation);
+            //}
 
             jumpGravity = currentModel.basePart.jumpGravity;
             jumpIntensity = currentModel.basePart.jumpIntensity;
@@ -2524,15 +2576,45 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void UpdateCustomObjects()
         {
-            var currentModel = PlayerModel;
+            var currentModel = Model;
 
             var currentModelCustomObjects = currentModel.customObjects;
 
             foreach (var obj in customObjects)
-                Destroy(obj.gameObject);
+                Destroy(obj.parent.gameObject);
             customObjects.Clear();
 
             playerObjects.RemoveAll(x => x.isCustom);
+
+            if (spawnAnimationCustom)
+            {
+                animationController.Remove(spawnAnimationCustom.id);
+                spawnAnimationCustom = null;
+            }
+            
+            if (boostAnimationCustom)
+            {
+                animationController.Remove(boostAnimationCustom.id);
+                boostAnimationCustom = null;
+            }
+            
+            if (healAnimationCustom)
+            {
+                animationController.Remove(healAnimationCustom.id);
+                healAnimationCustom = null;
+            }
+            
+            if (hitAnimationCustom)
+            {
+                animationController.Remove(hitAnimationCustom.id);
+                hitAnimationCustom = null;
+            }
+            
+            if (deathAnimationCustom)
+            {
+                animationController.Remove(deathAnimationCustom.id);
+                deathAnimationCustom = null;
+            }
 
             if (currentModelCustomObjects == null || currentModelCustomObjects.Count < 1)
                 return;
@@ -2560,11 +2642,12 @@ namespace BetterLegacy.Core.Components.Player
                 int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                 int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
-                customObj.gameObject = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent);
+                customObj.parent = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent).transform;
+                customObj.gameObject = customObj.parent.GetChild(0).gameObject;
                 customObj.gameObject.transform.localScale = Vector3.one;
                 customObj.gameObject.transform.localRotation = Quaternion.identity;
 
-                customObj.delayTracker = customObj.gameObject.AddComponent<PlayerDelayTracker>();
+                customObj.delayTracker = customObj.parent.gameObject.AddComponent<PlayerDelayTracker>();
                 customObj.delayTracker.offset = 0;
                 customObj.delayTracker.positionOffset = reference.positionOffset;
                 customObj.delayTracker.scaleOffset = reference.scaleOffset;
@@ -2573,25 +2656,29 @@ namespace BetterLegacy.Core.Components.Player
                 customObj.delayTracker.rotationParent = reference.rotationParent;
                 customObj.delayTracker.player = this;
 
-                var child = customObj.gameObject.transform.GetChild(0);
-                child.localPosition = new Vector3(pos.x, pos.y, depth);
-                child.localScale = new Vector3(sca.x, sca.y, 1f);
-                child.localEulerAngles = new Vector3(0f, 0f, rot);
+                customObj.gameObject.transform.localPosition = new Vector3(pos.x, pos.y, depth);
+                customObj.gameObject.transform.localScale = new Vector3(sca.x, sca.y, 1f);
+                customObj.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, rot);
 
                 customObj.gameObject.tag = "Helper";
-                child.tag = "Helper";
+                customObj.gameObject.tag = "Helper";
 
                 var renderer = customObj.gameObject.GetComponentInChildren<Renderer>();
                 renderer.enabled = true;
                 customObj.renderer = renderer;
 
-                Destroy(child.GetComponent<Collider2D>());
+                Destroy(customObj.gameObject.GetComponent<Collider2D>());
 
-                if (s == 4 && child.gameObject.TryGetComponent(out TextMeshPro tmp))
+                if (s == 4 && customObj.gameObject.gameObject.TryGetComponent(out TextMeshPro tmp))
                 {
                     tmp.text = customObj.reference.text;
                     customObj.text = tmp;
                 }
+
+                UpdateCustomAnimations(customObj);
+
+                playerObjects.Add(customObj);
+                customObjects.Add(customObj);
 
                 if (s == 6 && renderer is SpriteRenderer spriteRenderer)
                 {
@@ -2611,12 +2698,105 @@ namespace BetterLegacy.Core.Components.Player
                         spriteRenderer.sprite = SpriteHelper.CreateSprite(texture2D);
                     }));
                 }
-
-                playerObjects.Add(customObj);
-                customObjects.Add(customObj);
             }
 
             UpdateParents();
+        }
+
+        void UpdateCustomAnimations(CustomObject customObject)
+        {
+            if (!customObject.reference)
+                return;
+
+            var reference = customObject.reference;
+            if (reference.animations == null || reference.animations.Empty())
+                return;
+
+            for (int j = 0; j < reference.animations.Count; j++)
+            {
+                var animation = reference.animations[j];
+                if (string.IsNullOrEmpty(animation.ReferenceID))
+                    continue;
+
+                RTAnimation runtimeAnim = null;
+
+                switch (animation.ReferenceID.ToLower().Remove(" "))
+                {
+                    case "boost": {
+                            if (!boostAnimationCustom)
+                                boostAnimationCustom = new RTAnimation("Player Boost Custom Animation");
+                            runtimeAnim = boostAnimationCustom;
+                            break;
+                        }
+                    case "heal": {
+                            if (!healAnimationCustom)
+                                healAnimationCustom = new RTAnimation("Player Heal Custom Animation");
+                            runtimeAnim = healAnimationCustom;
+                            break;
+                        }
+                    case "hit": {
+                            if (!hitAnimationCustom)
+                                hitAnimationCustom = new RTAnimation("Player Hit Custom Animation");
+                            runtimeAnim = hitAnimationCustom;
+                            break;
+                        }
+                    case "death": {
+                            if (!deathAnimationCustom)
+                                deathAnimationCustom = new RTAnimation("Player Death Custom Animation");
+                            runtimeAnim = deathAnimationCustom;
+                            break;
+                        }
+                }
+
+                if (runtimeAnim)
+                {
+                    if (animation.animatePosition)
+                        for (int i = 0; i < animation.positionKeyframes.Count; i++)
+                        {
+                            var positionKeyframes = ObjectConverter.GetVector3Keyframes(animation.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
+
+                            if (animation.transition && customObject.gameObject)
+                                positionKeyframes[0].SetValue(customObject.gameObject.transform.localPosition);
+
+                            runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, vector =>
+                            {
+                                customObject.idle = false;
+                                if (customObject.gameObject)
+                                    customObject.gameObject.transform.localPosition = (new Vector3(reference.position.x, reference.position.y, reference.depth) + vector);
+                            }, () => customObject.idle = true));
+                        }
+                    if (animation.animateScale)
+                        for (int i = 0; i < animation.scaleKeyframes.Count; i++)
+                        {
+                            var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+
+                            if (animation.transition && customObject.gameObject)
+                                scaleKeyframes[0].SetValue(customObject.gameObject.transform.localScale);
+
+                            runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
+                            {
+                                customObject.idle = false;
+                                if (customObject.gameObject)
+                                    customObject.gameObject.transform.localScale = (new Vector3(reference.scale.x, reference.scale.y, 1f) * vector);
+                            }, () => customObject.idle = true));
+                        }
+                    if (animation.animateRotation)
+                        for (int i = 0; i < animation.rotationKeyframes.Count; i++)
+                        {
+                            var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+
+                            if (animation.transition && customObject.gameObject)
+                                rotationKeyframes[0].SetValue(customObject.gameObject.transform.localEulerAngles.z);
+
+                            runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
+                            {
+                                customObject.idle = false;
+                                if (customObject.gameObject)
+                                    customObject.gameObject.transform.localEulerAngles = (new Vector3(0f, 0f, reference.rotation + x));
+                            }, () => customObject.idle = true));
+                        }
+                }
+            }
         }
 
         /// <summary>
@@ -2687,10 +2867,11 @@ namespace BetterLegacy.Core.Components.Player
                     particleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>(),
                 };
                 tailParts.Add(tailPart);
+                playerObjects.Add(tailPart);
                 tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
                 tailBase.transform.localPosition = last.parent.localPosition;
-                path.Insert(path.Count - 2, new MovementPath(tailBase.transform.localPosition, tailBase.transform.localRotation, tailBase.transform));
-                Assign(tailPart, PlayerModel.GetTail(num - 2));
+                path.Insert(path.Count - 1, new MovementPath(tailBase.transform.localPosition, tailBase.transform.localRotation, tailBase.transform));
+                Assign(tailPart, Model.GetTail(num - 2));
             }
 
             while (initialHealthCount > healthObjects.Count)
@@ -2709,6 +2890,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <param name="pos">Position the player was updated at.</param>
         public void UpdateTail(int health, Vector3 pos)
         {
+            // increase tail length if tailGrows is true
             if (health > initialHealthCount)
             {
                 initialHealthCount = health;
@@ -2717,20 +2899,27 @@ namespace BetterLegacy.Core.Components.Player
                     GrowTail();
             }
 
-            for (int i = 2; i < path.Count; i++)
+            //for (int i = 2; i < path.Count; i++)
+            //{
+            //    if (!path[i].transform)
+            //        continue;
+
+            //    var inactive = i - 1 > health;
+
+            //    if (path[i].transform.childCount != 0)
+            //        path[i].transform.GetChild(0).gameObject.SetActive(!inactive);
+            //    else
+            //        path[i].transform.gameObject.SetActive(!inactive);
+            //}
+
+            for (int i = 0; i < tailParts.Count; i++)
             {
-                if (!path[i].transform)
-                    continue;
-
-                var inactive = i - 1 > health;
-
-                if (path[i].transform.childCount != 0)
-                    path[i].transform.GetChild(0).gameObject.SetActive(!inactive);
-                else
-                    path[i].transform.gameObject.SetActive(!inactive);
+                var tailPart = tailParts[i];
+                if (tailPart.parent)
+                    tailPart.parent.gameObject.SetActive(i < health);
             }
 
-            var currentModel = PlayerModel;
+            var currentModel = Model;
 
             if (!currentModel)
                 return;
@@ -2800,28 +2989,43 @@ namespace BetterLegacy.Core.Components.Player
             d.positionOffset = 0.9f;
         }
 
-        void Assign(PlayerObject playerObject, PlayerModel.Generic generic, bool changeActive = true)
+        void Assign(PlayerObject playerObject, PlayerModel.Generic generic, bool isBoost = false)
         {
-            if (changeActive)
-                playerObject.renderer.enabled = generic.active;
-            if (changeActive && !generic.active)
+            playerObject.renderer.enabled = generic.active;
+            var trailRenderer = playerObject.trailRenderer;
+            var particleSystem = playerObject.particleSystem;
+            if (!generic.active)
+            {
+                if (trailRenderer)
+                {
+                    trailRenderer.enabled = false;
+                    trailRenderer.emitting = false;
+                }
+                if (particleSystem)
+                {
+                    var p = particleSystem.emission;
+                    p.enabled = false;
+
+                    if (playerObject.particleSystemRenderer)
+                        playerObject.particleSystemRenderer.enabled = false;
+                }
                 return;
+            }
 
             playerObject.meshFilter.mesh = GetShape(generic.shape.type, generic.shape.option).mesh;
             playerObject.gameObject.transform.localPosition = new Vector3(generic.position.x, generic.position.y);
             playerObject.gameObject.transform.localScale = new Vector3(generic.scale.x, generic.scale.y, 1f);
             playerObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, generic.rotation);
             
-            var trailRenderer = playerObject.trailRenderer;
             if (trailRenderer)
             {
                 trailRenderer.enabled = generic.Trail.emitting;
                 trailRenderer.emitting = generic.Trail.emitting;
                 trailRenderer.startWidth = generic.Trail.startWidth;
                 trailRenderer.endWidth = generic.Trail.endWidth;
+                trailRenderer.transform.localPosition = generic.Trail.positionOffset;
             }
 
-            var particleSystem = playerObject.particleSystem;
 
             if (playerObject.particleSystemRenderer)
                 playerObject.particleSystemRenderer.mesh = GetShape(generic.Particles.shape.type, generic.Particles.shape.option).mesh;
@@ -2836,7 +3040,12 @@ namespace BetterLegacy.Core.Components.Player
             main.startSpeed = generic.Particles.speed;
 
             emission.enabled = generic.Particles.emitting;
-            particleSystem.emissionRate = generic.Particles.amount;
+            particleSystem.emissionRate = isBoost ? 0f : generic.Particles.amount;
+            if (isBoost)
+            {
+                emission.burstCount = (int)generic.Particles.amount;
+                main.duration = 1f;
+            }
 
             var rotationOverLifetime = particleSystem.rotationOverLifetime;
             rotationOverLifetime.enabled = true;
@@ -2953,10 +3162,10 @@ namespace BetterLegacy.Core.Components.Player
 
         void CreatePulse()
         {
-            if (!PlayerModel)
+            if (!Model)
                 return;
 
-            var currentModel = PlayerModel;
+            var currentModel = Model;
 
             if (!currentModel.pulsePart.active)
                 return;
@@ -3037,7 +3246,7 @@ namespace BetterLegacy.Core.Components.Player
         // to do: aiming so you don't need to be facing the direction of the bullet
         void CreateBullet()
         {
-            var currentModel = PlayerModel;
+            var currentModel = Model;
 
             if (currentModel == null || !currentModel.bulletPart.active)
                 return;
@@ -3166,7 +3375,7 @@ namespace BetterLegacy.Core.Components.Player
 
         IEnumerator CanShoot()
         {
-            var currentModel = PlayerModel;
+            var currentModel = Model;
             if (currentModel)
             {
                 var delay = currentModel.bulletPart.delay;
@@ -3306,6 +3515,7 @@ namespace BetterLegacy.Core.Components.Player
 
             public PlayerModel.CustomObject reference;
             public TextMeshPro text;
+            public bool idle = true;
         }
 
         /// <summary>
