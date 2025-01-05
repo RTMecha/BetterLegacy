@@ -851,6 +851,354 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static float InterpolateFloatKeyframes(List<DataManager.GameData.EventKeyframe> eventKeyframes, float time, int valueIndex, bool isLerper = true)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as EventKeyframe;
+            var prevKF = list[prevKFIndex] as EventKeyframe;
+
+            if (prevKF.eventValues.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((EventKeyframe)list[k + 1]).relative)
+                    total += list[k].eventValues[valueIndex];
+                else
+                    total = 0f;
+
+                if (((EventKeyframe)list[k]).relative)
+                    prevtotal += list[k].eventValues[valueIndex];
+                else
+                    prevtotal = 0f;
+            }
+
+            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+        
+        public static float InterpolateFloatKeyframes(List<EventKeyframe> eventKeyframes, float time, int valueIndex, bool isLerper = true)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex];
+            var prevKF = list[prevKFIndex];
+
+            if (prevKF.eventValues.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (list[k + 1].relative)
+                    total += list[k].eventValues[valueIndex];
+                else
+                    total = 0f;
+
+                if (list[k].relative)
+                    prevtotal += list[k].eventValues[valueIndex];
+                else
+                    prevtotal = 0f;
+            }
+
+            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+
+        public static Vector2 InterpolateVector2Keyframes(List<DataManager.GameData.EventKeyframe> eventKeyframes, float time)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as EventKeyframe;
+            var prevKF = list[prevKFIndex] as EventKeyframe;
+
+            if (prevKF.eventValues.Length <= 0)
+                return Vector2.zero;
+
+            Vector2 total = Vector3.zero;
+            Vector2 prevtotal = Vector3.zero;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((EventKeyframe)list[k + 1]).relative)
+                    total += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
+                else
+                    total = Vector3.zero;
+
+                if (((EventKeyframe)list[k]).relative)
+                    prevtotal += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
+                else
+                    prevtotal = Vector2.zero;
+            }
+
+            var next = nextKF.relative ? total + new Vector2(nextKF.eventValues[0], nextKF.eventValues[1]) : new Vector2(nextKF.eventValues[0], nextKF.eventValues[1]);
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : new Vector2(prevKF.eventValues[0], prevKF.eventValues[1]);
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y))
+                prev = Vector2.zero;
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y))
+                next = Vector2.zero;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsInfinity(x.x) || float.IsInfinity(x.y))
+                x = next;
+
+            return x;
+        }
+
+        public static Vector2 InterpolateVector2Keyframes(List<EventKeyframe> eventKeyframes, float time)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex];
+            var prevKF = list[prevKFIndex];
+
+            if (prevKF.eventValues.Length <= 0)
+                return Vector2.zero;
+
+            Vector2 total = Vector3.zero;
+            Vector2 prevtotal = Vector3.zero;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (list[k + 1].relative)
+                    total += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
+                else
+                    total = Vector3.zero;
+
+                if (list[k].relative)
+                    prevtotal += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
+                else
+                    prevtotal = Vector2.zero;
+            }
+
+            var next = nextKF.relative ? total + new Vector2(nextKF.eventValues[0], nextKF.eventValues[1]) : new Vector2(nextKF.eventValues[0], nextKF.eventValues[1]);
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : new Vector2(prevKF.eventValues[0], prevKF.eventValues[1]);
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y))
+                prev = Vector2.zero;
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y))
+                next = Vector2.zero;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsInfinity(x.x) || float.IsInfinity(x.y))
+                x = next;
+
+            return x;
+        }
+
+        public static Vector3 InterpolateVector3Keyframes(List<DataManager.GameData.EventKeyframe> eventKeyframes, float time)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as EventKeyframe;
+            var prevKF = list[prevKFIndex] as EventKeyframe;
+
+            if (prevKF.eventValues.Length <= 0)
+                return Vector3.zero;
+
+            Vector3 total = Vector3.zero;
+            Vector3 prevtotal = Vector3.zero;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((EventKeyframe)list[k + 1]).relative)
+                    total += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
+                else
+                    total = Vector3.zero;
+
+                if (((EventKeyframe)list[k]).relative)
+                    prevtotal += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
+                else
+                    prevtotal = Vector3.zero;
+            }
+
+            var next = nextKF.relative ? total + new Vector3(nextKF.eventValues[0], nextKF.eventValues[1], nextKF.eventValues[2]) : new Vector3(nextKF.eventValues[0], nextKF.eventValues[1], nextKF.eventValues[2]);
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : new Vector3(prevKF.eventValues[0], prevKF.eventValues[1], prevKF.eventValues[2]);
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y) || float.IsNaN(prev.z))
+                prev = Vector3.zero;
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y) || float.IsNaN(prev.z))
+                next = Vector3.zero;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsNaN(x.z) || float.IsInfinity(x.x) || float.IsInfinity(x.y) || float.IsInfinity(x.z))
+                x = next;
+
+            return x;
+        }
+
+        public static Vector3 InterpolateVector3Keyframes(List<EventKeyframe> eventKeyframes, float time)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex];
+            var prevKF = list[prevKFIndex];
+
+            if (prevKF.eventValues.Length <= 0)
+                return Vector3.zero;
+
+            Vector3 total = Vector3.zero;
+            Vector3 prevtotal = Vector3.zero;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (list[k + 1].relative)
+                    total += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
+                else
+                    total = Vector3.zero;
+
+                if (list[k].relative)
+                    prevtotal += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
+                else
+                    prevtotal = Vector3.zero;
+            }
+
+            var next = nextKF.relative ? total + new Vector3(nextKF.eventValues[0], nextKF.eventValues[1], nextKF.eventValues[2]) : new Vector3(nextKF.eventValues[0], nextKF.eventValues[1], nextKF.eventValues[2]);
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : new Vector3(prevKF.eventValues[0], prevKF.eventValues[1], prevKF.eventValues[2]);
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y) || float.IsNaN(prev.z))
+                prev = Vector3.zero;
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y) || float.IsNaN(prev.z))
+                next = Vector3.zero;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsNaN(x.z) || float.IsInfinity(x.x) || float.IsInfinity(x.y) || float.IsInfinity(x.z))
+                x = next;
+
+            return x;
+        }
+
         #endregion
 
         #region Screenshot
