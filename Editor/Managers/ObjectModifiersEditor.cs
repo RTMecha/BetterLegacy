@@ -269,7 +269,7 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(content);
 
             //content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(beatmapObject.modifiers.Count, 1, 5));
-            content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 600f);
+            content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 500f);
 
             int num = 0;
             foreach (var modifier in beatmapObject.modifiers)
@@ -3126,7 +3126,7 @@ namespace BetterLegacy.Editor.Managers
 
             ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(146f, 32f);
 
-            var input = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Input");
+            var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(rectTransform, "Input");
             input.transform.localScale = Vector2.one;
             ((RectTransform)input.transform.Find("Text")).sizeDelta = Vector2.zero;
 
@@ -3153,7 +3153,7 @@ namespace BetterLegacy.Editor.Managers
 
             ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(146f, 32f);
 
-            var input = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Input");
+            var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(rectTransform, "Input");
             input.transform.localScale = Vector2.one;
             input.transform.AsRT().anchoredPosition = new Vector2(210f, -16f);
             input.transform.AsRT().sizeDelta = new Vector2(120, 32f);
