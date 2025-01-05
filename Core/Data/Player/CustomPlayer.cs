@@ -36,7 +36,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             PlayerModel = PlayerModel.DeepCopy(PlayersData.Main.playerModels.TryGetValue(currentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer, false);
             if (Player)
-                Player.PlayerModel = PlayerModel;
+                Player.Model = PlayerModel;
         }
 
         public void Test()

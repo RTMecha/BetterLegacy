@@ -329,7 +329,7 @@ namespace BetterLegacy.Core.Managers
                 player = gameObject.AddComponent<RTPlayer>();
 
             player.CustomPlayer = customPlayer;
-            player.PlayerModel = customPlayer.PlayerModel;
+            player.Model = customPlayer.PlayerModel;
             player.playerIndex = customPlayer.index;
             player.initialHealthCount = customPlayer.Health;
             customPlayer.Player = player;
@@ -434,7 +434,7 @@ namespace BetterLegacy.Core.Managers
             if (!player)
                 player = gameObject.AddComponent<RTPlayer>();
 
-            player.PlayerModel = playerModel;
+            player.Model = playerModel;
             player.playerIndex = index;
 
             if (transform.gameObject.activeInHierarchy)
