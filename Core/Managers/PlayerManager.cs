@@ -361,15 +361,8 @@ namespace BetterLegacy.Core.Managers
                 player.FaceController = faceController;
             }
 
-            foreach (var path in player.path)
-            {
-                path.pos = new Vector3(pos.x, pos.y);
-                path.lastPos = new Vector3(pos.x, pos.y);
+            player.SetPath(pos);
 
-                if (path.transform)
-                    path.transform.position = path.pos;
-            }
-            
             if (Is1Life || IsNoHit)
             {
                 player.playerDeathEvent += _val =>
@@ -452,14 +445,7 @@ namespace BetterLegacy.Core.Managers
             else
                 player.playerNeedsUpdating = true;
 
-            foreach (var path in player.path)
-            {
-                path.pos = new Vector3(pos.x, pos.y, 0f);
-                path.lastPos = new Vector3(pos.x, pos.y, 0f);
-
-                if (path.transform)
-                    path.transform.position = path.pos;
-            }
+            player.SetPath(pos);
 
             return gameObject;
         }

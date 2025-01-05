@@ -39,103 +39,12 @@ namespace BetterLegacy.Core.Components.Player
         //player-complete/trail/2
         //player-complete/trail/3
 
-        /// <summary>
-        /// If player does not take damage in editor.
-        /// </summary>
-        public static bool ZenModeInEditor { get; set; }
-
-        /// <summary>
-        /// If zen mode in editor should also consider solid.
-        /// </summary>
-        public static bool ZenEditorIncludesSolid { get; set; }
+        #region Base
 
         /// <summary>
         /// If multiplayer nametags should display when there are more than one player on-screen.
         /// </summary>
         public static bool ShowNameTags { get; set; }
-
-        /// <summary>
-        /// If the boost sound should play when the player boosts.
-        /// </summary>
-        public static bool PlayBoostSound { get; set; }
-
-        /// <summary>
-        /// If the boost recover sound should play when the player can boost again.
-        /// </summary>
-        public static bool PlayBoostRecoverSound { get; set; }
-
-        /// <summary>
-        /// If the shoot sound should play when the player shoots.
-        /// </summary>
-        public static bool PlayShootSound { get; set; }
-
-        /// <summary>
-        /// How the player tail should update.
-        /// </summary>
-        public static TailUpdateMode UpdateMode { get; set; } = TailUpdateMode.FixedUpdate;
-
-        /// <summary>
-        /// If custom assets should be loaded from a global source.
-        /// </summary>
-        public static bool AssetsGlobal { get; set; }
-
-        /// <summary>
-        /// If players can take damage from another players' bullet.
-        /// </summary>
-        public static bool AllowPlayersToTakeBulletDamage { get; set; }
-
-        /// <summary>
-        /// If players are allowed out of bounds.
-        /// </summary>
-        public static bool OutOfBounds { get; set; } = false;
-
-        /// <summary>
-        /// If all players' boosts should be locked.
-        /// </summary>
-        public static bool LockBoost { get; set; } = false;
-
-        /// <summary>
-        /// How fast all players are.
-        /// </summary>
-        public static float SpeedMultiplier { get; set; } = 1f;
-
-        /// <summary>
-        /// The current force to apply to players.
-        /// </summary>
-        public static Vector2 PlayerForce { get; set; }
-
-        /// <summary>
-        /// Updates player properties based on <see cref="LevelData"/>.
-        /// </summary>
-        public static void SetGameDataProperties()
-        {
-            try
-            {
-                var levelData = GameData.Current.beatmapData.levelData;
-                LockBoost = levelData.lockBoost;
-                SpeedMultiplier = levelData.speedMultiplier;
-                GameMode = (GameMode)levelData.gameMode;
-                JumpGravity = levelData.jumpGravity;
-                JumpIntensity = levelData.jumpIntensity;
-                MaxJumpCount = levelData.maxJumpCount;
-                MaxJumpBoostCount = levelData.maxJumpBoostCount;
-                CustomPlayer.MaxHealth = levelData.maxHealth;
-
-                if (CoreHelper.InEditor && PlayerManager.Players.Count > 0)
-                {
-                    foreach (var customPlayer in PlayerManager.Players)
-                        if (customPlayer.PlayerModel)
-                            customPlayer.Health = customPlayer.PlayerModel.basePart.health;
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Could not set properties {ex}");
-            }
-
-        }
-
-        #region Base
 
         /// <summary>
         /// Base player actions.
@@ -186,34 +95,48 @@ namespace BetterLegacy.Core.Components.Player
         public ParticleSystem death;
         public ParticleSystem spawn;
 
+        /// <summary>
+        /// The players' tail.
+        /// </summary>
         public Transform tailParent;
+
+        /// <summary>
+        /// The tail tracker used for Dev+ tail parts.
+        /// </summary>
         public GameObject tailTracker;
 
-        public Animator anim;
+        /// <summary>
+        /// Base rigidbody component.
+        /// </summary>
         public Rigidbody2D rb;
-        public CircleCollider2D circleCollider2D;
-        public PolygonCollider2D polygonCollider2D;
+
+        CircleCollider2D circleCollider2D;
+        PolygonCollider2D polygonCollider2D;
+
+        /// <summary>
+        /// The collider that is currently being used.
+        /// </summary>
+        public Collider2D CurrentCollider => PlayerModel != null && PlayerModel.basePart.collisionAccurate ? polygonCollider2D : circleCollider2D;
 
         public Transform customObjectParent;
 
-        public Collider2D CurrentCollider => PlayerModel != null && PlayerModel.basePart.collisionAccurate ? polygonCollider2D : circleCollider2D;
+        public PlayerObject basePart;
+        public PlayerObject head;
+        public PlayerObject face;
+        public PlayerObject boost;
+        public PlayerObject boostTail;
 
-        #endregion
+        public List<PlayerObject> playerObjects = new List<PlayerObject>();
 
-        #region Bool
+        public List<PlayerObject> tailParts = new List<PlayerObject>();
 
-        public bool canBoost = true;
-        public bool canMove = true;
-        public bool canRotate = true;
-        public bool canTakeDamage;
+        public List<CustomObject> customObjects = new List<CustomObject>();
 
-        public bool isTakingHit;
-        public bool isBoosting;
-        public bool isBoostCancelled;
-        public bool isDead = true;
+        public List<MovementPath> path = new List<MovementPath>();
 
-        public bool isKeyboard;
-        public bool animatingBoost;
+        public List<HealthObject> healthObjects = new List<HealthObject>();
+
+        public List<PulseObject> boosts = new List<PulseObject>();
 
         #endregion
 
@@ -282,6 +205,16 @@ namespace BetterLegacy.Core.Components.Player
         #endregion
 
         #region Velocities
+
+        /// <summary>
+        /// How fast all players are.
+        /// </summary>
+        public static float SpeedMultiplier { get; set; } = 1f;
+
+        /// <summary>
+        /// The current force to apply to players.
+        /// </summary>
+        public static Vector2 PlayerForce { get; set; }
 
         public Vector3 lastPos;
         public float lastMoveHorizontal;
@@ -371,6 +304,11 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Tail
 
+        /// <summary>
+        /// How the player tail should update.
+        /// </summary>
+        public static TailUpdateMode UpdateMode { get; set; } = TailUpdateMode.FixedUpdate;
+
         public bool tailGrows = false;
         public bool showBoostTail = false;
         public float tailDistance = 2f;
@@ -384,33 +322,165 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
-        #region Properties
+        #region States
 
+        /// <summary>
+        /// If the boost sound should play when the player boosts.
+        /// </summary>
+        public static bool PlayBoostSound { get; set; }
+
+        /// <summary>
+        /// If the boost recover sound should play when the player can boost again.
+        /// </summary>
+        public static bool PlayBoostRecoverSound { get; set; }
+
+        /// <summary>
+        /// If the shoot sound should play when the player shoots.
+        /// </summary>
+        public static bool PlayShootSound { get; set; }
+
+        /// <summary>
+        /// If custom assets should be loaded from a global source.
+        /// </summary>
+        public static bool AssetsGlobal { get; set; }
+
+        /// <summary>
+        /// If player does not take damage in editor.
+        /// </summary>
+        public static bool ZenModeInEditor { get; set; }
+
+        /// <summary>
+        /// If zen mode in editor should also consider solid.
+        /// </summary>
+        public static bool ZenEditorIncludesSolid { get; set; }
+
+        /// <summary>
+        /// If players can take damage from another players' bullet.
+        /// </summary>
+        public static bool AllowPlayersToTakeBulletDamage { get; set; }
+
+        /// <summary>
+        /// If players are allowed out of bounds.
+        /// </summary>
+        public static bool OutOfBounds { get; set; } = false;
+
+        /// <summary>
+        /// If all players' boosts should be locked.
+        /// </summary>
+        public static bool LockBoost { get; set; } = false;
+
+        /// <summary>
+        /// If players can take damage from colliding with other players.
+        /// </summary>
+        public static bool AllowPlayersToHitOthers { get; set; }
+
+        public bool colliding;
+        public bool updated;
+        public bool playerNeedsUpdating;
+
+        public bool isTakingHit;
+        public bool isBoosting;
+        public bool isBoostCancelled;
+        public bool isDead = true;
+
+        public bool isKeyboard;
+        public bool animatingBoost;
+
+        public bool isSpawning;
+
+        /// <summary>
+        /// If the player can take damage.
+        /// </summary>
         public bool CanTakeDamage
         {
-            get => (CoreHelper.InEditor || CoreHelper.InStory || !PlayerManager.IsZenMode) && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage;
+            get => (CoreHelper.InEditor || CoreHelper.InStory || !PlayerManager.IsZenMode) && !CoreHelper.Paused && !CoreHelper.IsEditing && (!CoreHelper.InEditor || !ZenModeInEditor) && canTakeDamage;
             set => canTakeDamage = value;
         }
 
+        /// <summary>
+        /// If the player can move.
+        /// </summary>
         public bool CanMove
         {
             get => canMove;
             set => canMove = value;
         }
 
+        /// <summary>
+        /// If the player can rotate.
+        /// </summary>
         public bool CanRotate
         {
             get => canRotate;
             set => canRotate = value;
         }
 
+        /// <summary>
+        /// If the player can boost.
+        /// </summary>
         public bool CanBoost
         {
             get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
             set => canBoost = value;
         }
 
+        /// <summary>
+        /// If the player is alive.
+        /// </summary>
         public bool Alive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
+
+        /// <summary>
+        /// Updates player properties based on <see cref="LevelData"/>.
+        /// </summary>
+        public static void SetGameDataProperties()
+        {
+            try
+            {
+                var levelData = GameData.Current.beatmapData.levelData;
+                LockBoost = levelData.lockBoost;
+                SpeedMultiplier = levelData.speedMultiplier;
+                GameMode = (GameMode)levelData.gameMode;
+                JumpGravity = levelData.jumpGravity;
+                JumpIntensity = levelData.jumpIntensity;
+                MaxJumpCount = levelData.maxJumpCount;
+                MaxJumpBoostCount = levelData.maxJumpBoostCount;
+                CustomPlayer.MaxHealth = levelData.maxHealth;
+
+                if (CoreHelper.InEditor && PlayerManager.Players.Count > 0)
+                {
+                    foreach (var customPlayer in PlayerManager.Players)
+                        if (customPlayer.PlayerModel)
+                            customPlayer.Health = customPlayer.PlayerModel.basePart.health;
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not set properties {ex}");
+            }
+
+        }
+
+        #region Internal
+
+        float timeHit;
+        float timeHitOffset;
+
+        bool canBoost = true;
+        bool canMove = true;
+        bool canRotate = true;
+        bool canTakeDamage;
+
+        bool canShoot = true;
+
+        bool queuedBoost;
+
+        bool animatingRotateReset;
+        bool moved;
+        float timeNotMovingOffset;
+        Vector2 lastMovementTotal;
+        RTAnimation rotateResetAnimation;
+
+        #endregion
 
         #endregion
 
@@ -426,16 +496,410 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
-        #region Spawn
+        #region Animations
+
+        public AnimationController animationController;
+
+        #region Main
+
+        public RTAnimation spawnAnimation;
+
+        public RTAnimation boostAnimation;
+
+        public RTAnimation boostEndAnimation;
+
+        public RTAnimation hitAnimation;
+
+        public RTAnimation deathAnimation;
+
+        #endregion
+
+        #region Custom
+
+        public RTAnimation spawnAnimationCustom;
+
+        public RTAnimation boostAnimationCustom;
+
+        public RTAnimation boostEndAnimationCustom;
+
+        public RTAnimation healAnimationCustom;
+
+        public RTAnimation hitAnimationCustom;
+
+        public RTAnimation deathAnimationCustom;
+
+        #endregion
+
+        void InitSpawnAnimation()
+        {
+            if (spawnAnimation)
+            {
+                animationController.Remove(spawnAnimation.id);
+                spawnAnimation = null;
+            }
+
+            spawnAnimation = new RTAnimation("Player Spawn Animation");
+            spawnAnimation.animationHandlers = new List<AnimationHandlerBase>()
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.2f, 1.2f, Ease.SineOut),
+                    new FloatKeyframe(0.23333333f, 1f, Ease.SineInOut),
+                }, x =>
+                {
+                    if (transform)
+                        transform.localScale = new Vector3(x, x, 1f);
+                }, interpolateOnComplete: true), // base
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.23333333f, 1.2f, Ease.SineOut),
+                    new FloatKeyframe(0.36666667f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.43333334f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.5f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.56666666f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.6333333f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.7f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.76666665f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.8333333f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.9f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.93333334f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(1f, 1f, Ease.SineInOut),
+                }, x =>
+                {
+                    if (rb && rb.transform)
+                        rb.transform.localScale = new Vector3(x, x, 1f);
+                }, interpolateOnComplete: true), // Player
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.33333334f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.43333334f, 1f, Ease.BackOut),
+                    new FloatKeyframe(0.5f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (tailParts.Count > 0 && tailParts[0].parent)
+                        tailParts[0].parent.localScale = new Vector3(x, x, 1f);
+                }, interpolateOnComplete: true), // Trail 1
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.43333334f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.53333336f, 1f, Ease.BackOut),
+                    new FloatKeyframe(0.6f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (tailParts.Count > 1 && tailParts[1].parent)
+                        tailParts[1].parent.localScale = new Vector3(x, x, 1f);
+                }, interpolateOnComplete: true), // Trail 2
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.53333336f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.6333333f, 1f, Ease.BackOut),
+                    new FloatKeyframe(0.7f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (tailParts.Count > 2 && tailParts[2].parent)
+                        tailParts[2].parent.localScale = new Vector3(x, x, 1f);
+                }, interpolateOnComplete: true), // Trail 3
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 1.4f, Ease.Linear),
+                    new FloatKeyframe(1f, 1.4f, Ease.Linear),
+                    new FloatKeyframe(1.1f, 0f, Ease.Linear),
+                }, x =>
+                {
+                    if (boost != null && boost.parent)
+                        boost.parent.localScale = new Vector3(x, x, 0.2f);
+                }, interpolateOnComplete: true), // Boost
+            };
+            spawnAnimation.onComplete = () =>
+            {
+                animationController.Remove(spawnAnimation.id);
+                spawnAnimation = null;
+
+                InitAfterSpawn();
+            };
+            spawnAnimation.events = new List<Animation.AnimationEvent>
+            {
+                new Animation.AnimationEvent(0.04f, InitMidSpawn),
+            };
+            animationController.Play(spawnAnimation);
+
+            if (spawnAnimationCustom)
+                animationController.Play(spawnAnimationCustom);
+        }
+
+        void InitBoostAnimation()
+        {
+            if (hitAnimation)
+                return;
+
+            if (boostAnimation)
+            {
+                animationController.Remove(boostAnimation.id);
+                boostAnimation = null;
+            }
+
+            boostAnimation = new RTAnimation("Player Boost Animation");
+            boostAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1f, 1f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.02f, new Vector3(1.2f, 1f, 1f), Ease.SineOut),
+                }, vector => { if (rb) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(0f, 0f, 0.2f), Ease.Linear),
+                    new Vector3Keyframe(0.05f, new Vector3(0f, 0f, 0.2f), Ease.Linear),
+                    new Vector3Keyframe(0.1f, new Vector3(1.5f, 1.5f, 0.2f), Ease.SineOut),
+                }, vector => { if (boost && boost.parent) boost.parent.localScale = vector; }, interpolateOnComplete: true), // boost
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1f, 1f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.09f, new Vector3(1.2f, 0.8f, 1f), Ease.SineOut),
+                }, vector =>
+                {
+                    for (int i = 0; i < tailParts.Count; i++)
+                    {
+                        if (tailParts[i].parent)
+                            tailParts[i].parent.localScale = vector;
+                    }
+
+                }, interpolateOnComplete: true), // tail parts
+            };
+            boostAnimation.onComplete = () =>
+            {
+                animationController.Remove(boostAnimation.id);
+                boostAnimation = null;
+            };
+            animationController.Play(boostAnimation);
+
+            if (boostAnimationCustom)
+                animationController.Play(boostAnimationCustom);
+        }
+
+        void InitBoostEndAnimation()
+        {
+            if (hitAnimation)
+                return;
+
+            if (boostAnimation)
+            {
+                animationController.Remove(boostAnimation.id);
+                boostAnimation = null;
+            }
+            
+            if (boostEndAnimation)
+            {
+                animationController.Remove(boostEndAnimation.id);
+                boostEndAnimation = null;
+            }
+
+            boostEndAnimation = new RTAnimation("Player Boost Animation");
+            boostEndAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, rb.transform.localScale, Ease.Linear),
+                    new Vector3Keyframe(0.022222223f, new Vector3(1f, 1f, 1f), Ease.SineInOut),
+                }, vector => { if (rb) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, boost.parent.localScale, Ease.Linear),
+                    new Vector3Keyframe(0.033333335f, new Vector3(0f, 0f, 0.2f), Ease.SineInOut),
+                }, vector => { if (boost && boost.parent) boost.parent.localScale = vector; }, interpolateOnComplete: true), // boost
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1.2f, 0.8f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.08888889f, new Vector3(1f, 1f, 1f), Ease.SineInOut),
+                }, vector =>
+                {
+                    for (int i = 0; i < tailParts.Count; i++)
+                    {
+                        if (tailParts[i].parent)
+                            tailParts[i].parent.localScale = vector;
+                    }
+
+                }, interpolateOnComplete: true), // tail parts
+            };
+            boostEndAnimation.onComplete = () =>
+            {
+                animationController.Remove(boostEndAnimation.id);
+                boostEndAnimation = null;
+            };
+            animationController.Play(boostEndAnimation);
+
+            if (boostEndAnimationCustom)
+                animationController.Play(boostEndAnimationCustom);
+        }
+
+        void InitHealAnimation()
+        {
+            if (hitAnimation)
+            {
+                animationController.Remove(hitAnimation.id);
+                hitAnimation = null;
+            }
+
+            var healAnimation = new RTAnimation("Player Heal Animation");
+            healAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1f, 1f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.1f, new Vector3(1.2f, 1f, 1f), Ease.SineOut),
+                    new Vector3Keyframe(0.2f, new Vector3(1f, 1f, 1f), Ease.SineIn),
+                }, vector => { if (rb) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(0f, 0f, 0.2f), Ease.Linear),
+                    new Vector3Keyframe(0.05f, new Vector3(0f, 0f, 0.2f), Ease.Linear),
+                    new Vector3Keyframe(0.15f, new Vector3(1.5f, 1.5f, 0.2f), Ease.SineOut),
+                    new Vector3Keyframe(0.25f, new Vector3(0f, 0f, 0.2f), Ease.SineIn),
+                }, vector => { if (boost && boost.parent) boost.parent.localScale = vector; }, interpolateOnComplete: true), // boost
+            };
+
+            List<AnimationHandlerBase> animationHandlers = new List<AnimationHandlerBase>();
+            float t = 0f;
+            for (int i = 0; i < tailParts.Count; i++)
+            {
+                var tailPart = tailParts[i];
+                animationHandlers.Add(new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f + t, new Vector3(1f, 1f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.09f + t, new Vector3(1.2f, 1.2f, 1f), Ease.SineOut),
+                    new Vector3Keyframe(0.13f + t, new Vector3(1f, 1f, 1f), Ease.SineIn),
+                }, vector =>
+                {
+                    if (tailPart.parent)
+                        tailPart.parent.localScale = vector;
+                }, interpolateOnComplete: true));
+                t += 0.02f;
+            }
+            healAnimation.animationHandlers.AddRange(animationHandlers);
+
+            healAnimation.onComplete = () =>
+            {
+                animationController.Remove(healAnimation.id);
+                healAnimation = null;
+            };
+            animationController.Play(healAnimation);
+
+            if (healAnimationCustom)
+                animationController.Play(healAnimationCustom);
+        }
+
+        void InitHitAnimation()
+        {
+            animationController.RemoveName("Player Heal Animation");
+
+            if (hitAnimation)
+            {
+                animationController.Remove(hitAnimation.id);
+                hitAnimation = null;
+            }
+
+            hitAnimation = new RTAnimation("Player Hit Animation");
+            hitAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1.2f, 1.2f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.1666667f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(0.4583333f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(0.6666666f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(0.8749999f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(1.083333f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(1.25f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(1.416667f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(1.625f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(1.875f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(2.083333f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(2.25f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(2.375f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(2.5f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                }, vector => { if (rb && !isBoosting) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(0f, 0f, 0.2f), Ease.Linear),
+                    new Vector3Keyframe(0.1f, new Vector3(1.5f, 1.5f, 0.2f), Ease.SineOut),
+                    new Vector3Keyframe(2.4f, new Vector3(1.5f, 1.5f, 0.2f), Ease.SineOut),
+                    new Vector3Keyframe(2.5f, new Vector3(0f, 0f, 0.2f), Ease.SineOut),
+                }, vector => { if (boost && boost.parent && !isBoosting) boost.parent.localScale = vector; }, interpolateOnComplete: true), // boost
+            };
+            hitAnimation.events = new List<Animation.AnimationEvent>
+            {
+                new Animation.AnimationEvent(0f, PlayHitParticles),
+                new Animation.AnimationEvent(2.5f, InitAfterHit),
+            };
+            hitAnimation.onComplete = () =>
+            {
+                animationController.Remove(hitAnimation.id);
+                hitAnimation = null;
+            };
+            animationController.Play(hitAnimation);
+
+            if (hitAnimationCustom)
+                animationController.Play(hitAnimationCustom);
+        }
+
+        void InitDeathAnimation()
+        {
+            if (deathAnimation)
+            {
+                animationController.Remove(deathAnimation.id);
+                deathAnimation = null;
+            }
+
+            deathAnimation = new RTAnimation("Player Death Animation");
+            deathAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1.1f, 1.1f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.2f, new Vector3(1.4f, 1.4f, 1f), Ease.SineOut),
+                    new Vector3Keyframe(0.4f, Vector3.zero, Ease.SineOut),
+                    new Vector3Keyframe(0.6f, Vector3.zero, Ease.Linear),
+                }, vector => { if (rb) rb.transform.localScale = vector; }), // rb
+                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
+                    new Vector3Keyframe(0f, new Vector3(1f, 1f, 1f), Ease.Linear),
+                    new Vector3Keyframe(0.2f, Vector3.zero, Ease.SineIn),
+                }, vector => { if (tailParent) tailParent.localScale = vector; }), // boost
+            };
+            deathAnimation.events = new List<Animation.AnimationEvent>
+            {
+                new Animation.AnimationEvent(0f, PlayDeathParticles),
+                new Animation.AnimationEvent(0.6f, () => Destroy(gameObject)),
+            };
+            deathAnimation.onComplete = () =>
+            {
+                animationController.Remove(deathAnimation.id);
+                deathAnimation = null;
+            };
+            animationController.Play(deathAnimation);
+
+            if (deathAnimationCustom)
+                animationController.Play(deathAnimationCustom);
+        }
+
+        #endregion
+
+        #region Init
 
         void Awake()
         {
             customObjectParent = Creator.NewGameObject("Custom Objects", transform).transform;
             customObjectParent.transform.localPosition = Vector3.zero;
 
+            animationController = gameObject.AddComponent<AnimationController>();
             var anim = gameObject.GetComponent<Animator>();
-            anim.keepAnimatorControllerStateOnDisable = true;
-            this.anim = anim;
+            //anim.keepAnimatorControllerStateOnDisable = true;
+            anim.enabled = face;
 
             var rb = transform.Find("Player").gameObject;
             this.rb = rb.GetComponent<Rigidbody2D>();
@@ -520,6 +984,8 @@ namespace BetterLegacy.Core.Components.Player
             };
             playerObjects.Add(this.head);
 
+            var spawnPos = rb.transform.localPosition;
+
             var faceBase = Creator.NewGameObject("face-base", rb.transform);
             faceBase.transform.localPosition = Vector3.zero;
 
@@ -535,7 +1001,7 @@ namespace BetterLegacy.Core.Components.Player
             };
             playerObjects.Add(face);
 
-            path.Add(new MovementPath(Vector3.zero, Quaternion.identity, rb.transform)); // base path
+            path.Add(new MovementPath(spawnPos, Quaternion.identity, rb.transform)); // base path
 
             tailParent = transform.Find("trail");
             tailTracker = Creator.NewGameObject("tail-tracker", rb.transform);
@@ -546,6 +1012,8 @@ namespace BetterLegacy.Core.Components.Player
             boost.transform.localScale = Vector3.zero;
 
             var boostBase = Creator.NewGameObject("Boost Base", transform.Find("Player"));
+            boostBase.transform.localPosition = Vector3.zero;
+            boostBase.transform.localRotation = Quaternion.identity;
             boostBase.layer = 8;
             boost.transform.SetParent(boostBase.transform);
             boost.transform.localPosition = Vector3.zero;
@@ -607,7 +1075,7 @@ namespace BetterLegacy.Core.Components.Player
                 delayTracker = boostDelayTracker,
             };
 
-            path.Add(new MovementPath(Vector3.zero, Quaternion.identity, boostTail.transform, showBoostTail));
+            path.Add(new MovementPath(spawnPos, Quaternion.identity, boostTail.transform, showBoostTail));
 
             for (int i = 1; i < 4; i++)
             {
@@ -653,10 +1121,10 @@ namespace BetterLegacy.Core.Components.Player
                 };
                 tailParts.Add(tailPart);
                 tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
-                path.Add(new MovementPath(Vector3.zero, Quaternion.identity, tailBase.transform));
+                path.Add(new MovementPath(spawnPos, Quaternion.identity, tailBase.transform));
             }
 
-            path.Add(new MovementPath(Vector3.zero, Quaternion.identity, null));
+            path.Add(new MovementPath(spawnPos, Quaternion.identity, null));
 
             healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}");
 
@@ -683,177 +1151,17 @@ namespace BetterLegacy.Core.Components.Player
             healthText.SetActive(false);
         }
 
-        public bool playerNeedsUpdating;
         void Start()
         {
             playerHitEvent += UpdateTail;
 
             if (playerNeedsUpdating)
             {
+                playerNeedsUpdating = false;
                 Spawn();
                 UpdateModel();
             }
         }
-
-        public bool isSpawning;
-        public void Spawn()
-        {
-            CanTakeDamage = false;
-            CanBoost = false;
-            CanMove = false;
-            isDead = false;
-            isBoosting = false;
-            isSpawning = true;
-
-            if (spawnAnimation != null)
-            {
-                AnimationManager.inst.Remove(spawnAnimation.id);
-                spawnAnimation = null;
-            }
-
-            bool initMidSpawn = false;
-            bool initAfterSpawn = false;
-            spawnAnimation = new RTAnimation("Player Spawn");
-            spawnAnimation.animationHandlers = new List<AnimationHandlerBase>()
-            {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.2f, 1.2f, Ease.SineOut),
-                    new FloatKeyframe(0.23333333f, 1f, Ease.SineInOut),
-                }, x =>
-                {
-                    if (transform)
-                        transform.localScale = new Vector3(x, x, 1f);
-                }), // base
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.23333333f, 1.2f, Ease.SineOut),
-                    new FloatKeyframe(0.36666667f, 0.8f, Ease.SineInOut),
-                    new FloatKeyframe(0.43333334f, 1.2f, Ease.SineInOut),
-                    new FloatKeyframe(0.5f, 0.8f, Ease.SineInOut),
-                    new FloatKeyframe(0.56666666f, 1.2f, Ease.SineInOut),
-                    new FloatKeyframe(0.6333333f, 0.8f, Ease.SineInOut),
-                    new FloatKeyframe(0.7f, 1.2f, Ease.SineInOut),
-                    new FloatKeyframe(0.76666665f, 1.2f, Ease.SineInOut),
-                    new FloatKeyframe(0.8333333f, 0.8f, Ease.SineInOut),
-                    new FloatKeyframe(0.9f, 1.2f, Ease.SineInOut),
-                    new FloatKeyframe(0.93333334f, 0.8f, Ease.SineInOut),
-                    new FloatKeyframe(1f, 1f, Ease.SineInOut),
-                }, x =>
-                {
-                    if (rb && rb.transform)
-                        rb.transform.localScale = new Vector3(x, x, 1f);
-                }), // Player
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.33333334f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.43333334f, 1f, Ease.BackOut),
-                    new FloatKeyframe(0.5f, 1f, Ease.Linear),
-                }, x =>
-                {
-                    if (tailParts.Count > 0 && tailParts[0].parent)
-                        tailParts[0].parent.localScale = new Vector3(x, x, 1f);
-                }), // Trail 1
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.43333334f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.53333336f, 1f, Ease.BackOut),
-                    new FloatKeyframe(0.6f, 1f, Ease.Linear),
-                }, x =>
-                {
-                    if (tailParts.Count > 1 && tailParts[1].parent)
-                        tailParts[1].parent.localScale = new Vector3(x, x, 1f);
-                }), // Trail 2
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.53333336f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.6333333f, 1f, Ease.BackOut),
-                    new FloatKeyframe(0.7f, 1f, Ease.Linear),
-                }, x =>
-                {
-                    if (tailParts.Count > 2 && tailParts[2].parent)
-                        tailParts[2].parent.localScale = new Vector3(x, x, 1f);
-                }), // Trail 3
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 1.4f, Ease.Linear),
-                    new FloatKeyframe(1f, 1.4f, Ease.Linear),
-                    new FloatKeyframe(1.1f, 0f, Ease.Linear),
-                }, x =>
-                {
-                    if (boost != null && boost.gameObject)
-                        boost.gameObject.transform.localScale = new Vector3(x, x, 0.2f);
-                }), // Boost
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 1f, Ease.Linear),
-                    new FloatKeyframe(0.13333334f, 0.13333334f, Ease.Linear),
-                    new FloatKeyframe(1f, 1f, Ease.Linear),
-                    new FloatKeyframe(1.1f, 1f, Ease.Linear),
-                }, x =>
-                {
-                    if (!initMidSpawn && x >= 0.13333334f)
-                    {
-                        initMidSpawn = true;
-                        InitMidSpawn();
-                    }
-                    if (!initAfterSpawn && x >= 1f)
-                    {
-                        initAfterSpawn = true;
-                        InitAfterSpawn();
-                    }
-                }), // Events
-            };
-            spawnAnimation.onComplete = () =>
-            {
-                AnimationManager.inst.Remove(spawnAnimation.id);
-                spawnAnimation = null;
-
-                if (transform)
-                    transform.localScale = new Vector3(1f, 1f, 1f);
-
-                if (rb && rb.transform)
-                    rb.transform.localScale = new Vector3(1f, 1f, 1f);
-
-                if (tailParts != null)
-                    for (int i = 0; i < tailParts.Count; i++)
-                        if (tailParts[i].parent)
-                            tailParts[i].parent.localScale = Vector3.one;
-
-                if (boost != null && boost.gameObject)
-                    boost.gameObject.transform.localScale = new Vector3(0f, 0f, 0.2f);
-            };
-            AnimationManager.inst.Play(spawnAnimation);
-            PlaySpawnParticles();
-
-            try
-            {
-                path[0].pos = rb.transform.position;
-                path[0].rot = rb.transform.rotation;
-                var pos = path[0].pos;
-                var rot = path[0].rot;
-                for (int i = 1; i < path.Count; i++)
-                {
-                    var path = this.path[i];
-                    path.pos = new Vector3(pos.x, pos.y);
-                    path.rot = rot;
-                    path.lastPos = new Vector3(pos.x, pos.y);
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-
-            CoreHelper.Log($"Spawned Player {playerIndex}");
-        }
-
-        public RTAnimation spawnAnimation;
 
         #endregion
 
@@ -893,10 +1201,8 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             if (!Alive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
-                StartCoroutine(Kill());
+                StartCoroutine(IKill());
         }
-
-        bool canShoot = true;
 
         void FixedUpdate()
         {
@@ -947,9 +1253,6 @@ namespace BetterLegacy.Core.Components.Player
             face.gameObject.transform.localPosition = new Vector3(vector.x * 0.3f + fp.x, vector.y * 0.3f + fp.y, 0f);
         }
 
-        float timeHit;
-        float timeHitOffset;
-
         void UpdateSpeeds()
         {
             float pitch = CoreHelper.ForwardPitch;
@@ -957,7 +1260,8 @@ namespace BetterLegacy.Core.Components.Player
             if (CoreHelper.Paused)
                 pitch = 0f;
 
-            anim.speed = pitch;
+            //anim.speed = pitch;
+            animationController.speed = pitch;
 
             if (!PlayerModel)
                 return;
@@ -1107,21 +1411,17 @@ namespace BetterLegacy.Core.Components.Player
             headTrail.time = PlayerModel.headPart.Trail.time / pitch;
             boostTrail.time = PlayerModel.boostPart.Trail.time / pitch;
 
-            for (int i = 0; i < PlayerModel.tailParts.Count; i++)
-            {
-                if (i >= tailParts.Count)
-                    continue;
-
-                tailParts[i].trailRenderer.time = PlayerModel.tailParts[i].Trail.time / pitch;
-            }
+            for (int i = 0; i < tailParts.Count; i++)
+                tailParts[i].trailRenderer.time = PlayerModel.GetTail(i).Trail.time / pitch;
         }
-
-        bool queuedBoost;
 
         void UpdateControls()
         {
             if (!CustomPlayer || !PlayerModel || !Alive)
+            {
+                rb.velocity = Vector2.zero;
                 return;
+            }
 
             if (CanMove && Actions != null)
             {
@@ -1302,59 +1602,36 @@ namespace BetterLegacy.Core.Components.Player
                         float xt = 1f + stretchVector.x;
                         float yt = 1f + stretchVector.y;
 
-                        if (rotateMode == RotateMode.FlipX)
+                        switch (rotateMode)
                         {
-                            if (lastMovement.x > 0f)
-                                player.transform.localScale = new Vector3(xt, yt, 1f);
-                            if (lastMovement.x < 0f)
-                                player.transform.localScale = new Vector3(-xt, yt, 1f);
-                        }
-                        if (rotateMode == RotateMode.FlipY)
-                        {
-                            if (lastMovement.y > 0f)
-                                player.transform.localScale = new Vector3(xt, yt, 1f);
-                            if (lastMovement.y < 0f)
-                                player.transform.localScale = new Vector3(xt, -yt, 1f);
-                        }
-                        if (rotateMode == RotateMode.None)
-                        {
-                            player.transform.localScale = new Vector3(xt, yt, 1f);
+                            case RotateMode.FlipX: {
+                                    if (lastMovement.x > 0f)
+                                        player.transform.localScale = new Vector3(xt, yt, 1f);
+                                    if (lastMovement.x < 0f)
+                                        player.transform.localScale = new Vector3(-xt, yt, 1f);
+                                    break;
+                                }
+                            case RotateMode.FlipY: {
+                                    if (lastMovement.y > 0f)
+                                        player.transform.localScale = new Vector3(xt, yt, 1f);
+                                    if (lastMovement.y < 0f)
+                                        player.transform.localScale = new Vector3(xt, -yt, 1f);
+                                    break;
+                                }
+                            case RotateMode.None: {
+                                    player.transform.localScale = new Vector3(xt, yt, 1f);
+                                    break;
+                                }
                         }
                     }
                 }
-                anim.SetFloat("Speed", Mathf.Abs(vector.x + vector.y));
+                //anim.SetFloat("Speed", Mathf.Abs(vector.x + vector.y));
 
                 if (rb.velocity != Vector2.zero)
                     lastVelocity = rb.velocity;
             }
             else if (CanMove)
-            {
                 rb.velocity = Vector3.zero;
-            }
-
-            // Currently unused.
-            if (Alive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !CoreHelper.IsUsingInputField && movementMode == MovementMode.Mouse && CoreHelper.InEditorPreview && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
-            {
-                Vector2 screenCenter = new Vector2(1920 / 2 * (int)CoreHelper.ScreenScale, 1080 / 2 * (int)CoreHelper.ScreenScale);
-                Vector2 mousePos = new Vector2(System.Windows.Forms.Cursor.Position.X - screenCenter.x, -(System.Windows.Forms.Cursor.Position.Y - (screenCenter.y * 2)) - screenCenter.y);
-
-                if (lastMousePos != new Vector2(System.Windows.Forms.Cursor.Position.X, System.Windows.Forms.Cursor.Position.Y))
-                {
-                    System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)screenCenter.x, (int)screenCenter.y);
-                }
-
-                var mousePosition = Input.mousePosition;
-                mousePosition = Camera.main.WorldToScreenPoint(mousePosition);
-
-                float num = idleSpeed * 0.00025f;
-                if (isBoosting)
-                    num = boostSpeed * 0.0001f;
-
-                //player.transform.position += new Vector3(mousePos.x * num, mousePos.y * num, 0f);
-                player.transform.localPosition = new Vector3(mousePosition.x, mousePosition.y, 0f);
-                lastMousePos = new Vector2(mousePosition.x, mousePosition.y);
-            }
-
         }
 
         void UpdateRotation()
@@ -1465,7 +1742,7 @@ namespace BetterLegacy.Core.Components.Player
 
                                 if (rotateResetAnimation != null)
                                 {
-                                    AnimationManager.inst.Remove(rotateResetAnimation.id);
+                                    animationController.Remove(rotateResetAnimation.id);
                                     rotateResetAnimation = null;
                                 }
 
@@ -1484,7 +1761,7 @@ namespace BetterLegacy.Core.Components.Player
 
                                 if (rotateResetAnimation != null)
                                 {
-                                    AnimationManager.inst.Remove(rotateResetAnimation.id);
+                                    animationController.Remove(rotateResetAnimation.id);
                                     rotateResetAnimation = null;
                                 }
 
@@ -1511,12 +1788,12 @@ namespace BetterLegacy.Core.Components.Player
                                     if (rotateResetAnimation == null)
                                         return;
 
-                                    AnimationManager.inst.Remove(rotateResetAnimation.id);
+                                    animationController.Remove(rotateResetAnimation.id);
                                     rotateResetAnimation = null;
                                     animatingRotateReset = false;
                                 };
 
-                                AnimationManager.inst.Play(rotateResetAnimation);
+                                animationController.Play(rotateResetAnimation);
                             }
 
                             break;
@@ -1622,12 +1899,6 @@ namespace BetterLegacy.Core.Components.Player
             player.transform.localPosition = dfs;
         }
 
-        bool animatingRotateReset;
-        bool moved;
-        float timeNotMovingOffset;
-        Vector2 lastMovementTotal;
-        RTAnimation rotateResetAnimation;
-
         void UpdateTheme()
         {
             if (!PlayerModel)
@@ -1682,11 +1953,9 @@ namespace BetterLegacy.Core.Components.Player
                 barIm.color = CoreHelper.GetPlayerColor(index, topCol, topAlpha, topColHex);
             }
 
-            for (int i = 0; i < PlayerModel.tailParts.Count; i++)
+            for (int i = 0; i < tailParts.Count; i++)
             {
-                if (i >= tailParts.Count)
-                    continue;
-                var modelPart = PlayerModel.tailParts[i];
+                var modelPart = PlayerModel.GetTail(i);
 
                 var tailPart = tailParts[i];
 
@@ -1728,39 +1997,159 @@ namespace BetterLegacy.Core.Components.Player
             }
         }
 
+        void UpdateCustomTheme()
+        {
+            if (customObjects.Count < 1)
+                return;
+
+            var index = PlayersData.Main.GetMaxIndex(playerIndex);
+            foreach (var playerObject in playerObjects)
+            {
+                if (!playerObject.isCustom)
+                {
+                    playerObject.gameObject.SetActive(playerObject.active);
+                    continue;
+                }
+
+                var customObject = playerObject as CustomObject;
+
+                if (!CustomPlayer || !customObject.gameObject)
+                    continue;
+                var active = customObject.active && (customObject.reference.visibilitySettings.Count < 1 && customObject.reference.active || customObject.reference.visibilitySettings.Count > 0 &&
+                        (!customObject.reference.requireAll && customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)) ||
+                    customObject.reference.visibilitySettings.All(x => CheckVisibility(x))));
+
+                customObject.gameObject.SetActive(active);
+
+                if (!active)
+                    continue;
+
+                var reference = customObject.reference;
+                if (customObject.text)
+                    customObject.text.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+                else if (customObject.renderer)
+                    customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+            }
+        }
+
+        void UpdateBoostTheme()
+        {
+            if (boosts.Count < 1)
+                return;
+
+            var index = PlayersData.Main.GetMaxIndex(playerIndex);
+
+            foreach (var boost in boosts)
+            {
+                if (boost == null)
+                    continue;
+
+                int startCol = boost.startColor;
+                int endCol = boost.endColor;
+
+                var startHex = boost.startCustomColor;
+                var endHex = boost.endCustomColor;
+
+                float alpha = boost.opacity;
+                float colorTween = boost.colorTween;
+
+                Color startColor = CoreHelper.GetPlayerColor(index, startCol, alpha, startHex);
+                Color endColor = CoreHelper.GetPlayerColor(index, endCol, alpha, endHex);
+
+                if (boost.renderer)
+                    boost.renderer.material.color = Color.Lerp(startColor, endColor, colorTween);
+            }
+        }
+
         #endregion
 
-        #region Collision Handlers
+        #region Actions
 
-        public bool colliding;
-
-        bool CollisionCheck(Collider2D other) => other.tag != "Helper" && other.tag != "Player" && other.name != $"bullet (Player {playerIndex + 1})";
-        bool CollisionCheck(Collider other) => other.tag != "Helper" && other.tag != "Player" && other.name != $"bullet (Player {playerIndex + 1})";
-
-        public void OnObjectCollisionEnter(Collider2D other) => HandleCollision(other);
-
-        public void OnObjectCollisionEnter(Collider other) => HandleCollision(other);
-
-        public void OnObjectCollisionStay(Collider2D other) => HandleCollision(other, false);
-
-        public void OnObjectCollisionStay(Collider other) => HandleCollision(other, false);
-
-        void HandleCollision(Collider2D other, bool stay = true)
+        /// <summary>
+        /// Spawns the player.
+        /// </summary>
+        public void Spawn()
         {
-            if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
-                Hit();
+            CanTakeDamage = false;
+            CanBoost = false;
+            CanMove = false;
+            isDead = false;
+            isBoosting = false;
+            isSpawning = true;
+
+            InitSpawnAnimation();
+            PlaySpawnParticles();
+
+            try
+            {
+                path[0].pos = rb.transform.position;
+                path[0].rot = rb.transform.rotation;
+                var pos = path[0].pos;
+                var rot = path[0].rot;
+                for (int i = 1; i < path.Count; i++)
+                {
+                    var path = this.path[i];
+                    path.pos = new Vector3(pos.x, pos.y);
+                    path.rot = rot;
+                    path.lastPos = new Vector3(pos.x, pos.y);
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
+            CoreHelper.Log($"Spawned Player {playerIndex}");
         }
-        
-        void HandleCollision(Collider other, bool stay = true)
+
+        /// <summary>
+        /// Heals the player.
+        /// </summary>
+        /// <param name="health">Amount of health to add.</param>
+        /// <returns>Returns true if the player was successfully healed.</returns>
+        public bool Heal(int health, bool playSound = true)
         {
-            if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
-                Hit();
+            if (!CustomPlayer || !Alive || health <= 0)
+                return false;
+
+            int prevHealth = CustomPlayer.Health;
+            CustomPlayer.Health += health;
+
+            if (prevHealth != CustomPlayer.Health)
+            {
+                InitHealAnimation();
+                if (playSound)
+                    SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
+                return true;
+            }
+            return false;
         }
 
-        #endregion
+        /// <summary>
+        /// Hits the player.
+        /// </summary>
+        /// <param name="damage">Amount of health to take away.</param>
+        public void Hit(int damage)
+        {
+            if (!CanTakeDamage || !Alive || damage <= 0)
+                return;
 
-        #region Init
+            timeHit = Time.time;
 
+            InitBeforeHit();
+            if (CustomPlayer && CustomPlayer.Health > 0)
+                InitHitAnimation();
+            if (!CustomPlayer)
+                return;
+
+            if (!PlayerManager.IsPractice)
+                CustomPlayer.Health -= damage;
+            playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
+        }
+
+        /// <summary>
+        /// Hits the player.
+        /// </summary>
         public void Hit()
         {
             if (!CanTakeDamage || !Alive)
@@ -1769,9 +2158,9 @@ namespace BetterLegacy.Core.Components.Player
             timeHit = Time.time;
 
             InitBeforeHit();
-            if (Alive)
-                anim.SetTrigger("hurt");
-            if (CustomPlayer == null)
+            if (CustomPlayer && CustomPlayer.Health > 0)
+                InitHitAnimation();
+            if (!CustomPlayer)
                 return;
 
             if (!PlayerManager.IsPractice)
@@ -1779,69 +2168,18 @@ namespace BetterLegacy.Core.Components.Player
             playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
         }
 
-        IEnumerator BoostCooldownLoop()
+        /// <summary>
+        /// Kills the player.
+        /// </summary>
+        public void Kill()
         {
-            var headTrail = boost.trailRenderer;
-            if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
-                headTrail.emitting = false;
-
-            AnimationManager.inst.Play(new RTAnimation("Player Stretch")
-            {
-                animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, stretchAmount * 1.5f, Ease.Linear),
-                        new FloatKeyframe(1.5f, 0f, Ease.GetEaseFunction(DataManager.inst.AnimationList[stretchEasing].Name)),
-                    }, x => { stretchVector = new Vector2(x, -x); }),
-                },
-            });
-
-            yield return new WaitForSeconds(boostCooldown / CoreHelper.ForwardPitch);
-            CanBoost = true;
-            if (PlayBoostRecoverSound && (!PlayerConfig.Instance.PlaySoundRBoostTail.Value || showBoostTail))
-                SoundManager.inst.PlaySound(DefaultSounds.boost_recover);
-
-            if (showBoostTail)
-            {
-                path[1].active = true;
-                var tweener = boostTail.parent.DOScale(Vector3.one, 0.1f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[9].Animation);
-                tweener.OnComplete(() => animatingBoost = false);
-            }
-            yield break;
+            if (CustomPlayer)
+                CustomPlayer.Health = 0;
         }
 
-        IEnumerator Kill()
-        {
-            isDead = true;
-            playerDeathEvent?.Invoke(rb.position);
-            CustomPlayer.active = false;
-            CustomPlayer.health = 0;
-            anim.SetTrigger("kill");
-            InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
-            yield return new WaitForSecondsRealtime(0.2f);
-            Destroy(healthText);
-            Destroy(gameObject);
-            InputDataManager.inst.StopControllerRumble(playerIndex);
-            yield break;
-        }
-
-        public void InitMidSpawn()
-        {
-            CanMove = true;
-            CanBoost = true;
-        }
-
-        public void InitAfterSpawn()
-        {
-            if (boostCoroutine != null)
-                StopCoroutine(boostCoroutine);
-            CanMove = true;
-            CanBoost = true;
-            CanTakeDamage = true;
-            isSpawning = false;
-        }
-
+        /// <summary>
+        /// Makes the player boost.
+        /// </summary>
         public void StartBoost()
         {
             if (!CanBoost || isBoosting)
@@ -1849,7 +2187,8 @@ namespace BetterLegacy.Core.Components.Player
 
             startBoostTime = Time.time;
             InitBeforeBoost();
-            anim.SetTrigger("boost");
+            //anim.SetTrigger("boost");
+            InitBoostAnimation();
 
             var ps = boost.particleSystem;
             var emission = ps.emission;
@@ -1878,14 +2217,127 @@ namespace BetterLegacy.Core.Components.Player
             LevelManager.BoostCount++;
         }
 
-        public void InitBeforeBoost()
+        /// <summary>
+        /// Sets all path points to a single position.
+        /// </summary>
+        /// <param name="pos">Position to set.</param>
+        public void SetPath(Vector2 pos)
+        {
+            foreach (var path in path)
+            {
+                path.pos = new Vector3(pos.x, pos.y);
+                path.lastPos = new Vector3(pos.x, pos.y);
+
+                if (path.transform)
+                    path.transform.position = path.pos;
+            }
+        }
+
+        /// <summary>
+        /// Sets a path point to a position.
+        /// </summary>
+        /// <param name="index">Index of the path.</param>
+        /// <param name="pos">Position to set.</param>
+        public void SetPath(int index, Vector2 pos)
+        {
+            if (index < 0 || index > path.Count)
+                return;
+            path[index].pos = new Vector3(pos.x, pos.y);
+            path[index].lastPos = new Vector3(pos.x, pos.y);
+            if (path[index].transform)
+                path[index].transform.position = path[index].pos;
+        }
+
+        #region Internal
+
+        /// <summary>
+        /// this is public but should be treated as internal.
+        /// </summary>
+        public void HandleCollision(Component other, bool stay = true)
+        {
+            if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
+                Hit();
+        }
+
+        bool CollisionCheck(Component other) => other.tag != "Helper" && (other.tag == "Player" && AllowPlayersToHitOthers || other.tag != "Player") && other.name != $"bullet (Player {playerIndex + 1})";
+
+        IEnumerator BoostCooldownLoop()
+        {
+            var headTrail = boost.trailRenderer;
+            if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
+                headTrail.emitting = false;
+
+            animationController.Play(new RTAnimation("Player Stretch")
+            {
+                animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, stretchAmount * 1.5f, Ease.Linear),
+                        new FloatKeyframe(1.5f, 0f, Ease.GetEaseFunction(DataManager.inst.AnimationList[stretchEasing].Name)),
+                    }, x => { stretchVector = new Vector2(x, -x); }),
+                },
+            });
+
+            yield return new WaitForSeconds(boostCooldown / CoreHelper.ForwardPitch);
+            CanBoost = true;
+            if (PlayBoostRecoverSound && (!PlayerConfig.Instance.PlaySoundRBoostTail.Value || showBoostTail))
+                SoundManager.inst.PlaySound(DefaultSounds.boost_recover);
+
+            if (showBoostTail)
+            {
+                path[1].active = true;
+                var tweener = boostTail.parent.DOScale(Vector3.one, 0.1f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[9].Animation);
+                tweener.OnComplete(() => animatingBoost = false);
+            }
+            yield break;
+        }
+
+        void ClearObjects()
+        {
+            Destroy(healthText);
+            Destroy(gameObject);
+        }
+
+        IEnumerator IKill()
+        {
+            isDead = true;
+            playerDeathEvent?.Invoke(rb.position);
+            CustomPlayer.active = false;
+            CustomPlayer.health = 0;
+            //anim.SetTrigger("kill");
+            InitDeathAnimation();
+            InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
+            yield return new WaitForSecondsRealtime(0.2f);
+            //ClearObjects();
+            InputDataManager.inst.StopControllerRumble(playerIndex);
+            yield break;
+        } // if you want to kill the player, just set health to zero.
+
+        void InitMidSpawn()
+        {
+            CanMove = true;
+            CanBoost = true;
+        }
+
+        void InitAfterSpawn()
+        {
+            if (boostCoroutine != null)
+                StopCoroutine(boostCoroutine);
+            CanMove = true;
+            CanBoost = true;
+            CanTakeDamage = true;
+            isSpawning = false;
+        }
+
+        void InitBeforeBoost()
         {
             CanBoost = false;
             isBoosting = true;
             CanTakeDamage = false;
         }
 
-        public void InitMidBoost(bool _forceToNormal = false)
+        void InitMidBoost(bool _forceToNormal = false)
         {
             if (_forceToNormal)
             {
@@ -1897,7 +2349,7 @@ namespace BetterLegacy.Core.Components.Player
             CanTakeDamage = true;
         }
 
-        public IEnumerator BoostCancel(float _offset)
+        IEnumerator BoostCancel(float _offset)
         {
             isBoostCancelled = true;
             yield return new WaitForSeconds(_offset);
@@ -1905,27 +2357,28 @@ namespace BetterLegacy.Core.Components.Player
             if (!isTakingHit)
             {
                 CanTakeDamage = true;
-                anim.SetTrigger("boost_cancel");
+                CancelBoostAnim();
             }
             else
             {
-                float num = (Time.time - startHurtTime) / 2.5f;
-                if (num < 1f)
-                    anim.Play("Hurt", -1, num);
-                else
-                {
-                    anim.SetTrigger("boost_cancel");
-                    InitAfterHit();
-                }
+                //CoreHelper.Log($"Player is somehow taking damage while boosting");
+                //float num = (Time.time - startHurtTime) / 2.5f;
+                //if (num < 1f)
+                //    anim.Play("Hurt", -1, num);
+                //else
+                //{
+                //    CancelBoostAnim();
+                //    //InitAfterHit();
+                //}
             }
             yield return new WaitForSeconds(0.1f);
             InitAfterBoost();
-            anim.SetTrigger("boost_cancel");
+            CancelBoostAnim();
             yield break;
         }
 
         //Look into making custom damage offsets
-        public IEnumerator DamageSetDelay(float _offset)
+        IEnumerator DamageSetDelay(float _offset)
         {
             yield return new WaitForSeconds(_offset);
             CoreHelper.Log($"Player {playerIndex} can now be damaged.");
@@ -1933,14 +2386,14 @@ namespace BetterLegacy.Core.Components.Player
             yield break;
         }
 
-        public void InitAfterBoost()
+        void InitAfterBoost()
         {
             isBoosting = false;
             isBoostCancelled = false;
             boostCoroutine = StartCoroutine(BoostCooldownLoop());
         }
 
-        public void InitBeforeHit()
+        void InitBeforeHit()
         {
             CoreHelper.Log($"Player {playerIndex} InitBeforeHit");
             startHurtTime = Time.time;
@@ -1953,10 +2406,19 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         // Empty method for animation controller (todo: see if animation controller can live without this or am I misunderstanding how this works?)
-        public void InitAfterHit() { }
+        void InitAfterHit() => Debug.Log($"RUN METHOD {nameof(InitAfterHit)}");
 
-        public void ResetMovement()
+        void CancelBoostAnim()
         {
+            CoreHelper.Log($"Player {playerIndex} {nameof(CancelBoostAnim)}");
+            //anim.SetTrigger("boost_cancel");
+            InitBoostEndAnimation();
+        }
+
+        void ResetMovement()
+        {
+            Debug.Log($"RUN METHOD {nameof(ResetMovement)}");
+
             if (boostCoroutine != null)
                 StopCoroutine(boostCoroutine);
 
@@ -1965,17 +2427,378 @@ namespace BetterLegacy.Core.Components.Player
             CanBoost = true;
         }
 
-        public void PlaySpawnParticles() => spawn.Play();
-
-        public void PlayDeathParticles() => death.Play();
-
-        public void PlayHitParticles() => burst.Play();
+        #endregion
 
         #endregion
 
-        #region Update Values
+        #region Model
 
-        public bool updated;
+        /// <summary>
+        /// Updates the players' model.
+        /// </summary>
+        public void UpdateModel()
+        {
+            if (!PlayerModel)
+                return;
+
+            var currentModel = PlayerModel;
+
+            InitNametag();
+
+            for (int i = 0; i < tailParts.Count; i++)
+                Assign(tailParts[i], currentModel.GetTail(i));
+
+            Assign(head, currentModel.headPart);
+            Assign(boost, currentModel.boostPart);
+
+            var fp = currentModel.FacePosition;
+            face.gameObject.transform.localPosition = new Vector3(fp.x, fp.y, 0f);
+
+            tailDistance = currentModel.tailBase.distance;
+            tailMode = (int)currentModel.tailBase.mode;
+            tailGrows = currentModel.tailBase.grows;
+
+            showBoostTail = currentModel.boostTailPart.active;
+
+            boostTail.parent.gameObject.SetActive(showBoostTail);
+            if (showBoostTail)
+                boostTail.meshFilter.mesh = GetShape(currentModel.boostTailPart.shape.type, currentModel.boostTailPart.shape.option).mesh;
+
+            if (!isBoosting)
+                path[1].active = showBoostTail;
+
+            boostTail.gameObject.SetActive(showBoostTail);
+
+            if (showBoostTail)
+            {
+                boostTail.gameObject.transform.localPosition = new Vector3(currentModel.boostTailPart.position.x, currentModel.boostTailPart.position.y, 0.1f);
+                boostTail.gameObject.transform.localScale = new Vector3(currentModel.boostTailPart.scale.x, currentModel.boostTailPart.scale.y, 1f);
+                boostTail.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, currentModel.boostTailPart.rotation);
+            }
+
+            jumpGravity = currentModel.basePart.jumpGravity;
+            jumpIntensity = currentModel.basePart.jumpIntensity;
+            jumpCount = currentModel.basePart.jumpCount;
+            jumpBoostCount = currentModel.basePart.jumpBoostCount;
+            bounciness = currentModel.basePart.bounciness;
+
+            rb.sharedMaterial.bounciness = bounciness;
+
+            stretch = currentModel.stretchPart.active;
+            stretchAmount = currentModel.stretchPart.amount;
+            stretchEasing = currentModel.stretchPart.easing;
+
+            rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
+
+            circleCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
+            polygonCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
+
+            var colAcc = currentModel.basePart.collisionAccurate;
+            circleCollider2D.enabled = !colAcc;
+            polygonCollider2D.enabled = colAcc;
+            if (colAcc)
+                polygonCollider2D.CreateCollider(head.meshFilter);
+
+            if (CustomPlayer)
+                CustomPlayer.Health = PlayerManager.IsNoHit ? 1 : currentModel.basePart.health;
+
+            var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
+                        RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :
+                        PlayerManager.healthSprite;
+
+            //Health Images
+            foreach (var health in healthObjects)
+                if (health.image)
+                    health.image.sprite = healthSprite;
+
+            UpdateCustomObjects();
+
+            if (tailGrows)
+                GrowTail();
+
+            updated = true;
+        }
+
+        /// <summary>
+        /// Updates the custom objects of the players' model.
+        /// </summary>
+        public void UpdateCustomObjects()
+        {
+            var currentModel = PlayerModel;
+
+            var currentModelCustomObjects = currentModel.customObjects;
+
+            foreach (var obj in customObjects)
+                Destroy(obj.gameObject);
+            customObjects.Clear();
+
+            playerObjects.RemoveAll(x => x.isCustom);
+
+            if (currentModelCustomObjects == null || currentModelCustomObjects.Count < 1)
+                return;
+
+            for (int i = 0; i < currentModelCustomObjects.Count; i++)
+            {
+                var reference = currentModelCustomObjects[i];
+
+                if (reference.shape.type == 9)
+                    continue;
+
+                var customObj = new CustomObject()
+                {
+                    id = reference.id,
+                    reference = reference,
+                };
+
+                var shape = reference.shape;
+                var pos = reference.position;
+                var sca = reference.scale;
+                var rot = reference.rotation;
+
+                var depth = reference.depth;
+
+                int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+                int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+
+                customObj.gameObject = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent);
+                customObj.gameObject.transform.localScale = Vector3.one;
+                customObj.gameObject.transform.localRotation = Quaternion.identity;
+
+                customObj.delayTracker = customObj.gameObject.AddComponent<PlayerDelayTracker>();
+                customObj.delayTracker.offset = 0;
+                customObj.delayTracker.positionOffset = reference.positionOffset;
+                customObj.delayTracker.scaleOffset = reference.scaleOffset;
+                customObj.delayTracker.rotationOffset = reference.rotationOffset;
+                customObj.delayTracker.scaleParent = reference.scaleParent;
+                customObj.delayTracker.rotationParent = reference.rotationParent;
+                customObj.delayTracker.player = this;
+
+                var child = customObj.gameObject.transform.GetChild(0);
+                child.localPosition = new Vector3(pos.x, pos.y, depth);
+                child.localScale = new Vector3(sca.x, sca.y, 1f);
+                child.localEulerAngles = new Vector3(0f, 0f, rot);
+
+                customObj.gameObject.tag = "Helper";
+                child.tag = "Helper";
+
+                var renderer = customObj.gameObject.GetComponentInChildren<Renderer>();
+                renderer.enabled = true;
+                customObj.renderer = renderer;
+
+                Destroy(child.GetComponent<Collider2D>());
+
+                if (s == 4 && child.gameObject.TryGetComponent(out TextMeshPro tmp))
+                {
+                    tmp.text = customObj.reference.text;
+                    customObj.text = tmp;
+                }
+
+                if (s == 6 && renderer is SpriteRenderer spriteRenderer)
+                {
+                    var path = RTFile.CombinePaths(RTFile.BasePath, reference.text);
+
+                    if (!RTFile.FileExists(path))
+                    {
+                        spriteRenderer.sprite = ArcadeManager.inst.defaultImage;
+                        continue;
+                    }
+
+                    CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", texture2D =>
+                    {
+                        if (!spriteRenderer)
+                            return;
+
+                        spriteRenderer.sprite = SpriteHelper.CreateSprite(texture2D);
+                    }));
+                }
+
+                playerObjects.Add(customObj);
+                customObjects.Add(customObj);
+            }
+
+            UpdateParents();
+        }
+
+        /// <summary>
+        /// Updates the parents of the custom objects.
+        /// </summary>
+        public void UpdateParents()
+        {
+            foreach (var customObject in customObjects)
+                UpdateParent(customObject);
+        }
+
+        /// <summary>
+        /// Checks if a visibility setting is active.
+        /// </summary>
+        /// <param name="visiblity">Visibility to check.</param>
+        /// <returns>Returns true if visibility is active, otherwise returns false.</returns>
+        public bool CheckVisibility(PlayerModel.CustomObject.Visiblity visiblity)
+        {
+            var value = visiblity.command switch
+            {
+                "isBoosting" => isBoosting,
+                "isTakingHit" => isTakingHit,
+                "isZenMode" => PlayerManager.Invincible,
+                "isHealthPercentageGreater" => (float)CustomPlayer.health / initialHealthCount * 100f >= visiblity.value,
+                "isHealthGreaterEquals" => CustomPlayer.health >= visiblity.value,
+                "isHealthEquals" => CustomPlayer.health == visiblity.value,
+                "isHealthGreater" => CustomPlayer.health > visiblity.value,
+                "isPressingKey" => Input.GetKey(GetKeyCode((int)visiblity.value)),
+                _ => true,
+            };
+
+            return visiblity.not ? !value : value;
+        }
+
+        /// <summary>
+        /// Grows the players' tail.
+        /// </summary>
+        public void GrowTail()
+        {
+            while (initialHealthCount > tailParts.Count)
+            {
+                int num = tailParts.Count + 1;
+                var last = tailParts.Last();
+                var tailBase = last.parent.gameObject.Duplicate(tailParent, $"Tail {num} Base");
+                tailBase.transform.localScale = Vector3.one;
+                var tail = tailBase.transform.GetChild(0);
+                tail.name = num.ToString();
+
+
+                var playerDelayTracker = tailBase.GetOrAddComponent<PlayerDelayTracker>();
+                playerDelayTracker.offset = -num * tailDistance / 2f;
+                playerDelayTracker.positionOffset *= (-num + 4);
+                playerDelayTracker.player = this;
+                playerDelayTracker.leader = tailTracker.transform;
+
+                var tailParticles = tailBase.transform.Find("tail-particles");
+
+                var tailPart = new PlayerObject
+                {
+                    id = (num + 99).ToString(),
+                    parent = tailBase.transform,
+                    gameObject = tail.gameObject,
+                    meshFilter = tail.GetComponent<MeshFilter>(),
+                    renderer = tail.GetComponent<MeshRenderer>(),
+                    delayTracker = playerDelayTracker,
+                    trailRenderer = tail.GetComponent<TrailRenderer>(),
+                    particleSystem = tailParticles.GetComponent<ParticleSystem>(),
+                    particleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>(),
+                };
+                tailParts.Add(tailPart);
+                tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
+                tailBase.transform.localPosition = last.parent.localPosition;
+                path.Insert(path.Count - 2, new MovementPath(tailBase.transform.localPosition, tailBase.transform.localRotation, tailBase.transform));
+                Assign(tailPart, PlayerModel.GetTail(num - 2));
+            }
+
+            while (initialHealthCount > healthObjects.Count)
+            {
+                var last = healthObjects.Last();
+                var healthObject = last.gameObject.Duplicate(healthText.transform);
+
+                healthObjects.Add(new HealthObject(healthObject, healthObject.GetComponent<Image>()));
+            }
+        }
+
+        /// <summary>
+        /// Updates the players' tail.
+        /// </summary>
+        /// <param name="health">Health to update.</param>
+        /// <param name="pos">Position the player was updated at.</param>
+        public void UpdateTail(int health, Vector3 pos)
+        {
+            if (health > initialHealthCount)
+            {
+                initialHealthCount = health;
+
+                if (tailGrows)
+                    GrowTail();
+            }
+
+            for (int i = 2; i < path.Count; i++)
+            {
+                if (!path[i].transform)
+                    continue;
+
+                var inactive = i - 1 > health;
+
+                if (path[i].transform.childCount != 0)
+                    path[i].transform.GetChild(0).gameObject.SetActive(!inactive);
+                else
+                    path[i].transform.gameObject.SetActive(!inactive);
+            }
+
+            var currentModel = PlayerModel;
+
+            if (!currentModel)
+                return;
+
+            if (healthObjects.Count > 0)
+                for (int i = 0; i < healthObjects.Count; i++)
+                    healthObjects[i].gameObject.SetActive(i < health && currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Images);
+
+            var text = healthText.GetComponent<Text>();
+            if (currentModel.guiPart.active && (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text || currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.EqualsBar))
+            {
+                text.enabled = true;
+                if (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text)
+                    text.text = health.ToString();
+                else
+                    text.text = RTString.ConvertHealthToEquals(health, initialHealthCount);
+            }
+            else
+                text.enabled = false;
+
+            if (currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Bar)
+            {
+                barBaseIm.gameObject.SetActive(true);
+                var e = (float)health / (float)initialHealthCount;
+                barIm.rectTransform.sizeDelta = new Vector2(200f * e, 32f);
+            }
+            else
+                barBaseIm.gameObject.SetActive(false);
+        }
+
+        void InitNametag()
+        {
+            Destroy(canvas);
+            canvas = Creator.NewGameObject("Name Tag Canvas" + (playerIndex + 1).ToString(), transform);
+            canvas.transform.localRotation = Quaternion.identity;
+
+            var nametagBase = ObjectManager.inst.objectPrefabs[0].options[0].Duplicate(canvas.transform);
+            nametagBase.transform.localScale = Vector3.one;
+            nametagBase.transform.localRotation = Quaternion.identity;
+
+            nametagBase.transform.GetChild(0).transform.localScale = new Vector3(6.5f, 1.5f, 1f);
+            nametagBase.transform.GetChild(0).transform.localPosition = new Vector3(0f, 2.5f, -0.3f);
+
+            this.nametagBase = nametagBase.GetComponentInChildren<MeshRenderer>();
+            this.nametagBase.enabled = true;
+
+            Destroy(nametagBase.GetComponentInChildren<SelectObject>());
+            Destroy(nametagBase.GetComponentInChildren<SelectObjectInEditor>());
+            Destroy(nametagBase.GetComponentInChildren<Collider2D>());
+
+            var tae = ObjectManager.inst.objectPrefabs[4].options[0].Duplicate(canvas.transform);
+            tae.transform.localScale = Vector3.one;
+            tae.transform.localRotation = Quaternion.identity;
+
+            tae.transform.GetChild(0).transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            tae.transform.GetChild(0).transform.localPosition = new Vector3(0f, 2.5f, -0.3f);
+            Destroy(tae.GetComponentInChildren<SelectObjectInEditor>());
+
+            nametagText = tae.GetComponentInChildren<TextMeshPro>();
+            nametagText.color = Color.white;
+
+            var d = canvas.AddComponent<PlayerDelayTracker>();
+            d.leader = rb.transform;
+            d.scaleParent = false;
+            d.rotationParent = false;
+            d.player = this;
+            d.positionOffset = 0.9f;
+        }
 
         void Assign(PlayerObject playerObject, PlayerModel.Generic generic, bool changeActive = true)
         {
@@ -2081,234 +2904,6 @@ namespace BetterLegacy.Core.Components.Player
             return type == 4 || type == 6 ? ShapeManager.inst.Shapes2D[0][0] : ShapeManager.inst.Shapes2D[type][option];
         }
 
-        public void UpdateModel()
-        {
-            if (!PlayerModel)
-                return;
-
-            var currentModel = PlayerModel;
-
-            //New NameTag
-            {
-                Destroy(canvas);
-                canvas = Creator.NewGameObject("Name Tag Canvas" + (playerIndex + 1).ToString(), transform);
-                canvas.transform.localRotation = Quaternion.identity;
-
-                var nametagBase = ObjectManager.inst.objectPrefabs[0].options[0].Duplicate(canvas.transform);
-                nametagBase.transform.localScale = Vector3.one;
-                nametagBase.transform.localRotation = Quaternion.identity;
-
-                nametagBase.transform.GetChild(0).transform.localScale = new Vector3(6.5f, 1.5f, 1f);
-                nametagBase.transform.GetChild(0).transform.localPosition = new Vector3(0f, 2.5f, -0.3f);
-
-                this.nametagBase = nametagBase.GetComponentInChildren<MeshRenderer>();
-                this.nametagBase.enabled = true;
-
-                Destroy(nametagBase.GetComponentInChildren<SelectObject>());
-                Destroy(nametagBase.GetComponentInChildren<SelectObjectInEditor>());
-                Destroy(nametagBase.GetComponentInChildren<Collider2D>());
-
-                var tae = ObjectManager.inst.objectPrefabs[4].options[0].Duplicate(canvas.transform);
-                tae.transform.localScale = Vector3.one;
-                tae.transform.localRotation = Quaternion.identity;
-
-                tae.transform.GetChild(0).transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                tae.transform.GetChild(0).transform.localPosition = new Vector3(0f, 2.5f, -0.3f);
-
-                nametagText = tae.GetComponentInChildren<TextMeshPro>();
-
-                var d = canvas.AddComponent<PlayerDelayTracker>();
-                d.leader = rb.transform;
-                d.scaleParent = false;
-                d.rotationParent = false;
-                d.player = this;
-                d.positionOffset = 0.9f;
-            }
-
-            for (int i = 0; i < currentModel.tailParts.Count; i++)
-            {
-                if (i >= tailParts.Count)
-                    continue;
-
-                Assign(tailParts[i], currentModel.tailParts[i]);
-            }
-
-            Assign(head, currentModel.headPart);
-            Assign(boost, currentModel.boostPart);
-
-            tailDistance = currentModel.tailBase.distance;
-            tailMode = (int)currentModel.tailBase.mode;
-
-            tailGrows = currentModel.tailBase.grows;
-
-            showBoostTail = currentModel.boostTailPart.active;
-
-            boostTail.parent.gameObject.SetActive(showBoostTail);
-            if (showBoostTail)
-                boostTail.meshFilter.mesh = GetShape(currentModel.boostTailPart.shape.type, currentModel.boostTailPart.shape.option).mesh;
-
-            var fp = currentModel.FacePosition;
-            face.gameObject.transform.localPosition = new Vector3(fp.x, fp.y, 0f);
-
-            if (!isBoosting)
-                path[1].active = showBoostTail;
-
-            jumpGravity = currentModel.basePart.jumpGravity;
-            jumpIntensity = currentModel.basePart.jumpIntensity;
-            jumpCount = currentModel.basePart.jumpCount;
-            jumpBoostCount = currentModel.basePart.jumpBoostCount;
-            bounciness = currentModel.basePart.bounciness;
-
-            rb.sharedMaterial.bounciness = bounciness;
-
-            stretch = currentModel.stretchPart.active;
-            stretchAmount = currentModel.stretchPart.amount;
-            stretchEasing = currentModel.stretchPart.easing;
-
-            var bt1 = currentModel.boostTailPart.position;
-            var bt2 = currentModel.boostTailPart.scale;
-            var bt3 = currentModel.boostTailPart.rotation;
-
-            boostTail.gameObject.SetActive(showBoostTail);
-
-            if (showBoostTail)
-            {
-                boostTail.gameObject.transform.localPosition = new Vector3(bt1.x, bt1.y, 0.1f);
-                boostTail.gameObject.transform.localScale = new Vector3(bt2.x, bt2.y, 1f);
-                boostTail.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, bt3);
-            }
-
-            rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
-
-            circleCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
-            polygonCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
-
-            var colAcc = currentModel.basePart.collisionAccurate;
-            circleCollider2D.enabled = !colAcc;
-            polygonCollider2D.enabled = colAcc;
-            if (colAcc)
-                polygonCollider2D.CreateCollider(head.meshFilter);
-
-            if (CustomPlayer)
-                CustomPlayer.Health = PlayerManager.IsNoHit ? 1 : currentModel.basePart.health;
-
-            //Health Images
-            foreach (var health in healthObjects)
-            {
-                if (health.image)
-                    health.image.sprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
-                        RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :
-                        PlayerManager.healthSprite;
-            }
-
-            UpdateCustomObjects();
-
-            updated = true;
-        }
-        
-        public void UpdateCustomObjects()
-        {
-            var currentModel = PlayerModel;
-
-            var currentModelCustomObjects = currentModel.customObjects;
-
-            foreach (var obj in customObjects)
-                Destroy(obj.gameObject);
-            customObjects.Clear();
-
-            playerObjects.RemoveAll(x => x.isCustom);
-
-            if (currentModelCustomObjects == null || currentModelCustomObjects.Count < 1)
-                return;
-
-            for (int i = 0; i < currentModelCustomObjects.Count; i++)
-            {
-                var reference = currentModelCustomObjects[i];
-
-                if (reference.shape.type == 9)
-                    continue;
-
-                var customObj = new CustomObject()
-                {
-                    id = reference.id,
-                    reference = reference,
-                };
-
-                var shape = reference.shape;
-                var pos = reference.position;
-                var sca = reference.scale;
-                var rot = reference.rotation;
-
-                var depth = reference.depth;
-
-                int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-                int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
-
-                customObj.gameObject = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent);
-                customObj.gameObject.transform.localScale = Vector3.one;
-                customObj.gameObject.transform.localRotation = Quaternion.identity;
-
-                customObj.delayTracker = customObj.gameObject.AddComponent<PlayerDelayTracker>();
-                customObj.delayTracker.offset = 0;
-                customObj.delayTracker.positionOffset = reference.positionOffset;
-                customObj.delayTracker.scaleOffset = reference.scaleOffset;
-                customObj.delayTracker.rotationOffset = reference.rotationOffset;
-                customObj.delayTracker.scaleParent = reference.scaleParent;
-                customObj.delayTracker.rotationParent = reference.rotationParent;
-                customObj.delayTracker.player = this;
-
-                var child = customObj.gameObject.transform.GetChild(0);
-                child.localPosition = new Vector3(pos.x, pos.y, depth);
-                child.localScale = new Vector3(sca.x, sca.y, 1f);
-                child.localEulerAngles = new Vector3(0f, 0f, rot);
-
-                customObj.gameObject.tag = "Helper";
-                child.tag = "Helper";
-
-                var renderer = customObj.gameObject.GetComponentInChildren<Renderer>();
-                renderer.enabled = true;
-                customObj.renderer = renderer;
-
-                Destroy(child.GetComponent<Collider2D>());
-
-                if (s == 4 && child.gameObject.TryGetComponent(out TextMeshPro tmp))
-                {
-                    tmp.text = customObj.reference.text;
-                    customObj.text = tmp;
-                }
-
-                if (s == 6 && renderer is SpriteRenderer spriteRenderer)
-                {
-                    var path = RTFile.CombinePaths(RTFile.BasePath, reference.text);
-
-                    if (!RTFile.FileExists(path))
-                    {
-                        spriteRenderer.sprite = ArcadeManager.inst.defaultImage;
-                        continue;
-                    }
-
-                    CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", texture2D =>
-                    {
-                        if (!spriteRenderer)
-                            return;
-
-                        spriteRenderer.sprite = SpriteHelper.CreateSprite(texture2D);
-                    }));
-                }
-
-                playerObjects.Add(customObj);
-                customObjects.Add(customObj);
-            }
-
-            UpdateParents();
-        }
-
-        public void UpdateParents()
-        {
-            foreach (var customObject in customObjects)
-                UpdateParent(customObject);
-        }
-
         void UpdateParent(CustomObject customObject)
         {
             var reference = customObject.reference;
@@ -2334,163 +2929,27 @@ namespace BetterLegacy.Core.Components.Player
                 };
         }
 
-        void UpdateCustomTheme()
-        {
-            if (customObjects.Count < 1)
-                return;
-
-            var index = PlayersData.Main.GetMaxIndex(playerIndex);
-            foreach (var playerObject in playerObjects)
-            {
-                if (!playerObject.isCustom)
-                {
-                    playerObject.gameObject.SetActive(playerObject.active);
-                    continue;
-                }
-
-                var customObject = playerObject as CustomObject;
-
-                if (!CustomPlayer || !customObject.gameObject)
-                    continue;
-                var active = customObject.active && (customObject.reference.visibilitySettings.Count < 1 && customObject.reference.active || customObject.reference.visibilitySettings.Count > 0 &&
-                        (!customObject.reference.requireAll && customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)) ||
-                    customObject.reference.visibilitySettings.All(x => CheckVisibility(x))));
-
-                customObject.gameObject.SetActive(active);
-
-                if (!active)
-                    continue;
-
-                var reference = customObject.reference;
-                if (customObject.text)
-                    customObject.text.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
-                else if (customObject.renderer)
-                    customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
-            }
-        }
-
-        public void UpdateVisibility(CustomObject customGameObject)
-        {
-            if (CustomPlayer && customGameObject.gameObject)
-                customGameObject.gameObject.SetActive(customGameObject.active && (customGameObject.reference.visibilitySettings.Count < 1 && customGameObject.reference.active || customGameObject.reference.visibilitySettings.Count > 0 &&
-                    (!customGameObject.reference.requireAll && customGameObject.reference.visibilitySettings.Any(x => CheckVisibility(x)) ||
-                customGameObject.reference.visibilitySettings.All(x => CheckVisibility(x)))));
-        }
-
-        public bool CheckVisibility(PlayerModel.CustomObject.Visiblity visiblity)
-        {
-            var value = visiblity.command switch
-            {
-                "isBoosting" => isBoosting,
-                "isTakingHit" => isTakingHit,
-                "isZenMode" => PlayerManager.Invincible,
-                "isHealthPercentageGreater" => (float)CustomPlayer.health / initialHealthCount * 100f >= visiblity.value,
-                "isHealthGreaterEquals" => CustomPlayer.health >= visiblity.value,
-                "isHealthEquals" => CustomPlayer.health == visiblity.value,
-                "isHealthGreater" => CustomPlayer.health > visiblity.value,
-                "isPressingKey" => Input.GetKey(GetKeyCode((int)visiblity.value)),
-                _ => true,
-            };
-
-            return visiblity.not ? !value : value;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void GrowTail()
-        {
-            int num = tailParts.Count + 1;
-            var tailBase = tailParts.Last().parent.gameObject.Duplicate(tailParent, $"Tail {num} Base");
-            tailBase.transform.localScale = Vector3.one;
-            var tail = tailBase.transform.GetChild(0);
-            tail.name = num.ToString();
-
-            path.Insert(path.Count - 2, new MovementPath(tailBase.transform.localPosition, tailBase.transform.localRotation, tailBase.transform));
-
-            var playerDelayTracker = tailBase.AddComponent<PlayerDelayTracker>();
-            playerDelayTracker.offset = -num * tailDistance / 2f;
-            playerDelayTracker.positionOffset *= (-num + 4);
-            playerDelayTracker.player = this;
-            playerDelayTracker.leader = tailTracker.transform;
-
-            var tailParticles = tailBase.transform.Find("tail-particles");
-
-            var tailPart = new PlayerObject
-            {
-                id = (num + 99).ToString(),
-                parent = tailBase.transform,
-                gameObject = tail.gameObject,
-                meshFilter = tail.GetComponent<MeshFilter>(),
-                renderer = tail.GetComponent<MeshRenderer>(),
-                delayTracker = playerDelayTracker,
-                trailRenderer = tail.GetComponent<TrailRenderer>(),
-                particleSystem = tailParticles.GetComponent<ParticleSystem>(),
-                particleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>(),
-            };
-            tailParts.Add(tailPart);
-            tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
-
-            Assign(tailPart, PlayerModel.tailParts.Last());
-        }
-
-        public void UpdateTail(int health, Vector3 _pos)
-        {
-            if (health > initialHealthCount)
-            {
-                initialHealthCount = health;
-
-                if (tailGrows)
-                    GrowTail();
-            }
-
-            for (int i = 2; i < path.Count; i++)
-            {
-                if (!path[i].transform)
-                    continue;
-
-                var inactive = i - 1 > health;
-
-                if (path[i].transform.childCount != 0)
-                    path[i].transform.GetChild(0).gameObject.SetActive(!inactive);
-                else
-                    path[i].transform.gameObject.SetActive(!inactive);
-            }
-
-            var currentModel = PlayerModel;
-
-            if (!currentModel)
-                return;
-
-            if (healthObjects.Count > 0)
-                for (int i = 0; i < healthObjects.Count; i++)
-                    healthObjects[i].gameObject.SetActive(i < health && currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Images);
-
-            var text = healthText.GetComponent<Text>();
-            if (currentModel.guiPart.active && (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text || currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.EqualsBar))
-            {
-                text.enabled = true;
-                if (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text)
-                    text.text = health.ToString();
-                else
-                    text.text = RTString.ConvertHealthToEquals(health, initialHealthCount);
-            }
-            else
-                text.enabled = false;
-
-            if (currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Bar)
-            {
-                barBaseIm.gameObject.SetActive(true);
-                var e = (float)health / (float)initialHealthCount;
-                barIm.rectTransform.sizeDelta = new Vector2(200f * e, 32f);
-            }
-            else
-                barBaseIm.gameObject.SetActive(false);
-        }
-
         #endregion
 
-        #region Actions
+        #region Emitting
+
+        public void PlaySpawnParticles()
+        {
+            CoreHelper.Log($"Spawn particles");
+            spawn.Play();
+        }
+
+        public void PlayDeathParticles()
+        {
+            CoreHelper.Log($"Death particles");
+            death.Play();
+        }
+
+        public void PlayHitParticles()
+        {
+            CoreHelper.Log($"Hit particles");
+            burst.Play();
+        }
 
         void CreatePulse()
         {
@@ -2574,37 +3033,6 @@ namespace BetterLegacy.Core.Components.Player
                 boosts.Remove(pulseObject);
             });
         }
-
-        void UpdateBoostTheme()
-        {
-            if (boosts.Count < 1)
-                return;
-
-            var index = PlayersData.Main.GetMaxIndex(playerIndex);
-
-            foreach (var boost in boosts)
-            {
-                if (boost == null)
-                    continue;
-
-                int startCol = boost.startColor;
-                int endCol = boost.endColor;
-
-                var startHex = boost.startCustomColor;
-                var endHex = boost.endCustomColor;
-
-                float alpha = boost.opacity;
-                float colorTween = boost.colorTween;
-
-                Color startColor = CoreHelper.GetPlayerColor(index, startCol, alpha, startHex);
-                Color endColor = CoreHelper.GetPlayerColor(index, endCol, alpha, endHex);
-
-                if (boost.renderer)
-                    boost.renderer.material.color = Color.Lerp(startColor, endColor, colorTween);
-            }
-        }
-
-        public List<PulseObject> boosts = new List<PulseObject>();
 
         // to do: aiming so you don't need to be facing the direction of the bullet
         void CreateBullet()
@@ -2749,9 +3177,7 @@ namespace BetterLegacy.Core.Components.Player
             yield break;
         }
 
-        #endregion
-
-        public KeyCode GetKeyCode(int key)
+        KeyCode GetKeyCode(int key)
         {
             if (key < 91)
                 switch (key)
@@ -2865,26 +3291,15 @@ namespace BetterLegacy.Core.Components.Player
             return KeyCode.None;
         }
 
-        public int IndexToInt(PlayerIndex playerIndex) => (int)playerIndex;
+        int IndexToInt(PlayerIndex playerIndex) => (int)playerIndex;
 
-        #region Objects
+        #endregion
 
-        public List<CustomObject> customObjects = new List<CustomObject>();
+        #region Constructors
 
-        public PlayerObject basePart;
-        public PlayerObject head;
-        public PlayerObject face;
-        public PlayerObject boost;
-        public PlayerObject boostTail;
-
-        public List<PlayerObject> tailParts = new List<PlayerObject>();
-
-        public List<PlayerObject> playerObjects = new List<PlayerObject>();
-
-        public List<MovementPath> path = new List<MovementPath>();
-
-        public List<HealthObject> healthObjects = new List<HealthObject>();
-
+        /// <summary>
+        /// Represents a custom object from the model.
+        /// </summary>
         public class CustomObject : PlayerObject
         {
             public CustomObject() => isCustom = true;
@@ -2893,6 +3308,9 @@ namespace BetterLegacy.Core.Components.Player
             public TextMeshPro text;
         }
 
+        /// <summary>
+        /// Represents a spawned object.
+        /// </summary>
         public class PulseObject : PlayerObject
         {
             public float opacity;
@@ -2903,6 +3321,9 @@ namespace BetterLegacy.Core.Components.Player
             public string endCustomColor;
         }
 
+        /// <summary>
+        /// Represents a part of the player.
+        /// </summary>
         public class PlayerObject : Exists
         {
             public bool active = true;
@@ -2921,6 +3342,9 @@ namespace BetterLegacy.Core.Components.Player
             public bool isCustom;
         }
 
+        /// <summary>
+        /// Represents the path of the Legacy tail.
+        /// </summary>
         public class MovementPath
         {
             public MovementPath(Vector3 pos, Quaternion rot, Transform transform)
@@ -2928,6 +3352,7 @@ namespace BetterLegacy.Core.Components.Player
                 this.pos = pos;
                 this.rot = rot;
                 this.transform = transform;
+                lastPos = pos;
             }
 
             public MovementPath(Vector3 pos, Quaternion rot, Transform transform, bool active)
@@ -2936,6 +3361,7 @@ namespace BetterLegacy.Core.Components.Player
                 this.rot = rot;
                 this.transform = transform;
                 this.active = active;
+                lastPos = pos;
             }
 
             public bool active = true;
@@ -2948,6 +3374,9 @@ namespace BetterLegacy.Core.Components.Player
             public Transform transform;
         }
 
+        /// <summary>
+        /// Represents a health UI image.
+        /// </summary>
         public class HealthObject
         {
             public HealthObject(GameObject gameObject, Image image)

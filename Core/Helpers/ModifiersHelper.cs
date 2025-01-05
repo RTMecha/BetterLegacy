@@ -2547,7 +2547,7 @@ namespace BetterLegacy.Core.Helpers
 
                     case "playerHit":
                         {
-                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant || !int.TryParse(modifier.value, out int hit))
+                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant || !int.TryParse(modifier.value, out int damage))
                                 break;
 
                             var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
@@ -2555,25 +2555,16 @@ namespace BetterLegacy.Core.Helpers
                             var player = PlayerManager.GetClosestPlayer(pos);
 
                             if (player && player.Player)
-                            {
-                                player.Player.Hit();
-                                if (hit > 1)
-                                    player.Health -= hit;
-                            }
+                                player.Player.Hit(damage);
 
                             break;
                         }
 
                     case "playerHitAll":
                         {
-                            if (!PlayerManager.Invincible && !modifier.constant && int.TryParse(modifier.value, out int hit))
+                            if (!PlayerManager.Invincible && !modifier.constant && int.TryParse(modifier.value, out int damage))
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                                {
-                                    player.Player.Hit();
-
-                                    if (hit > 1)
-                                        player.Health -= hit;
-                                }
+                                    player.Player.Hit(damage);
 
                             break;
                         }
@@ -2582,21 +2573,14 @@ namespace BetterLegacy.Core.Helpers
                             if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                                 break;
 
-                            int hit = modifier.GetInt(0, 1);
-                            hit = Mathf.Clamp(hit, 0, int.MaxValue);
+                            var heal = Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue);
 
                             var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                             var player = PlayerManager.GetClosestPlayer(pos);
 
-                            if (player)
-                            {
-                                int oldHealth = player.Health;
-                                player.Health += hit;
-
-                                if (player.Health != oldHealth)
-                                    SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
-                            }
+                            if (player && player.Player)
+                                player.Player.Heal(heal);
 
                             break;
                         }
@@ -2604,19 +2588,13 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (!PlayerManager.Invincible && !modifier.constant)
                             {
-                                int hit = modifier.GetInt(0, 1);
-                                hit = Mathf.Clamp(hit, 0, int.MaxValue);
+                                var heal = Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue);
                                 bool healed = false;
                                 foreach (var player in PlayerManager.Players)
                                 {
                                     if (player.Player)
-                                    {
-                                        int oldHealth = player.Health;
-                                        player.Health += hit;
-
-                                        if (player.Health != oldHealth)
+                                        if (player.Player.Heal(heal, false))
                                             healed = true;
-                                    }
                                 }
 
                                 if (healed)
@@ -2633,8 +2611,8 @@ namespace BetterLegacy.Core.Helpers
 
                             var player = PlayerManager.GetClosestPlayer(pos);
 
-                            if (player)
-                                player.Health = 0;
+                            if (player && player.Player)
+                                player.Player.Kill();
 
                             break;
                         }
@@ -2645,7 +2623,7 @@ namespace BetterLegacy.Core.Helpers
                                 foreach (var player in PlayerManager.Players)
                                 {
                                     if (player.Player)
-                                        player.Health = 0;
+                                        player.Player.Kill();
                                 }
                             }
                             break;
@@ -3017,7 +2995,7 @@ namespace BetterLegacy.Core.Helpers
                                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
                                 if (player && player.Player)
-                                    player.Player.canBoost = false;
+                                    player.Player.CanBoost = false;
                             }
 
                             break;
@@ -3025,7 +3003,7 @@ namespace BetterLegacy.Core.Helpers
                     case "playerDisableBoostAll":
                         {
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                                player.Player.canBoost = false;
+                                player.Player.CanBoost = false;
 
                             break;
                         }
@@ -3036,7 +3014,7 @@ namespace BetterLegacy.Core.Helpers
                                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
                                 if (player && player.Player)
-                                    player.Player.canBoost = true;
+                                    player.Player.CanBoost = true;
                             }
 
                             break;
@@ -3044,7 +3022,7 @@ namespace BetterLegacy.Core.Helpers
                     case "playerEnableBoostAll":
                         {
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                                player.Player.canBoost = true;
+                                player.Player.CanBoost = true;
 
                             break;
                         }
