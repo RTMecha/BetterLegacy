@@ -25,6 +25,14 @@ namespace BetterLegacy.Core.Data
             id = LSText.randomNumString(8);
         }
 
+        public EventKeyframe(float eventTime, float[] evenValues, string curveType)
+        {
+            this.eventTime = eventTime;
+            SetEventValues(evenValues);
+            if (DataManager.inst.AnimationListDictionaryStr.TryGetValue(curveType, out DataManager.LSAnimation anim))
+                this.curveType = anim;
+        }
+
         public EventKeyframe(float eventTime, float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventTime, eventValues, eventRandomValues, random)
         {
             id = LSText.randomNumString(8);
@@ -40,6 +48,11 @@ namespace BetterLegacy.Core.Data
             random = eventKeyframe.random;
             id = LSText.randomNumString(8);
         }
+
+        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[3]);
+        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[3]);
+        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[3]) { relative = true };
+        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[5], new float[3]);
 
         public string id;
         public int index;
