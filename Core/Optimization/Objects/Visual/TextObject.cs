@@ -34,6 +34,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             SetText(this.text);
         }
 
+        /// <summary>
+        /// Sets the text objects' text.
+        /// </summary>
+        /// <param name="text">Text to set.</param>
         public void SetText(string text)
         {
             if (textMeshPro)

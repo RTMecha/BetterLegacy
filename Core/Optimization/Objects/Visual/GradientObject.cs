@@ -46,11 +46,13 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             this.opacityCollision = opacityCollision;
         }
 
-        public override void SetColor(Color color)
-        {
-            throw new NotImplementedException();
-        }
+        public override void SetColor(Color color) => material.color = new Color(color.r, color.g, color.b, color.a * opacity);
 
+        /// <summary>
+        /// Sets the gradient objects' colors.
+        /// </summary>
+        /// <param name="color">Primary color to set.</param>
+        /// <param name="color2">Secondary color to set.</param>
         public void SetColor(Color color, Color color2)
         {
             if (color2.a < 0) //no custom opacity, it means it's an alpha gradient
@@ -78,6 +80,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override Color GetPrimaryColor() => material.color;
 
+        /// <summary>
+        /// Gets the gradient objects' secondary color.
+        /// </summary>
+        /// <returns>Returns the secondary color of the gradient object.</returns>
         public Color GetSecondaryColor() => material.GetColor("_ColorSecondary");
         
         public override void Clear()
