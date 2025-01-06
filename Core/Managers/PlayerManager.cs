@@ -312,7 +312,8 @@ namespace BetterLegacy.Core.Managers
         public static void SpawnPlayer(CustomPlayer customPlayer, Vector3 pos)
         {
             if (customPlayer.PlayerModel && customPlayer.PlayerModel.basePart)
-                customPlayer.Health = customPlayer.PlayerModel.basePart.health;
+                customPlayer.Health = IsNoHit ? 1 : customPlayer.PlayerModel.basePart.health;
+
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (customPlayer.index + 1));
             gameObject.layer = 8;
             gameObject.SetActive(true);
@@ -472,8 +473,7 @@ namespace BetterLegacy.Core.Managers
                 if (!player.Player)
                     continue;
 
-                DestroyImmediate(player.Player.healthText);
-                DestroyImmediate(player.Player.gameObject);
+                player.Player.ClearObjects();
                 player.Player = null;
             }
         }
@@ -491,8 +491,7 @@ namespace BetterLegacy.Core.Managers
             if (!player.Player)
                 return;
 
-            DestroyImmediate(player.Player.healthText);
-            DestroyImmediate(player.Player.gameObject);
+            player.Player.ClearObjects();
             player.Player = null;
         }
 
@@ -529,12 +528,9 @@ namespace BetterLegacy.Core.Managers
 
             var player = Players[index];
             if (player.Player)
-            {
-                DestroyImmediate(player.Player.healthText);
-                DestroyImmediate(player.Player.gameObject);
-            }
+                player.Player.ClearObjects();
 
-            player.SetPlayerModel(PlayersData.Main.GetPlayerModel(index).basePart.id);
+            player.CurrentModel = PlayersData.Current.GetPlayerModel(index).basePart.id;
 
             SpawnPlayers(pos);
         }
@@ -572,11 +568,8 @@ namespace BetterLegacy.Core.Managers
             if (InputDataManager.inst)
                 foreach (var player in Players.Where(x => x && x.Player))
                 {
-                    if (CoreHelper.InEditor || IsZenMode)
-                    {
-                        player.UpdatePlayerModel();
-                        player.Player.UpdateModel();
-                    }
+                    player.UpdatePlayerModel();
+                    player.Player.UpdateModel();
                 }
         }
 
@@ -585,10 +578,7 @@ namespace BetterLegacy.Core.Managers
             var players = Players;
             if (players.Count > 0)
                 for (int i = 0; i < players.Count; i++)
-                {
-                    var playerModel = PlayersData.Main.GetPlayerModel(i);
-                    players[i].SetPlayerModel(playerModel.basePart.id);
-                }
+                    players[i].CurrentModel = PlayersData.Current.GetPlayerModel(i).basePart.id;
         }
 
         #endregion
