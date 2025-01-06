@@ -111,6 +111,22 @@ namespace BetterLegacy.Core
         /// <returns>Returns a casted <see cref="Transform"/>.</returns>
         public static RectTransform AsRT(this Transform transform) => (RectTransform)transform;
 
+        public static Vector3 GetLocalVector(this Transform transform, int type) => type switch
+        {
+            0 => transform.localPosition,
+            1 => transform.localScale,
+            2 => transform.localRotation.eulerAngles,
+            _ => Vector3.zero,
+        };
+
+        public static Vector3 GetVector(this Transform transform, int type) => type switch
+        {
+            0 => transform.position,
+            1 => transform.lossyScale,
+            2 => transform.rotation.eulerAngles,
+            _ => Vector3.zero,
+        };
+
         public static void SetPosition(this Transform transform, int axis, float value)
         {
             switch (axis)
@@ -604,6 +620,13 @@ namespace BetterLegacy.Core
         /// <param name="remove">String to remove.</param>
         /// <returns>Returns a string with the specified string removed.</returns>
         public static string Remove(this string input, string remove) => input.Replace(remove, "");
+
+        public static float At(this Vector2 vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
+        public static float At(this Vector3 vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
+        public static float At(this Vector4 vector4, int index) => vector4[Mathf.Clamp(index, 0, 3)];
+        
+        public static float At(this Vector2Int vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
+        public static float At(this Vector3Int vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
 
         #endregion
 
