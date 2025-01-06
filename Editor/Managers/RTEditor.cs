@@ -233,10 +233,23 @@ namespace BetterLegacy.Editor.Managers
                 functionButtonStorage.button.transition = Selectable.Transition.ColorTint;
 
                 prefabHolder.Dropdown = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(prefabHolder.PrefabParent, "dropdown");
-                prefabHolder.Dropdown.GetComponent<Dropdown>().options.Clear();
-                prefabHolder.Dropdown.AddComponent<HideDropdownOptions>().DisabledOptions.Clear();
+                var dropdownStorage = prefabHolder.Dropdown.AddComponent<DropdownStorage>();
+
+                dropdownStorage.dropdown = prefabHolder.Dropdown.GetComponent<Dropdown>();
+                dropdownStorage.templateGrid = dropdownStorage.dropdown.template.Find("Viewport/Content").gameObject.AddComponent<GridLayoutGroup>();
+                dropdownStorage.templateGrid.cellSize = new Vector2(1000f, 32f);
+                dropdownStorage.templateGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                dropdownStorage.templateGrid.constraintCount = 1;
+
+                dropdownStorage.templateFitter = dropdownStorage.templateGrid.gameObject.AddComponent<ContentSizeFitter>();
+                dropdownStorage.templateFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+                dropdownStorage.dropdown.options.Clear();
+                dropdownStorage.hideOptions = prefabHolder.Dropdown.GetComponent<HideDropdownOptions>();
+                dropdownStorage.hideOptions.DisabledOptions.Clear();
                 if (prefabHolder.Dropdown.TryGetComponent(out HoverTooltip dropdownHoverTooltip))
                     dropdownHoverTooltip.tooltipLangauges.Clear();
+
+                dropdownStorage.arrow = prefabHolder.Dropdown.transform.Find("Arrow").GetComponent<Image>();
 
                 prefabHolder.Labels = ObjEditor.inst.ObjectView.transform.ChildList().First(x => x.name == "label").gameObject.Duplicate(prefabHolder.PrefabParent, "label");
                 if (prefabHolder.Labels.transform.childCount > 1)
@@ -248,10 +261,23 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.DestroyChildren(prefabHolder.ScrollView.transform.Find("Viewport/Content"));
 
                 prefabHolder.CurvesDropdown = ObjEditor.inst.KeyframeDialogs[0].transform.Find("curves").gameObject.Duplicate(prefabHolder.PrefabParent, "curves");
-                prefabHolder.CurvesDropdown.GetComponent<Dropdown>().options.Clear();
-                prefabHolder.CurvesDropdown.AddComponent<HideDropdownOptions>().DisabledOptions.Clear();
+                var curvesDropdownStorage = prefabHolder.CurvesDropdown.AddComponent<DropdownStorage>();
+
+                curvesDropdownStorage.dropdown = prefabHolder.CurvesDropdown.GetComponent<Dropdown>();
+                curvesDropdownStorage.templateGrid = curvesDropdownStorage.dropdown.template.Find("Viewport/Content").gameObject.AddComponent<GridLayoutGroup>();
+                curvesDropdownStorage.templateGrid.cellSize = new Vector2(1000f, 32f);
+                curvesDropdownStorage.templateGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                curvesDropdownStorage.templateGrid.constraintCount = 1;
+
+                curvesDropdownStorage.templateFitter = curvesDropdownStorage.templateGrid.gameObject.AddComponent<ContentSizeFitter>();
+                curvesDropdownStorage.templateFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+                curvesDropdownStorage.dropdown.options.Clear();
+                curvesDropdownStorage.hideOptions = prefabHolder.CurvesDropdown.AddComponent<HideDropdownOptions>();
+                curvesDropdownStorage.hideOptions.DisabledOptions.Clear();
                 if (prefabHolder.CurvesDropdown.TryGetComponent(out HoverTooltip curvesDropdownHoverTooltip))
                     curvesDropdownHoverTooltip.tooltipLangauges.Clear();
+
+                curvesDropdownStorage.arrow = prefabHolder.CurvesDropdown.transform.Find("Arrow").GetComponent<Image>();
 
                 prefabHolder.ColorsLayout = ObjEditor.inst.KeyframeDialogs[3].transform.Find("color").gameObject.Duplicate(prefabHolder.PrefabParent, "color");
                 prefabHolder.Slider = ObjEditor.inst.ObjectView.transform.Find("depth/depth").gameObject.Duplicate(prefabHolder.PrefabParent, "Slider");
@@ -296,6 +322,10 @@ namespace BetterLegacy.Editor.Managers
             toggleButtonStorage.label = prefabHolder.ToggleButton.transform.Find("Text").GetComponent<Text>();
             toggleButtonStorage.toggle = prefabHolder.ToggleButton.GetComponent<Toggle>();
 
+            prefabHolder.SpriteButton = timelineBar.transform.Find("play").gameObject.Duplicate(prefabHolder.PrefabParent, "Sprite Button");
+            DestroyImmediate(prefabHolder.SpriteButton.GetComponent<Animator>());
+            prefabHolder.SpriteButton.GetComponent<Button>().transition = Selectable.Transition.ColorTint;
+
             var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
             prefabHolder.CloseButton = openFilePopup.Find("Panel/x").gameObject.Duplicate(prefabHolder.PrefabParent, "x");
             prefabHolder.Scrollbar = openFilePopup.Find("Scrollbar").gameObject.Duplicate(prefabHolder.PrefabParent, "Scrollbar");
@@ -313,7 +343,6 @@ namespace BetterLegacy.Editor.Managers
             SetupCreateObjects();
             SetupDropdowns();
             SetupDoggo();
-            SetupFileBrowser();
             SetupPaths();
             SetupTimelinePreview();
             SetupTimelineElements();
@@ -322,7 +351,6 @@ namespace BetterLegacy.Editor.Managers
             SetupNewFilePopup();
             CreatePreviewCover();
             CreateObjectSearch();
-            CreateWarningPopup();
             CreateDebug();
             CreateAutosavePopup();
             SetupMiscEditorThemes();
@@ -413,8 +441,10 @@ namespace BetterLegacy.Editor.Managers
             timelineObjectsParent = timelineParent.transform.AsRT();
             RectValues.FullAnchored.AssignToRectTransform(timelineObjectsParent);
 
+            SetupFileBrowser();
             CreateContextMenu();
             CreateFolderCreator();
+            CreateWarningPopup();
         }
 
         #endregion
@@ -546,7 +576,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     case BinSliderControlActive.Always:
                         {
-                            binSlider.gameObject.SetActive(true);
+                            binSlider.gameObject.SetActive(layerType == LayerType.Objects);
                             break;
                         }
                     case BinSliderControlActive.Never:
@@ -567,10 +597,6 @@ namespace BetterLegacy.Editor.Managers
                         }
                 }
             }
-            if (EditorManager.inst.hasLoadedLevel && Input.GetKey(EditorConfig.Instance.BinControlKey.Value) && (Input.GetKeyDown(KeyCode.KeypadPlus) || Input.GetKeyDown(KeyCode.Plus)))
-                AddBin();
-            if (EditorManager.inst.hasLoadedLevel && Input.GetKey(EditorConfig.Instance.BinControlKey.Value) && (Input.GetKeyDown(KeyCode.KeypadMinus) || Input.GetKeyDown(KeyCode.Minus)))
-                RemoveBin();
         }
 
         void UpdateTimeChange()
@@ -2843,6 +2869,10 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case LayerType.Events:
                         {
+                            RenderBinPosition(0f); // sets the position to the default.
+                            if (binSlider)
+                                binSlider.gameObject.SetActive(false);
+
                             RTEventEditor.inst.RenderEventObjects();
                             CheckpointEditor.inst.CreateCheckpoints();
 
@@ -2903,6 +2933,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void AddBin()
         {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Please load a level first before trying to change the bin count.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             int prevBinCount = BinCount;
             BinCount++;
             CoreHelper.Log($"Add bin count: {BinCount}");
@@ -2916,7 +2952,9 @@ namespace BetterLegacy.Editor.Managers
             if (prevBinCount == BinCount)
                 return;
 
-            SetBinPosition(BinCount);
+            if (EditorConfig.Instance.MoveToChangedBin.Value)
+                SetBinPosition(BinCount);
+
             if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.pop, 0.7f, 1.3f + UnityEngine.Random.Range(-0.05f, 0.05f));
         }
@@ -2926,6 +2964,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RemoveBin()
         {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Please load a level first before trying to change the bin count.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             int prevBinCount = BinCount;
             BinCount--;
             CoreHelper.Log($"Remove bin count: {BinCount}");
@@ -2939,7 +2983,9 @@ namespace BetterLegacy.Editor.Managers
             if (prevBinCount == BinCount)
                 return;
 
-            SetBinPosition(BinCount);
+            if (EditorConfig.Instance.MoveToChangedBin.Value)
+                SetBinPosition(BinCount);
+
             if (!EditorConfig.Instance.BinControlsPlaysSounds.Value)
                 return;
 
@@ -2948,13 +2994,18 @@ namespace BetterLegacy.Editor.Managers
             SoundManager.inst.PlaySound(DefaultSounds.menuflip, 0.4f, 1.5f + add);
         }
 
-        // todo: implement this somewhere...
         /// <summary>
         /// Sets the bin (row) count to a specific number.
         /// </summary>
         /// <param name="count">Count to set to the editor bins.</param>
         public void SetBinCount(int count)
         {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Please load a level first before trying to change the bin count.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             int prevBinCount = BinCount;
             BinCount = count;
             CoreHelper.Log($"Set bin count: {BinCount}");
@@ -2965,8 +3016,14 @@ namespace BetterLegacy.Editor.Managers
 
             ObjectEditor.inst.RenderTimelineObjectsPositions();
             RenderBins();
-            if (prevBinCount != BinCount)
+            if (prevBinCount == BinCount)
+                return;
+
+            if (EditorConfig.Instance.MoveToChangedBin.Value)
                 SetBinPosition(BinCount);
+
+            if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
+                SoundManager.inst.PlaySound(DefaultSounds.glitch);
         }
 
         /// <summary>
@@ -2997,7 +3054,13 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the slider value for the Bin Control slider.
         /// </summary>
         /// <param name="scroll">Value to set.</param>
-        public void SetBinScroll(float scroll) => binSlider.value = scroll;
+        public void SetBinScroll(float scroll)
+        {
+            if (layerType == LayerType.Events)
+                return;
+
+            binSlider.value = scroll;
+        }
 
         void RenderBinPosition()
         {
@@ -3410,6 +3473,9 @@ namespace BetterLegacy.Editor.Managers
             binSlider.value = 0f;
             binSlider.onValueChanged.AddListener(_val =>
             {
+                if (layerType == LayerType.Events)
+                    return;
+
                 BinScroll = _val;
                 RenderBinPosition();
             });
@@ -4053,8 +4119,7 @@ namespace BetterLegacy.Editor.Managers
             };
             EditorHelper.SetComplexity(levelPathGameObject, Complexity.Advanced);
 
-            var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
-                .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "reload");
+            var levelListReloader = EditorPrefabHolder.Instance.SpriteButton.Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "reload");
             levelListReloader.transform.AsRT().anchoredPosition = config.OpenLevelListRefreshPosition.Value;
             levelListReloader.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
