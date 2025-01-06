@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!player || !leader)
                 return;
 
-            float pitch = CoreHelper.ForwardPitch;
+            float pitch = RTPlayer.MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
             // If object should flip.
             if (player.rotateMode == RTPlayer.RotateMode.FlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipX)

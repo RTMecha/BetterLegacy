@@ -207,6 +207,8 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Velocities
 
+        public static bool MultiplyByPitch => GameData.IsValid && GameData.Current.beatmapData.levelData.multiplyPlayerSpeed;
+
         /// <summary>
         /// How fast all players are.
         /// </summary>
@@ -836,11 +838,6 @@ namespace BetterLegacy.Core.Components.Player
                     new Vector3Keyframe(2.5f, new Vector3(0f, 0f, 0.2f), Ease.SineOut),
                 }, vector => { if (boost && boost.parent && !isBoosting) boost.parent.localScale = vector; }, interpolateOnComplete: true), // boost
             };
-            hitAnimation.events = new List<Animation.AnimationEvent>
-            {
-                new Animation.AnimationEvent(0f, PlayHitParticles),
-                new Animation.AnimationEvent(2.5f, InitAfterHit),
-            };
             hitAnimation.onComplete = () =>
             {
                 animationController.Remove(hitAnimation.id);
@@ -1270,12 +1267,11 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateSpeeds()
         {
-            float pitch = CoreHelper.ForwardPitch;
+            float pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
             if (CoreHelper.Paused)
                 pitch = 0f;
 
-            //anim.speed = pitch;
             animationController.speed = pitch;
 
             if (!Model)
@@ -1418,7 +1414,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!Model)
                 return;
 
-            var pitch = CoreHelper.ForwardPitch;
+            var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
             var headTrail = head.trailRenderer;
             var boostTrail = boost.trailRenderer;
@@ -1468,9 +1464,7 @@ namespace BetterLegacy.Core.Components.Player
                     InitMidBoost(true);
             }
 
-            if (Alive && FaceController != null && Model.bulletPart.active &&
-                (!Model.bulletPart.constant && FaceController.Shoot.WasPressed && canShoot ||
-                    Model.bulletPart.constant && FaceController.Shoot.IsPressed && canShoot))
+            if (Alive && FaceController != null && Model.bulletPart.active && (Model.bulletPart.constant ? FaceController.Shoot.IsPressed : FaceController.Shoot.WasPressed) && canShoot)
                 CreateBullet();
 
             var player = rb.gameObject;
@@ -1482,7 +1476,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (Actions == null)
                     return;
 
-                var pitch = CoreHelper.ForwardPitch;
+                var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
                 float x = Actions.Move.Vector.x;
                 float y = Actions.Move.Vector.y;
 
@@ -1545,7 +1539,7 @@ namespace BetterLegacy.Core.Components.Player
                         lastMoveHorizontal = 0f;
                 }
 
-                var pitch = CoreHelper.ForwardPitch;
+                var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
                 Vector2 vector;
                 if (isBoosting)
@@ -2186,7 +2180,10 @@ namespace BetterLegacy.Core.Components.Player
 
             InitBeforeHit();
             if (CustomPlayer && CustomPlayer.Health > 0)
+            {
+                PlayHitParticles();
                 InitHitAnimation();
+            }
             if (!CustomPlayer)
                 return;
 
@@ -2207,7 +2204,10 @@ namespace BetterLegacy.Core.Components.Player
 
             InitBeforeHit();
             if (CustomPlayer && CustomPlayer.Health > 0)
+            {
+                PlayHitParticles();
                 InitHitAnimation();
+            }
             if (!CustomPlayer)
                 return;
 
@@ -2451,20 +2451,14 @@ namespace BetterLegacy.Core.Components.Player
             SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.HurtPlayer);
         }
 
-        // Empty method for animation controller (todo: see if animation controller can live without this or am I misunderstanding how this works?)
-        void InitAfterHit() => Debug.Log($"RUN METHOD {nameof(InitAfterHit)}");
-
         void CancelBoostAnim()
         {
             CoreHelper.Log($"Player {playerIndex} {nameof(CancelBoostAnim)}");
-            //anim.SetTrigger("boost_cancel");
             InitBoostEndAnimation();
         }
 
         void ResetMovement()
         {
-            Debug.Log($"RUN METHOD {nameof(ResetMovement)}");
-
             if (boostCoroutine != null)
                 StopCoroutine(boostCoroutine);
 
@@ -2705,11 +2699,9 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateCustomAnimations(CustomObject customObject)
         {
-            if (!customObject.reference)
-                return;
-
             var reference = customObject.reference;
-            if (reference.animations == null || reference.animations.Empty())
+
+            if (!reference || reference.animations == null || reference.animations.Empty())
                 return;
 
             for (int j = 0; j < reference.animations.Count; j++)
@@ -2748,55 +2740,68 @@ namespace BetterLegacy.Core.Components.Player
                         }
                 }
 
-                if (runtimeAnim)
-                {
-                    if (animation.animatePosition)
-                        for (int i = 0; i < animation.positionKeyframes.Count; i++)
-                        {
-                            var positionKeyframes = ObjectConverter.GetVector3Keyframes(animation.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
-
-                            if (animation.transition && customObject.gameObject)
-                                positionKeyframes[0].SetValue(customObject.gameObject.transform.localPosition);
-
-                            runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, vector =>
-                            {
-                                customObject.idle = false;
-                                if (customObject.gameObject)
-                                    customObject.gameObject.transform.localPosition = (new Vector3(reference.position.x, reference.position.y, reference.depth) + vector);
-                            }, () => customObject.idle = true));
-                        }
-                    if (animation.animateScale)
-                        for (int i = 0; i < animation.scaleKeyframes.Count; i++)
-                        {
-                            var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
-
-                            if (animation.transition && customObject.gameObject)
-                                scaleKeyframes[0].SetValue(customObject.gameObject.transform.localScale);
-
-                            runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
-                            {
-                                customObject.idle = false;
-                                if (customObject.gameObject)
-                                    customObject.gameObject.transform.localScale = (new Vector3(reference.scale.x, reference.scale.y, 1f) * vector);
-                            }, () => customObject.idle = true));
-                        }
-                    if (animation.animateRotation)
-                        for (int i = 0; i < animation.rotationKeyframes.Count; i++)
-                        {
-                            var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
-
-                            if (animation.transition && customObject.gameObject)
-                                rotationKeyframes[0].SetValue(customObject.gameObject.transform.localEulerAngles.z);
-
-                            runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
-                            {
-                                customObject.idle = false;
-                                if (customObject.gameObject)
-                                    customObject.gameObject.transform.localEulerAngles = (new Vector3(0f, 0f, reference.rotation + x));
-                            }, () => customObject.idle = true));
-                        }
-                }
+                ApplyAnimation(runtimeAnim, animation, customObject);
             }
+        }
+
+        /// <summary>
+        /// Applies a PA animation to a runtime animation.
+        /// </summary>
+        /// <param name="runtimeAnim">The RTAnimation.</param>
+        /// <param name="animation">The PA Animation reference.</param>
+        /// <param name="customObject">Custom object to animate.</param>
+        public void ApplyAnimation(RTAnimation runtimeAnim, PAAnimation animation, CustomObject customObject)
+        {
+            var reference = customObject.reference;
+
+            if (!runtimeAnim || !reference)
+                return;
+
+            if (animation.animatePosition)
+                for (int i = 0; i < animation.positionKeyframes.Count; i++)
+                {
+                    var positionKeyframes = ObjectConverter.GetVector3Keyframes(animation.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
+
+                    if (animation.transition && customObject.gameObject)
+                        positionKeyframes[0].SetValue(customObject.gameObject.transform.localPosition);
+
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, vector =>
+                    {
+                        customObject.idle = false;
+                        if (customObject.gameObject)
+                            customObject.gameObject.transform.localPosition = (new Vector3(reference.position.x, reference.position.y, reference.depth) + vector);
+                    }, () => customObject.idle = true));
+                }
+            if (animation.animateScale)
+                for (int i = 0; i < animation.scaleKeyframes.Count; i++)
+                {
+                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+
+                    if (animation.transition && customObject.gameObject)
+                        scaleKeyframes[0].SetValue(customObject.gameObject.transform.localScale);
+
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
+                    {
+                        customObject.idle = false;
+                        if (customObject.gameObject)
+                            customObject.gameObject.transform.localScale = (new Vector3(reference.scale.x, reference.scale.y, 1f) * vector);
+                    }, () => customObject.idle = true));
+                }
+            if (animation.animateRotation)
+                for (int i = 0; i < animation.rotationKeyframes.Count; i++)
+                {
+                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+
+                    if (animation.transition && customObject.gameObject)
+                        rotationKeyframes[0].SetValue(customObject.gameObject.transform.localEulerAngles.z);
+
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
+                    {
+                        customObject.idle = false;
+                        if (customObject.gameObject)
+                            customObject.gameObject.transform.localEulerAngles = (new Vector3(0f, 0f, reference.rotation + x));
+                    }, () => customObject.idle = true));
+                }
         }
 
         /// <summary>
