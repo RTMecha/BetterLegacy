@@ -2346,8 +2346,8 @@ namespace BetterLegacy.Core.Components.Player
         public void ClearObjects()
         {
             if (healthText)
-                Destroy(healthText.gameObject);
-            Destroy(gameObject);
+                DestroyImmediate(healthText.gameObject);
+            DestroyImmediate(gameObject);
         }
 
         /// <summary>
