@@ -9,7 +9,7 @@ namespace BetterLegacy.Core.Components.Player
     /// </summary>
     public class BulletCollider : MonoBehaviour
     {
-        public RTPlayer.PulseObject playerObject;
+        public RTPlayer.EmittedObject emit;
         public RTPlayer player;
         public Rigidbody2D rb;
         public bool kill = false;
@@ -22,8 +22,8 @@ namespace BetterLegacy.Core.Components.Player
 
             tweener.Kill();
 
-            player.boosts.Remove(playerObject);
-            playerObject = null;
+            player.emitted.Remove(emit);
+            emit = null;
             Destroy(transform.parent.gameObject);
         }
 
@@ -34,8 +34,8 @@ namespace BetterLegacy.Core.Components.Player
 
             tweener.Kill();
 
-            player.boosts.Remove(playerObject);
-            playerObject = null;
+            player.emitted.Remove(emit);
+            emit = null;
             Destroy(transform.parent.gameObject);
         }
     }
