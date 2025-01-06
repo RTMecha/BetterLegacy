@@ -62,13 +62,22 @@ namespace BetterLegacy.Core.Data.Player
 
         public bool IsDefault { get; set; }
 
-        static List<PlayerModel> defaultModels;
+        #region Default Models
+
+        public const string DEFAULT_ID = "0";
+        public const string CIRCLE_ID = "1";
+        public const string ALPHA_ID = "2";
+        public const string BETA_ID = "3";
+        public const string DEV_ID = "4";
+
+        /// <summary>
+        /// List of all default player models.
+        /// </summary>
         public static List<PlayerModel> DefaultModels
         {
             get
             {
                 if (defaultModels == null)
-                {
                     defaultModels = new List<PlayerModel>
                     {
                         DefaultPlayer,
@@ -77,14 +86,14 @@ namespace BetterLegacy.Core.Data.Player
                         BetaPlayer,
                         DevPlayer
                     };
-                }
 
                 return defaultModels;
             }
         }
 
-        public const string DEFAULT_ID = "0";
-        static PlayerModel defaultPlayer;
+        /// <summary>
+        /// The default Legacy player.
+        /// </summary>
         public static PlayerModel DefaultPlayer
         {
             get
@@ -101,8 +110,9 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
-        public const string CIRCLE_ID = "1";
-        static PlayerModel circlePlayer;
+        /// <summary>
+        /// The extra Legacy player. Based on the 5-8 players.
+        /// </summary>
         public static PlayerModel CirclePlayer
         {
             get
@@ -130,8 +140,9 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
-        public const string ALPHA_ID = "2";
-        static PlayerModel alphaPlayer;
+        /// <summary>
+        /// The original player from Arrhythmia.
+        /// </summary>
         public static PlayerModel AlphaPlayer
         {
             get
@@ -161,8 +172,9 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
-        public const string BETA_ID = "3";
-        static PlayerModel betaPlayer;
+        /// <summary>
+        /// The pre-Legacy player with a boost tail part.
+        /// </summary>
         public static PlayerModel BetaPlayer
         {
             get
@@ -189,8 +201,9 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
-        public const string DEV_ID = "4";
-        static PlayerModel devPlayer;
+        /// <summary>
+        /// The modern VG player.
+        /// </summary>
         public static PlayerModel DevPlayer
         {
             get
@@ -208,6 +221,19 @@ namespace BetterLegacy.Core.Data.Player
                 return devPlayer;
             }
         }
+
+        #region Internal
+
+        static List<PlayerModel> defaultModels;
+        static PlayerModel defaultPlayer;
+        static PlayerModel circlePlayer;
+        static PlayerModel alphaPlayer;
+        static PlayerModel betaPlayer;
+        static PlayerModel devPlayer;
+
+        #endregion
+
+        #endregion
 
         public static PlayerModel DeepCopy(PlayerModel orig, bool newID = true)
         {
@@ -247,9 +273,9 @@ namespace BetterLegacy.Core.Data.Player
             if (jn["face"] != null)
             {
                 if (jn["face"]["position"] != null && !string.IsNullOrEmpty(jn["face"]["position"]["x"]) && !string.IsNullOrEmpty(jn["face"]["position"]["y"]))
-                    playerModel.FacePosition = jn["face"]["position"].AsVector2();
+                    playerModel.facePosition = jn["face"]["position"].AsVector2();
                 if (!string.IsNullOrEmpty(jn["face"]["con_active"]))
-                    playerModel.FaceControlActive = jn["face"]["con_active"].AsBool;
+                    playerModel.faceControlActive = jn["face"]["con_active"].AsBool;
             }
             playerModel.boostPart = Generic.Parse(jn["boost"], playerModel);
             playerModel.pulsePart = Pulse.Parse(jn["pulse"], playerModel);
@@ -304,8 +330,8 @@ namespace BetterLegacy.Core.Data.Player
                 jn["stretch"] = stretchPart.ToJSON();
             if (guiPart != null)
                 jn["gui"] = guiPart.ToJSON();
-            jn["face"]["position"] = FacePosition.ToJSON();
-            jn["face"]["con_active"] = FaceControlActive.ToString();
+            jn["face"]["position"] = facePosition.ToJSON();
+            jn["face"]["con_active"] = faceControlActive.ToString();
             if (headPart != null)
                 jn["head"] = headPart.ToJSON();
             if (boostPart != null)
@@ -442,8 +468,8 @@ namespace BetterLegacy.Core.Data.Player
 
                     #region Face
 
-                    case "Face Position": return FacePosition; // 52
-                    case "Face Control Active": return FaceControlActive; // 53
+                    case "Face Position": return facePosition; // 52
+                    case "Face Control Active": return faceControlActive; // 53
 
                     #endregion
 
@@ -889,9 +915,9 @@ namespace BetterLegacy.Core.Data.Player
 
                     #region Face
 
-                    case "Face Position": FacePosition = (Vector2)value; // 52
+                    case "Face Position": facePosition = (Vector2)value; // 52
                         break;
-                    case "Face Control Active": FaceControlActive = (bool)value; // 53
+                    case "Face Control Active": faceControlActive = (bool)value; // 53
                         break;
 
                     #endregion
@@ -1770,9 +1796,9 @@ namespace BetterLegacy.Core.Data.Player
 
         public Generic headPart;
 
-        public Vector2 FacePosition { get; set; } = new Vector2(0.3f, 0f);
+        public Vector2 facePosition = new Vector2(0.3f, 0f);
 
-        public bool FaceControlActive { get; set; } = true;
+        public bool faceControlActive = true;
 
         public Generic boostPart;
 
