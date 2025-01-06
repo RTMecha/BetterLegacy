@@ -1,3 +1,28 @@
+snapshot-2025.1.2 - (pre-1.7.0) > [Jan 7, 2025]
+- Implemented Bin Controls. This means you can now scroll up and down in the main editor timeline and you can add new bins to the editor.
+- With the Bin Controls feature, Timeline Objects can now retain their bin value depending on the Config Manager > Editor > Timeline > Timeline Object Retains Bin On Drag setting.
+- You can now delete level templates.
+- Fonts in the Text Object documentation now display their actual font.
+- You can now edit the transform offsets of multiple prefabs in the Multi Object editor.
+- Fixed the bug where selecting a single object after selecting multiple prevents rendering the keyframes correctly.
+- Simplified the level combining process by adding a PA type dropdown and shortening the default path so it looks less daunting.
+- Added "Mouse Tooltip Requires Help" setting to Config Manager > Editor > Editor GUI. With it on, the mouse tooltip requires the help info box to be active in order to show. It's off by default.
+- Changed the Modifier Collapse toggle UI to look like other collapse toggles, so it's more clear as to what it does.
+- Added a bunch of mouse tooltips.
+- Changed the layout of the Setting Editor so the color editors are side-by-side.
+- Easing Dropdown in the Multi Object Keyframe Editor now has an "Apply Curves" button.
+- Shortened some of the color keyframe labels for gradient objects.
+- Cleaned up Multi Object Editor UI a little.
+- Added "pop" sound to the default sounds.
+- Cleaned up a ton of Player code.
+- Overwrite the Players' animation system. Includes a new heal animation.
+- It now should be possible to parent custom player objects to other custom player objects.
+- Custom player animations have been implemented internally.
+- Added Replay End Level Off setting to the Metadata Editor.
+- Fixed keyboard number row + not working with the editor freecam.
+- Added a reload button to the Keybinds popup. This resets your keybinds to the default list.
+- Fixed Warning Popup appearing behind some popups.
+- Changed the default image object sprite to the PA logo.
 snapshot-2025.1.1 - (pre-1.7.0) > [Jan 3, 2025]
 - First snapshot of the new year! I really hope to get this update done soon...
 - Fixed SS rank shine not working in some cases.
