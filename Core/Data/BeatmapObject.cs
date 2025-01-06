@@ -1210,6 +1210,13 @@ namespace BetterLegacy.Core.Data
 
         #region Custom Interpolation
 
+        public Vector3 GetTransformOffset(int type) => type switch
+        {
+            0 => positionOffset,
+            1 => scaleOffset,
+            _ => rotationOffset,
+        };
+
         public void SetTransform(int toType, Vector3 value)
         {
             switch (toType)

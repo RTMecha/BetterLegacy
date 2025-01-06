@@ -185,6 +185,20 @@ namespace BetterLegacy.Core.Helpers
             SceneHelper.LoadScene(SceneName.Arcade_Select);
         }
 
+        public static void QuitToMainMenu()
+        {
+            InterfaceManager.inst.CloseMenus();
+
+            CoreHelper.Log("Quitting to main menu...");
+            LevelManager.Clear();
+            ResetModifiedStates();
+
+            LevelManager.LevelEnded = false;
+            LevelManager.Hub = null;
+
+            SceneHelper.LoadScene(SceneName.Main_Menu);
+        }
+
         public static void EndOfLevel()
         {
             endedLevel = true;
