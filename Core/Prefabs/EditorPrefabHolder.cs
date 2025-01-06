@@ -18,6 +18,7 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject NumberInputField { get; set; }
         public GameObject DefaultInputField { get; set; }
 
+        public GameObject SpriteButton { get; set; }
         public GameObject DeleteButton { get; set; }
         public GameObject Function1Button { get; set; }
         public GameObject Function2Button { get; set; }
@@ -36,6 +37,24 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject Slider { get; set; }
 
         public GameObject Tag { get; set; }
+    }
+
+    public class DropdownStorage : MonoBehaviour
+    {
+        [SerializeField]
+        public Dropdown dropdown;
+
+        [SerializeField]
+        public GridLayoutGroup templateGrid;
+
+        [SerializeField]
+        public ContentSizeFitter templateFitter;
+
+        [SerializeField]
+        public Image arrow;
+
+        [SerializeField]
+        public HideDropdownOptions hideOptions;
     }
 
     public class ToggleButtonStorage : MonoBehaviour
