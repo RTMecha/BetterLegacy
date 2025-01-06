@@ -7656,6 +7656,17 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "playAnimation":
+                    {
+                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(0), out RTPlayer.CustomObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == modifier.GetValue(1), out PAAnimation animation))
+                        {
+                            var runtimeAnimation = new RTAnimation("Custom Animation");
+                            modifier.reference.Player.ApplyAnimation(runtimeAnimation, animation, customObject);
+                            modifier.reference.Player.animationController.Play(runtimeAnimation);
+                        }
+
+                        break;
+                    }
             }
         }
 

@@ -28,6 +28,18 @@ namespace BetterLegacy.Core.Helpers
         public static string endLevelData;
         public static bool endLevelUpdateProgress = true;
 
+        /// <summary>
+        /// If the song has reached the end.
+        /// </summary>
+        public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - 0.1f;
+
+        /// <summary>
+        /// Replays the level during the End Level Menu.
+        /// </summary>
+        public static bool ReplayLevel =>
+            (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.levelData == null || !GameData.Current.beatmapData.levelData.forceReplayLevelOff) &&
+            CoreConfig.Instance.ReplayLevel.Value;
+
         public static void LoadInputSelect()
         {
             LevelManager.Levels.Clear();

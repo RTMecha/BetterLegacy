@@ -133,9 +133,9 @@ namespace BetterLegacy.Patchers
             if (CoreHelper.Reversing && !__instance.isReversing)
                 __instance.StartCoroutine(ReverseToCheckpointLoop(__instance));
             else if (CoreHelper.Playing)
-                CheckLevelEnd(__instance);
+                CheckLevelEnd();
             else if (CoreHelper.Finished)
-                CheckReplay(__instance);
+                CheckReplay();
 
             if (CoreHelper.Playing || CoreHelper.Reversing)
                 __instance.UpdateEventSequenceTime();
@@ -158,15 +158,15 @@ namespace BetterLegacy.Patchers
             }
         }
 
-        static void CheckLevelEnd(GameManager __instance)
+        static void CheckLevelEnd()
         {
-            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f && !LevelManager.LevelEnded)
+            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
                 LevelManager.EndLevel();
         }
 
-        static void CheckReplay(GameManager __instance)
+        static void CheckReplay()
         {
-            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f && CoreConfig.Instance.ReplayLevel.Value && LevelManager.LevelEnded)
+            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
                 AudioManager.inst.SetMusicTime(0f);
         }
 

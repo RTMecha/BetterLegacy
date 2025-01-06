@@ -556,6 +556,13 @@ namespace BetterLegacy.Core.Managers
             },
             new Modifier<CustomPlayer>
             {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string> { "playAnimation", "boost" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
                 type = ModifierBase.Type.Trigger,
                 constant = true,
                 commands = new List<string> { "keyPressDown" },

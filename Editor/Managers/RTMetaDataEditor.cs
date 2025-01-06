@@ -219,11 +219,12 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Players", 7);
             GenerateToggle(content, creatorLinkTitle, "show intro", "Show Intro", 8);
+            GenerateToggle(content, creatorLinkTitle, "replay end level off", "Replay End Level Off", 9);
 
-            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 13);
+            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 14);
             Destroy(serverID.transform.GetChild(1).gameObject);
 
-            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 9);
+            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 10);
 
             try
             {
@@ -744,14 +745,25 @@ namespace BetterLegacy.Editor.Managers
             unlockComplete.onValueChanged.ClearAll();
             unlockComplete.isOn = metadata.unlockAfterCompletion;
             unlockComplete.onValueChanged.AddListener(_val => metadata.unlockAfterCompletion = _val);
-            
+
+            var levelData = GameData.Current?.beatmapData?.levelData;
+
             var showIntro = content.Find("show intro/toggle").GetComponent<Toggle>();
             showIntro.onValueChanged.ClearAll();
-            showIntro.isOn = GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && !levelData.showIntro;
+            showIntro.isOn = !levelData.showIntro;
             showIntro.onValueChanged.AddListener(_val =>
             {
                 if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData)
                     levelData.showIntro = !_val;
+            });
+            
+            var replayEndLevelOff = content.Find("replay end level off/toggle").GetComponent<Toggle>();
+            replayEndLevelOff.onValueChanged.ClearAll();
+            replayEndLevelOff.isOn = levelData.forceReplayLevelOff;
+            replayEndLevelOff.onValueChanged.AddListener(_val =>
+            {
+                if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData)
+                    levelData.forceReplayLevelOff = !_val;
             });
 
             var preferredPlayerCount = content.Find("preferred player count/dropdown").GetComponent<Dropdown>();

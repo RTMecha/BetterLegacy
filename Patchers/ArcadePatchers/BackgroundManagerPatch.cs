@@ -75,7 +75,7 @@ namespace BetterLegacy.Patchers
         static bool UpdateBackgroundObjectsPrefix(BackgroundManager __instance)
         {
             var ldm = CoreConfig.Instance.LDM.Value;
-            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
                 __instance.sampleLow = Updater.samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
                 __instance.sampleMid = Updater.samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
