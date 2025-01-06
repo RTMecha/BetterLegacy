@@ -17,6 +17,17 @@ namespace BetterLegacy.Editor.Data
             this.keys = keys;
             ActionType = actionType;
             this.settings = settings ?? new Dictionary<string, string>();
+
+            if (settings == null && actionType >= 0 && actionType < KeybindEditor.inst.Settings.Count)
+            {
+                var setting = KeybindEditor.inst.Settings[actionType];
+                if (setting != null)
+                    foreach (var keyValuePair in setting)
+                    {
+                        if (!this.settings.ContainsKey(keyValuePair.Key))
+                            this.settings.Add(keyValuePair.Key, keyValuePair.Value);
+                    }
+            }
         }
 
         public static Keybind Parse(JSONNode jn)
