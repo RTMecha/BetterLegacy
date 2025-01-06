@@ -835,6 +835,9 @@ namespace BetterLegacy.Editor.Managers
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
+                    if (text1.transform.Find("edit"))
+                        Destroy(text1.transform.Find("edit").gameObject);
+
                     todoEditorText = text1.GetComponent<InputField>();
                     EditorThemeManager.AddInputField(todoEditorText);
 
@@ -2436,7 +2439,7 @@ namespace BetterLegacy.Editor.Managers
             todoEditorMoveUpButton.onClick.ClearAll();
             todoEditorMoveUpButton.onClick.AddListener(() =>
             {
-                if (todos.TryFindIndex(x => x.ID == todo.ID, out int index))
+                if (!todos.TryFindIndex(x => x.ID == todo.ID, out int index))
                     return;
 
                 if (index - 1 < 0)
