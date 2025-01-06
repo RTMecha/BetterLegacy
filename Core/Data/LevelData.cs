@@ -20,6 +20,10 @@ namespace BetterLegacy.Core.Data
         public int maxJumpCount = 10;
         public int maxJumpBoostCount = 1;
         public int maxHealth = 3;
+
+        public bool forceReplayLevelOff;
+
+        public bool multiplyPlayerSpeed = true;
         public bool allowCustomPlayerModels = true;
         public bool spawnPlayers = true;
 
@@ -71,6 +75,12 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(jn["max_health"]))
                 levelData.maxHealth = jn["max_health"].AsInt;
+
+            if (!string.IsNullOrEmpty(jn["force_replay_level_off"]))
+                levelData.forceReplayLevelOff = jn["force_replay_level_off"].AsBool;
+
+            if (!string.IsNullOrEmpty(jn["multiply_player_speed"]))
+                levelData.multiplyPlayerSpeed = jn["multiply_player_speed"].AsBool;
 
             if (!string.IsNullOrEmpty(jn["allow_custom_player_models"]))
                 levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
@@ -130,6 +140,12 @@ namespace BetterLegacy.Core.Data
 
             if (maxHealth != 3)
                 jn["max_health"] = maxHealth.ToString();
+
+            if (forceReplayLevelOff)
+                jn["force_replay_level_off"] = forceReplayLevelOff.ToString();
+
+            if (!multiplyPlayerSpeed)
+                jn["multiply_player_speed"] = multiplyPlayerSpeed.ToString();
 
             if (!allowCustomPlayerModels)
                 jn["allow_custom_player_models"] = allowCustomPlayerModels.ToString();
