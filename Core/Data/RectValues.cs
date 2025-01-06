@@ -48,6 +48,19 @@ namespace BetterLegacy.Core.Data
         };
 
         /// <summary>
+        /// Forces a <see cref="RectTransform"/> to anchor to the top right of the parent.
+        /// </summary>
+        public static RectValues TopRightAnchored => new RectValues
+        {
+            anchoredPosition = Vector2.zero,
+            anchorMax = Vector2.one,
+            anchorMin = Vector2.one,
+            pivot = Vector2.one,
+            sizeDelta = Vector2.zero,
+            rotation = 0f,
+        };
+
+        /// <summary>
         /// Forces a <see cref="RectTransform"/> to anchor to the left and right sides of the parent.
         /// </summary>
         public static RectValues HorizontalAnchored => new RectValues
