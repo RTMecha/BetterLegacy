@@ -107,309 +107,73 @@ namespace BetterLegacy.Editor.Managers
 
         public void FirstInit()
         {
-            // Save
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.S),
-            }, 9));
+            AddDefaultKeybind(ActionType.SaveBeatmap, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.S));
+            AddDefaultKeybind(ActionType.OpenBeatmapPopup, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.O));
 
-            // Open Beatmap Popup
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.O),
-            }, 10));
+            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "0" } },
+                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha1));
+            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "1" } },
+                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha2));
+            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "2" } },
+                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha3));
+            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "3" } },
+                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha4));
+            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "4" } },
+                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha5));
 
-            // Set Layer 1
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha1),
-            }, 11, new Dictionary<string, string>
-            {
-                { "Layer", "0" }
-            }));
+            AddDefaultKeybind(ActionType.ToggleEventLayer, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.E));
+            AddDefaultKeybind(ActionType.Undo, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z));
+            AddDefaultKeybind(ActionType.Redo, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z));
+            AddDefaultKeybind(ActionType.TogglePlayingSong, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Space));
+            AddDefaultKeybind(ActionType.SwapLockSelection, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.L));
+            AddDefaultKeybind(ActionType.UpdateObject, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R));
+            AddDefaultKeybind(ActionType.UpdateEverything, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.T));
+            AddDefaultKeybind(ActionType.SetFirstKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
+            AddDefaultKeybind(ActionType.SetLastKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
+            AddDefaultKeybind(ActionType.SetNextKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
+            AddDefaultKeybind(ActionType.SetPreviousKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
+            AddDefaultKeybind(ActionType.AddPitch, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow));
+            AddDefaultKeybind(ActionType.SubPitch, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow));
+            AddDefaultKeybind(ActionType.ToggleShowHelp, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
+            AddDefaultKeybind(ActionType.GoToCurrent, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Insert));
+            AddDefaultKeybind(ActionType.GoToStart, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Home));
+            AddDefaultKeybind(ActionType.GoToEnd, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.End));
+            AddDefaultKeybind(ActionType.CreateNewMarker, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.M));
+            AddDefaultKeybind(ActionType.SpawnSelectedQuickPrefab, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Slash));
+            AddDefaultKeybind(ActionType.Cut, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.X));
+            AddDefaultKeybind(ActionType.Copy, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.C));
+            AddDefaultKeybind(ActionType.Paste, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.V));
+            AddDefaultKeybind(ActionType.Duplicate, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.D));
+            AddDefaultKeybind(ActionType.Delete, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Backspace));
+            AddDefaultKeybind(ActionType.Delete, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Delete));
+            AddDefaultKeybind(ActionType.ToggleZenMode, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z));
+            AddDefaultKeybind(ActionType.TransformPosition, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.G));
+            AddDefaultKeybind(ActionType.TransformScale, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Y));
+            AddDefaultKeybind(ActionType.TransformRotation, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl));
+            AddDefaultKeybind(ActionType.ToggleProjectPlanner, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.F10));
+            AddDefaultKeybind(ActionType.ParentPicker, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.P));
 
-            // Set Layer 2
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha2),
-            }, 11, new Dictionary<string, string>
-            {
-                { "Layer", "1" }
-            }));
+            AddDefaultKeybind(ActionType.AddTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.KeypadPlus));
+            AddDefaultKeybind(ActionType.AddTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Equals));
+            AddDefaultKeybind(ActionType.RemoveTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.KeypadMinus));
+            AddDefaultKeybind(ActionType.RemoveTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Minus));
 
-            // Set Layer 3
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha3),
-            }, 11, new Dictionary<string, string>
-            {
-                { "Layer", "2" }
-            }));
+            AddDefaultKeybind(ActionType.AddLayer, new Dictionary<string, string> { { "Layer", "1" } }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageUp));
+            AddDefaultKeybind(ActionType.AddLayer, new Dictionary<string, string> { { "Layer", "-1" } }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageDown));
 
-            // Set Layer 4
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha4),
-            }, 11, new Dictionary<string, string>
-            {
-                { "Layer", "3" }
-            }));
-
-            // Set Layer 5
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha5),
-            }, 11, new Dictionary<string, string>
-            {
-                { "Layer", "4" }
-            }));
-
-            // Set Layer 6
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha6),
-            }, 11, new Dictionary<string, string>
-            {
-                { "Layer", "5" }
-            }));
-
-            // Toggle Event Layer
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.E),
-            }, 12));
-
-            // Undo
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z),
-            }, 13));
-
-            // Redo
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z),
-            }, 14));
-
-            // Toggle Playing Song
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Space),
-            }, 15));
-
-            // Swap Lock Selection
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.L),
-            }, 19));
-
-            // Update Object
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R),
-            }, 3));
-
-            // Update Everything
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.T),
-            }, 2));
-
-            // Set First Keyframe In Type
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period),
-            }, 34));
-
-            // Set Last Keyframe In Type
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma),
-            }, 35));
-
-            // Set Next Keyframe In Type
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period),
-            }, 36));
-
-            // Set Previous Keyframe In Type
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma),
-            }, 37));
-
-            // Add Pitch
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow),
-            }, 38));
-
-            // Sub Pitch
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow),
-            }, 39));
-
-            // Toggle Show Help
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H),
-            }, 40));
-
-            // Go To Current
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Insert),
-            }, 41));
-
-            // Go To Start
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Home),
-            }, 42));
-
-            // Go To End
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.End),
-            }, 43));
-
-            // Create New Marker
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.M),
-            }, 44));
-
-            // Spawn Prefab
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Slash),
-            }, 57));
-
-            // Cut
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.X),
-            }, 46));
-
-            // Copy
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.C),
-            }, 47));
-
-            // Paste
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.V),
-            }, 48, new Dictionary<string, string>
-            {
-                { "Remove Prefab Instance ID", "False" }
-            }));
-
-            // Duplicate
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.D),
-            }, 49, new Dictionary<string, string>
-            {
-                { "Remove Prefab Instance ID", "False" }
-            }));
-
-            // Delete (Backspace key)
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Backspace),
-            }, 50));
-
-            // Delete (Delete key)
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Delete),
-            }, 50));
-
-            // ToggleZenMode
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z),
-            }, 52));
-
-            // TransformPosition
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.G)
-            }, 54, new Dictionary<string, string>
-            {
-                { "Create Keyframe", "True" },
-                { "Use Nearest", "True" },
-                { "Use Previous", "False" },
-            }));
-
-            // TransformScale
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Y)
-            }, 55, new Dictionary<string, string>
-            {
-                { "Create Keyframe", "True" },
-                { "Use Nearest", "True" },
-                { "Use Previous", "False" },
-            }));
-
-            // TransformRotation
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R),
-                new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl),
-            }, 56, new Dictionary<string, string>
-            {
-                { "Create Keyframe", "True" },
-                { "Use Nearest", "True" },
-                { "Use Previous", "False" },
-            }));
-
-            // ToggleProjectPlanner
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.F10),
-            }, 59));
-
-            // Custom Code
-            keybinds.Add(new Keybind(LSText.randomNumString(16), new List<Keybind.Key>
-            {
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl),
-                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.I),
-            }, 0, new Dictionary<string, string>
-            {
-                { "Code", "Debug.Log($\"{EditorManagement.Functions.Editors.KeybindManager.className} This is an example! You can use the keybind variable to check any settings you may have.\");" }
-            }));
+            AddDefaultKeybind(ActionType.SetSongTimeAutokill, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.K));
 
             Save();
+        }
+
+        void AddDefaultKeybind(ActionType actionType, params Keybind.Key[] keys)
+        {
+            keybinds.Add(new Keybind(LSText.randomNumString(16), keys.ToList(), (int)actionType));
+        }
+        
+        void AddDefaultKeybind(ActionType actionType, Dictionary<string, string> settings, params Keybind.Key[] keys)
+        {
+            keybinds.Add(new Keybind(LSText.randomNumString(16), keys.ToList(), (int)actionType, settings));
         }
 
         public void Save()
@@ -454,6 +218,25 @@ namespace BetterLegacy.Editor.Managers
                 RefreshKeybindPopup();
             }, placeholderText: "Search for keybind...");
             content = popup.Content;
+
+            var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(popup.TopPanel, "Reload");
+            RectValues.TopRightAnchored.AnchoredPosition(-64f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(reload.transform.AsRT());
+            var reloadButton = reload.GetComponent<Button>();
+            reloadButton.onClick.ClearAll();
+            reloadButton.onClick.AddListener(() =>
+            {
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to reset the keybinds list to the default? This <b>will</b> remove all custom keybinds you have setup and cannot be undone.", () =>
+                {
+                    keybinds.Clear();
+                    FirstInit();
+                    RefreshKeybindPopup();
+                    EditorManager.inst.HideDialog("Keybind Editor");
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup);
+            });
+
+            reloadButton.image.sprite = EditorSprites.ReloadSprite;
+            EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
 
             editorDialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "KeybindEditor").transform;
             editorDialog.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
@@ -598,6 +381,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var hide = keyCodeDropdown.GetComponent<HideDropdownOptions>();
                 hide.DisabledOptions.Clear();
+                hide.remove = true;
                 var keyCodes = Enum.GetValues(typeof(KeyCode));
                 for (int i = 0; i < keyCodes.Length; i++)
                 {
@@ -974,6 +758,7 @@ namespace BetterLegacy.Editor.Managers
                     case "eventvalue":
                     case "layer":
                     case "index":
+                    case "count":
                         {
                             var x = singleInput.Duplicate(settingsContent, "input [INT]");
 
@@ -1089,6 +874,77 @@ namespace BetterLegacy.Editor.Managers
 
         #region Methods
 
+        public enum ActionType
+        {
+            CustomCode, // 0
+            ToggleEditor, // 1
+            UpdateEverything, // 2
+            UpdateObject, // 3
+            OpenPrefabDialog, // 4
+            CollapsePrefab, // 5
+            ExpandPrefab, // 6
+            SetSongTimeAutokill, // 7
+            OpenDialog, // 8
+            SaveBeatmap, // 9
+            OpenBeatmapPopup, // 10
+            SetLayer, // 11
+            ToggleEventLayer, // 12
+            Undo, // 13
+            Redo, // 14
+            TogglePlayingSong, // 15
+            IncreaseKeyframeValue, // 16
+            DecreaseKeyframeValue, // 17
+            SetKeyframeValue, // 18
+            SwapLockSelection, // 19
+            ToggleLockSelection, // 20
+            SwapCollapseSelection, // 21
+            ToggleCollapseSelection, // 22
+            AddObjectLayer, // 23
+            SubObjectLayer, // 24
+            CycleObjectTypeUp, // 25
+            CycleObjectTypeDown, // 26
+            JumpToNextMarker, // 27
+            JumpToPreviousMarker, // 28
+            OpenSaveAs, // 29
+            OpenNewLevel, // 30
+            ToggleBPMSnap, // 31
+            SelectNextObject, // 32
+            SelectPreviousObject, // 33
+            SetFirstKeyframeInType, // 34
+            SetLastKeyframeInType, // 35
+            SetNextKeyframeInType, // 36
+            SetPreviousKeyframeInType, // 37
+            AddPitch, // 38
+            SubPitch, // 39
+            ToggleShowHelp, // 40
+            GoToCurrent, // 41
+            GoToStart, // 42
+            GoToEnd, // 43
+            CreateNewMarker, // 44
+            SpawnPrefab, // 45
+            Cut, // 46
+            Copy, // 47
+            Paste, // 48
+            Duplicate, // 49
+            Delete, // 50
+            ToggleObjectDragger, // 51
+            ToggleZenMode, // 52
+            CycleGameMode, // 53
+            TransformPosition, //54
+            TransformScale, //55
+            TransformRotation, //56
+            SpawnSelectedQuickPrefab, //57
+            ResetIntegerVariables, // 58
+            ToggleProjectPlanner, // 59
+            ForceSnapBPM, // 60
+            AddLayer, // 61
+            ParentPicker, // 62
+            ToggleMouseTooltip, // 63
+            AddTimelineBin, // 64
+            RemoveTimelineBin, // 65
+            SetTimelineBin, // 66
+        }
+
         public static List<Action<Keybind>> KeybinderMethods { get; } = new List<Action<Keybind>>
         {
             CustomCode, // 0
@@ -1155,6 +1011,9 @@ namespace BetterLegacy.Editor.Managers
             AddLayer, // 61
             ParentPicker, // 62
             ToggleMouseTooltip, // 63
+            AddTimelineBin, // 64
+            RemoveTimelineBin, // 65
+            SetTimelineBin, // 66
         };
 
         public static void CustomCode(Keybind keybind)
@@ -1191,6 +1050,9 @@ namespace BetterLegacy.Editor.Managers
 
         public static void OpenPrefabDialog(Keybind keybind)
         {
+            if (keybind.settings.TryGetValue("External", out string setting) && bool.TryParse(setting, out bool external))
+                RTPrefabEditor.inst.createInternal = !external;
+
             PrefabEditor.inst.OpenDialog();
         }
 
@@ -1964,6 +1826,16 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set tooltip {(o ? "on" : "off")}", 1.5f, EditorManager.NotificationType.Success);
         }
 
+        public static void AddTimelineBin(Keybind keybind) => RTEditor.inst.AddBin();
+
+        public static void RemoveTimelineBin(Keybind keybind) => RTEditor.inst.RemoveBin();
+
+        public static void SetTimelineBin(Keybind keybind)
+        {
+            if (keybind.settings.TryGetValue("Count", out string str) && int.TryParse(str, out int count))
+                RTEditor.inst.SetBinCount(count);
+        }
+
         #endregion
 
         #region Settings
@@ -1977,7 +1849,10 @@ namespace BetterLegacy.Editor.Managers
             null, // 1
             null, // 2
             null, // 3
-            null, // 4
+            new Dictionary<string, string>
+            {
+                { "External", "True" }
+            }, // 4
             null, // 5
             null, // 6
             null, // 7
@@ -2091,6 +1966,12 @@ namespace BetterLegacy.Editor.Managers
             }, // 61
             null, // 62
             null, // 63
+            null, // 64 (AddBin)
+            null, // 65 (RemoveBin)
+            new Dictionary<string, string>
+            {
+                { "Count", "30" }
+            }, // 66 (SetBinCount)
         };
 
         #endregion
