@@ -22,8 +22,8 @@ namespace BetterLegacy.Core.Data
 
         public new int Bin
         {
-            get => Mathf.Clamp(bin, 0, RTEditor.MAX_BINS);
-            set => bin = Mathf.Clamp(value, 0, RTEditor.MAX_BINS);
+            get => bin;
+            set => bin = value;
         }
 
         public new int Layer
