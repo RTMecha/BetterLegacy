@@ -158,7 +158,7 @@ namespace BetterLegacy.Arcade.Managers
                 if (Input.GetKey(KeyCode.S))
                     editorOffset.y -= 0.1f * EditorSpeed * multiply;
 
-                if (Input.GetKey(KeyCode.KeypadPlus) || Input.GetKey(KeyCode.Plus))
+                if (Input.GetKey(KeyCode.KeypadPlus) || Input.GetKey(KeyCode.Equals))
                     editorZoom += 0.1f * EditorSpeed * multiply;
                 if (Input.GetKey(KeyCode.KeypadMinus) || Input.GetKey(KeyCode.Minus))
                     editorZoom -= 0.1f * EditorSpeed * multiply;
@@ -1747,6 +1747,12 @@ namespace BetterLegacy.Arcade.Managers
         #region Offsets
 
         public float pitchOffset = 1f;
+
+        public void SetOffset(int eventType, int indexValue, float value)
+        {
+            if (eventType >= 0 && eventType < offsets.Count && indexValue >= 0 && indexValue < offsets[eventType].Count)
+                offsets[eventType][indexValue] = value;
+        }
 
         List<List<float>> ResetOffsets()
         {
