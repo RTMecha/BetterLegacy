@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Components.Player;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using InControl;
@@ -24,17 +25,19 @@ namespace BetterLegacy.Core.Data.Player
         public RTPlayer Player { get; set; }
 
         public string currentPlayerModel = PlayerModel.DEFAULT_ID;
-        public void SetPlayerModel(string id)
+        public string CurrentModel
         {
-            id = !CoreHelper.InEditor && PlayersData.AllowCustomModels ? PlayerManager.PlayerIndexes[index].Value : id;
-            currentPlayerModel = id;
-            UpdatePlayerModel();
+            get => !CoreHelper.InEditor && PlayersData.AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? PlayerManager.PlayerIndexes[index].Value : currentPlayerModel;
+            set
+            {
+                currentPlayerModel = value;
+                UpdatePlayerModel();
+            }
         }
 
-        
         public void UpdatePlayerModel()
         {
-            PlayerModel = PlayerModel.DeepCopy(PlayersData.Main.playerModels.TryGetValue(currentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer, false);
+            PlayerModel = PlayerModel.DeepCopy(PlayersData.GetPlayerModel(CurrentModel), false);
             if (Player)
                 Player.Model = PlayerModel;
         }

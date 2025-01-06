@@ -752,9 +752,9 @@ namespace BetterLegacy.Patchers
                 Instance.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
 
             if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(CoreHelper.DoAction(() => RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Main.ToJSON().ToString())));
+                yield return CoreHelper.StartCoroutineAsync(CoreHelper.DoAction(() => RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString())));
             else
-                RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Main.ToJSON().ToString());
+                RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString());
 
             PlayersData.Save();
 

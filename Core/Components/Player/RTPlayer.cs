@@ -87,7 +87,7 @@ namespace BetterLegacy.Core.Components.Player
         public TextMeshPro nametagText;
         public MeshRenderer nametagBase;
 
-        public GameObject healthText;
+        public Text healthText;
 
         private Image barIm;
         private Image barBaseIm;
@@ -129,15 +129,30 @@ namespace BetterLegacy.Core.Components.Player
 
         public List<PlayerObject> playerObjects = new List<PlayerObject>();
 
+        /// <summary>
+        /// A list of the players' tail parts. Only includes the tail parts that represent the health.
+        /// </summary>
         public List<PlayerObject> tailParts = new List<PlayerObject>();
 
+        /// <summary>
+        /// A list of the custom objects spawned from the players' model.
+        /// </summary>
         public List<CustomObject> customObjects = new List<CustomObject>();
 
+        /// <summary>
+        /// Used for pathing the players' tail.
+        /// </summary>
         public List<MovementPath> path = new List<MovementPath>();
 
+        /// <summary>
+        /// A list of images that represent the players' health in GUI image form.
+        /// </summary>
         public List<HealthObject> healthObjects = new List<HealthObject>();
 
-        public List<PulseObject> boosts = new List<PulseObject>();
+        /// <summary>
+        /// A list of temporary spawned objects.
+        /// </summary>
+        public List<EmittedObject> emitted = new List<EmittedObject>();
 
         #endregion
 
@@ -207,7 +222,7 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Velocities
 
-        public static bool MultiplyByPitch => GameData.IsValid && GameData.Current.beatmapData.levelData.multiplyPlayerSpeed;
+        public static bool MultiplyByPitch => GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData.multiplyPlayerSpeed;
 
         /// <summary>
         /// How fast all players are.
@@ -327,6 +342,8 @@ namespace BetterLegacy.Core.Components.Player
 
         #region States
 
+        #region Global
+
         /// <summary>
         /// If the boost sound should play when the player boosts.
         /// </summary>
@@ -376,6 +393,8 @@ namespace BetterLegacy.Core.Components.Player
         /// If players can take damage from colliding with other players.
         /// </summary>
         public static bool AllowPlayersToHitOthers { get; set; }
+
+        #endregion
 
         public bool colliding;
         public bool updated;
@@ -433,6 +452,24 @@ namespace BetterLegacy.Core.Components.Player
         /// If the player is alive.
         /// </summary>
         public bool Alive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
+
+        /// <summary>
+        /// Text of the nametag.
+        /// </summary>
+        public string NametagText
+        {
+            get
+            {
+                try
+                {
+                    return !CustomPlayer ? string.Empty : "<#" + LSColors.ColorToHex(GameManager.inst.LiveTheme.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4))) + ">Player " + (PlayersData.Current.GetMaxIndex(playerIndex, 4) + 1).ToString() + " " + RTString.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
+                }
+                catch (Exception)
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         /// <summary>
         /// Updates player properties based on <see cref="LevelData"/>.
@@ -876,7 +913,7 @@ namespace BetterLegacy.Core.Components.Player
             deathAnimation.events = new List<Animation.AnimationEvent>
             {
                 new Animation.AnimationEvent(0f, PlayDeathParticles),
-                new Animation.AnimationEvent(0.6f, () => Destroy(gameObject)),
+                new Animation.AnimationEvent(0.6f, ClearObjects),
             };
             deathAnimation.onComplete = () =>
             {
@@ -1134,7 +1171,7 @@ namespace BetterLegacy.Core.Components.Player
 
             path.Add(new MovementPath(spawnPos, Quaternion.identity, null));
 
-            healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}");
+            healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}").GetComponent<Text>();
 
             for (int i = 0; i < 3; i++)
                 healthObjects.Add(new HealthObject(healthText.transform.GetChild(i).gameObject, healthText.transform.GetChild(i).GetComponent<Image>()));
@@ -1152,11 +1189,9 @@ namespace BetterLegacy.Core.Components.Player
             var bar = Creator.NewUIObject("Bar", barBase.transform);
 
             barIm = bar.AddComponent<Image>();
+            new RectValues(Vector2.zero, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(0f, 0f)).AssignToRectTransform(barIm.rectTransform);
 
-            bar.transform.AsRT().pivot = new Vector2(0f, 0.5f);
-            bar.transform.AsRT().anchoredPosition = new Vector2(-100f, 0f);
-
-            healthText.SetActive(false);
+            healthText.gameObject.SetActive(false);
         }
 
         void Start()
@@ -1168,6 +1203,14 @@ namespace BetterLegacy.Core.Components.Player
                 playerNeedsUpdating = false;
                 Spawn();
                 UpdateModel();
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (CustomPlayer)
+            {
+                CustomPlayer.Player = null;
             }
         }
 
@@ -1192,9 +1235,9 @@ namespace BetterLegacy.Core.Components.Player
 
                 if (act && nametagText)
                 {
-                    var index = PlayersData.Main.GetMaxIndex(playerIndex, 4);
+                    var index = PlayersData.Current.GetMaxIndex(playerIndex, 4);
 
-                    nametagText.text = "<#" + LSColors.ColorToHex(GameManager.inst.LiveTheme.GetPlayerColor(index)) + ">Player " + (playerIndex + 1).ToString() + " " + RTString.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
+                    nametagText.text = NametagText;
                     nametagBase.material.color = LSColors.fadeColor(GameManager.inst.LiveTheme.GetPlayerColor(index), 0.3f);
                     nametagBase.transform.localScale = new Vector3((float)initialHealthCount * 2.25f, 1.5f, 1f);
                 }
@@ -1221,7 +1264,8 @@ namespace BetterLegacy.Core.Components.Player
             if (UpdateMode == TailUpdateMode.FixedUpdate)
                 UpdateTailDistance();
 
-            healthText?.SetActive(Model && Model.guiPart.active && GameManager.inst.timeline.activeSelf);
+            if (healthText)
+                healthText.gameObject.SetActive(Model && Model.guiPart.active && GameManager.inst.timeline.activeSelf);
         }
 
         void LateUpdate()
@@ -1249,11 +1293,11 @@ namespace BetterLegacy.Core.Components.Player
                 }
             }
 
-            if (!Model || !Model.FaceControlActive || FaceController == null)
+            if (!Model || !Model.faceControlActive || FaceController == null)
                 return;
 
             var vector = new Vector2(FaceController.Move.Vector.x, FaceController.Move.Vector.y);
-            var fp = Model.FacePosition;
+            var fp = Model.facePosition;
             if (vector.magnitude > 1f)
                 vector = vector.normalized;
 
@@ -1913,7 +1957,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!Model)
                 return;
 
-            var index = PlayersData.Main.GetMaxIndex(playerIndex);
+            var index = PlayersData.Current.GetMaxIndex(playerIndex);
 
             if (head.gameObject)
             {
@@ -2011,7 +2055,7 @@ namespace BetterLegacy.Core.Components.Player
             if (customObjects.Count < 1)
                 return;
 
-            var index = PlayersData.Main.GetMaxIndex(playerIndex);
+            var index = PlayersData.Current.GetMaxIndex(playerIndex);
             foreach (var playerObject in playerObjects)
             {
                 if (!playerObject.isCustom)
@@ -2045,7 +2089,7 @@ namespace BetterLegacy.Core.Components.Player
                 for (int i = 0; i < reference.animations.Count; i++)
                 {
                     var animation = reference.animations[i];
-                    if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != "idle")
+                    if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != customObject.currentIdleAnimation)
                         continue;
 
                     var length = animation.GetLength();
@@ -2076,12 +2120,12 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateBoostTheme()
         {
-            if (boosts.Count < 1)
+            if (emitted.Count < 1)
                 return;
 
-            var index = PlayersData.Main.GetMaxIndex(playerIndex);
+            var index = PlayersData.Current.GetMaxIndex(playerIndex);
 
-            foreach (var boost in boosts)
+            foreach (var boost in emitted)
             {
                 if (boost == null)
                     continue;
@@ -2253,6 +2297,8 @@ namespace BetterLegacy.Core.Components.Player
 
             stretchVector = new Vector2(stretchAmount * 1.5f, -(stretchAmount * 1.5f));
 
+            SetTriggerCollision(true);
+
             if (showBoostTail)
             {
                 path[1].active = false;
@@ -2292,6 +2338,26 @@ namespace BetterLegacy.Core.Components.Player
             path[index].lastPos = new Vector3(pos.x, pos.y);
             if (path[index].transform)
                 path[index].transform.position = path[index].pos;
+        }
+
+        /// <summary>
+        /// Destroys the player objects.
+        /// </summary>
+        public void ClearObjects()
+        {
+            if (healthText)
+                Destroy(healthText.gameObject);
+            Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// Changes how the players collision works.
+        /// </summary>
+        /// <param name="enabled">True if the player can phase through walls.</param>
+        public void SetTriggerCollision(bool enabled)
+        {
+            //circleCollider2D.isTrigger = enabled;
+            //polygonCollider2D.isTrigger = enabled;
         }
 
         #region Internal
@@ -2339,12 +2405,6 @@ namespace BetterLegacy.Core.Components.Player
             yield break;
         }
 
-        void ClearObjects()
-        {
-            Destroy(healthText);
-            Destroy(gameObject);
-        }
-
         IEnumerator IKill()
         {
             isDead = true;
@@ -2355,7 +2415,6 @@ namespace BetterLegacy.Core.Components.Player
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
             yield return new WaitForSecondsRealtime(0.2f);
-            //ClearObjects();
             InputDataManager.inst.StopControllerRumble(playerIndex);
             yield break;
         } // if you want to kill the player, just set health to zero.
@@ -2391,6 +2450,7 @@ namespace BetterLegacy.Core.Components.Player
                 StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
                 return;
             }
+            SetTriggerCollision(false);
             isBoosting = false;
             CanTakeDamage = true;
         }
@@ -2399,41 +2459,20 @@ namespace BetterLegacy.Core.Components.Player
         {
             isBoostCancelled = true;
             yield return new WaitForSeconds(_offset);
+            SetTriggerCollision(false);
             isBoosting = false;
             if (!isTakingHit)
-            {
                 CanTakeDamage = true;
-                CancelBoostAnim();
-            }
-            else
-            {
-                //CoreHelper.Log($"Player is somehow taking damage while boosting");
-                //float num = (Time.time - startHurtTime) / 2.5f;
-                //if (num < 1f)
-                //    anim.Play("Hurt", -1, num);
-                //else
-                //{
-                //    CancelBoostAnim();
-                //    //InitAfterHit();
-                //}
-            }
+
             yield return new WaitForSeconds(0.1f);
             InitAfterBoost();
             CancelBoostAnim();
             yield break;
         }
 
-        //Look into making custom damage offsets
-        IEnumerator DamageSetDelay(float _offset)
-        {
-            yield return new WaitForSeconds(_offset);
-            CoreHelper.Log($"Player {playerIndex} can now be damaged.");
-            CanTakeDamage = true;
-            yield break;
-        }
-
         void InitAfterBoost()
         {
+            SetTriggerCollision(false);
             isBoosting = false;
             isBoostCancelled = false;
             boostCoroutine = StartCoroutine(BoostCooldownLoop());
@@ -2444,6 +2483,7 @@ namespace BetterLegacy.Core.Components.Player
             CoreHelper.Log($"Player {playerIndex} InitBeforeHit");
             startHurtTime = Time.time;
             CanBoost = true;
+            SetTriggerCollision(false);
             isBoosting = false;
             isTakingHit = true;
             CanTakeDamage = false;
@@ -2486,14 +2526,7 @@ namespace BetterLegacy.Core.Components.Player
 
             InitNametag();
 
-            for (int i = 0; i < tailParts.Count; i++)
-                Assign(tailParts[i], currentModel.GetTail(i));
-
-            Assign(head, currentModel.headPart);
-            Assign(boost, currentModel.boostPart, true);
-
-            var fp = currentModel.FacePosition;
-            face.gameObject.transform.localPosition = new Vector3(fp.x, fp.y, 0f);
+            #region Cache
 
             tailDistance = currentModel.tailBase.distance;
             tailMode = (int)currentModel.tailBase.mode;
@@ -2501,40 +2534,39 @@ namespace BetterLegacy.Core.Components.Player
 
             showBoostTail = currentModel.boostTailPart.active;
 
-            if (!isBoosting)
-                path[1].active = showBoostTail;
-
-            Assign(boostTail, currentModel.boostTailPart);
-
-            //boostTail.parent.gameObject.SetActive(showBoostTail);
-            //if (showBoostTail)
-            //    boostTail.meshFilter.mesh = GetShape(currentModel.boostTailPart.shape.type, currentModel.boostTailPart.shape.option).mesh;
-
-            //if (!isBoosting)
-            //    path[1].active = showBoostTail;
-
-            //boostTail.gameObject.SetActive(showBoostTail);
-
-            //if (showBoostTail)
-            //{
-            //    boostTail.gameObject.transform.localPosition = new Vector3(currentModel.boostTailPart.position.x, currentModel.boostTailPart.position.y, 0.1f);
-            //    boostTail.gameObject.transform.localScale = new Vector3(currentModel.boostTailPart.scale.x, currentModel.boostTailPart.scale.y, 1f);
-            //    boostTail.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, currentModel.boostTailPart.rotation);
-            //}
-
             jumpGravity = currentModel.basePart.jumpGravity;
             jumpIntensity = currentModel.basePart.jumpIntensity;
             jumpCount = currentModel.basePart.jumpCount;
             jumpBoostCount = currentModel.basePart.jumpBoostCount;
             bounciness = currentModel.basePart.bounciness;
 
-            rb.sharedMaterial.bounciness = bounciness;
-
             stretch = currentModel.stretchPart.active;
             stretchAmount = currentModel.stretchPart.amount;
             stretchEasing = currentModel.stretchPart.easing;
 
             rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
+
+            #endregion
+
+            Assign(head, currentModel.headPart);
+            Assign(boost, currentModel.boostPart, true);
+            Assign(boostTail, currentModel.boostTailPart);
+
+            while (tailParts.Count > initialHealthCount)
+            {
+                Destroy(tailParts[tailParts.Count - 1].gameObject);
+                tailParts.RemoveAt(tailParts.Count - 1);
+            }
+
+            for (int i = 0; i < tailParts.Count; i++)
+                Assign(tailParts[i], currentModel.GetTail(i));
+
+            face.gameObject.transform.localPosition = new Vector3(currentModel.facePosition.x, currentModel.facePosition.y, 0f);
+
+            if (!isBoosting)
+                path[1].active = showBoostTail;
+
+            rb.sharedMaterial.bounciness = bounciness;
 
             circleCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
             polygonCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
@@ -2545,7 +2577,7 @@ namespace BetterLegacy.Core.Components.Player
             if (colAcc)
                 polygonCollider2D.CreateCollider(head.meshFilter);
 
-            if (CustomPlayer)
+            if (CustomPlayer && CoreHelper.InEditor)
                 CustomPlayer.Health = PlayerManager.IsNoHit ? 1 : currentModel.basePart.health;
 
             var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
@@ -2561,6 +2593,8 @@ namespace BetterLegacy.Core.Components.Player
 
             if (tailGrows)
                 GrowTail();
+
+            UpdateGUI();
 
             updated = true;
         }
@@ -2904,19 +2938,6 @@ namespace BetterLegacy.Core.Components.Player
                     GrowTail();
             }
 
-            //for (int i = 2; i < path.Count; i++)
-            //{
-            //    if (!path[i].transform)
-            //        continue;
-
-            //    var inactive = i - 1 > health;
-
-            //    if (path[i].transform.childCount != 0)
-            //        path[i].transform.GetChild(0).gameObject.SetActive(!inactive);
-            //    else
-            //        path[i].transform.gameObject.SetActive(!inactive);
-            //}
-
             for (int i = 0; i < tailParts.Count; i++)
             {
                 var tailPart = tailParts[i];
@@ -2924,38 +2945,13 @@ namespace BetterLegacy.Core.Components.Player
                     tailPart.parent.gameObject.SetActive(i < health);
             }
 
-            var currentModel = Model;
-
-            if (!currentModel)
-                return;
-
-            if (healthObjects.Count > 0)
-                for (int i = 0; i < healthObjects.Count; i++)
-                    healthObjects[i].gameObject.SetActive(i < health && currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Images);
-
-            var text = healthText.GetComponent<Text>();
-            if (currentModel.guiPart.active && (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text || currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.EqualsBar))
-            {
-                text.enabled = true;
-                if (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text)
-                    text.text = health.ToString();
-                else
-                    text.text = RTString.ConvertHealthToEquals(health, initialHealthCount);
-            }
-            else
-                text.enabled = false;
-
-            if (currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Bar)
-            {
-                barBaseIm.gameObject.SetActive(true);
-                var e = (float)health / (float)initialHealthCount;
-                barIm.rectTransform.sizeDelta = new Vector2(200f * e, 32f);
-            }
-            else
-                barBaseIm.gameObject.SetActive(false);
+            UpdateGUI();
         }
 
-        void InitNametag()
+        /// <summary>
+        /// Initializes the nametag.
+        /// </summary>
+        public void InitNametag()
         {
             Destroy(canvas);
             canvas = Creator.NewGameObject("Name Tag Canvas" + (playerIndex + 1).ToString(), transform);
@@ -2984,6 +2980,7 @@ namespace BetterLegacy.Core.Components.Player
             Destroy(tae.GetComponentInChildren<SelectObjectInEditor>());
 
             nametagText = tae.GetComponentInChildren<TextMeshPro>();
+            nametagText.text = NametagText;
             nametagText.color = Color.white;
 
             var d = canvas.AddComponent<PlayerDelayTracker>();
@@ -2992,6 +2989,34 @@ namespace BetterLegacy.Core.Components.Player
             d.rotationParent = false;
             d.player = this;
             d.positionOffset = 0.9f;
+
+            canvas.SetActive(InputDataManager.inst.players.Count > 1 && CustomPlayer && ShowNameTags);
+        }
+
+        public void UpdateGUI()
+        {
+            var currentModel = Model;
+
+            if (!currentModel || !CustomPlayer)
+                return;
+
+            var health = CustomPlayer.Health;
+
+            if (healthObjects.Count > 0)
+                for (int i = 0; i < healthObjects.Count; i++)
+                    healthObjects[i].gameObject.SetActive(i < health && currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Images);
+
+            var text = healthText;
+            var isText = currentModel.guiPart.active && (currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text || currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.EqualsBar);
+            var isBar = currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Bar;
+
+            text.enabled = isText;
+            if (isText)
+                text.text = currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Text ? health.ToString() : RTString.ConvertHealthToEquals(health, initialHealthCount);
+
+            barBaseIm.gameObject.SetActive(isBar);
+            if (isBar)
+                barIm.rectTransform.sizeDelta = new Vector2(200f * (float)health / (float)initialHealthCount, 0f);
         }
 
         void Assign(PlayerObject playerObject, PlayerModel.Generic generic, bool isBoost = false)
@@ -3024,13 +3049,12 @@ namespace BetterLegacy.Core.Components.Player
             
             if (trailRenderer)
             {
-                trailRenderer.enabled = generic.Trail.emitting;
-                trailRenderer.emitting = generic.Trail.emitting;
+                trailRenderer.enabled = !isBoost && generic.Trail.emitting;
+                trailRenderer.emitting = !isBoost && generic.Trail.emitting;
                 trailRenderer.startWidth = generic.Trail.startWidth;
                 trailRenderer.endWidth = generic.Trail.endWidth;
                 trailRenderer.transform.localPosition = generic.Trail.positionOffset;
             }
-
 
             if (playerObject.particleSystemRenderer)
                 playerObject.particleSystemRenderer.mesh = GetShape(generic.Particles.shape.type, generic.Particles.shape.option).mesh;
@@ -3204,7 +3228,7 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             MeshRenderer pulseRenderer = pulse.transform.GetChild(0).GetComponent<MeshRenderer>();
-            var pulseObject = new PulseObject
+            var pulseObject = new EmittedObject
             {
                 renderer = pulseRenderer,
                 startColor = currentModel.pulsePart.startColor,
@@ -3213,7 +3237,7 @@ namespace BetterLegacy.Core.Components.Player
                 endCustomColor = currentModel.pulsePart.endCustomColor,
             };
 
-            boosts.Add(pulseObject);
+            emitted.Add(pulseObject);
 
             pulseRenderer.enabled = true;
             pulseRenderer.material = head.renderer.material;
@@ -3244,11 +3268,11 @@ namespace BetterLegacy.Core.Components.Player
             tweenScale.OnComplete(() =>
             {
                 Destroy(pulse);
-                boosts.Remove(pulseObject);
+                emitted.Remove(pulseObject);
             });
         }
 
-        // to do: aiming so you don't need to be facing the direction of the bullet
+        // to do: aiming so you don't need to be facing the direction of the bullet (maybe create a parent that rotates in the direction of the right stick?)
         void CreateBullet()
         {
             var currentModel = Model;
@@ -3306,7 +3330,7 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             MeshRenderer pulseRenderer = pulse.transform.GetChild(0).GetComponent<MeshRenderer>();
-            var pulseObject = new PulseObject
+            var pulseObject = new EmittedObject
             {
                 renderer = pulseRenderer,
                 startColor = currentModel.bulletPart.startColor,
@@ -3315,7 +3339,7 @@ namespace BetterLegacy.Core.Components.Player
                 endCustomColor = currentModel.bulletPart.endCustomColor,
             };
 
-            boosts.Add(pulseObject);
+            emitted.Add(pulseObject);
 
             pulseRenderer.enabled = true;
             pulseRenderer.material = head.renderer.material;
@@ -3333,7 +3357,7 @@ namespace BetterLegacy.Core.Components.Player
             bulletCollider.rb = rb;
             bulletCollider.kill = currentModel.bulletPart.autoKill;
             bulletCollider.player = this;
-            bulletCollider.playerObject = pulseObject;
+            bulletCollider.emit = pulseObject;
 
             int easingPos = currentModel.bulletPart.easingPosition;
             int easingSca = currentModel.bulletPart.easingScale;
@@ -3372,7 +3396,7 @@ namespace BetterLegacy.Core.Components.Player
                 tweenScale.OnComplete(() =>
                 {
                     Destroy(pulse);
-                    boosts.Remove(pulseObject);
+                    emitted.Remove(pulseObject);
                     pulseObject = null;
                 });
             });
@@ -3521,12 +3545,13 @@ namespace BetterLegacy.Core.Components.Player
             public PlayerModel.CustomObject reference;
             public TextMeshPro text;
             public bool idle = true;
+            public string currentIdleAnimation = "idle";
         }
 
         /// <summary>
         /// Represents a spawned object.
         /// </summary>
-        public class PulseObject : PlayerObject
+        public class EmittedObject : PlayerObject
         {
             public float opacity;
             public float colorTween;

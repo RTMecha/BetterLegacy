@@ -258,6 +258,7 @@ namespace BetterLegacy.Editor.Managers
                     RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Regular", "Platformer");
+                    dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
                     EditorThemeManager.AddDropdown(dropdown);
 
@@ -683,6 +684,7 @@ namespace BetterLegacy.Editor.Managers
                     RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Legacy", "Dev+");
+                    dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -695,6 +697,7 @@ namespace BetterLegacy.Editor.Managers
                     RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Face Direction", "None", "Flip X", "Flip Y", "Rotate Reset", "Rotate Flip X", "Rotate Flip Y");
+                    dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -707,6 +710,7 @@ namespace BetterLegacy.Editor.Managers
                     RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Images", "Text", "Equals Bar", "Bar");
+                    dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -718,9 +722,10 @@ namespace BetterLegacy.Editor.Managers
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     RectValues.Default.AnchoredPosition(212f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
                     dropdown.options.Clear();
-                    dropdown.onValueChanged.RemoveAllListeners();
+                    dropdown.onValueChanged.ClearAll();
 
                     dropdown.options = EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
+                    dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -963,6 +968,7 @@ namespace BetterLegacy.Editor.Managers
                     dropdown.options.Clear();
                     dropdown.onValueChanged.ClearAll();
                     dropdown.options = CoreHelper.StringToOptionData("Head", "Boost", "Boost Tail", "Tail 1", "Tail 2", "Tail 3", "Face");
+                    dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -1229,7 +1235,7 @@ namespace BetterLegacy.Editor.Managers
                 setToGlobalStorage.text.fontSize = 16;
                 setToGlobalStorage.text.text = "Set to Global";
                 setToGlobalStorage.button.onClick.ClearAll();
-                setToGlobalStorage.button.onClick.AddListener(() => PlayerManager.PlayerIndexes[playerModelIndex].Value = PlayersData.Main.playerModelsIndex[playerModelIndex]);
+                setToGlobalStorage.button.onClick.AddListener(() => PlayerManager.PlayerIndexes[playerModelIndex].Value = PlayersData.Current.playerModelsIndex[playerModelIndex]);
 
                 EditorThemeManager.AddSelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(setToGlobalStorage.text, ThemeGroup.Function_2_Text);
@@ -1271,9 +1277,9 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshEditor()
         {
-            var currentModel = PlayersData.Main.GetPlayerModel(playerModelIndex);
+            var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
 
-            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
+            var isDefault = currentModel.IsDefault;
             content.Find("handler").gameObject.SetActive(isDefault && CurrentTab != Tab.Global);
 
             for (int i = 0; i < editorUIs.Count; i++)
@@ -2019,7 +2025,7 @@ namespace BetterLegacy.Editor.Managers
 
                 try
                 {
-                    var value = PlayersData.Main.playerModels[PlayersData.Main.playerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                    var value = currentModel[ui.Index];
                     var key = PlayerModel.Values[ui.Index];
 
                     switch (ui.Tab)
@@ -2179,7 +2185,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        var value = PlayersData.Main.playerModels[PlayersData.Main.playerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                                        var value = currentModel[ui.Index];
                                         currentModel[key] = new Vector2(result, ((Vector2)value).y);
                                         PlayerManager.UpdatePlayerModels();
                                     }
@@ -2191,7 +2197,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        var value = PlayersData.Main.playerModels[PlayersData.Main.playerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                                        var value = currentModel[ui.Index];
                                         currentModel[key] = new Vector2(((Vector2)value).x, result);
                                         PlayerManager.UpdatePlayerModels();
                                     }
@@ -2257,7 +2263,7 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
 
             int num = 0;
-            foreach (var playerModel in PlayersData.Main.playerModels)
+            foreach (var playerModel in PlayersData.externalPlayerModels)
             {
                 int index = num;
                 var name = playerModel.Value.basePart.name;
@@ -2272,7 +2278,8 @@ namespace BetterLegacy.Editor.Managers
                 modelButton.onClick.ClearAll();
                 modelButton.onClick.AddListener(() =>
                 {
-                    PlayersData.Main.SetPlayerModel(playerModelIndex, playerModel.Key);
+                    PlayersData.Current.playerModels[playerModel.Key] = playerModel.Value;
+                    PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
                     PlayerManager.RespawnPlayers();
                     StartCoroutine(RefreshEditor());
                 });
@@ -2286,7 +2293,7 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.ShowContextMenu(
                         new ButtonFunction("Open & Use", () =>
                         {
-                            PlayersData.Main.SetPlayerModel(playerModelIndex, playerModel.Key);
+                            PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
                             PlayerManager.RespawnPlayers();
                             StartCoroutine(RefreshEditor());
                         }),
@@ -2297,20 +2304,21 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction(true),
                         new ButtonFunction("Duplicate", () =>
                         {
-                            var dup = PlayersData.Main.DuplicatePlayerModel(playerModel.Key);
+                            var dup = PlayersData.Current.DuplicatePlayerModel(playerModel.Key);
+                            PlayersData.externalPlayerModels[dup.basePart.id] = dup;
                             if (dup)
-                                PlayersData.Main.SetPlayerModel(playerModelIndex, dup.basePart.id);
+                                PlayersData.Current.SetPlayerModel(playerModelIndex, dup.basePart.id);
                         }),
                         new ButtonFunction("Delete", () =>
                         {
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                             {
-                                PlayersData.Main.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
-                                PlayersData.Main.playerModels.Remove(playerModel.Key);
+                                PlayersData.Current.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
+                                PlayersData.externalPlayerModels.Remove(playerModel.Key);
+                                PlayersData.Current.playerModels.Remove(playerModel.Key);
                                 PlayerManager.RespawnPlayers();
                                 StartCoroutine(RefreshEditor());
                                 StartCoroutine(RefreshModels());
-
 
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup);
@@ -2342,8 +2350,9 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                     {
-                        PlayersData.Main.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
-                        PlayersData.Main.playerModels.Remove(playerModel.Key);
+                        PlayersData.Current.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
+                        PlayersData.externalPlayerModels.Remove(playerModel.Key);
+                        PlayersData.Current.playerModels.Remove(playerModel.Key);
                         PlayerManager.RespawnPlayers();
                         StartCoroutine(RefreshEditor());
                         StartCoroutine(RefreshModels());
@@ -2366,7 +2375,7 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
 
-            var currentModel = PlayersData.Main.GetPlayerModel(playerModelIndex);
+            var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
 
             var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
 
@@ -2890,8 +2899,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreateNewModel()
         {
-            var playerModel = PlayersData.Main.CreateNewPlayerModel();
-            PlayersData.Main.SetPlayerModel(playerModelIndex, playerModel.basePart.id);
+            var playerModel = PlayersData.Current.CreateNewPlayerModel();
+            PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.basePart.id);
             PlayerManager.RespawnPlayers();
             StartCoroutine(RefreshEditor());
             EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
@@ -2902,7 +2911,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 if (PlayersData.Save())
-                    EditorManager.inst.DisplayNotification("Successfully saved player models!.", 2f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.DisplayNotification("Successfully saved player models!", 2f, EditorManager.NotificationType.Success);
                 else
                     EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
             }
