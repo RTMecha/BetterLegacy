@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         public override Renderer Renderer { get; set; }
         public override Collider2D Collider { get; set; }
 
+        SpriteRenderer spriteRenderer;
+
         Material material;
         readonly float opacity;
 
@@ -24,6 +26,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             if (GameObject.TryGetComponent(out Renderer renderer))
                 Renderer = renderer;
+
+            spriteRenderer = Renderer as SpriteRenderer;
 
             if (background)
                 GameObject.layer = 9;
@@ -42,7 +46,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             if (imageData != null)
             {
-                ((SpriteRenderer)Renderer).sprite = imageData;
+                SetSprite(imageData);
                 return;
             }
 
@@ -54,21 +58,33 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             var position = gameObject.transform.localPosition;
             if (!RTFile.FileExists(path))
             {
-                ((SpriteRenderer)Renderer).sprite = ArcadeManager.inst.defaultImage;
-                gameObject.transform.localPosition = position;
+                SetDefaultSprite();
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, x =>
-            {
-                ((SpriteRenderer)Renderer).sprite = SpriteHelper.CreateSprite(x);
-                gameObject.transform.localPosition = position;
-            }, onError =>  { ((SpriteRenderer)Renderer).sprite = ArcadeManager.inst.defaultImage; }));
+            CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, SetTexture, SetDefaultSprite));
         }
 
         public override void SetColor(Color color) => material?.SetColor(new Color(color.r, color.g, color.b, color.a * opacity));
 
         public override Color GetPrimaryColor() => material.color;
+
+        /// <summary>
+        /// Sets the image objects' image to the default image.
+        /// </summary>
+        public void SetDefaultSprite(string onError = null) => SetSprite(LegacyPlugin.PALogoSprite);
+
+        /// <summary>
+        /// Sets the image objects' image.
+        /// </summary>
+        /// <param name="texture2D">Creates a sprite from this texture and applies it to the sprite renderer.</param>
+        public void SetTexture(Texture2D texture2D) => SetSprite(SpriteHelper.CreateSprite(texture2D));
+
+        /// <summary>
+        /// Sets the image objects' image.
+        /// </summary>
+        /// <param name="sprite">Applies this to the sprite renderer</param>
+        public void SetSprite(Sprite sprite) => spriteRenderer.sprite = sprite;
 
         public override void Clear()
         {
@@ -76,6 +92,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             Renderer = null;
             Collider = null;
             material = null;
+            spriteRenderer = null;
         }
     }
 }
