@@ -370,8 +370,9 @@ namespace BetterLegacy.Core.Managers
                 {
                     if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.Alive)))
                     {
-                        GameManager.inst.lastCheckpointState = -1;
-                        GameManager.inst.ResetCheckpoints();
+                        RTGameManager.inst.ResetCheckpoint();
+
+                        // todo: implement hits to editor
                         if (!CoreHelper.InEditor)
                         {
                             GameManager.inst.hits.Clear();

@@ -127,11 +127,11 @@ namespace BetterLegacy.Patchers
                         PauseMenu.Pause();
                 }
 
-                UpdateCheckpoint(__instance);
+                RTGameManager.inst.UpdateCheckpoints();
             }
 
             if (CoreHelper.Reversing && !__instance.isReversing)
-                __instance.StartCoroutine(ReverseToCheckpointLoop(__instance));
+                RTGameManager.inst.ReverseToCheckpoint();
             else if (CoreHelper.Playing)
                 CheckLevelEnd();
             else if (CoreHelper.Finished)
@@ -147,15 +147,17 @@ namespace BetterLegacy.Patchers
 
         static void UpdateCheckpoint(GameManager __instance)
         {
-            if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
-                AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation &&
-                __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] && CoreHelper.InEditorPreview)
-            {
-                CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
-                __instance.playingCheckpointAnimation = true;
-                PlayerManager.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
-                __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
-            }
+            //if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
+            //    AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation &&
+            //    __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] && CoreHelper.InEditorPreview)
+            //{
+            //    CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
+            //    __instance.playingCheckpointAnimation = true;
+            //    PlayerManager.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
+            //    __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
+            //}
+
+            RTGameManager.inst.UpdateCheckpoints();
         }
 
         static void CheckLevelEnd()
@@ -178,11 +180,7 @@ namespace BetterLegacy.Patchers
             __instance.playingCheckpointAnimation = true;
             __instance.isReversing = true;
 
-            int index = GameData.Current.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
-            if (index < 0)
-                index = 0;
-
-            var checkpoint = GameData.Current.beatmapData.checkpoints[index];
+            var checkpoint = RTGameManager.inst?.ActiveCheckpoint ?? GameData.Current.beatmapData.GetLastCheckpoint();
 
             var animation = new RTAnimation("Reverse");
             animation.animationHandlers = new List<AnimationHandlerBase>
@@ -252,8 +250,8 @@ namespace BetterLegacy.Patchers
                         Instance.UpdateTimeline();
                 }
 
-                if (!CoreHelper.Reversing)
-                    Instance.lastCheckpointState = GameData.Current.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
+                //if (!CoreHelper.Reversing)
+                //    Instance.lastCheckpointState = GameData.Current.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
             }
             Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
             return false;
@@ -318,7 +316,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(GameManager.GoToNextLevelLoop))]
         [HarmonyPrefix]
-        static bool GoToNextLevelLoopPrefix(GameManager __instance, ref IEnumerator __result)
+        static bool GoToNextLevelLoopPrefix(ref IEnumerator __result)
         {
             __result = GoToNextLevelLoop();
             return false;
@@ -403,19 +401,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ResetCheckpointsPrefix(bool __0)
         {
-            if (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
-                return false;
-
-            CoreHelper.Log($"Reset Checkpoints | Based on time: {__0}");
-            Instance.checkpointsActivated = new bool[GameData.Current.beatmapData.checkpoints.Count];
-            if (Instance.checkpointsActivated.Length != 0)
-                Instance.checkpointsActivated[0] = true;
-
-            if (__0)
-                for (int i = 0; i < Instance.checkpointsActivated.Length - 1; i++)
-                    if (AudioManager.inst.CurrentAudioSource.time >= GameData.Current.beatmapData.checkpoints[i].time)
-                        Instance.checkpointsActivated[i] = true;
-
+            RTGameManager.inst.ResetCheckpoint(__0);
             return false;
         }
 
@@ -423,26 +409,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool PlayCheckpointAnimationPrefix(ref IEnumerator __result, int __0)
         {
-            __result = PlayCheckpointAnimation(__0);
+            __result = RTGameManager.inst.IPlayCheckpointAnimation();
             return false;
-        }
-
-        // todo: make checkpoints triggerable via modifiers.
-        static IEnumerator PlayCheckpointAnimation(int _index = 0)
-        {
-            if (_index > 0)
-            {
-                Instance.checkpointsActivated[_index] = true;
-
-                if (CoreConfig.Instance.PlayCheckpointSound.Value)
-                    SoundManager.inst.PlaySound(DefaultSounds.checkpoint);
-                if (CoreConfig.Instance.PlayCheckpointAnimation.Value)
-                    Instance.CheckpointAnimator.SetTrigger("GotCheckpoint");
-
-                yield return new WaitForSecondsRealtime(0.1f);
-                Instance.playingCheckpointAnimation = false;
-            }
-            yield break;
         }
     }
 }

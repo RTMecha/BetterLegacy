@@ -41,6 +41,14 @@ namespace BetterLegacy.Core.Data
             return beatmapData;
         }
 
+        public int GetLastCheckpointIndex()
+        {
+            var index = checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+            return index < 0 ? 0 : index;
+        }
+
+        public Checkpoint GetLastCheckpoint() => checkpoints[GetLastCheckpointIndex()];
+
         public new List<Data.Marker> markers = new List<Data.Marker>();
 
         public new Data.LevelData levelData;

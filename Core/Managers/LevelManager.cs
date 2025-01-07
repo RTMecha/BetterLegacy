@@ -320,7 +320,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Updating checkpoints...");
 
             GameManager.inst.UpdateTimeline();
-            GameManager.inst.ResetCheckpoints();
+            RTGameManager.inst.ResetCheckpoint();
 
             Debug.Log($"{className}Spawning...");
             BoostCount = 0;

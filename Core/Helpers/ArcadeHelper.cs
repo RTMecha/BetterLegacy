@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
@@ -154,6 +155,7 @@ namespace BetterLegacy.Core.Helpers
             PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(0f);
+            RTGameManager.inst.ResetCheckpoint();
             endedLevel = false;
         }
 

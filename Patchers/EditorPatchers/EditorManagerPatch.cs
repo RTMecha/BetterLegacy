@@ -321,7 +321,6 @@ namespace BetterLegacy.Patchers
 
                     if (Instance.OpenedEditor)
                     {
-                        GameManager.inst.ResetCheckpoints(true);
                         GameManager.inst.playerGUI.SetActive(false);
                         CursorManager.inst.ShowCursor();
                         Instance.GUI.SetActive(true);
@@ -355,6 +354,7 @@ namespace BetterLegacy.Patchers
                         AudioManager.inst.CurrentAudioSource.Play();
                         Instance.SetNormalRenderArea();
                         GameManager.inst.UpdateTimeline();
+                        RTGameManager.inst.ResetCheckpoint(true);
 
                         EventSystem.current.SetSelectedGameObject(null);
                     }
@@ -488,7 +488,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadBaseLevelPrefix()
         {
-            GameManager.inst.ResetCheckpoints(true);
+            RTGameManager.inst.ResetCheckpoint();
             if (!April)
             {
                 AssignGameData();
@@ -505,8 +505,8 @@ namespace BetterLegacy.Patchers
                     GameManager.inst.gameState = GameManager.State.Playing;
 
                     CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
-                }, onError => { AssignGameData(); }));
-            }, onError => { AssignGameData(); }));
+                }, onError => AssignGameData()));
+            }, onError => AssignGameData()));
 
             return false;
         }
@@ -680,7 +680,7 @@ namespace BetterLegacy.Patchers
         {
             if (Instance.isEditing)
                 Instance.UpdatePlayButton();
-            GameManager.inst.ResetCheckpoints();
+            RTGameManager.inst.ResetCheckpoint();
 
             ExampleManager.onEditorToggle?.Invoke(Instance.isEditing);
             if (ExampleManager.inst)

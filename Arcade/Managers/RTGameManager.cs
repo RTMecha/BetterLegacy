@@ -1,18 +1,22 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 
 using Axis = BetterLegacy.Editor.Components.SelectObject.Axis;
+using BaseCheckpoint = DataManager.GameData.BeatmapData.Checkpoint;
 
 namespace BetterLegacy.Arcade.Managers
 {
@@ -33,6 +37,15 @@ namespace BetterLegacy.Arcade.Managers
             timelineLine = GameManager.inst.timeline.transform.Find("Base").GetComponent<Image>();
 
             levelAnimationController = gameObject.AddComponent<AnimationController>();
+            checkpointAnimParent = GameManager.inst.CheckpointAnimator.transform;
+            checkpointAnimTop = checkpointAnimParent.Find("top").GetComponent<Image>();
+            checkpointAnimBottom = checkpointAnimParent.Find("bottom").GetComponent<Image>();
+            checkpointAnimLeft = checkpointAnimParent.Find("left").GetComponent<Image>();
+            checkpointAnimRight = checkpointAnimParent.Find("right").GetComponent<Image>();
+
+            GameManager.inst.CheckpointAnimator.enabled = false;
+
+            InitCheckpointAnimation();
 
             if (!CoreHelper.InEditor)
                 return;
@@ -92,6 +105,204 @@ namespace BetterLegacy.Arcade.Managers
             return s;
         }
 
+        #region Checkpoints
+
+        /// <summary>
+        /// The currently activated checkpoint.
+        /// </summary>
+        public BaseCheckpoint ActiveCheckpoint { get; set; }
+
+        List<BaseCheckpoint> Checkpoints => GameData.Current?.beatmapData?.checkpoints;
+
+        int nextCheckpointIndex;
+
+        RTAnimation checkpointAnimation;
+
+        #region Methods
+
+        /// <summary>
+        /// Updates the checkpoint conditions.
+        /// </summary>
+        public void UpdateCheckpoints()
+        {
+            var checkpoints = Checkpoints;
+            if (nextCheckpointIndex >= 0 && nextCheckpointIndex < checkpoints.Count && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
+                SetCheckpoint(nextCheckpointIndex);
+        }
+
+        /// <summary>
+        /// Creates a new checkpoint and sets it as the currently active checkpoint. Used for modifiers.
+        /// </summary>
+        /// <param name="time">Time of the checkpoint to rewind to when reversing to it.</param>
+        /// <param name="position">Position to spawn the players at.</param>
+        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new BaseCheckpoint(false, "Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
+
+        /// <summary>
+        /// Sets the currently active checkpoint based on an index.
+        /// </summary>
+        /// <param name="index">Index of the checkpoint.</param>
+        /// <param name="playAnimation">If the animation should play.</param>
+        /// <param name="spawnPlayers">If players should be respawned.</param>
+        public void SetCheckpoint(int index, bool playAnimation = true, bool spawnPlayers = true)
+        {
+            var checkpoints = Checkpoints;
+            if (index < 0 || index >= checkpoints.Count)
+                return;
+
+            CoreHelper.Log($"Set checkpoint: {index}");
+            SetCheckpoint(checkpoints[index], index + 1, playAnimation, spawnPlayers);
+        }
+
+        /// <summary>
+        /// Sets the currently active checkpoint based on an index.
+        /// </summary>
+        /// <param name="checkpoint">Checkpoint to set active.</param>
+        /// <param name="nextIndex">Index of the next checkpoint to activate. If left at -1, it will not update the next index.</param>
+        /// <param name="playAnimation">If the animation should play.</param>
+        /// <param name="spawnPlayers">If players should be respawned.</param>
+        public void SetCheckpoint(BaseCheckpoint checkpoint, int nextIndex = -1, bool playAnimation = true, bool spawnPlayers = true)
+        {
+            ActiveCheckpoint = checkpoint;
+            if (nextIndex >= 0)
+                nextCheckpointIndex = nextIndex;
+
+            if (spawnPlayers)
+                PlayerManager.SpawnPlayers(ActiveCheckpoint.pos);
+            if (playAnimation)
+            {
+                GameManager.inst.playingCheckpointAnimation = true;
+                StartCoroutine(IPlayCheckpointAnimation());
+            }
+        }
+
+        /// <summary>
+        /// Resets the active checkpoint.
+        /// </summary>
+        /// <param name="baseOnTime">If true, reset to last checkpoint. Otherwise, reset to first.</param>
+        public void ResetCheckpoint(bool baseOnTime = false)
+        {
+            if (Checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
+                return;
+
+            CoreHelper.Log($"Reset Checkpoints | Based on time: {baseOnTime}");
+            int index = 0;
+            if (baseOnTime)
+                index = GameData.Current.beatmapData.GetLastCheckpointIndex();
+
+            ActiveCheckpoint = Checkpoints[index];
+            nextCheckpointIndex = index + 1;
+        }
+
+        /// <summary>
+        /// Reverses to the active checkpoint.
+        /// </summary>
+        public void ReverseToCheckpoint() => CoreHelper.StartCoroutine(IReverseToCheckpoint());
+
+        /// <summary>
+        /// Plays the checkpoint sound and animation.
+        /// </summary>
+        public IEnumerator IPlayCheckpointAnimation()
+        {
+            if (CoreConfig.Instance.PlayCheckpointSound.Value)
+                SoundManager.inst.PlaySound(DefaultSounds.checkpoint);
+            if (CoreConfig.Instance.PlayCheckpointAnimation.Value)
+            {
+                GameManager.inst.playingCheckpointAnimation = true;
+                levelAnimationController.Play(checkpointAnimation);
+            }
+
+            yield break;
+        }
+
+        IEnumerator IReverseToCheckpoint()
+        {
+            if (GameManager.inst.isReversing)
+                yield break;
+
+            GameManager.inst.playingCheckpointAnimation = true;
+            GameManager.inst.isReversing = true;
+
+            var checkpoint = ActiveCheckpoint ?? GameData.Current.beatmapData.GetLastCheckpoint();
+
+            var animation = new RTAnimation("Reverse");
+            animation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
+                    new FloatKeyframe(1f, -1.5f, Ease.CircIn)
+                }, x =>
+                {
+                    if (AudioManager.inst.CurrentAudioSource.time > 1f)
+                        AudioManager.inst.SetPitch(x);
+                    else
+                        AudioManager.inst.SetMusicTime(1f);
+                }),
+            };
+
+            animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
+
+            AnimationManager.inst.Play(animation);
+
+            SoundManager.inst.PlaySound(DefaultSounds.rewind);
+
+            yield return new WaitForSeconds(2f);
+
+            float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
+            if (!CoreHelper.InEditor && (PlayerManager.Is1Life || PlayerManager.IsNoHit))
+                time = 0.1f;
+
+            AudioManager.inst.SetMusicTime(time);
+            GameManager.inst.gameState = GameManager.State.Playing;
+
+            AudioManager.inst.CurrentAudioSource.Play();
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
+
+            GameManager.inst.UpdateEventSequenceTime();
+            GameManager.inst.isReversing = false;
+
+            yield return new WaitForSeconds(0.1f);
+
+            PlayerManager.SpawnPlayers(checkpoint.pos);
+            GameManager.inst.playingCheckpointAnimation = false;
+            checkpoint = null;
+
+            yield break;
+        }
+
+        void InitCheckpointAnimation()
+        {
+            checkpointAnimation = new RTAnimation("Got Checkpoint");
+            checkpointAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                CheckpointAnimationHandler(checkpointAnimTop, true),
+                CheckpointAnimationHandler(checkpointAnimBottom, true),
+                CheckpointAnimationHandler(checkpointAnimLeft, false),
+                CheckpointAnimationHandler(checkpointAnimRight, false),
+            };
+            checkpointAnimation.onComplete = () =>
+            {
+                levelAnimationController.Remove(checkpointAnimation.id);
+                GameManager.inst.playingCheckpointAnimation = false;
+            };
+        }
+
+        AnimationHandler<float> CheckpointAnimationHandler(Image image, bool vertical) => new AnimationHandler<float>(new List<IKeyframe<float>>
+        {
+            new FloatKeyframe(0f, 0f, Ease.Linear),
+            new FloatKeyframe(0.05f, 12f, Ease.SineOut),
+            new FloatKeyframe(0.08f, 8f, Ease.SineInOut),
+            new FloatKeyframe(0.15f, 0f, Ease.SineIn),
+        }, x =>
+        {
+            image.color = GameManager.inst.LiveTheme.guiColor;
+            image.rectTransform.sizeDelta = new Vector2(!vertical ? x : 0f, vertical ? x : 0f);
+        }, interpolateOnComplete: true);
+
+        #endregion
+
+        #endregion
+
         #region Scene Assets
 
         public SelectObjectRotator objectRotator;
@@ -110,6 +321,12 @@ namespace BetterLegacy.Arcade.Managers
         public PostProcessLayer postProcessLayer;
         public Transform extraBG;
         public Transform video;
+
+        public Transform checkpointAnimParent;
+        public Image checkpointAnimTop;
+        public Image checkpointAnimBottom;
+        public Image checkpointAnimLeft;
+        public Image checkpointAnimRight;
 
         public Dictionary<string, object> assets = new Dictionary<string, object>();
 

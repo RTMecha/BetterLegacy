@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
@@ -237,7 +238,7 @@ namespace BetterLegacy.Patchers
 
             Instance.SetCurrentCheckpoint(GameData.Current.beatmapData.checkpoints.Count - 1);
             GameManager.inst.UpdateTimeline();
-            GameManager.inst.ResetCheckpoints();
+            RTGameManager.inst.ResetCheckpoint(true);
             return false;
         }
 
