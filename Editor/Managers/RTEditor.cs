@@ -576,23 +576,23 @@ namespace BetterLegacy.Editor.Managers
                 {
                     case BinSliderControlActive.Always:
                         {
-                            binSlider.gameObject.SetActive(layerType == LayerType.Objects);
+                            ShowBinControls(layerType == LayerType.Objects);
                             break;
                         }
                     case BinSliderControlActive.Never:
                         {
-                            binSlider.gameObject.SetActive(false);
+                            ShowBinControls(false);
                             break;
                         }
                     case BinSliderControlActive.KeyToggled:
                         {
                             if (Input.GetKeyDown(EditorConfig.Instance.BinControlKey.Value))
-                                binSlider.gameObject.SetActive(!binSlider.gameObject.activeSelf);
+                                ShowBinControls(!binSlider.gameObject.activeSelf);
                             break;
                         }
                     case BinSliderControlActive.KeyHeld:
                         {
-                            binSlider.gameObject.SetActive(Input.GetKey(EditorConfig.Instance.BinControlKey.Value));
+                            ShowBinControls(Input.GetKey(EditorConfig.Instance.BinControlKey.Value));
                             break;
                         }
                 }
@@ -2870,8 +2870,8 @@ namespace BetterLegacy.Editor.Managers
                     case LayerType.Events:
                         {
                             RenderBinPosition(0f); // sets the position to the default.
-                            if (binSlider)
-                                binSlider.gameObject.SetActive(false);
+                            RenderBins(); // makes sure the bins look normal on the event layer
+                            ShowBinControls(false);
 
                             RTEventEditor.inst.RenderEventObjects();
                             CheckpointEditor.inst.CreateCheckpoints();
@@ -3027,6 +3027,16 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Shows / hides the bin slider controls.
+        /// </summary>
+        /// <param name="enabled">If the bin slider should show.</param>
+        public void ShowBinControls(bool enabled)
+        {
+            if (binSlider)
+                binSlider.gameObject.SetActive(enabled);
+        }
+
+        /// <summary>
         /// Scrolls the editor bins up exactly by one bin height.
         /// </summary>
         public void ScrollBinsUp() => binSlider.value -= 0.1f / 2.3f;
@@ -3082,7 +3092,7 @@ namespace BetterLegacy.Editor.Managers
         {
             RenderBinPosition();
             LSHelpers.DeleteChildren(bins);
-            for (int i = 0; i < BinCount + 1; i++)
+            for (int i = 0; i < (layerType == LayerType.Events ? DEFAULT_BIN_COUNT : BinCount) + 1; i++)
             {
                 var bin = binPrefab.Duplicate(bins);
                 bin.transform.GetChild(0).GetComponent<Image>().enabled = i % 2 == 0;
@@ -3479,7 +3489,7 @@ namespace BetterLegacy.Editor.Managers
                 BinScroll = _val;
                 RenderBinPosition();
             });
-            RectValues.Default.AnchoredPosition(960f, 133f).Pivot(1f, 1f).SizeDelta(32f, 266f).AssignToRectTransform(binScroll.transform.AsRT());
+            RectValues.Default.AnchoredPosition(960f, 134f).Pivot(1f, 1f).SizeDelta(32f, 268f).AssignToRectTransform(binScroll.transform.AsRT());
             RectValues.Default.AnchoredPosition(24f, 0f).AnchorMax(1f, 1f).AnchorMin(0f, 1f).Pivot(1f, 0.5f).SizeDelta(48f, 32f).AssignToRectTransform(binSlider.handleRect);
             RectValues.FullAnchored.SizeDelta(0f, 32f).AssignToRectTransform(binScrollImage.rectTransform);
 
@@ -5625,7 +5635,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.HideDialog("File Info Popup");
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
 
-            GameManager.inst.ResetCheckpoints(true);
+            RTGameManager.inst.ResetCheckpoint();
             GameManager.inst.gameState = GameManager.State.Playing;
 
             EditorManager.inst.DisplayNotification($"{name} Level loaded", 2f, EditorManager.NotificationType.Success);
