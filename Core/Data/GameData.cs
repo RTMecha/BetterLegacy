@@ -1801,6 +1801,274 @@ namespace BetterLegacy.Core.Data
             }
         }
 
+        #region Helpers
+
+        /// <summary>
+        /// Gets closest event keyframe to current time.
+        /// </summary>
+        /// <param name="_type">Event Keyframe Type</param>
+        /// <returns>Event Keyframe Index</returns>
+        public int ClosestEventKeyframe(int _type)
+        {
+            var allEvents = eventObjects.allEvents;
+            float time = AudioManager.inst.CurrentAudioSource.time;
+            if (allEvents[_type].TryFindIndex(x => x.eventTime > time, out int nextKF))
+            {
+                var prevKF = nextKF - 1;
+
+                if (nextKF == 0)
+                    prevKF = 0;
+                else
+                {
+                    var v1 = new Vector2(allEvents[_type][prevKF].eventTime, 0f);
+                    var v2 = new Vector2(allEvents[_type][nextKF].eventTime, 0f);
+
+                    float dis = Vector2.Distance(v1, v2) / 2f;
+
+                    bool prevClose = time > dis + allEvents[_type][prevKF].eventTime;
+                    bool nextClose = time < allEvents[_type][nextKF].eventTime - dis;
+
+                    if (!prevClose)
+                        return prevKF;
+                    if (!nextClose)
+                        return nextKF;
+                }
+            }
+            return 0;
+        }
+
+        public bool TryFindObjectWithTag(Modifier<Data.BeatmapObject> modifier, string tag, out Data.BeatmapObject result)
+        {
+            result = FindObjectWithTag(modifier, tag);
+            return result;
+        }
+
+        public Data.BeatmapObject FindObjectWithTag(string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
+
+        public Data.BeatmapObject FindObjectWithTag(Modifier<Data.BeatmapObject> modifier, string tag)
+        {
+            if (modifier.reference.fromPrefab && modifier.prefabInstanceOnly && prefabObjects.TryFind(x => x.ID == modifier.reference.prefabInstanceID, out Data.PrefabObject prefabObject))
+            {
+                var bm = beatmapObjects.Find(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
+
+                if (bm)
+                    return bm;
+            }
+
+            return beatmapObjects.Find(x => x.tags.Contains(tag));
+        }
+
+        public Data.BeatmapObject FindObjectWithTag(List<Data.BeatmapObject> beatmapObjects, Data.BeatmapObject beatmapObject, string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
+
+        public Data.BeatmapObject FindObjectWithTag(List<Data.BeatmapObject> beatmapObjects, List<Data.PrefabObject> prefabObjects, Data.BeatmapObject beatmapObject, string tag)
+        {
+            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Data.PrefabObject prefabObject))
+            {
+                var bm = beatmapObjects.Find(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
+
+                if (bm)
+                    return bm;
+            }
+
+            return beatmapObjects.Find(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
+        }
+
+        public List<Data.BeatmapObject> FindObjectsWithTag(string tag) => Current.beatmapObjects.FindAll(x => x.tags.Contains(tag));
+
+        public List<Data.BeatmapObject> FindObjectsWithTag(Data.BeatmapObject beatmapObject, string tag)
+        {
+            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Data.PrefabObject prefabObject))
+                return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
+
+            return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
+        }
+
+        public List<Data.BeatmapObject> FindObjectsWithTag(List<Data.BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
+
+        public List<Data.BeatmapObject> FindObjectsWithTag(List<Data.BeatmapObject> beatmapObjects, List<Data.PrefabObject> prefabObjects, Data.BeatmapObject beatmapObject, string tag)
+        {
+            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Data.PrefabObject prefabObject))
+                return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
+
+            return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
+        }
+
+        public static float InterpolateFloatKeyframes(List<BaseEventKeyframe> eventKeyframes, float time, int valueIndex, bool isLerper = true)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as Data.EventKeyframe;
+            var prevKF = list[prevKFIndex] as Data.EventKeyframe;
+
+            if (prevKF.eventValues.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((Data.EventKeyframe)list[k + 1]).relative)
+                    total += list[k].eventValues[valueIndex];
+                else
+                    total = 0f;
+
+                if (((Data.EventKeyframe)list[k]).relative)
+                    prevtotal += list[k].eventValues[valueIndex];
+                else
+                    prevtotal = 0f;
+            }
+
+            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+
+        public static Vector2 InterpolateVector2Keyframes(List<BaseEventKeyframe> eventKeyframes, float time)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as Data.EventKeyframe;
+            var prevKF = list[prevKFIndex] as Data.EventKeyframe;
+
+            if (prevKF.eventValues.Length <= 0)
+                return Vector2.zero;
+
+            Vector2 total = Vector3.zero;
+            Vector2 prevtotal = Vector3.zero;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((Data.EventKeyframe)list[k + 1]).relative)
+                    total += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
+                else
+                    total = Vector3.zero;
+
+                if (((Data.EventKeyframe)list[k]).relative)
+                    prevtotal += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
+                else
+                    prevtotal = Vector2.zero;
+            }
+
+            var next = nextKF.relative ? total + new Vector2(nextKF.eventValues[0], nextKF.eventValues[1]) : new Vector2(nextKF.eventValues[0], nextKF.eventValues[1]);
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : new Vector2(prevKF.eventValues[0], prevKF.eventValues[1]);
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y))
+                prev = Vector2.zero;
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y))
+                next = Vector2.zero;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsInfinity(x.x) || float.IsInfinity(x.y))
+                x = next;
+
+            return x;
+        }
+
+        public static Vector3 InterpolateVector3Keyframes(List<BaseEventKeyframe> eventKeyframes, float time)
+        {
+            var list = eventKeyframes.OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as Data.EventKeyframe;
+            var prevKF = list[prevKFIndex] as Data.EventKeyframe;
+
+            if (prevKF.eventValues.Length <= 0)
+                return Vector3.zero;
+
+            Vector3 total = Vector3.zero;
+            Vector3 prevtotal = Vector3.zero;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((Data.EventKeyframe)list[k + 1]).relative)
+                    total += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
+                else
+                    total = Vector3.zero;
+
+                if (((Data.EventKeyframe)list[k]).relative)
+                    prevtotal += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
+                else
+                    prevtotal = Vector3.zero;
+            }
+
+            var next = nextKF.relative ? total + new Vector3(nextKF.eventValues[0], nextKF.eventValues[1], nextKF.eventValues[2]) : new Vector3(nextKF.eventValues[0], nextKF.eventValues[1], nextKF.eventValues[2]);
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : new Vector3(prevKF.eventValues[0], prevKF.eventValues[1], prevKF.eventValues[2]);
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y) || float.IsNaN(prev.z))
+                prev = Vector3.zero;
+
+            if (float.IsNaN(prev.x) || float.IsNaN(prev.y) || float.IsNaN(prev.z))
+                next = Vector3.zero;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsNaN(x.z) || float.IsInfinity(x.x) || float.IsInfinity(x.y) || float.IsInfinity(x.z))
+                x = next;
+
+            return x;
+        }
+
+        #endregion
+
         #endregion
 
         #region Fields

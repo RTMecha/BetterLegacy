@@ -659,7 +659,7 @@ namespace BetterLegacy.Core
             {
                 RTString.RegexMatches(str, new Regex(@"<modifierVariable=(.*?)>"), match =>
                 {
-                    var beatmapObject = CoreHelper.FindObjectWithTag(match.Groups[1].ToString());
+                    var beatmapObject = GameData.Current.FindObjectWithTag(match.Groups[1].ToString());
                     if (beatmapObject)
                         str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
                 });

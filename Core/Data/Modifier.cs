@@ -22,7 +22,7 @@ namespace BetterLegacy.Core.Data
             if (commands.Count < 1)
                 return;
 
-            if (modifiers.TryFind(x => x.commands[0] == commands[0] && x.type == type, out Modifier<T> defaultModifier))
+            if (modifiers.TryFind(x => x.Name == Name && x.type == type, out Modifier<T> defaultModifier))
             {
                 int num = commands.Count;
                 while (commands.Count < defaultModifier.commands.Count)
@@ -33,7 +33,7 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        public bool IsValid(List<Modifier<T>> modifiers) => commands.Count > 0 && modifiers.Has(x => x.commands[0] == commands[0]);
+        public bool IsValid(List<Modifier<T>> modifiers) => commands.Count > 0 && modifiers.Has(x => x.Name == Name);
 
         public static Modifier<T> DeepCopy(Modifier<T> orig, T reference = default) => new Modifier<T>
         {

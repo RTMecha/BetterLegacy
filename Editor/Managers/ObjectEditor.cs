@@ -4318,7 +4318,7 @@ namespace BetterLegacy.Editor.Managers
                 else if (parent == BeatmapObject.CAMERA_PARENT)
                 {
                     RTEditor.inst.SetLayer(RTEditor.LayerType.Events);
-                    EventEditor.inst.SetCurrentEvent(0, CoreHelper.ClosestEventKeyframe(0));
+                    EventEditor.inst.SetCurrentEvent(0, GameData.Current.ClosestEventKeyframe(0));
                 }
             });
 

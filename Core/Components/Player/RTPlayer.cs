@@ -2096,21 +2096,21 @@ namespace BetterLegacy.Core.Components.Player
 
                     if (animation.animatePosition)
                     {
-                        var position = CoreHelper.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
+                        var position = GameData.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
                         var origPos = reference.position;
                         customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position);
                     }
 
                     if (animation.animateScale)
                     {
-                        var scale = CoreHelper.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
+                        var scale = GameData.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
                         var origSca = reference.scale;
                         customObject.gameObject.transform.localScale = (new Vector3(origSca.x * scale.x, origSca.y * scale.y, 1f));
                     }
 
                     if (animation.animateRotation)
                     {
-                        var rotation = CoreHelper.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
+                        var rotation = GameData.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
                         var origRot = reference.rotation;
                         customObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, origRot + rotation);
                     }

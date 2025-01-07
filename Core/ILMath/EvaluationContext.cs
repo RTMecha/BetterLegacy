@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using ILMath.Exception;
@@ -130,7 +131,7 @@ namespace ILMath
 
                             var tag = split[1];
 
-                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            var bm = GameData.Current.FindObjectWithTag(tag);
                             if (!bm)
                             {
                                 result = 0;
@@ -174,7 +175,7 @@ namespace ILMath
 
                             var tag = split[1];
 
-                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            var bm = GameData.Current.FindObjectWithTag(tag);
                             if (!bm)
                             {
                                 result = 0;
@@ -210,7 +211,7 @@ namespace ILMath
 
                             var tag = split[1];
 
-                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            var bm = GameData.Current.FindObjectWithTag(tag);
                             if (!bm || split.Length < 2)
                             {
                                 result = 0;
@@ -238,7 +239,7 @@ namespace ILMath
 
                             var tag = split[1];
 
-                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            var bm = GameData.Current.FindObjectWithTag(tag);
                             if (!bm)
                             {
                                 result = 0;

@@ -1433,7 +1433,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     SyncObjectData("Parent", eventData, (TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo) =>
                     {
-                        CoreHelper.SetParent(currentSelection, beatmapObjectToParentTo, recalculate: false, renderParent: false);
+                        currentSelection.GetData<BeatmapObject>().SetParent(beatmapObjectToParentTo, recalculate: false, renderParent: false);
                     }, false, true, "Parent");
                 })); // Parent
                 GenerateButton(syncLayout.transform, new ButtonFunction("PD", eventData =>

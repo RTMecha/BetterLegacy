@@ -523,7 +523,7 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case "mouseOverSignalModifier": {
-                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                         if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null && modifier.reference.levelObject.visualObject.GameObject)
                         {
                             if (!modifier.reference.detector)
@@ -615,7 +615,7 @@ namespace BetterLegacy.Core.Helpers
                 case "objectCollide": {
                         if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                         {
-                            var list = (!modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value)).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.Collider);
+                            var list = (!modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value)).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.Collider);
                             return list.Count > 0 && list.Any(x => x.levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
                         }
 
@@ -747,7 +747,7 @@ namespace BetterLegacy.Core.Helpers
                         return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable > num;
                     }
                 case "variableOtherEquals": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                         return
                             int.TryParse(modifier.value, out int num) &&
@@ -755,7 +755,7 @@ namespace BetterLegacy.Core.Helpers
                             beatmapObjects.Any(x => x.integerVariable == num);
                     }
                 case "variableOtherLesserEquals": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                         return
                             int.TryParse(modifier.value, out int num) &&
@@ -763,7 +763,7 @@ namespace BetterLegacy.Core.Helpers
                             beatmapObjects.Any(x => x.integerVariable <= num);
                     }
                 case "variableOtherGreaterEquals": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                         return
                             int.TryParse(modifier.value, out int num) &&
@@ -771,7 +771,7 @@ namespace BetterLegacy.Core.Helpers
                             beatmapObjects.Any(x => x.integerVariable >= num);
                     }
                 case "variableOtherLesser": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                         return
                             int.TryParse(modifier.value, out int num) &&
@@ -779,7 +779,7 @@ namespace BetterLegacy.Core.Helpers
                             beatmapObjects.Any(x => x.integerVariable < num);
                     }
                 case "variableOtherGreater": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                         return
                             int.TryParse(modifier.value, out int num) &&
@@ -889,7 +889,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
 
@@ -910,7 +910,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
 
@@ -931,7 +931,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
 
@@ -952,7 +952,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
 
@@ -973,7 +973,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
 
@@ -1271,7 +1271,7 @@ namespace BetterLegacy.Core.Helpers
                         return Screen.fullScreen;
                     }
                 case "objectAlive": {
-                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                        var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                         for (int i = 0; i < list.Count; i++)
                         {
                             if (list[i].Alive)
@@ -1286,7 +1286,7 @@ namespace BetterLegacy.Core.Helpers
 
                         var ids = modifier.GetResult<List<string>>();
 
-                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                        var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                         for (int i = 0; i < list.Count; i++)
                         {
                             if (!ids.Contains(list[i].id) && list[i].Alive)
@@ -1700,7 +1700,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "blurOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
                                 break;
 
@@ -1752,7 +1752,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "blurVariableOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
                                 break;
 
@@ -1808,7 +1808,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "blurColoredOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
                                 break;
 
@@ -2051,7 +2051,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "rigidbodyOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                             if (list.Count > 0
                                         && float.TryParse(modifier.commands[1], out float gravity)
                                         && int.TryParse(modifier.commands[2], out int collisionMode)
@@ -2750,7 +2750,23 @@ namespace BetterLegacy.Core.Helpers
 
                         // todo: consider reworking these to reference the objects' self instead of an object group and add "variable other" modifiers.
                     case "addVariable": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
+                            if (modifier.commands.Count == 2)
+                            {
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
+                                    break;
+
+                                foreach (var beatmapObject in list)
+                                    beatmapObject.integerVariable += num;
+                            }
+                            else
+                                modifier.reference.integerVariable += modifier.GetInt(0, 0);
+
+                            break;
+                        }
+                    case "addVariableOther": {
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
                                 break;
 
@@ -2760,7 +2776,22 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "subVariable": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            if (modifier.commands.Count == 2)
+                            {
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
+                                    break;
+
+                                foreach (var beatmapObject in list)
+                                    beatmapObject.integerVariable -= num;
+                            }
+                            else
+                                modifier.reference.integerVariable -= modifier.GetInt(0, 0);
+
+                            break;
+                        }
+                    case "subVariableOther": {
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
                                 break;
 
@@ -2770,7 +2801,22 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setVariable": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            if (modifier.commands.Count == 2)
+                            {
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
+                                    break;
+
+                                foreach (var beatmapObject in list)
+                                    beatmapObject.integerVariable = num;
+                            }
+                            else
+                                modifier.reference.integerVariable = modifier.GetInt(0, 0);
+
+                            break;
+                        }
+                    case "setVariableOther": {
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
                                 break;
 
@@ -2780,7 +2826,26 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setVariableRandom": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            if (modifier.commands.Count == 3)
+                            {
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
+                                if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int min) || !int.TryParse(modifier.commands[2], out int max))
+                                    break;
+
+                                foreach (var beatmapObject in list)
+                                    beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                            }
+                            else
+                            {
+                                var min = modifier.GetInt(0, 0);
+                                var max = modifier.GetInt(1, 0);
+                                modifier.reference.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                            }
+
+                            break;
+                        }
+                    case "setVariableRandomOther": {
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                             if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int min) || !int.TryParse(modifier.commands[2], out int max))
                                 break;
 
@@ -2790,7 +2855,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "animateVariableOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                             if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int fromType) || !int.TryParse(modifier.commands[2], out int fromAxis) ||
                                 !float.TryParse(modifier.commands[3], out float delay) || !float.TryParse(modifier.commands[4], out float multiply) ||
                                 !float.TryParse(modifier.commands[5], out float offset) || !float.TryParse(modifier.commands[6], out float min) ||
@@ -2850,7 +2915,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "clampVariableOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0)
                                 foreach (var bm in list)
@@ -2891,7 +2956,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "enableObjectOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0)
                                 foreach (var beatmapObject in list)
@@ -2903,7 +2968,7 @@ namespace BetterLegacy.Core.Helpers
                     case "enableObjectTreeOther": {
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
@@ -2955,7 +3020,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "disableObjectOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0)
                                 foreach (var beatmapObject in list)
@@ -2967,7 +3032,7 @@ namespace BetterLegacy.Core.Helpers
                     case "disableObjectTreeOther": {
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
@@ -3049,7 +3114,7 @@ namespace BetterLegacy.Core.Helpers
 
                             var jn = JSON.Parse(json);
                             
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
                                 float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
@@ -3294,7 +3359,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "addColorOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 &&
                                 int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
@@ -3331,7 +3396,7 @@ namespace BetterLegacy.Core.Helpers
                             //if (sw != null)
                             //    CoreHelper.Log($"Time taken: {sw.Elapsed}");
 
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             //if (sw != null)
                             //    CoreHelper.Log($"Time taken: {sw.Elapsed}");
@@ -3415,7 +3480,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setAlphaOther":
                     case "setOpacityOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 && float.TryParse(modifier.value, out float num))
                                 foreach (var bm in list)
@@ -3432,7 +3497,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "copyColor": {
-                            if (!CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject beatmapObject))
+                            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject beatmapObject))
                                 break;
 
                             if (!Updater.TryGetObject(beatmapObject, out LevelObject otherLevelObject) ||
@@ -3473,7 +3538,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "copyColorOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                                 foreach (var bm in list)
@@ -3518,7 +3583,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "applyColorGroup": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && Updater.levelProcessor.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequence))
                             {
@@ -3660,7 +3725,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setColorHexOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0)
                                 foreach (var bm in list)
@@ -3723,7 +3788,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setImageOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0 || modifier.constant)
                                 break;
@@ -3759,7 +3824,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setTextOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0)
                                 break;
@@ -3790,7 +3855,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "addTextOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0)
                                 break;
@@ -3822,7 +3887,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "removeTextOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0)
                                 break;
@@ -3862,7 +3927,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "removeTextOtherAt": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0)
                                 break;
@@ -4077,7 +4142,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "animateObjectOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                             if (list.Count > 0 && int.TryParse(modifier.commands[1], out int type)
                                 && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
@@ -4123,7 +4188,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (!Parser.TryParse(modifier.commands[9], true))
                                 {
-                                    var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                                    var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                     foreach (var bm in list)
                                     {
@@ -4157,7 +4222,7 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         AnimationManager.inst.Remove(animation.id);
 
-                                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                                        var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                         foreach (var bm in list)
                                             CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.commands[8], 0f)));
@@ -4172,7 +4237,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "animateSignalOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                             if (list.Count > 0 && int.TryParse(modifier.commands[1], out int type)
                                 && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
@@ -4180,7 +4245,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (!Parser.TryParse(modifier.commands[10], true))
                                 {
-                                    var list2 = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
+                                    var list2 = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                     foreach (var bm in list2)
                                     {
@@ -4218,7 +4283,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             AnimationManager.inst.Remove(animation.id);
 
-                                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
+                                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                             foreach (var bm in list)
                                                 CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.commands[9], 0f)));
@@ -4276,7 +4341,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "animateObjectMathOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                             if (list.Count < 1 || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
                                 break;
@@ -4328,7 +4393,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (!Parser.TryParse(modifier.commands[9], true))
                             {
-                                var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                 foreach (var bm in list)
                                 {
@@ -4371,7 +4436,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     AnimationManager.inst.Remove(animation.id);
 
-                                    var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                                    var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                     foreach (var bm in list)
                                         CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, signalTime));
@@ -4385,14 +4450,14 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "animateSignalMathOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                             if (list.Count < 1 || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
                                 break;
 
                             if (!Parser.TryParse(modifier.commands[10], true))
                             {
-                                var list2 = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
+                                var list2 = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                 foreach (var bm in list2)
                                 {
@@ -4437,7 +4502,7 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         AnimationManager.inst.Remove(animation.id);
 
-                                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
+                                        var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                         foreach (var bm in list)
                                             CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, signalTime));
@@ -4475,7 +4540,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "gravityOther": {
-                            var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (beatmapObjects.Count <= 0)
                                 break;
@@ -4519,7 +4584,7 @@ namespace BetterLegacy.Core.Helpers
                                 && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
                                 && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
                                 && float.TryParse(modifier.commands[10], out float loop) && bool.TryParse(modifier.commands[11], out bool useVisual)
-                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                                && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                             {
                                 var time = Updater.CurrentTime;
 
@@ -4579,7 +4644,7 @@ namespace BetterLegacy.Core.Helpers
                                     && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
                                     && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float min)
                                     && float.TryParse(modifier.commands[7], out float max) && bool.TryParse(modifier.commands[9], out bool useVisual)
-                                    && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                                    && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                                 {
                                     var time = Updater.CurrentTime;
 
@@ -4696,7 +4761,7 @@ namespace BetterLegacy.Core.Helpers
                                     var max = Parser.TryParse(modifier.commands[i + 6], 0f);
                                     var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
 
-                                    var beatmapObject = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectWithTag(group) : CoreHelper.FindObjectWithTag(beatmapObjects, prefabObjects, modifier.reference, group);
+                                    var beatmapObject = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectWithTag(group) : GameData.Current.FindObjectWithTag(beatmapObjects, prefabObjects, modifier.reference, group);
 
                                     if (!beatmapObject)
                                         continue;
@@ -4767,7 +4832,7 @@ namespace BetterLegacy.Core.Helpers
 
                                     for (int i = 1; i < modifier.commands.Count; i += 3)
                                     {
-                                        var group = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[i]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[i]);
+                                        var group = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[i]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[i]);
 
                                         if (modifier.commands.Count <= i + 2 || group.Count() < 1)
                                             break;
@@ -4814,9 +4879,9 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     case "applyAnimation": {
-                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
+                            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
                             {
-                                var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[10]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[10]);
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[10]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[10]);
 
                                 if (modifier.Result == null)
                                     modifier.Result = Updater.CurrentTime;
@@ -4867,7 +4932,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "applyAnimationFrom": {
-                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                             {
                                 if (modifier.Result == null)
                                     modifier.Result = Updater.CurrentTime;
@@ -4911,9 +4976,8 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "applyAnimationTo":
-                        {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                    case "applyAnimationTo": {
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (modifier.Result == null)
                                 modifier.Result = Updater.CurrentTime;
@@ -4964,9 +5028,9 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     case "applyAnimationMath": {
-                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
+                            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
                             {
-                                var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[10]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[10]);
+                                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[10]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[10]);
 
                                 if (modifier.Result == null)
                                     modifier.Result = Updater.CurrentTime;
@@ -5021,7 +5085,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "applyAnimationFromMath": {
-                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                             {
                                 if (modifier.Result == null)
                                     modifier.Result = Updater.CurrentTime;
@@ -5070,7 +5134,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "applyAnimationToMath": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (modifier.Result == null)
                                 modifier.Result = Updater.CurrentTime;
@@ -5191,7 +5255,7 @@ namespace BetterLegacy.Core.Helpers
                                 && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
                                 && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
                                 && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed)
-                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.commands[10], out BeatmapObject beatmapObject))
+                                && GameData.Current.TryFindObjectWithTag(modifier, modifier.commands[10], out BeatmapObject beatmapObject))
                             {
                                 var animationResult = beatmapObject.InterpolateChain();
 
@@ -5265,7 +5329,7 @@ namespace BetterLegacy.Core.Helpers
                                 && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
                                 && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
                                 && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed)
-                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.commands[9], out BeatmapObject beatmapObject))
+                                && GameData.Current.TryFindObjectWithTag(modifier, modifier.commands[9], out BeatmapObject beatmapObject))
                             {
                                 var animationResult = beatmapObject.InterpolateChain();
 
@@ -5289,7 +5353,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "clearSpawnedPrefabs": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             for (int i = 0; i < list.Count; i++)
                             {
@@ -5510,7 +5574,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setCollisionOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             foreach (var beatmapObject in list)
                             {
@@ -5527,7 +5591,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "updateObject": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (!modifier.constant && list.Count > 0)
                             {
@@ -5539,7 +5603,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "signalModifier": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             foreach (var bm in list)
                                 CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
@@ -5547,7 +5611,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "activateModifier": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             var doMultiple = Parser.TryParse(modifier.commands[1], true);
                             var index = Parser.TryParse(modifier.commands[2], -1);
@@ -5846,7 +5910,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "enableObjectOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
@@ -5890,7 +5954,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
@@ -5925,7 +5989,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "disableObjectOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
@@ -5969,7 +6033,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
@@ -6011,7 +6075,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "signalModifier":
                     case "mouseOverSignalModifier": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 && list.Any(x => x.modifiers.Any(y => y.Result != null)))
                                 foreach (var bm in list)
@@ -6029,7 +6093,7 @@ namespace BetterLegacy.Core.Helpers
                                 return;
 
                             int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[groupIndex]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[groupIndex]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[groupIndex]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[groupIndex]);
 
                             if (list.Count > 0 && !modifier.constant)
                                 foreach (var bm in list)
@@ -6058,7 +6122,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setTextOther": {
-                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (modifier.constant && list.Count > 0)
                                 foreach (var bm in list)
@@ -6481,7 +6545,7 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case "signalModifier": {
-                        var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
+                        var list = GameData.Current.FindObjectsWithTag(modifier.commands[1]);
 
                         foreach (var bm in list)
                             CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));

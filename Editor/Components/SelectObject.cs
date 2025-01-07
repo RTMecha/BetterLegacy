@@ -218,7 +218,7 @@ namespace BetterLegacy.Editor.Components
                         continue;
                     }
 
-                    success = CoreHelper.TrySetParent(otherTimelineObject, beatmapObject, recalculate: false, renderParent: false);
+                    success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(beatmapObject, recalculate: false, renderParent: false);
                 }
 
                 if (!success)
@@ -244,7 +244,7 @@ namespace BetterLegacy.Editor.Components
             }
 
             // set single parent
-            var tryParent = CoreHelper.TrySetParent(currentSelection, beatmapObject);
+            var tryParent = currentSelection.GetData<BeatmapObject>().TrySetParent(beatmapObject);
 
             if (!tryParent)
                 EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);

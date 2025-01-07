@@ -4,6 +4,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Managers;
 using ILMath;
 using LSFunctions;
 using SimpleJSON;
@@ -1645,10 +1646,47 @@ namespace BetterLegacy.Core.Data
         #region Parent / Child
 
         /// <summary>
-        /// Gets the entire parent chain, including the beatmap object itself.
+        /// Iterates through the object parent chain (including the object itself).
         /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to get the parent chain of.</param>
         /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
-        public List<BeatmapObject> GetParentChain() => CoreHelper.GetParentChain(this);
+        public List<BeatmapObject> GetParentChain()
+        {
+            var list = new List<BeatmapObject>();
+
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            string parent = this.parent;
+            int index = beatmapObjects.FindIndex(x => x.id == parent);
+
+            list.Add(this);
+            while (index >= 0)
+            {
+                list.Add(beatmapObjects[index]);
+                parent = beatmapObjects[index].parent;
+                index = beatmapObjects.FindIndex(x => x.id == parent);
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Iterates through the object parent chain (including the object itself).
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to get the parent chain of.</param>
+        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public IEnumerable<BeatmapObject> IGetParentChain()
+        {
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            string parent = this.parent;
+            int index = beatmapObjects.FindIndex(x => x.id == parent);
+
+            yield return this;
+            while (index >= 0)
+            {
+                yield return beatmapObjects[index];
+                parent = beatmapObjects[index].parent;
+                index = beatmapObjects.FindIndex(x => x.id == parent);
+            }
+        }
 
         /// <summary>
         /// Recursively gets every child connected to the beatmap object.
@@ -1675,6 +1713,57 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <returns>Returns a list of the objects' children.</returns>
         public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
+
+        public void SetParent(BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true) => TrySetParent(beatmapObjectToParentTo, recalculate, renderParent);
+
+        /// <summary>
+        /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
+        /// </summary>
+        /// <param name="beatmapObjectToParentTo">Object to try parenting to.</param>
+        /// <param name="recalculate">If spawner should recalculate.</param>
+        /// <returns>Returns true if the <see cref="BeatmapObject"/> was successfully parented, otherwise returns false.</returns>
+        public bool TrySetParent(BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true)
+        {
+            var dictionary = new Dictionary<string, bool>();
+            var beatmapObjects = GameData.Current.beatmapObjects;
+
+            foreach (var obj in beatmapObjects)
+            {
+                bool canParent = true;
+                if (!string.IsNullOrEmpty(obj.parent))
+                {
+                    string parentID = id;
+                    while (!string.IsNullOrEmpty(parentID))
+                    {
+                        if (parentID == obj.parent)
+                        {
+                            canParent = false;
+                            break;
+                        }
+
+                        int index = beatmapObjects.FindIndex(x => x.parent == parentID);
+                        parentID = index != -1 ? beatmapObjects[index].id : null;
+                    }
+                }
+
+                dictionary[obj.id] = canParent;
+            }
+
+            dictionary[id] = false;
+
+            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo.id, out bool value) && value;
+
+            if (shouldParent)
+            {
+                parent = beatmapObjectToParentTo.id;
+                Updater.UpdateObject(this, recalculate: recalculate);
+
+                if (renderParent)
+                    ObjectEditor.inst.RenderParent(this);
+            }
+
+            return shouldParent;
+        }
 
         #endregion
 
