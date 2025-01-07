@@ -268,7 +268,6 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(content);
 
-            //content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(beatmapObject.modifiers.Count, 1, 5));
             content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 500f);
 
             int num = 0;
@@ -280,7 +279,6 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = modifierCardPrefab.Duplicate(content, name);
 
                 TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(name + " (" + modifier.type.ToString() + ")")}");
-
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
                 gameObject.transform.localScale = Vector3.one;
@@ -296,8 +294,8 @@ namespace BetterLegacy.Editor.Managers
                     modifier.collapse = _val;
                     StartCoroutine(RenderModifiers(beatmapObject));
                 });
-                TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
 
+                TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
                 EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
 
                 for (int i = 0; i < collapse.transform.Find("dots").childCount; i++)
@@ -315,6 +313,7 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(RenderModifiers(beatmapObject));
                 });
 
+                TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
                 EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
                 EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
@@ -327,13 +326,15 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
                 });
 
+                TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
                 EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
                 EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
 
                 var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
                 notifier.modifierBase = modifier;
-                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject;
-                EditorThemeManager.ApplyGraphic(notifier.notifier.GetComponent<Image>(), ThemeGroup.Warning_Confirm, true);
+                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject.GetComponent<Image>();
+                TooltipHelper.AssignTooltip(notifier.notifier.gameObject, "Notifier Modifier");
+                EditorThemeManager.ApplyGraphic(notifier.notifier, ThemeGroup.Warning_Confirm, true);
 
                 gameObject.AddComponent<Button>();
                 var modifierContextMenu = gameObject.AddComponent<ContextClickable>();
@@ -491,15 +492,17 @@ namespace BetterLegacy.Editor.Managers
                 constantText.text = "Constant";
                 EditorThemeManager.ApplyLightText(constantText);
 
-                var toggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = modifier.constant;
-                toggle.onValueChanged.AddListener(_val =>
+                var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
+                constantToggle.onValueChanged.ClearAll();
+                constantToggle.isOn = modifier.constant;
+                constantToggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.constant = _val;
                     modifier.active = false;
                 });
-                EditorThemeManager.ApplyToggle(toggle);
+
+                TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
+                EditorThemeManager.ApplyToggle(constantToggle);
 
                 if (modifier.type == ModifierBase.Type.Trigger)
                 {
@@ -516,6 +519,7 @@ namespace BetterLegacy.Editor.Managers
                         modifier.not = _val;
                         modifier.active = false;
                     });
+                    TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
 
                     EditorThemeManager.ApplyLightText(notText);
                     EditorThemeManager.ApplyToggle(notToggle);
@@ -533,6 +537,7 @@ namespace BetterLegacy.Editor.Managers
                         modifier.elseIf = _val;
                         modifier.active = false;
                     });
+                    TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
 
                     EditorThemeManager.ApplyLightText(elseIfText);
                     EditorThemeManager.ApplyToggle(elseIfToggle);
@@ -552,7 +557,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                var cmd = modifier.commands[0];
+                var cmd = modifier.Name;
                 switch (cmd)
                 {
                     #region Float
@@ -569,6 +574,8 @@ namespace BetterLegacy.Editor.Managers
                     case "playerDistanceGreater":
                     case "setAlpha":
                     case "setAlphaOther":
+                    case "setOpacity":
+                    case "setOpacityOther":
                     case "blackHole":
                     case "playerSpeed":
                     case "setAudioTransition":
@@ -1049,13 +1056,31 @@ namespace BetterLegacy.Editor.Managers
 
                     #region Integer
 
+                    case "addVariable":
+                    case "subVariable":
+                    case "setVariable":
+                    case "addVariableOther":
+                    case "subVariableOther":
+                    case "setVariableOther":
+                        {
+                            var isGroup = modifier.commands.Count == 2;
+                            if (isGroup)
+                                PrefabGroupOnly(modifier, layout);
+                            IntegerGenerator(modifier, layout, "Value", 0, 0);
+
+                            if (isGroup)
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
+
+                            break;
+                        }
+
                     case "playerHit":
                     case "playerHitAll":
                     case "playerHeal":
                     case "playerHealAll":
-                    case "addVariable":
-                    case "subVariable":
-                    case "setVariable":
                     case "mouseButtonDown":
                     case "mouseButton":
                     case "mouseButtonUp":
@@ -1129,13 +1154,12 @@ namespace BetterLegacy.Editor.Managers
                     case "realTimeYearLesser":
                     case "realTimeYearGreater":
                         {
-                            if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") ||
-                                cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt")
+                            var isGroup = cmd.Contains("variableOther") || cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt";
+                            if (isGroup)
                                 PrefabGroupOnly(modifier, layout);
                             IntegerGenerator(modifier, layout, "Value", 0, 0);
 
-                            if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") ||
-                                cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt")
+                            if (isGroup)
                             {
                                 var str = StringGenerator(modifier, layout, "Object Group", 1);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -1614,10 +1638,15 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case "setVariableRandom":
+                    case "setVariableRandomOther":
                         {
-                            PrefabGroupOnly(modifier, layout);
-                            var str = StringGenerator(modifier, layout, "Object Group", 0);
-                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            var isGroup = modifier.commands.Count == 3;
+                            if (isGroup)
+                            {
+                                PrefabGroupOnly(modifier, layout);
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
                             IntegerGenerator(modifier, layout, "Minimum", 1, 0);
                             IntegerGenerator(modifier, layout, "Maximum", 2, 0);
 
@@ -2859,7 +2888,23 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<string> options) => DropdownGenerator(modifier, layout, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList());
 
-        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions = null)
+        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions = null) =>
+            DropdownGenerator(layout, label, modifier.GetInt(type, 0), _val =>
+            {
+                modifier.SetValue(type, _val.ToString());
+
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+                modifier.active = false;
+            }, options, disabledOptions);
+
+        public GameObject DropdownGenerator(Transform layout, string label, int value, Action<int> onValueChanged, List<Dropdown.OptionData> options, List<bool> disabledOptions = null)
         {
             var dd = dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -2886,22 +2931,9 @@ namespace BetterLegacy.Editor.Managers
 
             d.options = options;
 
-            d.value = modifier.GetInt(type, 0);
+            d.value = value;
 
-            d.onValueChanged.AddListener(_val =>
-            {
-                modifier.SetValue(type, _val.ToString());
-
-                try
-                {
-                    modifier.Inactive?.Invoke(modifier);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
-            });
+            d.onValueChanged.AddListener(_val => onValueChanged?.Invoke(_val));
 
             if (d.template)
                 d.template.sizeDelta = new Vector2(80f, 192f);
@@ -2951,6 +2983,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
             });
 
+            TooltipHelper.AssignTooltip(pasteModifier, "Paste Modifier");
             EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Paste, true);
             EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Paste_Text);
         }

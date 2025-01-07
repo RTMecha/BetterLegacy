@@ -1860,11 +1860,16 @@ namespace BetterLegacy.Editor.Managers
             mcpTextText.fontSize = 19;
             mcpTextText.color = new Color(0.9373f, 0.9216f, 0.9373f);
 
+            var collapse = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(mcpLabel.transform, "Collapse");
+            collapse.transform.localScale = Vector3.one;
+            var collapseLayoutElement = collapse.GetComponent<LayoutElement>() ?? collapse.AddComponent<LayoutElement>();
+            collapseLayoutElement.minWidth = 32f;
+            UIManager.SetRectTransform(collapse.transform.AsRT(), new Vector2(70f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Delete");
             delete.transform.localScale = Vector3.one;
             var deleteLayoutElement = delete.GetComponent<LayoutElement>() ?? delete.GetComponent<LayoutElement>();
             deleteLayoutElement.minWidth = 32f;
-
             UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(140f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
 
             var duplicate = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Copy");
@@ -1983,7 +1988,7 @@ namespace BetterLegacy.Editor.Managers
             if (!showModifiers || backgroundObject.modifiers.Count <= currentPage)
                 yield break;
 
-            content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(backgroundObject.modifiers[currentPage].Count, 1, 5));
+            content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 500f);
 
             int num = 0;
             foreach (var modifier in backgroundObject.modifiers[currentPage])
@@ -1995,6 +2000,21 @@ namespace BetterLegacy.Editor.Managers
                 var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
                 modifierTitle.text = modifier.commands[0];
                 EditorThemeManager.ApplyLightText(modifierTitle);
+
+                var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
+                collapse.onValueChanged.ClearAll();
+                collapse.isOn = modifier.collapse;
+                collapse.onValueChanged.AddListener(_val =>
+                {
+                    modifier.collapse = _val;
+                    StartCoroutine(RenderModifiers(backgroundObject));
+                });
+
+                TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
+                EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
+
+                for (int i = 0; i < collapse.transform.Find("dots").childCount; i++)
+                    EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
                 var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
                 delete.button.onClick.ClearAll();
@@ -2011,6 +2031,10 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(RenderModifiers(backgroundObject));
                 });
 
+                TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
+                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
                 var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
                 copy.button.onClick.ClearAll();
                 copy.button.onClick.AddListener(() =>
@@ -2020,16 +2044,21 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
                 });
 
+                TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
                 EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
                 EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
 
-                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
                 var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
                 notifier.modifierBase = modifier;
-                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject;
-                EditorThemeManager.ApplyGraphic(notifier.notifier.GetComponent<Image>(), ThemeGroup.Warning_Confirm, true);
+                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject.GetComponent<Image>();
+                TooltipHelper.AssignTooltip(notifier.notifier.gameObject, "Notifier Modifier");
+                EditorThemeManager.ApplyGraphic(notifier.notifier, ThemeGroup.Warning_Confirm, true);
+
+                if (modifier.collapse)
+                {
+                    num++;
+                    continue;
+                }
 
                 var layout = gameObject.transform.Find("Layout");
 
@@ -2040,15 +2069,17 @@ namespace BetterLegacy.Editor.Managers
                 constantText.text = "Constant";
                 EditorThemeManager.ApplyLightText(constantText);
 
-                var toggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = modifier.constant;
-                toggle.onValueChanged.AddListener(_val =>
+                var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
+                constantToggle.onValueChanged.ClearAll();
+                constantToggle.isOn = modifier.constant;
+                constantToggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.constant = _val;
                     modifier.active = false;
                 });
-                EditorThemeManager.ApplyToggle(toggle);
+
+                TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
+                EditorThemeManager.ApplyToggle(constantToggle);
 
                 if (modifier.type == ModifierBase.Type.Trigger)
                 {
