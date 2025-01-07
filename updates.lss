@@ -1,3 +1,13 @@
+snapshot-2025.1.3 - (pre-1.7.0) > [Jan 8, 2025]
+- Forgot to note last snapshots that the TO DO items in the Project Planner can now have their priority changed.
+- Fixed edit button showing on the input field for the Project Planner TO DO Editor.
+- Reworked setVariable modifiers to only set the variable of itself. Any levels / prefabs that use the same modifier but before this change should be unaffected. If they have, then you'll need to change the modifiers to the new setVariableOther modifiers.
+- Modifier notifier now lights up instead of changing its active state.
+- Added some more tooltips to the modifiers.
+- Reworked the checkpoint system a little.
+- Fixed a bug with restarting the level not resetting the currently active checkpoint.
+- Got Checkpoint animation now properly updates its colors to the themes' GUI color.
+- Fixed Bin Controls affecting the Events layer.
 snapshot-2025.1.2 - (pre-1.7.0) > [Jan 7, 2025]
 - Implemented Bin Controls. This means you can now scroll up and down in the main editor timeline and you can add new bins to the editor.
 - With the Bin Controls feature, Timeline Objects can now retain their bin value depending on the Config Manager > Editor > Timeline > Timeline Object Retains Bin On Drag setting.
