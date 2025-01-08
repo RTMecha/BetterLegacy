@@ -45,7 +45,7 @@
 - Color picker rework. > 1.8.0
 - Multi language support.
 - Rework the level combiner into just a selection system.
-- Some kind of way to change the timing and length of the Game Timeline.
+- Game Timeline Editor. (skipping regions, custom images, etc)
 - Rework controller shake to be properly toggleable and have a separate variable.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.
 - Undo / redo everything. > 1.13.0
