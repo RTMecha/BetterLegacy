@@ -61,6 +61,32 @@ namespace BetterLegacy.Core.Data
         };
 
         /// <summary>
+        /// Forces a <see cref="RectTransform"/> to anchor to the left of the parent.
+        /// </summary>
+        public static RectValues LeftAnchored => new RectValues
+        {
+            anchoredPosition = Vector2.zero,
+            anchorMax = new Vector2(0f, 1f),
+            anchorMin = new Vector2(0f, 1f),
+            pivot = new Vector2(0f, 1f),
+            sizeDelta = Vector2.zero,
+            rotation = 0f,
+        };
+
+        /// <summary>
+        /// Forces a <see cref="RectTransform"/> to anchor to the bottom left of the parent.
+        /// </summary>
+        public static RectValues BottomLeftAnchored => new RectValues
+        {
+            anchoredPosition = Vector2.zero,
+            anchorMax = Vector2.zero,
+            anchorMin = Vector2.zero,
+            pivot = Vector2.zero,
+            sizeDelta = Vector2.zero,
+            rotation = 0f,
+        };
+
+        /// <summary>
         /// Forces a <see cref="RectTransform"/> to anchor to the left and right sides of the parent.
         /// </summary>
         public static RectValues HorizontalAnchored => new RectValues
@@ -205,6 +231,9 @@ namespace BetterLegacy.Core.Data
         public static RectValues FromString(string name) => string.IsNullOrEmpty(name) ? Default : name.ToLower() switch
         {
             "fullanchored" => FullAnchored,
+            "toprightanchored" => TopRightAnchored,
+            "leftanchored" => LeftAnchored,
+            "bottomleftanchored" => BottomLeftAnchored,
             "horizontalanchored" => HorizontalAnchored,
             "verticalanchored" => VerticalAnchored,
             _ => Default,
@@ -304,6 +333,8 @@ namespace BetterLegacy.Core.Data
         }
 
         #endregion
+
+        public override string ToString() => $"Pos: {anchoredPosition}, Max: {anchorMax}, Min: {anchorMin}, Pivot: {pivot}, Size: {sizeDelta}, Rot: {rotation}";
 
         #endregion
 
