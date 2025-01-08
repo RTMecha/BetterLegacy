@@ -100,6 +100,10 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public Button rightGreaterButton;
         [SerializeField]
+        public Button subButton;
+        [SerializeField]
+        public Button addButton;
+        [SerializeField]
         public InputField inputField;
 
         public void Assign(GameObject gameObject)

@@ -222,6 +222,15 @@ namespace BetterLegacy.Editor.Managers
                 if (prefabHolder.NumberInputField.transform.Find("lock"))
                     DestroyImmediate(prefabHolder.NumberInputField.transform.Find("lock").gameObject);
 
+                floatInputFieldStorage.subButton = floatInputFieldStorage.middleButton.gameObject.Duplicate(prefabHolder.NumberInputField.transform, "sub").GetComponent<Button>();
+                floatInputFieldStorage.subButton.image = floatInputFieldStorage.subButton.GetComponent<Image>();
+                floatInputFieldStorage.subButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_sub.png"));
+                floatInputFieldStorage.subButton.gameObject.SetActive(false);
+                floatInputFieldStorage.addButton = floatInputFieldStorage.middleButton.gameObject.Duplicate(prefabHolder.NumberInputField.transform, "add").GetComponent<Button>();
+                floatInputFieldStorage.addButton.image = floatInputFieldStorage.addButton.GetComponent<Image>();
+                floatInputFieldStorage.addButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_add.png"));
+                floatInputFieldStorage.addButton.gameObject.SetActive(false);
+
                 prefabHolder.StringInputField = floatInputFieldStorage.inputField.gameObject.Duplicate(prefabHolder.PrefabParent, "string input");
 
                 prefabHolder.Function2Button = ObjEditor.inst.ObjectView.transform.Find("applyprefab").gameObject.Duplicate(prefabHolder.PrefabParent, "function 2 button");
