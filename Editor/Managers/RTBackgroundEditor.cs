@@ -2067,7 +2067,6 @@ namespace BetterLegacy.Editor.Managers
 
                 var constantText = constant.transform.Find("Text").GetComponent<Text>();
                 constantText.text = "Constant";
-                EditorThemeManager.ApplyLightText(constantText);
 
                 var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
                 constantToggle.onValueChanged.ClearAll();
@@ -2079,6 +2078,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
+                EditorThemeManager.ApplyLightText(constantText);
                 EditorThemeManager.ApplyToggle(constantToggle);
 
                 if (modifier.type == ModifierBase.Type.Trigger)
@@ -2097,6 +2097,7 @@ namespace BetterLegacy.Editor.Managers
                         modifier.active = false;
                     });
 
+                    TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
                     EditorThemeManager.ApplyLightText(notText);
                     EditorThemeManager.ApplyToggle(notToggle);
 
@@ -2114,6 +2115,7 @@ namespace BetterLegacy.Editor.Managers
                         modifier.active = false;
                     });
 
+                    TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
                     EditorThemeManager.ApplyLightText(elseIfText);
                     EditorThemeManager.ApplyToggle(elseIfToggle);
                 }
@@ -2316,38 +2318,24 @@ namespace BetterLegacy.Editor.Managers
 
             //Add Modifier
             {
-                var button = modifierAddPrefab.Duplicate(content, "add modifier");
+                var gameObject = modifierAddPrefab.Duplicate(content, "add modifier");
+                TooltipHelper.AssignTooltip(gameObject, "Add Modifier");
 
-                var butt = button.GetComponent<Button>();
-                butt.onClick.ClearAll();
-                butt.onClick.AddListener(() =>
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
                 {
                     EditorManager.inst.ShowDialog("Default Background Modifiers Popup");
                     RefreshDefaultModifiersList(backgroundObject);
                 });
 
-                EditorThemeManager.ApplySelectable(butt, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(button.transform.GetChild(0).GetComponent<Text>());
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(gameObject.transform.GetChild(0).GetComponent<Text>());
             }
 
             // Paste Modifier
-            if (copiedModifier != null)
-            {
-                var gameObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
-                gameObject.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
-                var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                buttonStorage.text.text = "Paste";
-                buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(() =>
-                {
-                    backgroundObject.modifiers[currentPage].Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
-                    StartCoroutine(RenderModifiers(backgroundObject));
-                    EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                });
-
-                EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Paste, true);
-                EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Paste_Text);
-            }
+            PasteGenerator(backgroundObject);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
 
             yield break;
         }
@@ -2389,6 +2377,32 @@ namespace BetterLegacy.Editor.Managers
                 }
                 num++;
             }
+        }
+
+        GameObject pasteModifier;
+        public void PasteGenerator(BackgroundObject backgroundObject)
+        {
+            if (copiedModifier == null)
+                return;
+
+            if (pasteModifier)
+                CoreHelper.Destroy(pasteModifier);
+
+            pasteModifier = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
+            pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
+            var buttonStorage = pasteModifier.GetComponent<FunctionButtonStorage>();
+            buttonStorage.text.text = "Paste";
+            buttonStorage.button.onClick.ClearAll();
+            buttonStorage.button.onClick.AddListener(() =>
+            {
+                backgroundObject.modifiers[currentPage].Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                StartCoroutine(RenderModifiers(backgroundObject));
+                EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+            });
+
+            TooltipHelper.AssignTooltip(pasteModifier, "Paste Modifier");
+            EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Paste, true);
+            EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Paste_Text);
         }
 
         #endregion
