@@ -506,9 +506,9 @@ namespace BetterLegacy.Editor.Managers
                 DestroyImmediate(positionBase.GetComponent<HorizontalLayoutGroup>());
                 var grp = positionBase.gameObject.AddComponent<GridLayoutGroup>();
 
-                DestroyImmediate(ObjEditor.inst.KeyframeDialogs[0].transform.Find("position/x/input").GetComponent<LayoutElement>());
-                DestroyImmediate(ObjEditor.inst.KeyframeDialogs[0].transform.Find("position/y/input").GetComponent<LayoutElement>());
-                DestroyImmediate(ObjEditor.inst.KeyframeDialogs[0].transform.Find("position/z/input").GetComponent<LayoutElement>());
+                DestroyImmediate(positionBase.Find("x/input").GetComponent<LayoutElement>());
+                DestroyImmediate(positionBase.Find("y/input").GetComponent<LayoutElement>());
+                DestroyImmediate(positionBase.Find("z/input").GetComponent<LayoutElement>());
 
                 var xLayout = positionBase.Find("x/input").GetComponent<LayoutElement>();
                 var yLayout = positionBase.Find("y/input").GetComponent<LayoutElement>();
@@ -557,15 +557,13 @@ namespace BetterLegacy.Editor.Managers
 
             // Layers
             {
+                var editor = objectView.Find("editor");
                 objectView.GetChild(objectView.Find("spacer") ? 18 : 17).GetChild(1).gameObject.SetActive(true);
 
-                Destroy(objectView.Find("editor/layer").gameObject);
+                Destroy(editor.Find("layer").gameObject);
 
-                var layers = Instantiate(objectView.Find("time/time").gameObject);
+                var layers = objectView.Find("time/time").gameObject.Duplicate(editor, "layers", 0);
 
-                layers.transform.SetParent(objectView.transform.Find("editor"));
-                layers.name = "layers";
-                layers.transform.SetSiblingIndex(0);
                 var layersIF = layers.GetComponent<InputField>();
 
                 layersIF.characterValidation = InputField.CharacterValidation.Integer;
@@ -803,11 +801,10 @@ namespace BetterLegacy.Editor.Managers
 
             // Object Tags
             {
-                var label = objectView.ChildList().First(x => x.name == "label").gameObject.Duplicate(objectView, "tags_label");
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "tags_label");
                 var index = objectView.Find("name").GetSiblingIndex() + 1;
                 label.transform.SetSiblingIndex(index);
 
-                Destroy(label.transform.GetChild(1).gameObject);
                 label.transform.GetChild(0).GetComponent<Text>().text = "Tags";
 
                 // Tags Scroll View/Viewport/Content
@@ -846,17 +843,15 @@ namespace BetterLegacy.Editor.Managers
 
             // Render Type
             {
-                var label = objectView.ChildList().First(x => x.name == "label").gameObject.Duplicate(objectView, "rendertype_label");
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "rendertype_label");
                 var index = objectView.Find("depth").GetSiblingIndex() + 1;
                 label.transform.SetSiblingIndex(index);
 
-                Destroy(label.transform.GetChild(1).gameObject);
                 var labelText = label.transform.GetChild(0).GetComponent<Text>();
                 labelText.text = "Render Type";
                 EditorThemeManager.AddLightText(labelText);
 
-                var renderType = objectView.Find("autokill/tod-dropdown").gameObject
-                    .Duplicate(objectView, "rendertype", index + 1);
+                var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(objectView, "rendertype", index + 1);
                 var renderTypeDD = renderType.GetComponent<Dropdown>();
                 renderTypeDD.options = CoreHelper.StringToOptionData("Foreground", "Background");
 
@@ -940,21 +935,20 @@ namespace BetterLegacy.Editor.Managers
             // Make Shape list scrollable, for any more shapes I decide to add.
             {
                 var shape = objectView.Find("shape");
-                var rect = (RectTransform)shape;
                 var scroll = shape.gameObject.AddComponent<ScrollRect>();
                 shape.gameObject.AddComponent<Mask>();
                 var image = shape.gameObject.AddComponent<Image>();
 
                 scroll.horizontal = true;
                 scroll.vertical = false;
-                scroll.content = rect;
-                scroll.viewport = rect;
+                scroll.content = shape.AsRT();
+                scroll.viewport = shape.AsRT();
                 image.color = new Color(1f, 1f, 1f, 0.01f);
             }
 
             // Timeline Object adjustments
             {
-                var gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(null, ObjEditor.inst.timelineObjectPrefab.name);
+                var gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(transform, ObjEditor.inst.timelineObjectPrefab.name);
                 var icons = gameObject.transform.Find("icons");
 
                 if (!icons.gameObject.GetComponent<HorizontalLayoutGroup>())
@@ -963,11 +957,11 @@ namespace BetterLegacy.Editor.Managers
 
                     var @lock = ObjEditor.inst.timelineObjectPrefabLock.Duplicate(icons);
                     @lock.name = "lock";
-                    ((RectTransform)@lock.transform).anchoredPosition = Vector3.zero;
+                    @lock.transform.AsRT().anchoredPosition = Vector3.zero;
 
                     var dots = ObjEditor.inst.timelineObjectPrefabDots.Duplicate(icons);
                     dots.name = "dots";
-                    ((RectTransform)dots.transform).anchoredPosition = Vector3.zero;
+                    dots.transform.AsRT().anchoredPosition = Vector3.zero;
 
                     var hlg = icons.gameObject.AddComponent<HorizontalLayoutGroup>();
                     hlg.childControlWidth = false;
@@ -975,29 +969,20 @@ namespace BetterLegacy.Editor.Managers
                     hlg.spacing = -4f;
                     hlg.childAlignment = TextAnchor.UpperRight;
 
-                    ((RectTransform)@lock.transform).sizeDelta = new Vector2(20f, 20f);
+                    @lock.transform.AsRT().sizeDelta = new Vector2(20f, 20f);
+                    dots.transform.AsRT().sizeDelta = new Vector2(32f, 20f);
 
-                    ((RectTransform)dots.transform).sizeDelta = new Vector2(32f, 20f);
-
-                    var b = new GameObject("type");
-                    b.transform.SetParent(icons);
-                    b.transform.localScale = Vector3.one;
-
-                    var bRT = b.AddComponent<RectTransform>();
-                    bRT.sizeDelta = new Vector2(20f, 20f);
+                    var b = Creator.NewUIObject("type", icons);
+                    b.transform.AsRT().sizeDelta = new Vector2(20f, 20f);
 
                     var bImage = b.AddComponent<Image>();
                     bImage.color = new Color(0f, 0f, 0f, 0.45f);
 
-                    var icon = new GameObject("type");
-                    icon.transform.SetParent(b.transform);
-                    icon.transform.localScale = Vector3.one;
+                    var icon = Creator.NewUIObject("type", b.transform);
+                    icon.transform.AsRT().anchoredPosition = Vector2.zero;
+                    icon.transform.AsRT().sizeDelta = new Vector2(20f, 20f);
 
-                    var iconRT = icon.AddComponent<RectTransform>();
-                    iconRT.anchoredPosition = Vector2.zero;
-                    iconRT.sizeDelta = new Vector2(20f, 20f);
-
-                    var iconImage = icon.AddComponent<Image>();
+                    icon.AddComponent<Image>();
 
                     var hoverUI = gameObject.AddComponent<HoverUI>();
                     hoverUI.animatePos = false;
@@ -1113,7 +1098,7 @@ namespace BetterLegacy.Editor.Managers
             // Markers
             {
                 var markers = Creator.NewUIObject("Markers", ObjEditor.inst.objTimelineSlider.transform);
-                UIManager.SetRectTransform(markers.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                RectValues.FullAnchored.AssignToRectTransform(markers.transform.AsRT());
             }
 
             // Editor Themes
@@ -1222,29 +1207,16 @@ namespace BetterLegacy.Editor.Managers
 
                         EditorThemeManager.AddDropdown(kfdialog.Find("curves").GetComponent<Dropdown>());
 
-                        switch (i)
+                        if (i < 3)
                         {
-                            case 0:
-                                {
-                                    EditorThemeManager.AddInputFields(kfdialog.Find("position").gameObject, true, "");
-                                    EditorThemeManager.AddInputFields(kfdialog.Find("r_position").gameObject, true, "");
-
-                                    break;
-                                }
-                            case 1:
-                                {
-                                    EditorThemeManager.AddInputFields(kfdialog.Find("scale").gameObject, true, "");
-                                    EditorThemeManager.AddInputFields(kfdialog.Find("r_scale").gameObject, true, "");
-
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    EditorThemeManager.AddInputFields(kfdialog.Find("rotation").gameObject, true, "");
-                                    EditorThemeManager.AddInputFields(kfdialog.Find("r_rotation").gameObject, true, "");
-
-                                    break;
-                                }
+                            var find = i switch
+                            {
+                                0 => "position",
+                                1 => "scale",
+                                _ => "rotation",
+                            };
+                            EditorThemeManager.AddInputFields(kfdialog.Find(find).gameObject, true, "");
+                            EditorThemeManager.AddInputFields(kfdialog.Find($"r_{find}").gameObject, true, "");
                         }
 
                         if (kfdialog.Find("random"))
@@ -1278,13 +1250,10 @@ namespace BetterLegacy.Editor.Managers
 
                 var zoomSliderBase = ObjEditor.inst.zoomSlider.transform.parent;
 
-                var gameObject = new GameObject("zoom back");
-                gameObject.transform.SetParent(zoomSliderBase.parent);
-                gameObject.transform.SetSiblingIndex(1);
+                var gameObject = Creator.NewUIObject("zoom back", zoomSliderBase.parent, 1);
 
-                var rectTransform = gameObject.AddComponent<RectTransform>();
                 var image = gameObject.AddComponent<Image>();
-                UIManager.SetRectTransform(rectTransform, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(128f, 25f));
+                RectValues.BottomLeftAnchored.SizeDelta(128f, 25f).AssignToRectTransform(image.rectTransform);
                 EditorThemeManager.AddGraphic(image, ThemeGroup.Timeline_Scrollbar_Base);
                 EditorThemeManager.AddGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Slider_2);
@@ -6411,17 +6380,31 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
-                    if (pointerEventData.button == PointerEventData.InputButton.Left && RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                    if (!marker.timelineMarker)
+                        return;
+
+                    switch (pointerEventData.button)
                     {
-                        RTMarkerEditor.inst.SetCurrentMarker(timelineMarker);
-                        AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+                        case PointerEventData.InputButton.Left:
+                            {
+                                //RTMarkerEditor.inst.SetCurrentMarker(marker.timelineMarker);
+                                AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+                                break;
+                            }
+                        case PointerEventData.InputButton.Right:
+                            {
+                                RTMarkerEditor.inst.ShowMarkerContextMenu(marker.timelineMarker);
+                                break;
+                            }
+                        case PointerEventData.InputButton.Middle:
+                            {
+                                if (EditorConfig.Instance.MarkerDragButton.Value == PointerEventData.InputButton.Middle)
+                                    return;
+
+                                AudioManager.inst.SetMusicTime(Mathf.Clamp(marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                                break;
+                            }
                     }
-
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                        RTMarkerEditor.inst.DeleteMarker(index);
-
-                    if (pointerEventData.button == PointerEventData.InputButton.Middle)
-                        AudioManager.inst.SetMusicTime(marker.time);
                 }));
             }
         }
