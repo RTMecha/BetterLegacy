@@ -524,6 +524,13 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Shuffles a list randomly.
+        /// </summary>
+        /// <typeparam name="T">The type of the List.</typeparam>
+        /// <returns>Returns a shuffled list.</returns>
+        public static List<T> Shuffle<T>(this List<T> list) => list.Order(x => x?.GetHashCode() + UnityEngine.Random.Range(-100, 100) * UnityEngine.Random.Range(0, 100), false);
+
+        /// <summary>
         /// Checks if an array has a specific item.
         /// </summary>
         /// <typeparam name="T">The type of the list.</typeparam>
