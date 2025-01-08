@@ -1426,7 +1426,7 @@ namespace BetterLegacy.Core.Components.Player
                     playerDelayTracker.rotationOffset = 0.1f * (-i + 5);
                 }
 
-                int tailIndex = i - 2;
+                int tailIndex = i - 1;
                 if (tailIndex < 0 || tailIndex >= tailParts.Count)
                     continue;
 
