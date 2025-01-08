@@ -231,7 +231,7 @@ namespace BetterLegacy.Editor.Data
             TypeIcon = typeIconImage;
 
             Render(updateCurrentPrefab);
-            SetActive(RTPrefabEditor.inst.ContainsName(Prefab, PrefabDialog.External));
+            SetActive(RTPrefabEditor.inst.ContainsName(Prefab, dialog));
         }
 
         /// <summary>

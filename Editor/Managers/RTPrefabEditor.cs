@@ -2796,14 +2796,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefab">Prefab reference.</param>
         /// <param name="dialog">Prefabs' dialog.</param>
         /// <returns>Returns true if the prefab is being searched for, otherwise returns false.</returns>
-        public bool ContainsName(Prefab prefab, PrefabDialog dialog)
-        {
-            string str = dialog == PrefabDialog.External ?
-                string.IsNullOrEmpty(PrefabEditor.inst.externalSearchStr) ? "" : PrefabEditor.inst.externalSearchStr.ToLower() :
-                string.IsNullOrEmpty(PrefabEditor.inst.internalSearchStr) ? "" : PrefabEditor.inst.internalSearchStr.ToLower();
-
-            return RTString.SearchString(str, prefab.Name, prefab.PrefabType.Name);
-        }
+        public bool ContainsName(Prefab prefab, PrefabDialog dialog) => RTString.SearchString(dialog == PrefabDialog.External ? PrefabEditor.inst.externalSearchStr : PrefabEditor.inst.internalSearchStr, prefab.Name, prefab.PrefabType.Name);
 
         /// <summary>
         /// Imports a prefab into the internal prefabs list.
