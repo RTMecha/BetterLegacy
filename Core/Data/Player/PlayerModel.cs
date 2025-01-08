@@ -278,10 +278,10 @@ namespace BetterLegacy.Core.Data.Player
                     playerModel.faceControlActive = jn["face"]["con_active"].AsBool;
             }
             playerModel.boostPart = Generic.Parse(jn["boost"], playerModel);
-            playerModel.pulsePart = Pulse.Parse(jn["pulse"], playerModel);
+            playerModel.pulsePart = jn["pulse"] == null ? new Pulse(playerModel) : Pulse.Parse(jn["pulse"], playerModel);
             playerModel.bulletPart = jn["bullet"] == null ? new Bullet(playerModel) : Bullet.Parse(jn["bullet"], playerModel);
-            playerModel.tailBase = TailBase.Parse(jn["tail_base"], playerModel);
-            playerModel.boostTailPart = Generic.Parse(jn["tail_boost"], playerModel);
+            playerModel.tailBase = jn["tail_base"] == null ? new TailBase(playerModel) : TailBase.Parse(jn["tail_base"], playerModel);
+            playerModel.boostTailPart = jn["tail_boost"] == null ? Generic.DeepCopy(playerModel, DefaultPlayer.boostTailPart) : Generic.Parse(jn["tail_boost"], playerModel);
 
             if (jn["tail"] != null && jn["tail"].Count > 0)
                 for (int i = 0; i < jn["tail"].Count; i++)
