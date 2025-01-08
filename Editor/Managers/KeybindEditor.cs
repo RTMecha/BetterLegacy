@@ -584,7 +584,8 @@ namespace BetterLegacy.Editor.Managers
                 type.onValueChanged.AddListener(_val =>
                 {
                     key.InteractType = (Keybind.Key.Type)_val;
-                    RefreshKeybindPopup();
+                    if (content.gameObject.activeInHierarchy)
+                        RefreshKeybindPopup();
                     Save();
                     text.text = "Set Key";
                 });
@@ -598,7 +599,8 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.setKey = keyCode =>
                     {
                         key.KeyCode = keyCode;
-                        RefreshKeybindPopup();
+                        if (content.gameObject.activeInHierarchy)
+                            RefreshKeybindPopup();
                         Save();
                         text.text = "Set Key";
 
@@ -607,7 +609,8 @@ namespace BetterLegacy.Editor.Managers
                         code.onValueChanged.AddListener(_val =>
                         {
                             key.KeyCode = (KeyCode)_val;
-                            RefreshKeybindPopup();
+                            if (content.gameObject.activeInHierarchy)
+                                RefreshKeybindPopup();
                             Save();
                             text.text = "Set Key";
                         });
@@ -624,7 +627,8 @@ namespace BetterLegacy.Editor.Managers
                 code.onValueChanged.AddListener(_val =>
                 {
                     key.KeyCode = (KeyCode)_val;
-                    RefreshKeybindPopup();
+                    if (content.gameObject.activeInHierarchy)
+                        RefreshKeybindPopup();
                     Save();
                     text.text = "Set Key";
                 });
@@ -636,7 +640,8 @@ namespace BetterLegacy.Editor.Managers
                 delete.button.onClick.AddListener(() =>
                 {
                     keybind.keys.RemoveAt(index);
-                    RefreshKeybindPopup();
+                    if (content.gameObject.activeInHierarchy)
+                        RefreshKeybindPopup();
                     RefreshKeybindEditor(keybind);
                     Save();
                 });
@@ -746,7 +751,7 @@ namespace BetterLegacy.Editor.Managers
                             xif.characterLimit = 0;
                             xif.text = setting.Value;
                             xif.textComponent.fontSize = 18;
-                            xif.onValueChanged.AddListener(_val => { keybind.settings[setting.Key] = _val; });
+                            xif.onValueChanged.AddListener(_val => keybind.settings[setting.Key] = _val);
                             xif.onEndEdit.AddListener(_val => Save());
 
                             EditorThemeManager.ApplyInputField(xif, ThemeGroup.Input_Field);
