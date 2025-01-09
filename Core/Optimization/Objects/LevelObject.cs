@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         public float KillTime { get; set; }
 
         public string ID { get; }
-        public Data.BeatmapObject beatmapObject;
+        public BeatmapObject beatmapObject;
 
         public List<LevelParentObject> parentObjects;
         public VisualObject visualObject;
@@ -243,6 +243,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             for (int i = 0; i < parentObjects.Count; i++)
             {
                 var parentObject = parentObjects[i];
+
+                if (totalScale == Vector3.zero) // stop interpolating entire parent chain if any of the parents scale is zero due to scale being multiplied.
+                    break;
 
                 if (!spawned || i >= syncParentIndex && i < this.desyncParentIndex)
                 {
