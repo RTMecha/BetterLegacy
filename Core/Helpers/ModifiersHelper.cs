@@ -5569,7 +5569,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setCollision": {
                             if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
-                                levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
+                                levelObject.visualObject.ColliderEnabled = Parser.TryParse(modifier.value, false);
 
                             break;
                         }
@@ -5579,7 +5579,7 @@ namespace BetterLegacy.Core.Helpers
                             foreach (var beatmapObject in list)
                             {
                                 if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
-                                    levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
+                                    levelObject.visualObject.ColliderEnabled = Parser.TryParse(modifier.value, false);
                             }
 
                             break;

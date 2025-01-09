@@ -22,6 +22,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public abstract Collider2D Collider { get; set; }
 
+        public virtual bool ColliderEnabled { get; set; } = true;
+
         /// <summary>
         /// Sets the visual objects' main color.
         /// </summary>

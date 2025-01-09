@@ -2,6 +2,7 @@
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using HarmonyLib;
+using LSFunctions;
 using System;
 using TMPro;
 using UnityEngine;
@@ -28,6 +29,8 @@ namespace BetterLegacy.Patchers
             // Fixes Hexagons being solid.
             foreach (var option in __instance.objectPrefabs[5].options)
                 option.GetComponentInChildren<Collider2D>().isTrigger = true;
+
+            LSHelpers.DeleteChildren(__instance.objectParent.transform);
 
             CoreHelper.LogInit($"{nameof(ObjectManager)} - {SceneHelper.CurrentSceneType}\n");
         }

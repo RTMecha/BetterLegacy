@@ -50,7 +50,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             float a = color.a * opacity;
             material?.SetColor(new Color(color.r, color.g, color.b, a));
             if (opacityCollision)
-                Collider.enabled = a > 0.99f;
+                ColliderEnabled = a > 0.99f;
         }
 
         public override Color GetPrimaryColor() => material.color;

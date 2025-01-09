@@ -159,6 +159,18 @@ namespace BetterLegacy.Core.Optimization.Objects
         int desyncParentIndex;
         int syncParentIndex;
 
+        Vector3 currentScale;
+
+        void CheckCollision()
+        {
+            var active = RTMath.Distance(0f, currentScale.x) > 0.001f && RTMath.Distance(0f, currentScale.y) > 0.001f && RTMath.Distance(0f, currentScale.z) > 0.001f;
+
+            if (visualObject.Collider)
+                visualObject.Collider.enabled = visualObject.ColliderEnabled && active;
+            if (visualObject.Renderer)
+                visualObject.Renderer.enabled = active;
+        }
+
         public void Interpolate(float time)
         {
             // Set visual object color
@@ -225,6 +237,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 spawned = false;
             }
 
+            var totalScale = Vector3.one;
             int desyncParentIndex = 0;
             bool hasSpawned = false;
             for (int i = 0; i < parentObjects.Count; i++)
@@ -263,7 +276,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                     {
                         var r = parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.scaleOffset;
                         var value = parentObject.scaleSequence.Interpolate(time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
-                        parentObject.transform.localScale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
+                        var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
+                        parentObject.transform.localScale = scale;
+                        totalScale = RTMath.Multiply(totalScale, scale);
                     }
 
                     // If last parent is rotation parented, animate rotation
@@ -300,8 +315,12 @@ namespace BetterLegacy.Core.Optimization.Objects
                 }
             }
 
+            currentScale = totalScale;
+
             if (hasSpawned)
                 this.desyncParentIndex = desyncParentIndex;
+
+            CheckCollision();
         }
     }
 }
