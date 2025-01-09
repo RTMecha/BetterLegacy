@@ -1,3 +1,5 @@
+snapshot-2025.1.5 - (pre-1.7.0) [Jan 9, 2025]
+- Fixed a really old bug with colliders scaled to 0, 0 crashing the game. (Looking at you, pseudo-3D animations)
 snapshot-2025.1.4 - (pre-1.7.0) [Jan 9, 2025]
 - Fixed internal prefab search using the external search.
 - Fixed DevPlus players' tail being further away from the head than it should be.
