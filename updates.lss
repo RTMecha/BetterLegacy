@@ -1,3 +1,11 @@
+snapshot-2025.1.4 - (pre-1.7.0) [Jan 9, 2025]
+- Fixed internal prefab search using the external search.
+- Fixed DevPlus players' tail being further away from the head than it should be.
+- Fixed the story mode levels not working.
+- Fixed Multi Object Editor color keyframe index scrolling setting itself to a really low negative number.
+- Fixed Multi Object Keyframe Editor ease type dropdown not having any values.
+- Fixed the BG Modifier card layout.
+- Fixed expanding prefab objects lower than the default bin collapsing all the objects bin values.
 snapshot-2025.1.3 - (pre-1.7.0) > [Jan 8, 2025]
 - Forgot to note last snapshots that the TO DO items in the Project Planner can now have their priority changed.
 - Fixed edit button showing on the input field for the Project Planner TO DO Editor.
