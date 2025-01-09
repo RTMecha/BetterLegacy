@@ -5608,8 +5608,15 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.song.title}", "In Editor", "editor");
 
             CoreHelper.Log("Spawning players...");
-            PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
-            PlayerManager.SpawnPlayersOnStart();
+            try
+            {
+                PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
+                PlayerManager.SpawnPlayersOnStart();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             RTPlayer.SetGameDataProperties();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
