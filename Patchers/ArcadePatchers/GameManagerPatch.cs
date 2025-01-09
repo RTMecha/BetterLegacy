@@ -145,21 +145,6 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        static void UpdateCheckpoint(GameManager __instance)
-        {
-            //if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
-            //    AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation &&
-            //    __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] && CoreHelper.InEditorPreview)
-            //{
-            //    CoreHelper.Log($"Playing checkpoint animation: {__instance.UpcomingCheckpointIndex}");
-            //    __instance.playingCheckpointAnimation = true;
-            //    PlayerManager.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
-            //    __instance.StartCoroutine(__instance.PlayCheckpointAnimation(__instance.UpcomingCheckpointIndex));
-            //}
-
-            RTGameManager.inst.UpdateCheckpoints();
-        }
-
         static void CheckLevelEnd()
         {
             if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
@@ -170,62 +155,6 @@ namespace BetterLegacy.Patchers
         {
             if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
                 AudioManager.inst.SetMusicTime(0f);
-        }
-
-        public static IEnumerator ReverseToCheckpointLoop(GameManager __instance)
-        {
-            if (__instance.isReversing)
-                yield break;
-
-            __instance.playingCheckpointAnimation = true;
-            __instance.isReversing = true;
-
-            var checkpoint = RTGameManager.inst?.ActiveCheckpoint ?? GameData.Current.beatmapData.GetLastCheckpoint();
-
-            var animation = new RTAnimation("Reverse");
-            animation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
-                    new FloatKeyframe(1f, -1.5f, Ease.CircIn)
-                }, x =>
-                {
-                    if (AudioManager.inst.CurrentAudioSource.time > 1f)
-                        AudioManager.inst.SetPitch(x);
-                    else
-                        AudioManager.inst.SetMusicTime(1f);
-                }),
-            };
-
-            animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
-
-            AnimationManager.inst.Play(animation);
-
-            SoundManager.inst.PlaySound(DefaultSounds.rewind);
-
-            yield return new WaitForSeconds(2f);
-
-            float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
-            if (!CoreHelper.InEditor && (PlayerManager.Is1Life || PlayerManager.IsNoHit))
-                time = 0.1f;
-
-            AudioManager.inst.SetMusicTime(time);
-            __instance.gameState = GameManager.State.Playing;
-
-            AudioManager.inst.CurrentAudioSource.Play();
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
-
-            __instance.UpdateEventSequenceTime();
-            __instance.isReversing = false;
-
-            yield return new WaitForSeconds(0.1f);
-
-            PlayerManager.SpawnPlayers(checkpoint.pos);
-            __instance.playingCheckpointAnimation = false;
-            checkpoint = null;
-
-            yield break;
         }
 
         [HarmonyPatch(nameof(GameManager.FixedUpdate))]
