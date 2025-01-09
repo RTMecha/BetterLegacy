@@ -3095,7 +3095,7 @@ namespace BetterLegacy.Editor.Managers
             return button;
         }
 
-        InputField CreateInputField(string name, string value, string placeholder, Transform parent, float length = 340f, bool isInteger = true, float minValue = 0f, float maxValue = 0f)
+        InputField CreateInputField(string name, string value, string placeholder, Transform parent, float length = 340f, bool isInteger = true, double minValue = 0f, double maxValue = 0f)
         {
             var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
             gameObject.transform.localScale = Vector3.one;
@@ -3115,8 +3115,8 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField, max: int.MaxValue));
-                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage.inputField, min: (int)minValue, max: (int)maxValue, t: gameObject.transform);
+                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField, min: (float)minValue, max: (float)maxValue));
+                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage.inputField, min: (float)minValue, max: (float)maxValue, t: gameObject.transform);
             }
 
             EditorThemeManager.AddInputField(inputFieldStorage.inputField);
