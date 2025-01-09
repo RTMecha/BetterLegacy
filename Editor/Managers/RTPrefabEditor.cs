@@ -1443,7 +1443,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObjectCopy.StartTime += prefabObject.StartTime + prefab.Offset;
 
                 beatmapObjectCopy.editorData.layer = prefabObject.editorData.layer;
-                beatmapObjectCopy.editorData.Bin = Mathf.Clamp(beatmapObjectCopy.editorData.Bin, 0, 14);
+                beatmapObjectCopy.editorData.Bin = beatmapObjectCopy.editorData.Bin;
 
                 if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
                     AssetManager.SpriteAssets[beatmapObject.text] = sprite;
