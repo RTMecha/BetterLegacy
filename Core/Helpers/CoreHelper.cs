@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Data;
@@ -64,6 +65,11 @@ namespace BetterLegacy.Core.Helpers
         /// If the player is in the Classic Arrhythmia story mode.
         /// </summary>
         public static bool InStory { get; set; }
+
+        /// <summary>
+        /// The currently open level.
+        /// </summary>
+        public static Level CurrentLevel => InEditor ? RTEditor.inst.CurrentLevel : LevelManager.CurrentLevel;
 
         /// <summary>
         /// If the game is loading.
