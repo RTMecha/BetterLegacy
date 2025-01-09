@@ -1840,7 +1840,8 @@ namespace BetterLegacy.Editor.Managers
 
             var mcpVLG = modifierCardPrefab.AddComponent<VerticalLayoutGroup>();
             mcpVLG.childControlHeight = false;
-            mcpVLG.childForceExpandHeight = false;
+            mcpVLG.childControlWidth = false;
+            mcpVLG.childForceExpandWidth = false;
 
             var mcpCSF = modifierCardPrefab.AddComponent<ContentSizeFitter>();
             mcpCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
