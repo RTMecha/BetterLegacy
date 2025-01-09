@@ -314,8 +314,7 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Setting Camera sizes...");
 
-            EventManager.inst.cam.rect = new Rect(0f, 0f, 1f, 1f);
-            EventManager.inst.camPer.rect = new Rect(0f, 0f, 1f, 1f);
+            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
 
             Debug.Log($"{className}Updating checkpoints...");
 
@@ -325,7 +324,10 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Spawning...");
             BoostCount = 0;
 
-            PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
+            if (!CurrentLevel.isStory)
+                PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
+            else
+                PlayersData.LoadJSON(JSON.Parse(storyLevel.jsonPlayers));
             PlayerManager.ValidatePlayers();
             PlayerManager.AssignPlayerModels();
 

@@ -514,7 +514,7 @@ namespace BetterLegacy.Patchers
         static void AssignGameData()
         {
             GameData.Current = RTEditor.inst.CreateBaseBeatmap();
-            AudioManager.inst.PlayMusic(null, Instance.baseSong, true, 0f);
+            RTEditor.inst.SetCurrentAudio(Instance.baseSong);
             GameManager.inst.gameState = GameManager.State.Playing;
         }
 
@@ -1016,8 +1016,7 @@ namespace BetterLegacy.Patchers
             if (InterfaceManager.inst && InterfaceManager.inst.CurrentInterface)
                 InterfaceManager.inst.CloseMenus();
 
-            EventManager.inst.cam.rect = new Rect(0f, 0.3708f, 0.601f, 0.601f);
-            EventManager.inst.camPer.rect = new Rect(0f, 0.3708f, 0.602f, 0.601f);
+            RTGameManager.inst.SetCameraArea(new Rect(0f, 0.3708f, 0.601f, 0.601f));
             return false;
         }
 
@@ -1025,8 +1024,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetNormalRenderAreaPrefix()
         {
-            EventManager.inst.cam.rect = new Rect(0f, 0f, 1f, 1f);
-            EventManager.inst.camPer.rect = new Rect(0f, 0f, 1f, 1f);
+            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
             return false;
         }
 

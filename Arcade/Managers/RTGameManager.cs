@@ -105,6 +105,16 @@ namespace BetterLegacy.Arcade.Managers
             return s;
         }
 
+        /// <summary>
+        /// Sets the camera's render area.
+        /// </summary>
+        /// <param name="rect">Rect to set.</param>
+        public void SetCameraArea(Rect rect)
+        {
+            EventManager.inst.cam.rect = rect;
+            EventManager.inst.camPer.rect = rect;
+        }
+
         #region Checkpoints
 
         /// <summary>
@@ -126,7 +136,7 @@ namespace BetterLegacy.Arcade.Managers
         public void UpdateCheckpoints()
         {
             var checkpoints = Checkpoints;
-            if (nextCheckpointIndex >= 0 && nextCheckpointIndex < checkpoints.Count && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
+            if (checkpoints != null && nextCheckpointIndex >= 0 && nextCheckpointIndex < checkpoints.Count && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
                 SetCheckpoint(nextCheckpointIndex);
         }
 
@@ -272,6 +282,10 @@ namespace BetterLegacy.Arcade.Managers
 
         void InitCheckpointAnimation()
         {
+            checkpointAnimTop.rectTransform.sizeDelta = Vector2.zero;
+            checkpointAnimBottom.rectTransform.sizeDelta = Vector2.zero;
+            checkpointAnimLeft.rectTransform.sizeDelta = Vector2.zero;
+            checkpointAnimRight.rectTransform.sizeDelta = Vector2.zero;
             checkpointAnimation = new RTAnimation("Got Checkpoint");
             checkpointAnimation.animationHandlers = new List<AnimationHandlerBase>
             {
