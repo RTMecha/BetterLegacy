@@ -1302,7 +1302,9 @@ namespace BetterLegacy.Editor.Managers
 
                 var curves = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(curveBase.transform, "curves");
                 curves.transform.AsRT().sizeDelta = new Vector2(230f, 38f);
-                EditorThemeManager.AddDropdown(curves.GetComponent<Dropdown>());
+                var curvesDropdown = curves.GetComponent<Dropdown>();
+                curvesDropdown.options = EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
+                EditorThemeManager.AddDropdown(curvesDropdown);
 
                 var curvesApply = EditorPrefabHolder.Instance.Function1Button.Duplicate(curveBase.transform, "apply");
                 curvesApply.transform.AsRT().sizeDelta = new Vector2(132f, 38f);
@@ -3678,6 +3680,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (EditorConfig.Instance.ShowMarkersInObjectEditor.Value)
                     RenderMarkers(beatmapObject);
+                else
+                    LSHelpers.DeleteChildren(ObjEditor.inst.objTimelineSlider.transform.Find("Markers"));
             }
             catch (Exception ex)
             {
