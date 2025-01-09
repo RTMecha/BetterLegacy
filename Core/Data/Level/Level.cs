@@ -157,7 +157,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// The type of Project Arrhythmia the level comes from.
         /// </summary>
-        public ArrhythmiaType ArrhythmiaType => RTFile.GetFileFormat(CurrentFile).ToArrhythmiaType();
+        public ArrhythmiaType ArrhythmiaType => isStory ? ArrhythmiaType.LS : RTFile.GetFileFormat(CurrentFile).ToArrhythmiaType();
 
         /// <summary>
         /// If the current selected file is a VG format.

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using SimpleJSON;
 using UnityEngine;
@@ -73,10 +74,15 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Loads the global player models.
         /// </summary>
-        public static void Load(string filePath)
+        public static void LoadJSON(JSONNode jn)
         {
-            if (RTFile.FileExists(filePath))
-                Current = Parse(JSON.Parse(RTFile.ReadFromFile(filePath)));
+            var exists = !jn.IsNull;
+            Current = exists ? Parse(jn) : new PlayersData();
+
+            var currentLevel = CoreHelper.CurrentLevel;
+            if (!exists && currentLevel)
+                for (int i = 0; i < Current.playerModelsIndex.Count; i++)
+                    Current.playerModelsIndex[i] = currentLevel.IsVG ? PlayerModel.DEV_ID : PlayerModel.DEFAULT_ID;
 
             externalPlayerModels.Clear();
             foreach (var playerModel in PlayerModel.DefaultModels)
@@ -102,11 +108,14 @@ namespace BetterLegacy.Core.Data.Player
                 externalPlayerModels[id] = model;
 
                 if (IsValid && CoreHelper.InEditor)
-                {
                     Current.playerModels[id] = model;
-                }
             }
         }
+
+        /// <summary>
+        /// Loads the global player models.
+        /// </summary>
+        public static void Load(string filePath) => LoadJSON(RTFile.FileExists(filePath) ? JSON.Parse(RTFile.ReadFromFile(filePath)) : new JSONNull());
 
         /// <summary>
         /// Saves the global player models.
