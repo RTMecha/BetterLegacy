@@ -1850,10 +1850,10 @@ namespace BetterLegacy.Editor.Managers
             mcpSpacerTop.transform.AsRT().sizeDelta = new Vector2(350f, 8f);
 
             var mcpLabel = Creator.NewUIObject("Label", modifierCardPrefab.transform);
-            UIManager.SetRectTransform(mcpLabel.transform.AsRT(), new Vector2(0f, -8f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(352f, 32f));
+            RectValues.LeftAnchored.AnchoredPosition(0f, -8f).SizeDelta(352f, 32f).AssignToRectTransform(mcpLabel.transform.AsRT());
 
             var mcpText = Creator.NewUIObject("Text", mcpLabel.transform);
-            UIManager.SetRectTransform(mcpText.transform.AsRT(), Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(300f, 32f));
+            RectValues.LeftAnchored.SizeDelta(300f, 32f).AssignToRectTransform(mcpText.transform.AsRT());
 
             var mcpTextText = mcpText.AddComponent<Text>();
             mcpTextText.alignment = TextAnchor.MiddleLeft;
@@ -1865,27 +1865,25 @@ namespace BetterLegacy.Editor.Managers
             collapse.transform.localScale = Vector3.one;
             var collapseLayoutElement = collapse.GetComponent<LayoutElement>() ?? collapse.AddComponent<LayoutElement>();
             collapseLayoutElement.minWidth = 32f;
-            UIManager.SetRectTransform(collapse.transform.AsRT(), new Vector2(70f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+            RectValues.Default.AnchoredPosition(70f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(collapse.transform.AsRT());
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Delete");
             delete.transform.localScale = Vector3.one;
-            var deleteLayoutElement = delete.GetComponent<LayoutElement>() ?? delete.GetComponent<LayoutElement>();
+            var deleteLayoutElement = delete.GetComponent<LayoutElement>() ?? delete.AddComponent<LayoutElement>();
             deleteLayoutElement.minWidth = 32f;
-            UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(140f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+            RectValues.Default.AnchoredPosition(140f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
 
-            var duplicate = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Copy");
-            duplicate.transform.localScale = Vector3.one;
-            var duplicateLayoutElement = duplicate.GetComponent<LayoutElement>() ?? duplicate.AddComponent<LayoutElement>();
+            var copy = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Copy");
+            copy.transform.localScale = Vector3.one;
+            var duplicateLayoutElement = copy.GetComponent<LayoutElement>() ?? copy.AddComponent<LayoutElement>();
             duplicateLayoutElement.minWidth = 32f;
+            RectValues.Default.AnchoredPosition(106f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(copy.transform.AsRT());
 
-            UIManager.SetRectTransform(duplicate.transform.AsRT(), new Vector2(106f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
-
-            duplicate.GetComponent<DeleteButtonStorage>().image.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}copy.png");
+            copy.GetComponent<DeleteButtonStorage>().image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"copy{FileFormat.PNG.Dot()}"));
 
             var notifier = Creator.NewUIObject("Notifier", mcpLabel.transform);
             var notifierImage = notifier.AddComponent<Image>();
-
-            UIManager.SetRectTransform(notifierImage.rectTransform, new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(8f, 32f));
+            RectValues.Default.AnchoredPosition(44f, 0f).SizeDelta(8f, 32f).AssignToRectTransform(notifierImage.rectTransform);
 
             var mcpSpacerMid = Creator.NewUIObject("Spacer Middle", modifierCardPrefab.transform);
             mcpSpacerMid.transform.AsRT().sizeDelta = new Vector2(350f, 8f);
