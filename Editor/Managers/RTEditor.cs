@@ -3514,7 +3514,11 @@ namespace BetterLegacy.Editor.Managers
             }));
 
             TriggerHelper.AddEventTriggers(EditorManager.inst.timeline,
-                TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => isOverMainTimeline = true),
+                TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData =>
+                {
+                    isOverMainTimeline = true;
+                    SetDialogStatus("Timeline", true);
+                }),
                 TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => isOverMainTimeline = false),
                 TriggerHelper.StartDragTrigger(),
                 TriggerHelper.DragTrigger(),
