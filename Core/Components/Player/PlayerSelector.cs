@@ -10,8 +10,6 @@ namespace BetterLegacy.Core.Components.Player
     /// </summary>
     public class PlayerSelector : MonoBehaviour
     {
-        public int id;
-
         void Awake()
         {
             if (!CoreHelper.InEditor)

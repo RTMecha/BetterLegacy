@@ -938,7 +938,7 @@ namespace BetterLegacy.Core.Components.Player
             animationController = gameObject.AddComponent<AnimationController>();
             var anim = gameObject.GetComponent<Animator>();
             //anim.keepAnimatorControllerStateOnDisable = true;
-            anim.enabled = face;
+            anim.enabled = false;
 
             var rb = transform.Find("Player").gameObject;
             this.rb = rb.GetComponent<Rigidbody2D>();
@@ -960,7 +960,7 @@ namespace BetterLegacy.Core.Components.Player
             polygonCollider2D = polygonCollider;
 
             if (CoreHelper.InEditor)
-                rb.AddComponent<PlayerSelector>().id = playerIndex;
+                rb.AddComponent<PlayerSelector>();
 
             var head = transform.Find("Player/Player").gameObject;
 
