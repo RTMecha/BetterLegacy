@@ -1190,7 +1190,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(EditorManager.RefreshDialogDictionary))]
         [HarmonyPrefix]
-        static bool RefreshDialogDictionary()
+        static bool RefreshDialogDictionaryPrefix()
         {
             foreach (var dialog in Instance.EditorDialogs)
             {
