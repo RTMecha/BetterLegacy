@@ -8,6 +8,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Example;
 using BetterLegacy.Menus;
@@ -1040,6 +1041,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ClearDialogsPrefix(params EditorManager.EditorDialog.DialogType[] __0)
         {
+            EditorDialog.CurrentDialog?.Close();
+
             var play = EditorConfig.Instance.PlayEditorAnimations.Value;
 
             var editorDialogs = Instance.EditorDialogs;

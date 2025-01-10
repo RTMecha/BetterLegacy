@@ -41,12 +41,19 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
+        public bool init;
+
         #region Methods
+
+        public virtual void Init()
+        {
+
+        }
 
         /// <summary>
         /// Opens the editor dialog and sets it as the current dialog.
         /// </summary>
-        public void Open()
+        public virtual void Open()
         {
             CurrentDialog?.Close();
             CurrentDialog = this;
@@ -56,7 +63,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Closes the editor dialog.
         /// </summary>
-        public void Close()
+        public virtual void Close()
         {
             CurrentDialog = null;
             SetActive(false);
@@ -66,10 +73,11 @@ namespace BetterLegacy.Editor.Data
         /// Sets the active state of the editor dialog.
         /// </summary>
         /// <param name="active">The active state to set.</param>
-        public void SetActive(bool active)
+        public virtual void SetActive(bool active)
         {
-            if (GameObject)
-                GameObject.SetActive(active);
+            //if (GameObject)
+            //    GameObject.SetActive(active);
+            EditorManager.inst.SetDialogStatus(Name, active);
         }
 
         #endregion

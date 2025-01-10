@@ -105,6 +105,10 @@ namespace BetterLegacy.Core.Prefabs
         public Button addButton;
         [SerializeField]
         public InputField inputField;
+        [SerializeField]
+        public Toggle lockToggle;
+        [SerializeField]
+        public EventTrigger eventTrigger;
 
         public void Assign(GameObject gameObject)
         {
@@ -123,12 +127,15 @@ namespace BetterLegacy.Core.Prefabs
             if (gameObject.transform.TryFind(">>", out Transform rightGreater))
                 rightGreaterButton = rightGreater.GetComponent<Button>();
 
-            if (gameObject.transform.TryFind("input", out Transform input))
-                inputField = input.GetComponent<InputField>();
-            else if (gameObject.transform.TryFind("time", out Transform time))
-                inputField = time.GetComponent<InputField>();
+            if (gameObject.transform.TryFind("input", out Transform input) && input.gameObject.TryGetComponent(out InputField inputField))
+                this.inputField = inputField;
+            else if (gameObject.transform.TryFind("time", out Transform time) && time.gameObject.TryGetComponent(out InputField timeField))
+                this.inputField = timeField;
             else if (gameObject.TryGetComponent(out InputField baseInput))
-                inputField = baseInput;
+                this.inputField = baseInput;
+
+            if (gameObject.transform.TryFind("lock", out Transform lockTransform))
+                lockToggle = lockTransform.GetComponent<Toggle>();
         }
     }
 

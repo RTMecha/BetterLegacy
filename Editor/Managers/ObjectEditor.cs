@@ -1734,7 +1734,7 @@ namespace BetterLegacy.Editor.Managers
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to init shapes due to the exception: {ex}");
-            }
+            } // init shapes
 
             AnimationEditor.Init();
 
@@ -1751,7 +1751,17 @@ namespace BetterLegacy.Editor.Managers
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Could not load global copied objects.\n{ex}");
+            } // load global copy
+
+            try
+            {
+                Dialog = new ObjectEditorDialog();
+                Dialog.Init();
             }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         void InitShapes()
@@ -1971,6 +1981,8 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Variables
+
+        public ObjectEditorDialog Dialog { get; set; }
 
         public Text ldmLabel;
         public Toggle ldmToggle;
@@ -3517,88 +3529,6 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool UpdateObjects => true;
 
-        Dictionary<string, object> objectUIElements;
-        public Dictionary<string, object> ObjectUIElements
-        {
-            get
-            {
-                if (objectUIElements == null || objectUIElements.Count == 0 || objectUIElements.Any(x => x.Value == null))
-                {
-                    var objEditor = ObjEditor.inst;
-                    var tfv = objEditor.ObjectView.transform;
-
-                    if (objectUIElements == null)
-                        objectUIElements = new Dictionary<string, object>();
-                    objectUIElements.Clear();
-
-                    objectUIElements.Add("ID Base", tfv.Find("id"));
-                    objectUIElements.Add("ID Text", tfv.Find("id/text").GetComponent<Text>());
-                    objectUIElements.Add("LDM Toggle", ldmToggle);
-
-                    objectUIElements.Add("Name IF", tfv.Find("name/name").GetComponent<InputField>());
-                    objectUIElements.Add("Object Type DD", tfv.Find("name/object-type").GetComponent<Dropdown>());
-                    objectUIElements.Add("Tags Content", tfv.Find("Tags Scroll View/Viewport/Content").transform);
-
-                    objectUIElements.Add("Start Time ET", tfv.Find("time").GetComponent<EventTrigger>());
-                    objectUIElements.Add("Start Time IF", tfv.Find("time/time").GetComponent<InputField>());
-                    objectUIElements.Add("Start Time Lock", tfv.Find("time/lock")?.GetComponent<Toggle>());
-                    objectUIElements.Add("Start Time <<", tfv.Find("time/<<").GetComponent<Button>());
-                    objectUIElements.Add("Start Time <", tfv.Find("time/<").GetComponent<Button>());
-                    objectUIElements.Add("Start Time |", tfv.Find("time/|").GetComponent<Button>());
-                    objectUIElements.Add("Start Time >", tfv.Find("time/>").GetComponent<Button>());
-                    objectUIElements.Add("Start Time >>", tfv.Find("time/>>").GetComponent<Button>());
-
-                    objectUIElements.Add("Autokill TOD DD", tfv.Find("autokill/tod-dropdown").GetComponent<Dropdown>());
-                    objectUIElements.Add("Autokill TOD IF", tfv.Find("autokill/tod-value").GetComponent<InputField>());
-                    objectUIElements.Add("Autokill TOD Value", tfv.Find("autokill/tod-value"));
-                    objectUIElements.Add("Autokill TOD Set", tfv.Find("autokill/|"));
-                    objectUIElements.Add("Autokill TOD Set B", tfv.Find("autokill/|").GetComponent<Button>());
-                    objectUIElements.Add("Autokill Collapse", tfv.Find("autokill/collapse").GetComponent<Toggle>());
-
-                    objectUIElements.Add("Parent Name", tfv.Find("parent/text/text").GetComponent<Text>());
-                    objectUIElements.Add("Parent Select", tfv.Find("parent/text").GetComponent<Button>());
-                    objectUIElements.Add("Parent Info", tfv.Find("parent/text").GetComponent<HoverTooltip>());
-                    objectUIElements.Add("Parent More B", tfv.Find("parent/more").GetComponent<Button>());
-                    objectUIElements.Add("Parent More", tfv.Find("parent_more"));
-                    objectUIElements.Add("Parent Spawn Once", tfv.Find("parent_more/spawn_once").GetComponent<Toggle>());
-                    objectUIElements.Add("Parent Search Open", tfv.Find("parent/parent").GetComponent<Button>());
-                    objectUIElements.Add("Parent Clear", tfv.Find("parent/clear parent").GetComponent<Button>());
-                    objectUIElements.Add("Parent Picker", tfv.Find("parent/parent picker").GetComponent<Button>());
-
-                    objectUIElements.Add("Parent Offset 1", tfv.Find("parent_more/pos_row"));
-                    objectUIElements.Add("Parent Offset 2", tfv.Find("parent_more/sca_row"));
-                    objectUIElements.Add("Parent Offset 3", tfv.Find("parent_more/rot_row"));
-
-                    objectUIElements.Add("Origin", tfv.Find("origin"));
-                    objectUIElements.Add("Origin X IF", tfv.Find("origin/x").GetComponent<InputField>());
-                    objectUIElements.Add("Origin Y IF", tfv.Find("origin/y").GetComponent<InputField>());
-
-                    objectUIElements.Add("Gradient", tfv.Find("gradienttype"));
-                    objectUIElements.Add("Shape", tfv.Find("shape"));
-                    objectUIElements.Add("Shape Settings", tfv.Find("shapesettings"));
-
-                    objectUIElements.Add("Depth", tfv.Find("depth"));
-                    objectUIElements.Add("Depth T", tfv.Find("depth input"));
-                    objectUIElements.Add("Depth Slider", tfv.Find("depth/depth").GetComponent<Slider>());
-                    objectUIElements.Add("Depth IF", tfv.Find("depth input/depth")?.GetComponent<InputField>());
-                    objectUIElements.Add("Depth <", tfv.Find("depth input/depth/<")?.GetComponent<Button>());
-                    objectUIElements.Add("Depth >", tfv.Find("depth input/depth/>")?.GetComponent<Button>());
-                    objectUIElements.Add("Render Type T", tfv.Find("rendertype"));
-                    objectUIElements.Add("Render Type", tfv.Find("rendertype")?.GetComponent<Dropdown>());
-
-                    objectUIElements.Add("Bin Slider", tfv.Find("editor/bin").GetComponent<Slider>());
-                    objectUIElements.Add("Layers IF", tfv.Find("editor/layers")?.GetComponent<InputField>());
-                    objectUIElements.Add("Layers Image", tfv.Find("editor/layers")?.GetComponent<Image>());
-
-                    objectUIElements.Add("Collapse Label", tfv.Find("collapselabel").gameObject);
-                    objectUIElements.Add("Collapse Prefab", tfv.Find("applyprefab").gameObject);
-                }
-
-                return objectUIElements;
-            }
-            set => objectUIElements = value;
-        }
-
         public static bool HideVisualElementsWhenObjectIsEmpty { get; set; }
 
         /// <summary>
@@ -3619,7 +3549,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorManager.inst.ActiveDialogs.Count > 2 || !EditorManager.inst.ActiveDialogs.Has(x => x.Name == "Object Editor")) // Only need to clear the dialogs if object editor isn't the only active dialog.
             {
                 EditorManager.inst.ClearDialogs();
-                EditorManager.inst.ShowDialog("Object Editor");
+                Dialog.Open();
             }
 
             if (CurrentSelection.ID != beatmapObject.id)
@@ -3669,8 +3599,8 @@ namespace BetterLegacy.Editor.Managers
             RenderGameObjectInspector(beatmapObject);
 
             bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
-            ((GameObject)ObjectUIElements["Collapse Label"]).SetActive(fromPrefab);
-            ((GameObject)ObjectUIElements["Collapse Prefab"]).SetActive(fromPrefab);
+            Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
+            Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
 
             SetTimeline(CurrentSelection.Zoom, CurrentSelection.TimelinePosition);
 
@@ -3701,7 +3631,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderEmpty(BeatmapObject beatmapObject)
         {
             var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty;
-            var shapeTF = (Transform)ObjectUIElements["Shape"];
+            var shapeTF = Dialog.ShapeTypesParent;
             var shapesLabel = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2);
             var shapeTFPActive = shapesLabel.gameObject.activeSelf;
             shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2).gameObject.SetActive(active);
@@ -3715,20 +3645,20 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogException(ex);
             }
-            ((Transform)ObjectUIElements["Gradient"]).gameObject.SetActive(active && RTEditor.NotSimple);
+            Dialog.GradientParent.gameObject.SetActive(active && RTEditor.NotSimple);
 
-            ((Transform)ObjectUIElements["Shape Settings"]).gameObject.SetActive(active);
-            ((Transform)ObjectUIElements["Depth"]).gameObject.SetActive(active);
-            var depthTf = (Transform)ObjectUIElements["Depth T"];
+            Dialog.ShapeOptionsParent.gameObject.SetActive(active);
+            Dialog.DepthParent.gameObject.SetActive(active);
+            var depthTf = Dialog.DepthField.transform.parent;
             depthTf.parent.GetChild(depthTf.GetSiblingIndex() - 1).gameObject.SetActive(active);
             depthTf.gameObject.SetActive(RTEditor.NotSimple && active);
-            ((Slider)ObjectUIElements["Depth Slider"]).transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
+            Dialog.DepthSlider.transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
 
-            var renderTypeTF = (Transform)ObjectUIElements["Render Type T"];
+            var renderTypeTF = Dialog.RenderTypeDropdown.transform;
             renderTypeTF.parent.GetChild(renderTypeTF.GetSiblingIndex() - 1).gameObject.SetActive(active && RTEditor.ShowModdedUI);
             renderTypeTF.gameObject.SetActive(active && RTEditor.ShowModdedUI);
 
-            var originTF = (Transform)ObjectUIElements["Origin"];
+            var originTF = Dialog.OriginParent;
             originTF.parent.GetChild(originTF.GetSiblingIndex() - 1).gameObject.SetActive(active);
             originTF.gameObject.SetActive(active);
 
@@ -3772,12 +3702,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderID(BeatmapObject beatmapObject)
         {
-            var idText = (Text)ObjectUIElements["ID Text"];
-            idText.text = $"ID: {beatmapObject.id}";
+            Dialog.IDText.text = $"ID: {beatmapObject.id}";
 
-            var gameObject = idText.transform.parent.gameObject;
-
-            var clickable = gameObject.GetComponent<Clickable>() ?? gameObject.AddComponent<Clickable>();
+            var clickable = Dialog.IDBase.gameObject.GetOrAddComponent<Clickable>();
 
             clickable.onClick = pointerEventData =>
             {
@@ -3807,7 +3734,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderName(BeatmapObject beatmapObject)
         {
-            var name = (InputField)ObjectUIElements["Name IF"];
+            var name = Dialog.NameField;
 
             // Allows for left / right flipping.
             if (!name.GetComponent<InputFieldSwapper>() && name.gameObject)
@@ -3835,7 +3762,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderTags(BeatmapObject beatmapObject)
         {
-            var tagsParent = (Transform)ObjectUIElements["Tags Content"];
+            var tagsParent = Dialog.TagsContent;
 
             LSHelpers.DeleteChildren(tagsParent);
 
@@ -3898,15 +3825,13 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderObjectType(BeatmapObject beatmapObject)
         {
-            var objType = (Dropdown)ObjectUIElements["Object Type DD"];
-
-            objType.options =
+            Dialog.ObjectTypeDropdown.options =
                 EditorConfig.Instance.EditorComplexity.Value == Complexity.Advanced ?
                     CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid") :
                     CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty"); // don't show solid object type 
-            objType.onValueChanged.ClearAll();
-            objType.value = Mathf.Clamp((int)beatmapObject.objectType, 0, objType.options.Count - 1);
-            objType.onValueChanged.AddListener(_val =>
+            Dialog.ObjectTypeDropdown.onValueChanged.ClearAll();
+            Dialog.ObjectTypeDropdown.value = Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1);
+            Dialog.ObjectTypeDropdown.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.objectType = (ObjectType)_val;
                 RenderGameObjectInspector(beatmapObject);
@@ -3925,18 +3850,11 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderStartTime(BeatmapObject beatmapObject)
         {
-            var time = (EventTrigger)ObjectUIElements["Start Time ET"];
-            var timeIF = (InputField)ObjectUIElements["Start Time IF"];
-            var locker = (Toggle)ObjectUIElements["Start Time Lock"];
-            var timeJumpLargeLeft = (Button)ObjectUIElements["Start Time <<"];
-            var timeJumpLeft = (Button)ObjectUIElements["Start Time <"];
-            var setStartToTime = (Button)ObjectUIElements["Start Time |"];
-            var timeJumpRight = (Button)ObjectUIElements["Start Time >"];
-            var timeJumpLargeRight = (Button)ObjectUIElements["Start Time >>"];
+            var startTimeField = Dialog.StartTimeField;
 
-            locker.onValueChanged.ClearAll();
-            locker.isOn = beatmapObject.editorData.locked;
-            locker.onValueChanged.AddListener(_val =>
+            startTimeField.lockToggle.onValueChanged.ClearAll();
+            startTimeField.lockToggle.isOn = beatmapObject.editorData.locked;
+            startTimeField.lockToggle.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.editorData.locked = _val;
 
@@ -3944,9 +3862,9 @@ namespace BetterLegacy.Editor.Managers
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
             });
 
-            timeIF.onValueChanged.ClearAll();
-            timeIF.text = beatmapObject.StartTime.ToString();
-            timeIF.onValueChanged.AddListener(_val =>
+            startTimeField.inputField.onValueChanged.ClearAll();
+            startTimeField.inputField.text = beatmapObject.StartTime.ToString();
+            startTimeField.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -3961,16 +3879,15 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            time.triggers.Clear();
-            time.triggers.Add(TriggerHelper.ScrollDelta(timeIF, max: AudioManager.inst.CurrentAudioSource.clip.length));
+            TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
-            timeJumpLargeLeft.onClick.ClearAll();
-            timeJumpLargeLeft.interactable = (beatmapObject.StartTime > 0f);
-            timeJumpLargeLeft.onClick.AddListener(() =>
+            startTimeField.leftGreaterButton.onClick.ClearAll();
+            startTimeField.leftGreaterButton.interactable = (beatmapObject.StartTime > 0f);
+            startTimeField.leftGreaterButton.onClick.AddListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                timeIF.text = moveTime.ToString();
+                startTimeField.inputField.text = moveTime.ToString();
 
                 ResizeKeyframeTimeline(beatmapObject);
 
@@ -3982,13 +3899,13 @@ namespace BetterLegacy.Editor.Managers
                 ResizeKeyframeTimeline(beatmapObject);
             });
 
-            timeJumpLeft.onClick.ClearAll();
-            timeJumpLeft.interactable = (beatmapObject.StartTime > 0f);
-            timeJumpLeft.onClick.AddListener(() =>
+            startTimeField.leftButton.onClick.ClearAll();
+            startTimeField.leftButton.interactable = (beatmapObject.StartTime > 0f);
+            startTimeField.leftButton.onClick.AddListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 0.1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                timeIF.text = moveTime.ToString();
+                startTimeField.inputField.text = moveTime.ToString();
 
                 ResizeKeyframeTimeline(beatmapObject);
 
@@ -4000,10 +3917,10 @@ namespace BetterLegacy.Editor.Managers
                 ResizeKeyframeTimeline(beatmapObject);
             });
 
-            setStartToTime.onClick.ClearAll();
-            setStartToTime.onClick.AddListener(() =>
+            startTimeField.middleButton.onClick.ClearAll();
+            startTimeField.middleButton.onClick.AddListener(() =>
             {
-                timeIF.text = EditorManager.inst.CurrentAudioPos.ToString();
+                startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
 
                 ResizeKeyframeTimeline(beatmapObject);
 
@@ -4015,12 +3932,12 @@ namespace BetterLegacy.Editor.Managers
                 ResizeKeyframeTimeline(beatmapObject);
             });
 
-            timeJumpRight.onClick.ClearAll();
-            timeJumpRight.onClick.AddListener(() =>
+            startTimeField.rightButton.onClick.ClearAll();
+            startTimeField.rightButton.onClick.AddListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 0.1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                timeIF.text = moveTime.ToString();
+                startTimeField.inputField.text = moveTime.ToString();
 
                 ResizeKeyframeTimeline(beatmapObject);
 
@@ -4032,12 +3949,12 @@ namespace BetterLegacy.Editor.Managers
                 ResizeKeyframeTimeline(beatmapObject);
             });
 
-            timeJumpLargeRight.onClick.ClearAll();
-            timeJumpLargeRight.onClick.AddListener(() =>
+            startTimeField.rightGreaterButton.onClick.ClearAll();
+            startTimeField.rightGreaterButton.onClick.AddListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                timeIF.text = moveTime.ToString();
+                startTimeField.inputField.text = moveTime.ToString();
 
                 ResizeKeyframeTimeline(beatmapObject);
 
@@ -4056,10 +3973,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderAutokill(BeatmapObject beatmapObject)
         {
-            var akType = (Dropdown)ObjectUIElements["Autokill TOD DD"];
-            akType.onValueChanged.ClearAll();
-            akType.value = (int)beatmapObject.autoKillType;
-            akType.onValueChanged.AddListener(_val =>
+            Dialog.AutokillDropdown.onValueChanged.ClearAll();
+            Dialog.AutokillDropdown.value = (int)beatmapObject.autoKillType;
+            Dialog.AutokillDropdown.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.autoKillType = (AutoKillType)_val;
                 // AutoKillType affects both physical object and timeline object.
@@ -4068,23 +3984,17 @@ namespace BetterLegacy.Editor.Managers
                     Updater.UpdateObject(beatmapObject, "Autokill");
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderAutokill(beatmapObject);
-
             });
-
-            var todValue = (Transform)ObjectUIElements["Autokill TOD Value"];
-            var akOffset = todValue.GetComponent<InputField>();
-            var akset = (Transform)ObjectUIElements["Autokill TOD Set"];
-            var aksetButt = (Button)ObjectUIElements["Autokill TOD Set B"];
 
             if (beatmapObject.autoKillType == AutoKillType.FixedTime ||
                 beatmapObject.autoKillType == AutoKillType.SongTime ||
                 beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
             {
-                todValue.gameObject.SetActive(true);
+                Dialog.AutokillField.gameObject.SetActive(true);
 
-                akOffset.onValueChanged.ClearAll();
-                akOffset.text = beatmapObject.autoKillOffset.ToString();
-                akOffset.onValueChanged.AddListener(_val =>
+                Dialog.AutokillField.onValueChanged.ClearAll();
+                Dialog.AutokillField.text = beatmapObject.autoKillOffset.ToString();
+                Dialog.AutokillField.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -4108,9 +4018,9 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                akset.gameObject.SetActive(true);
-                aksetButt.onClick.ClearAll();
-                aksetButt.onClick.AddListener(() =>
+                Dialog.AutokillSetButton.gameObject.SetActive(true);
+                Dialog.AutokillSetButton.onClick.ClearAll();
+                Dialog.AutokillSetButton.onClick.AddListener(() =>
                 {
                     float num = 0f;
 
@@ -4121,25 +4031,23 @@ namespace BetterLegacy.Editor.Managers
                     if (num < 0f)
                         num = 0f;
 
-                    akOffset.text = num.ToString();
+                    Dialog.AutokillField.text = num.ToString();
                 });
 
                 // Add Scrolling for easy changing of values.
-                TriggerHelper.AddEventTriggers(todValue.gameObject, TriggerHelper.ScrollDelta(akOffset, 0.1f, 10f, 0f, float.PositiveInfinity));
+                TriggerHelper.AddEventTriggers(Dialog.AutokillField.gameObject, TriggerHelper.ScrollDelta(Dialog.AutokillField, 0.1f, 10f, 0f, float.PositiveInfinity));
             }
             else
             {
-                todValue.gameObject.SetActive(false);
-                akOffset.onValueChanged.ClearAll();
-                akset.gameObject.SetActive(false);
-                aksetButt.onClick.ClearAll();
+                Dialog.AutokillField.gameObject.SetActive(false);
+                Dialog.AutokillField.onValueChanged.ClearAll();
+                Dialog.AutokillSetButton.gameObject.SetActive(false);
+                Dialog.AutokillSetButton.onClick.ClearAll();
             }
 
-            var collapse = (Toggle)ObjectUIElements["Autokill Collapse"];
-
-            collapse.onValueChanged.ClearAll();
-            collapse.isOn = beatmapObject.editorData.collapse;
-            collapse.onValueChanged.AddListener(_val =>
+            Dialog.CollapseToggle.onValueChanged.ClearAll();
+            Dialog.CollapseToggle.isOn = beatmapObject.editorData.collapse;
+            Dialog.CollapseToggle.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.editorData.collapse = _val;
 
@@ -4155,20 +4063,15 @@ namespace BetterLegacy.Editor.Managers
         public void RenderParent(BeatmapObject beatmapObject)
         {
             string parent = beatmapObject.parent;
+            
+            Dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
 
-            var parentTextText = (Text)ObjectUIElements["Parent Name"];
-            var parentText = (Button)ObjectUIElements["Parent Select"];
-            var parentMore = (Button)ObjectUIElements["Parent More B"];
-            var parent_more = (Transform)ObjectUIElements["Parent More"];
-            var parentParent = (Button)ObjectUIElements["Parent Search Open"];
-            var parentClear = (Button)ObjectUIElements["Parent Clear"];
-            var parentPicker = (Button)ObjectUIElements["Parent Picker"];
+            Dialog.ParentSearchButton.onClick.ClearAll();
+            Dialog.ParentClearButton.onClick.ClearAll();
+            Dialog.ParentPickerButton.onClick.ClearAll();
 
-            parentText.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
-
-            parentParent.onClick.ClearAll();
-            parentParent.onClick.AddListener(EditorManager.inst.OpenParentPopup);
-            var parentSearchContextMenu = parentParent.gameObject.GetComponent<ContextClickable>() ?? parentParent.gameObject.AddComponent<ContextClickable>();
+            Dialog.ParentSearchButton.onClick.AddListener(EditorManager.inst.OpenParentPopup);
+            var parentSearchContextMenu = Dialog.ParentSearchButton.gameObject.GetOrAddComponent<ContextClickable>();
             parentSearchContextMenu.onClick = eventData =>
             {
                 if (eventData.button != PointerEventData.InputButton.Right)
@@ -4185,16 +4088,13 @@ namespace BetterLegacy.Editor.Managers
                     );
             };
 
-            parentClear.onClick.ClearAll();
+            Dialog.ParentPickerButton.onClick.AddListener(() => RTEditor.inst.parentPickerEnabled = true);
 
-            parentPicker.onClick.ClearAll();
-            parentPicker.onClick.AddListener(() => { RTEditor.inst.parentPickerEnabled = true; });
+            Dialog.ParentClearButton.gameObject.SetActive(!string.IsNullOrEmpty(parent));
 
-            parentClear.gameObject.SetActive(!string.IsNullOrEmpty(parent));
+            Dialog.ParentSettingsParent.transform.AsRT().sizeDelta = new Vector2(351f, RTEditor.ShowModdedUI ? 152f : 112f);
 
-            parent_more.AsRT().sizeDelta = new Vector2(351f, RTEditor.ShowModdedUI ? 152f : 112f);
-
-            var parentContextMenu = parentText.gameObject.GetComponent<ContextClickable>() ?? parentText.gameObject.AddComponent<ContextClickable>();
+            var parentContextMenu = Dialog.ParentButton.gameObject.GetOrAddComponent<ContextClickable>();
             parentContextMenu.onClick = eventData =>
             {
                 if (eventData.button != PointerEventData.InputButton.Right)
@@ -4227,14 +4127,14 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(parent))
             {
-                parentText.interactable = false;
-                parentMore.interactable = false;
-                parent_more.gameObject.SetActive(false);
-                parentTextText.text = "No Parent Object";
+                Dialog.ParentButton.button.interactable = false;
+                Dialog.ParentMoreButton.interactable = false;
+                Dialog.ParentSettingsParent.gameObject.SetActive(false);
+                Dialog.ParentButton.text.text = "No Parent Object";
 
-                ((HoverTooltip)ObjectUIElements["Parent Info"]).tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
-                parentText.onClick.ClearAll();
-                parentMore.onClick.ClearAll();
+                Dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
+                Dialog.ParentButton.button.onClick.ClearAll();
+                Dialog.ParentMoreButton.onClick.ClearAll();
 
                 return;
             }
@@ -4244,20 +4144,20 @@ namespace BetterLegacy.Editor.Managers
             if (GameData.Current.beatmapObjects.TryFindIndex(x => x.id == parent, out int pa))
             {
                 p = GameData.Current.beatmapObjects[pa].name;
-                ((HoverTooltip)ObjectUIElements["Parent Info"]).tooltipLangauges[0].hint = string.Format("Parent chain count: [{0}]\n(Inclusive)", beatmapObject.GetParentChain().Count);
+                Dialog.ParentInfo.tooltipLangauges[0].hint = string.Format("Parent chain count: [{0}]\n(Inclusive)", beatmapObject.GetParentChain().Count);
             }
             else if (parent == BeatmapObject.CAMERA_PARENT)
             {
                 p = "[CAMERA]";
-                ((HoverTooltip)ObjectUIElements["Parent Info"]).tooltipLangauges[0].hint = "Object parented to the camera.";
+                Dialog.ParentInfo.tooltipLangauges[0].hint = "Object parented to the camera.";
             }
 
-            parentText.interactable = p != null;
-            parentMore.interactable = p != null;
+            Dialog.ParentButton.button.interactable = p != null;
+            Dialog.ParentMoreButton.interactable = p != null;
 
-            parent_more.gameObject.SetActive(p != null && ObjEditor.inst.advancedParent);
+            Dialog.ParentSettingsParent.gameObject.SetActive(p != null && ObjEditor.inst.advancedParent);
 
-            parentClear.onClick.AddListener(() =>
+            Dialog.ParentClearButton.onClick.AddListener(() =>
             {
                 beatmapObject.parent = "";
 
@@ -4270,18 +4170,18 @@ namespace BetterLegacy.Editor.Managers
 
             if (p == null)
             {
-                parentTextText.text = "No Parent Object";
-                ((HoverTooltip)ObjectUIElements["Parent Info"]).tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
-                parentText.onClick.ClearAll();
-                parentMore.onClick.ClearAll();
+                Dialog.ParentButton.text.text = "No Parent Object";
+                Dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
+                Dialog.ParentButton.button.onClick.ClearAll();
+                Dialog.ParentMoreButton.onClick.ClearAll();
 
                 return;
             }
 
-            parentTextText.text = p;
+            Dialog.ParentButton.text.text = p;
 
-            parentText.onClick.ClearAll();
-            parentText.onClick.AddListener(() =>
+            Dialog.ParentButton.button.onClick.ClearAll();
+            Dialog.ParentButton.button.onClick.AddListener(() =>
             {
                 if (GameData.Current.beatmapObjects.Find(x => x.id == parent) != null &&
                     parent != BeatmapObject.CAMERA_PARENT &&
@@ -4295,40 +4195,36 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            parentMore.onClick.ClearAll();
-            parentMore.onClick.AddListener(() =>
+            Dialog.ParentMoreButton.onClick.ClearAll();
+            Dialog.ParentMoreButton.onClick.AddListener(() =>
             {
                 ObjEditor.inst.advancedParent = !ObjEditor.inst.advancedParent;
-                parent_more.gameObject.SetActive(ObjEditor.inst.advancedParent);
+                Dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
             });
-            parent_more.gameObject.SetActive(ObjEditor.inst.advancedParent);
+            Dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
 
-            var spawnOnce = (Toggle)ObjectUIElements["Parent Spawn Once"];
-            spawnOnce.onValueChanged.ClearAll();
-            spawnOnce.gameObject.SetActive(RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value);
+            Dialog.ParentDesyncToggle.onValueChanged.ClearAll();
+            Dialog.ParentDesyncToggle.gameObject.SetActive(RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value);
             if (RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value)
             {
-                spawnOnce.isOn = beatmapObject.desync;
-                spawnOnce.onValueChanged.AddListener(_val =>
+                Dialog.ParentDesyncToggle.isOn = beatmapObject.desync;
+                Dialog.ParentDesyncToggle.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.desync = _val;
                     Updater.UpdateObject(beatmapObject);
                 });
             }
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < Dialog.ParentSettings.Count; i++)
             {
-                var _p = (Transform)ObjectUIElements[$"Parent Offset {i + 1}"];
-
-                var parentOffset = beatmapObject.getParentOffset(i);
+                var parentSetting = Dialog.ParentSettings[i];
 
                 var index = i;
 
                 // Parent Type
-                var tog = _p.GetChild(2).GetComponent<Toggle>();
-                tog.onValueChanged.ClearAll();
-                tog.isOn = beatmapObject.GetParentType(i);
-                tog.onValueChanged.AddListener(_val =>
+                parentSetting.activeToggle.onValueChanged.ClearAll();
+                parentSetting.activeToggle.isOn = beatmapObject.GetParentType(i);
+                parentSetting.activeToggle.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.SetParentType(index, _val);
 
@@ -4340,13 +4236,12 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 // Parent Offset
-                var pif = _p.GetChild(3).GetComponent<InputField>();
-                var lel = _p.GetChild(3).GetComponent<LayoutElement>();
+                var lel = parentSetting.offsetField.GetComponent<LayoutElement>();
                 lel.minWidth = RTEditor.ShowModdedUI ? 64f : 128f;
                 lel.preferredWidth = RTEditor.ShowModdedUI ? 64f : 128f;
-                pif.onValueChanged.ClearAll();
-                pif.text = parentOffset.ToString();
-                pif.onValueChanged.AddListener(_val =>
+                parentSetting.offsetField.onValueChanged.ClearAll();
+                parentSetting.offsetField.text = beatmapObject.getParentOffset(i).ToString();
+                parentSetting.offsetField.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -4360,27 +4255,25 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.AddEventTriggers(pif.gameObject, TriggerHelper.ScrollDelta(pif));
+                TriggerHelper.AddEventTriggers(parentSetting.offsetField.gameObject, TriggerHelper.ScrollDelta(parentSetting.offsetField));
 
-                var additive = _p.GetChild(4).GetComponent<Toggle>();
-                additive.onValueChanged.ClearAll();
-                additive.gameObject.SetActive(RTEditor.ShowModdedUI);
-                var parallax = _p.GetChild(5).GetComponent<InputField>();
-                parallax.onValueChanged.ClearAll();
-                parallax.gameObject.SetActive(RTEditor.ShowModdedUI);
+                parentSetting.additiveToggle.onValueChanged.ClearAll();
+                parentSetting.parallaxField.onValueChanged.ClearAll();
+                parentSetting.additiveToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+                parentSetting.parallaxField.gameObject.SetActive(RTEditor.ShowModdedUI);
 
                 if (!RTEditor.ShowModdedUI)
                     continue;
 
-                additive.isOn = beatmapObject.parentAdditive[i] == '1';
-                additive.onValueChanged.AddListener(_val =>
+                parentSetting.additiveToggle.isOn = beatmapObject.parentAdditive[i] == '1';
+                parentSetting.additiveToggle.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.SetParentAdditive(index, _val);
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject);
                 });
-                parallax.text = beatmapObject.parallaxSettings[index].ToString();
-                parallax.onValueChanged.AddListener(_val =>
+                parentSetting.parallaxField.text = beatmapObject.parallaxSettings[index].ToString();
+                parentSetting.parallaxField.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -4392,7 +4285,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.AddEventTriggers(parallax.gameObject, TriggerHelper.ScrollDelta(parallax));
+                TriggerHelper.AddEventTriggers(parentSetting.parallaxField.gameObject, TriggerHelper.ScrollDelta(parentSetting.parallaxField));
             }
         }
 
@@ -4407,7 +4300,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 1; i <= 3; i++)
             {
                 int index = i;
-                var toggle = ObjEditor.inst.ObjectView.transform.Find("origin/origin-x/" + i).GetComponent<Toggle>();
+                var toggle = Dialog.OriginXToggles[i - 1];
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = beatmapObject.origin.x == originDefaultPositions[i];
                 toggle.onValueChanged.AddListener(_val =>
@@ -4443,7 +4336,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                var originContextMenu = toggle.gameObject.GetComponent<ContextClickable>() ?? toggle.gameObject.AddComponent<ContextClickable>();
+                var originContextMenu = toggle.gameObject.GetOrAddComponent<ContextClickable>();
 
                 originContextMenu.onClick = eventData =>
                 {
@@ -4456,7 +4349,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 1; i <= 3; i++)
             {
                 int index = i;
-                var toggle = ObjEditor.inst.ObjectView.transform.Find("origin/origin-y/" + i).GetComponent<Toggle>();
+                var toggle = Dialog.OriginYToggles[i - 1];
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = beatmapObject.origin.y == originDefaultPositions[i];
                 toggle.onValueChanged.AddListener(_val =>
@@ -4492,7 +4385,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                var originContextMenu = toggle.gameObject.GetComponent<ContextClickable>() ?? toggle.gameObject.AddComponent<ContextClickable>();
+                var originContextMenu = toggle.gameObject.GetOrAddComponent<ContextClickable>();
 
                 originContextMenu.onClick = eventData =>
                 {
@@ -4503,17 +4396,15 @@ namespace BetterLegacy.Editor.Managers
                 };
             }
 
-            var oxIF = (InputField)ObjectUIElements["Origin X IF"];
-
-            if (!oxIF.gameObject.GetComponent<InputFieldSwapper>())
+            if (!Dialog.OriginXField.inputField.gameObject.GetComponent<InputFieldSwapper>())
             {
-                var ifh = oxIF.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(oxIF, InputFieldSwapper.Type.Num);
+                var ifh = Dialog.OriginXField.inputField.gameObject.AddComponent<InputFieldSwapper>();
+                ifh.Init(Dialog.OriginXField.inputField, InputFieldSwapper.Type.Num);
             }
 
-            oxIF.onValueChanged.ClearAll();
-            oxIF.text = beatmapObject.origin.x.ToString();
-            oxIF.onValueChanged.AddListener(_val =>
+            Dialog.OriginXField.inputField.onValueChanged.ClearAll();
+            Dialog.OriginXField.inputField.text = beatmapObject.origin.x.ToString();
+            Dialog.OriginXField.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -4525,17 +4416,15 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            var oyIF = (InputField)ObjectUIElements["Origin Y IF"];
-
-            if (!oyIF.gameObject.GetComponent<InputFieldSwapper>())
+            if (!Dialog.OriginYField.inputField.gameObject.GetComponent<InputFieldSwapper>())
             {
-                var ifh = oyIF.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(oyIF, InputFieldSwapper.Type.Num);
+                var ifh = Dialog.OriginYField.inputField.gameObject.AddComponent<InputFieldSwapper>();
+                ifh.Init(Dialog.OriginYField.inputField, InputFieldSwapper.Type.Num);
             }
 
-            oyIF.onValueChanged.ClearAll();
-            oyIF.text = beatmapObject.origin.y.ToString();
-            oyIF.onValueChanged.AddListener(_val =>
+            Dialog.OriginYField.inputField.onValueChanged.ClearAll();
+            Dialog.OriginYField.inputField.text = beatmapObject.origin.y.ToString();
+            Dialog.OriginYField.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -4547,13 +4436,13 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            TriggerHelper.IncreaseDecreaseButtons(oxIF, 0.1f, 10f);
-            TriggerHelper.IncreaseDecreaseButtons(oyIF, 0.1f, 10f);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.OriginXField);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.OriginYField);
 
-            TriggerHelper.AddEventTriggers(oxIF.gameObject, TriggerHelper.ScrollDelta(oxIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
-            TriggerHelper.AddEventTriggers(oyIF.gameObject, TriggerHelper.ScrollDelta(oyIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
+            TriggerHelper.AddEventTriggers(Dialog.OriginXField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.OriginXField.inputField, multi: true), TriggerHelper.ScrollDeltaVector2(Dialog.OriginXField.inputField, Dialog.OriginYField.inputField, 0.1f, 10f));
+            TriggerHelper.AddEventTriggers(Dialog.OriginYField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.OriginYField.inputField, multi: true), TriggerHelper.ScrollDeltaVector2(Dialog.OriginXField.inputField, Dialog.OriginYField.inputField, 0.1f, 10f));
 
-            var originXContextMenu = oxIF.gameObject.GetComponent<ContextClickable>() ?? oxIF.gameObject.AddComponent<ContextClickable>();
+            var originXContextMenu = Dialog.OriginXField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
 
             originXContextMenu.onClick = eventData =>
             {
@@ -4563,7 +4452,7 @@ namespace BetterLegacy.Editor.Managers
                 OriginContextMenu(beatmapObject);
             };
 
-            var originYContextMenu = oyIF.gameObject.GetComponent<ContextClickable>() ?? oyIF.gameObject.AddComponent<ContextClickable>();
+            var originYContextMenu = Dialog.OriginYField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
 
             originYContextMenu.onClick = eventData =>
             {
@@ -4647,11 +4536,10 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderGradient(BeatmapObject beatmapObject)
         {
-            var gradient = (Transform)ObjectUIElements["Gradient"];
-            for (int i = 0; i < gradient.childCount; i++)
+            for (int i = 0; i < Dialog.GradientToggles.Count; i++)
             {
                 var index = i;
-                var toggle = gradient.GetChild(i).GetComponent<Toggle>();
+                var toggle = Dialog.GradientToggles[i];
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = index == (int)beatmapObject.gradientType;
                 toggle.onValueChanged.AddListener(_val =>
@@ -4713,8 +4601,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderShape(BeatmapObject beatmapObject)
         {
-            var shape = ObjEditor.inst.ObjectView.transform.Find("shape");
-            var shapeSettings = ObjEditor.inst.ObjectView.transform.Find("shapesettings");
+            var shape = Dialog.ShapeTypesParent;
+            var shapeSettings = Dialog.ShapeOptionsParent;
 
             LSHelpers.SetActiveChildren(shapeSettings, false);
 
@@ -4932,7 +4820,7 @@ namespace BetterLegacy.Editor.Managers
 
             slider.onValueChanged.ClearAll();
             slider.value = value;
-            slider.onValueChanged.AddListener(_val => { SetDepthInputField(beatmapObject, ((int)_val).ToString(), inputField, slider); });
+            slider.onValueChanged.AddListener(_val => SetDepthInputField(beatmapObject, ((int)_val).ToString(), inputField, slider));
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
@@ -4968,33 +4856,32 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderDepth(BeatmapObject beatmapObject)
         {
-            var depthSlider = (Slider)ObjectUIElements["Depth Slider"];
-            var depthText = (InputField)ObjectUIElements["Depth IF"];
+            var depthSlider = Dialog.DepthSlider;
+            var depthText = Dialog.DepthField.inputField;
 
-            if (!depthText.GetComponent<InputFieldSwapper>())
+            if (!Dialog.DepthField.inputField.GetComponent<InputFieldSwapper>())
             {
-                var ifh = depthText.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(depthText, InputFieldSwapper.Type.Num);
+                var ifh = Dialog.DepthField.inputField.gameObject.AddComponent<InputFieldSwapper>();
+                ifh.Init(Dialog.DepthField.inputField, InputFieldSwapper.Type.Num);
             }
 
-            depthText.onValueChanged.ClearAll();
-            depthText.text = beatmapObject.Depth.ToString();
-
-            depthText.onValueChanged.AddListener(_val =>
+            Dialog.DepthField.inputField.onValueChanged.ClearAll();
+            Dialog.DepthField.inputField.text = beatmapObject.Depth.ToString();
+            Dialog.DepthField.inputField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                    SetDepthSlider(beatmapObject, num, depthText, depthSlider);
+                    SetDepthSlider(beatmapObject, num, Dialog.DepthField.inputField, Dialog.DepthSlider);
             });
 
             var max = EditorConfig.Instance.EditorComplexity.Value == Complexity.Simple ? 30 : EditorConfig.Instance.RenderDepthRange.Value.x;
             var min = EditorConfig.Instance.EditorComplexity.Value == Complexity.Simple ? 0 : EditorConfig.Instance.RenderDepthRange.Value.y;
 
-            depthSlider.maxValue = max;
-            depthSlider.minValue = min;
+            Dialog.DepthSlider.maxValue = max;
+            Dialog.DepthSlider.minValue = min;
 
-            depthSlider.onValueChanged.ClearAll();
-            depthSlider.value = beatmapObject.Depth;
-            depthSlider.onValueChanged.AddListener(_val => { SetDepthInputField(beatmapObject, _val.ToString(), depthText, depthSlider); });
+            Dialog.DepthSlider.onValueChanged.ClearAll();
+            Dialog.DepthSlider.value = beatmapObject.Depth;
+            Dialog.DepthSlider.onValueChanged.AddListener(_val => SetDepthInputField(beatmapObject, _val.ToString(), Dialog.DepthField.inputField, Dialog.DepthSlider));
 
             if (RTEditor.ShowModdedUI)
             {
@@ -5002,15 +4889,13 @@ namespace BetterLegacy.Editor.Managers
                 min = 0;
             }
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1, min, max);
-            TriggerHelper.AddEventTriggers(depthText.gameObject, TriggerHelper.ScrollDeltaInt(depthText, 1, min, max));
+            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max);
+            TriggerHelper.AddEventTriggers(Dialog.DepthField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.DepthField.inputField, 1, min, max));
+            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max, Dialog.DepthParent);
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1, min, max, ObjEditor.inst.ObjectView.transform.Find("depth"));
-
-            var renderType = (Dropdown)ObjectUIElements["Render Type"];
-            renderType.onValueChanged.ClearAll();
-            renderType.value = beatmapObject.background ? 1 : 0;
-            renderType.onValueChanged.AddListener(_val =>
+            Dialog.RenderTypeDropdown.onValueChanged.ClearAll();
+            Dialog.RenderTypeDropdown.value = beatmapObject.background ? 1 : 0;
+            Dialog.RenderTypeDropdown.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.background = _val == 1;
                 if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -5119,13 +5004,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderLayers(BeatmapObject beatmapObject)
         {
-            var editorLayersIF = (InputField)ObjectUIElements["Layers IF"];
-            var editorLayersImage = (Image)ObjectUIElements["Layers Image"];
-
-            editorLayersIF.onValueChanged.ClearAll();
-            editorLayersIF.text = (beatmapObject.editorData.layer + 1).ToString();
-            editorLayersImage.color = RTEditor.GetLayerColor(beatmapObject.editorData.layer);
-            editorLayersIF.onValueChanged.AddListener(_val =>
+            Dialog.EditorLayerField.onValueChanged.ClearAll();
+            Dialog.EditorLayerField.text = (beatmapObject.editorData.layer + 1).ToString();
+            Dialog.EditorLayerField.image.color = RTEditor.GetLayerColor(beatmapObject.editorData.layer);
+            Dialog.EditorLayerField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
@@ -5140,8 +5022,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            if (editorLayersIF.gameObject)
-                TriggerHelper.AddEventTriggers(editorLayersIF.gameObject, TriggerHelper.ScrollDeltaInt(editorLayersIF, 1, 1, int.MaxValue));
+            if (Dialog.EditorLayerField.gameObject)
+                TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, 1, 1, int.MaxValue));
         }
 
         /// <summary>
@@ -5150,11 +5032,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderBin(BeatmapObject beatmapObject)
         {
-            var editorBin = (Slider)ObjectUIElements["Bin Slider"];
-            editorBin.onValueChanged.ClearAll();
-            editorBin.maxValue = RTEditor.inst.BinCount;
-            editorBin.value = beatmapObject.editorData.Bin;
-            editorBin.onValueChanged.AddListener(_val =>
+            Dialog.BinSlider.onValueChanged.ClearAll();
+            Dialog.BinSlider.maxValue = RTEditor.inst.BinCount;
+            Dialog.BinSlider.value = beatmapObject.editorData.Bin;
+            Dialog.BinSlider.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.editorData.Bin = Mathf.Clamp((int)_val, 0, RTEditor.inst.BinCount);
 
@@ -6697,5 +6578,273 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
+    }
+
+    public class ObjectEditorDialog : EditorDialog
+    {
+        #region Object Properties
+
+        public RectTransform Content { get; set; }
+
+        public override void Init()
+        {
+            if (init)
+                return;
+
+            Name = "Object Editor";
+            GameObject = EditorManager.inst.GetDialog(Name).Dialog.gameObject;
+            Content = ObjEditor.inst.ObjectView.transform.AsRT();
+
+            #region Top Properties
+
+            IDBase = Content.Find("id").AsRT();
+            IDText = IDBase.Find("text").GetComponent<Text>();
+            LDMToggle = IDBase.Find("ldm").GetComponent<Toggle>();
+
+            #endregion
+
+            #region Name Area
+
+            NameField = Content.Find("name/name").GetComponent<InputField>();
+            ObjectTypeDropdown = Content.Find("name/object-type").GetComponent<Dropdown>();
+            TagsContent = Content.Find("Tags Scroll View/Viewport/Content").AsRT();
+
+            #endregion
+
+            #region Start Time
+
+            StartTimeField = Content.Find("time").gameObject.AddComponent<InputFieldStorage>();
+            StartTimeField.Assign(StartTimeField.gameObject);
+
+            #endregion
+
+            #region Autokill
+
+            AutokillDropdown = Content.Find("autokill/tod-dropdown").GetComponent<Dropdown>();
+            AutokillField = Content.Find("autokill/tod-value").GetComponent<InputField>();
+            AutokillSetButton = Content.Find("autokill/|").GetComponent<Button>();
+            CollapseToggle = Content.Find("autokill/collapse").GetComponent<Toggle>();
+
+            #endregion
+
+            #region Parent
+
+            ParentButton = Content.Find("parent/text").gameObject.AddComponent<FunctionButtonStorage>();
+            ParentButton.button = ParentButton.GetComponent<Button>();
+            ParentButton.text = ParentButton.transform.Find("text").GetComponent<Text>();
+            ParentInfo = ParentButton.GetComponent<HoverTooltip>();
+            ParentMoreButton = Content.Find("parent/more").GetComponent<Button>();
+            ParentSettingsParent = Content.Find("parent_more").gameObject;
+            ParentDesyncToggle = ParentSettingsParent.transform.Find("spawn_once").GetComponent<Toggle>();
+            ParentSearchButton = Content.Find("parent/parent").GetComponent<Button>();
+            ParentClearButton = Content.Find("parent/clear parent").GetComponent<Button>();
+            ParentPickerButton = Content.Find("parent/parent picker").GetComponent<Button>();
+
+            for (int i = 0; i < 3; i++)
+            {
+                var name = i switch
+                {
+                    0 => "pos",
+                    1 => "sca",
+                    _ => "rot"
+                };
+
+                var row = ParentSettingsParent.transform.Find($"{name}_row");
+                var parentSetting = new ParentSetting();
+                parentSetting.row = row;
+                parentSetting.label = row.Find("text").GetComponent<Text>();
+                parentSetting.activeToggle = row.Find(name).GetComponent<Toggle>();
+                parentSetting.offsetField = row.Find($"{name}_offset").GetComponent<InputField>();
+                parentSetting.additiveToggle = row.Find($"{name}_add").GetComponent<Toggle>();
+                parentSetting.parallaxField = row.Find($"{name}_parallax").GetComponent<InputField>();
+                ParentSettings.Add(parentSetting);
+            }
+
+            #endregion
+
+            #region Origin
+
+            OriginParent = Content.Find("origin").AsRT();
+            OriginXField = OriginParent.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
+            OriginXField.Assign(OriginXField.gameObject);
+            OriginYField = OriginParent.Find("y").gameObject.GetOrAddComponent<InputFieldStorage>();
+            OriginYField.Assign(OriginYField.gameObject);
+
+            for (int i = 0; i < 3; i++)
+            {
+                OriginXToggles.Add(OriginParent.Find("origin-x").GetChild(i).GetComponent<Toggle>());
+                OriginYToggles.Add(OriginParent.Find("origin-y").GetChild(i).GetComponent<Toggle>());
+            }
+
+            #endregion
+
+            #region Gradient / Shape
+
+            GradientParent = Content.Find("gradienttype").AsRT();
+            for (int i = 0; i < GradientParent.childCount; i++)
+                GradientToggles.Add(GradientParent.GetChild(i).GetComponent<Toggle>());
+            ShapeTypesParent = Content.Find("shape").AsRT();
+            ShapeOptionsParent = Content.Find("shapesettings").AsRT();
+
+            #endregion
+
+            #region Render Depth / Type
+
+            DepthParent = Content.Find("depth").AsRT();
+            DepthField = Content.Find("depth input/depth").gameObject.GetOrAddComponent<InputFieldStorage>();
+            DepthField.Assign(DepthField.gameObject);
+            DepthSlider = Content.Find("depth/depth").GetComponent<Slider>();
+            DepthSliderLeftButton = DepthParent.Find("<").GetComponent<Button>();
+            DepthSliderRightButton = DepthParent.Find(">").GetComponent<Button>();
+            RenderTypeDropdown = Content.Find("rendertype").GetComponent<Dropdown>();
+
+            #endregion
+
+            #region Editor Settings
+
+            EditorSettingsParent = Content.Find("editor").AsRT();
+            EditorLayerField = EditorSettingsParent.Find("layers")?.GetComponent<InputField>();
+            EditorLayerField.image = EditorLayerField.GetComponent<Image>();
+            BinSlider = EditorSettingsParent.Find("bin")?.GetComponent<Slider>();
+
+            #endregion
+
+            #region Prefab
+
+            CollapsePrefabLabel = Content.Find("collapselabel").gameObject;
+            CollapsePrefabButton = Content.Find("applyprefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
+            CollapsePrefabButton.text = CollapsePrefabButton.transform.Find("Text").GetComponent<Text>();
+            CollapsePrefabButton.button = CollapsePrefabButton.GetComponent<Button>();
+
+            AssignPrefabLabel = Content.Find("assignlabel").gameObject;
+            AssignPrefabButton = Content.Find("assign prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
+            AssignPrefabButton.text = AssignPrefabButton.transform.Find("Text").GetComponent<Text>();
+            AssignPrefabButton.button = AssignPrefabButton.GetComponent<Button>();
+            RemovePrefabButton = Content.Find("remove prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
+            RemovePrefabButton.text = RemovePrefabButton.transform.Find("Text").GetComponent<Text>();
+            RemovePrefabButton.button = RemovePrefabButton.GetComponent<Button>();
+
+            #endregion
+
+            init = true;
+        }
+
+        #region Top Properties
+
+        public RectTransform IDBase { get; set; }
+        public Text IDText { get; set; }
+        public Toggle LDMToggle { get; set; }
+
+        #endregion
+
+        #region Name Area
+
+        public InputField NameField { get; set; }
+        public Dropdown ObjectTypeDropdown { get; set; }
+        public RectTransform TagsContent { get; set; }
+
+        #endregion
+
+        #region Start Time / Autokill
+
+        public InputFieldStorage StartTimeField { get; set; }
+
+        public Dropdown AutokillDropdown { get; set; }
+        public InputField AutokillField { get; set; }
+        public Button AutokillSetButton { get; set; }
+        public Toggle CollapseToggle { get; set; }
+
+        #endregion
+
+        #region Parent
+
+        public FunctionButtonStorage ParentButton { get; set; }
+        public HoverTooltip ParentInfo { get; set; }
+        public Button ParentMoreButton { get; set; }
+        public GameObject ParentSettingsParent { get; set; }
+        public Toggle ParentDesyncToggle { get; set; }
+        public Button ParentSearchButton { get; set; }
+        public Button ParentClearButton { get; set; }
+        public Button ParentPickerButton { get; set; }
+
+        public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
+
+        #endregion
+
+        #region Origin
+
+        public RectTransform OriginParent { get; set; }
+        public InputFieldStorage OriginXField { get; set; }
+        public InputFieldStorage OriginYField { get; set; }
+
+        public List<Toggle> OriginXToggles { get; set; } = new List<Toggle>();
+        public List<Toggle> OriginYToggles { get; set; } = new List<Toggle>();
+
+        #endregion
+
+        #region Gradient / Shape
+
+        public RectTransform GradientParent { get; set; }
+        public List<Toggle> GradientToggles { get; set; } = new List<Toggle>();
+        public RectTransform ShapeTypesParent { get; set; }
+        public RectTransform ShapeOptionsParent { get; set; }
+
+        #endregion
+
+        #region Render Depth / Type
+
+        public RectTransform DepthParent { get; set; }
+        public InputFieldStorage DepthField { get; set; }
+        public Slider DepthSlider { get; set; }
+        public Button DepthSliderLeftButton { get; set; }
+        public Button DepthSliderRightButton { get; set; }
+        public Dropdown RenderTypeDropdown { get; set; }
+
+        #endregion
+
+        #region Editor Settings
+
+        public RectTransform EditorSettingsParent { get; set; }
+        public Slider BinSlider { get; set; }
+        public InputField EditorLayerField { get; set; }
+
+        #endregion
+
+        #region Prefab
+
+        public GameObject CollapsePrefabLabel { get; set; }
+        public FunctionButtonStorage CollapsePrefabButton { get; set; }
+        public GameObject AssignPrefabLabel { get; set; }
+        public FunctionButtonStorage AssignPrefabButton { get; set; }
+        public FunctionButtonStorage RemovePrefabButton { get; set; }
+
+        #endregion
+
+        #endregion
+
+        public List<KeyframeDialog> keyframeDialogs = new List<KeyframeDialog>();
+    }
+
+    public class KeyframeDialog
+    {
+        public GameObject GameObject { get; set; }
+        public Dropdown CurvesDropdown { get; set; }
+        public InputFieldStorage EventTimeField { get; set; }
+
+        public FunctionButtonStorage CopyButton { get; set; }
+        public FunctionButtonStorage PasteButton { get; set; }
+        public DeleteButtonStorage DeleteButton { get; set; }
+
+        public List<InputFieldStorage> EventValueFields { get; set; } = new List<InputFieldStorage>();
+    }
+
+    public class ParentSetting
+    {
+        public Transform row;
+        public Text label;
+        public Toggle activeToggle;
+        public InputField offsetField;
+        public Toggle additiveToggle;
+        public InputField parallaxField;
     }
 }
