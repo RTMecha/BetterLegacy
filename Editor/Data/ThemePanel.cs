@@ -222,7 +222,7 @@ namespace BetterLegacy.Editor.Data
 
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RTEditor.inst.ShowContextMenu(
+                        EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
                                 RTEditor.inst.themePathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
@@ -287,7 +287,7 @@ namespace BetterLegacy.Editor.Data
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Use", () =>
                     {
                         if (isDuplicate)

@@ -139,7 +139,7 @@ namespace BetterLegacy.Editor.Data
 
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
-                    RTEditor.inst.ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Open folder", () =>
                         {
                             RTEditor.inst.prefabPathField.text = path.Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
@@ -392,7 +392,7 @@ namespace BetterLegacy.Editor.Data
 
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
-                                RTEditor.inst.ShowContextMenu(
+                                EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Add to Level", () =>
                                     {
                                         RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
@@ -461,7 +461,7 @@ namespace BetterLegacy.Editor.Data
 
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
-                                RTEditor.inst.ShowContextMenu(
+                                EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab)),
                                     new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Prefab)),
                                     new ButtonFunction("Open", () =>

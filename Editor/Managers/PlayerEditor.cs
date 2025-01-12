@@ -2290,7 +2290,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Open & Use", () =>
                         {
                             PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
@@ -2422,7 +2422,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RTEditor.inst.ShowContextMenu(
+                        EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open", () =>
                             {
                                 CustomObjectID = customObject.id;

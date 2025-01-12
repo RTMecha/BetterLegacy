@@ -409,7 +409,7 @@ namespace BetterLegacy.Core.Helpers
             if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
                 return;
 
-            RTEditor.inst.ShowContextMenu(
+            EditorContextMenu.inst.ShowContextMenu(
                 new ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time); }),
                 new ButtonFunction("Set KF to Cursor", () =>
                 {
@@ -534,7 +534,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
-                    RTEditor.inst.ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Select", () => EditorTimeline.inst.SetCurrentObject(timelineObject)),
                         new ButtonFunction("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(timelineObject)),
                         new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
@@ -940,7 +940,7 @@ namespace BetterLegacy.Core.Helpers
             if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
                 return;
 
-            RTEditor.inst.ShowContextMenu(
+            EditorContextMenu.inst.ShowContextMenu(
                 new ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(timelineObject.Time); }),
                 new ButtonFunction("Set KF to Cursor", () =>
                 {

@@ -101,7 +101,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create folder", () =>
                         {
                             RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
@@ -122,7 +122,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create Prefab", () =>
                         {
                             PrefabEditor.inst.OpenDialog();
@@ -627,7 +627,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Assign", () =>
                     {
                         selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
@@ -1931,7 +1931,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RTEditor.inst.ShowContextMenu(
+                        EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Create prefab", () =>
                             {
@@ -2009,7 +2009,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RTEditor.inst.ShowContextMenu(
+                        EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Paste Prefab", PastePrefab));
 
@@ -2700,7 +2700,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
-                    RTEditor.inst.ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create prefab", () =>
                         {
                             PrefabEditor.inst.OpenDialog();

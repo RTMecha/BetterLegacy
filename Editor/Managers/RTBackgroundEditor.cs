@@ -2249,7 +2249,7 @@ namespace BetterLegacy.Editor.Managers
                     if (ModCompatibility.UnityExplorerInstalled)
                         buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
 
-                    RTEditor.inst.ShowContextMenu(buttonFunctions);
+                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                 };
 
                 var cmd = modifier.commands[0];

@@ -385,6 +385,7 @@ namespace BetterLegacy.Editor.Managers
             LevelCombiner.Init();
             ProjectPlanner.Init();
             UploadedLevelsManager.Init();
+
             EditorDocumentation.Init();
         }
 
@@ -451,9 +452,9 @@ namespace BetterLegacy.Editor.Managers
             RectValues.FullAnchored.AssignToRectTransform(EditorTimeline.inst.timelineObjectsParent);
 
             SetupFileBrowser();
-            CreateContextMenu();
             CreateFolderCreator();
             CreateWarningPopup();
+            EditorContextMenu.Init();
         }
 
         #endregion
@@ -647,11 +648,6 @@ namespace BetterLegacy.Editor.Managers
         #region Constants
 
         /// <summary>
-        /// The default width the context menu should have.
-        /// </summary>
-        public const float DEFAULT_CONTEXT_MENU_WIDTH = 300f;
-
-        /// <summary>
         /// Default object cameo
         /// </summary>
         public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
@@ -778,9 +774,6 @@ namespace BetterLegacy.Editor.Managers
         /// The top panel of the editor with the dropdowns.
         /// </summary>
         public Transform titleBar;
-
-        GameObject contextMenu;
-        RectTransform contextMenuLayout;
 
         public InputField folderCreatorName;
         Text folderCreatorTitle;
@@ -2207,7 +2200,7 @@ namespace BetterLegacy.Editor.Managers
             editorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
             editorLayerField.GetPlaceholderText().fontSize = 16;
             editorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-            editorLayerField.onValueChanged.RemoveAllListeners();
+            editorLayerField.onValueChanged.ClearAll();
             editorLayerField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
@@ -2318,7 +2311,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Options", () => { EditorManager.inst.ShowDialog("Object Options Popup"); }),
                     new ButtonFunction("More Options", ShowObjectTemplates)
                     );
@@ -2330,7 +2323,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Show Prefabs", PrefabEditor.inst.OpenPopup),
                     new ButtonFunction(true),
                     new ButtonFunction("Create Internal Prefab", () =>
@@ -2352,7 +2345,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Open Marker Editor", () =>
                     {
                         if (!RTMarkerEditor.inst.CurrentMarker)
@@ -2390,7 +2383,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Open Checkpoint Editor", () =>
                     {
                         if (Patchers.CheckpointEditorPatch.currentCheckpoint == null || !GameData.IsValid || CheckpointEditor.inst.currentObj < 0 || CheckpointEditor.inst.currentObj >= GameData.Current.beatmapData.checkpoints.Count)
@@ -2417,7 +2410,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Playtest", EditorManager.inst.ToggleEditor),
                     new ButtonFunction("Playtest Zen", () =>
                     {
@@ -2438,7 +2431,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Toggle Layer Type", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? EditorTimeline.LayerType.Objects : EditorTimeline.LayerType.Events)),
                     new ButtonFunction("View Objects", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Objects)),
                     new ButtonFunction("View Events", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Events))
@@ -2451,7 +2444,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("List Layers with Objects", CoreHelper.ListObjectLayers),
                     new ButtonFunction("Next Free Layer", () =>
                     {
@@ -2459,7 +2452,15 @@ namespace BetterLegacy.Editor.Managers
                         while (GameData.Current.beatmapObjects.Has(x => x.editorData != null && x.editorData.layer == layer))
                             layer++;
                         EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
-                    })
+                    })//,
+                    //new ButtonFunction("Pin Editor Layer", () =>
+                    //{
+
+                   //})//,
+                    //new ButtonFunction("View Pinned Editor Layers", () =>
+                    //{
+
+                   //})
                     );
             };
         }
@@ -2513,7 +2514,7 @@ namespace BetterLegacy.Editor.Managers
                     if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
                         return;
 
-                    ShowContextMenu(
+                    EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
                         new ButtonFunction("Update Everything", () =>
                         {
@@ -3063,7 +3064,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Create folder", () =>
                     {
                         ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
@@ -3105,7 +3106,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Level folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3181,7 +3182,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Theme folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3304,7 +3305,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Prefab folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -4142,37 +4143,6 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        void CreateContextMenu()
-        {
-            try
-            {
-                var parent = EditorManager.inst.dialogs.parent;
-
-                contextMenu = Creator.NewUIObject("Context Menu", parent, parent.childCount - 2);
-                RectValues.Default.AnchorMax(0f, 0f).AnchorMin(0f, 0f).Pivot(0f, 1f).SizeDelta(126f, 300f).AssignToRectTransform(contextMenu.transform.AsRT());
-                var contextMenuImage = contextMenu.AddComponent<Image>();
-
-                var contextMenuLayout = Creator.NewUIObject("Context Menu Layout", contextMenu.transform);
-                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(contextMenuLayout.transform.AsRT());
-                this.contextMenuLayout = contextMenuLayout.transform.AsRT();
-
-                var contextMenuLayoutVLG = contextMenuLayout.AddComponent<VerticalLayoutGroup>();
-                contextMenuLayoutVLG.childControlHeight = false;
-                contextMenuLayoutVLG.childForceExpandHeight = false;
-                contextMenuLayoutVLG.spacing = 4f;
-
-                var disable = contextMenu.AddComponent<Clickable>();
-                disable.onExit = pointerEventData => { contextMenu.SetActive(false); };
-
-                EditorThemeManager.AddGraphic(contextMenuImage, ThemeGroup.Background_2, true);
-                contextMenu.SetActive(false);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-        }
-
         void CreateFolderCreator()
         {
             try
@@ -4328,7 +4298,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        ShowContextMenu(
+                        EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction("Paste", PasteLevel),
@@ -4983,80 +4953,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh Popups / Dialogs
 
-        #region Context Menu
-
-        /// <summary>
-        /// Shows the editor context menu.
-        /// </summary>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(List<ButtonFunction> buttonFunctions) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
-
-        /// <summary>
-        /// Shows the editor context menu.
-        /// </summary>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(params ButtonFunction[] buttonFunctions) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
-
-        /// <summary>
-        /// Shows the editor context menu.
-        /// </summary>
-        /// <param name="width">Width of the context menu.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(float width, List<ButtonFunction> buttonFunctions) => ShowContextMenu(width, buttonFunctions.ToArray());
-
-        /// <summary>
-        /// Shows the editor context menu.
-        /// </summary>
-        /// <param name="width">Width of the context menu.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
-        {
-            float height = 0f;
-            contextMenu.SetActive(true);
-            LSHelpers.DeleteChildren(contextMenuLayout);
-            for (int i = 0; i < buttonFunctions.Length; i++)
-            {
-                var buttonFunction = buttonFunctions[i];
-
-                if (buttonFunction.IsSpacer)
-                {
-                    var g = Creator.NewUIObject("sp", contextMenuLayout);
-                    var image = g.AddComponent<Image>();
-                    image.rectTransform.sizeDelta = new Vector2(0f, buttonFunction.SpacerSize);
-                    EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3);
-                    height += 6f;
-                    continue;
-                }
-
-                var gameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(contextMenuLayout);
-                var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-
-                buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(() =>
-                {
-                    contextMenu.SetActive(false);
-                    buttonFunction.Action?.Invoke();
-                });
-                buttonStorage.text.alignment = TextAnchor.MiddleLeft;
-                buttonStorage.text.text = buttonFunction.Name;
-                buttonStorage.text.rectTransform.sizeDelta = new Vector2(-12f, 0f);
-
-                if (!string.IsNullOrEmpty(buttonFunction.TooltipGroup))
-                    TooltipHelper.AssignTooltip(gameObject, buttonFunction.TooltipGroup);
-
-                EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
-                height += 37f;
-            }
-
-            var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
-            pos.y = Mathf.Clamp(pos.y, height, float.PositiveInfinity);
-            contextMenu.transform.AsRT().anchoredPosition = pos;
-            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
-        }
-
-        #endregion
-
         #region Folder Creator / Name Editor
 
         /// <summary>
@@ -5636,7 +5532,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case PointerEventData.InputButton.Right:
                             {
-                                ShowContextMenu(
+                                EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Open", () =>
                                     {
                                         levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));

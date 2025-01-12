@@ -2845,7 +2845,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (eventData.button == PointerEventData.InputButton.Right)
             {
-                RTEditor.inst.ShowContextMenu(400f,
+                EditorContextMenu.inst.ShowContextMenu(400f,
                     new ButtonFunction($"Sync {nameContext} via Search", () =>
                     {
                         RTEditor.inst.ShowObjectSearch(beatmapObject =>

@@ -3834,7 +3834,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.ShowContextMenu(
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Open Parent Popup", EditorManager.inst.OpenParentPopup),
                     new ButtonFunction("Parent to Camera", () =>
                     {
@@ -3879,7 +3879,7 @@ namespace BetterLegacy.Editor.Managers
                         }));
                 }
 
-                RTEditor.inst.ShowContextMenu(list);
+                EditorContextMenu.inst.ShowContextMenu(list);
             };
 
             if (string.IsNullOrEmpty(parent))
@@ -4222,7 +4222,7 @@ namespace BetterLegacy.Editor.Managers
 
         void OriginContextMenu(BeatmapObject beatmapObject)
         {
-            RTEditor.inst.ShowContextMenu(
+            EditorContextMenu.inst.ShowContextMenu(
                 new ButtonFunction("Center", () =>
                 {
                     beatmapObject.origin = Vector2.zero;
@@ -4440,7 +4440,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
-                                RTEditor.inst.ShowContextMenu(
+                                EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject)),
                                     new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
                                     {
@@ -4781,6 +4781,17 @@ namespace BetterLegacy.Editor.Managers
 
             if (Dialog.EditorLayerField.gameObject)
                 TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, 1, 1, int.MaxValue));
+
+            var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
+            editorLayerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects))
+                    );
+            };
         }
 
         /// <summary>

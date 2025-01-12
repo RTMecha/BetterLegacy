@@ -262,7 +262,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (eventData.button != PointerEventData.InputButton.Right)
                                     return;
 
-                                RTEditor.inst.ShowContextMenu(
+                                EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Create folder", () =>
                                     {
                                         RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
