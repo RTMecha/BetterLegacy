@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -414,23 +415,19 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to check.</param>
         public void CheckDescription(Marker marker)
         {
-            var matchCollection = Regex.Matches(marker.desc, @"setLayer\((.*?)\)");
+            foreach (var markerFunction in markerFunctions)
+                if (markerFunction.Auto)
+                    RTString.RegexMatches(marker.desc, markerFunction.Regex, markerFunction.Result);
+        }
 
-            if (matchCollection.Count > 0)
-                foreach (var obj in matchCollection)
-                {
-                    var match = (Match)obj;
-
-                    var matchGroup = match.Groups[1].ToString();
-                    if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
-                        EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
-                    else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
-                        EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
-                    else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
-                        EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
-                    else if (int.TryParse(matchGroup, out int layer))
-                        EditorTimeline.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
-                }
+        /// <summary>
+        /// Checks the description of a marker, running specific functions.
+        /// </summary>
+        /// <param name="marker">Marker to check.</param>
+        public void RunMarkerFunctions(Marker marker)
+        {
+            foreach (var markerFunction in markerFunctions)
+                RTString.RegexMatches(marker.desc, markerFunction.Regex, markerFunction.Result);
         }
 
         /// <summary>
@@ -637,7 +634,9 @@ namespace BetterLegacy.Editor.Managers
                 new ButtonFunction("Start Marker Looping", () => markerLooping = true),
                 new ButtonFunction("Stop Marker Looping", () => markerLooping = false),
                 new ButtonFunction("Set Begin Loop", () => markerLoopBegin = timelineMarker),
-                new ButtonFunction("Set End Loop", () => markerLoopEnd = timelineMarker)
+                new ButtonFunction("Set End Loop", () => markerLoopEnd = timelineMarker),
+                new ButtonFunction(true),
+                new ButtonFunction("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker))
                 );
         }
 
@@ -775,6 +774,67 @@ namespace BetterLegacy.Editor.Managers
 
             CurrentMarker.RenderTooltip();
             CurrentMarker.RenderColor();
+        }
+
+        #endregion
+
+        #region Marker Functions
+
+        /// <summary>
+        /// Functions to run from a markers' description.
+        /// </summary>
+        public List<MarkerFunction> markerFunctions = new List<MarkerFunction>
+        {
+            new MarkerFunction(new Regex(@"setLayer\((.*?)\)"), match =>
+            {
+                var matchGroup = match.Groups[1].ToString();
+                if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
+                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
+                else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
+                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
+                else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
+                    EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
+                else if (int.TryParse(matchGroup, out int layer))
+                    EditorTimeline.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
+            }),
+            new MarkerFunction(new Regex(@"setBin\((.*?)\)"), match =>
+            {
+                var matchGroup = match.Groups[1].ToString();
+                if (int.TryParse(matchGroup, out int result))
+                    EditorTimeline.inst.SetBinPosition(result);
+            }),
+            new MarkerFunction(new Regex(@"setTimeline\((.*?)\)"), match =>
+            {
+                if (int.TryParse(match.Groups[1].ToString(), out int zoom))
+                    EditorTimeline.inst.SetTimeline(zoom, match.Groups.Count > 1 && float.TryParse(match.Groups[2].ToString(), out float position) ? position : -1f);
+            }),
+        };
+
+        /// <summary>
+        /// Runs a custom function from a marker.
+        /// </summary>
+        public class MarkerFunction
+        {
+            public MarkerFunction(Regex regex, Action<Match> result)
+            {
+                Regex = regex;
+                Result = result;
+            }
+
+            /// <summary>
+            /// If the function should run automatically when the marker is opened.
+            /// </summary>
+            public bool Auto { get; set; } = true;
+
+            /// <summary>
+            /// The pattern to search for in the markers' description.
+            /// </summary>
+            public Regex Regex { get; set; }
+
+            /// <summary>
+            /// The match result.
+            /// </summary>
+            public Action<Match> Result { get; set; }
         }
 
         #endregion
