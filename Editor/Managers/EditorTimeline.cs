@@ -39,6 +39,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Timeline
 
+        public bool movingTimeline;
+
         public Slider timelineSlider;
 
         public Image timelineSliderHandle;
@@ -51,6 +53,12 @@ namespace BetterLegacy.Editor.Managers
         public float newTime;
 
         public Transform wholeTimeline;
+
+        /// <summary>
+        /// Sets the main timeline position.
+        /// </summary>
+        /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
+        public void SetTimelinePosition(float position) => SetTimeline(EditorManager.inst.zoomFloat, position);
 
         /// <summary>
         /// Sets the main timeline zoom and position.

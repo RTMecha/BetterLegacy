@@ -599,7 +599,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.UpdatePlayButton();
 
             if (moveTimeline)
-                EditorTimeline.inst.SetTimeline(EditorManager.inst.zoomFloat, AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+                EditorTimeline.inst.SetTimelinePosition(AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
         }
 
         /// <summary>

@@ -313,17 +313,34 @@ namespace BetterLegacy.Core.Helpers
 
         #region Timeline
 
+        static Vector2 cachedTimelinePos;
+
         public static EventTrigger.Entry StartDragTrigger() => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
             var pointerEventData = (PointerEventData)eventData;
-            EditorManager.inst.SelectionBoxImage.gameObject.SetActive(true);
             EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+            if (pointerEventData.button == PointerEventData.InputButton.Middle)
+            {
+                EditorTimeline.inst.movingTimeline = true;
+                cachedTimelinePos = new Vector2(EditorManager.inst.timelineScrollRectBar.value, EditorTimeline.inst.binSlider.value);
+                return;
+            }
+
+            EditorManager.inst.SelectionBoxImage.gameObject.SetActive(true);
             EditorManager.inst.SelectionRect = default;
         });
 
         public static EventTrigger.Entry DragTrigger() => CreateEntry(EventTriggerType.Drag, eventData =>
         {
-            var vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
+            var vector = ((PointerEventData)eventData).position * CoreHelper.ScreenScaleInverse;
+
+            if (EditorTimeline.inst.movingTimeline)
+            {
+                EditorTimeline.inst.SetTimelinePosition(Mathf.Clamp(cachedTimelinePos.x + -(vector.x - EditorManager.inst.DragStartPos.x) / Screen.width, 0f, 1f));
+                EditorTimeline.inst.SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
+
+                return;
+            }
 
             EditorManager.inst.SelectionRect.xMin = vector.x < EditorManager.inst.DragStartPos.x ? vector.x : EditorManager.inst.DragStartPos.x;
             EditorManager.inst.SelectionRect.xMax = vector.x < EditorManager.inst.DragStartPos.x ? EditorManager.inst.DragStartPos.x : vector.x;
@@ -339,6 +356,13 @@ namespace BetterLegacy.Core.Helpers
         {
             EditorManager.inst.DragEndPos = ((PointerEventData)eventData).position;
             EditorManager.inst.SelectionBoxImage.gameObject.SetActive(false);
+
+            if (EditorTimeline.inst.movingTimeline)
+            {
+                EditorTimeline.inst.movingTimeline = false;
+                return;
+            }
+
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
                 RTEditor.inst.StartCoroutine(EditorTimeline.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift)));
             else
