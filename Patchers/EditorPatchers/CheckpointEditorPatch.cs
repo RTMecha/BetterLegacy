@@ -64,7 +64,7 @@ namespace BetterLegacy.Patchers
             {
                 if (Instance.checkpointsDrag[j])
                 {
-                    GameData.Current.beatmapData.checkpoints[j].time = Mathf.Clamp(RTEditor.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    GameData.Current.beatmapData.checkpoints[j].time = Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     Instance.left.Find("time/time").GetComponent<InputField>().text = GameData.Current.beatmapData.checkpoints[j].time.ToString("f3");
                     Instance.RenderCheckpoint(j);
                 }
@@ -234,7 +234,7 @@ namespace BetterLegacy.Patchers
                 Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length),
                 __1));
 
-            (RTEditor.inst.layerType == RTEditor.LayerType.Events ? (Action)Instance.CreateCheckpoints : Instance.CreateGhostCheckpoints).Invoke();
+            (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? (Action)Instance.CreateCheckpoints : Instance.CreateGhostCheckpoints).Invoke();
 
             Instance.SetCurrentCheckpoint(GameData.Current.beatmapData.checkpoints.Count - 1);
             GameManager.inst.UpdateTimeline();
@@ -251,7 +251,7 @@ namespace BetterLegacy.Patchers
             if (GameData.Current.beatmapData.checkpoints.Count > 0)
                 Instance.SetCurrentCheckpoint(Mathf.Clamp(Instance.currentObj - 1, 0, GameData.Current.beatmapData.checkpoints.Count - 1));
 
-            if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 Instance.CreateCheckpoints();
                 return false;
@@ -346,7 +346,7 @@ namespace BetterLegacy.Patchers
             float time = GameData.Current.beatmapData.checkpoints[__0].time;
             gameObject.transform.AsRT().anchoredPosition = new Vector2(time * EditorManager.inst.Zoom - (float)(EditorManager.BaseUnit / 2), 0f);
             gameObject.SetActive(true);
-            if (RTEditor.inst.layerType != RTEditor.LayerType.Events)
+            if (EditorTimeline.inst.layerType != EditorTimeline.LayerType.Events)
                 return false;
 
             var image = gameObject.GetComponent<Image>();

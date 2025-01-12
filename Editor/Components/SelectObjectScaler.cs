@@ -59,10 +59,10 @@ namespace BetterLegacy.Editor.Components
             if (!dragging)
                 return;
 
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.RenderObjectKeyframesDialog(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
-            else if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
-                RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.RenderObjectKeyframesDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+            else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
+                RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
         void OnMouseUp()
@@ -81,9 +81,9 @@ namespace BetterLegacy.Editor.Components
             var vector2 = Camera.main.ScreenToWorldPoint(vector) * 0.2f;
             var vector3 = new Vector3(RTMath.RoundToNearestDecimal(vector2.x, 1), RTMath.RoundToNearestDecimal(vector2.y, 1), transform.localPosition.z);
 
-            if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
+            if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
             {
-                selectedKeyframe = (EventKeyframe)ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>().events[1];
+                selectedKeyframe = (EventKeyframe)EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[1];
 
                 dragging = true;
 
@@ -95,7 +95,7 @@ namespace BetterLegacy.Editor.Components
             if (!dragging)
             {
                 dragging = true;
-                selectedKeyframe = SelectObject.SetCurrentKeyframe(1, ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+                selectedKeyframe = SelectObject.SetCurrentKeyframe(1, EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             }
 
             Drag(vector2, vector3);
@@ -146,10 +146,10 @@ namespace BetterLegacy.Editor.Components
                     selectedKeyframe.eventValues[1] = dragKeyframeValues.y + dragOffset.y - finalVector.y;
             }
 
-            if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
-                Updater.UpdatePrefab(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>(), "Offset");
+            if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
+                Updater.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), "Offset");
             else
-                Updater.UpdateObject(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), "Keyframes");
+                Updater.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), "Keyframes");
         }
     }
 }

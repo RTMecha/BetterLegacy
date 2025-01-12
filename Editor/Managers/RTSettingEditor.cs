@@ -287,8 +287,8 @@ namespace BetterLegacy.Editor.Managers
                     SetText("Prefab Internal Count", GameData.Current.prefabs.Count.ToString());
                     SetText("Prefab Objects Count", GameData.Current.prefabObjects.Count.ToString());
 
-                    SetText("Timeline Bin Count", RTEditor.inst.BinCount.ToString());
-                    SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
+                    SetText("Timeline Bin Count", EditorTimeline.inst.BinCount.ToString());
+                    SetText("Timeline Objects in Current Layer Count", EditorTimeline.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
                     SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
                 }
                 catch (Exception ex)
@@ -307,7 +307,7 @@ namespace BetterLegacy.Editor.Managers
                 MetaData.Current.song.BPM = _val;
                 SettingEditor.inst.SnapBPM = _val;
                 SetBPMInputField(slider, input);
-                RTEditor.inst.SetTimelineGridSize();
+                EditorTimeline.inst.SetTimelineGridSize();
             });
         }
 
@@ -321,7 +321,7 @@ namespace BetterLegacy.Editor.Managers
                 MetaData.Current.song.BPM = bpm;
                 SettingEditor.inst.SnapBPM = bpm;
                 SetBPMSlider(slider, input);
-                RTEditor.inst.SetTimelineGridSize();
+                EditorTimeline.inst.SetTimelineGridSize();
             });
         }
 
@@ -333,7 +333,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 RTEditor.inst.bpmOffset = _val;
                 SetBPMOffsetInputField(slider, input);
-                RTEditor.inst.SetTimelineGridSize();
+                EditorTimeline.inst.SetTimelineGridSize();
                 RTEditor.inst.SaveSettings();
             });
         }
@@ -347,7 +347,7 @@ namespace BetterLegacy.Editor.Managers
                 var bpm = Parser.TryParse(_val, 0f);
                 RTEditor.inst.bpmOffset = bpm;
                 SetBPMOffsetSlider(slider, input);
-                RTEditor.inst.SetTimelineGridSize();
+                EditorTimeline.inst.SetTimelineGridSize();
                 RTEditor.inst.SaveSettings();
             });
         }

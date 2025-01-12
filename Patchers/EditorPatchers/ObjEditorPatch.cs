@@ -103,7 +103,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetMainTimelineZoomPrefix(float __0, bool __1 = true)
         {
-            var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
             if (__1)
             {
                 ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
@@ -152,7 +152,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderTimelineObjectsPrefix()
         {
-            ObjectEditor.inst.RenderTimelineObjects();
+            EditorTimeline.inst.RenderTimelineObjects();
             return false;
         }
 
@@ -188,8 +188,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyAllSelectedEventsPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.CopyAllSelectedEvents(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.CopyAllSelectedEvents(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -197,8 +197,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool PasteKeyframesPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.PasteKeyframes(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.PasteKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -206,7 +206,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDialogPrefix()
         {
-            ObjectEditor.inst.OpenDialog(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -214,8 +214,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetCurrentKeyframePrefix(int __0, bool __1 = false)
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.SetCurrentKeyframe(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.SetCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
 
@@ -223,8 +223,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetCurrentKeyframePrefix(int __0, int __1, bool __2 = false, bool __3 = false)
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.SetCurrentKeyframe(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.SetCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
 
@@ -232,8 +232,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddCurrentKeyframePrefix(int __0, bool __1 = false)
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.AddCurrentKeyframe(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.AddCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
 
@@ -241,8 +241,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ResizeKeyframeTimelinePrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.ResizeKeyframeTimeline(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.ResizeKeyframeTimeline(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -262,7 +262,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetKeyframeIconPrefix(ref Sprite __result, DataManager.LSAnimation __0, DataManager.LSAnimation __1)
         {
-            __result = RTEditor.GetKeyframeIcon(__0, __1);
+            __result = EditorTimeline.GetKeyframeIcon(__0, __1);
             return false;
         }
 
@@ -270,8 +270,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateKeyframesPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.CreateKeyframes(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.CreateKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -279,7 +279,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateKeyframeStartDragTriggerPrefix(ref EventTrigger.Entry __result, EventTriggerType __0, int __1, int __2)
         {
-            __result = TriggerHelper.CreateKeyframeStartDragTrigger(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), RTEditor.inst.timelineKeyframes.Find(x => x.Type == __1 && x.Index == __2));
+            __result = TriggerHelper.CreateKeyframeStartDragTrigger(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == __1 && x.Index == __2));
             return false;
         }
 
@@ -287,7 +287,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateKeyframeEndDragTriggerPrefix(ref EventTrigger.Entry __result, EventTriggerType __0, int __1, int __2)
         {
-            __result = TriggerHelper.CreateKeyframeEndDragTrigger(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), RTEditor.inst.timelineKeyframes.Find(x => x.Type == __1 && x.Index == __2));
+            __result = TriggerHelper.CreateKeyframeEndDragTrigger(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == __1 && x.Index == __2));
             return false;
         }
 
@@ -295,7 +295,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool DeRenderSelectedObjectsPrefix()
         {
-            ObjectEditor.inst.DeselectAllObjects();
+            EditorTimeline.inst.DeselectAllObjects();
             return false;
         }
 
@@ -303,7 +303,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyObjectPrefix()
         {
-            var a = new List<TimelineObject>(ObjectEditor.inst.SelectedObjects);
+            var a = new List<TimelineObject>(EditorTimeline.inst.SelectedObjects);
 
             a = (from x in a
                  orderby x.Time
@@ -342,14 +342,14 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ToggleLockCurrentSelectionPrefix()
         {
-            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 if (timelineObject.isBeatmapObject)
                     timelineObject.GetData<BeatmapObject>().editorData.locked = !timelineObject.GetData<BeatmapObject>().editorData.locked;
                 if (timelineObject.isPrefabObject)
                     timelineObject.GetData<PrefabObject>().editorData.locked = !timelineObject.GetData<PrefabObject>().editorData.locked;
 
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
 
             return false;
@@ -359,8 +359,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateKeyframeOrderPrefix(bool _setCurrent = true)
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.UpdateKeyframeOrder(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.UpdateKeyframeOrder(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -392,8 +392,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RefreshKeyframeGUIPrefix()
         {
-            if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
             return false;
         }
 

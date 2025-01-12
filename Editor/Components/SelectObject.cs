@@ -21,7 +21,7 @@ namespace BetterLegacy.Editor.Components
         /// <summary>
         /// If user is only looking at one object, then allow drag.
         /// </summary>
-        public bool CanDrag => ObjectEditor.inst.SelectedObjectCount < 2;
+        public bool CanDrag => EditorTimeline.inst.SelectedObjectCount < 2;
 
         /// <summary>
         /// If dragging is enabled via <see cref="Configs.EditorConfig.ObjectDraggerEnabled"/>.
@@ -136,31 +136,31 @@ namespace BetterLegacy.Editor.Components
             if (beatmapObject && beatmapObject.fromPrefab && beatmapObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
                 return;
 
-            if (RTEditor.inst.onSelectTimelineObject != null)
+            if (EditorTimeline.inst.onSelectTimelineObject != null)
             {
-                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
-                RTEditor.inst.onSelectTimelineObject(timelineObject);
-                RTEditor.inst.onSelectTimelineObject = null;
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
+                EditorTimeline.inst.onSelectTimelineObject(timelineObject);
+                EditorTimeline.inst.onSelectTimelineObject = null;
                 return;
             }
 
             // select object if picker is not currently active.
             if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
             {
-                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
-                    ObjectEditor.inst.SetCurrentObject(timelineObject);
+                    EditorTimeline.inst.SetCurrentObject(timelineObject);
                     return;
                 }
 
-                ObjectEditor.inst.AddSelectedObject(timelineObject);
+                EditorTimeline.inst.AddSelectedObject(timelineObject);
 
                 return;
             }
 
-            var currentSelection = ObjectEditor.inst.CurrentSelection;
-            var selectedObjects = ObjectEditor.inst.SelectedObjects;
+            var currentSelection = EditorTimeline.inst.CurrentSelection;
+            var selectedObjects = EditorTimeline.inst.SelectedObjects;
 
             // prefab assign picker
             if (RTEditor.inst.prefabPickerEnabled)
@@ -180,7 +180,7 @@ namespace BetterLegacy.Editor.Components
                         otherBeatmapObject.prefabID = beatmapObject.prefabID;
                         otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
 
-                        ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
+                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
                     }
                 }
                 else if (currentSelection.isBeatmapObject)
@@ -190,7 +190,7 @@ namespace BetterLegacy.Editor.Components
                     currentBeatmapObject.prefabID = beatmapObject.prefabID;
                     currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
 
-                    ObjectEditor.inst.RenderTimelineObject(currentSelection);
+                    EditorTimeline.inst.RenderTimelineObject(currentSelection);
                     CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(currentBeatmapObject));
                 }
 
@@ -281,7 +281,7 @@ namespace BetterLegacy.Editor.Components
         {
             if (beatmapObject.fromPrefab)
             {
-                var currentSelection = ObjectEditor.inst.CurrentSelection;
+                var currentSelection = EditorTimeline.inst.CurrentSelection;
 
                 if (!currentSelection.isPrefabObject || currentSelection.ID != beatmapObject.prefabInstanceID)
                     return;
@@ -418,7 +418,7 @@ namespace BetterLegacy.Editor.Components
 
             if (Enabled)
             {
-                var currentSelection = ObjectEditor.inst.CurrentSelection;
+                var currentSelection = EditorTimeline.inst.CurrentSelection;
 
                 if (!beatmapObject.fromPrefab && currentSelection.ID == beatmapObject.id)
                 {
@@ -441,7 +441,7 @@ namespace BetterLegacy.Editor.Components
 
                 var prefabObject = GameData.Current.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
 
-                if (prefabObject == null || prefabObject.fromModifier || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != RTEditor.inst.Layer))
+                if (prefabObject == null || prefabObject.fromModifier || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != EditorTimeline.inst.Layer))
                     return;
 
                 var beatmapObjects = prefabObject.ExpandedObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty)

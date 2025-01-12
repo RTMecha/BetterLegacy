@@ -40,7 +40,7 @@ namespace BetterLegacy.Editor.Managers
             if (dialog.activeInHierarchy
                 && isOverTimeline
                 && !CoreHelper.IsUsingInputField
-                && !RTEditor.inst.isOverMainTimeline)
+                && !EditorTimeline.inst.isOverMainTimeline)
             {
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     Zoom = zoomFloat + config.KeyframeZoomAmount.Value * multiply;

@@ -226,6 +226,7 @@ namespace BetterLegacy.Patchers
                 CoreHelper.LogError($"Could not destroy the interface.\n{ex}");
             }
 
+            EditorTimeline.Init();
             RTEditor.Init();
 
             __instance.hasLoadedLevel = false;
@@ -278,7 +279,7 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                CoreHelper.StartCoroutine(RTEditor.inst.AssignTimelineTexture());
+                CoreHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
                 Instance.UpdateTimelineSizes();
                 Instance.firstOpened = true;
 
@@ -473,7 +474,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetLayerPrefix(int __0)
         {
-            RTEditor.inst.SetLayer(__0);
+            EditorTimeline.inst.SetLayer(__0);
             return false;
         }
 
@@ -580,16 +581,16 @@ namespace BetterLegacy.Patchers
             if (Input.GetKey(EditorConfig.Instance.BinControlKey.Value))
             {
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadPlus) || Input.GetKeyDown(KeyCode.Plus)))
-                    RTEditor.inst.SetBinScroll(Mathf.Clamp01(RTEditor.inst.BinScroll - config.BinControlScrollAmount.Value * multiply));
+                    EditorTimeline.inst.SetBinScroll(Mathf.Clamp01(EditorTimeline.inst.BinScroll - config.BinControlScrollAmount.Value * multiply));
                 if (InputDataManager.inst.editorActions.ZoomOut.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadMinus) || Input.GetKeyDown(KeyCode.Minus)))
-                    RTEditor.inst.SetBinScroll(Mathf.Clamp01(RTEditor.inst.BinScroll + config.BinControlScrollAmount.Value * multiply));
+                    EditorTimeline.inst.SetBinScroll(Mathf.Clamp01(EditorTimeline.inst.BinScroll + config.BinControlScrollAmount.Value * multiply));
                 return false;
             }
 
             if (Instance.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Object)
                 && Instance.IsOverObjTimeline
                 && !CoreHelper.IsUsingInputField
-                && !RTEditor.inst.isOverMainTimeline)
+                && !EditorTimeline.inst.isOverMainTimeline)
             {
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat + config.KeyframeZoomAmount.Value * multiply;
@@ -597,7 +598,7 @@ namespace BetterLegacy.Patchers
                     ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat - config.KeyframeZoomAmount.Value * multiply;
             }
 
-            if (!Instance.IsOverObjTimeline && RTEditor.inst.isOverMainTimeline)
+            if (!Instance.IsOverObjTimeline && EditorTimeline.inst.isOverMainTimeline)
             {
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     Instance.Zoom = Instance.zoomFloat + config.MainZoomAmount.Value * multiply;
@@ -612,9 +613,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool updatePointerPrefix()
         {
-            if (EditorConfig.Instance.DraggingMainCursorFix.Value && RTEditor.inst && RTEditor.inst.timelineSlider)
+            if (EditorConfig.Instance.DraggingMainCursorFix.Value && RTEditor.inst && EditorTimeline.inst.timelineSlider)
             {
-                var slider = RTEditor.inst.timelineSlider;
+                var slider = EditorTimeline.inst.timelineSlider;
                 slider.minValue = 0f;
                 slider.maxValue = AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom;
                 Instance.audioTimeForSlider = slider.value;
@@ -629,9 +630,9 @@ namespace BetterLegacy.Patchers
                 AudioManager.inst.SetMusicTime(Instance.audioTimeForSlider / Instance.Zoom);
                 Instance.updateAudioTime = false;
             }
-            if (Input.GetMouseButton(0) && rect.Contains(point) && RTEditor.inst && RTEditor.inst.timelineSlider)
+            if (Input.GetMouseButton(0) && rect.Contains(point) && RTEditor.inst && EditorTimeline.inst.timelineSlider)
             {
-                var slider = RTEditor.inst.timelineSlider;
+                var slider = EditorTimeline.inst.timelineSlider;
                 slider.minValue = 0f;
                 slider.maxValue = AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom;
                 Instance.audioTimeForSlider = slider.value;
@@ -653,9 +654,9 @@ namespace BetterLegacy.Patchers
                 Instance.updateAudioTime = false;
                 Instance.wasDraggingPointer = false;
             }
-            else if (RTEditor.inst && RTEditor.inst.timelineSlider)
+            else if (EditorTimeline.inst && EditorTimeline.inst.timelineSlider)
             {
-                var slider = RTEditor.inst.timelineSlider;
+                var slider = EditorTimeline.inst.timelineSlider;
 
                 slider.minValue = 0f;
                 slider.maxValue = AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom;
@@ -870,7 +871,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderParentSearchListPrefix()
         {
-            RTEditor.inst.RefreshParentSearch(ObjectEditor.inst.CurrentSelection);
+            RTEditor.inst.RefreshParentSearch(EditorTimeline.inst.CurrentSelection);
             return false;
         }
 
@@ -896,17 +897,17 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderTimelinePrefix()
         {
-            if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                 EventEditor.inst.RenderEventObjects();
             else
-                ObjectEditor.inst.RenderTimelineObjectsPositions();
+                EditorTimeline.inst.RenderTimelineObjectsPositions();
 
             CheckpointEditor.inst.RenderCheckpoints();
             RTMarkerEditor.inst.RenderMarkers();
 
             Instance.UpdateTimelineSizes();
 
-            RTEditor.inst.SetTimelineGridSize();
+            EditorTimeline.inst.SetTimelineGridSize();
 
             return false;
         }
@@ -1104,7 +1105,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetTimelineTimePrefix(ref float __result, float __0)
         {
-            __result = RTEditor.inst.GetTimelineTime() + __0;
+            __result = EditorTimeline.inst.GetTimelineTime() + __0;
             return false;
         }
 
@@ -1214,7 +1215,7 @@ namespace BetterLegacy.Patchers
             if (__1)
                 Instance.RenderTimeline();
 
-            Instance.timelineScrollRectBar.value = (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? RTEditor.inst.GetTimelineTime() : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
+            Instance.timelineScrollRectBar.value = (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? EditorTimeline.inst.GetTimelineTime() : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
             Debug.LogFormat("{0}Set Timeline Zoom -> [{1}]", new object[] { Instance.className, Instance.Zoom });
             return false;
         }
@@ -1251,7 +1252,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(ref float value)
         {
-            RTEditor.inst.SetTimeline(value);
+            EditorTimeline.inst.SetTimeline(value);
             return false;
         }
     }

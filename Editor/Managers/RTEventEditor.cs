@@ -29,10 +29,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region Selection
 
-        public TimelineObject CurrentSelectedTimelineKeyframe => RTEditor.inst.timelineKeyframes.Find(x => x.Type == EventEditor.inst.currentEventType && x.Index == EventEditor.inst.currentEvent);
+        public TimelineObject CurrentSelectedTimelineKeyframe => EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == EventEditor.inst.currentEventType && x.Index == EventEditor.inst.currentEvent);
         public EventKeyframe CurrentSelectedKeyframe => !GameData.IsValid ? null : (EventKeyframe)GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
-        public List<TimelineObject> SelectedKeyframes => RTEditor.inst.timelineKeyframes.FindAll(x => x.Selected);
+        public List<TimelineObject> SelectedKeyframes => EditorTimeline.inst.timelineKeyframes.FindAll(x => x.Selected);
 
         public List<TimelineObject> copiedEventKeyframes = new List<TimelineObject>();
 
@@ -432,7 +432,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             SelectedKeyframes.ForEach(x => Destroy(x.GameObject));
-            RTEditor.inst.timelineKeyframes.RemoveAll(x => strs.Contains(x.ID));
+            EditorTimeline.inst.timelineKeyframes.RemoveAll(x => strs.Contains(x.ID));
 
             var allEvents = GameData.Current.eventObjects.allEvents;
             for (int i = 0; i < allEvents.Count; i++)
@@ -478,7 +478,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             SelectedKeyframes.ForEach(x => Destroy(x.GameObject));
-            RTEditor.inst.timelineKeyframes.RemoveAll(x => strs.Contains(x.ID));
+            EditorTimeline.inst.timelineKeyframes.RemoveAll(x => strs.Contains(x.ID));
 
             var allEvents = GameData.Current.eventObjects.allEvents;
             for (int i = 0; i < allEvents.Count; i++)
@@ -564,7 +564,7 @@ namespace BetterLegacy.Editor.Managers
 
             var selectPasted = EditorConfig.Instance.SelectPasted.Value;
             if (selectPasted)
-                RTEditor.inst.timelineKeyframes.ForEach(x => x.Selected = false);
+                EditorTimeline.inst.timelineKeyframes.ForEach(x => x.Selected = false);
 
             var time = EditorManager.inst.CurrentAudioPos;
             if (SettingEditor.inst.SnapActive)
@@ -588,7 +588,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderTimelineObject(kf);
                 if (selectPasted)
                     kf.Selected = true;
-                RTEditor.inst.timelineKeyframes.Add(kf);
+                EditorTimeline.inst.timelineKeyframes.Add(kf);
             }
 
             UpdateEventOrder();
@@ -602,12 +602,12 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator GroupSelectKeyframes(bool _add)
         {
-            var list = RTEditor.inst.timelineKeyframes;
+            var list = EditorTimeline.inst.timelineKeyframes;
 
             if (!_add)
                 DeselectAllKeyframes();
 
-            list.Where(x => (x.Type / EVENT_LIMIT) == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events &&
+            list.Where(x => (x.Type / EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events &&
             RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform).Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList()
             .ForEach(x =>
             {
@@ -662,7 +662,7 @@ namespace BetterLegacy.Editor.Managers
 
             var kf = CreateEventObject(type, AllEvents[type].IndexOf(eventKeyframe));
             RenderTimelineObject(kf);
-            RTEditor.inst.timelineKeyframes.Add(kf);
+            EditorTimeline.inst.timelineKeyframes.Add(kf);
             SetCurrentEvent(type, kf.Index);
         }
 
@@ -674,19 +674,19 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CreateNewEventObject(RTEditor.inst.GetTimelineTime(), type);
+            CreateNewEventObject(EditorTimeline.inst.GetTimelineTime(), type);
         }
 
         public void AddSelectedEvent(int type, int index)
         {
             int kfIndex = 0;
-            if (!RTEditor.inst.timelineKeyframes.TryFindIndex(x => x.Type == type && x.Index == index, out kfIndex))
+            if (!EditorTimeline.inst.timelineKeyframes.TryFindIndex(x => x.Type == type && x.Index == index, out kfIndex))
             {
                 CreateEventObjects();
-                kfIndex = RTEditor.inst.timelineKeyframes.FindIndex(x => x.Type == type && x.Index == index);
+                kfIndex = EditorTimeline.inst.timelineKeyframes.FindIndex(x => x.Type == type && x.Index == index);
             }
 
-            var kf = RTEditor.inst.timelineKeyframes[kfIndex];
+            var kf = EditorTimeline.inst.timelineKeyframes[kfIndex];
 
             kf.Selected = SelectedKeyframes.Count <= 1 || !kf.Selected;
 
@@ -708,13 +708,13 @@ namespace BetterLegacy.Editor.Managers
 
         public void ClearEventObjects()
         {
-            foreach (var kf in RTEditor.inst.timelineKeyframes)
+            foreach (var kf in EditorTimeline.inst.timelineKeyframes)
             {
                 kf.Selected = false;
                 Destroy(kf.GameObject);
             }
 
-            RTEditor.inst.timelineKeyframes.Clear();
+            EditorTimeline.inst.timelineKeyframes.Clear();
         }
 
         public void CreateEventObjects()
@@ -729,7 +729,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var kf = CreateEventObject(type, index);
 
-                    RTEditor.inst.timelineKeyframes.Add(kf);
+                    EditorTimeline.inst.timelineKeyframes.Add(kf);
                 }
             }
 
@@ -765,15 +765,15 @@ namespace BetterLegacy.Editor.Managers
             {
                 for (int index = 0; index < AllEvents[type].Count; index++)
                 {
-                    var kf = RTEditor.inst.timelineKeyframes.Find(x => x.Type == type && x.Index == index);
+                    var kf = EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == type && x.Index == index);
 
                     if (!kf)
-                        kf = RTEditor.inst.timelineKeyframes.Find(x => x.ID == (AllEvents[type][index] as EventKeyframe).id);
+                        kf = EditorTimeline.inst.timelineKeyframes.Find(x => x.ID == (AllEvents[type][index] as EventKeyframe).id);
 
                     if (!kf)
                     {
                         kf = CreateEventObject(type, index);
-                        RTEditor.inst.timelineKeyframes.Add(kf);
+                        EditorTimeline.inst.timelineKeyframes.Add(kf);
                     }
                     if (!kf.GameObject)
                         kf.GameObject = EventGameObject(kf);
@@ -788,7 +788,7 @@ namespace BetterLegacy.Editor.Managers
             if (events.TryFindIndex(x => (x as EventKeyframe).id == kf.ID, out int index))
                 kf.Index = index;
 
-            if (kf.Type / EVENT_LIMIT == RTEditor.inst.Layer)
+            if (kf.Type / EVENT_LIMIT == EditorTimeline.inst.Layer)
             {
                 kf.GameObject.transform.AsRT().anchoredPosition = new Vector2(events[kf.Index].eventTime * EditorManager.inst.Zoom - EditorManager.BaseUnit / 2, 0.0f);
                 kf.GameObject.transform.AsRT().pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
@@ -1751,7 +1751,6 @@ namespace BetterLegacy.Editor.Managers
             alignToFirst.onClick.ClearAll();
             alignToFirst.onClick.AddListener(() =>
             {
-                var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = SelectedKeyframes.OrderBy(x => x.Time);
                 var first = list.ElementAt(0);
 
@@ -3347,7 +3346,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < AllEvents.Count; i++)
             {
                 GameData.Current.eventObjects.allEvents[i] = GameData.Current.eventObjects.allEvents[i].OrderBy(x => x.eventTime).ToList();
-                foreach (var keyframe in RTEditor.inst.timelineKeyframes)
+                foreach (var keyframe in EditorTimeline.inst.timelineKeyframes)
                 {
                     if (GameData.Current.eventObjects.allEvents[i].TryFindIndex(x => ((EventKeyframe)x).id == keyframe.ID, out int index))
                         keyframe.Index = index;
@@ -3371,7 +3370,7 @@ namespace BetterLegacy.Editor.Managers
             var renderLeft = EditorConfig.Instance.EventLabelsRenderLeft.Value;
             var eventLabels = EventEditor.inst.EventLabels;
 
-            var layer = RTEditor.inst.Layer + 1;
+            var layer = EditorTimeline.inst.Layer + 1;
             int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
 
             for (int i = 0; i < AllEvents.Count; i++)
@@ -3392,7 +3391,7 @@ namespace BetterLegacy.Editor.Managers
 
                 text.alignment = renderLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
 
-                if (!RTEditor.ShowModdedUI && RTEditor.inst.Layer > 0)
+                if (!RTEditor.ShowModdedUI && EditorTimeline.inst.Layer > 0)
                     text.text = "No Event";
             }
 

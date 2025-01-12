@@ -163,16 +163,14 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            if (RTEditor.inst.timelineObjects.Count == 1)
+            if (EditorTimeline.inst.timelineObjects.Count == 1)
+                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[0]);
+            else if (EditorTimeline.inst.timelineObjects.Count > 1)
             {
-                ObjectEditor.inst.SetCurrentObject(RTEditor.inst.timelineObjects[0]);
-            }
-            else if (RTEditor.inst.timelineObjects.Count > 1)
-            {
-                for (int i = 0; i < RTEditor.inst.timelineObjects.Count; i++)
-                    RTEditor.inst.timelineObjects[i].Selected = true;
+                for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+                    EditorTimeline.inst.timelineObjects[i].Selected = true;
 
-                ObjectEditor.inst.CurrentSelection = RTEditor.inst.timelineObjects.Last();
+                EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.timelineObjects.Last();
 
                 EditorManager.inst.ClearDialogs();
                 EditorManager.inst.ShowDialog("Multi Object Editor", false);
@@ -186,22 +184,22 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            var layer = RTEditor.inst.Layer;
+            var layer = EditorTimeline.inst.Layer;
 
-            ObjectEditor.inst.DeselectAllObjects();
+            EditorTimeline.inst.DeselectAllObjects();
 
-            if (RTEditor.inst.timelineObjects.Count == 1)
+            if (EditorTimeline.inst.timelineObjects.Count == 1)
             {
-                if (RTEditor.inst.timelineObjects[0].Layer == layer)
-                    ObjectEditor.inst.SetCurrentObject(RTEditor.inst.timelineObjects[0]);
+                if (EditorTimeline.inst.timelineObjects[0].Layer == layer)
+                    EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[0]);
             }
-            else if (RTEditor.inst.timelineObjects.Count > 1)
+            else if (EditorTimeline.inst.timelineObjects.Count > 1)
             {
-                for (int i = 0; i < RTEditor.inst.timelineObjects.Count; i++)
-                    if (RTEditor.inst.timelineObjects[i].Layer == layer)
-                        RTEditor.inst.timelineObjects[i].Selected = true;
+                for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+                    if (EditorTimeline.inst.timelineObjects[i].Layer == layer)
+                        EditorTimeline.inst.timelineObjects[i].Selected = true;
 
-                ObjectEditor.inst.CurrentSelection = RTEditor.inst.timelineObjects.Last();
+                EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.timelineObjects.Last();
 
                 EditorManager.inst.ClearDialogs();
                 EditorManager.inst.ShowDialog("Multi Object Editor", false);
@@ -215,7 +213,7 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
             {
                 for (int i = 0; i < 3; i++)
                 {
@@ -237,7 +235,7 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
             {
                 for (int i = 0; i < 2; i++)
                 {
@@ -259,7 +257,7 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                 Updater.UpdateObject(beatmapObject, "Keyframes");
 
             return true;
@@ -286,7 +284,7 @@ namespace BetterLegacy.Core.Helpers
                 EditorManager.inst.DisplayNotification("No copied keyframes yet!", 2f, EditorManager.NotificationType.Warning);
                 return;
             }
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
             {
                 var ids = new List<string>();
                 for (int i = 0; i < beatmapObject.events.Count; i++)
@@ -304,14 +302,14 @@ namespace BetterLegacy.Core.Helpers
                                                select x).ToList();
                 }
 
-                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
                     foreach (var kf in timelineObject.InternalTimelineObjects)
                         kf.Selected = ids.Contains(kf.ID);
                 }
 
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
                 if (ObjectEditor.UpdateObjects)
                 {
@@ -331,7 +329,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+            foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
             {
                 float t = 0f;
                 var ids = new List<string>();
@@ -356,14 +354,14 @@ namespace BetterLegacy.Core.Helpers
                                                select x).ToList();
                 }
 
-                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
                     foreach (var kf in timelineObject.InternalTimelineObjects)
                         kf.Selected = ids.Contains(kf.ID);
                 }
 
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
                 if (ObjectEditor.UpdateObjects)
                 {
@@ -375,7 +373,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void AddSelectedObjectIndexes(int amount)
         {
-            var selected = ObjectEditor.inst.SelectedBeatmapObjects.Order(x => x.Index, amount > 0);
+            var selected = EditorTimeline.inst.SelectedBeatmapObjects.Order(x => x.Index, amount > 0);
 
             for (int i = 0; i < selected.Count; i++)
             {
@@ -388,7 +386,7 @@ namespace BetterLegacy.Core.Helpers
                 GameData.Current.beatmapObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.beatmapObjects.Count - 1));
             }
 
-            selected = ObjectEditor.inst.SelectedPrefabObjects.Order(x => x.Index, amount > 0);
+            selected = EditorTimeline.inst.SelectedPrefabObjects.Order(x => x.Index, amount > 0);
 
             for (int i = 0; i < selected.Count; i++)
             {
@@ -401,12 +399,12 @@ namespace BetterLegacy.Core.Helpers
                 GameData.Current.prefabObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.beatmapObjects.Count - 1));
             }
 
-            ObjectEditor.inst.UpdateTransformIndex();
+            EditorTimeline.inst.UpdateTransformIndex();
         }
 
         public static void SetSelectedObjectIndexes(int amount)
         {
-            var selected = ObjectEditor.inst.SelectedBeatmapObjects.Order(x => x.Index, amount > 0);
+            var selected = EditorTimeline.inst.SelectedBeatmapObjects.Order(x => x.Index, amount > 0);
 
             for (int i = 0; i < selected.Count; i++)
             {
@@ -419,7 +417,7 @@ namespace BetterLegacy.Core.Helpers
                 GameData.Current.beatmapObjects.Move(index, Mathf.Clamp(amount, 0, GameData.Current.beatmapObjects.Count - 1));
             }
 
-            selected = ObjectEditor.inst.SelectedPrefabObjects.Order(x => x.Index, amount > 0);
+            selected = EditorTimeline.inst.SelectedPrefabObjects.Order(x => x.Index, amount > 0);
 
             for (int i = 0; i < selected.Count; i++)
             {
@@ -432,7 +430,7 @@ namespace BetterLegacy.Core.Helpers
                 GameData.Current.prefabObjects.Move(index, Mathf.Clamp(amount, 0, GameData.Current.prefabObjects.Count - 1));
             }
 
-            ObjectEditor.inst.UpdateTransformIndex();
+            EditorTimeline.inst.UpdateTransformIndex();
         }
 
         /// <summary>

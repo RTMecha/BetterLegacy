@@ -359,22 +359,22 @@ namespace BetterLegacy.Editor.Data
                                 var prefabInstanceID = LSText.randomString(16);
                                 if (RTEditor.inst.selectingMultiple)
                                 {
-                                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                                     {
                                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
                                         otherBeatmapObject.prefabID = prefab.ID;
                                         otherBeatmapObject.prefabInstanceID = prefabInstanceID;
-                                        ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
+                                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
                                     }
                                 }
-                                else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
+                                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                                 {
-                                    var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+                                    var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
                                     currentBeatmapObject.prefabID = prefab.ID;
                                     currentBeatmapObject.prefabInstanceID = prefabInstanceID;
-                                    ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
                                     ObjectEditor.inst.OpenDialog(currentBeatmapObject);
                                 }
 

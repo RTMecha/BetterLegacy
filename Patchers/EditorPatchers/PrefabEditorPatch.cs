@@ -84,22 +84,23 @@ namespace BetterLegacy.Patchers
             if (Instance.dialog && Instance.dialog.gameObject.activeSelf)
             {
                 float num;
-                if (ObjectEditor.inst.SelectedObjects.Count <= 0)
+                if (EditorTimeline.inst.SelectedObjects.Count <= 0)
                     num = 0f;
                 else
-                    num = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                    num = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                if (!Instance.OffsetLine.activeSelf && ObjectEditor.inst.SelectedObjects.Count > 0)
+                if (!Instance.OffsetLine.activeSelf && EditorTimeline.inst.SelectedObjects.Count > 0)
                 {
                     Instance.OffsetLine.transform.SetAsLastSibling();
                     Instance.OffsetLine.SetActive(true);
                 }
-                ((RectTransform)Instance.OffsetLine.transform).anchoredPosition = new Vector2(Instance.posCalc(num - Instance.NewPrefabOffset), 0f);
+
+                Instance.OffsetLine.transform.AsRT().anchoredPosition = new Vector2(Instance.posCalc(num - Instance.NewPrefabOffset), 0f);
             }
-            if (((!Instance.dialog || !Instance.dialog.gameObject.activeSelf) || ObjectEditor.inst.SelectedBeatmapObjects.Count <= 0) && Instance.OffsetLine.activeSelf)
-            {
+
+            if (((!Instance.dialog || !Instance.dialog.gameObject.activeSelf) || EditorTimeline.inst.SelectedBeatmapObjects.Count <= 0) && Instance.OffsetLine.activeSelf)
                 Instance.OffsetLine.SetActive(false);
-            }
+
             return false;
         }
 
@@ -241,7 +242,7 @@ namespace BetterLegacy.Patchers
         {
             EditorManager.inst.ClearDialogs();
 
-            bool isPrefab = ObjectEditor.inst.CurrentSelection != null && ObjectEditor.inst.CurrentSelection.isPrefabObject;
+            bool isPrefab = EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject;
             if (!isPrefab)
             {
                 Debug.LogError($"{Instance.className}Cannot select non-Prefab with this editor!");
@@ -250,7 +251,7 @@ namespace BetterLegacy.Patchers
             }
 
             EditorManager.inst.ShowDialog("Prefab Selector");
-            RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
+            RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
 
             return false;
         }

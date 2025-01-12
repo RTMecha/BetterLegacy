@@ -40,8 +40,8 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.GeneratePopup("Default Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
             {
                 searchTerm = _val;
-                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                    RefreshDefaultModifiersList(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), addIndex);
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                    RefreshDefaultModifiersList(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), addIndex);
             }, placeholderText: "Search for default Modifier...");
         }
 
@@ -62,8 +62,8 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                if (RTEditor.ShowModdedUI && ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                    intVariable.text = $"Integer Variable: [ {ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().integerVariable} ]";
+                if (RTEditor.ShowModdedUI && EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                    intVariable.text = $"Integer Variable: [ {EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().integerVariable} ]";
             }
             catch
             {
@@ -143,8 +143,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     this.showModifiers = _val;
                     scrollView.gameObject.SetActive(this.showModifiers);
-                    if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                        RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
+                    if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                        RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
                 });
 
                 EditorThemeManager.AddToggle(activeToggle, graphic: showModifiersToggleButton.label);

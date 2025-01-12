@@ -215,9 +215,9 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public bool IsCurrentLayer => TimelineReference switch
         {
-            TimelineReferenceType.BeatmapObject => RTEditor.inst.layerType == RTEditor.LayerType.Objects && Layer == RTEditor.inst.Layer,
-            TimelineReferenceType.PrefabObject => RTEditor.inst.layerType == RTEditor.LayerType.Objects && Layer == RTEditor.inst.Layer,
-            TimelineReferenceType.EventKeyframe => (Type / RTEventEditor.EVENT_LIMIT) == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10),
+            TimelineReferenceType.BeatmapObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
+            TimelineReferenceType.PrefabObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
+            TimelineReferenceType.EventKeyframe => (Type / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10),
             _ => false,
         };
 
@@ -365,7 +365,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object", Index);
+            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(EditorTimeline.inst.timelineObjectsParent, "timeline object", Index);
             var storage = gameObject.GetComponent<TimelineObjectStorage>();
 
             Hover = storage.hoverUI;
@@ -393,13 +393,13 @@ namespace BetterLegacy.Editor.Data
         /// <param name="forceAdd">If the timeline object should be added regardless of verification.</param>
         public void AddToList(bool forceAdd = false)
         {
-            if (forceAdd || !verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == ID))
+            if (forceAdd || !verified && !EditorTimeline.inst.timelineObjects.Has(x => x.ID == ID))
             {
                 verified = true;
-                if (isPrefabObject || !RTEditor.inst.timelineObjects.TryFindIndex(x => x.isPrefabObject, out int index))
-                    RTEditor.inst.timelineObjects.Add(this);
+                if (isPrefabObject || !EditorTimeline.inst.timelineObjects.TryFindIndex(x => x.isPrefabObject, out int index))
+                    EditorTimeline.inst.timelineObjects.Add(this);
                 else
-                    RTEditor.inst.timelineObjects.Insert(index, this);
+                    EditorTimeline.inst.timelineObjects.Insert(index, this);
             }
         }
 
@@ -427,8 +427,8 @@ namespace BetterLegacy.Editor.Data
                 startTime = beatmapObject.StartTime;
                 length = beatmapObject.GetObjectLifeLength(collapse: true);
 
-                image.type = ObjectEditor.inst.GetObjectTypePattern(beatmapObject.objectType);
-                image.sprite = ObjectEditor.inst.GetObjectTypeSprite(beatmapObject.objectType);
+                image.type = EditorTimeline.inst.GetObjectTypePattern(beatmapObject.objectType);
+                image.sprite = EditorTimeline.inst.GetObjectTypeSprite(beatmapObject.objectType);
 
                 if (!prefabExists)
                     beatmapObject.RemovePrefabReference();
@@ -609,7 +609,7 @@ namespace BetterLegacy.Editor.Data
             length = length <= ObjectEditor.TimelineCollapseLength ? ObjectEditor.TimelineCollapseLength * zoom : length * zoom;
 
             rectTransform.sizeDelta = new Vector2(length, 20f);
-            rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, RTEditor.inst.BinCount)));
+            rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, EditorTimeline.inst.BinCount)));
             if (Hover)
                 Hover.size = ObjectEditor.TimelineObjectHoverSize;
         }
@@ -621,7 +621,7 @@ namespace BetterLegacy.Editor.Data
         public void RenderSprite(List<DataManager.GameData.EventKeyframe> events)
         {
             if (TryGetData(out EventKeyframe eventKeyframe))
-                Image.sprite = RTEditor.GetKeyframeIcon(eventKeyframe.curveType, events.Count > Index + 1 ? events[Index + 1].curveType : DataManager.inst.AnimationList[0]);
+                Image.sprite = EditorTimeline.GetKeyframeIcon(eventKeyframe.curveType, events.Count > Index + 1 ? events[Index + 1].curveType : DataManager.inst.AnimationList[0]);
         }
 
         /// <summary>

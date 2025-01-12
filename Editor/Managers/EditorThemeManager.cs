@@ -46,7 +46,7 @@ namespace BetterLegacy.Editor.Managers
                 Debug.LogException(ex);
             }
 
-            if (RTEditor.inst && RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            if (EditorTimeline.inst && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 RTEventEditor.inst.RenderLayerBins();
                 if (EventEditor.inst.dialogRight.gameObject.activeInHierarchy)

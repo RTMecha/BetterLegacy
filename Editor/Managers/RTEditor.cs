@@ -100,11 +100,11 @@ namespace BetterLegacy.Editor.Managers
         {
             titleBar = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TitleBar").transform;
             popups = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups").transform;
-            wholeTimeline = EditorManager.inst.timelineSlider.transform.parent.parent;
-            bins = wholeTimeline.Find("Bins");
+            EditorTimeline.inst.wholeTimeline = EditorManager.inst.timelineSlider.transform.parent.parent;
+            EditorTimeline.inst.bins = EditorTimeline.inst.wholeTimeline.Find("Bins");
             timelineBar = EditorManager.inst.playButton.transform.parent.gameObject;
-            timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
-            timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
+            EditorTimeline.inst.timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
+            EditorTimeline.inst.timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
 
             notificationsParent = EditorManager.inst.notification.transform.AsRT();
             tooltipText = EditorManager.inst.tooltip.GetComponent<TextMeshProUGUI>();
@@ -339,7 +339,7 @@ namespace BetterLegacy.Editor.Managers
             prefabHolder.CloseButton = openFilePopup.Find("Panel/x").gameObject.Duplicate(prefabHolder.PrefabParent, "x");
             prefabHolder.Scrollbar = openFilePopup.Find("Scrollbar").gameObject.Duplicate(prefabHolder.PrefabParent, "Scrollbar");
 
-            binPrefab = bins.GetChild(0).gameObject.Duplicate(prefabHolder.PrefabParent, "bin");
+            EditorTimeline.inst.binPrefab = EditorTimeline.inst.bins.GetChild(0).gameObject.Duplicate(prefabHolder.PrefabParent, "bin");
         }
 
         // 5 - setup misc editor UI
@@ -408,25 +408,25 @@ namespace BetterLegacy.Editor.Managers
             timelineTime = EditorManager.inst.timelineTime.GetComponent<Text>();
             SetNotificationProperties();
 
-            timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
-            TriggerHelper.AddEventTriggers(timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
+            EditorTimeline.inst.timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
+            TriggerHelper.AddEventTriggers(EditorTimeline.inst.timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
             {
                 if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
                     return;
 
-                changingTime = true;
-                newTime = timelineSlider.value / EditorManager.inst.Zoom;
-                AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                EditorTimeline.inst.changingTime = true;
+                EditorTimeline.inst.newTime = EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom;
+                AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
             }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, eventData =>
             {
                 if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
                     return;
 
-                newTime = timelineSlider.value / EditorManager.inst.Zoom;
-                AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-                changingTime = false;
+                EditorTimeline.inst.newTime = EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom;
+                AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                EditorTimeline.inst.changingTime = false;
             }));
-            timelineSlider.onValueChanged.AddListener(x =>
+            EditorTimeline.inst.timelineSlider.onValueChanged.AddListener(x =>
             {
                 if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value)
                     System.Threading.Tasks.Task.Run(Updater.UpdateHomingKeyframes);
@@ -447,8 +447,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
 
             var timelineParent = Creator.NewUIObject("Timeline Objects", EditorManager.inst.timeline.transform, 1);
-            timelineObjectsParent = timelineParent.transform.AsRT();
-            RectValues.FullAnchored.AssignToRectTransform(timelineObjectsParent);
+            EditorTimeline.inst.timelineObjectsParent = timelineParent.transform.AsRT();
+            RectValues.FullAnchored.AssignToRectTransform(EditorTimeline.inst.timelineObjectsParent);
 
             SetupFileBrowser();
             CreateContextMenu();
@@ -468,8 +468,8 @@ namespace BetterLegacy.Editor.Managers
 
             UpdatePicker();
             UpdateTooltip();
-            UpdateBinControls();
-            UpdateTimeChange();
+            EditorTimeline.inst.UpdateBinControls();
+            EditorTimeline.inst.UpdateTimeChange();
             UpdatePreview();
             UpdateKey();
 
@@ -510,14 +510,14 @@ namespace BetterLegacy.Editor.Managers
 
         void UpdatePicker()
         {
-            if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled || onSelectTimelineObject != null))
+            if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled || EditorTimeline.inst.onSelectTimelineObject != null))
             {
                 parentPickerEnabled = false;
                 prefabPickerEnabled = false;
-                onSelectTimelineObject = null;
+                EditorTimeline.inst.onSelectTimelineObject = null;
             }
 
-            var pickerActive = parentPickerEnabled || prefabPickerEnabled || onSelectTimelineObject != null;
+            var pickerActive = parentPickerEnabled || prefabPickerEnabled || EditorTimeline.inst.onSelectTimelineObject != null;
             mousePicker?.SetActive(pickerActive);
 
             if (mousePicker && mousePickerRT && pickerActive)
@@ -575,51 +575,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (!EditorConfig.Instance.MouseTooltipDisplay.Value || !EditorManager.inst.showHelp && EditorConfig.Instance.MouseTooltipRequiresHelp.Value)
                 mouseTooltip.SetActive(false);
-        }
-
-        void UpdateBinControls()
-        {
-            if (binSlider)
-            {
-                switch (EditorConfig.Instance.BinControlActiveBehavior.Value)
-                {
-                    case BinSliderControlActive.Always:
-                        {
-                            ShowBinControls(layerType == LayerType.Objects);
-                            break;
-                        }
-                    case BinSliderControlActive.Never:
-                        {
-                            ShowBinControls(false);
-                            break;
-                        }
-                    case BinSliderControlActive.KeyToggled:
-                        {
-                            if (Input.GetKeyDown(EditorConfig.Instance.BinControlKey.Value))
-                                ShowBinControls(!binSlider.gameObject.activeSelf);
-                            break;
-                        }
-                    case BinSliderControlActive.KeyHeld:
-                        {
-                            ShowBinControls(Input.GetKey(EditorConfig.Instance.BinControlKey.Value));
-                            break;
-                        }
-                }
-            }
-        }
-
-        void UpdateTimeChange()
-        {
-            if (!changingTime && EditorConfig.Instance.DraggingMainCursorFix.Value)
-            {
-                newTime = Mathf.Clamp(AudioManager.inst.CurrentAudioSource.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length) * EditorManager.inst.Zoom;
-                timelineSlider.value = newTime;
-            }
-            else if (EditorConfig.Instance.DraggingMainCursorFix.Value)
-            {
-                newTime = timelineSlider.value / EditorManager.inst.Zoom;
-                AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-            }
         }
 
         void UpdatePreview()
@@ -892,30 +847,6 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Timeline
-
-        public Image timelineImage;
-        public Image timelineOverlayImage;
-
-        public Slider timelineSlider;
-
-        public Image timelineSliderHandle;
-        public Image timelineSliderRuler;
-        public Image keyframeTimelineSliderHandle;
-        public Image keyframeTimelineSliderRuler;
-
-        public bool isOverMainTimeline;
-        public bool changingTime;
-        public float newTime;
-
-        public GridRenderer timelineGridRenderer;
-        public Transform wholeTimeline;
-        public Transform bins;
-        public GameObject binPrefab;
-        public Slider binSlider;
-
-        #endregion
-
         #region Loading & sorting
 
         public bool canUpdateThemes = true;
@@ -1018,7 +949,6 @@ namespace BetterLegacy.Editor.Managers
         public Image timelinePreviewRightCap;
         public List<Image> checkpointImages = new List<Image>();
 
-        public RectTransform timelineObjectsParent;
         public Transform timelinePreview;
         public RectTransform timelinePosition;
 
@@ -1097,13 +1027,13 @@ namespace BetterLegacy.Editor.Managers
             //original JSON: tsc
             jn["timeline"]["position"] = EditorManager.inst.timelineScrollRectBar.value.ToString("f2");
             //original JSON: l
-            jn["timeline"]["layer_type"] = ((int)layerType).ToString();
-            jn["timeline"]["layer"] = EditorManager.inst.layer.ToString();
-            jn["timeline"]["bin_count"] = BinCount.ToString();
-            jn["timeline"]["bin_position"] = binSlider.value.ToString();
+            jn["timeline"]["layer_type"] = ((int)EditorTimeline.inst.layerType).ToString();
+            jn["timeline"]["layer"] = EditorTimeline.inst.Layer.ToString();
+            jn["timeline"]["bin_count"] = EditorTimeline.inst.BinCount.ToString();
+            jn["timeline"]["bin_position"] = EditorTimeline.inst.binSlider.value.ToString();
 
-            for (int i = 0; i < pinnedEditorLayers.Count; i++)
-                jn["timeline"]["pinned_layers"][i] = pinnedEditorLayers[i].ToJSON();
+            for (int i = 0; i < EditorTimeline.inst.pinnedEditorLayers.Count; i++)
+                jn["timeline"]["pinned_layers"][i] = EditorTimeline.inst.pinnedEditorLayers[i].ToJSON();
 
             //original JSON: t
             jn["editor"]["editing_time"] = timeEditing.ToString();
@@ -1124,7 +1054,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void LoadSettings()
         {
-            pinnedEditorLayers.Clear();
+            EditorTimeline.inst.pinnedEditorLayers.Clear();
 
             if (!RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)))
             {
@@ -1138,7 +1068,7 @@ namespace BetterLegacy.Editor.Managers
             if (jn["timeline"] != null)
             {
                 var layer = 0;
-                var layerType = LayerType.Objects;
+                var layerType = EditorTimeline.LayerType.Objects;
 
                 float zoom = 0.05f;
                 float position = 0f;
@@ -1155,12 +1085,12 @@ namespace BetterLegacy.Editor.Managers
                 if (jn["timeline"]["position"] != null)
                     position = jn["timeline"]["position"].AsFloat;
 
-                SetTimeline(zoom, position);
+                EditorTimeline.inst.SetTimeline(zoom, position);
 
                 if (jn["timeline"]["layer_type"] != null)
-                    layerType = (LayerType)jn["timeline"]["layer_type"].AsInt;
+                    layerType = (EditorTimeline.LayerType)jn["timeline"]["layer_type"].AsInt;
 
-                this.layerType = layerType;
+                EditorTimeline.inst.layerType = layerType;
 
                 if (jn["timeline"]["l"] != null)
                     layer = jn["timeline"]["l"].AsInt;
@@ -1169,17 +1099,17 @@ namespace BetterLegacy.Editor.Managers
                     layer = jn["timeline"]["layer"].AsInt;
 
                 if (jn["timeline"]["bin_count"] != null)
-                    BinCount = jn["timeline"]["bin_count"].AsInt;
+                    EditorTimeline.inst.BinCount = jn["timeline"]["bin_count"].AsInt;
                 else
-                    BinCount = 14;
+                    EditorTimeline.inst.BinCount = 14;
 
-                binSlider.value = jn["timeline"]["bin_position"].AsFloat;
+                EditorTimeline.inst.binSlider.value = jn["timeline"]["bin_position"].AsFloat;
 
-                SetLayer(layer, false);
+                EditorTimeline.inst.SetLayer(layer, false);
 
                 if (jn["timeline"]["pinned_layers"] != null)
                     for (int i = 0; i < jn["timeline"]["pinned_layers"].Count; i++)
-                        pinnedEditorLayers.Add(PinnedEditorLayer.Parse(jn["timeline"]["pinned_layers"][i]));
+                        EditorTimeline.inst.pinnedEditorLayers.Add(PinnedEditorLayer.Parse(jn["timeline"]["pinned_layers"][i]));
             }
 
             if (jn["editor"] != null)
@@ -1220,10 +1150,10 @@ namespace BetterLegacy.Editor.Managers
                 SettingEditor.inst.SnapBPM = MetaData.Current.song.BPM;
             }
 
-            prevLayer = EditorManager.inst.layer;
-            prevLayerType = layerType;
+            EditorTimeline.inst.prevLayer = EditorTimeline.inst.Layer;
+            EditorTimeline.inst.prevLayerType = EditorTimeline.inst.layerType;
 
-            SetTimelineGridSize();
+            EditorTimeline.inst.SetTimelineGridSize();
         }
 
         #endregion
@@ -1380,582 +1310,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
-
-        #endregion
-
-        #region Timeline
-
-        /// <summary>
-        /// Sets the main timeline zoom and position.
-        /// </summary>
-        /// <param name="zoom">The amount to zoom in.</param>
-        /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
-        /// <param name="render">If the timeline should render.</param>
-        /// <param name="log">If the zoom amount should be logged.</param>
-        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
-        {
-            try
-            {
-                var timelineTime = GetTimelineTime();
-
-                float prevZoom = EditorManager.inst.zoomFloat;
-                EditorManager.inst.zoomFloat = Mathf.Clamp01(zoom);
-                EditorManager.inst.zoomVal =
-                    LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
-
-                if (render)
-                    EditorManager.inst.RenderTimeline();
-
-                CoreHelper.StartCoroutine(SetTimelinePosition(timelineTime, position));
-
-                EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
-                EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
-                EditorManager.inst.zoomSlider.onValueChanged.AddListener(_val => EditorManager.inst.Zoom = _val);
-
-                if (log)
-                    CoreHelper.Log($"SET MAIN ZOOM\n" +
-                        $"ZoomFloat: {EditorManager.inst.zoomFloat}\n" +
-                        $"ZoomVal: {EditorManager.inst.zoomVal}\n" +
-                        $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
-                        $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}\n" +
-                        $"Timeline Time: {timelineTime}\n" +
-                        $"Timeline Position Calculation: {(AudioManager.inst.CurrentAudioSource.clip == null ? -1f : position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length)}");
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Had an error with setting zoom. Exception: {ex}");
-            }
-        }
-
-        // i have no idea why the timeline scrollbar doesn't like to be set in the frame the zoom is also set in.
-        IEnumerator SetTimelinePosition(float timelineTime, float position = 0f)
-        {
-            yield return new WaitForFixedUpdate();
-            var pos = position >= 0f ? position : AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
-            EditorManager.inst.timelineScrollRectBar.value = pos;
-            CoreHelper.Log($"Pos: {pos} - Scrollbar: {EditorManager.inst.timelineScrollRectBar.value}");
-        }
-
-        /// <summary>
-        /// Calculates the timeline time the mouse cursor is at.
-        /// </summary>
-        /// <returns>Returns a calculated timeline time.</returns>
-        public float GetTimelineTime()
-        {
-            float num = Input.mousePosition.x;
-            num += Mathf.Abs(EditorManager.inst.timeline.transform.AsRT().position.x);
-
-            return SettingEditor.inst.SnapActive && !Input.GetKey(KeyCode.LeftAlt) ?
-                SnapToBPM(num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom) :
-                num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom;
-        }
-
-        /// <summary>
-        /// Updates the timeline cursor colors.
-        /// </summary>
-        public void UpdateTimelineColors()
-        {
-            timelineSliderHandle.color = EditorConfig.Instance.TimelineCursorColor.Value;
-            timelineSliderRuler.color = EditorConfig.Instance.TimelineCursorColor.Value;
-
-            keyframeTimelineSliderHandle.color = EditorConfig.Instance.KeyframeCursorColor.Value;
-            keyframeTimelineSliderRuler.color = EditorConfig.Instance.KeyframeCursorColor.Value;
-        }
-
-        #endregion
-
-        #region Timeline Objects
-
-        /// <summary>
-        /// Function to run when the user selects a timeline object using the picker.
-        /// </summary>
-        public Action<TimelineObject> onSelectTimelineObject;
-
-        /// <summary>
-        /// The list of all timeline objects, excluding event keyframes.
-        /// </summary>
-        public List<TimelineObject> timelineObjects = new List<TimelineObject>();
-
-        // todo: consider replacing TimelineObject keyframe with its own "TimelineKeyframe" class.
-        /// <summary>
-        /// The list of timeline keyframes.
-        /// </summary>
-        public List<TimelineObject> timelineKeyframes = new List<TimelineObject>();
-
-        /// <summary>
-        /// All timeline objects that are <see cref="BeatmapObject"/>.
-        /// </summary>
-        public List<TimelineObject> TimelineBeatmapObjects => timelineObjects.Where(x => x.isBeatmapObject).ToList();
-
-        /// <summary>
-        /// All timeline objects that are <see cref="PrefabObject"/>.
-        /// </summary>
-        public List<TimelineObject> TimelinePrefabObjects => timelineObjects.Where(x => x.isPrefabObject).ToList();
-
-        /// <summary>
-        /// Removes and destroys the timeline object.
-        /// </summary>
-        /// <param name="timelineObject">Timeline object to remove.</param>
-        public void RemoveTimelineObject(TimelineObject timelineObject)
-        {
-            if (timelineObjects.TryFindIndex(x => x.ID == timelineObject.ID, out int a))
-            {
-                Destroy(timelineObject.GameObject);
-                timelineObjects.RemoveAt(a);
-            }
-        }
-
-        /// <summary>
-        /// Gets a keyframes' sprite based on easing type.
-        /// </summary>
-        /// <param name="a">The keyframes' own easing.</param>
-        /// <param name="b">The next keyframes' easing.</param>
-        /// <returns>Returns a sprite based on the animation curve.</returns>
-        public static Sprite GetKeyframeIcon(DataManager.LSAnimation a, DataManager.LSAnimation b)
-            => ObjEditor.inst.KeyframeSprites[a.Name.Contains("Out") && b.Name.Contains("In") ? 3 : a.Name.Contains("Out") ? 2 : b.Name.Contains("In") ? 1 : 0];
-
-        void UpdateTimelineObjects()
-        {
-            for (int i = 0; i < timelineObjects.Count; i++)
-                timelineObjects[i].RenderVisibleState();
-
-            if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.isBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Count > 0)
-                for (int i = 0; i < ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Count; i++)
-                    ObjectEditor.inst.CurrentSelection.InternalTimelineObjects[i].RenderVisibleState();
-
-            for (int i = 0; i < timelineKeyframes.Count; i++)
-                timelineKeyframes[i].RenderVisibleState();
-        }
-
-        #endregion
-
-        #region Timeline Textures
-
-        /// <summary>
-        /// Updates the timelines' waveform texture.
-        /// </summary>
-        public IEnumerator AssignTimelineTexture()
-        {
-            var config = EditorConfig.Instance;
-            var path = RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
-            var settingsPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
-
-            SetTimelineSprite(null);
-
-            if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists(settingsPath) ||
-                !RTFile.FileExists(path)) && !config.WaveformRerender.Value || config.WaveformRerender.Value)
-            {
-                int num = Mathf.Clamp((int)AudioManager.inst.CurrentAudioSource.clip.length * 48, 100, 15000);
-                Texture2D waveform = null;
-
-                switch (config.WaveformMode.Value)
-                {
-                    case WaveformType.Legacy:
-                        {
-                            yield return CoreHelper.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.Beta:
-                        {
-                            yield return CoreHelper.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.Modern:
-                        {
-                            yield return CoreHelper.StartCoroutineAsync(Modern(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.LegacyFast:
-                        {
-                            yield return CoreHelper.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.BetaFast:
-                        {
-                            yield return CoreHelper.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.ModernFast:
-                        {
-                            yield return CoreHelper.StartCoroutineAsync(ModernFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                }
-
-                var waveSprite = Sprite.Create(waveform, new Rect(0f, 0f, num, 300f), new Vector2(0.5f, 0.5f), 100f);
-                SetTimelineSprite(waveSprite);
-
-                if (config.WaveformSaves.Value)
-                    CoreHelper.StartCoroutineAsync(SaveWaveform());
-            }
-            else
-            {
-                CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
-                settingsPath :
-                path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
-            }
-
-            SetTimelineGridSize();
-
-            yield break;
-        }
-
-        /// <summary>
-        /// Saves the timelines' current waveform texture.
-        /// </summary>
-        public IEnumerator SaveWaveform()
-        {
-            var path = !EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
-                    RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/waveform-{EditorConfig.Instance.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}") :
-                    RTFile.CombinePaths(RTFile.BasePath, $"waveform-{EditorConfig.Instance.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
-            var bytes = timelineImage.sprite.texture.EncodeToPNG();
-
-            File.WriteAllBytes(path, bytes);
-
-            yield break;
-        }
-
-        /// <summary>
-        /// Sets the timelines' texture.
-        /// </summary>
-        /// <param name="sprite">Sprite to set.</param>
-        public void SetTimelineSprite(Sprite sprite)
-        {
-            timelineImage.sprite = sprite;
-            timelineOverlayImage.sprite = timelineImage.sprite;
-        }
-
-        /// <summary>
-        /// Based on the pre-Legacy waveform where the waveform is in the center of the timeline instead of the edges.
-        /// </summary>
-        public IEnumerator Beta(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
-        {
-            yield return Ninja.JumpToUnity;
-            CoreHelper.Log("Generating Beta Waveform");
-            int num = 100;
-            var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
-            yield return Ninja.JumpBack;
-
-            var array = new Color[texture2D.width * texture2D.height];
-            for (int i = 0; i < array.Length; i++)
-                array[i] = background;
-
-            texture2D.SetPixels(array);
-            num = clip.frequency / num;
-            float[] array2 = new float[clip.samples * clip.channels];
-            clip.GetData(array2, 0);
-            float[] array3 = new float[array2.Length / num];
-            for (int j = 0; j < array3.Length; j++)
-            {
-                array3[j] = 0f;
-                for (int k = 0; k < num; k++)
-                    array3[j] += Mathf.Abs(array2[j * num + k]);
-                array3[j] /= num;
-            }
-            for (int l = 0; l < array3.Length - 1; l++)
-            {
-                int num2 = 0;
-                while (num2 < textureHeight * array3[l] + 1f)
-                {
-                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)(textureHeight * (array3[l] + 1f) / 2f) - num2, waveform);
-                    num2++;
-                }
-            }
-            yield return Ninja.JumpToUnity;
-            texture2D.wrapMode = TextureWrapMode.Clamp;
-            texture2D.filterMode = FilterMode.Point;
-            texture2D.Apply();
-            action(texture2D);
-            yield break;
-        }
-
-        /// <summary>
-        /// Based on the regular Legacy waveform where the waveform is on the top and bottom of the timeline.
-        /// </summary>
-        public IEnumerator Legacy(AudioClip clip, int textureWidth, int textureHeight, Color background, Color top, Color bottom, Action<Texture2D> action)
-        {
-            yield return Ninja.JumpToUnity;
-
-            CoreHelper.Log("Generating Legacy Waveform");
-            int num = 160;
-            num = clip.frequency / num;
-            var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
-
-            yield return Ninja.JumpBack;
-            Color[] array = new Color[texture2D.width * texture2D.height];
-            for (int i = 0; i < array.Length; i++)
-                array[i] = background;
-
-            texture2D.SetPixels(array);
-            float[] array3 = new float[clip.samples];
-            float[] array4 = new float[clip.samples];
-            float[] array5 = new float[clip.samples * clip.channels];
-            clip.GetData(array5, 0);
-            if (clip.channels > 1)
-            {
-                array3 = array5.Where((float value, int index) => index % 2 != 0).ToArray();
-                array4 = array5.Where((float value, int index) => index % 2 == 0).ToArray();
-            }
-            else
-            {
-                array3 = array5;
-                array4 = array5;
-            }
-            float[] array6 = new float[array3.Length / num];
-            for (int j = 0; j < array6.Length; j++)
-            {
-                array6[j] = 0f;
-                for (int k = 0; k < num; k++)
-                {
-                    array6[j] += Mathf.Abs(array3[j * num + k]);
-                }
-                array6[j] /= num;
-                array6[j] *= 0.85f;
-            }
-            for (int l = 0; l < array6.Length - 1; l++)
-            {
-                int num2 = 0;
-                while (num2 < textureHeight * array6[l])
-                {
-                    texture2D.SetPixel(textureWidth * l / array6.Length, (int)(textureHeight * array6[l]) - num2, top);
-                    num2++;
-                }
-            }
-            array6 = new float[array4.Length / num];
-            for (int m = 0; m < array6.Length; m++)
-            {
-                array6[m] = 0f;
-                for (int n = 0; n < num; n++)
-                {
-                    array6[m] += Mathf.Abs(array4[m * num + n]);
-                }
-                array6[m] /= num;
-                array6[m] *= 0.85f;
-            }
-            for (int num3 = 0; num3 < array6.Length - 1; num3++)
-            {
-                int num4 = 0;
-                while (num4 < textureHeight * array6[num3])
-                {
-                    int x = textureWidth * num3 / array6.Length;
-                    int y = (int)array4[num3 * num + num4] - num4;
-                    texture2D.SetPixel(x, y, texture2D.GetPixel(x, y) == top ? CoreHelper.MixColors(top, bottom) : bottom);
-                    num4++;
-                }
-            }
-            yield return Ninja.JumpToUnity;
-            texture2D.wrapMode = TextureWrapMode.Clamp;
-            texture2D.filterMode = FilterMode.Point;
-            texture2D.Apply();
-            action?.Invoke(texture2D);
-            yield break;
-        }
-
-        /// <summary>
-        /// Based on the modern VG / Alpha editor waveform where only one side of the waveform is at the bottom of the timeline.
-        /// </summary>
-        public IEnumerator Modern(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
-        {
-            yield return Ninja.JumpToUnity;
-            CoreHelper.Log("Generating Modern Waveform");
-            int num = 100;
-            var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
-            yield return Ninja.JumpBack;
-
-            var array = new Color[texture2D.width * texture2D.height];
-            for (int i = 0; i < array.Length; i++)
-                array[i] = background;
-
-            texture2D.SetPixels(array);
-            num = clip.frequency / num;
-            float[] array2 = new float[clip.samples * clip.channels];
-            clip.GetData(array2, 0);
-            float[] array3 = new float[array2.Length / num];
-            for (int j = 0; j < array3.Length; j++)
-            {
-                array3[j] = 0f;
-                for (int k = 0; k < num; k++)
-                    array3[j] += Mathf.Abs(array2[j * num + k]);
-                array3[j] /= (float)num;
-            }
-            for (int l = 0; l < array3.Length - 1; l++)
-            {
-                int num2 = 0;
-                while (num2 < textureHeight * array3[l] + 1f)
-                {
-                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)(textureHeight * (array3[l] + 1f)) - num2, waveform);
-                    num2++;
-                }
-            }
-            yield return Ninja.JumpToUnity;
-            texture2D.wrapMode = TextureWrapMode.Clamp;
-            texture2D.filterMode = FilterMode.Point;
-            texture2D.Apply();
-            action(texture2D);
-            yield break;
-        }
-
-        /// <summary>
-        /// Based on the pre-Legacy waveform where the waveform is in the center of the timeline instead of the edges.<br></br>
-        /// Forgot where I got this from, but it appeared to be faster at the time. Now it's just a different aesthetic.
-        /// </summary>
-        public IEnumerator BetaFast(AudioClip audio, int width, int height, Color background, Color col, Action<Texture2D> action)
-        {
-            yield return Ninja.JumpToUnity;
-            CoreHelper.Log("Generating Beta Waveform (Fast)");
-            var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
-            yield return Ninja.JumpBack;
-
-            float[] samples = new float[audio.samples * audio.channels];
-            float[] waveform = new float[width];
-            audio.GetData(samples, 0);
-            float packSize = ((float)samples.Length / (float)width);
-            int s = 0;
-            for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
-            {
-                waveform[s] = Mathf.Abs(samples[Mathf.RoundToInt(i)]);
-                s++;
-            }
-
-            for (int x = 0; x < width; x++)
-                for (int y = 0; y < height; y++)
-                    tex.SetPixel(x, y, background);
-
-            for (int x = 0; x < waveform.Length; x++)
-            {
-                for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
-                {
-                    tex.SetPixel(x, (height / 2) + y, col);
-                    tex.SetPixel(x, (height / 2) - y, col);
-                }
-            }
-            yield return Ninja.JumpToUnity;
-            tex.Apply();
-
-            action?.Invoke(tex);
-            yield break;
-        }
-
-        /// <summary>
-        /// Based on the regular Legacy waveform where the waveform is on the top and bottom of the timeline.<br></br>
-        /// Forgot where I got this from, but it appeared to be faster at the time. Now it's just a different aesthetic.
-        /// </summary>
-        public IEnumerator LegacyFast(AudioClip audio, int width, int height, Color background, Color colTop, Color colBot, Action<Texture2D> action)
-        {
-            yield return Ninja.JumpToUnity;
-            CoreHelper.Log("Generating Legacy Waveform (Fast)");
-            var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
-            yield return Ninja.JumpBack;
-
-            float[] samples = new float[audio.samples * audio.channels];
-            float[] waveform = new float[width];
-            audio.GetData(samples, 0);
-            float packSize = ((float)samples.Length / (float)width);
-            int s = 0;
-            for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
-            {
-                waveform[s] = Mathf.Abs(samples[Mathf.RoundToInt(i)]);
-                s++;
-            }
-
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    tex.SetPixel(x, y, background);
-                }
-            }
-
-            for (int x = 0; x < waveform.Length; x++)
-            {
-                for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
-                {
-                    tex.SetPixel(x, height - y, colTop);
-
-                    tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? CoreHelper.MixColors(colTop, colBot) : colBot);
-                }
-            }
-            yield return Ninja.JumpToUnity;
-            tex.Apply();
-
-            action?.Invoke(tex);
-            yield break;
-        }
-
-        /// <summary>
-        /// Based on the modern VG / Alpha editor waveform where only one side of the waveform is at the bottom of the timeline.<br></br>
-        /// Forgot where I got this from, but it appeared to be faster at the time. Now it's just a different aesthetic.
-        /// </summary>
-        public IEnumerator ModernFast(AudioClip audio, int width, int height, Color background, Color col, Action<Texture2D> action)
-        {
-            yield return Ninja.JumpToUnity;
-            CoreHelper.Log("Generating Modern Waveform (Fast)");
-            var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
-            yield return Ninja.JumpBack;
-
-            float[] samples = new float[audio.samples * audio.channels];
-            float[] waveform = new float[width];
-            audio.GetData(samples, 0);
-            float packSize = ((float)samples.Length / (float)width);
-            int s = 0;
-            for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
-            {
-                waveform[s] = Mathf.Abs(samples[Mathf.RoundToInt(i)]);
-                s++;
-            }
-
-            for (int x = 0; x < width; x++)
-                for (int y = 0; y < height; y++)
-                    tex.SetPixel(x, y, background);
-
-            for (int x = 0; x < waveform.Length; x++)
-            {
-                for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
-                {
-                    tex.SetPixel(x, y, col);
-                    //tex.SetPixel(x, (height / 2) - y, col);
-                }
-            }
-            yield return Ninja.JumpToUnity;
-            tex.Apply();
-
-            action?.Invoke(tex);
-            yield break;
-        }
-
-        // todo: look into improving this? is it possible to fix the issues with zooming in too close causing the grid to break and some issues with the grid going further than it should.
-        /// <summary>
-        /// Updates the timeline grids' size.
-        /// </summary>
-        public void SetTimelineGridSize()
-        {
-            if (!AudioManager.inst || !AudioManager.inst.CurrentAudioSource || !AudioManager.inst.CurrentAudioSource.clip)
-            {
-                if (timelineGridRenderer)
-                    timelineGridRenderer.enabled = false;
-                return;
-            }
-
-            var clipLength = AudioManager.inst.CurrentAudioSource.clip.length;
-
-            float x = SettingEditor.inst.SnapBPM / 60f;
-
-            var closer = 40f * x;
-            var close = 20f * x;
-            var unrender = 6f * x;
-
-            var bpm = EditorManager.inst.Zoom > closer ? SettingEditor.inst.SnapBPM : EditorManager.inst.Zoom > close ? SettingEditor.inst.SnapBPM / 2f : SettingEditor.inst.SnapBPM / 4f;
-            var snapDivisions = EditorConfig.Instance.BPMSnapDivisions.Value * 2f;
-            if (timelineGridRenderer && EditorManager.inst.Zoom > unrender && EditorConfig.Instance.TimelineGridEnabled.Value)
-            {
-                timelineGridRenderer.enabled = false;
-                timelineGridRenderer.gridCellSize.x = ((int)bpm / (int)snapDivisions) * (int)clipLength;
-                timelineGridRenderer.gridSize.x = clipLength * bpm / (snapDivisions * 1.875f);
-                timelineGridRenderer.enabled = true;
-            }
-            else if (timelineGridRenderer)
-                timelineGridRenderer.enabled = false;
-        }
 
         #endregion
 
@@ -2516,7 +1870,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (!isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
+            if (!EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
             {
                 if (!_dup)
                 {
@@ -2537,7 +1891,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (isOverMainTimeline && layerType == LayerType.Events)
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 if (!_dup)
                 {
@@ -2558,9 +1912,9 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (isOverMainTimeline && layerType == LayerType.Objects)
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
             {
-                var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                 ObjEditor.inst.CopyObject();
                 if (!_cut)
@@ -2581,10 +1935,10 @@ namespace BetterLegacy.Editor.Managers
 
         public void Paste(float _offsetTime = 0f, bool _regen = true)
         {
-            if (isOverMainTimeline && layerType == LayerType.Objects)
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
                 ObjectEditor.inst.PasteObject(_offsetTime, _regen);
 
-            if (isOverMainTimeline && layerType == LayerType.Events)
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.FileExists($"{Application.persistentDataPath}/copied_events.lsev"))
                 {
@@ -2611,13 +1965,13 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
             }
 
-            if (!isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
+            if (!EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
             {
                 ObjEditor.inst.PasteKeyframes();
                 EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
             }
 
-            if ((isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint)) || EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Checkpoint))
+            if ((EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint)) || EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Checkpoint))
             {
                 CheckpointEditor.inst.PasteCheckpoint();
                 EditorManager.inst.DisplayNotification("Pasted Checkpoint", 1f, EditorManager.NotificationType.Success);
@@ -2632,15 +1986,15 @@ namespace BetterLegacy.Editor.Managers
 
         public void Delete()
         {
-            if (!isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
+            if (!EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
             {
-                if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                     if (ObjEditor.inst.currentKeyframe != 0)
                     {
                         var list = new List<TimelineObject>();
-                        foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                        foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             list.Add(timelineObject);
-                        var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+                        var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
                         EditorManager.inst.history.Add(new History.Command("Delete Keyframes", () =>
                         {
@@ -2656,12 +2010,12 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.DisplayNotification("Can't delete first keyframe.", 1f, EditorManager.NotificationType.Error);
                 return;
             }
-            if (isOverMainTimeline && layerType == LayerType.Objects)
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
             {
-                if (GameData.Current.beatmapObjects.Count > 1 && ObjectEditor.inst.SelectedObjectCount != GameData.Current.beatmapObjects.Count)
+                if (GameData.Current.beatmapObjects.Count > 1 && EditorTimeline.inst.SelectedObjectCount != GameData.Current.beatmapObjects.Count)
                 {
                     var list = new List<TimelineObject>();
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                         list.Add(timelineObject);
 
                     EditorManager.inst.ClearDialogs(EditorManager.EditorDialog.DialogType.Object, EditorManager.EditorDialog.DialogType.Prefab);
@@ -2687,7 +2041,7 @@ namespace BetterLegacy.Editor.Managers
                         Delete();
                     }, () =>
                     {
-                        ObjectEditor.inst.DeselectAllObjects();
+                        EditorTimeline.inst.DeselectAllObjects();
                         StartCoroutine(ObjectEditor.inst.AddPrefabExpandedToLevel(prefab, true, 0f, true, retainID: true));
                     }));
 
@@ -2697,7 +2051,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Can't delete only Beatmap Object", 1f, EditorManager.NotificationType.Error);
                 return;
             }
-            if (isOverMainTimeline && layerType == LayerType.Events)
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 if (RTEventEditor.inst.SelectedKeyframes.Count > 0 && !RTEventEditor.inst.SelectedKeyframes.Has(x => x.Index == 0))
                 {
@@ -2740,375 +2094,6 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
         }
-
-        #endregion
-
-        #region Bins & Layers
-
-        #region Layers
-
-        /// <summary>
-        /// List of editor layers the user has pinned in a level.
-        /// </summary>
-        public List<PinnedEditorLayer> pinnedEditorLayers = new List<PinnedEditorLayer>();
-
-        /// <summary>
-        /// The current editor layer.
-        /// </summary>
-        public int Layer
-        {
-            get => GetLayer(EditorManager.inst.layer);
-            set => EditorManager.inst.layer = GetLayer(value);
-        }
-
-        /// <summary>
-        /// The type of layer to render.
-        /// </summary>
-        public LayerType layerType;
-
-        int prevLayer;
-        LayerType prevLayerType;
-
-        /// <summary>
-        /// Represents a type of layer to render in the timeline. In the vanilla Project Arrhythmia editor, the objects and events layer are considered a part of the same layer system.
-        /// <br><br></br></br>This is used to separate them and cause less issues with objects ending up on the events layer.
-        /// </summary>
-        public enum LayerType
-        {
-            /// <summary>
-            /// Renders the <see cref="BeatmapObject"/> and <see cref="PrefabObject"/> object layers.
-            /// </summary>
-            Objects,
-            /// <summary>
-            /// Renders the <see cref="EventKeyframe"/> layers.
-            /// </summary>
-            Events
-        }
-
-        /// <summary>
-        /// Limits the editor layer between 0 and <see cref="int.MaxValue"/>.
-        /// </summary>
-        /// <param name="layer">Editor layer to limit.</param>
-        /// <returns>Returns a clamped editor layer.</returns>
-        public static int GetLayer(int layer) => Mathf.Clamp(layer, 0, int.MaxValue);
-
-        /// <summary>
-        /// Makes the editor layer human-readable by changing it from zero based to one based.
-        /// </summary>
-        /// <param name="layer">Editor layer to format.</param>
-        /// <returns>Returns a formatted editor layer.</returns>
-        public static string GetLayerString(int layer) => (layer + 1).ToString();
-
-        /// <summary>
-        /// Gets the editor layer color.
-        /// </summary>
-        /// <param name="layer">The layer to get the color of.</param>
-        /// <returns>Returns an editor layers' color.</returns>
-        public static Color GetLayerColor(int layer)
-        {
-            if (inst.pinnedEditorLayers.TryFind(x => x.layer == layer, out PinnedEditorLayer pinnedEditorLayer))
-                return pinnedEditorLayer.color;
-
-            return layer >= 0 && layer < EditorManager.inst.layerColors.Count ? EditorManager.inst.layerColors[layer] : Color.white;
-        }
-
-        /// <summary>
-        /// Sets the current editor layer.
-        /// </summary>
-        /// <param name="layerType">The type of layer to set.</param>
-        public void SetLayer(LayerType layerType) => SetLayer(0, layerType);
-
-        /// <summary>
-        /// Sets the current editor layer.
-        /// </summary>
-        /// <param name="layer">The layer to set.</param>
-        /// <param name="setHistory">If the action should be undoable.</param>
-        public void SetLayer(int layer, bool setHistory = true) => SetLayer(layer, layerType, setHistory);
-
-        /// <summary>
-        /// Sets the current editor layer.
-        /// </summary>
-        /// <param name="layer">The layer to set.</param>
-        /// <param name="layerType">The type of layer to set.</param>
-        /// <param name="setHistory">If the action should be undoable.</param>
-        public void SetLayer(int layer, LayerType layerType, bool setHistory = true)
-        {
-            if (layer == 68)
-                AchievementManager.inst.UnlockAchievement("editor_layer_lol");
-            
-            if (layer == 554)
-                AchievementManager.inst.UnlockAchievement("editor_layer_funny");
-
-            var oldLayer = Layer;
-            var oldLayerType = this.layerType;
-
-            Layer = layer;
-            this.layerType = layerType;
-            timelineOverlayImage.color = GetLayerColor(layer);
-            editorLayerImage.color = GetLayerColor(layer);
-
-            editorLayerField.onValueChanged.ClearAll();
-            editorLayerField.text = GetLayerString(layer);
-            editorLayerField.onValueChanged.AddListener(_val =>
-            {
-                if (int.TryParse(_val, out int num))
-                    SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
-            });
-
-            eventLayerToggle.onValueChanged.ClearAll();
-            eventLayerToggle.isOn = layerType == LayerType.Events;
-            eventLayerToggle.onValueChanged.AddListener(_val => { SetLayer(_val ? LayerType.Events : LayerType.Objects); });
-
-            RTEventEditor.inst.SetEventActive(layerType == LayerType.Events);
-
-            if (prevLayer != layer || prevLayerType != layerType)
-            {
-                UpdateTimelineObjects();
-                switch (layerType)
-                {
-                    case LayerType.Objects:
-                        {
-                            RenderBins();
-                            ObjectEditor.inst.RenderTimelineObjectsPositions();
-
-                            if (prevLayerType != layerType)
-                                CheckpointEditor.inst.CreateGhostCheckpoints();
-
-                            break;
-                        }
-                    case LayerType.Events:
-                        {
-                            RenderBinPosition(0f); // sets the position to the default.
-                            RenderBins(); // makes sure the bins look normal on the event layer
-                            ShowBinControls(false);
-
-                            RTEventEditor.inst.RenderEventObjects();
-                            CheckpointEditor.inst.CreateCheckpoints();
-
-                            RTEventEditor.inst.RenderLayerBins();
-
-                            break;
-                        }
-                }
-            }
-
-            prevLayerType = layerType;
-            prevLayer = layer;
-
-            var tmpLayer = Layer;
-            var tmpLayerType = this.layerType;
-            if (setHistory)
-            {
-                EditorManager.inst.history.Add(new History.Command("Change Layer", () =>
-                {
-                    CoreHelper.Log($"Redone layer: {tmpLayer}");
-                    SetLayer(tmpLayer, tmpLayerType, false);
-                }, () =>
-                {
-                    CoreHelper.Log($"Undone layer: {oldLayer}");
-                    SetLayer(oldLayer, oldLayerType, false);
-                }));
-            }
-        }
-
-        #endregion
-
-        #region Bins
-
-        /// <summary>
-        /// Total max of possible bins.
-        /// </summary>
-        public const int MAX_BINS = 60;
-
-        /// <summary>
-        /// The default bin count.
-        /// </summary>
-        public const int DEFAULT_BIN_COUNT = 14;
-
-        int binCount = DEFAULT_BIN_COUNT;
-
-        /// <summary>
-        /// The amount of bins that should render and max objects to.
-        /// </summary>
-        public int BinCount { get => Mathf.Clamp(binCount, 0, MAX_BINS); set => binCount = Mathf.Clamp(value, 0, MAX_BINS); }
-
-        /// <summary>
-        /// The current scroll amount of the bin.
-        /// </summary>
-        public float BinScroll { get; set; }
-
-        /// <summary>
-        /// Adds a bin (row) to the main editor timeline.
-        /// </summary>
-        public void AddBin()
-        {
-            if (!EditorManager.inst.hasLoadedLevel)
-            {
-                EditorManager.inst.DisplayNotification("Please load a level first before trying to change the bin count.", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            int prevBinCount = BinCount;
-            BinCount++;
-            CoreHelper.Log($"Add bin count: {BinCount}");
-            EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
-
-            if (layerType == LayerType.Events)
-                return;
-
-            ObjectEditor.inst.RenderTimelineObjectsPositions();
-            RenderBins();
-            if (prevBinCount == BinCount)
-                return;
-
-            if (EditorConfig.Instance.MoveToChangedBin.Value)
-                SetBinPosition(BinCount);
-
-            if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
-                SoundManager.inst.PlaySound(DefaultSounds.pop, 0.7f, 1.3f + UnityEngine.Random.Range(-0.05f, 0.05f));
-        }
-
-        /// <summary>
-        /// Removes a bin (row) from the main editor timeline.
-        /// </summary>
-        public void RemoveBin()
-        {
-            if (!EditorManager.inst.hasLoadedLevel)
-            {
-                EditorManager.inst.DisplayNotification("Please load a level first before trying to change the bin count.", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            int prevBinCount = BinCount;
-            BinCount--;
-            CoreHelper.Log($"Remove bin count: {BinCount}");
-            EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
-
-            if (layerType == LayerType.Events)
-                return;
-
-            ObjectEditor.inst.RenderTimelineObjectsPositions();
-            RenderBins();
-            if (prevBinCount == BinCount)
-                return;
-
-            if (EditorConfig.Instance.MoveToChangedBin.Value)
-                SetBinPosition(BinCount);
-
-            if (!EditorConfig.Instance.BinControlsPlaysSounds.Value)
-                return;
-
-            float add = UnityEngine.Random.Range(-0.05f, 0.05f);
-            SoundManager.inst.PlaySound(DefaultSounds.Block, 0.5f, 1.3f + add);
-            SoundManager.inst.PlaySound(DefaultSounds.menuflip, 0.4f, 1.5f + add);
-        }
-
-        /// <summary>
-        /// Sets the bin (row) count to a specific number.
-        /// </summary>
-        /// <param name="count">Count to set to the editor bins.</param>
-        public void SetBinCount(int count)
-        {
-            if (!EditorManager.inst.hasLoadedLevel)
-            {
-                EditorManager.inst.DisplayNotification("Please load a level first before trying to change the bin count.", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            int prevBinCount = BinCount;
-            BinCount = count;
-            CoreHelper.Log($"Set bin count: {BinCount}");
-            EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
-
-            if (layerType == LayerType.Events)
-                return;
-
-            ObjectEditor.inst.RenderTimelineObjectsPositions();
-            RenderBins();
-            if (prevBinCount == BinCount)
-                return;
-
-            if (EditorConfig.Instance.MoveToChangedBin.Value)
-                SetBinPosition(BinCount);
-
-            if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
-                SoundManager.inst.PlaySound(DefaultSounds.glitch);
-        }
-
-        /// <summary>
-        /// Shows / hides the bin slider controls.
-        /// </summary>
-        /// <param name="enabled">If the bin slider should show.</param>
-        public void ShowBinControls(bool enabled)
-        {
-            if (binSlider)
-                binSlider.gameObject.SetActive(enabled);
-        }
-
-        /// <summary>
-        /// Scrolls the editor bins up exactly by one bin height.
-        /// </summary>
-        public void ScrollBinsUp() => binSlider.value -= 0.1f / 2.3f;
-
-        /// <summary>
-        /// Scrolls the editor bins down exactly by one bin height.
-        /// </summary>
-        public void ScrollBinsDown() => binSlider.value += 0.1f / 2.3f;
-
-        /// <summary>
-        /// Sets the editor bins to a specific bin.
-        /// </summary>
-        /// <param name="bin">Bin to set.</param>
-        public void SetBinPosition(int bin)
-        {
-            if (bin >= 14)
-            {
-                var value = ((bin - 14f) * 20f) / 920f;
-                CoreHelper.Log($"Set pos: {bin} at: {value}");
-                SetBinScroll(value);
-            }
-        }
-
-        /// <summary>
-        /// Sets the slider value for the Bin Control slider.
-        /// </summary>
-        /// <param name="scroll">Value to set.</param>
-        public void SetBinScroll(float scroll)
-        {
-            if (layerType == LayerType.Events)
-                return;
-
-            binSlider.value = scroll;
-        }
-
-        void RenderBinPosition()
-        {
-            //var scroll = Mathf.Lerp(0f, Mathf.Clamp(BinCount - DEFAULT_BIN_COUNT, 0f, MAX_BINS), BinScroll) * 10f;
-            // can't figure out how to clamp the slider value to the available bin count
-
-            //var scroll = BinScroll * MAX_BINS * 20f;
-            var scroll = (MAX_BINS * 15f + 20f) * BinScroll;
-            RenderBinPosition(scroll);
-        }
-
-        void RenderBinPosition(float scroll)
-        {
-            bins.transform.AsRT().anchoredPosition = new Vector2(0f, scroll);
-            timelineObjectsParent.transform.AsRT().anchoredPosition = new Vector2(0f, scroll);
-        }
-
-        void RenderBins()
-        {
-            RenderBinPosition();
-            LSHelpers.DeleteChildren(bins);
-            for (int i = 0; i < (layerType == LayerType.Events ? DEFAULT_BIN_COUNT : BinCount) + 1; i++)
-            {
-                var bin = binPrefab.Duplicate(bins);
-                bin.transform.GetChild(0).GetComponent<Image>().enabled = i % 2 == 0;
-            }
-        }
-
-        #endregion
 
         #endregion
 
@@ -3210,7 +2195,7 @@ namespace BetterLegacy.Editor.Managers
             editorLayerField = layersObj.GetComponent<InputField>();
             editorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
 
-            editorLayerField.text = GetLayerString(EditorManager.inst.layer);
+            editorLayerField.text = EditorTimeline.GetLayerString(EditorManager.inst.layer);
 
             editorLayerImage = editorLayerField.image;
 
@@ -3226,10 +2211,10 @@ namespace BetterLegacy.Editor.Managers
             editorLayerField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                    SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
+                    EditorTimeline.inst.SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
             });
 
-            editorLayerImage.color = GetLayerColor(EditorManager.inst.layer);
+            editorLayerImage.color = EditorTimeline.GetLayerColor(EditorManager.inst.layer);
 
             TriggerHelper.AddEventTriggers(layersObj,
                 TriggerHelper.ScrollDeltaInt(editorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
@@ -3382,8 +2367,8 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Create Marker", MarkerEditor.inst.CreateNewMarker),
                     new ButtonFunction("Create Marker at Object", () =>
                     {
-                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
-                            RTMarkerEditor.inst.CreateNewMarker(ObjectEditor.inst.CurrentSelection.Time);
+                        if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
+                            RTMarkerEditor.inst.CreateNewMarker(EditorTimeline.inst.CurrentSelection.Time);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Show Markers", () =>
@@ -3420,8 +2405,8 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Create Checkpoint", CheckpointEditor.inst.CreateNewCheckpoint),
                     new ButtonFunction("Create Checkpoint at Object", () =>
                     {
-                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
-                            CheckpointEditor.inst.CreateNewCheckpoint(ObjectEditor.inst.CurrentSelection.Time, Vector2.zero);
+                        if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
+                            CheckpointEditor.inst.CreateNewCheckpoint(EditorTimeline.inst.CurrentSelection.Time, Vector2.zero);
                     })
                     );
             };
@@ -3454,9 +2439,9 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 ShowContextMenu(
-                    new ButtonFunction("Toggle Layer Type", () => SetLayer(Layer, layerType == LayerType.Events ? LayerType.Objects : LayerType.Events)),
-                    new ButtonFunction("View Objects", () => SetLayer(Layer, LayerType.Objects)),
-                    new ButtonFunction("View Events", () => SetLayer(Layer, LayerType.Events))
+                    new ButtonFunction("Toggle Layer Type", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? EditorTimeline.LayerType.Objects : EditorTimeline.LayerType.Events)),
+                    new ButtonFunction("View Objects", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Objects)),
+                    new ButtonFunction("View Events", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Events))
                     );
             };
 
@@ -3473,7 +2458,7 @@ namespace BetterLegacy.Editor.Managers
                         var layer = 0;
                         while (GameData.Current.beatmapObjects.Has(x => x.editorData != null && x.editorData.layer == layer))
                             layer++;
-                        SetLayer(layer, LayerType.Objects);
+                        EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
                     })
                     );
             };
@@ -3481,45 +2466,45 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelineTriggers()
         {
-            var binScroll = EditorPrefabHolder.Instance.Slider.Duplicate(wholeTimeline, "Bin Scrollbar");
+            var binScroll = EditorPrefabHolder.Instance.Slider.Duplicate(EditorTimeline.inst.wholeTimeline, "Bin Scrollbar");
             var binScrollImage = binScroll.transform.Find("Image").GetComponent<Image>();
-            binSlider = binScroll.GetComponent<Slider>();
-            binSlider.onValueChanged.ClearAll();
-            binSlider.wholeNumbers = false;
-            binSlider.direction = Slider.Direction.TopToBottom;
-            binSlider.minValue = 0f;
-            binSlider.maxValue = 1f;
-            binSlider.value = 0f;
-            binSlider.onValueChanged.AddListener(_val =>
+            EditorTimeline.inst.binSlider = binScroll.GetComponent<Slider>();
+            EditorTimeline.inst.binSlider.onValueChanged.ClearAll();
+            EditorTimeline.inst.binSlider.wholeNumbers = false;
+            EditorTimeline.inst.binSlider.direction = Slider.Direction.TopToBottom;
+            EditorTimeline.inst.binSlider.minValue = 0f;
+            EditorTimeline.inst.binSlider.maxValue = 1f;
+            EditorTimeline.inst.binSlider.value = 0f;
+            EditorTimeline.inst.binSlider.onValueChanged.AddListener(_val =>
             {
-                if (layerType == LayerType.Events)
+                if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                     return;
 
-                BinScroll = _val;
-                RenderBinPosition();
+                EditorTimeline.inst.BinScroll = _val;
+                EditorTimeline.inst.RenderBinPosition();
             });
             RectValues.Default.AnchoredPosition(960f, 134f).Pivot(1f, 1f).SizeDelta(32f, 268f).AssignToRectTransform(binScroll.transform.AsRT());
-            RectValues.Default.AnchoredPosition(24f, 0f).AnchorMax(1f, 1f).AnchorMin(0f, 1f).Pivot(1f, 0.5f).SizeDelta(48f, 32f).AssignToRectTransform(binSlider.handleRect);
+            RectValues.Default.AnchoredPosition(24f, 0f).AnchorMax(1f, 1f).AnchorMin(0f, 1f).Pivot(1f, 0.5f).SizeDelta(48f, 32f).AssignToRectTransform(EditorTimeline.inst.binSlider.handleRect);
             RectValues.FullAnchored.SizeDelta(0f, 32f).AssignToRectTransform(binScrollImage.rectTransform);
 
-            binSlider.colors = UIManager.SetColorBlock(binSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
+            EditorTimeline.inst.binSlider.colors = UIManager.SetColorBlock(EditorTimeline.inst.binSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
 
             EditorThemeManager.AddGraphic(binScrollImage, ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(binSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.AddGraphic(EditorTimeline.inst.binSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             TriggerHelper.AddEventTriggers(binScroll, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
-                binSlider.value += pointerEventData.scrollDelta.y * -EditorConfig.Instance.BinControlScrollAmount.Value * 0.5f;
+                EditorTimeline.inst.binSlider.value += pointerEventData.scrollDelta.y * -EditorConfig.Instance.BinControlScrollAmount.Value * 0.5f;
             }));
 
             TriggerHelper.AddEventTriggers(EditorManager.inst.timeline,
                 TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData =>
                 {
-                    isOverMainTimeline = true;
+                    EditorTimeline.inst.isOverMainTimeline = true;
                     SetDialogStatus("Timeline", true);
                 }),
-                TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => isOverMainTimeline = false),
+                TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => EditorTimeline.inst.isOverMainTimeline = false),
                 TriggerHelper.StartDragTrigger(),
                 TriggerHelper.DragTrigger(),
                 TriggerHelper.EndDragTrigger(),
@@ -3546,7 +2531,7 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Paste", () => ObjectEditor.inst.PasteObject()),
                         new ButtonFunction("Duplicate", () =>
                         {
-                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime);
@@ -3554,15 +2539,15 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
                         new ButtonFunction("Duplicate (Keep Prefab)", () =>
                         {
-                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
                         new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
                         new ButtonFunction(true),
-                        new ButtonFunction("Add Bin", AddBin),
-                        new ButtonFunction("Remove Bin", RemoveBin)
+                        new ButtonFunction("Add Bin", EditorTimeline.inst.AddBin),
+                        new ButtonFunction("Remove Bin", EditorTimeline.inst.RemoveBin)
                         );
                 }));
 
@@ -3571,8 +2556,8 @@ namespace BetterLegacy.Editor.Managers
                 int type = i;
                 var et = EventEditor.inst.EventHolders.transform.GetChild(i).GetComponent<EventTrigger>();
                 et.triggers.Clear();
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverMainTimeline = true; }));
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverMainTimeline = false; }));
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => EditorTimeline.inst.isOverMainTimeline = true));
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => EditorTimeline.inst.isOverMainTimeline = false));
                 et.triggers.Add(TriggerHelper.StartDragTrigger());
                 et.triggers.Add(TriggerHelper.DragTrigger());
                 et.triggers.Add(TriggerHelper.EndDragTrigger());
@@ -3580,7 +2565,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
-                    var currentEvent = (RTEventEditor.EVENT_LIMIT * (Layer + 1)) - RTEventEditor.EVENT_LIMIT + type;
+                    var currentEvent = (RTEventEditor.EVENT_LIMIT * (EditorTimeline.inst.Layer + 1)) - RTEventEditor.EVENT_LIMIT + type;
 
                     switch (pointerEventData.button)
                     {
@@ -3589,7 +2574,7 @@ namespace BetterLegacy.Editor.Managers
                                     RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
                                 break;
                         case PointerEventData.InputButton.Middle:
-                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent) && GameData.Current.eventObjects.allEvents[currentEvent].TryFindLastIndex(x => x.eventTime < GetTimelineTime(), out int index))
+                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent) && GameData.Current.eventObjects.allEvents[currentEvent].TryFindLastIndex(x => x.eventTime < EditorTimeline.inst.GetTimelineTime(), out int index))
                                 RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
                             break;
                     }
@@ -3611,7 +2596,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(EditorManager.inst.timelineSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
 
-            EditorThemeManager.AddGraphic(wholeTimeline.GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
+            EditorThemeManager.AddGraphic(EditorTimeline.inst.wholeTimeline.GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
 
             var zoomSliderBase = EditorManager.inst.zoomSlider.transform.parent;
             EditorThemeManager.AddGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
@@ -3910,11 +2895,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (EditorConfig.Instance.WaveformGenerate.Value)
                 {
-                    SetTimelineSprite(null);
-                    StartCoroutine(AssignTimelineTexture());
+                    EditorTimeline.inst.SetTimelineSprite(null);
+                    StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
                 }
                 else
-                    SetTimelineSprite(null);
+                    EditorTimeline.inst.SetTimelineSprite(null);
             });
             EditorHelper.SetComplexity(renderWaveform, Complexity.Normal);
 
@@ -4441,17 +3426,17 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                var top = Creator.NewUIObject("Top", wholeTimeline, 3); // creates a cover so the bin scrolling doesn't overlay outside the regular slider range.
+                var top = Creator.NewUIObject("Top", EditorTimeline.inst.wholeTimeline, 3); // creates a cover so the bin scrolling doesn't overlay outside the regular slider range.
                 RectValues.Default.AnchorMax(0f, 1f).AnchorMin(0f, 1f).Pivot(0f, 1f).SizeDelta(1920f, 25f).AssignToRectTransform(top.transform.AsRT());
                 EditorThemeManager.AddGraphic(top.AddComponent<Image>(), ThemeGroup.Background_3);
 
-                timelineSliderHandle = wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
-                timelineSliderRuler = wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
+                EditorTimeline.inst.timelineSliderHandle = EditorTimeline.inst.wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
+                EditorTimeline.inst.timelineSliderRuler = EditorTimeline.inst.wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
                 var keyframeTimelineHandle = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("timeline/Scroll View/Viewport/Content/time_slider/Handle Slide Area/Handle");
-                keyframeTimelineSliderHandle = keyframeTimelineHandle.Find("Image").GetComponent<Image>();
-                keyframeTimelineSliderRuler = keyframeTimelineHandle.GetComponent<Image>();
+                EditorTimeline.inst.keyframeTimelineSliderHandle = keyframeTimelineHandle.Find("Image").GetComponent<Image>();
+                EditorTimeline.inst.keyframeTimelineSliderRuler = keyframeTimelineHandle.GetComponent<Image>();
 
-                UpdateTimelineColors();
+                EditorTimeline.inst.UpdateTimelineColors();
             }
             catch (Exception ex)
             {
@@ -4470,15 +3455,15 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(grid.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, Vector2.zero);
 
-            timelineGridRenderer = grid.AddComponent<GridRenderer>();
-            timelineGridRenderer.isTimeline = true;
+            EditorTimeline.inst.timelineGridRenderer = grid.AddComponent<GridRenderer>();
+            EditorTimeline.inst.timelineGridRenderer.isTimeline = true;
 
             var config = EditorConfig.Instance;
 
-            timelineGridRenderer.color = config.TimelineGridColor.Value;
-            timelineGridRenderer.thickness = config.TimelineGridThickness.Value;
+            EditorTimeline.inst.timelineGridRenderer.color = config.TimelineGridColor.Value;
+            EditorTimeline.inst.timelineGridRenderer.thickness = config.TimelineGridThickness.Value;
 
-            timelineGridRenderer.enabled = config.TimelineGridEnabled.Value;
+            EditorTimeline.inst.timelineGridRenderer.enabled = config.TimelineGridEnabled.Value;
 
             var gridCanvasGroup = grid.AddComponent<CanvasGroup>();
             gridCanvasGroup.blocksRaycasts = false;
@@ -4671,13 +3656,13 @@ namespace BetterLegacy.Editor.Managers
             var objectSearchPopup = GeneratePopup("Object Search Popup", "Object Search", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 objectSearchTerm = _val;
-                RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
+                RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             }, placeholderText: "Search for object...");
 
             var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", EditorSprites.SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Object Search Popup");
-                RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
+                RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             });
 
             EditorHelper.SetComplexity(dropdown, Complexity.Normal);
@@ -5425,7 +4410,7 @@ namespace BetterLegacy.Editor.Managers
                     yield return StartCoroutine(RTCode.IEvaluate(str));
             }
 
-            SetLayer(0, LayerType.Objects);
+            EditorTimeline.inst.SetLayer(0, EditorTimeline.LayerType.Objects);
 
             WindowController.ResetTitle();
 
@@ -5433,9 +4418,9 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Clearing data...");
 
-            for (int i = 0; i < timelineObjects.Count; i++)
+            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
             {
-                var timelineObject = timelineObjects[i];
+                var timelineObject = EditorTimeline.inst.timelineObjects[i];
                 if (timelineObject.GameObject)
                     Destroy(timelineObject.GameObject);
 
@@ -5446,18 +4431,18 @@ namespace BetterLegacy.Editor.Managers
                         if (kf.GameObject)
                             Destroy(kf.GameObject);
                     }
-                timelineObjects[i] = null;
+                EditorTimeline.inst.timelineObjects[i] = null;
             }
-            timelineObjects.Clear();
+            EditorTimeline.inst.timelineObjects.Clear();
 
-            for (int i = 0; i < timelineKeyframes.Count; i++)
+            for (int i = 0; i < EditorTimeline.inst.timelineKeyframes.Count; i++)
             {
-                var timelineObject = timelineKeyframes[i];
+                var timelineObject = EditorTimeline.inst.timelineKeyframes[i];
                 if (timelineObject.GameObject)
                     Destroy(timelineObject.GameObject);
-                timelineKeyframes[i] = null;
+                EditorTimeline.inst.timelineKeyframes[i] = null;
             }
-            timelineKeyframes.Clear();
+            EditorTimeline.inst.timelineKeyframes.Clear();
 
             for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
                 LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
@@ -5587,15 +4572,15 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.Log("Assigning waveform textures...");
                 InfoPopup.SetInfo($"Assigning Waveform Textures for [ {name} ]");
-                SetTimelineSprite(null);
-                StartCoroutine(AssignTimelineTexture());
+                EditorTimeline.inst.SetTimelineSprite(null);
+                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
             else
             {
                 CoreHelper.Log("Skipping waveform textures...");
                 InfoPopup.SetInfo($"Skipping Waveform Textures for [ {name} ]");
-                SetTimelineSprite(null);
+                EditorTimeline.inst.SetTimelineSprite(null);
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
 
@@ -5646,7 +4631,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Creating timeline objects...");
             InfoPopup.SetInfo($"Setting first object of [ {name} ]");
-            StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects());
+            StartCoroutine(EditorTimeline.inst.ICreateTimelineObjects());
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.SetCurrentCheckpoint(0);
@@ -5669,7 +4654,7 @@ namespace BetterLegacy.Editor.Managers
             // Load Settings like timeline position, editor layer, bpm active, etc
             LoadSettings();
             EditorManager.inst.RenderTimeline();
-            RenderBins();
+            EditorTimeline.inst.RenderBins();
 
             if (EditorConfig.Instance.LevelPausesOnStart.Value)
             {
@@ -6170,7 +5155,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    foreach (var bm in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         bm.parent = "";
                         Updater.UpdateObject(bm);
@@ -6317,7 +5302,7 @@ namespace BetterLegacy.Editor.Managers
             noParentButton.onClick.ClearAll();
             noParentButton.onClick.AddListener(() =>
             {
-                var list = ObjectEditor.inst.SelectedObjects;
+                var list = EditorTimeline.inst.SelectedObjects;
                 foreach (var timelineObject in list)
                 {
                     if (timelineObject.isPrefabObject)
@@ -6355,7 +5340,7 @@ namespace BetterLegacy.Editor.Managers
                 camButton.onClick.ClearAll();
                 camButton.onClick.AddListener(() =>
                 {
-                    var list = ObjectEditor.inst.SelectedObjects;
+                    var list = EditorTimeline.inst.SelectedObjects;
                     foreach (var timelineObject in list)
                     {
                         if (timelineObject.isPrefabObject)
@@ -6423,7 +5408,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         string id = obj.id;
 
-                        var list = ObjectEditor.inst.SelectedObjects;
+                        var list = EditorTimeline.inst.SelectedObjects;
                         foreach (var timelineObject in list)
                         {
                             if (timelineObject.isPrefabObject)
@@ -6436,7 +5421,7 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            TriggerHelper.SetParent(timelineObject, ObjectEditor.inst.GetTimelineObject(obj));
+                            TriggerHelper.SetParent(timelineObject, EditorTimeline.inst.GetTimelineObject(obj));
                             Updater.UpdateObject(bm);
                         }
 

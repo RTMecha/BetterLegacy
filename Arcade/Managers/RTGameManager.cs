@@ -81,8 +81,8 @@ namespace BetterLegacy.Arcade.Managers
                 return;
 
             objectDragger.gameObject.SetActive(SelectObject.Enabled && CoreHelper.InEditor && EditorManager.inst.isEditing &&
-                ObjectEditor.inst.SelectedObjectCount == 1 &&
-                (ObjectEditor.inst.CurrentSelection.isBeatmapObject && ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || ObjectEditor.inst.CurrentSelection.isPrefabObject));
+                EditorTimeline.inst.SelectedObjectCount == 1 &&
+                (EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || EditorTimeline.inst.CurrentSelection.isPrefabObject));
         }
 
         SelectObjectScaler CreateScaler(Axis axis, Color color)

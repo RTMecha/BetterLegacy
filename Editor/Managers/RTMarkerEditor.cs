@@ -232,7 +232,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!timelineMarkers[i].dragging)
                     continue;
 
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(RTEditor.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
                 timelineMarkers[i].RenderPosition();
             }
 
@@ -423,13 +423,13 @@ namespace BetterLegacy.Editor.Managers
 
                     var matchGroup = match.Groups[1].ToString();
                     if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
-                        RTEditor.inst.SetLayer(RTEditor.LayerType.Events);
+                        EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
                     else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
-                        RTEditor.inst.SetLayer(RTEditor.LayerType.Objects);
+                        EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
                     else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
-                        RTEditor.inst.SetLayer(RTEditor.inst.layerType == RTEditor.LayerType.Objects ? RTEditor.LayerType.Events : RTEditor.LayerType.Objects);
+                        EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
                     else if (int.TryParse(matchGroup, out int layer))
-                        RTEditor.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
+                        EditorTimeline.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
                 }
         }
 
@@ -599,7 +599,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.UpdatePlayButton();
 
             if (moveTimeline)
-                RTEditor.inst.SetTimeline(EditorManager.inst.zoomFloat, AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+                EditorTimeline.inst.SetTimeline(EditorManager.inst.zoomFloat, AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
         }
 
         /// <summary>

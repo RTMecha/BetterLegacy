@@ -339,8 +339,8 @@ namespace BetterLegacy.Core.Helpers
         {
             EditorManager.inst.DragEndPos = ((PointerEventData)eventData).position;
             EditorManager.inst.SelectionBoxImage.gameObject.SetActive(false);
-            if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
-                RTEditor.inst.StartCoroutine(ObjectEditor.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift)));
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+                RTEditor.inst.StartCoroutine(EditorTimeline.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift)));
             else
                 RTEventEditor.inst.StartCoroutine(RTEventEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift)));
         });
@@ -372,7 +372,7 @@ namespace BetterLegacy.Core.Helpers
         {
             ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
 
-            ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.GetTimelineObject(beatmapObject));
+            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
 
             ObjectEditor.inst.RenderKeyframes(beatmapObject);
             ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
@@ -460,7 +460,7 @@ namespace BetterLegacy.Core.Helpers
         {
             int bin = timelineObject.Bin;
 
-            foreach (var otherTLO in RTEditor.inst.timelineObjects)
+            foreach (var otherTLO in EditorTimeline.inst.timelineObjects)
             {
                 otherTLO.timeOffset = otherTLO.Time - timelineObject.Time;
                 otherTLO.binOffset = otherTLO.Bin - bin;
@@ -469,7 +469,7 @@ namespace BetterLegacy.Core.Helpers
             timelineObject.timeOffset = 0f;
             timelineObject.binOffset = 0;
 
-            float timelineTime = RTEditor.inst.GetTimelineTime();
+            float timelineTime = EditorTimeline.inst.GetTimelineTime();
             int num = 14 - Mathf.RoundToInt((Input.mousePosition.y - 25f) * EditorManager.inst.ScreenScaleInverse / 20f);
             ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
             ObjEditor.inst.mouseOffsetYForDrag = bin - num;
@@ -480,9 +480,9 @@ namespace BetterLegacy.Core.Helpers
         {
             ObjEditor.inst.beatmapObjectsDrag = false;
 
-            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
                 if (ObjectEditor.UpdateObjects)
                 {
                     if (timelineObject.isBeatmapObject)
@@ -494,7 +494,7 @@ namespace BetterLegacy.Core.Helpers
                 Updater.Sort();
             }
 
-            if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
+            if (EditorTimeline.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
                 RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
         });
 
@@ -506,14 +506,14 @@ namespace BetterLegacy.Core.Helpers
 
             CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
 
-            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled && RTEditor.inst.onSelectTimelineObject == null)
+            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled && EditorTimeline.inst.onSelectTimelineObject == null)
             {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
                     RTEditor.inst.ShowContextMenu(
-                        new ButtonFunction("Select", () => { ObjectEditor.inst.SetCurrentObject(timelineObject); }),
-                        new ButtonFunction("Add to Selection", () => { ObjectEditor.inst.AddSelectedObject(timelineObject); }),
-                        new ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
+                        new ButtonFunction("Select", () => EditorTimeline.inst.SetCurrentObject(timelineObject)),
+                        new ButtonFunction("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(timelineObject)),
+                        new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
                         new ButtonFunction("Update Object", () =>
                         {
                             if (timelineObject.isBeatmapObject)
@@ -531,7 +531,7 @@ namespace BetterLegacy.Core.Helpers
                         new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
                         new ButtonFunction("Duplicate", () =>
                         {
-                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime);
@@ -539,7 +539,7 @@ namespace BetterLegacy.Core.Helpers
                         new ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
                         new ButtonFunction("Duplicate (Keep Prefab)", () =>
                         {
-                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
@@ -561,7 +561,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.beatmapObjects.Move(index, index - 1);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject:
@@ -575,7 +575,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.prefabObjects.Move(index, index - 1);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                             }
@@ -595,7 +595,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.beatmapObjects.Move(index, index + 1);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject:
@@ -609,7 +609,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.prefabObjects.Move(index, index + 1);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                             }
@@ -629,7 +629,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.beatmapObjects.Move(index, 0);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject:
@@ -643,7 +643,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.prefabObjects.Move(index, 0);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                             }
@@ -663,7 +663,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject:
@@ -677,7 +677,7 @@ namespace BetterLegacy.Core.Helpers
                                         }
 
                                         GameData.Current.prefabObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
-                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        EditorTimeline.inst.UpdateTransformIndex();
                                         break;
                                     }
                             }
@@ -688,11 +688,11 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
-                    ObjectEditor.inst.AddSelectedObject(timelineObject);
+                    EditorTimeline.inst.AddSelectedObject(timelineObject);
                 else
-                    ObjectEditor.inst.SetCurrentObject(timelineObject);
+                    EditorTimeline.inst.SetCurrentObject(timelineObject);
 
-                float timelineTime = RTEditor.inst.GetTimelineTime();
+                float timelineTime = EditorTimeline.inst.GetTimelineTime();
                 ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
                 return;
             }
@@ -700,10 +700,10 @@ namespace BetterLegacy.Core.Helpers
             if (pointerEventData.button == PointerEventData.InputButton.Right)
                 return;
 
-            if (RTEditor.inst.onSelectTimelineObject != null)
+            if (EditorTimeline.inst.onSelectTimelineObject != null)
             {
-                RTEditor.inst.onSelectTimelineObject(timelineObject);
-                RTEditor.inst.onSelectTimelineObject = null;
+                EditorTimeline.inst.onSelectTimelineObject(timelineObject);
+                EditorTimeline.inst.onSelectTimelineObject = null;
                 return;
             }
 
@@ -718,22 +718,22 @@ namespace BetterLegacy.Core.Helpers
 
                 if (RTEditor.inst.selectingMultiple)
                 {
-                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
                         otherBeatmapObject.prefabID = beatmapObject.prefabID;
                         otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                        ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
+                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
                     }
                 }
-                else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
+                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
-                    var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+                    var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
                     currentBeatmapObject.prefabID = beatmapObject.prefabID;
                     currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                    ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
                     ObjectEditor.inst.OpenDialog(currentBeatmapObject);
                 }
 
@@ -749,22 +749,22 @@ namespace BetterLegacy.Core.Helpers
 
                 if (RTEditor.inst.selectingMultiple)
                 {
-                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                     {
                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
                         otherBeatmapObject.prefabID = prefabObject.prefabID;
                         otherBeatmapObject.prefabInstanceID = prefabInstanceID;
-                        ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
+                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
                     }
                 }
-                else if (ObjectEditor.inst.CurrentSelection.isBeatmapObject)
+                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
-                    var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+                    var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
                     currentBeatmapObject.prefabID = prefabObject.prefabID;
                     currentBeatmapObject.prefabInstanceID = prefabInstanceID;
-                    ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
                     ObjectEditor.inst.OpenDialog(currentBeatmapObject);
                 }
 
@@ -778,7 +778,7 @@ namespace BetterLegacy.Core.Helpers
                 if (RTEditor.inst.selectingMultiple)
                 {
                     bool success = false;
-                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects)
+                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects)
                     {
                         if (otherTimelineObject.isPrefabObject)
                         {
@@ -801,9 +801,9 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
+                if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
                 {
-                    var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
+                    var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
                     prefabObject.parent = timelineObject.ID;
                     Updater.UpdatePrefab(prefabObject);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
@@ -812,7 +812,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                var tryParent = SetParent(ObjectEditor.inst.CurrentSelection, timelineObject);
+                var tryParent = SetParent(EditorTimeline.inst.CurrentSelection, timelineObject);
 
                 if (!tryParent)
                     EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
@@ -906,7 +906,7 @@ namespace BetterLegacy.Core.Helpers
             else
                 EventEditor.inst.SetCurrentEvent(kf.Type, kf.Index);
 
-            float timelineTime = RTEditor.inst.GetTimelineTime();
+            float timelineTime = EditorTimeline.inst.GetTimelineTime();
             EventEditor.inst.mouseOffsetXForDrag = GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
             EventEditor.inst.eventDrag = true;
         });

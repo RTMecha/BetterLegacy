@@ -2711,8 +2711,8 @@ namespace BetterLegacy.Configs
         void TimelineCollapseLengthChanged()
         {
             ObjectEditor.TimelineCollapseLength = TimelineCollapseLength.Value;
-            if (ObjectEditor.inst)
-                ObjectEditor.inst.RenderTimelineObjects();
+            if (EditorTimeline.inst)
+                EditorTimeline.inst.RenderTimelineObjects();
         }
 
         void ThemeEventKeyframeChanged()
@@ -2758,10 +2758,10 @@ namespace BetterLegacy.Configs
             UpdateEditorComplexity?.Invoke();
             AdjustPositionInputsChanged?.Invoke();
 
-            if (ObjectEditor.inst && ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
+            if (EditorTimeline.inst && EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
 
-            if (RTEditor.inst && RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            if (RTEditor.inst && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 RTEventEditor.inst.RenderLayerBins();
                 if (EventEditor.inst.dialogRight.gameObject.activeInHierarchy)
@@ -2775,8 +2775,8 @@ namespace BetterLegacy.Configs
 
             if (!prefabSelectorLeft.gameObject.activeInHierarchy)
                 RTPrefabEditor.inst.UpdateModdedVisbility();
-            else if (ObjectEditor.inst.CurrentSelection.isPrefabObject)
-                RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
+            else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
+                RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
         void DraggingChanged()
@@ -2791,7 +2791,7 @@ namespace BetterLegacy.Configs
                 return;
 
             if (WaveformRerender.Value)
-                RTEditor.inst.StartCoroutine(RTEditor.inst.AssignTimelineTexture());
+                RTEditor.inst.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
         }
 
         void ThemePopupChanged()
@@ -2810,8 +2810,8 @@ namespace BetterLegacy.Configs
             ObjEditor.inst.ObjectLengthOffset = KeyframeEndLengthOffset.Value;
             ObjEditor.inst.SelectedColor = ObjectSelectionColor.Value;
 
-            if (ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.isBeatmapObject)
-                CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
+            if (EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
         }
 
         void TimelineGridChanged()
@@ -2819,12 +2819,12 @@ namespace BetterLegacy.Configs
             if (!RTEditor.inst)
                 return;
 
-            RTEditor.inst.timelineGridRenderer.enabled = false;
+            EditorTimeline.inst.timelineGridRenderer.enabled = false;
 
-            RTEditor.inst.timelineGridRenderer.color = TimelineGridColor.Value;
-            RTEditor.inst.timelineGridRenderer.thickness = TimelineGridThickness.Value;
+            EditorTimeline.inst.timelineGridRenderer.color = TimelineGridColor.Value;
+            EditorTimeline.inst.timelineGridRenderer.thickness = TimelineGridThickness.Value;
 
-            RTEditor.inst.SetTimelineGridSize();
+            EditorTimeline.inst.SetTimelineGridSize();
         }
 
         void ThemeTemplateChanged() => UpdateDefaultThemeValues();
@@ -2849,7 +2849,7 @@ namespace BetterLegacy.Configs
 
             AdjustPositionInputsChanged?.Invoke();
 
-            if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                 RTEventEditor.inst.RenderLayerBins();
         }
 
@@ -2876,7 +2876,7 @@ namespace BetterLegacy.Configs
         void TimelineColorsChanged()
         {
             if (CoreHelper.InEditor)
-                RTEditor.inst.UpdateTimelineColors();
+                EditorTimeline.inst.UpdateTimelineColors();
         }
 
         void UpdateDefaultThemeValues()
