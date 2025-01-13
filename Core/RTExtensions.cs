@@ -265,6 +265,20 @@ namespace BetterLegacy.Core
             transform.anchoredPosition = pos;
         }
 
+        public static void SetSizeDeltaX(this RectTransform transform, float x)
+        {
+            var size = transform.sizeDelta;
+            size.x = x;
+            transform.sizeDelta = size;
+        }
+        
+        public static void SetSizeDeltaY(this RectTransform transform, float y)
+        {
+            var size = transform.sizeDelta;
+            size.y = y;
+            transform.sizeDelta = size;
+        }
+
         /// <summary>
         /// Gets a <see cref="RectValues"/> from a <see cref="RectTransform"/>.
         /// </summary>
