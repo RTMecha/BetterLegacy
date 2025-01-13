@@ -1042,7 +1042,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ClearDialogsPrefix(params EditorManager.EditorDialog.DialogType[] __0)
         {
-            EditorDialog.CurrentDialog?.Close();
+            if (__0.Contains(EditorManager.EditorDialog.DialogType.Object))
+                EditorDialog.CurrentDialog?.Close();
 
             var play = EditorConfig.Instance.PlayEditorAnimations.Value;
 
