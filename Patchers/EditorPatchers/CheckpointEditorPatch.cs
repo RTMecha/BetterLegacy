@@ -80,7 +80,6 @@ namespace BetterLegacy.Patchers
         {
             int index = __0;
 
-            EditorManager.inst.ClearDialogs();
             RTEditor.inst.CheckpointEditorDialog.Open();
 
             if (Instance.right == null)

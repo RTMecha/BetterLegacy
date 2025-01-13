@@ -268,7 +268,6 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="timelineMarker">The marker to edit.</param>
         public void OpenDialog(TimelineMarker timelineMarker)
         {
-            EditorManager.inst.ClearDialogs();
             Dialog.Open();
 
             UpdateMarkerList();

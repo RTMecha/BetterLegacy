@@ -172,7 +172,7 @@ namespace BetterLegacy.Core.Helpers
 
                 EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.timelineObjects.Last();
 
-                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ClearPopups();
                 MultiObjectEditor.inst.Dialog.Open();
             }
 
@@ -201,7 +201,7 @@ namespace BetterLegacy.Core.Helpers
 
                 EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.timelineObjects.Last();
 
-                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ClearPopups();
                 MultiObjectEditor.inst.Dialog.Open();
             }
 

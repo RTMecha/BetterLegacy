@@ -1848,13 +1848,11 @@ namespace BetterLegacy.Editor.Managers
         {
             if (SelectedKeyframes.Count > 1 && !SelectedKeyframes.All(x => x.Type == SelectedKeyframes.Min(y => y.Type)))
             {
-                EditorManager.inst.ClearDialogs();
                 MultiDialog.Open();
                 RenderMultiEventsDialog();
             }
             else if (SelectedKeyframes.Count > 0)
             {
-                EditorManager.inst.ClearDialogs();
                 Dialog.Open();
 
                 EventEditor.inst.currentEventType = SelectedKeyframes[0].Type;

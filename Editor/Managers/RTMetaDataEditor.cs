@@ -540,7 +540,6 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            EditorManager.inst.ClearDialogs();
             if (RTEditor.inst.CurrentLevel)
                 iconImage.sprite = RTEditor.inst.CurrentLevel.icon;
 
@@ -821,11 +820,7 @@ namespace BetterLegacy.Editor.Managers
                 "If you want to know more, click this text.";
 
             var agreementText = content.Find("agreement/text").GetComponent<Clickable>() ?? content.Find("agreement/text").gameObject.AddComponent<Clickable>();
-            agreementText.onClick = eventData =>
-            {
-                EditorManager.inst.ClearDialogs();
-                EditorDocumentation.inst.OpenDocument("Uploading a Level");
-            };
+            agreementText.onClick = eventData => EditorDocumentation.inst.OpenDocument("Uploading a Level");
 
             content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();

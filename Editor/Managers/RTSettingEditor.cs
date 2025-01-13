@@ -370,7 +370,6 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
             EditorManager.inst.InvokeRepeating("LoadingIconUpdate", 0f, UnityEngine.Random.Range(0.01f, 0.4f));
 
-            EditorManager.inst.ClearDialogs();
             Dialog.Open();
 
             var transform = Dialog.GameObject.transform.AsRT();

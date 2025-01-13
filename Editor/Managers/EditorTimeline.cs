@@ -209,7 +209,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (SelectedObjectCount > 1)
             {
-                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ClearPopups();
                 MultiObjectEditor.inst.Dialog.Open();
             }
 
@@ -230,7 +230,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (SelectedObjectCount + 1 > 1)
             {
-                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ClearPopups();
 
                 var first = SelectedObjects[0];
                 timelineObject.Selected = !timelineObject.Selected;

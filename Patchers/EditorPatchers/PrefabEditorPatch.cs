@@ -240,8 +240,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenPrefabDialogPrefix()
         {
-            EditorManager.inst.ClearDialogs();
-
             bool isPrefab = EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject;
             if (!isPrefab)
             {

@@ -2040,7 +2040,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                         list.Add(timelineObject);
 
-                    EditorManager.inst.ClearDialogs(EditorManager.EditorDialog.DialogType.Object, EditorManager.EditorDialog.DialogType.Prefab);
+                    EditorDialog.CurrentDialog?.Close();
 
                     float startTime = 0f;
 
@@ -2074,7 +2074,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (RTEventEditor.inst.SelectedKeyframes.Count > 0 && !RTEventEditor.inst.SelectedKeyframes.Has(x => x.Index == 0))
                 {
-                    EditorManager.inst.ClearDialogs(EditorManager.EditorDialog.DialogType.Event);
+                    EditorDialog.CurrentDialog?.Close();
 
                     var list = new List<TimelineKeyframe>();
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
@@ -4509,7 +4509,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.timelineScrollRectBar.value = 0f;
             GameManager.inst.gameState = GameManager.State.Loading;
 
-            EditorManager.inst.ClearDialogs();
+            EditorManager.inst.ClearPopups();
+            EditorDialog.CurrentDialog?.Close();
             InfoPopup.Open();
 
             if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.FileExists(GameManager.inst.path))

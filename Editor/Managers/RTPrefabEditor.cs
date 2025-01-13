@@ -1365,7 +1365,7 @@ namespace BetterLegacy.Editor.Managers
         {
             string id = prefabObject.ID;
 
-            EditorManager.inst.ClearDialogs();
+            EditorDialog.CurrentDialog.Close();
 
             var sw = CoreHelper.StartNewStopwatch();
 
@@ -1439,8 +1439,6 @@ namespace BetterLegacy.Editor.Managers
             var objectIDs = new List<IDPair>();
             for (int j = 0; j < prefab.objects.Count; j++)
                 objectIDs.Add(new IDPair(prefab.objects[j].id));
-
-            EditorManager.inst.ClearDialogs();
 
             var sw = CoreHelper.StartNewStopwatch();
 
@@ -2512,8 +2510,21 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OpenPopup()
         {
-            EditorManager.inst.ClearPopups();
-            RTEditor.inst.PrefabPopups.Open();
+            foreach (var editorPopup in RTEditor.inst.editorPopups)
+            {
+                if (editorPopup.Name == EditorPopup.PREFAB_POPUP)
+                {
+                    if (editorPopup.IsOpen)
+                        continue;
+
+                    editorPopup.Open();
+
+                    continue;
+                }
+
+                editorPopup.Close();
+            }
+
             RenderPopup();
         }
 
@@ -2588,7 +2599,6 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OpenDialog()
         {
-            EditorManager.inst.ClearDialogs();
             PrefabCreator.Open();
 
             var component = PrefabEditor.inst.dialog.Find("data/name/input").GetComponent<InputField>();

@@ -1298,7 +1298,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var __instance = BackgroundEditor.inst;
 
-            EditorManager.inst.ClearDialogs();
+            EditorManager.inst.ClearPopups();
             Dialog.Open();
 
             var backgroundObject = GameData.Current.backgroundObjects[index];

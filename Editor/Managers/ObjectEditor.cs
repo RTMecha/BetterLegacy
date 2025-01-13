@@ -2564,7 +2564,7 @@ namespace BetterLegacy.Editor.Managers
                 ClearKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
 
             if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
-                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ClearPopups();
 
             var sw = CoreHelper.StartNewStopwatch();
 
@@ -3284,7 +3284,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorManager.inst.ActiveDialogs.Count > 2 || !EditorManager.inst.ActiveDialogs.Has(x => x.Name == "Object Editor")) // Only need to clear the dialogs if object editor isn't the only active dialog.
             {
-                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ClearPopups();
                 Dialog.Open();
             }
 
