@@ -160,7 +160,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public TimelineObject CurrentSelection { get; set; } = new TimelineObject(null);
 
-        public List<TimelineObject> SelectedObjects => timelineObjects.FindAll(x => x.Selected && !x.isEventKeyframe);
+        public List<TimelineObject> SelectedObjects => timelineObjects.FindAll(x => x.Selected);
         public List<TimelineObject> SelectedBeatmapObjects => TimelineBeatmapObjects.FindAll(x => x.Selected);
         public List<TimelineObject> SelectedPrefabObjects => TimelinePrefabObjects.FindAll(x => x.Selected);
 

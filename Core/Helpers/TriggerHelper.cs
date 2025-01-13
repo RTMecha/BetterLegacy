@@ -16,6 +16,8 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class TriggerHelper
     {
+        #region Main
+
         public static void AddEventTriggers(GameObject gameObject, params EventTrigger.Entry[] entries)
         {
             var eventTrigger = gameObject.GetComponent<EventTrigger>() ?? gameObject.AddComponent<EventTrigger>();
@@ -311,6 +313,8 @@ namespace BetterLegacy.Core.Helpers
                 button.interactable = interactable;
         }
 
+        #endregion
+
         #region Timeline
 
         static Vector2 cachedTimelinePos;
@@ -373,107 +377,178 @@ namespace BetterLegacy.Core.Helpers
 
         #region Keyframes
 
-        public static EventTrigger.Entry CreateKeyframeStartDragTrigger(BeatmapObject beatmapObject, TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
+        public static EventTrigger.Entry CreateTimelineKeyframeTrigger(TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.PointerClick, eventData =>
+        {
+            var pointerEventData = (PointerEventData)eventData;
+
+            if (pointerEventData.button == PointerEventData.InputButton.Right)
+                return;
+
+            if (timelineKeyframe.isObjectKeyframe)
+                ObjectEditor.inst.SetCurrentKeyframe(timelineKeyframe.beatmapObject, timelineKeyframe.Type, timelineKeyframe.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
+            else if (!EventEditor.inst.eventDrag)
+                (InputDataManager.inst.editorActions.MultiSelect.IsPressed ?
+                    (Action<int, int>)EventEditor.inst.AddedSelectedEvent :
+                    EventEditor.inst.SetCurrentEvent)(timelineKeyframe.Type, timelineKeyframe.Index);
+        });
+
+        public static EventTrigger.Entry CreateTimelineKeyframeStartDragTrigger(TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
             if (timelineKeyframe.Index == 0)
             {
-                EditorManager.inst.DisplayNotification("Can't change time of first Keyframe", 2f, EditorManager.NotificationType.Warning);
+                EditorManager.inst.DisplayNotification("Can't change the time of the first Keyframe.", 3f, EditorManager.NotificationType.Warning);
                 return;
             }
 
-            ObjEditor.inst.currentKeyframeKind = timelineKeyframe.Type;
-            ObjEditor.inst.currentKeyframe = timelineKeyframe.Index;
+            if (timelineKeyframe.isObjectKeyframe)
+            {
+                var beatmapObject = timelineKeyframe.beatmapObject;
+                ObjEditor.inst.currentKeyframeKind = timelineKeyframe.Type;
+                ObjEditor.inst.currentKeyframe = timelineKeyframe.Index;
 
-            var list = beatmapObject.timelineObject.InternalTimelineObjects;
-            if (list.FindIndex(x => x.Type == timelineKeyframe.Type && x.Index == timelineKeyframe.Index) != -1)
-                foreach (var otherTLO in beatmapObject.timelineObject.InternalTimelineObjects)
-                    otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineKeyframe.Time;
-            ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineKeyframe.Time - ObjectEditor.MouseTimelineCalc();
-            ObjEditor.inst.timelineKeyframesDrag = true;
+                var list = beatmapObject.timelineObject.InternalTimelineObjects;
+                if (list.FindIndex(x => x.Type == timelineKeyframe.Type && x.Index == timelineKeyframe.Index) != -1)
+                    foreach (var otherTLO in beatmapObject.timelineObject.InternalTimelineObjects)
+                        otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineKeyframe.Time;
+                ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineKeyframe.Time - ObjectEditor.MouseTimelineCalc();
+                ObjEditor.inst.timelineKeyframesDrag = true;
+            }
+            else
+            {
+                if (RTEventEditor.inst.SelectedKeyframes.FindIndex(x => x.Type == timelineKeyframe.Type && x.Index == timelineKeyframe.Index) != -1)
+                {
+                    foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                    {
+                        timelineObject.timeOffset =
+                            timelineObject.Type == timelineKeyframe.Type && timelineObject.Index == timelineKeyframe.Index ? 0f :
+                                timelineObject.Time - GameData.Current.eventObjects.allEvents[timelineKeyframe.Type][timelineKeyframe.Index].eventTime;
+                    }
+                }
+                else
+                    EventEditor.inst.SetCurrentEvent(timelineKeyframe.Type, timelineKeyframe.Index);
+
+                float timelineTime = EditorTimeline.inst.GetTimelineTime();
+                EventEditor.inst.mouseOffsetXForDrag = timelineKeyframe.eventKeyframe.eventTime - timelineTime;
+                EventEditor.inst.eventDrag = true;
+            }
         });
 
-        public static EventTrigger.Entry CreateKeyframeEndDragTrigger(BeatmapObject beatmapObject, TimelineKeyframe timelineObject) => CreateEntry(EventTriggerType.EndDrag, eventData =>
+        public static EventTrigger.Entry CreateTimelineKeyframeEndDragTrigger(TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.EndDrag, eventData =>
         {
-            ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
+            if (timelineKeyframe.isObjectKeyframe)
+            {
+                var beatmapObject = timelineKeyframe.beatmapObject;
+                ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
 
-            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
 
-            ObjectEditor.inst.RenderKeyframes(beatmapObject);
-            ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
-            ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-            ObjEditor.inst.timelineKeyframesDrag = false;
+                ObjectEditor.inst.RenderKeyframes(beatmapObject);
+                ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
+                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                ObjEditor.inst.timelineKeyframesDrag = false;
+            }
+            else
+            {
+                EventEditor.inst.eventDrag = false;
+                EventEditor.inst.UpdateEventOrder();
+                EventManager.inst.updateEvents();
+
+                RTEventEditor.inst.OpenDialog();
+            }
         });
 
-        public static EventTrigger.Entry CreateKeyframeSelectTrigger(BeatmapObject beatmapObject, TimelineKeyframe timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
+        public static EventTrigger.Entry CreateTimelineKeyframeSelectTrigger(TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.PointerDown, eventData =>
         {
             if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
                 return;
 
-            EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time)),
-                new ButtonFunction("Set KF to Cursor", () =>
-                {
-                    var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
-                    var selected = RTEventEditor.inst.SelectedKeyframes;
-                    for (int i = 0; i < selected.Count; i++)
+            if (timelineKeyframe.isObjectKeyframe)
+            {
+                var beatmapObject = timelineKeyframe.beatmapObject;
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineKeyframe.Time)),
+                    new ButtonFunction("Set KF to Cursor", () =>
                     {
-                        var kf = selected[i];
-                        var eventKeyframe = kf.eventKeyframe;
-                        eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                    }
+                        var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
+                        var selected = RTEventEditor.inst.SelectedKeyframes;
+                        for (int i = 0; i < selected.Count; i++)
+                        {
+                            var kf = selected[i];
+                            var eventKeyframe = kf.eventKeyframe;
+                            eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                        }
 
-                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                    Updater.UpdateObject(beatmapObject, "Keyframes");
-                }),
-                new ButtonFunction(true),
-                new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
-                new ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
-                new ButtonFunction("Copy Data", () =>
-                {
-                    var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
-                    var firstKF = selected.ElementAt(0);
-                    var type = timelineObject.Type;
-
-                    switch (type)
+                        ObjectEditor.inst.RenderKeyframes(beatmapObject);
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
+                    new ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
+                    new ButtonFunction("Copy Data", () =>
                     {
-                        case 0:
-                            ObjectEditor.inst.CopiedPositionData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                            break;
-                        case 1:
-                            ObjectEditor.inst.CopiedScaleData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                            break;
-                        case 2:
-                            ObjectEditor.inst.CopiedRotationData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                            break;
-                        case 3:
-                            ObjectEditor.inst.CopiedColorData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                            break;
-                    }
-                    EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction("Paste Data", () =>
-                {
-                    var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
-                    var type = timelineObject.Type;
+                        var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
+                        var firstKF = selected.ElementAt(0);
+                        var type = timelineKeyframe.Type;
 
-                    switch (type)
+                        switch (type)
+                        {
+                            case 0:
+                                ObjectEditor.inst.CopiedPositionData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
+                                break;
+                            case 1:
+                                ObjectEditor.inst.CopiedScaleData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
+                                break;
+                            case 2:
+                                ObjectEditor.inst.CopiedRotationData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
+                                break;
+                            case 3:
+                                ObjectEditor.inst.CopiedColorData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
+                                break;
+                        }
+                        EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste Data", () => ObjectEditor.inst.PasteKeyframeData(timelineKeyframe.Type, beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected), beatmapObject)),
+                    new ButtonFunction("Delete", RTEditor.inst.Delete)
+                    );
+            }
+            else
+            {
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(timelineKeyframe.Time)),
+                    new ButtonFunction("Set KF to Cursor", () =>
                     {
-                        case 0:
-                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedPositionData, selected, beatmapObject, "Position");
-                            break;
-                        case 1:
-                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedScaleData, selected, beatmapObject, "Scale");
-                            break;
-                        case 2:
-                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedRotationData, selected, beatmapObject, "Rotation");
-                            break;
-                        case 3:
-                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedColorData, selected, beatmapObject, "Color");
-                            break;
-                    }
-                }),
-                new ButtonFunction("Delete", RTEditor.inst.Delete)
-                );
+                        var time = AudioManager.inst.CurrentAudioSource.time;
+                        var selected = RTEventEditor.inst.SelectedKeyframes;
+                        for (int i = 0; i < selected.Count; i++)
+                        {
+                            var kf = selected[i];
+                            var eventKeyframe = kf.eventKeyframe;
+                            eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                        }
+
+                        RTEventEditor.inst.UpdateEventOrder();
+                        RTEventEditor.inst.RenderEventObjects();
+                        EventManager.inst.updateEvents();
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Reset", () =>
+                    {
+                        var eventKeyframe = timelineKeyframe.eventKeyframe;
+                        var defaultKeyframe = GameData.DefaultKeyframes[timelineKeyframe.Type];
+                        for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
+                        {
+                            if (defaultKeyframe.eventValues.Length > i)
+                                eventKeyframe.eventValues[i] = defaultKeyframe.eventValues[i];
+                        }
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
+                    new ButtonFunction("Paste", () => RTEventEditor.inst.PasteEvents()),
+                    new ButtonFunction("Copy Data", () => RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe)),
+                    new ButtonFunction("Paste Data", () => RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType)),
+                    new ButtonFunction("Delete", RTEditor.inst.Delete)
+                    );
+            }
         });
 
         #endregion
@@ -886,96 +961,6 @@ namespace BetterLegacy.Core.Helpers
 
             return canBeParented;
         }
-
-        #endregion
-
-        #region Events
-
-        public static EventTrigger.Entry CreateEventObjectTrigger(TimelineKeyframe kf) => CreateEntry(EventTriggerType.PointerClick, eventData =>
-        {
-            var pointerEventData = (PointerEventData)eventData;
-            if (EventEditor.inst.eventDrag || pointerEventData.button == PointerEventData.InputButton.Right)
-                return;
-
-            (InputDataManager.inst.editorActions.MultiSelect.IsPressed ?
-                (Action<int, int>)EventEditor.inst.AddedSelectedEvent :
-                EventEditor.inst.SetCurrentEvent)(kf.Type, kf.Index);
-        });
-
-        public static EventTrigger.Entry CreateEventEndDragTrigger() => CreateEntry(EventTriggerType.EndDrag, evenData =>
-        {
-            EventEditor.inst.eventDrag = false;
-            EventEditor.inst.UpdateEventOrder();
-            EventManager.inst.updateEvents();
-
-            RTEventEditor.inst.OpenDialog();
-        });
-
-        public static EventTrigger.Entry CreateEventStartDragTrigger(TimelineKeyframe kf) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
-        {
-            if (kf.Index == 0)
-            {
-                EditorManager.inst.DisplayNotification("Can't change time of first Event", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            if (RTEventEditor.inst.SelectedKeyframes.FindIndex(x => x.Type == kf.Type && x.Index == kf.Index) != -1)
-            {
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                {
-                    timelineObject.timeOffset = timelineObject.Type == kf.Type && timelineObject.Index == kf.Index ? 0f :
-                    timelineObject.Time - GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime;
-                }
-            }
-            else
-                EventEditor.inst.SetCurrentEvent(kf.Type, kf.Index);
-
-            float timelineTime = EditorTimeline.inst.GetTimelineTime();
-            EventEditor.inst.mouseOffsetXForDrag = GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
-            EventEditor.inst.eventDrag = true;
-        });
-
-        public static EventTrigger.Entry CreateEventSelectTrigger(TimelineKeyframe timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
-        {
-            if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
-                return;
-
-            EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(timelineObject.Time); }),
-                new ButtonFunction("Set KF to Cursor", () =>
-                {
-                    var time = AudioManager.inst.CurrentAudioSource.time;
-                    var selected = RTEventEditor.inst.SelectedKeyframes;
-                    for (int i = 0; i < selected.Count; i++)
-                    {
-                        var kf = selected[i];
-                        var eventKeyframe = kf.eventKeyframe;
-                        eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                    }
-
-                    RTEventEditor.inst.UpdateEventOrder();
-                    RTEventEditor.inst.RenderEventObjects();
-                    EventManager.inst.updateEvents();
-                }),
-                new ButtonFunction(true),
-                new ButtonFunction("Reset", () =>
-                {
-                    var eventKeyframe = timelineObject.eventKeyframe;
-                    var defaultKeyframe = GameData.DefaultKeyframes[timelineObject.Type];
-                    for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
-                    {
-                        if (defaultKeyframe.eventValues.Length > i)
-                            eventKeyframe.eventValues[i] = defaultKeyframe.eventValues[i];
-                    }
-                }),
-                new ButtonFunction(true),
-                new ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
-                new ButtonFunction("Paste", () => RTEventEditor.inst.PasteEvents()),
-                new ButtonFunction("Copy Data", () => RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe)),
-                new ButtonFunction("Paste Data", () => RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType)),
-                new ButtonFunction("Delete", RTEditor.inst.Delete)
-                );
-        });
 
         #endregion
 

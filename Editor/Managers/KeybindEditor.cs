@@ -1273,7 +1273,7 @@ namespace BetterLegacy.Editor.Managers
                         continue;
 
                     timelineObject.Locked = !timelineObject.Locked;
-                    ObjectEditor.inst.RenderKeyframe(beatmapObject, timelineObject);
+                    timelineObject.Render();
                 }
 
                 return;
@@ -1284,7 +1284,7 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                 {
                     timelineObject.Locked = !timelineObject.Locked;
-                    RTEventEditor.inst.RenderTimelineObject(timelineObject);
+                    timelineObject.RenderIcons();
                 }
                 return;
             }
@@ -1310,7 +1310,7 @@ namespace BetterLegacy.Editor.Managers
                         continue;
 
                     timelineObject.Locked = loggled;
-                    ObjectEditor.inst.RenderKeyframe(beatmapObject, timelineObject);
+                    timelineObject.Render();
                 }
 
                 loggled = !loggled;
@@ -1322,7 +1322,7 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                 {
                     timelineObject.Locked = loggled;
-                    RTEventEditor.inst.RenderTimelineObject(timelineObject);
+                    timelineObject.RenderIcons();
                 }
 
                 loggled = !loggled;
@@ -1796,7 +1796,7 @@ namespace BetterLegacy.Editor.Managers
                     if (timelineObject.Index != 0)
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
 
-                    RTEventEditor.inst.RenderTimelineObject(timelineObject);
+                    timelineObject.RenderPos();
                 }
 
             if (RTEditor.DraggingPlaysSound)

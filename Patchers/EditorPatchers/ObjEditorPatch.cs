@@ -279,7 +279,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateKeyframeStartDragTriggerPrefix(ref EventTrigger.Entry __result, EventTriggerType __0, int __1, int __2)
         {
-            __result = TriggerHelper.CreateKeyframeStartDragTrigger(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == __1 && x.Index == __2));
+            __result = TriggerHelper.CreateEntry(__0, eventData => { });
             return false;
         }
 
@@ -287,7 +287,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateKeyframeEndDragTriggerPrefix(ref EventTrigger.Entry __result, EventTriggerType __0, int __1, int __2)
         {
-            __result = TriggerHelper.CreateKeyframeEndDragTrigger(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == __1 && x.Index == __2));
+            __result = TriggerHelper.CreateEntry(__0, eventData => { });
             return false;
         }
 

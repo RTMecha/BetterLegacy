@@ -581,7 +581,7 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.eventObjects.allEvents[keyframeSelection.Type].Insert(index, eventKeyframe);
 
                 var kf = CreateEventObject(keyframeSelection.Type, index);
-                RenderTimelineObject(kf);
+                kf.Render();
                 if (selectPasted)
                     kf.Selected = true;
                 EditorTimeline.inst.timelineKeyframes.Add(kf);
@@ -657,7 +657,7 @@ namespace BetterLegacy.Editor.Managers
             EventManager.inst.updateEvents();
 
             var kf = CreateEventObject(type, AllEvents[type].IndexOf(eventKeyframe));
-            RenderTimelineObject(kf);
+            kf.Render();
             EditorTimeline.inst.timelineKeyframes.Add(kf);
             SetCurrentEvent(type, kf.Index);
         }
@@ -717,7 +717,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var kf = CreateEventObject(type, index);
 
-                    RenderTimelineObject(kf);
+                    kf.Render();
 
                     EditorTimeline.inst.timelineKeyframes.Add(kf);
                 }
@@ -732,15 +732,7 @@ namespace BetterLegacy.Editor.Managers
             eventKeyframe.timelineKeyframe = kf;
             kf.Type = type;
             kf.Index = index;
-            kf.GameObject = EventGameObject(kf);
-            kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-            kf.RenderVisibleState();
-
-            TriggerHelper.AddEventTriggers(kf.GameObject,
-                TriggerHelper.CreateEventObjectTrigger(kf),
-                TriggerHelper.CreateEventStartDragTrigger(kf),
-                TriggerHelper.CreateEventEndDragTrigger(),
-                TriggerHelper.CreateEventSelectTrigger(kf));
+            kf.Init();
 
             return kf;
         }
@@ -765,24 +757,8 @@ namespace BetterLegacy.Editor.Managers
                     }
                     if (!kf.GameObject)
                         kf.GameObject = EventGameObject(kf);
-                    RenderTimelineObject(kf);
+                    kf.Render();
                 }
-            }
-        }
-
-        public void RenderTimelineObject(TimelineKeyframe kf)
-        {
-            var events = AllEvents[kf.Type];
-            if (events.TryFindIndex(x => (x as EventKeyframe).id == kf.ID, out int index))
-                kf.Index = index;
-
-            if (kf.Type / EVENT_LIMIT == EditorTimeline.inst.Layer)
-            {
-                kf.GameObject.transform.AsRT().anchoredPosition = new Vector2(events[kf.Index].eventTime * EditorManager.inst.Zoom - EditorManager.BaseUnit / 2, 0.0f);
-                kf.GameObject.transform.AsRT().pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
-
-                kf.RenderSprite(events);
-                kf.RenderIcons();
             }
         }
 
@@ -1690,11 +1666,11 @@ namespace BetterLegacy.Editor.Managers
             button.onClick.ClearAll();
             button.onClick.AddListener(() =>
             {
-                foreach (var timelineObject in SelectedKeyframes)
+                foreach (var kf in SelectedKeyframes)
                 {
-                    if (timelineObject.Index != 0)
-                        timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
-                    RenderTimelineObject(timelineObject);
+                    if (kf.Index != 0)
+                        kf.Time = RTEditor.SnapToBPM(kf.Time);
+                    kf.RenderPos();
                 }
 
                 RenderEventsDialog();
@@ -1742,11 +1718,11 @@ namespace BetterLegacy.Editor.Managers
                 var list = SelectedKeyframes.OrderBy(x => x.Time);
                 var first = list.ElementAt(0);
 
-                foreach (var timelineObject in list)
+                foreach (var kf in list)
                 {
-                    if (timelineObject.Index != 0)
-                        timelineObject.Time = first.Time;
-                    RenderTimelineObject(timelineObject);
+                    if (kf.Index != 0)
+                        kf.Time = first.Time;
+                    kf.RenderPos();
                 }
 
                 RenderEventsDialog();
@@ -1802,7 +1778,7 @@ namespace BetterLegacy.Editor.Managers
                     kf.eventRandomValues = copiedKeyframeDatas[keyframe.Type].eventRandomValues.Copy();
                     kf.random = copiedKeyframeDatas[keyframe.Type].random;
                     kf.relative = copiedKeyframeDatas[keyframe.Type].relative;
-                    RenderTimelineObject(keyframe);
+                    keyframe.Render();
                 }
 
                 RenderEventsDialog();
@@ -2152,8 +2128,8 @@ namespace BetterLegacy.Editor.Managers
 
                         foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
                         {
-                            kf.eventKeyframe.eventTime = num;
-                            RenderTimelineObject(kf);
+                            kf.Time = num;
+                            kf.Render();
                         }
 
                         UpdateEventOrder();

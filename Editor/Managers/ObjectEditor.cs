@@ -1378,7 +1378,7 @@ namespace BetterLegacy.Editor.Managers
 
                         Updater.UpdateObject(beatmapObject, "Keyframes");
 
-                        RenderKeyframe(beatmapObject, timelineObject);
+                        timelineObject.Render();
                     }
                 });
 
@@ -1403,52 +1403,7 @@ namespace BetterLegacy.Editor.Managers
                     var list = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
 
                     foreach (var timelineObject in list)
-                    {
-                        var kf = timelineObject.eventKeyframe;
-                        switch (timelineObject.Type)
-                        {
-                            case 0:
-                                if (CopiedPositionData != null)
-                                {
-                                    kf.curveType = CopiedPositionData.curveType;
-                                    kf.eventValues = CopiedPositionData.eventValues.Copy();
-                                    kf.eventRandomValues = CopiedPositionData.eventRandomValues.Copy();
-                                    kf.random = CopiedPositionData.random;
-                                    kf.relative = CopiedPositionData.relative;
-                                }
-                                break;
-                            case 1:
-                                if (CopiedScaleData != null)
-                                {
-                                    kf.curveType = CopiedScaleData.curveType;
-                                    kf.eventValues = CopiedScaleData.eventValues.Copy();
-                                    kf.eventRandomValues = CopiedScaleData.eventRandomValues.Copy();
-                                    kf.random = CopiedScaleData.random;
-                                    kf.relative = CopiedScaleData.relative;
-                                }
-                                break;
-                            case 2:
-                                if (CopiedRotationData != null)
-                                {
-                                    kf.curveType = CopiedRotationData.curveType;
-                                    kf.eventValues = CopiedRotationData.eventValues.Copy();
-                                    kf.eventRandomValues = CopiedRotationData.eventRandomValues.Copy();
-                                    kf.random = CopiedRotationData.random;
-                                    kf.relative = CopiedRotationData.relative;
-                                }
-                                break;
-                            case 3:
-                                if (CopiedColorData != null)
-                                {
-                                    kf.curveType = CopiedColorData.curveType;
-                                    kf.eventValues = CopiedColorData.eventValues.Copy();
-                                    kf.eventRandomValues = CopiedColorData.eventRandomValues.Copy();
-                                    kf.random = CopiedColorData.random;
-                                    kf.relative = CopiedColorData.relative;
-                                }
-                                break;
-                        }
-                    }
+                        SetCopiedData(timelineObject.Type, timelineObject.eventKeyframe);
 
                     RenderKeyframes(beatmapObject);
                     RenderObjectKeyframesDialog(beatmapObject);
@@ -1495,16 +1450,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.Type != 0)
                             continue;
 
-                        var kf = timelineObject.eventKeyframe;
-
-                        if (CopiedPositionData != null)
-                        {
-                            kf.curveType = CopiedPositionData.curveType;
-                            kf.eventValues = CopiedPositionData.eventValues.Copy();
-                            kf.eventRandomValues = CopiedPositionData.eventRandomValues.Copy();
-                            kf.random = CopiedPositionData.random;
-                            kf.relative = CopiedPositionData.relative;
-                        }
+                        SetCopiedData(0, timelineObject.eventKeyframe);
                     }
 
                     RenderKeyframes(beatmapObject);
@@ -1536,16 +1482,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.Type != 1)
                             continue;
 
-                        var kf = timelineObject.eventKeyframe;
-
-                        if (CopiedScaleData != null)
-                        {
-                            kf.curveType = CopiedScaleData.curveType;
-                            kf.eventValues = CopiedScaleData.eventValues.Copy();
-                            kf.eventRandomValues = CopiedScaleData.eventRandomValues.Copy();
-                            kf.random = CopiedScaleData.random;
-                            kf.relative = CopiedScaleData.relative;
-                        }
+                        SetCopiedData(1, timelineObject.eventKeyframe);
                     }
 
                     RenderKeyframes(beatmapObject);
@@ -1593,16 +1530,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.Type != 2)
                             continue;
 
-                        var kf = timelineObject.eventKeyframe;
-
-                        if (CopiedRotationData != null)
-                        {
-                            kf.curveType = CopiedRotationData.curveType;
-                            kf.eventValues = CopiedRotationData.eventValues.Copy();
-                            kf.eventRandomValues = CopiedRotationData.eventRandomValues.Copy();
-                            kf.random = CopiedRotationData.random;
-                            kf.relative = CopiedRotationData.relative;
-                        }
+                        SetCopiedData(2, timelineObject.eventKeyframe);
                     }
 
                     RenderKeyframes(beatmapObject);
@@ -1634,16 +1562,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.Type != 3)
                             continue;
 
-                        var kf = timelineObject.eventKeyframe;
-
-                        if (CopiedColorData != null)
-                        {
-                            kf.curveType = CopiedColorData.curveType;
-                            kf.eventValues = CopiedColorData.eventValues.Copy();
-                            kf.eventRandomValues = CopiedColorData.eventRandomValues.Copy();
-                            kf.random = CopiedColorData.random;
-                            kf.relative = CopiedColorData.relative;
-                        }
+                        SetCopiedData(3, timelineObject.eventKeyframe);
                     }
 
                     RenderKeyframes(beatmapObject);
@@ -2233,7 +2152,7 @@ namespace BetterLegacy.Editor.Managers
 
                 ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(TimeTimelineCalc(st), 0f);
 
-                RenderKeyframe(beatmapObject, timelineObject);
+                timelineObject.Render();
             }
 
             Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -2556,6 +2475,50 @@ namespace BetterLegacy.Editor.Managers
             3 => CopiedColorData,
             _ => null,
         };
+
+        public void SetCopiedData(int type, EventKeyframe kf) => SetData(kf, GetCopiedData(type));
+
+        public void SetData(EventKeyframe kf, EventKeyframe copiedData)
+        {
+            if (copiedData == null)
+                return;
+
+            kf.curveType = copiedData.curveType;
+            kf.eventValues = copiedData.eventValues.Copy();
+            kf.eventRandomValues = copiedData.eventRandomValues.Copy();
+            kf.random = copiedData.random;
+            kf.relative = copiedData.relative;
+        }
+
+        public void PasteKeyframeData(int type, IEnumerable<TimelineKeyframe> selected, BeatmapObject beatmapObject)
+        {
+            var copiedData = GetCopiedData(type);
+            var name = type switch
+            {
+                0 => "Position",
+                1 => "Scale",
+                2 => "Rotation",
+                3 => "Color",
+                _ => "Null",
+            };
+
+            if (copiedData == null)
+            {
+                EditorManager.inst.DisplayNotification($"{name} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            foreach (var timelineObject in selected)
+            {
+                if (timelineObject.Type == type)
+                    SetData(timelineObject.eventKeyframe, copiedData);
+            }
+
+            RenderKeyframes(beatmapObject);
+            RenderObjectKeyframesDialog(beatmapObject);
+            Updater.UpdateObject(beatmapObject, "Keyframes");
+            EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
+        }
 
         #endregion
 
@@ -5155,30 +5118,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void PasteKeyframeData(EventKeyframe copiedData, IEnumerable<TimelineKeyframe> selected, BeatmapObject beatmapObject, string name)
-        {
-            if (copiedData == null)
-            {
-                EditorManager.inst.DisplayNotification($"{name} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            foreach (var timelineObject in selected)
-            {
-                var kf = timelineObject.eventKeyframe;
-                kf.curveType = copiedData.curveType;
-                kf.eventValues = copiedData.eventValues.Copy();
-                kf.eventRandomValues = copiedData.eventRandomValues.Copy();
-                kf.random = copiedData.random;
-                kf.relative = copiedData.relative;
-            }
-
-            RenderKeyframes(beatmapObject);
-            RenderObjectKeyframesDialog(beatmapObject);
-            Updater.UpdateObject(beatmapObject, "Keyframes");
-            EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
-        }
-
         public void RenderObjectKeyframesDialog(BeatmapObject beatmapObject)
         {
             var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
@@ -5484,24 +5423,7 @@ namespace BetterLegacy.Editor.Managers
 
             var paste = kfdialog.Find("edit/paste").GetComponent<Button>();
             paste.onClick.ClearAll();
-            paste.onClick.AddListener(() =>
-            {
-                switch (type)
-                {
-                    case 0:
-                        PasteKeyframeData(CopiedPositionData, selected, beatmapObject, "Position");
-                        break;
-                    case 1:
-                        PasteKeyframeData(CopiedScaleData, selected, beatmapObject, "Scale");
-                        break;
-                    case 2:
-                        PasteKeyframeData(CopiedRotationData, selected, beatmapObject, "Rotation");
-                        break;
-                    case 3:
-                        PasteKeyframeData(CopiedColorData, selected, beatmapObject, "Color");
-                        break;
-                }
-            });
+            paste.onClick.AddListener(() => PasteKeyframeData(type, selected, beatmapObject));
 
             var deleteKey = kfdialog.Find("edit/del").GetComponent<Button>();
 
@@ -6150,11 +6072,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (!kf.GameObject)
-            {
-                kf.GameObject = KeyframeObject(beatmapObject, kf);
-                kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-                kf.RenderVisibleState();
-            }
+                kf.Init(true);
 
             return kf;
         }
@@ -6182,13 +6100,9 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     if (!kf.GameObject)
-                    {
-                        kf.GameObject = KeyframeObject(beatmapObject, kf);
-                        kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-                        kf.RenderVisibleState();
-                    }
+                        kf.Init();
 
-                    RenderKeyframe(beatmapObject, kf);
+                    kf.Render();
                 }
             }
         }
@@ -6204,32 +6118,9 @@ namespace BetterLegacy.Editor.Managers
             };
 
             eventKeyframe.timelineKeyframe = kf;
-
-            kf.GameObject = KeyframeObject(beatmapObject, kf);
-            kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
-            kf.RenderVisibleState();
+            kf.Init();
 
             return kf;
-        }
-
-        public GameObject KeyframeObject(BeatmapObject beatmapObject, TimelineKeyframe kf)
-        {
-            var gameObject = ObjEditor.inst.objTimelinePrefab.Duplicate(ObjEditor.inst.TimelineParents[kf.Type], $"{IntToType(kf.Type)}_{kf.Index}");
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() =>
-            {
-                if (!Input.GetMouseButtonDown(2))
-                    SetCurrentKeyframe(beatmapObject, kf.Type, kf.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
-            });
-
-            TriggerHelper.AddEventTriggers(gameObject,
-                TriggerHelper.CreateKeyframeStartDragTrigger(beatmapObject, kf),
-                TriggerHelper.CreateKeyframeEndDragTrigger(beatmapObject, kf),
-                TriggerHelper.CreateKeyframeSelectTrigger(beatmapObject, kf));
-
-            return gameObject;
         }
 
         public void RenderKeyframes(BeatmapObject beatmapObject)
@@ -6240,7 +6131,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var kf = GetKeyframe(beatmapObject, i, j);
 
-                    RenderKeyframe(beatmapObject, kf);
+                    kf.Render();
                 }
             }
 

@@ -14,6 +14,9 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data
 {
+    /// <summary>
+    /// Object for storing keyframe data in the timelines.
+    /// </summary>
     public class TimelineKeyframe : Exists
     {
         public TimelineKeyframe(EventKeyframe eventKeyframe)
@@ -161,26 +164,22 @@ namespace BetterLegacy.Editor.Data
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
-                {
-                    if (!Input.GetMouseButtonDown(2))
-                        ObjectEditor.inst.SetCurrentKeyframe(beatmapObject, Type, Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
-                });
 
                 TriggerHelper.AddEventTriggers(gameObject,
-                    TriggerHelper.CreateKeyframeStartDragTrigger(beatmapObject, this),
-                    TriggerHelper.CreateKeyframeEndDragTrigger(beatmapObject, this),
-                    TriggerHelper.CreateKeyframeSelectTrigger(beatmapObject, this));
+                    TriggerHelper.CreateTimelineKeyframeTrigger(this),
+                    TriggerHelper.CreateTimelineKeyframeStartDragTrigger(this),
+                    TriggerHelper.CreateTimelineKeyframeEndDragTrigger(this),
+                    TriggerHelper.CreateTimelineKeyframeSelectTrigger(this));
             }
             else
             {
                 gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(Type % RTEventEditor.EVENT_LIMIT), $"keyframe - {Type}");
 
                 TriggerHelper.AddEventTriggers(gameObject,
-                    TriggerHelper.CreateEventObjectTrigger(this),
-                    TriggerHelper.CreateEventStartDragTrigger(this),
-                    TriggerHelper.CreateEventEndDragTrigger(),
-                    TriggerHelper.CreateEventSelectTrigger(this));
+                    TriggerHelper.CreateTimelineKeyframeTrigger(this),
+                    TriggerHelper.CreateTimelineKeyframeStartDragTrigger(this),
+                    TriggerHelper.CreateTimelineKeyframeEndDragTrigger(this),
+                    TriggerHelper.CreateTimelineKeyframeSelectTrigger(this));
             }
 
             GameObject = gameObject;

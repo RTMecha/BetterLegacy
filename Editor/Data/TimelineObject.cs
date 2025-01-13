@@ -24,7 +24,6 @@ namespace BetterLegacy.Editor.Data
             TimelineReference = GetTimelineReferenceType(data);
             isBeatmapObject = TimelineReference == TimelineReferenceType.BeatmapObject;
             isPrefabObject = TimelineReference == TimelineReferenceType.PrefabObject;
-            isEventKeyframe = TimelineReference == TimelineReferenceType.EventKeyframe;
 
             if (isBeatmapObject)
                 InternalTimelineObjects = new List<TimelineKeyframe>();
@@ -65,7 +64,6 @@ namespace BetterLegacy.Editor.Data
         {
             TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().id,
             TimelineReferenceType.PrefabObject => GetData<PrefabObject>().ID,
-            TimelineReferenceType.EventKeyframe => GetData<EventKeyframe>().id,
             _ => string.Empty,
         };
 
@@ -83,7 +81,6 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GameData.Current.beatmapObjects.IndexOf(GetData<BeatmapObject>()),
                 TimelineReferenceType.PrefabObject => GameData.Current.prefabObjects.IndexOf(GetData<PrefabObject>()),
-                TimelineReferenceType.EventKeyframe => index,
                 _ => -1,
             };
             set => index = value;
@@ -98,7 +95,6 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().StartTime,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().StartTime,
-                TimelineReferenceType.EventKeyframe => GetData<EventKeyframe>().eventTime,
                 _ => 0f,
             };
             set
@@ -107,8 +103,6 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().StartTime = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().StartTime = value;
-                if (isEventKeyframe)
-                    GetData<EventKeyframe>().eventTime = value;
             }
         }
 
@@ -121,7 +115,6 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.Bin,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.Bin,
-                TimelineReferenceType.EventKeyframe => Type,
                 _ => 0,
             };
             set
@@ -130,8 +123,6 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().editorData.Bin = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.Bin = value;
-                if (isEventKeyframe)
-                    Type = value;
             }
         }
 
@@ -176,7 +167,6 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.locked,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.locked,
-                TimelineReferenceType.EventKeyframe => GetData<EventKeyframe>().locked,
                 _ => false,
             };
             set
@@ -185,8 +175,6 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().editorData.locked = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.locked = value;
-                if (isEventKeyframe)
-                    GetData<EventKeyframe>().locked = value;
             }
         }
 
@@ -217,7 +205,6 @@ namespace BetterLegacy.Editor.Data
         {
             TimelineReferenceType.BeatmapObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
             TimelineReferenceType.PrefabObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
-            TimelineReferenceType.EventKeyframe => (Type / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10),
             _ => false,
         };
 
@@ -350,8 +337,6 @@ namespace BetterLegacy.Editor.Data
                 return TimelineReferenceType.BeatmapObject;
             if (obj is PrefabObject)
                 return TimelineReferenceType.PrefabObject;
-            if (obj is EventKeyframe)
-                return TimelineReferenceType.EventKeyframe;
             return TimelineReferenceType.Null;
         }
 
@@ -502,62 +487,6 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
-                case TimelineReferenceType.EventKeyframe:
-                    {
-                        var theme = EditorThemeManager.CurrentTheme;
-                        if (isObjectKeyframe)
-                        {
-                            var objectKeyframeColor1 = theme.GetObjectKeyframeColor(0);
-                            var objectKeyframeColor2 = theme.GetObjectKeyframeColor(1);
-                            var objectKeyframeColor3 = theme.GetObjectKeyframeColor(2);
-                            var objectKeyframeColor4 = theme.GetObjectKeyframeColor(3);
-                            var objectKeyframesRenderBinColor = EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value;
-
-                            if (!GameObject || !Image)
-                                return;
-
-                            if (!GameObject.activeSelf)
-                                GameObject.SetActive(true);
-
-                            var color = Type switch
-                            {
-                                0 => objectKeyframeColor1,
-                                1 => objectKeyframeColor2,
-                                2 => objectKeyframeColor3,
-                                3 => objectKeyframeColor4,
-                                _ => ObjEditor.inst.NormalColor,
-                            };
-                            color.a = 1f;
-                            color = selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
-
-                            if (Image.color != color)
-                                Image.color = color;
-                        }
-                        else
-                        {
-                            var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
-
-                            if (!GameObject || !Image)
-                                return;
-
-                            bool isCurrentLayer = IsCurrentLayer;
-
-                            if (setActive && GameObject.activeSelf != isCurrentLayer)
-                                GameObject.SetActive(isCurrentLayer);
-
-                            if (!isCurrentLayer)
-                                break;
-
-                            var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(Type % RTEventEditor.EVENT_LIMIT) : ObjEditor.inst.NormalColor;
-                            color.a = 1f;
-                            color = selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
-
-                            if (Image.color != color)
-                                Image.color = color;
-                        }
-
-                        break;
-                    }
             }
         }
 
@@ -598,14 +527,6 @@ namespace BetterLegacy.Editor.Data
         {
             var rectTransform = GameObject.transform.AsRT();
 
-            if (isEventKeyframe && isObjectKeyframe)
-            {
-                rectTransform.sizeDelta = new Vector2(14f, 25f);
-                rectTransform.anchoredPosition = new Vector2(time * 14f * zoom + 5f, 0f);
-
-                return;
-            }
-
             length = length <= ObjectEditor.TimelineCollapseLength ? ObjectEditor.TimelineCollapseLength * zoom : length * zoom;
 
             rectTransform.sizeDelta = new Vector2(length, 20f);
@@ -633,15 +554,6 @@ namespace BetterLegacy.Editor.Data
             var gameObject = GameObject;
             if (!gameObject)
                 return;
-
-            if (isEventKeyframe)
-            {
-                var lockedObj = gameObject.transform.Find("lock");
-                if (lockedObj)
-                    lockedObj.gameObject.SetActive(GetData<EventKeyframe>().locked);
-
-                return;
-            }
 
             var locked = Locked;
             gameObject.transform.Find("icons/lock").gameObject.SetActive(locked);
@@ -673,10 +585,6 @@ namespace BetterLegacy.Editor.Data
             /// If <see cref="data"/> is <seealso cref="Core.Data.PrefabObject"/>.
             /// </summary>
             PrefabObject,
-            /// <summary>
-            /// If <see cref="data"/> is <seealso cref="Core.Data.EventKeyframe"/>.
-            /// </summary>
-            EventKeyframe
         }
     }
 }
