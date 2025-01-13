@@ -340,7 +340,8 @@ namespace BetterLegacy.Core.Helpers
 
             if (EditorTimeline.inst.movingTimeline)
             {
-                EditorTimeline.inst.SetTimelinePosition(Mathf.Clamp(cachedTimelinePos.x + -(vector.x - EditorManager.inst.DragStartPos.x) / Screen.width, 0f, 1f));
+                float multiply = 12f / EditorManager.inst.Zoom;
+                EditorTimeline.inst.SetTimelinePosition(Mathf.Clamp(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply), 0f, 1f));
                 EditorTimeline.inst.SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
 
                 return;
@@ -472,11 +473,7 @@ namespace BetterLegacy.Core.Helpers
                         var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
                         var selected = RTEventEditor.inst.SelectedKeyframes;
                         for (int i = 0; i < selected.Count; i++)
-                        {
-                            var kf = selected[i];
-                            var eventKeyframe = kf.eventKeyframe;
-                            eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                        }
+                            selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                         ObjectEditor.inst.RenderKeyframes(beatmapObject);
                         Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -486,25 +483,7 @@ namespace BetterLegacy.Core.Helpers
                     new ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
                     new ButtonFunction("Copy Data", () =>
                     {
-                        var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
-                        var firstKF = selected.ElementAt(0);
-                        var type = timelineKeyframe.Type;
-
-                        switch (type)
-                        {
-                            case 0:
-                                ObjectEditor.inst.CopiedPositionData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                                break;
-                            case 1:
-                                ObjectEditor.inst.CopiedScaleData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                                break;
-                            case 2:
-                                ObjectEditor.inst.CopiedRotationData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                                break;
-                            case 3:
-                                ObjectEditor.inst.CopiedColorData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                                break;
-                        }
+                        ObjectEditor.inst.CopyData(timelineKeyframe.Type, timelineKeyframe.eventKeyframe);
                         EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction("Paste Data", () => ObjectEditor.inst.PasteKeyframeData(timelineKeyframe.Type, beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected), beatmapObject)),
@@ -520,11 +499,7 @@ namespace BetterLegacy.Core.Helpers
                         var time = AudioManager.inst.CurrentAudioSource.time;
                         var selected = RTEventEditor.inst.SelectedKeyframes;
                         for (int i = 0; i < selected.Count; i++)
-                        {
-                            var kf = selected[i];
-                            var eventKeyframe = kf.eventKeyframe;
-                            eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                        }
+                            selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                         RTEventEditor.inst.UpdateEventOrder();
                         RTEventEditor.inst.RenderEventObjects();
@@ -536,10 +511,8 @@ namespace BetterLegacy.Core.Helpers
                         var eventKeyframe = timelineKeyframe.eventKeyframe;
                         var defaultKeyframe = GameData.DefaultKeyframes[timelineKeyframe.Type];
                         for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
-                        {
-                            if (defaultKeyframe.eventValues.Length > i)
+                            if (i < defaultKeyframe.eventValues.Length)
                                 eventKeyframe.eventValues[i] = defaultKeyframe.eventValues[i];
-                        }
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
