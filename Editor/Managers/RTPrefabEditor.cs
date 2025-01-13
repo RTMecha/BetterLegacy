@@ -8,6 +8,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Example;
 using LSFunctions;
 using SimpleJSON;
@@ -69,6 +70,10 @@ namespace BetterLegacy.Editor.Managers
         public List<PrefabPanel> PrefabPanels { get; set; } = new List<PrefabPanel>();
 
         public static bool ImportPrefabsDirectly { get; set; }
+
+        public EditorDialog PrefabCreator { get; set; }
+        public EditorDialog PrefabObjectEditor { get; set; }
+        public EditorDialog PrefabExternalEditor { get; set; }
 
         #endregion
 
@@ -708,6 +713,19 @@ namespace BetterLegacy.Editor.Managers
                 Debug.LogException(ex);
             }
 
+            try
+            {
+                PrefabCreator = new EditorDialog(EditorDialog.PREFAB_EDITOR);
+                PrefabCreator.Init();
+                PrefabObjectEditor = new EditorDialog(EditorDialog.PREFAB_SELECTOR);
+                PrefabObjectEditor.Init();
+                PrefabExternalEditor = new EditorDialog(EditorDialog.PREFAB_EXTERNAL_EDITOR);
+                PrefabExternalEditor.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         public Button prefabCreatorTypeButton;
@@ -1254,9 +1272,8 @@ namespace BetterLegacy.Editor.Managers
                     savingToPrefab = true;
                     prefabToSaveFrom = prefab;
 
-                    EditorManager.inst.ShowDialog("Prefab Popup");
-                    var dialog = EditorManager.inst.GetDialog("Prefab Popup").Dialog;
-                    dialog.GetChild(0).gameObject.SetActive(false);
+                    RTEditor.inst.PrefabPopups.Open();
+                    RTEditor.inst.PrefabPopups.GameObject.transform.GetChild(0).gameObject.SetActive(false);
 
                     if (__instance.externalContent != null)
                         __instance.ReloadExternalPrefabsInPopup();
@@ -1490,7 +1507,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.StopAndLogStopwatch(sw);
 
             if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
-                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+                MultiObjectEditor.inst.Dialog.Open();
             else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
@@ -1531,7 +1548,7 @@ namespace BetterLegacy.Editor.Managers
             title.text = "Prefab Type Editor / Selector";
             var closeButton = panel.transform.Find("x").GetComponent<Button>();
             closeButton.onClick.ClearAll();
-            closeButton.onClick.AddListener(() => EditorManager.inst.HideDialog("Prefab Types Popup"));
+            closeButton.onClick.AddListener(() => RTEditor.inst.PrefabTypesPopup.Close());
 
             var refresh = Creator.NewUIObject("Refresh", panel.transform);
             UIManager.SetRectTransform(refresh.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(32f, 32f));
@@ -1662,6 +1679,10 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
             });
+
+            RTEditor.inst.PrefabTypesPopup = new ContentPopup("Prefab Types Popup");
+            RTEditor.inst.PrefabTypesPopup.GameObject = gameObject;
+            RTEditor.inst.PrefabTypesPopup.Content = prefabTypeContent.AsRT();
         }
 
         /// <summary>
@@ -1718,7 +1739,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onSelect">Action to occur when selecting.</param>
         public void OpenPrefabTypePopup(string current, Action<string> onSelect)
         {
-            EditorManager.inst.ShowDialog("Prefab Types Popup");
+            RTEditor.inst.PrefabTypesPopup.Open();
             RenderPrefabTypesPopup(current, onSelect);
         }
 
@@ -1873,14 +1894,14 @@ namespace BetterLegacy.Editor.Managers
                 if (!prefabType.isDefault)
                     setImageStorage.button.onClick.AddListener(() =>
                     {
-                        EditorManager.inst.ShowDialog("Browser Popup");
+                        RTEditor.inst.BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, onSelectFile: _val =>
                         {
                             prefabType.icon = SpriteHelper.LoadSprite(_val);
                             icon.sprite = prefabType.icon;
 
                             SavePrefabTypes();
-                            EditorManager.inst.HideDialog("Browser Popup");
+                            RTEditor.inst.BrowserPopup.Close();
                         });
                     });
 
@@ -1968,9 +1989,9 @@ namespace BetterLegacy.Editor.Managers
                     if (savingToPrefab && prefabToSaveFrom != null)
                     {
                         savingToPrefab = false;
-                        SavePrefab(RTPrefabEditor.inst.prefabToSaveFrom);
+                        SavePrefab(prefabToSaveFrom);
 
-                        EditorManager.inst.HideDialog("Prefab Popup");
+                        RTEditor.inst.PrefabPopups.Close();
 
                         prefabToSaveFrom = null;
 
@@ -2378,7 +2399,7 @@ namespace BetterLegacy.Editor.Managers
             else
                 SavePrefab(prefab);
 
-            EditorManager.inst.HideDialog("Prefab Editor");
+            PrefabCreator.Close();
             OpenPopup();
         }
 
@@ -2492,7 +2513,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenPopup()
         {
             EditorManager.inst.ClearPopups();
-            EditorManager.inst.ShowDialog("Prefab Popup");
+            RTEditor.inst.PrefabPopups.Open();
             RenderPopup();
         }
 
@@ -2568,7 +2589,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenDialog()
         {
             EditorManager.inst.ClearDialogs();
-            EditorManager.inst.ShowDialog("Prefab Editor");
+            PrefabCreator.Open();
 
             var component = PrefabEditor.inst.dialog.Find("data/name/input").GetComponent<InputField>();
             component.onValueChanged.ClearAll();

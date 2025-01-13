@@ -246,11 +246,11 @@ namespace BetterLegacy.Patchers
             if (!isPrefab)
             {
                 Debug.LogError($"{Instance.className}Cannot select non-Prefab with this editor!");
-                EditorManager.inst.ShowDialog("Object Editor", false);
+                ObjectEditor.inst.Dialog.Open();
                 return false;
             }
 
-            EditorManager.inst.ShowDialog("Prefab Selector");
+            RTPrefabEditor.inst.PrefabObjectEditor.Open();
             RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
 
             return false;

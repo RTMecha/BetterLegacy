@@ -2,6 +2,7 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
 using LSFunctions;
@@ -44,7 +45,7 @@ namespace BetterLegacy.Patchers
             if (!GameData.IsValid)
                 return false;
 
-            if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint) && EditorManager.inst.isEditing)
+            if (RTEditor.inst.CheckpointEditorDialog.IsCurrent && EditorManager.inst.isEditing)
             {
                 if (GameData.Current.beatmapData.checkpoints != null)
                 {
@@ -80,7 +81,7 @@ namespace BetterLegacy.Patchers
             int index = __0;
 
             EditorManager.inst.ClearDialogs();
-            EditorManager.inst.ShowDialog("Checkpoint Editor");
+            RTEditor.inst.CheckpointEditorDialog.Open();
 
             if (Instance.right == null)
                 Instance.right = EditorManager.inst.GetDialog("Checkpoint Editor").Dialog.Find("data/right");

@@ -11,6 +11,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Planners;
 using LSFunctions;
 using UnityEngine;
@@ -40,6 +41,16 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             StartCoroutine(SetupUI());
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.MARKER_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         IEnumerator SetupUI()
@@ -172,6 +183,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Variables
 
+        public EditorDialog Dialog { get; set; }
+
         /// <summary>
         /// List of timeline markers.
         /// </summary>
@@ -256,7 +269,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenDialog(TimelineMarker timelineMarker)
         {
             EditorManager.inst.ClearDialogs();
-            EditorManager.inst.ShowDialog("Marker Editor");
+            Dialog.Open();
 
             UpdateMarkerList();
             RenderMarkers();
@@ -457,7 +470,7 @@ namespace BetterLegacy.Editor.Managers
                         UpdateMarkerList();
                         CreateMarkers();
                         RTEditor.inst.HideWarningPopup();
-                        EditorManager.inst.HideDialog("Marker Editor");
+                        Dialog.Close();
                         CheckpointEditor.inst.SetCurrentCheckpoint(0);
                     }, RTEditor.inst.HideWarningPopup);
                 });

@@ -9,6 +9,7 @@ using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using Crosstales.FB;
 using LSFunctions;
 using System;
@@ -38,12 +39,24 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             GenerateUI();
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.MULTI_OBJECT_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         /// <summary>
         /// Text to update.
         /// </summary>
         public Text Text { get; set; }
+
+        public EditorDialog Dialog { get; set; }
 
         /// <summary>
         /// String to format from.
@@ -2850,8 +2863,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         RTEditor.inst.ShowObjectSearch(beatmapObject =>
                         {
-                            SyncObjectData(timelineObject => { update?.Invoke(timelineObject, beatmapObject); }, renderTimelineObject, updateObject, updateContext);
-                            EditorManager.inst.HideDialog("Object Search Popup");
+                            SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
+                            RTEditor.inst.ObjectSearchPopup.Close();
                         });
                     }),
                     new ButtonFunction($"Sync {nameContext} via Picker", () =>
@@ -2859,7 +2872,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.onSelectTimelineObject = to =>
                         {
                             var beatmapObject = to.GetData<BeatmapObject>();
-                            SyncObjectData(timelineObject => { update?.Invoke(timelineObject, beatmapObject); }, renderTimelineObject, updateObject, updateContext);
+                            SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
                         };
                     }));
 
@@ -2868,8 +2881,8 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.ShowObjectSearch(beatmapObject =>
             {
-                SyncObjectData(timelineObject => { update?.Invoke(timelineObject, beatmapObject); }, renderTimelineObject, updateObject, updateContext);
-                EditorManager.inst.HideDialog("Object Search Popup");
+                SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
+                RTEditor.inst.ObjectSearchPopup.Close();
             });
         }
 

@@ -20,6 +20,7 @@ using SelectionType = ObjEditor.ObjectSelection.SelectionType;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -36,6 +37,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool AllowKeys { get; set; }
 
+        public EditorDialog Dialog { get; set; }
+
+        public ContentPopup Popup { get; set; }
+
         public static void Init() => Creator.NewGameObject(nameof(KeybindEditor), EditorManager.inst.transform.parent).AddComponent<KeybindEditor>();
 
         void Awake()
@@ -48,6 +53,16 @@ namespace BetterLegacy.Editor.Managers
                 Load();
 
             GenerateKeybindEditorPopupDialog();
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.KEYBIND_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         void Update()
@@ -218,6 +233,7 @@ namespace BetterLegacy.Editor.Managers
                 RefreshKeybindPopup();
             }, placeholderText: "Search for keybind...");
             content = popup.Content;
+            Popup = popup;
 
             var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(popup.TopPanel, "Reload");
             RectValues.TopRightAnchored.AnchoredPosition(-64f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(reload.transform.AsRT());
@@ -230,7 +246,7 @@ namespace BetterLegacy.Editor.Managers
                     keybinds.Clear();
                     FirstInit();
                     RefreshKeybindPopup();
-                    EditorManager.inst.HideDialog("Keybind Editor");
+                    Dialog.Close();
                     RTEditor.inst.HideWarningPopup();
                 }, RTEditor.inst.HideWarningPopup);
             });
@@ -412,7 +428,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void OpenPopup()
         {
-            EditorManager.inst.ShowDialog("Keybind List Popup");
+            Popup.Open();
             RefreshKeybindPopup();
         }
 
@@ -431,7 +447,7 @@ namespace BetterLegacy.Editor.Managers
                 keybinds.Add(keybind);
                 RefreshKeybindPopup();
 
-                EditorManager.inst.ShowDialog("Keybind Editor");
+                Dialog.Open();
                 RefreshKeybindEditor(keybind);
             });
 
@@ -458,7 +474,7 @@ namespace BetterLegacy.Editor.Managers
                 var button = gameObject.transform.Find("Image").gameObject.AddComponent<Button>();
                 button.onClick.AddListener(() =>
                 {
-                    EditorManager.inst.ShowDialog("Keybind Editor");
+                    Dialog.Open();
                     RefreshKeybindEditor(keybind);
                 });
 
@@ -1094,7 +1110,7 @@ namespace BetterLegacy.Editor.Managers
         public static void OpenDialog(Keybind keybind)
         {
             if (CoreHelper.InEditor && keybind.settings.TryGetValue("Dialog", out string dialog) && EditorManager.inst.EditorDialogsDictionary.ContainsKey(dialog))
-                EditorManager.inst.ShowDialog(dialog);
+                RTEditor.inst.ShowDialog(dialog);
         }
 
         public static void SaveBeatmap(Keybind keybind) => EditorManager.inst.SaveBeatmap();
@@ -1460,13 +1476,13 @@ namespace BetterLegacy.Editor.Managers
         public static void OpenSaveAs(Keybind keybind)
         {
             EditorManager.inst.ClearPopups();
-            EditorManager.inst.ShowDialog("Save As Popup");
+            RTEditor.inst.SaveAsPopup.Open();
         }
 
         public static void OpenNewLevel(Keybind keybind)
         {
             EditorManager.inst.ClearPopups();
-            EditorManager.inst.ShowDialog("New File Popup");
+            RTEditor.inst.NewLevelPopup.Open();
         }
 
         public static void ToggleBPMSnap(Keybind keybind)
@@ -1752,7 +1768,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var markers = GameData.Current.beatmapData.markers;
             var currentMarker = MarkerEditor.inst.currentMarker;
-            if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Marker) && currentMarker >= 0 && currentMarker < markers.Count)
+            if (RTMarkerEditor.inst.Dialog.IsCurrent && currentMarker >= 0 && currentMarker < markers.Count)
             {
                 var marker = markers[currentMarker];
                 var time = MarkerEditor.inst.left.Find("time/input").GetComponent<InputField>();

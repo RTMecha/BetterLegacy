@@ -461,11 +461,11 @@ namespace BetterLegacy.Editor.Data
                         new ButtonFunction("Open", () =>
                         {
                             CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
-                            EditorManager.inst.HideDialog("Open File Popup");
+                            RTEditor.inst.OpenLevelPopup.Close();
                         }, "Level Panel Open"),
                         new ButtonFunction("Show Autosaves", () =>
                         {
-                            EditorManager.inst.ShowDialog("Autosave Popup");
+                            RTEditor.inst.AutosavePopup.Open();
                             RTEditor.inst.RefreshAutosaveList(this);
                         }, "Level Panel Show Autosaves"),
                         new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName), "Convert Level VG"),
@@ -546,7 +546,7 @@ namespace BetterLegacy.Editor.Data
                 }
 
                 CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
-                EditorManager.inst.HideDialog("Open File Popup");
+                RTEditor.inst.OpenLevelPopup.Close();
             };
         }
 

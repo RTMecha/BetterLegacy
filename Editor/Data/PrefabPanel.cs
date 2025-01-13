@@ -396,7 +396,7 @@ namespace BetterLegacy.Editor.Data
                                     new ButtonFunction("Add to Level", () =>
                                     {
                                         RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-                                        EditorManager.inst.HideDialog("Prefab Popup");
+                                        RTEditor.inst.PrefabPopups.Close();
                                     }),
                                     new ButtonFunction("Create Prefab", () =>
                                     {
@@ -418,7 +418,7 @@ namespace BetterLegacy.Editor.Data
                             }
 
                             RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-                            EditorManager.inst.HideDialog("Prefab Popup");
+                            RTEditor.inst.PrefabPopups.Close();
                         };
                         break;
                     }
@@ -450,7 +450,7 @@ namespace BetterLegacy.Editor.Data
 
                                 RTFile.WriteToFile(prefabToSaveTo.filePath, prefabToSaveTo.ToJSON().ToString());
 
-                                EditorManager.inst.HideDialog("Prefab Popup");
+                                RTEditor.inst.PrefabPopups.Close();
 
                                 RTPrefabEditor.inst.prefabToSaveFrom = null;
 
@@ -466,7 +466,7 @@ namespace BetterLegacy.Editor.Data
                                     new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Prefab)),
                                     new ButtonFunction("Open", () =>
                                     {
-                                        EditorManager.inst.ShowDialog("Prefab External Dialog");
+                                        RTPrefabEditor.inst.PrefabExternalEditor.Open();
                                         RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                                     }),
                                     new ButtonFunction(true),
@@ -504,7 +504,7 @@ namespace BetterLegacy.Editor.Data
 
                             if (!RTPrefabEditor.ImportPrefabsDirectly)
                             {
-                                EditorManager.inst.ShowDialog("Prefab External Dialog");
+                                RTPrefabEditor.inst.PrefabExternalEditor.Open();
                                 RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                             }
                             else

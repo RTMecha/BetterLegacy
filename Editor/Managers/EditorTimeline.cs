@@ -210,7 +210,7 @@ namespace BetterLegacy.Editor.Managers
             if (SelectedObjectCount > 1)
             {
                 EditorManager.inst.ClearDialogs();
-                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+                MultiObjectEditor.inst.Dialog.Open();
             }
 
             if (SelectedObjectCount <= 0)
@@ -240,7 +240,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+                MultiObjectEditor.inst.Dialog.Open();
 
                 RenderTimelineObject(timelineObject);
 

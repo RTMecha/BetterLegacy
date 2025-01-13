@@ -18,6 +18,7 @@ using UnityEngine.UI;
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -33,10 +34,22 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject shapeButtonCopy;
 
+        public EditorDialog Dialog { get; set; }
+
         void Awake()
         {
             inst = this;
             StartCoroutine(SetupUI());
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.BACKGROUND_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         IEnumerator SetupUI()
@@ -1286,7 +1299,7 @@ namespace BetterLegacy.Editor.Managers
             var __instance = BackgroundEditor.inst;
 
             EditorManager.inst.ClearDialogs();
-            EditorManager.inst.ShowDialog("Background Editor");
+            Dialog.Open();
 
             var backgroundObject = GameData.Current.backgroundObjects[index];
 
@@ -2142,17 +2155,17 @@ namespace BetterLegacy.Editor.Managers
                     {
                         new ButtonFunction("Add", () =>
                         {
-                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(backgroundObject);
                         }),
                         new ButtonFunction("Add Above", () =>
                         {
-                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(backgroundObject, index);
                         }),
                         new ButtonFunction("Add Below", () =>
                         {
-                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(backgroundObject, index + 1);
                         }),
                         new ButtonFunction("Delete", () =>
@@ -2324,7 +2337,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    EditorManager.inst.ShowDialog("Default Background Modifiers Popup");
+                    ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
                     RefreshDefaultModifiersList(backgroundObject);
                 });
 
@@ -2417,9 +2430,7 @@ namespace BetterLegacy.Editor.Managers
             this.addIndex = addIndex;
             defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
-            var dialog = EditorManager.inst.GetDialog("Default Background Modifiers Popup").Dialog.gameObject;
-
-            var contentM = dialog.transform.Find("mask/content");
+            var contentM = ObjectModifiersEditor.inst.DefaultModifiersPopup.Content;
             LSHelpers.DeleteChildren(contentM);
 
             for (int i = 0; i < defaultModifiers.Count; i++)
@@ -2447,7 +2458,7 @@ namespace BetterLegacy.Editor.Managers
                         else
                             backgroundObject.modifiers[currentPage].Insert(Mathf.Clamp(addIndex, 0, backgroundObject.modifiers[currentPage].Count), modifier);
                         StartCoroutine(RenderModifiers(backgroundObject));
-                        EditorManager.inst.HideDialog("Default Background Modifiers Popup");
+                        ObjectModifiersEditor.inst.DefaultModifiersPopup.Close();
                     });
 
                     EditorThemeManager.ApplyLightText(modifierName);

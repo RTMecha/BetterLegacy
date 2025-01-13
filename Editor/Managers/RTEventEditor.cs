@@ -6,6 +6,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -26,6 +27,9 @@ namespace BetterLegacy.Editor.Managers
         #region Variables
 
         public static List<List<BaseEventKeyframe>> AllEvents => !GameData.IsValid ? null : GameData.Current.eventObjects.allEvents;
+
+        public EditorDialog Dialog { get; set; }
+        public EditorDialog MultiDialog { get; set; }
 
         #region Selection
 
@@ -385,6 +389,18 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < GameData.DefaultKeyframes.Count; i++)
                 copiedKeyframeDatas.Add(null);
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.EVENT_EDITOR);
+                Dialog.Init();
+                MultiDialog = new EditorDialog(EditorDialog.MULTI_KEYFRAME_EDITOR);
+                MultiDialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         #region Deleting
@@ -1833,13 +1849,13 @@ namespace BetterLegacy.Editor.Managers
             if (SelectedKeyframes.Count > 1 && !SelectedKeyframes.All(x => x.Type == SelectedKeyframes.Min(y => y.Type)))
             {
                 EditorManager.inst.ClearDialogs();
-                EditorManager.inst.ShowDialog("Multi Keyframe Editor", false);
+                MultiDialog.Open();
                 RenderMultiEventsDialog();
             }
             else if (SelectedKeyframes.Count > 0)
             {
                 EditorManager.inst.ClearDialogs();
-                EditorManager.inst.ShowDialog("Event Editor");
+                Dialog.Open();
 
                 EventEditor.inst.currentEventType = SelectedKeyframes[0].Type;
                 EventEditor.inst.currentEvent = SelectedKeyframes[0].Index;

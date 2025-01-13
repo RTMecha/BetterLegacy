@@ -37,7 +37,7 @@ namespace BetterLegacy.Editor.Managers
             inst = this;
 
             CreateModifiersOnAwake();
-            RTEditor.inst.GeneratePopup("Default Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
+            DefaultModifiersPopup = RTEditor.inst.GeneratePopup("Default Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
             {
                 searchTerm = _val;
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
@@ -345,17 +345,17 @@ namespace BetterLegacy.Editor.Managers
                     {
                         new ButtonFunction("Add", () =>
                         {
-                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(beatmapObject);
                         }),
                         new ButtonFunction("Add Above", () =>
                         {
-                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(beatmapObject, index);
                         }),
                         new ButtonFunction("Add Below", () =>
                         {
-                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(beatmapObject, index + 1);
                         }),
                         new ButtonFunction("Delete", () =>
@@ -640,7 +640,7 @@ namespace BetterLegacy.Editor.Managers
                                         {
                                             str.transform.Find("Input").GetComponent<InputField>().text =
                                                 result.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
-                                            EditorManager.inst.HideDialog("Browser Popup");
+                                            RTEditor.inst.BrowserPopup.Close();
                                             return;
                                         }
 
@@ -648,7 +648,7 @@ namespace BetterLegacy.Editor.Managers
                                     }),
                                     new ButtonFunction("Use In-game Browser", () =>
                                     {
-                                        EditorManager.inst.ShowDialog("Browser Popup");
+                                        RTEditor.inst.BrowserPopup.Open();
 
                                         var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
                                         var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -667,7 +667,7 @@ namespace BetterLegacy.Editor.Managers
                                             if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                             {
                                                 str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
-                                                EditorManager.inst.HideDialog("Browser Popup");
+                                                RTEditor.inst.BrowserPopup.Close();
                                                 return;
                                             }
 
@@ -766,7 +766,7 @@ namespace BetterLegacy.Editor.Managers
                                         if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                         {
                                             str.transform.Find("Input").GetComponent<InputField>().text = result.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
-                                            EditorManager.inst.HideDialog("Browser Popup");
+                                            RTEditor.inst.BrowserPopup.Close();
                                             return;
                                         }
 
@@ -774,7 +774,7 @@ namespace BetterLegacy.Editor.Managers
                                     }),
                                     new ButtonFunction("Use In-game Browser", () =>
                                     {
-                                        EditorManager.inst.ShowDialog("Browser Popup");
+                                        RTEditor.inst.BrowserPopup.Open();
 
                                         var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
                                         var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -793,7 +793,7 @@ namespace BetterLegacy.Editor.Managers
                                             if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                             {
                                                 str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
-                                                EditorManager.inst.HideDialog("Browser Popup");
+                                                RTEditor.inst.BrowserPopup.Close();
                                                 return;
                                             }
 
@@ -2630,7 +2630,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                    DefaultModifiersPopup.Open();
                     RefreshDefaultModifiersList(beatmapObject);
                 });
 
@@ -2990,6 +2990,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Default Modifiers
 
+        public ContentPopup DefaultModifiersPopup { get; set; }
+
         public string searchTerm;
         public int addIndex = -1;
         public void RefreshDefaultModifiersList(BeatmapObject beatmapObject, int addIndex = -1)
@@ -3041,7 +3043,7 @@ namespace BetterLegacy.Editor.Managers
                         else
                             beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
                         RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(beatmapObject));
-                        EditorManager.inst.HideDialog("Default Modifiers Popup");
+                        DefaultModifiersPopup.Close();
                     });
 
                     EditorThemeManager.ApplyLightText(modifierName);

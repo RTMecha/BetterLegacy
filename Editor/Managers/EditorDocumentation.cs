@@ -17,6 +17,7 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System.IO;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -44,7 +45,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Wiki / Documentation", "", "Help", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_question.png"), () =>
             {
-                EditorManager.inst.ShowDialog("Documentation Popup");
+                RTEditor.inst.DocumentationPopup.Open();
                 RefreshDocumentation();
             });
 
@@ -1011,11 +1012,23 @@ namespace BetterLegacy.Editor.Managers
 
                 GenerateDocument("April Fools!", "fol.", elements);
             }
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.DOCUMENTATION);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         #endregion
 
         #region Values
+
+        public EditorDialog Dialog { get; set; }
 
         public List<EditorDocument> documents = new List<EditorDocument>();
 
@@ -1171,7 +1184,7 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            EditorManager.inst.ShowDialog("Documentation Dialog");
+            Dialog.Open();
         }
 
         #region Internal

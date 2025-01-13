@@ -22,6 +22,7 @@ using UnityEngine.Networking;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -41,6 +42,8 @@ namespace BetterLegacy.Editor.Managers
 
         public Image iconImage;
 
+        public EditorDialog Dialog { get; set; }
+
         #endregion
 
         #region Init
@@ -51,6 +54,16 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             StartCoroutine(SetupUI());
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.METADATA_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         /// <summary>
@@ -543,7 +556,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (!MetaData.IsValid)
             {
-                EditorManager.inst.HideDialog("Metadata Editor");
+                Dialog.Close();
                 EditorManager.inst.DisplayNotification("Metadata was not valid.", 1.4f, EditorManager.NotificationType.Error);
                 return;
             }

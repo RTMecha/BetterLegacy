@@ -9,6 +9,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Example;
 using BetterLegacy.Menus;
@@ -33,6 +34,19 @@ namespace BetterLegacy.Patchers
         static EditorManager Instance { get => EditorManager.inst; set => EditorManager.inst = value; }
 
         static bool April => CoreHelper.AprilFools;
+
+        static void Removal()
+        {
+            Instance.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Popup);
+            Instance.IsDialogActive(EditorManager.EditorDialog.DialogType.Popup);
+            Instance.ClearDialogs();
+            Instance.ClearPopups();
+            Instance.GetDialog("");
+            Instance.SetDialogStatus("", true);
+            Instance.ShowDialog("");
+            Instance.HideDialog("");
+            Instance.ToggleDialog("");
+        }
 
         [HarmonyPatch(nameof(EditorManager.Awake))]
         [HarmonyPrefix]
@@ -587,10 +601,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            if (Instance.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Object)
-                && Instance.IsOverObjTimeline
-                && !CoreHelper.IsUsingInputField
-                && !EditorTimeline.inst.isOverMainTimeline)
+            if (ObjectEditor.inst.Dialog.IsCurrent && Instance.IsOverObjTimeline && !CoreHelper.IsUsingInputField && !EditorTimeline.inst.isOverMainTimeline)
             {
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat + config.KeyframeZoomAmount.Value * multiply;
@@ -693,7 +704,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CloseOpenBeatmapPopupPrefix()
         {
-            Instance.HideDialog("Open File Popup");
+            RTEditor.inst.OpenLevelPopup.Close();
             return false;
         }
 
@@ -774,7 +785,7 @@ namespace BetterLegacy.Patchers
             if (Instance.hasLoadedLevel)
             {
                 Instance.ClearPopups();
-                Instance.ShowDialog("Save As Popup");
+                RTEditor.inst.SaveAsPopup.Open();
                 return false;
             }
             Instance.DisplayNotification("Beatmap can't be saved as until you load a level.", 5f, EditorManager.NotificationType.Error);
@@ -825,16 +836,16 @@ namespace BetterLegacy.Patchers
             component.text = Instance.openFileSearch;
             Instance.ClearPopups();
             Instance.RenderOpenBeatmapPopup();
-            Instance.ShowDialog("Open File Popup");
+            RTEditor.inst.OpenLevelPopup.Open();
 
             var config = EditorConfig.Instance;
 
             try
             {
                 //Create Local Variables
-                var openLevel = Instance.GetDialog("Open File Popup").Dialog.gameObject;
+                var openLevel = RTEditor.inst.OpenLevelPopup.GameObject;
                 var openTLevel = openLevel.transform;
-                var openRTLevel = openLevel.GetComponent<RectTransform>();
+                var openRTLevel = openLevel.transform.AsRT();
                 var openGridLVL = openTLevel.Find("mask/content").GetComponent<GridLayoutGroup>();
 
                 //Set Open File Popup RectTransform

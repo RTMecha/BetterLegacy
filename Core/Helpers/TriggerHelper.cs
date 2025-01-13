@@ -941,9 +941,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry CreatePreviewClickTrigger(Image _preview, Image _dropper, InputField _hex, Color _col, string popupName = "") => CreateEntry(EventTriggerType.PointerClick, eventData =>
         {
-            EditorManager.inst.ShowDialog("Color Picker");
+            RTEditor.inst.ShowDialog("Color Picker");
             if (!string.IsNullOrEmpty(popupName))
-                EditorManager.inst.HideDialog(popupName);
+                RTEditor.inst.HideDialog(popupName);
 
             var colorPickerTF = EditorManager.inst.GetDialog("Color Picker").Dialog.Find("content/Color Picker");
             var colorPicker = colorPickerTF.GetComponent<ColorPicker>();
@@ -957,7 +957,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 EditorManager.inst.ClearPopups();
                 if (!string.IsNullOrEmpty(popupName))
-                    EditorManager.inst.ShowDialog(popupName);
+                    RTEditor.inst.ShowDialog(popupName);
 
                 double saturation;
                 double num;

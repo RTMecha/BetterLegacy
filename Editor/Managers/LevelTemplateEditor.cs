@@ -5,6 +5,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using Crosstales.FB;
 using LSFunctions;
 using System;
@@ -31,6 +32,16 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             GenerateUI();
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.LEVEL_TEMPLATE_SELECTOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         void GenerateUI()
@@ -119,7 +130,7 @@ namespace BetterLegacy.Editor.Managers
             createLevelTemplateButtonStorage.button.onClick.AddListener(() =>
             {
                 choosingLevelTemplate = true;
-                EditorManager.inst.ShowDialog("Open File Popup");
+                RTEditor.inst.OpenLevelPopup.Open();
                 EditorManager.inst.RenderOpenBeatmapPopup();
 
                 EditorManager.inst.DisplayNotification("Choose a level to create a template from.", 4f, EditorManager.NotificationType.Info);
@@ -157,7 +168,7 @@ namespace BetterLegacy.Editor.Managers
                         if (sprite.texture.width != 480 || sprite.texture.height != 270)
                         {
                             EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
-                            EditorManager.inst.HideDialog("Warning Popup");
+                            RTEditor.inst.HideWarningPopup();
                             return;
                         }
 
@@ -167,13 +178,13 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.HideWarningPopup();
                 }, () =>
                 {
-                    EditorManager.inst.ShowDialog("Browser Popup");
+                    RTEditor.inst.BrowserPopup.Open();
                     RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, onSelectFile: _val =>
                     {
                         if (string.IsNullOrEmpty(_val))
                             return;
 
-                        EditorManager.inst.HideDialog("Browser Popup");
+                        RTEditor.inst.BrowserPopup.Close();
                         var sprite = SpriteHelper.LoadSprite(_val);
 
                         if (sprite.texture.width != 480 || sprite.texture.height != 270)
@@ -193,6 +204,8 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Values
+
+        public EditorDialog Dialog { get; set; }
 
         public bool choosingLevelTemplate;
         public int currentLevelTemplate = -1;
@@ -240,7 +253,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            EditorManager.inst.HideDialog("Open File Popup");
+            RTEditor.inst.OpenLevelPopup.Close();
 
             RTEditor.inst.ShowWarningPopup("Are you sure you want to make a new level template?", () =>
             {
@@ -258,7 +271,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.HideWarningPopup();
             }, () =>
             {
-                EditorManager.inst.ShowDialog("Open File Popup");
+                RTEditor.inst.OpenLevelPopup.Open();
                 RTEditor.inst.HideWarningPopup();
             });
         }

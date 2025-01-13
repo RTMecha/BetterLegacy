@@ -21,6 +21,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -37,6 +38,8 @@ namespace BetterLegacy.Editor.Managers
         public string CustomObjectID { get; set; }
 
         GameObject labelPrefab;
+
+        public EditorDialog Dialog { get; set; }
 
         public static void Init() => Creator.NewGameObject(nameof(PlayerEditor), EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
@@ -151,7 +154,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorDialog("Player Editor", dialog);
             var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", EditorSprites.PlayerSprite, () =>
             {
-                EditorManager.inst.ShowDialog("Player Editor");
+                PlayerEditor.inst.Dialog.Open();
                 StartCoroutine(RefreshEditor());
             });
             EditorHelper.SetComplexity(playerEditor, Complexity.Advanced);
@@ -1173,7 +1176,7 @@ namespace BetterLegacy.Editor.Managers
                 selectStorage.button.onClick.ClearAll();
                 selectStorage.button.onClick.AddListener(() =>
                 {
-                    EditorManager.inst.ShowDialog("Player Models Popup");
+                    RTEditor.inst.PlayerModelsPopup.Open();
                     StartCoroutine(RefreshModels());
                 });
 
@@ -1248,6 +1251,17 @@ namespace BetterLegacy.Editor.Managers
                 modelSearchTerm = _val;
                 StartCoroutine(RefreshModels());
             });
+
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.PLAYER_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
 
             yield break;
         }
@@ -1682,7 +1696,7 @@ namespace BetterLegacy.Editor.Managers
                     button.onClick.ClearAll();
                     button.onClick.AddListener(() =>
                     {
-                        EditorManager.inst.ShowDialog("Player Models Popup");
+                        RTEditor.inst.PlayerModelsPopup.Open();
                         StartCoroutine(RefreshCustomObjects());
                     });
 
@@ -2487,7 +2501,7 @@ namespace BetterLegacy.Editor.Managers
 
                     CustomObjectID = customObject.id;
                     StartCoroutine(RefreshEditor());
-                    EditorManager.inst.HideDialog("Player Models Popup");
+                    RTEditor.inst.PlayerModelsPopup.Close();
                 };
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
@@ -2927,7 +2941,7 @@ namespace BetterLegacy.Editor.Managers
             PlayersData.Load(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
             PlayerManager.RespawnPlayers();
             StartCoroutine(RefreshEditor());
-            EditorManager.inst.HideDialog("Player Models Popup");
+            RTEditor.inst.PlayerModelsPopup.Close();
 
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
         }

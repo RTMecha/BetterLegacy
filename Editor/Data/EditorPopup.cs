@@ -364,7 +364,7 @@ namespace BetterLegacy.Editor.Data
             CloseButton.onClick.ClearAll();
             CloseButton.onClick.AddListener(() =>
             {
-                EditorManager.inst.HideDialog(Name);
+                Close();
                 close?.Invoke();
             });
         }

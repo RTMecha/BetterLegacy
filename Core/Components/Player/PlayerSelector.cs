@@ -18,7 +18,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void OnMouseDown()
         {
-            EditorManager.inst.ShowDialog("Player Editor");
+            PlayerEditor.inst.Dialog.Open();
             StartCoroutine(PlayerEditor.inst.RefreshEditor());
             AchievementManager.inst.UnlockAchievement("select_player");
         }

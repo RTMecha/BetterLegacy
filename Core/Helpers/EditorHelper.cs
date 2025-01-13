@@ -173,7 +173,7 @@ namespace BetterLegacy.Core.Helpers
                 EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.timelineObjects.Last();
 
                 EditorManager.inst.ClearDialogs();
-                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+                MultiObjectEditor.inst.Dialog.Open();
             }
 
             return true;
@@ -202,7 +202,7 @@ namespace BetterLegacy.Core.Helpers
                 EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.timelineObjects.Last();
 
                 EditorManager.inst.ClearDialogs();
-                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+                MultiObjectEditor.inst.Dialog.Open();
             }
 
             return true;

@@ -41,7 +41,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var close = textEditorPopupPanel.Find("x").GetComponent<Button>();
                 close.onClick.ClearAll();
-                close.onClick.AddListener(() => EditorManager.inst.HideDialog("Text Editor"));
+                close.onClick.AddListener(() => RTEditor.inst.TextEditorPopup.Close());
 
                 Destroy(textEditorPopup.Find("Level Name").gameObject);
                 Destroy(textEditorPopup.Find("submit").gameObject);
@@ -108,6 +108,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddLightText(label);
 
                 EditorHelper.AddEditorPopup("Text Editor", textEditor);
+
+                RTEditor.inst.TextEditorPopup = new Data.EditorPopup("Text Editor");
+                RTEditor.inst.TextEditorPopup.GameObject = textEditor;
+                RTEditor.inst.editorPopups.Add(RTEditor.inst.TextEditorPopup);
             }
             catch (Exception ex)
             {
@@ -135,7 +139,7 @@ namespace BetterLegacy.Editor.Managers
             if (!inputField)
                 return;
 
-            EditorManager.inst.ShowDialog("Text Editor");
+            RTEditor.inst.TextEditorPopup.Open();
 
             currentInputField = inputField;
             editor.onValueChanged.ClearAll();

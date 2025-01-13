@@ -7,7 +7,9 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using LSFunctions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +24,8 @@ namespace BetterLegacy.Editor.Managers
         public static LevelCombiner inst;
 
         #region UI Objects
+
+        public EditorDialog Dialog { get; set; }
 
         public static GameObject editorDialogObject;
         public static Transform editorDialogTransform;
@@ -158,6 +162,7 @@ namespace BetterLegacy.Editor.Managers
                     dropdown.options = CoreHelper.StringToOptionData("LS", "VG");
                     dropdown.value = 0;
                     dropdown.onValueChanged.AddListener(_val => EditorConfig.Instance.CombinerOutputFormat.Value = (ArrhythmiaType)(_val + 1));
+                    EditorThemeManager.AddDropdown(dropdown);
                 }
 
                 //Button 1
@@ -192,11 +197,21 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddLightText(infoText);
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.LEVEL_COMBINER);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         public void OpenDialog()
         {
-            EditorManager.inst.ShowDialog("Level Combiner");
+            Dialog.Open();
             StartCoroutine(RenderDialog());
         }
 

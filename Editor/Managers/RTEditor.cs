@@ -15,6 +15,7 @@ using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Example;
 using CielaSpike;
 using Crosstales.FB;
@@ -166,12 +167,16 @@ namespace BetterLegacy.Editor.Managers
                 PrefabPopups.ExternalPrefabs = new ContentPopup("external prefabs");
                 PrefabPopups.ExternalPrefabs.Assign(prefabDialog.Find("external prefabs").gameObject);
 
+                ObjectOptionsPopup = new EditorPopup(EditorPopup.OBJECT_OPTIONS_POPUP);
+                ObjectOptionsPopup.GameObject = ObjectOptionsPopup.GetLegacyDialog().Dialog.gameObject;
+
                 editorPopups.Add(NewLevelPopup);
                 editorPopups.Add(OpenLevelPopup);
                 editorPopups.Add(InfoPopup);
                 editorPopups.Add(ParentSelectorPopup);
                 editorPopups.Add(SaveAsPopup);
                 editorPopups.Add(PrefabPopups);
+                editorPopups.Add(ObjectOptionsPopup);
             }
             catch (Exception ex)
             {
@@ -450,6 +455,16 @@ namespace BetterLegacy.Editor.Managers
             var timelineParent = Creator.NewUIObject("Timeline Objects", EditorManager.inst.timeline.transform, 1);
             EditorTimeline.inst.timelineObjectsParent = timelineParent.transform.AsRT();
             RectValues.FullAnchored.AssignToRectTransform(EditorTimeline.inst.timelineObjectsParent);
+
+            try
+            {
+                CheckpointEditorDialog = new EditorDialog(EditorDialog.CHECKPOINT_EDITOR);
+                CheckpointEditorDialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
 
             SetupFileBrowser();
             CreateFolderCreator();
@@ -817,6 +832,8 @@ namespace BetterLegacy.Editor.Managers
 
         public PrefabPopup PrefabPopups { get; set; }
 
+        public EditorPopup ObjectOptionsPopup { get; set; }
+
         public ContentPopup ObjectTemplatePopup { get; set; }
 
         public ContentPopup DebuggerPopup { get; set; }
@@ -827,6 +844,18 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup DocumentationPopup { get; set; }
 
         public EditorPopup WarningPopup { get; set; }
+
+        public EditorPopup BrowserPopup { get; set; }
+
+        public ContentPopup ObjectSearchPopup { get; set; }
+
+        public EditorPopup NamePopup { get; set; }
+
+        public ContentPopup PrefabTypesPopup { get; set; }
+
+        public ContentPopup ThemesPopup { get; set; }
+
+        public EditorPopup TextEditorPopup { get; set; }
 
         #endregion
 
@@ -1824,7 +1853,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void Copy(bool _cut = false, bool _dup = false, bool _regen = true)
         {
-            if ((EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Timeline) && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Background)) || EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Background))
+            if (!EditorTimeline.inst.isOverMainTimeline && RTBackgroundEditor.inst.Dialog.IsCurrent)
             {
                 BackgroundEditor.inst.CopyBackground();
                 if (!_cut)
@@ -1842,7 +1871,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if ((EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Timeline) && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint)) || EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Checkpoint))
+            if (!EditorTimeline.inst.isOverMainTimeline && CheckpointEditorDialog.IsCurrent)
             {
                 if (!_dup)
                 {
@@ -1863,7 +1892,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (!EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
+            if (!EditorTimeline.inst.isOverMainTimeline && ObjectEditor.inst.Dialog.IsCurrent)
             {
                 if (!_dup)
                 {
@@ -1884,7 +1913,10 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            if (!EditorTimeline.inst.isOverMainTimeline)
+                return;
+
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 if (!_dup)
                 {
@@ -1905,7 +1937,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
             {
                 var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
@@ -1958,19 +1990,22 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
             }
 
-            if (!EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
+            if (EditorTimeline.inst.isOverMainTimeline)
+                return;
+
+            if (!EditorTimeline.inst.isOverMainTimeline && ObjectEditor.inst.Dialog.IsCurrent)
             {
                 ObjEditor.inst.PasteKeyframes();
                 EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
             }
 
-            if ((EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint)) || EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Checkpoint))
+            if (!EditorTimeline.inst.isOverMainTimeline && CheckpointEditorDialog.IsCurrent)
             {
                 CheckpointEditor.inst.PasteCheckpoint();
                 EditorManager.inst.DisplayNotification("Pasted Checkpoint", 1f, EditorManager.NotificationType.Success);
             }
 
-            if (EditorManager.inst.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Background))
+            if (!EditorTimeline.inst.isOverMainTimeline && RTBackgroundEditor.inst.Dialog.IsCurrent)
             {
                 BackgroundEditor.inst.PasteBackground();
                 EditorManager.inst.DisplayNotification("Pasted Background Object", 1f, EditorManager.NotificationType.Success);
@@ -1979,7 +2014,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void Delete()
         {
-            if (!EditorTimeline.inst.isOverMainTimeline && EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Object))
+            if (!EditorTimeline.inst.isOverMainTimeline && ObjectEditor.inst.Dialog.IsCurrent)
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                     if (ObjEditor.inst.currentKeyframe != 0)
@@ -2023,10 +2058,7 @@ namespace BetterLegacy.Editor.Managers
                         list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
                         list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
 
-                    EditorManager.inst.history.Add(new History.Command("Delete Objects", () =>
-                    {
-                        Delete();
-                    }, () =>
+                    EditorManager.inst.history.Add(new History.Command("Delete Objects", Delete, () =>
                     {
                         EditorTimeline.inst.DeselectAllObjects();
                         StartCoroutine(ObjectEditor.inst.AddPrefabExpandedToLevel(prefab, true, 0f, true, retainID: true));
@@ -2057,13 +2089,13 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Background))
+            if (RTBackgroundEditor.inst.Dialog.IsCurrent)
             {
                 BackgroundEditor.inst.DeleteBackground(BackgroundEditor.inst.currentObj);
                 return;
             }
 
-            if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint))
+            if (CheckpointEditorDialog.IsCurrent)
             {
                 if (CheckpointEditor.inst.currentObj != 0)
                 {
@@ -2300,7 +2332,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Options", () => { EditorManager.inst.ShowDialog("Object Options Popup"); }),
+                    new ButtonFunction("Options", ObjectOptionsPopup.Open),
                     new ButtonFunction("More Options", ShowObjectTemplates)
                     );
             };
@@ -2743,7 +2775,7 @@ namespace BetterLegacy.Editor.Managers
 
             var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
-                EditorManager.inst.ShowDialog("Browser Popup");
+                BrowserPopup.Open();
                 RefreshFileBrowserLevels();
             }, 3);
             EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
@@ -2759,7 +2791,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                EditorManager.inst.ShowDialog("Browser Popup");
+                BrowserPopup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.OGG, FileFormat.WAV, FileFormat.PNG, FileFormat.JPG, FileFormat.MP4, FileFormat.LSP, FileFormat.VGP), onSelectFile: _val =>
                 {
                     var selectedFile = RTFile.ReplaceSlash(_val);
@@ -3097,7 +3129,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Level folder", () =>
                     {
-                        EditorManager.inst.ShowDialog("Browser Popup");
+                        BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
@@ -3108,7 +3140,7 @@ namespace BetterLegacy.Editor.Managers
 
                             editorPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
-                            EditorManager.inst.HideDialog("Browser Popup");
+                            RTEditor.inst.BrowserPopup.Close();
                             UpdateEditorPath(false);
                         });
                     }),
@@ -3173,7 +3205,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Theme folder", () =>
                     {
-                        EditorManager.inst.ShowDialog("Browser Popup");
+                        BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
@@ -3184,7 +3216,7 @@ namespace BetterLegacy.Editor.Managers
 
                             themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                            EditorManager.inst.HideDialog("Browser Popup");
+                            RTEditor.inst.BrowserPopup.Close();
                             UpdateThemePath(false);
                         });
                     }),
@@ -3296,7 +3328,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Prefab folder", () =>
                     {
-                        EditorManager.inst.ShowDialog("Browser Popup");
+                        BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
@@ -3307,7 +3339,7 @@ namespace BetterLegacy.Editor.Managers
 
                             prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
-                            EditorManager.inst.HideDialog("Browser Popup");
+                            RTEditor.inst.BrowserPopup.Close();
                             UpdatePrefabPath(false);
                         });
                     }),
@@ -3345,7 +3377,7 @@ namespace BetterLegacy.Editor.Managers
             UIManager.SetRectTransform(fileBrowser.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(600f, 364f));
             var close = fileBrowser.transform.Find("Panel/x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(() => { EditorManager.inst.HideDialog("Browser Popup"); });
+            close.onClick.AddListener(() => BrowserPopup.Close());
             fileBrowser.transform.Find("GameObject").gameObject.SetActive(false);
 
             var selectGUI = fileBrowser.AddComponent<SelectGUI>();
@@ -3383,6 +3415,21 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(panel.transform.Find("Text").GetComponent<TextMeshProUGUI>());
 
             EditorThemeManager.AddInputField(fileBrowser.transform.Find("folder-bar").GetComponent<InputField>());
+
+            try
+            {
+                BrowserPopup = new EditorPopup("Browser Popup");
+                BrowserPopup.Assign(BrowserPopup.GetLegacyDialog().Dialog.gameObject);
+                BrowserPopup.size = BrowserPopup.GameObject.transform.AsRT().sizeDelta;
+                editorPopups.Add(BrowserPopup);
+
+                if (BrowserPopup.Title)
+                    BrowserPopup.title = BrowserPopup.Title.text;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         void SetupTimelinePreview()
@@ -3498,10 +3545,10 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 if (LevelTemplateEditor.inst.choosingLevelTemplate)
-                    EditorManager.inst.HideDialog("Open File Popup");
+                    OpenLevelPopup.Close();
 
                 LevelTemplateEditor.inst.choosingLevelTemplate = false;
-                EditorManager.inst.HideDialog("New Level Template Dialog");
+                LevelTemplateEditor.inst.Dialog.Close();
             };
 
             EditorThemeManager.AddGraphic(newFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
@@ -3555,13 +3602,13 @@ namespace BetterLegacy.Editor.Managers
             browseInternalButton.onClick.ClearAll();
             browseInternalButton.onClick.AddListener(() =>
             {
-                EditorManager.inst.ShowDialog("Browser Popup");
+                BrowserPopup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.AudioDotFormats, onSelectFile: _val =>
                 {
                     if (!string.IsNullOrEmpty(_val))
                     {
                         path.text = _val;
-                        EditorManager.inst.HideDialog("Browser Popup");
+                        RTEditor.inst.BrowserPopup.Close();
                     }
                 });
             });
@@ -3574,7 +3621,7 @@ namespace BetterLegacy.Editor.Managers
             chooseTemplateButton.onClick.AddListener(() =>
             {
                 LevelTemplateEditor.inst.RefreshNewLevelTemplates();
-                EditorManager.inst.ShowDialog("New Level Template Dialog");
+                LevelTemplateEditor.inst.Dialog.Open();
             });
             chooseTemplate.transform.AsRT().sizeDelta = new Vector2(384f, 32f);
 
@@ -3642,7 +3689,7 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateObjectSearch()
         {
-            var objectSearchPopup = GeneratePopup("Object Search Popup", "Object Search", Vector2.zero, new Vector2(600f, 450f), _val =>
+            ObjectSearchPopup = GeneratePopup("Object Search Popup", "Object Search", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 objectSearchTerm = _val;
                 RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
@@ -3650,7 +3697,7 @@ namespace BetterLegacy.Editor.Managers
 
             var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", EditorSprites.SearchSprite, () =>
             {
-                EditorManager.inst.ShowDialog("Object Search Popup");
+                ObjectSearchPopup.Open();
                 RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             });
 
@@ -3710,7 +3757,7 @@ namespace BetterLegacy.Editor.Managers
 
             var close = panel.Find("x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(() => EditorManager.inst.HideDialog("Warning Popup"));
+            close.onClick.AddListener(HideWarningPopup);
 
             var title = panel.Find("Text").GetComponent<Text>();
             title.text = "Warning!";
@@ -3796,7 +3843,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger.png"), () =>
             {
-                EditorManager.inst.ShowDialog("Debugger Popup");
+                DebuggerPopup.Open();
                 RefreshDebugger();
             });
 
@@ -4126,9 +4173,19 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("View Screenshots", "", "View", EditorSprites.SearchSprite, () =>
             {
-                EditorManager.inst.ShowDialog("Screenshot Dialog");
+                ScreenshotsDialog.Open();
                 RefreshScreenshots();
             });
+
+            try
+            {
+                ScreenshotsDialog = new EditorDialog(EditorDialog.SCREENSHOTS);
+                ScreenshotsDialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         void CreateFolderCreator()
@@ -4147,7 +4204,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var close = folderCreatorPopupPanel.Find("x").GetComponent<Button>();
                 close.onClick.ClearAll();
-                close.onClick.AddListener(() => EditorManager.inst.HideDialog("Folder Creator Popup"));
+                close.onClick.AddListener(HideNameEditor);
 
                 folderCreatorNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
                 folderCreatorNameLabel.text = "New folder name";
@@ -4176,6 +4233,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
 
                 EditorHelper.AddEditorPopup("Folder Creator Popup", folderCreator);
+
+                NamePopup = new EditorPopup("Folder Creator Popup");
+                NamePopup.Assign(NamePopup.GetLegacyDialog().Dialog.gameObject);
+                NamePopup.size = NamePopup.GameObject.transform.AsRT().sizeDelta;
+                editorPopups.Add(NamePopup);
+
+                if (NamePopup.Title)
+                    NamePopup.title = NamePopup.Title.text;
             }
             catch (Exception ex)
             {
@@ -4445,7 +4510,7 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.gameState = GameManager.State.Loading;
 
             EditorManager.inst.ClearDialogs();
-            EditorManager.inst.ShowDialog("File Info Popup");
+            InfoPopup.Open();
 
             if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.FileExists(GameManager.inst.path))
             {
@@ -4595,7 +4660,7 @@ namespace BetterLegacy.Editor.Managers
             CheckpointEditor.inst.SetCurrentCheckpoint(0);
 
             InfoPopup.SetInfo("Done!");
-            EditorManager.inst.HideDialog("File Info Popup");
+            InfoPopup.Close();
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
 
             RTGameManager.inst.ResetCheckpoint();
@@ -4845,7 +4910,7 @@ namespace BetterLegacy.Editor.Managers
             levelPanel.Init(new Level(path));
             LevelPanels.Add(levelPanel);
             StartCoroutine(LoadLevel(levelPanel.Level));
-            EditorManager.inst.HideDialog("New File Popup");
+            NewLevelPopup.Close();
         }
 
         /// <summary>
@@ -4930,7 +4995,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || LevelPanels.Count > 0)
             {
-                EditorManager.inst.ShowDialog("Open File Popup");
+                OpenLevelPopup.Open();
                 EditorManager.inst.RenderOpenBeatmapPopup();
             }
             else
@@ -4941,6 +5006,11 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh Popups / Dialogs
 
+        public List<EditorDialog> editorDialogs = new List<EditorDialog>();
+
+        public EditorDialog CheckpointEditorDialog { get; set; }
+        public EditorDialog ScreenshotsDialog { get; set; }
+
         #region Folder Creator / Name Editor
 
         /// <summary>
@@ -4950,7 +5020,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onSubmit">Function to run when Submit is clicked.</param>
         public void ShowFolderCreator(string path, Action onSubmit)
         {
-            EditorManager.inst.ShowDialog("Folder Creator Popup");
+            NamePopup.Open();
             RefreshFolderCreator(path, onSubmit);
         }
 
@@ -4970,7 +5040,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Hides the name editor.
         /// </summary>
-        public void HideNameEditor() => EditorManager.inst.HideDialog("Folder Creator Popup");
+        public void HideNameEditor() => NamePopup.Close();
 
         /// <summary>
         /// Shows the Name Editor Popup.
@@ -4981,7 +5051,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onSubmit">Function to run when submit is clicked.</param>
         public void ShowNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
         {
-            EditorManager.inst.ShowDialog("Folder Creator Popup");
+            NamePopup.Open();
             RefreshNameEditor(title, nameLabel, submitText, onSubmit);
         }
 
@@ -5015,7 +5085,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObjects">List of <see cref="BeatmapObject"/> to render.</param>
         public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
         {
-            EditorManager.inst.ShowDialog("Object Search Popup");
+            ObjectSearchPopup.Open();
             RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
         }
 
@@ -5151,7 +5221,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void ShowObjectTemplates()
         {
-            EditorManager.inst.ShowDialog("Object Templates Popup");
+            ObjectTemplatePopup.Open();
             RefreshObjectTemplates(ObjectTemplatePopup.SearchField.text);
         }
 
@@ -5204,7 +5274,7 @@ namespace BetterLegacy.Editor.Managers
                     Updater.UpdateObject(bm);
                 }
 
-                EditorManager.inst.HideDialog("Parent Selector");
+                ParentSelectorPopup.Close();
                 if (list.Count == 1 && timelineObject.isBeatmapObject)
                     StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                 if (list.Count == 1 && timelineObject.isPrefabObject)
@@ -5241,7 +5311,7 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(bm);
                     }
 
-                    EditorManager.inst.HideDialog("Parent Selector");
+                    ParentSelectorPopup.Close();
                     if (list.Count == 1 && timelineObject.isBeatmapObject)
                         StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                     if (list.Count == 1 && timelineObject.isPrefabObject)
@@ -5309,7 +5379,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(bm);
                         }
 
-                        EditorManager.inst.HideDialog("Parent Selector");
+                        ParentSelectorPopup.Close();
                         if (list.Count == 1 && timelineObject.isBeatmapObject)
                             StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                         if (list.Count == 1 && timelineObject.isPrefabObject)
@@ -5331,7 +5401,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Hides the warning popup.
         /// </summary>
-        public void HideWarningPopup() => EditorManager.inst.HideDialog("Warning Popup");
+        public void HideWarningPopup() => WarningPopup.Close();
 
         /// <summary>
         /// Shows the warning popup.
@@ -5344,10 +5414,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onClose">Function to run when the user closes the popup.</param>
         public void ShowWarningPopup(string warning, UnityAction onConfirm, UnityAction onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
         {
-            EditorManager.inst.ShowDialog("Warning Popup");
+            WarningPopup.Open();
             RefreshWarningPopup(warning, onConfirm, onCancel, confirm, cancel, onClose);
 
-            var warningPopup = EditorManager.inst.GetDialog("Warning Popup").Dialog.GetChild(0);
+            var warningPopup = WarningPopup.GameObject.transform.GetChild(0);
             if (ExampleManager.inst && ExampleManager.inst.Visible && Vector2.Distance(ExampleManager.inst.TotalPosition, warningPopup.localPosition + new Vector3(140f, 200f)) > 20f)
             {
                 ExampleManager.inst.Move(
@@ -5374,7 +5444,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onClose">Function to run when the user closes the popup.</param>
         public void RefreshWarningPopup(string warning, UnityAction onConfirm, UnityAction onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
         {
-            var warningPopup = EditorManager.inst.GetDialog("Warning Popup").Dialog.GetChild(0);
+            var warningPopup = WarningPopup.GameObject.transform.GetChild(0);
 
             var close = warningPopup.Find("Panel/x").GetComponent<Button>();
             close.onClick.ClearAll();
@@ -5515,7 +5585,7 @@ namespace BetterLegacy.Editor.Managers
                                 levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));
 
                                 StartCoroutine(LoadLevel(levelPanel.Level));
-                                EditorManager.inst.HideDialog("Open File Popup");
+                                OpenLevelPopup.Close();
                                 break;
                             }
                         case PointerEventData.InputButton.Right:
@@ -5526,7 +5596,7 @@ namespace BetterLegacy.Editor.Managers
                                         levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));
 
                                         StartCoroutine(LoadLevel(levelPanel.Level));
-                                        EditorManager.inst.HideDialog("Open File Popup");
+                                        OpenLevelPopup.Close();
                                     }),
                                     new ButtonFunction("Toggle Backup State", () =>
                                     {
@@ -5813,6 +5883,16 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.SetActive(active);
         }
 
+        public void ShowDialog(string name)
+        {
+            EditorManager.inst.ShowDialog(name);
+        }
+
+        public void HideDialog(string name)
+        {
+            EditorManager.inst.HideDialog(name);
+        }
+
         /// <summary>
         /// Sets a dialogs' status.
         /// </summary>
@@ -5821,6 +5901,18 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="focus">If the dialog should set as the current dialog.</param>
         public void SetDialogStatus(string dialogName, bool active, bool focus = true)
         {
+            if (editorDialogs.TryFind(x => x.Name == dialogName, out EditorDialog dialog))
+            {
+                if (focus && active)
+                {
+                    EditorDialog.CurrentDialog?.Close();
+                    EditorDialog.CurrentDialog = dialog;
+                }
+
+                dialog.SetActive(active);
+                return;
+            }
+
             if (!EditorManager.inst.EditorDialogsDictionary.TryGetValue(dialogName, out EditorManager.EditorDialog editorDialog))
             {
                 Debug.LogError($"{EditorManager.inst.className}Can't load dialog [{dialogName}].");
@@ -6843,7 +6935,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void ConvertVGToLS()
         {
-            EditorManager.inst.ShowDialog("Browser Popup");
+            BrowserPopup.Open();
             RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.LSP, FileFormat.VGP, FileFormat.LST, FileFormat.VGT, FileFormat.LSB, FileFormat.VGD), onSelectFile: _val =>
             {
                 bool failed = false;
@@ -6985,7 +7077,7 @@ namespace BetterLegacy.Editor.Managers
                             }, () =>
                             {
                                 HideWarningPopup();
-                                EditorManager.inst.ShowDialog("Browser Popup");
+                                BrowserPopup.Open();
                             });
 
                             break;
@@ -7115,7 +7207,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 if (!failed)
-                    EditorManager.inst.HideDialog("Browser Popup");
+                    BrowserPopup.Close();
             });
         }
 

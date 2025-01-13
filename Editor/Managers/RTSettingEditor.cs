@@ -17,6 +17,7 @@ using LSFunctions;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -32,6 +33,16 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             StartCoroutine(SetupUI());
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.SETTINGS_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
 
         IEnumerator SetupUI()
@@ -227,6 +238,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Values
 
+        public EditorDialog Dialog { get; set; }
+
         public RectTransform dialog;
 
         Dictionary<string, Text> info = new Dictionary<string, Text>();
@@ -358,10 +371,10 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.InvokeRepeating("LoadingIconUpdate", 0f, UnityEngine.Random.Range(0.01f, 0.4f));
 
             EditorManager.inst.ClearDialogs();
-            EditorManager.inst.ShowDialog("Settings Editor");
+            Dialog.Open();
 
-            var transform = EditorManager.inst.GetDialog("Settings Editor").Dialog;
-            var loadingDoggoRect = transform.Find("loading doggo").GetComponent<RectTransform>();
+            var transform = Dialog.GameObject.transform.AsRT();
+            var loadingDoggoRect = transform.Find("loading doggo").AsRT();
 
             loadingDoggoRect.anchoredPosition = new Vector2(UnityEngine.Random.Range(-320f, 320f), UnityEngine.Random.Range(-310f, -340f));
             float sizeRandom = 64 * UnityEngine.Random.Range(0.5f, 1f);
@@ -370,7 +383,7 @@ namespace BetterLegacy.Editor.Managers
             var toggle = transform.Find("snap/toggle/toggle").GetComponent<Toggle>();
             toggle.onValueChanged.RemoveAllListeners();
             toggle.isOn = SettingEditor.inst.SnapActive;
-            toggle.onValueChanged.AddListener(_val => { SettingEditor.inst.SnapActive = _val; });
+            toggle.onValueChanged.AddListener(_val => SettingEditor.inst.SnapActive = _val);
 
             var slider = transform.Find("snap/bpm/slider").GetComponent<Slider>();
             var input = transform.Find("snap/bpm/input").GetComponent<InputField>();

@@ -447,25 +447,25 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                var themesPopup = RTEditor.inst.GeneratePopup("Theme Popup", "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
+                RTEditor.inst.ThemesPopup = RTEditor.inst.GeneratePopup("Theme Popup", "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
                 {
                     themeSearch = _val;
                     RefreshThemeSearch();
                 }, placeholderText: "Search for theme...");
 
-                themeContent = themesPopup.Content;
+                themeContent = RTEditor.inst.ThemesPopup.Content;
 
-                themesPopup.Grid.cellSize = new Vector2(600f, 362f);
+                RTEditor.inst.ThemesPopup.Grid.cellSize = new Vector2(600f, 362f);
 
                 EditorHelper.AddEditorDropdown("View Themes", "", "View", EditorSprites.SearchSprite, () =>
                 {
-                    EditorManager.inst.ShowDialog("Theme Popup");
+                    RTEditor.inst.ThemesPopup.Open();
                     RefreshThemeSearch();
                 });
 
                 // Page
                 {
-                    var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themesPopup.TopPanel, "page");
+                    var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(RTEditor.inst.ThemesPopup.TopPanel, "page");
                     page.transform.AsRT().anchoredPosition = new Vector2(240f, 16f);
                     pageStorage = page.GetComponent<InputFieldStorage>();
                     pageStorage.inputField.onValueChanged.ClearAll();

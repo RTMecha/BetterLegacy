@@ -4,6 +4,8 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -132,11 +134,21 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorHelper.AddEditorDropdown("View Uploaded", "", "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_levels.png"), () =>
+            EditorHelper.AddEditorDropdown("View Uploaded", "", "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_levels{FileFormat.PNG.Dot()}"), () =>
             {
-                EditorManager.inst.ShowDialog("Uploaded Dialog");
+                Dialog.Open();
                 Search();
             });
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.UPLOADED_LEVELS);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
 
             yield break;
         }
@@ -144,6 +156,8 @@ namespace BetterLegacy.Editor.Managers
 		int levelCount;
 
 		bool loadingOnlineLevels;
+
+        public EditorDialog Dialog { get; set; }
 
         int page;
         string search;
