@@ -773,7 +773,7 @@ namespace BetterLegacy.Patchers
         {
             if (Instance.hasLoadedLevel)
             {
-                Instance.ClearDialogs(EditorManager.EditorDialog.DialogType.Popup);
+                Instance.ClearPopups();
                 Instance.ShowDialog("Save As Popup");
                 return false;
             }
@@ -823,7 +823,7 @@ namespace BetterLegacy.Patchers
 
             LevelTemplateEditor.inst.choosingLevelTemplate = false;
             component.text = Instance.openFileSearch;
-            Instance.ClearDialogs(EditorManager.EditorDialog.DialogType.Popup);
+            Instance.ClearPopups();
             Instance.RenderOpenBeatmapPopup();
             Instance.ShowDialog("Open File Popup");
 
