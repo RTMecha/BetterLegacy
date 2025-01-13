@@ -916,13 +916,13 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateTimelineSizesPrefix()
         {
-            if (AudioManager.inst.CurrentAudioSource.clip == null)
+            if (!AudioManager.inst.CurrentAudioSource.clip)
                 return false;
 
-            var zoom = Instance.Zoom;
-            Instance.markerTimeline.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * zoom, Instance.markerTimeline.transform.AsRT().sizeDelta.y);
-            Instance.timeline.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * zoom, Instance.timeline.transform.AsRT().sizeDelta.y);
-            Instance.timelineWaveformOverlay.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * zoom, Instance.timeline.transform.AsRT().sizeDelta.y);
+            var size = AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom;
+            Instance.markerTimeline.transform.AsRT().SetSizeDeltaX(size);
+            Instance.timeline.transform.AsRT().SetSizeDeltaX(size);
+            Instance.timelineWaveformOverlay.transform.AsRT().SetSizeDeltaX(size);
 
             return false;
         }
