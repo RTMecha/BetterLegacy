@@ -2476,6 +2476,21 @@ namespace BetterLegacy.Editor.Managers
             _ => null,
         };
 
+        public void CopyData(int type, EventKeyframe kf)
+        {
+            switch (type)
+            {
+                case 0: CopiedPositionData = EventKeyframe.DeepCopy(kf);
+                    break;
+                case 1: CopiedScaleData = EventKeyframe.DeepCopy(kf);
+                    break;
+                case 2: CopiedRotationData = EventKeyframe.DeepCopy(kf);
+                    break;
+                case 3: CopiedColorData = EventKeyframe.DeepCopy(kf);
+                    break;
+            }
+        }
+
         public void SetCopiedData(int type, EventKeyframe kf) => SetData(kf, GetCopiedData(type));
 
         public void SetData(EventKeyframe kf, EventKeyframe copiedData)
@@ -5403,21 +5418,7 @@ namespace BetterLegacy.Editor.Managers
             copy.onClick.ClearAll();
             copy.onClick.AddListener(() =>
             {
-                switch (type)
-                {
-                    case 0:
-                        CopiedPositionData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                        break;
-                    case 1:
-                        CopiedScaleData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                        break;
-                    case 2:
-                        CopiedRotationData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                        break;
-                    case 3:
-                        CopiedColorData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
-                        break;
-                }
+                CopyData(firstKF.Type, firstKF.eventKeyframe);
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
             });
 
