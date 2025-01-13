@@ -27,7 +27,7 @@ namespace BetterLegacy.Editor.Data
             isEventKeyframe = TimelineReference == TimelineReferenceType.EventKeyframe;
 
             if (isBeatmapObject)
-                InternalTimelineObjects = new List<TimelineObject>();
+                InternalTimelineObjects = new List<TimelineKeyframe>();
         }
 
         #region Properties
@@ -247,7 +247,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// The internal keyframes an object stores. Only used for Beatmap Objects.
         /// </summary>
-        public List<TimelineObject> InternalTimelineObjects { get; set; }
+        public List<TimelineKeyframe> InternalTimelineObjects { get; set; }
 
         /// <summary>
         /// What kind of object <see cref="data"/> is.

@@ -686,7 +686,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             {
-                                var eventKeyframe = timelineObject.GetData<EventKeyframe>();
+                                var eventKeyframe = timelineObject.eventKeyframe;
                                 eventKeyframe.eventValues[0] = -eventKeyframe.eventValues[0];
                             }
 
@@ -713,7 +713,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                                 {
-                                    var eventKeyframe = timelineObject.GetData<EventKeyframe>();
+                                    var eventKeyframe = timelineObject.eventKeyframe;
                                     eventKeyframe.eventValues[1] = -eventKeyframe.eventValues[1];
                                 }
 
@@ -1404,7 +1404,7 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var timelineObject in list)
                     {
-                        var kf = timelineObject.GetData<EventKeyframe>();
+                        var kf = timelineObject.eventKeyframe;
                         switch (timelineObject.Type)
                         {
                             case 0:
@@ -1495,7 +1495,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.Type != 0)
                             continue;
 
-                        var kf = timelineObject.GetData<EventKeyframe>();
+                        var kf = timelineObject.eventKeyframe;
 
                         if (CopiedPositionData != null)
                         {
@@ -1536,7 +1536,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.Type != 1)
                             continue;
 
-                        var kf = timelineObject.GetData<EventKeyframe>();
+                        var kf = timelineObject.eventKeyframe;
 
                         if (CopiedScaleData != null)
                         {
@@ -1590,10 +1590,10 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var timelineObject in list)
                     {
-                        if (timelineObject.Type != 3)
+                        if (timelineObject.Type != 2)
                             continue;
 
-                        var kf = timelineObject.GetData<EventKeyframe>();
+                        var kf = timelineObject.eventKeyframe;
 
                         if (CopiedRotationData != null)
                         {
@@ -1631,10 +1631,10 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var timelineObject in list)
                     {
-                        if (timelineObject.Type != 4)
+                        if (timelineObject.Type != 3)
                             continue;
 
-                        var kf = timelineObject.GetData<EventKeyframe>();
+                        var kf = timelineObject.eventKeyframe;
 
                         if (CopiedColorData != null)
                         {
@@ -1991,7 +1991,7 @@ namespace BetterLegacy.Editor.Managers
         public GameObject shapeButtonPrefab;
 
 
-        public List<TimelineObject> copiedObjectKeyframes = new List<TimelineObject>();
+        public List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
 
         public EventKeyframe CopiedPositionData { get; set; }
         public EventKeyframe CopiedScaleData { get; set; }
@@ -2404,7 +2404,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var timelineObject in list)
             {
                 if (timelineObject.Index != 0)
-                    strs.Add(timelineObject.GetData<EventKeyframe>().id);
+                    strs.Add(timelineObject.eventKeyframe.id);
             }
 
             for (int i = 0; i < beatmapObject.events.Count; i++)
@@ -2472,13 +2472,13 @@ namespace BetterLegacy.Editor.Managers
                 var eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][index]);
                 eventKeyframe.eventTime -= num;
 
-                copiedObjectKeyframes.Add(new TimelineObject(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
+                copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
             }
         }
 
         public void PasteKeyframes(BeatmapObject beatmapObject, bool setTime = true) => PasteKeyframes(beatmapObject, copiedObjectKeyframes, setTime);
 
-        public void PasteKeyframes(BeatmapObject beatmapObject, List<TimelineObject> kfs, bool setTime = true)
+        public void PasteKeyframes(BeatmapObject beatmapObject, List<TimelineKeyframe> kfs, bool setTime = true)
         {
             if (kfs.Count <= 0)
             {
@@ -2516,9 +2516,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public EventKeyframe PasteKF(BeatmapObject beatmapObject, TimelineObject timelineObject, bool setTime = true)
+        public EventKeyframe PasteKF(BeatmapObject beatmapObject, TimelineKeyframe timelineKeyframe, bool setTime = true)
         {
-            var eventKeyframe = EventKeyframe.DeepCopy(timelineObject.GetData<EventKeyframe>());
+            var eventKeyframe = EventKeyframe.DeepCopy(timelineKeyframe.eventKeyframe);
 
             var time = EditorManager.inst.CurrentAudioPos;
             if (SettingEditor.inst.SnapActive)
@@ -4812,7 +4812,7 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        void KeyframeHandler(Transform kfdialog, int type, IEnumerable<TimelineObject> selected, TimelineObject firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
+        void KeyframeHandler(Transform kfdialog, int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
         {
             var valueBase = kfdialog.Find(typeName);
             var value = valueBase.Find(valueType);
@@ -4866,13 +4866,13 @@ namespace BetterLegacy.Editor.Managers
 
             valueInputField.onEndEdit.ClearAll();
             valueInputField.onValueChanged.ClearAll();
-            valueInputField.text = selected.Count() == 1 ? firstKF.GetData<EventKeyframe>().eventValues[i].ToString() : typeName == "rotation" ? "15" : "1";
+            valueInputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.eventValues[i].ToString() : typeName == "rotation" ? "15" : "1";
             valueInputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
 
-                    firstKF.GetData<EventKeyframe>().eventValues[current] = num;
+                    firstKF.eventKeyframe.eventValues[current] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -4883,11 +4883,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 var variables = new Dictionary<string, float>
                 {
-                    { "eventTime", firstKF.GetData<EventKeyframe>().eventTime },
-                    { "currentValue", firstKF.GetData<EventKeyframe>().eventValues[current] }
+                    { "eventTime", firstKF.eventKeyframe.eventTime },
+                    { "currentValue", firstKF.eventKeyframe.eventValues[current] }
                 };
 
-                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.GetData<EventKeyframe>().eventValues[current], variables, out float calc))
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.eventValues[current], variables, out float calc))
                     valueInputField.text = calc.ToString();
             });
 
@@ -4903,7 +4903,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.GetData<EventKeyframe>().eventValues[current] -= x;
+                        keyframe.eventKeyframe.eventValues[current] -= x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -4923,7 +4923,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.GetData<EventKeyframe>().eventValues[current] += x;
+                        keyframe.eventKeyframe.eventValues[current] += x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -4966,12 +4966,12 @@ namespace BetterLegacy.Editor.Managers
                 kfdialog.Find("r_label/interval").GetComponent<Text>().text = randomType == 6 ? "Speed" : "Random Interval";
         }
 
-        void KeyframeRandomHandler(Transform kfdialog, int type, IEnumerable<TimelineObject> selected, TimelineObject firstKF, BeatmapObject beatmapObject, string typeName)
+        void KeyframeRandomHandler(Transform kfdialog, int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject, string typeName)
         {
             var randomValueLabel = kfdialog.Find($"r_{typeName}_label");
             var randomValue = kfdialog.Find($"r_{typeName}");
 
-            int random = firstKF.GetData<EventKeyframe>().random;
+            int random = firstKF.eventKeyframe.random;
 
             if (kfdialog.Find("r_axis") && kfdialog.Find("r_axis").gameObject.TryGetComponent(out Dropdown rAxis))
             {
@@ -4980,10 +4980,10 @@ namespace BetterLegacy.Editor.Managers
                 rAxis.onValueChanged.ClearAll();
                 if (active)
                 {
-                    rAxis.value = Mathf.Clamp((int)firstKF.GetData<EventKeyframe>().eventRandomValues[3], 0, 3);
+                    rAxis.value = Mathf.Clamp((int)firstKF.eventKeyframe.eventRandomValues[3], 0, 3);
                     rAxis.onValueChanged.AddListener(_val =>
                     {
-                        foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.eventRandomValues[3] = _val;
                         Updater.UpdateObject(beatmapObject, "Keyframes");
                     });
@@ -5009,7 +5009,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (_val)
                     {
-                        foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.random = buttonTmp;
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
@@ -5031,8 +5031,8 @@ namespace BetterLegacy.Editor.Managers
             UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, random);
 
             float num = 0f;
-            if (firstKF.GetData<EventKeyframe>().eventRandomValues.Length > 2)
-                num = firstKF.GetData<EventKeyframe>().eventRandomValues[2];
+            if (firstKF.eventKeyframe.eventRandomValues.Length > 2)
+                num = firstKF.eventKeyframe.eventRandomValues[2];
 
             var randomInterval = kfdialog.Find("random/interval-input");
             var randomIntervalIF = randomInterval.GetComponent<InputField>();
@@ -5040,7 +5040,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (float.TryParse(_val, out float num))
                 {
-                    foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         keyframe.eventRandomValues[2] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
@@ -5061,7 +5061,7 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(randomInterval.gameObject, TriggerHelper.ScrollDelta(randomIntervalIF, max: random == 6 ? 1f : 0f));
         }
 
-        void KeyframeRandomValueHandler(Transform kfdialog, int type, IEnumerable<TimelineObject> selected, TimelineObject firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
+        void KeyframeRandomValueHandler(Transform kfdialog, int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
         {
             var randomValueLabel = kfdialog.Find($"r_{typeName}_label");
             var randomValueBase = kfdialog.Find($"r_{typeName}");
@@ -5080,7 +5080,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var random = firstKF.GetData<EventKeyframe>().random;
+            var random = firstKF.eventKeyframe.random;
 
             var valueButtonLeft = randomValue.Find("<").GetComponent<Button>();
             var valueButtonRight = randomValue.Find(">").GetComponent<Button>();
@@ -5091,12 +5091,12 @@ namespace BetterLegacy.Editor.Managers
             randomValueInputField.contentType = InputField.ContentType.Standard;
             randomValueInputField.keyboardType = TouchScreenKeyboardType.Default;
             randomValueInputField.onValueChanged.ClearAll();
-            randomValueInputField.text = selected.Count() == 1 ? firstKF.GetData<EventKeyframe>().eventRandomValues[i].ToString() : typeName == "rotation" ? "15" : "1";
+            randomValueInputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.eventRandomValues[i].ToString() : typeName == "rotation" ? "15" : "1";
             randomValueInputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
-                    firstKF.GetData<EventKeyframe>().eventRandomValues[i] = num;
+                    firstKF.eventKeyframe.eventRandomValues[i] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5116,7 +5116,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.GetData<EventKeyframe>().eventRandomValues[i] -= x;
+                        keyframe.eventKeyframe.eventRandomValues[i] -= x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5136,7 +5136,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.GetData<EventKeyframe>().eventRandomValues[i] += x;
+                        keyframe.eventKeyframe.eventRandomValues[i] += x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5155,7 +5155,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void PasteKeyframeData(EventKeyframe copiedData, IEnumerable<TimelineObject> selected, BeatmapObject beatmapObject, string name)
+        public void PasteKeyframeData(EventKeyframe copiedData, IEnumerable<TimelineKeyframe> selected, BeatmapObject beatmapObject, string name)
         {
             if (copiedData == null)
             {
@@ -5165,7 +5165,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var timelineObject in selected)
             {
-                var kf = timelineObject.GetData<EventKeyframe>();
+                var kf = timelineObject.eventKeyframe;
                 kf.curveType = copiedData.curveType;
                 kf.eventValues = copiedData.eventValues.Copy();
                 kf.eventRandomValues = copiedData.eventRandomValues.Copy();
@@ -5342,7 +5342,7 @@ namespace BetterLegacy.Editor.Managers
                         if (!DataManager.inst.AnimationListDictionary.TryGetValue(curvesMulti.value, out DataManager.LSAnimation anim))
                             return;
 
-                        foreach (var keyframe in selected.Where(x => x.Index != 0).Select(x => x.GetData<EventKeyframe>()))
+                        foreach (var keyframe in selected.Where(x => x.Index != 0).Select(x => x.eventKeyframe))
                             keyframe.curveType = anim;
 
                         ResizeKeyframeTimeline(beatmapObject);
@@ -5384,7 +5384,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             foreach (var kf in selected)
                             {
-                                var keyframe = kf.GetData<EventKeyframe>();
+                                var keyframe = kf.eventKeyframe;
 
                                 var index = Parser.TryParse(valueIndex.text, 0);
 
@@ -5438,7 +5438,7 @@ namespace BetterLegacy.Editor.Managers
 
             superLeft.onClick.ClearAll();
             superLeft.interactable = firstKF.Index != 0;
-            superLeft.onClick.AddListener(() => { SetCurrentKeyframe(beatmapObject, 0, true); });
+            superLeft.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, 0, true));
 
             var left = kfdialog.Find("edit/<").GetComponent<Button>();
 
@@ -5467,16 +5467,16 @@ namespace BetterLegacy.Editor.Managers
                 switch (type)
                 {
                     case 0:
-                        CopiedPositionData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                        CopiedPositionData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                         break;
                     case 1:
-                        CopiedScaleData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                        CopiedScaleData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                         break;
                     case 2:
-                        CopiedRotationData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                        CopiedRotationData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                         break;
                     case 3:
-                        CopiedColorData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                        CopiedColorData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                         break;
                 }
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
@@ -5631,7 +5631,7 @@ namespace BetterLegacy.Editor.Managers
             var curves = kfdialog.Find("curves").GetComponent<Dropdown>();
             curves.onValueChanged.ClearAll();
 
-            if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(firstKF.GetData<EventKeyframe>().curveType, out int animIndex))
+            if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(firstKF.eventKeyframe.curveType, out int animIndex))
                 curves.value = animIndex;
 
             curves.onValueChanged.AddListener(_val =>
@@ -5639,7 +5639,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
                     return;
 
-                foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                     keyframe.curveType = anim;
 
                 // Since keyframe curve has no affect on the timeline object, we will only need to update the physical object.
@@ -5686,7 +5686,7 @@ namespace BetterLegacy.Editor.Managers
                 case 3:
                     {
                         bool showModifiedColors = EditorConfig.Instance.ShowModifiedColors.Value;
-                        var eventTime = firstKF.GetData<EventKeyframe>().eventTime;
+                        var eventTime = firstKF.eventKeyframe.eventTime;
                         int index = 0;
                         foreach (var toggle in ObjEditor.inst.colorButtons)
                         {
@@ -5697,7 +5697,7 @@ namespace BetterLegacy.Editor.Managers
                             toggle.onValueChanged.ClearAll();
                             if (RTEditor.ShowModdedUI || tmpIndex < 9)
                             {
-                                toggle.isOn = index == firstKF.GetData<EventKeyframe>().eventValues[0];
+                                toggle.isOn = index == firstKF.eventKeyframe.eventValues[0];
                                 toggle.onValueChanged.AddListener(_val => SetKeyframeColor(beatmapObject, 0, tmpIndex, ObjEditor.inst.colorButtons, selected));
                             }
 
@@ -5724,7 +5724,7 @@ namespace BetterLegacy.Editor.Managers
                             index++;
                         }
 
-                        var random = firstKF.GetData<EventKeyframe>().random;
+                        var random = firstKF.eventKeyframe.random;
 
                         kfdialog.Find("opacity_label").gameObject.SetActive(RTEditor.NotSimple);
                         kfdialog.Find("opacity").gameObject.SetActive(RTEditor.NotSimple);
@@ -5757,13 +5757,13 @@ namespace BetterLegacy.Editor.Managers
                         var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
 
                         opacity.onValueChanged.RemoveAllListeners();
-                        opacity.text = (-firstKF.GetData<EventKeyframe>().eventValues[1] + 1).ToString();
+                        opacity.text = (-firstKF.eventKeyframe.eventValues[1] + 1).ToString();
                         opacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
                             {
                                 var value = Mathf.Clamp(-n + 1, 0f, 1f);
-                                foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                                 {
                                     keyframe.eventValues[1] = value;
                                     if (!RTEditor.ShowModdedUI)
@@ -5790,8 +5790,8 @@ namespace BetterLegacy.Editor.Managers
                             toggle.onValueChanged.ClearAll();
                             if (RTEditor.ShowModdedUI || tmpIndex < 9)
                             {
-                                toggle.isOn = index == firstKF.GetData<EventKeyframe>().eventValues[5];
-                                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 5, tmpIndex, gradientColorButtons, selected); });
+                                toggle.isOn = index == firstKF.eventKeyframe.eventValues[5];
+                                toggle.onValueChanged.AddListener(_val => SetKeyframeColor(beatmapObject, 5, tmpIndex, gradientColorButtons, selected));
                             }
 
                             if (showModifiedColors)
@@ -5834,12 +5834,12 @@ namespace BetterLegacy.Editor.Managers
                         var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
 
                         gradientOpacity.onValueChanged.RemoveAllListeners();
-                        gradientOpacity.text = (-firstKF.GetData<EventKeyframe>().eventValues[6] + 1).ToString();
+                        gradientOpacity.text = (-firstKF.eventKeyframe.eventValues[6] + 1).ToString();
                         gradientOpacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
                             {
-                                foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                                     keyframe.eventValues[6] = Mathf.Clamp(-n + 1, 0f, 1f);
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
@@ -5857,12 +5857,12 @@ namespace BetterLegacy.Editor.Managers
                             var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
 
                             hue.onValueChanged.RemoveAllListeners();
-                            hue.text = firstKF.GetData<EventKeyframe>().eventValues[2].ToString();
+                            hue.text = firstKF.eventKeyframe.eventValues[2].ToString();
                             hue.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.GetData<EventKeyframe>().eventValues[2] = n;
+                                    firstKF.eventKeyframe.eventValues[2] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5878,12 +5878,12 @@ namespace BetterLegacy.Editor.Managers
                             var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
 
                             sat.onValueChanged.RemoveAllListeners();
-                            sat.text = firstKF.GetData<EventKeyframe>().eventValues[3].ToString();
+                            sat.text = firstKF.eventKeyframe.eventValues[3].ToString();
                             sat.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.GetData<EventKeyframe>().eventValues[3] = n;
+                                    firstKF.eventKeyframe.eventValues[3] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5897,12 +5897,12 @@ namespace BetterLegacy.Editor.Managers
                             var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
 
                             val.onValueChanged.RemoveAllListeners();
-                            val.text = firstKF.GetData<EventKeyframe>().eventValues[4].ToString();
+                            val.text = firstKF.eventKeyframe.eventValues[4].ToString();
                             val.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.GetData<EventKeyframe>().eventValues[4] = n;
+                                    firstKF.eventKeyframe.eventValues[4] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5919,12 +5919,12 @@ namespace BetterLegacy.Editor.Managers
                             var hue = kfdialog.Find("gradient_huesatval/x").GetComponent<InputField>();
 
                             hue.onValueChanged.RemoveAllListeners();
-                            hue.text = firstKF.GetData<EventKeyframe>().eventValues[7].ToString();
+                            hue.text = firstKF.eventKeyframe.eventValues[7].ToString();
                             hue.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.GetData<EventKeyframe>().eventValues[7] = n;
+                                    firstKF.eventKeyframe.eventValues[7] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5940,12 +5940,12 @@ namespace BetterLegacy.Editor.Managers
                             var sat = kfdialog.Find("gradient_huesatval/y").GetComponent<InputField>();
 
                             sat.onValueChanged.RemoveAllListeners();
-                            sat.text = firstKF.GetData<EventKeyframe>().eventValues[8].ToString();
+                            sat.text = firstKF.eventKeyframe.eventValues[8].ToString();
                             sat.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.GetData<EventKeyframe>().eventValues[8] = n;
+                                    firstKF.eventKeyframe.eventValues[8] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5959,12 +5959,12 @@ namespace BetterLegacy.Editor.Managers
                             var val = kfdialog.Find("gradient_huesatval/z").GetComponent<InputField>();
 
                             val.onValueChanged.RemoveAllListeners();
-                            val.text = firstKF.GetData<EventKeyframe>().eventValues[9].ToString();
+                            val.text = firstKF.eventKeyframe.eventValues[9].ToString();
                             val.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.GetData<EventKeyframe>().eventValues[9] = n;
+                                    firstKF.eventKeyframe.eventValues[9] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5990,10 +5990,10 @@ namespace BetterLegacy.Editor.Managers
             {
                 var relative = relativeBase.GetComponent<Toggle>();
                 relative.onValueChanged.ClearAll();
-                relative.isOn = firstKF.GetData<EventKeyframe>().relative;
+                relative.isOn = firstKF.eventKeyframe.relative;
                 relative.onValueChanged.AddListener(_val =>
                 {
-                    foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         keyframe.relative = _val;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
@@ -6134,7 +6134,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(kf.GameObject);
         }
 
-        public TimelineObject GetKeyframe(BeatmapObject beatmapObject, int type, int index)
+        public TimelineKeyframe GetKeyframe(BeatmapObject beatmapObject, int type, int index)
         {
             var bmTimelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
 
@@ -6193,19 +6193,17 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public TimelineObject CreateKeyframe(BeatmapObject beatmapObject, int type, int index)
+        public TimelineKeyframe CreateKeyframe(BeatmapObject beatmapObject, int type, int index)
         {
-            var eventKeyframe = beatmapObject.events[type][index];
+            var eventKeyframe = (EventKeyframe)beatmapObject.events[type][index];
 
-            var kf = new TimelineObject(eventKeyframe)
+            var kf = new TimelineKeyframe(eventKeyframe, beatmapObject)
             {
                 Type = type,
                 Index = index,
-                isObjectKeyframe = true
             };
 
-            if (eventKeyframe is EventKeyframe eventKF)
-                eventKF.timelineObject = kf;
+            eventKeyframe.timelineKeyframe = kf;
 
             kf.GameObject = KeyframeObject(beatmapObject, kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
@@ -6214,7 +6212,7 @@ namespace BetterLegacy.Editor.Managers
             return kf;
         }
 
-        public GameObject KeyframeObject(BeatmapObject beatmapObject, TimelineObject kf)
+        public GameObject KeyframeObject(BeatmapObject beatmapObject, TimelineKeyframe kf)
         {
             var gameObject = ObjEditor.inst.objTimelinePrefab.Duplicate(ObjEditor.inst.TimelineParents[kf.Type], $"{IntToType(kf.Type)}_{kf.Index}");
 
@@ -6249,7 +6247,7 @@ namespace BetterLegacy.Editor.Managers
             var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
             if (timelineObject.InternalTimelineObjects.Count > 0 && timelineObject.InternalTimelineObjects.Where(x => x.Selected).Count() == 0)
             {
-                if (EditorConfig.Instance.RememberLastKeyframeType.Value && timelineObject.InternalTimelineObjects.TryFind(x => x.Type == ObjEditor.inst.currentKeyframeKind, out TimelineObject kf))
+                if (EditorConfig.Instance.RememberLastKeyframeType.Value && timelineObject.InternalTimelineObjects.TryFind(x => x.Type == ObjEditor.inst.currentKeyframeKind, out TimelineKeyframe kf))
                     kf.Selected = true;
                 else
                     timelineObject.InternalTimelineObjects[0].Selected = true;
@@ -6259,14 +6257,14 @@ namespace BetterLegacy.Editor.Managers
                 AchievementManager.inst.UnlockAchievement("holy_keyframes");
         }
 
-        public void RenderKeyframe(BeatmapObject beatmapObject, TimelineObject timelineObject)
+        public void RenderKeyframe(BeatmapObject beatmapObject, TimelineKeyframe timelineObject)
         {
             if (beatmapObject.events[timelineObject.Type].TryFindIndex(x => (x as EventKeyframe).id == timelineObject.ID, out int kfIndex))
                 timelineObject.Index = kfIndex;
 
-            var eventKeyframe = timelineObject.GetData<EventKeyframe>();
+            var eventKeyframe = timelineObject.eventKeyframe;
             timelineObject.RenderSprite(beatmapObject.events[timelineObject.Type]);
-            timelineObject.RenderPosLength(ObjEditor.inst.zoomVal, 0f, eventKeyframe.eventTime);
+            timelineObject.RenderPos();
             timelineObject.RenderIcons();
         }
 
@@ -6303,9 +6301,9 @@ namespace BetterLegacy.Editor.Managers
 
         #region Set Values
 
-        public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value, List<Toggle> colorButtons, IEnumerable<TimelineObject> selected)
+        public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value, List<Toggle> colorButtons, IEnumerable<TimelineKeyframe> selected)
         {
-            foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+            foreach (var keyframe in selected.Select(x => x.eventKeyframe))
             {
                 keyframe.eventValues[index] = value;
                 if (!RTEditor.ShowModdedUI)
@@ -6322,7 +6320,7 @@ namespace BetterLegacy.Editor.Managers
                 int tmpIndex = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == value;
-                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, index, tmpIndex, colorButtons, selected); });
+                toggle.onValueChanged.AddListener(_val => SetKeyframeColor(beatmapObject, index, tmpIndex, colorButtons, selected));
                 num++;
             }
         }
@@ -6340,7 +6338,7 @@ namespace BetterLegacy.Editor.Managers
                 int tmpIndex = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == value;
-                toggle.onValueChanged.AddListener(_val => { SetKeyframeRandomColorTarget(beatmapObject, index, tmpIndex, toggles); });
+                toggle.onValueChanged.AddListener(_val => SetKeyframeRandomColorTarget(beatmapObject, index, tmpIndex, toggles));
                 num++;
             }
         }

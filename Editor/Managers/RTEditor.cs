@@ -1945,7 +1945,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             for (int j = 0; j < jn["events"][GameData.EventTypes[i]].Count; j++)
                             {
-                                var timelineObject = new TimelineObject(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].eventValues.Length));
+                                var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].eventValues.Length));
                                 timelineObject.Type = i;
                                 timelineObject.Index = j;
                                 RTEventEditor.inst.copiedEventKeyframes.Add(timelineObject);
@@ -1984,18 +1984,12 @@ namespace BetterLegacy.Editor.Managers
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                     if (ObjEditor.inst.currentKeyframe != 0)
                     {
-                        var list = new List<TimelineObject>();
+                        var list = new List<TimelineKeyframe>();
                         foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             list.Add(timelineObject);
                         var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes", () =>
-                        {
-                            StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
-                        }, () =>
-                        {
-                            ObjectEditor.inst.PasteKeyframes(beatmapObject, list, false);
-                        }));
+                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes", ObjectEditor.inst.DeleteKeyframes().Start, () => ObjectEditor.inst.PasteKeyframes(beatmapObject, list, false)));
 
                         StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
                     }
@@ -2050,17 +2044,11 @@ namespace BetterLegacy.Editor.Managers
                 {
                     EditorManager.inst.ClearDialogs(EditorManager.EditorDialog.DialogType.Event);
 
-                    var list = new List<TimelineObject>();
+                    var list = new List<TimelineKeyframe>();
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                         list.Add(timelineObject);
 
-                    EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", () =>
-                    {
-                        StartCoroutine(RTEventEditor.inst.DeleteKeyframes(list));
-                    }, () =>
-                    {
-                        RTEventEditor.inst.PasteEvents(list, false);
-                    }));
+                    EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", RTEventEditor.inst.DeleteKeyframes(list).Start, () => RTEventEditor.inst.PasteEvents(list, false)));
 
                     StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
                 }

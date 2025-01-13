@@ -178,11 +178,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public List<TimelineObject> timelineObjects = new List<TimelineObject>();
 
-        // todo: consider replacing TimelineObject keyframe with its own "TimelineKeyframe" class.
         /// <summary>
         /// The list of timeline keyframes.
         /// </summary>
-        public List<TimelineObject> timelineKeyframes = new List<TimelineObject>();
+        public List<TimelineKeyframe> timelineKeyframes = new List<TimelineKeyframe>();
 
         /// <summary>
         /// All timeline objects that are <see cref="BeatmapObject"/>.

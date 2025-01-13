@@ -59,7 +59,7 @@ namespace BetterLegacy.Core.Data
         public int type;
         public bool relative;
         public bool locked;
-        public TimelineObject timelineObject;
+        public TimelineKeyframe timelineKeyframe;
 
         public void SetCurve(string ease) => curveType = DataManager.inst.AnimationList.TryFind(x => x.Name == ease, out DataManager.LSAnimation anim) ? anim : DataManager.inst.AnimationList[0];
         public void SetCurve(int ease) => curveType = DataManager.inst.AnimationList[Mathf.Clamp(ease, 0, DataManager.inst.AnimationList.Count - 1)];

@@ -839,7 +839,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => x.Type == 4))
                                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                    timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                                    timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
                             else if (EventEditor.inst.currentEventType == 4)
                                 GameData.Current.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
                             else if (GameData.Current.eventObjects.allEvents[4].Count > 0)
@@ -1180,7 +1180,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                        timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
                 else
                     RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
             });

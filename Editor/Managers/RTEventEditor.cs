@@ -29,12 +29,12 @@ namespace BetterLegacy.Editor.Managers
 
         #region Selection
 
-        public TimelineObject CurrentSelectedTimelineKeyframe => EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == EventEditor.inst.currentEventType && x.Index == EventEditor.inst.currentEvent);
+        public TimelineKeyframe CurrentSelectedTimelineKeyframe => EditorTimeline.inst.timelineKeyframes.Find(x => x.Type == EventEditor.inst.currentEventType && x.Index == EventEditor.inst.currentEvent);
         public EventKeyframe CurrentSelectedKeyframe => !GameData.IsValid ? null : (EventKeyframe)GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
-        public List<TimelineObject> SelectedKeyframes => EditorTimeline.inst.timelineKeyframes.FindAll(x => x.Selected);
+        public List<TimelineKeyframe> SelectedKeyframes => EditorTimeline.inst.timelineKeyframes.FindAll(x => x.Selected);
 
-        public List<TimelineObject> copiedEventKeyframes = new List<TimelineObject>();
+        public List<TimelineKeyframe> copiedEventKeyframes = new List<TimelineKeyframe>();
 
         #endregion
 
@@ -450,7 +450,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public IEnumerator DeleteKeyframes(List<TimelineObject> kfs)
+        public IEnumerator DeleteKeyframes(List<TimelineKeyframe> kfs)
         {
             var strs = new List<string>();
             var list = kfs;
@@ -482,9 +482,7 @@ namespace BetterLegacy.Editor.Managers
 
             var allEvents = GameData.Current.eventObjects.allEvents;
             for (int i = 0; i < allEvents.Count; i++)
-            {
                 allEvents[i].RemoveAll(x => strs.Contains(((EventKeyframe)x).id));
-            }
 
             UpdateEventOrder();
             EventManager.inst.updateEvents();
@@ -516,10 +514,10 @@ namespace BetterLegacy.Editor.Managers
                 int index = keyframeSelection2.Index;
                 var eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.Current.eventObjects.allEvents[type][index], false);
                 eventKeyframe.eventTime -= num;
-                var timelineObject = new TimelineObject(eventKeyframe);
-                timelineObject.Type = type;
-                timelineObject.Index = index;
-                copiedEventKeyframes.Add(timelineObject);
+                var timelineKeyframe = new TimelineKeyframe(eventKeyframe);
+                timelineKeyframe.Type = type;
+                timelineKeyframe.Index = index;
+                copiedEventKeyframes.Add(timelineKeyframe);
             }
 
             try
@@ -532,9 +530,9 @@ namespace BetterLegacy.Editor.Managers
                     int add = 0;
                     for (int j = 0; j < AllEvents[i].Count; j++)
                     {
-                        if (copiedEventKeyframes.TryFind(x => x.ID == ((EventKeyframe)AllEvents[i][j]).id, out TimelineObject timelineObject))
+                        if (copiedEventKeyframes.TryFind(x => x.ID == ((EventKeyframe)AllEvents[i][j]).id, out TimelineKeyframe timelineKeyframe))
                         {
-                            var eventKeyframe = timelineObject.GetData<EventKeyframe>();
+                            var eventKeyframe = timelineKeyframe.eventKeyframe;
                             eventKeyframe.id = LSText.randomNumString(8);
 
                             jn["events"][GameData.EventTypes[i]][add] = eventKeyframe.ToJSON();
@@ -554,7 +552,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void PasteEvents(bool setTime = true) => PasteEvents(copiedEventKeyframes, setTime);
 
-        public void PasteEvents(List<TimelineObject> kfs, bool setTime = true)
+        public void PasteEvents(List<TimelineKeyframe> kfs, bool setTime = true)
         {
             if (kfs.Count <= 0)
             {
@@ -572,11 +570,9 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var keyframeSelection in kfs)
             {
-                var eventKeyframe = EventKeyframe.DeepCopy(keyframeSelection.GetData<EventKeyframe>());
+                var eventKeyframe = EventKeyframe.DeepCopy(keyframeSelection.eventKeyframe);
                 if (setTime)
-                {
                     eventKeyframe.eventTime = time + eventKeyframe.eventTime;
-                }
 
                 var index = AllEvents[keyframeSelection.Type].FindIndex(x => x.eventTime > eventKeyframe.eventTime) - 1;
                 if (index < 0)
@@ -706,20 +702,12 @@ namespace BetterLegacy.Editor.Managers
 
         #region Timeline Objects
 
-        public void ClearEventObjects()
-        {
-            foreach (var kf in EditorTimeline.inst.timelineKeyframes)
-            {
-                kf.Selected = false;
-                Destroy(kf.GameObject);
-            }
-
-            EditorTimeline.inst.timelineKeyframes.Clear();
-        }
-
         public void CreateEventObjects()
         {
-            ClearEventObjects();
+            foreach (var kf in EditorTimeline.inst.timelineKeyframes)
+                Destroy(kf.GameObject);
+
+            EditorTimeline.inst.timelineKeyframes.Clear();
 
             EventEditor.inst.eventDrag = false;
 
@@ -729,19 +717,19 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var kf = CreateEventObject(type, index);
 
+                    RenderTimelineObject(kf);
+
                     EditorTimeline.inst.timelineKeyframes.Add(kf);
                 }
             }
-
-            RenderEventObjects();
         }
 
-        public TimelineObject CreateEventObject(int type, int index)
+        public TimelineKeyframe CreateEventObject(int type, int index)
         {
             var eventKeyframe = AllEvents[type][index] as EventKeyframe;
 
-            var kf = new TimelineObject(eventKeyframe);
-            eventKeyframe.timelineObject = kf;
+            var kf = new TimelineKeyframe(eventKeyframe);
+            eventKeyframe.timelineKeyframe = kf;
             kf.Type = type;
             kf.Index = index;
             kf.GameObject = EventGameObject(kf);
@@ -757,7 +745,7 @@ namespace BetterLegacy.Editor.Managers
             return kf;
         }
 
-        public GameObject EventGameObject(TimelineObject kf) => EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EVENT_LIMIT), $"keyframe - {kf.Type}");
+        public GameObject EventGameObject(TimelineKeyframe kf) => EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EVENT_LIMIT), $"keyframe - {kf.Type}");
 
         public void RenderEventObjects()
         {
@@ -782,7 +770,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void RenderTimelineObject(TimelineObject kf)
+        public void RenderTimelineObject(TimelineKeyframe kf)
         {
             var events = AllEvents[kf.Type];
             if (events.TryFindIndex(x => (x as EventKeyframe).id == kf.ID, out int index))
@@ -1808,7 +1796,7 @@ namespace BetterLegacy.Editor.Managers
                     if (!(copiedKeyframeDatas.Count > keyframe.Type) || copiedKeyframeDatas[keyframe.Type] == null)
                         continue;
 
-                    var kf = keyframe.GetData<EventKeyframe>();
+                    var kf = keyframe.eventKeyframe;
                     kf.curveType = copiedKeyframeDatas[keyframe.Type].curveType;
                     kf.eventValues = copiedKeyframeDatas[keyframe.Type].eventValues.Copy();
                     kf.eventRandomValues = copiedKeyframeDatas[keyframe.Type].eventRandomValues.Copy();
@@ -1916,7 +1904,7 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                     {
-                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        var eventKeyframe = kf.eventKeyframe;
                         eventKeyframe.eventTime = Mathf.Clamp(eventKeyframe.eventTime - (num * 10f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
@@ -1937,7 +1925,7 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                     {
-                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        var eventKeyframe = kf.eventKeyframe;
                         eventKeyframe.eventTime = Mathf.Clamp(eventKeyframe.eventTime + num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
@@ -1957,9 +1945,7 @@ namespace BetterLegacy.Editor.Managers
                     num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
-                    {
-                        kf.GetData<EventKeyframe>().eventTime = num;
-                    }
+                        kf.eventKeyframe.eventTime = num;
 
                     UpdateEventOrder();
                     RenderEventObjects();
@@ -1978,7 +1964,7 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                     {
-                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        var eventKeyframe = kf.eventKeyframe;
                         eventKeyframe.eventTime = Mathf.Clamp(eventKeyframe.eventTime - num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
@@ -1999,7 +1985,7 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                     {
-                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        var eventKeyframe = kf.eventKeyframe;
                         eventKeyframe.eventTime = Mathf.Clamp(eventKeyframe.eventTime + (num * 10f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
@@ -2021,7 +2007,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
-                    kf.GetData<EventKeyframe>().curveType = anim;
+                    kf.eventKeyframe.curveType = anim;
 
                 EventManager.inst.updateEvents();
             });
@@ -2053,8 +2039,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
 
-                        index = Mathf.Clamp(index, 0, kf.GetData<EventKeyframe>().eventValues.Length - 1);
-                        kf.GetData<EventKeyframe>().eventValues[index] -= num * 10f;
+                        index = Mathf.Clamp(index, 0, kf.eventKeyframe.eventValues.Length - 1);
+                        kf.eventKeyframe.eventValues[index] -= num * 10f;
                     }
                 }
                 else
@@ -2070,8 +2056,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
 
-                        index = Mathf.Clamp(index, 0, kf.GetData<EventKeyframe>().eventValues.Length - 1);
-                        kf.GetData<EventKeyframe>().eventValues[index] -= num;
+                        index = Mathf.Clamp(index, 0, kf.eventKeyframe.eventValues.Length - 1);
+                        kf.eventKeyframe.eventValues[index] -= num;
                     }
                 }
                 else
@@ -2087,8 +2073,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
 
-                        index = Mathf.Clamp(index, 0, kf.GetData<EventKeyframe>().eventValues.Length - 1);
-                        kf.GetData<EventKeyframe>().eventValues[index] = num;
+                        index = Mathf.Clamp(index, 0, kf.eventKeyframe.eventValues.Length - 1);
+                        kf.eventKeyframe.eventValues[index] = num;
                     }
                 }
                 else
@@ -2104,8 +2090,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
 
-                        index = Mathf.Clamp(index, 0, kf.GetData<EventKeyframe>().eventValues.Length - 1);
-                        kf.GetData<EventKeyframe>().eventValues[index] += num;
+                        index = Mathf.Clamp(index, 0, kf.eventKeyframe.eventValues.Length - 1);
+                        kf.eventKeyframe.eventValues[index] += num;
                     }
                 }
                 else
@@ -2121,8 +2107,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
 
-                        index = Mathf.Clamp(index, 0, kf.GetData<EventKeyframe>().eventValues.Length - 1);
-                        kf.GetData<EventKeyframe>().eventValues[index] += num * 10f;
+                        index = Mathf.Clamp(index, 0, kf.eventKeyframe.eventValues.Length - 1);
+                        kf.eventKeyframe.eventValues[index] += num * 10f;
                     }
                 }
                 else
@@ -2166,7 +2152,7 @@ namespace BetterLegacy.Editor.Managers
 
                         foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
                         {
-                            kf.GetData<EventKeyframe>().eventTime = num;
+                            kf.eventKeyframe.eventTime = num;
                             RenderTimelineObject(kf);
                         }
 
@@ -2787,7 +2773,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
-                        kf.GetData<EventKeyframe>().curveType = anim;
+                        kf.eventKeyframe.curveType = anim;
 
                     RenderEventObjects();
                     eventManager.updateEvents();
@@ -2872,11 +2858,11 @@ namespace BetterLegacy.Editor.Managers
 
         }
 
-        public void CopyKeyframeData(TimelineObject currentKeyframe)
+        public void CopyKeyframeData(TimelineKeyframe currentKeyframe)
         {
             if (copiedKeyframeDatas.Count > currentKeyframe.Type)
             {
-                copiedKeyframeDatas[currentKeyframe.Type] = EventKeyframe.DeepCopy(currentKeyframe.GetData<EventKeyframe>());
+                copiedKeyframeDatas[currentKeyframe.Type] = EventKeyframe.DeepCopy(currentKeyframe.eventKeyframe);
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
             }
             else
@@ -2889,7 +2875,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 foreach (var keyframe in SelectedKeyframes.Where(x => x.Type == type))
                 {
-                    var kf = keyframe.GetData<EventKeyframe>();
+                    var kf = keyframe.eventKeyframe;
 
                     kf.curveType = copiedKeyframeDatas[type].curveType;
                     kf.eventValues = copiedKeyframeDatas[type].eventValues.Copy();
@@ -2925,7 +2911,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.onValueChanged.AddListener(_val =>
                 {
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
-                        kf.GetData<EventKeyframe>().eventValues[index] = tmpIndex;
+                        kf.eventKeyframe.eventValues[index] = tmpIndex;
 
                     EventManager.inst.updateEvents();
 
@@ -2946,7 +2932,7 @@ namespace BetterLegacy.Editor.Managers
             vignetteRounded.onValueChanged.AddListener(_val =>
             {
                 foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                    kf.GetData<EventKeyframe>().eventValues[index] = _val ? onValue : offValue;
+                    kf.eventKeyframe.eventValues[index] = _val ? onValue : offValue;
 
                 EventManager.inst.updateEvents();
             });
@@ -2973,7 +2959,7 @@ namespace BetterLegacy.Editor.Managers
                         num = Mathf.Clamp(num, min, max);
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                        kf.GetData<EventKeyframe>().eventValues[index] = num;
+                        kf.eventKeyframe.eventValues[index] = num;
 
                     EventManager.inst.updateEvents();
 
@@ -3018,7 +3004,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                                kf.GetData<EventKeyframe>().eventValues[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                                kf.eventKeyframe.eventValues[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             zoom.text = result.ToString();
                     }
@@ -3038,9 +3024,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
-                                kf.GetData<EventKeyframe>().eventValues[index] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
+                                kf.eventKeyframe.eventValues[index] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             zoom.text = result.ToString();
                     }
@@ -3076,7 +3060,7 @@ namespace BetterLegacy.Editor.Managers
                         num = Mathf.Clamp(num, min, max);
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                        kf.GetData<EventKeyframe>().eventValues[index] = num;
+                        kf.eventKeyframe.eventValues[index] = num;
 
                     EventManager.inst.updateEvents();
                 }
@@ -3107,7 +3091,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                                kf.GetData<EventKeyframe>().eventValues[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                                kf.eventKeyframe.eventValues[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             zoom.text = result.ToString();
                     }
@@ -3127,7 +3111,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                                kf.GetData<EventKeyframe>().eventValues[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                                kf.eventKeyframe.eventValues[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             zoom.text = result.ToString();
                     }
@@ -3166,7 +3150,7 @@ namespace BetterLegacy.Editor.Managers
                         num = Mathf.Clamp(num, min, max);
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                        kf.GetData<EventKeyframe>().eventValues[xindex] = num;
+                        kf.eventKeyframe.eventValues[xindex] = num;
 
                     EventManager.inst.updateEvents();
                 }
@@ -3196,7 +3180,7 @@ namespace BetterLegacy.Editor.Managers
                         num = Mathf.Clamp(num, min, max);
 
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                        kf.GetData<EventKeyframe>().eventValues[yindex] = num;
+                        kf.eventKeyframe.eventValues[yindex] = num;
 
                     EventManager.inst.updateEvents();
                 }
@@ -3239,7 +3223,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                                kf.GetData<EventKeyframe>().eventValues[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                                kf.eventKeyframe.eventValues[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             posX.text = result.ToString();
                     }
@@ -3259,9 +3243,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
-                                kf.GetData<EventKeyframe>().eventValues[xindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
+                                kf.eventKeyframe.eventValues[xindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             posX.text = result.ToString();
                     }
@@ -3291,7 +3273,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                                kf.GetData<EventKeyframe>().eventValues[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                                kf.eventKeyframe.eventValues[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             posY.text = result.ToString();
                     }
@@ -3311,7 +3293,7 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                                kf.GetData<EventKeyframe>().eventValues[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                                kf.eventKeyframe.eventValues[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
                             posY.text = result.ToString();
                     }

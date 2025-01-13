@@ -1086,6 +1086,17 @@ namespace BetterLegacy.Editor.Managers
 
                 TriggerHelper.IncreaseDecreaseButtons(layers);
                 TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, min: 1, max: int.MaxValue));
+
+                var editorLayerContextMenu = layers.gameObject.GetOrAddComponent<ContextClickable>();
+                editorLayerContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(prefabObject.editorData.Layer, EditorTimeline.LayerType.Objects))
+                        );
+                };
             }
 
             for (int i = 0; i < 3; i++)
@@ -1269,21 +1280,35 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+            Collapse(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+        }
 
-            if (!bm || string.IsNullOrEmpty(bm.prefabInstanceID))
+        public void ExpandCurrentPrefab()
+        {
+            if (!EditorTimeline.inst.CurrentSelection.isPrefabObject)
+            {
+                EditorManager.inst.DisplayNotification("Can't expand non-prefab!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            Expand(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
+        }
+
+        public void Collapse(BeatmapObject beatmapObject)
+        {
+            if (!beatmapObject || string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
             {
                 EditorManager.inst.DisplayNotification("Beatmap Object does not have a Prefab Object reference.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
             var gameData = GameData.Current;
-            var editorData = bm.editorData;
-            string prefabInstanceID = bm.prefabInstanceID;
+            var editorData = beatmapObject.editorData;
+            string prefabInstanceID = beatmapObject.prefabInstanceID;
             var objects = gameData.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
             float startTime = objects.Min(x => x.StartTime);
 
-            int index = gameData.prefabs.FindIndex(x => x.ID == bm.prefabID);
+            int index = gameData.prefabs.FindIndex(x => x.ID == beatmapObject.prefabID);
             var originalPrefab = gameData.prefabs[index];
 
             var prefabObject = new PrefabObject(originalPrefab.ID, startTime - originalPrefab.Offset);
@@ -1319,15 +1344,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Replaced all instances of Prefab!", 2f, EditorManager.NotificationType.Success);
         }
 
-        public void ExpandCurrentPrefab()
+        public void Expand(PrefabObject prefabObject)
         {
-            if (!EditorTimeline.inst.CurrentSelection.isPrefabObject)
-            {
-                EditorManager.inst.DisplayNotification("Can't expand non-prefab!", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
             string id = prefabObject.ID;
 
             EditorManager.inst.ClearDialogs();
@@ -1388,12 +1406,14 @@ namespace BetterLegacy.Editor.Managers
                 ExampleManager.inst.Say("Hey, it's me!");
         }
 
+        public bool expanding;
         public IEnumerator AddExpandedPrefabToLevel(PrefabObject prefabObject)
         {
             var updateExpandedObjectsYieldType = EditorConfig.Instance.UpdateExpandedObjectsYieldMode.Value;
             var expandObjectsYieldType = EditorConfig.Instance.ExpandObjectsYieldMode.Value;
 
             RTEditor.inst.ienumRunning = true;
+            expanding = true;
             float delay = 0f;
             float audioTime = EditorManager.inst.CurrentAudioPos;
 
@@ -1478,6 +1498,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification($"Expanded Prefab Object {prefab.Name} in {sw.Elapsed}!.", 5f, EditorManager.NotificationType.Success, false);
             RTEditor.inst.ienumRunning = false;
+            expanding = false;
             sw = null;
             yield break;
         }

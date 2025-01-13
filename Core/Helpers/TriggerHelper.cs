@@ -373,26 +373,26 @@ namespace BetterLegacy.Core.Helpers
 
         #region Keyframes
 
-        public static EventTrigger.Entry CreateKeyframeStartDragTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
+        public static EventTrigger.Entry CreateKeyframeStartDragTrigger(BeatmapObject beatmapObject, TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
-            if (timelineObject.Index == 0)
+            if (timelineKeyframe.Index == 0)
             {
                 EditorManager.inst.DisplayNotification("Can't change time of first Keyframe", 2f, EditorManager.NotificationType.Warning);
                 return;
             }
 
-            ObjEditor.inst.currentKeyframeKind = timelineObject.Type;
-            ObjEditor.inst.currentKeyframe = timelineObject.Index;
+            ObjEditor.inst.currentKeyframeKind = timelineKeyframe.Type;
+            ObjEditor.inst.currentKeyframe = timelineKeyframe.Index;
 
             var list = beatmapObject.timelineObject.InternalTimelineObjects;
-            if (list.FindIndex(x => x.Type == timelineObject.Type && x.Index == timelineObject.Index) != -1)
+            if (list.FindIndex(x => x.Type == timelineKeyframe.Type && x.Index == timelineKeyframe.Index) != -1)
                 foreach (var otherTLO in beatmapObject.timelineObject.InternalTimelineObjects)
-                    otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineObject.Time;
-            ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineObject.Time - ObjectEditor.MouseTimelineCalc();
+                    otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineKeyframe.Time;
+            ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineKeyframe.Time - ObjectEditor.MouseTimelineCalc();
             ObjEditor.inst.timelineKeyframesDrag = true;
         });
 
-        public static EventTrigger.Entry CreateKeyframeEndDragTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject) => CreateEntry(EventTriggerType.EndDrag, eventData =>
+        public static EventTrigger.Entry CreateKeyframeEndDragTrigger(BeatmapObject beatmapObject, TimelineKeyframe timelineObject) => CreateEntry(EventTriggerType.EndDrag, eventData =>
         {
             ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
 
@@ -404,13 +404,13 @@ namespace BetterLegacy.Core.Helpers
             ObjEditor.inst.timelineKeyframesDrag = false;
         });
 
-        public static EventTrigger.Entry CreateKeyframeSelectTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
+        public static EventTrigger.Entry CreateKeyframeSelectTrigger(BeatmapObject beatmapObject, TimelineKeyframe timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
         {
             if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
                 return;
 
             EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time); }),
+                new ButtonFunction("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time)),
                 new ButtonFunction("Set KF to Cursor", () =>
                 {
                     var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
@@ -418,7 +418,7 @@ namespace BetterLegacy.Core.Helpers
                     for (int i = 0; i < selected.Count; i++)
                     {
                         var kf = selected[i];
-                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        var eventKeyframe = kf.eventKeyframe;
                         eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
@@ -437,16 +437,16 @@ namespace BetterLegacy.Core.Helpers
                     switch (type)
                     {
                         case 0:
-                            ObjectEditor.inst.CopiedPositionData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            ObjectEditor.inst.CopiedPositionData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                             break;
                         case 1:
-                            ObjectEditor.inst.CopiedScaleData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            ObjectEditor.inst.CopiedScaleData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                             break;
                         case 2:
-                            ObjectEditor.inst.CopiedRotationData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            ObjectEditor.inst.CopiedRotationData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                             break;
                         case 3:
-                            ObjectEditor.inst.CopiedColorData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            ObjectEditor.inst.CopiedColorData = EventKeyframe.DeepCopy(firstKF.eventKeyframe);
                             break;
                     }
                     EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
@@ -891,7 +891,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Events
 
-        public static EventTrigger.Entry CreateEventObjectTrigger(TimelineObject kf) => CreateEntry(EventTriggerType.PointerClick, eventData =>
+        public static EventTrigger.Entry CreateEventObjectTrigger(TimelineKeyframe kf) => CreateEntry(EventTriggerType.PointerClick, eventData =>
         {
             var pointerEventData = (PointerEventData)eventData;
             if (EventEditor.inst.eventDrag || pointerEventData.button == PointerEventData.InputButton.Right)
@@ -911,7 +911,7 @@ namespace BetterLegacy.Core.Helpers
             RTEventEditor.inst.OpenDialog();
         });
 
-        public static EventTrigger.Entry CreateEventStartDragTrigger(TimelineObject kf) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
+        public static EventTrigger.Entry CreateEventStartDragTrigger(TimelineKeyframe kf) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
             if (kf.Index == 0)
             {
@@ -935,7 +935,7 @@ namespace BetterLegacy.Core.Helpers
             EventEditor.inst.eventDrag = true;
         });
 
-        public static EventTrigger.Entry CreateEventSelectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
+        public static EventTrigger.Entry CreateEventSelectTrigger(TimelineKeyframe timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
         {
             if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
                 return;
@@ -949,7 +949,7 @@ namespace BetterLegacy.Core.Helpers
                     for (int i = 0; i < selected.Count; i++)
                     {
                         var kf = selected[i];
-                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        var eventKeyframe = kf.eventKeyframe;
                         eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
@@ -960,7 +960,7 @@ namespace BetterLegacy.Core.Helpers
                 new ButtonFunction(true),
                 new ButtonFunction("Reset", () =>
                 {
-                    var eventKeyframe = timelineObject.GetData<EventKeyframe>();
+                    var eventKeyframe = timelineObject.eventKeyframe;
                     var defaultKeyframe = GameData.DefaultKeyframes[timelineObject.Type];
                     for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
                     {
@@ -971,8 +971,8 @@ namespace BetterLegacy.Core.Helpers
                 new ButtonFunction(true),
                 new ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
                 new ButtonFunction("Paste", () => RTEventEditor.inst.PasteEvents()),
-                new ButtonFunction("Copy Data", () => { RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe); }),
-                new ButtonFunction("Paste Data", () => { RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType); }),
+                new ButtonFunction("Copy Data", () => RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe)),
+                new ButtonFunction("Paste Data", () => RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType)),
                 new ButtonFunction("Delete", RTEditor.inst.Delete)
                 );
         });
