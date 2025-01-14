@@ -31,7 +31,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            __instance.className = "[<color=#65B6F7>CheckpointEditor</color>] \n";
+            __instance.className = "[<color=#65B6F7>CheckpointEditor</color>] \n"; // this is done due to the CheckpointEditor className being BackgroundEditor for some reason...
 
             CoreHelper.LogInit(__instance.className);
 
@@ -82,12 +82,6 @@ namespace BetterLegacy.Patchers
 
             RTEditor.inst.CheckpointEditorDialog.Open();
 
-            if (Instance.right == null)
-                Instance.right = EditorManager.inst.GetDialog("Checkpoint Editor").Dialog.Find("data/right");
-
-            if (Instance.left == null)
-                Instance.left = EditorManager.inst.GetDialog("Checkpoint Editor").Dialog.Find("data/left");
-
             Instance.currentObj = index;
 
             if (GameData.Current == null || GameData.Current.beatmapData == null || GameData.Current.beatmapData.checkpoints == null)
@@ -98,7 +92,7 @@ namespace BetterLegacy.Patchers
 
             var search = Instance.right.Find("search").GetComponent<InputField>();
             search.onValueChanged.ClearAll();
-            search.onValueChanged.AddListener(_val => { Instance.RenderCheckpointList(_val, index); });
+            search.onValueChanged.AddListener(_val => Instance.RenderCheckpointList(_val, index));
             Instance.RenderCheckpointList(search.text, index);
 
             var first = Instance.left.Find("edit/<<").GetComponent<Button>();
@@ -381,9 +375,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderCheckpointListPrefix(string __0, int __1)
         {
-            if (Instance.right == null)
-                Instance.right = EditorManager.inst.GetDialog("Checkpoint Editor").Dialog.Find("data/right");
-
             var transform = Instance.right.Find("checkpoints/viewport/content");
             LSHelpers.DeleteChildren(transform, false);
 
