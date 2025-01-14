@@ -28,7 +28,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static List<List<BaseEventKeyframe>> AllEvents => !GameData.IsValid ? null : GameData.Current.eventObjects.allEvents;
 
-        public EditorDialog Dialog { get; set; }
+        public EventEditorDialog Dialog { get; set; }
         public EditorDialog MultiDialog { get; set; }
 
         #region Selection
@@ -393,7 +393,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                Dialog = new EditorDialog(EditorDialog.EVENT_EDITOR);
+                Dialog = new EventEditorDialog();
                 Dialog.Init();
                 MultiDialog = new EditorDialog(EditorDialog.MULTI_KEYFRAME_EDITOR);
                 MultiDialog.Init();
@@ -1862,9 +1862,7 @@ namespace BetterLegacy.Editor.Managers
                 if (EventEditor.inst.dialogRight.childCount > EventEditor.inst.currentEventType)
                 {
                     Debug.Log($"{EventEditor.inst.className}Dialog: {EventEditor.inst.dialogRight.GetChild(EventEditor.inst.currentEventType).name}");
-                    for (int i = 0; i < EventEditor.inst.dialogRight.childCount; i++)
-                        EventEditor.inst.dialogRight.GetChild(i).gameObject.SetActive(EventEditor.inst.currentEventType == i);
-
+                    Dialog.OpenKeyframeDialog(EventEditor.inst.currentEventType);
                     RenderEventsDialog();
                     RenderEventObjects();
                 }
@@ -1872,14 +1870,12 @@ namespace BetterLegacy.Editor.Managers
                     Debug.LogError($"{EventEditor.inst.className}Keyframe Type {EventEditor.inst.currentEventType} does not currently exist.");
             }
             else
-            {
                 CheckpointEditor.inst.SetCurrentCheckpoint(0);
-            }
         }
 
         public void RenderMultiEventsDialog()
         {
-            var dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor").Dialog.Find("data");
+            var dialog = MultiDialog.GameObject.transform.Find("data");
             var timeStorage = dialog.Find("time/time").GetComponent<InputFieldStorage>();
             var time = timeStorage.inputField;
             time.onValueChanged.ClearAll();
@@ -2111,37 +2107,34 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderEventsDialog()
         {
-            var __instance = EventEditor.inst;
-            var eventManager = EventManager.inst;
-            var dialogTmp = __instance.dialogRight.GetChild(__instance.currentEventType);
-            __instance.dialogLeft.Find("theme").gameObject.SetActive(false);
-            var time = dialogTmp.Find("time");
-            var timeTime = dialogTmp.Find("time/time").GetComponent<InputField>();
+            var dialog = Dialog.keyframeDialogs[EventEditor.inst.currentEventType];
+            var dialogTmp = dialog.GameObject.transform;
 
-            var currentKeyframe = GameData.Current.eventObjects.allEvents[__instance.currentEventType][__instance.currentEvent] as EventKeyframe;
+            EventEditor.inst.dialogLeft.Find("theme").gameObject.SetActive(false);
 
-            timeTime.onValueChanged.ClearAll();
-            timeTime.text = currentKeyframe.eventTime.ToString("f3");
+            var currentKeyframe = GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent] as EventKeyframe;
 
-            bool isNotFirst = __instance.currentEvent != 0;
-            timeTime.interactable = isNotFirst;
+            dialog.EventTimeField.inputField.onValueChanged.ClearAll();
+            dialog.EventTimeField.inputField.text = currentKeyframe.eventTime.ToString("f3");
+
+            bool isNotFirst = EventEditor.inst.currentEvent != 0;
 
             TriggerHelper.SetInteractable(isNotFirst,
-                timeTime,
-                dialogTmp.Find("time/<<").GetComponent<Button>(),
-                dialogTmp.Find("time/<").GetComponent<Button>(),
-                dialogTmp.Find("time/>").GetComponent<Button>(),
-                dialogTmp.Find("time/>>").GetComponent<Button>());
+                dialog.EventTimeField.inputField,
+                dialog.EventTimeField.leftGreaterButton,
+                dialog.EventTimeField.leftButton,
+                dialog.EventTimeField.rightButton,
+                dialog.EventTimeField.rightGreaterButton);
 
             if (isNotFirst)
             {
-                timeTime.onValueChanged.AddListener(_val =>
+                dialog.EventTimeField.inputField.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                        foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
+                        foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == EventEditor.inst.currentEventType))
                         {
                             kf.Time = num;
                             kf.Render();
@@ -2154,11 +2147,11 @@ namespace BetterLegacy.Editor.Managers
                         LogIncorrectFormat(_val);
                 });
 
-                TriggerHelper.IncreaseDecreaseButtons(timeTime, 0.1f, 10f, t: time);
-                TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(timeTime, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                TriggerHelper.IncreaseDecreaseButtons(dialog.EventTimeField);
+                TriggerHelper.AddEventTriggers(dialog.EventTimeField.gameObject, TriggerHelper.ScrollDelta(dialog.EventTimeField.inputField, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
             }
 
-            switch (__instance.currentEventType)
+            switch (EventEditor.inst.currentEventType)
             {
                 case 0: // Move
                     {
@@ -2202,7 +2195,7 @@ namespace BetterLegacy.Editor.Managers
                         theme.onValueChanged.ClearAll();
                         theme.onValueChanged.AddListener(_val => { RTThemeEditor.inst.RenderThemeContent(dialogTmp, _val); });
                         RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
-                        __instance.RenderThemePreview(dialogTmp);
+                        EventEditor.inst.RenderThemePreview(dialogTmp);
                         break;
                     }
                 case 5: // Chromatic
@@ -2748,105 +2741,89 @@ namespace BetterLegacy.Editor.Managers
             }
 
             // Curves
-            var curvesDropdown = dialogTmp.transform.Find("curves").GetComponent<Dropdown>();
-
-            dialogTmp.transform.Find("curves_label").gameObject.SetActive(isNotFirst);
-            curvesDropdown.gameObject.SetActive(isNotFirst);
+            dialog.CurvesLabel.gameObject.SetActive(isNotFirst);
+            dialog.CurvesDropdown.gameObject.SetActive(isNotFirst);
             if (isNotFirst)
             {
-                curvesDropdown.onValueChanged.ClearAll();
+                dialog.CurvesDropdown.onValueChanged.ClearAll();
                 if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(currentKeyframe.curveType, out int animIndex))
-                    curvesDropdown.value = animIndex;
+                    dialog.CurvesDropdown.value = animIndex;
 
-                curvesDropdown.onValueChanged.AddListener(_val =>
+                dialog.CurvesDropdown.onValueChanged.AddListener(_val =>
                 {
                     if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
                         return;
 
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.curveType = anim;
 
                     RenderEventObjects();
-                    eventManager.updateEvents();
+                    EventManager.inst.updateEvents();
                 });
             }
 
-            RenderIndexSelector(dialogTmp, __instance.currentEvent);
-            var editDelete = dialogTmp.Find("edit/del").GetComponent<Button>();
+            #region Edit
 
-            editDelete.onClick.ClearAll();
-            editDelete.interactable = isNotFirst;
-            editDelete.onClick.AddListener(DeleteKeyframes().Start);
-
-            if (dialogTmp.Find("edit/copy") && dialogTmp.Find("edit/paste"))
-            {
-                var copy = dialogTmp.Find("edit/copy").GetComponent<Button>();
-                var paste = dialogTmp.Find("edit/paste").GetComponent<Button>();
-
-                copy.onClick.ClearAll();
-                copy.onClick.AddListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
-
-                paste.onClick.ClearAll();
-                paste.onClick.AddListener(() => PasteKeyframeData(__instance.currentEventType));
-            }
-
-            RenderTitle(__instance.currentEventType);
-        }
-
-        public void RenderIndexSelector(Transform dialogTmp, int currentIndex)
-        {
-            bool isNotFirst = currentIndex != 0;
-
-            var editJumpLeftLarge = dialogTmp.Find("edit/<<").GetComponent<Button>();
-            var editJumpLeft = dialogTmp.Find("edit/<").GetComponent<Button>();
-            var editJumpRight = dialogTmp.Find("edit/>").GetComponent<Button>();
-            var editJumpRightLarge = dialogTmp.Find("edit/>>").GetComponent<Button>();
-
-            editJumpLeftLarge.interactable = isNotFirst;
-            editJumpLeftLarge.onClick.ClearAll();
-            editJumpLeftLarge.onClick.AddListener(() =>
+            dialog.JumpToStartButton.interactable = isNotFirst;
+            dialog.JumpToStartButton.onClick.ClearAll();
+            dialog.JumpToStartButton.onClick.AddListener(() =>
             {
                 EventEditor.inst.UpdateEventOrder(false);
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
             });
 
-            editJumpLeft.interactable = isNotFirst;
-            editJumpLeft.onClick.ClearAll();
-            editJumpLeft.onClick.AddListener(() =>
+            dialog.JumpToPrevButton.interactable = isNotFirst;
+            dialog.JumpToPrevButton.onClick.ClearAll();
+            dialog.JumpToPrevButton.onClick.AddListener(() =>
             {
                 EventEditor.inst.UpdateEventOrder(false);
-                int num = currentIndex - 1;
+                int num = EventEditor.inst.currentEvent - 1;
                 if (num < 0)
                     num = 0;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
             });
 
-            var indexText = dialogTmp.Find("edit/|/text").GetComponent<Text>();
-            var allEvents = GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType];
+            var allEvents = AllEvents[EventEditor.inst.currentEventType];
 
-            indexText.text = !isNotFirst ? "S" : currentIndex == allEvents.Count ? "E" : currentIndex.ToString();
+            dialog.KeyframeIndexer.text = !isNotFirst ? "S" : EventEditor.inst.currentEvent == allEvents.Count ? "E" : EventEditor.inst.currentEvent.ToString();
 
-            editJumpRight.interactable = currentIndex != allEvents.Count - 1;
-            editJumpRight.onClick.ClearAll();
-            editJumpRight.onClick.AddListener(() =>
+            dialog.JumpToNextButton.interactable = EventEditor.inst.currentEvent != allEvents.Count - 1;
+            dialog.JumpToNextButton.onClick.ClearAll();
+            dialog.JumpToNextButton.onClick.AddListener(() =>
             {
                 EventEditor.inst.UpdateEventOrder(false);
-                int num = currentIndex + 1;
+                int num = EventEditor.inst.currentEvent + 1;
                 if (num >= allEvents.Count)
                     num = allEvents.Count - 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
             });
 
-            editJumpRightLarge.interactable = currentIndex != allEvents.Count - 1;
-            editJumpRightLarge.onClick.ClearAll();
-            editJumpRightLarge.onClick.AddListener(() =>
+            dialog.JumpToLastButton.interactable = EventEditor.inst.currentEvent != allEvents.Count - 1;
+            dialog.JumpToLastButton.onClick.ClearAll();
+            dialog.JumpToLastButton.onClick.AddListener(() =>
             {
                 EventEditor.inst.UpdateEventOrder(false);
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, allEvents.IndexOf(allEvents.Last()));
             });
 
+            dialog.DeleteButton.button.onClick.ClearAll();
+            dialog.DeleteButton.button.interactable = isNotFirst;
+            dialog.DeleteButton.button.onClick.AddListener(DeleteKeyframes().Start);
+
+            if (dialog.CopyButton && dialog.PasteButton)
+            {
+                dialog.CopyButton.button.onClick.ClearAll();
+                dialog.CopyButton.button.onClick.AddListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
+
+                dialog.PasteButton.button.onClick.ClearAll();
+                dialog.PasteButton.button.onClick.AddListener(() => PasteKeyframeData(EventEditor.inst.currentEventType));
+            }
+
+            #endregion
+
+            RenderTitle(EventEditor.inst.currentEventType);
         }
 
         public void CopyKeyframeData(TimelineKeyframe currentKeyframe)

@@ -231,13 +231,24 @@ namespace BetterLegacy.Editor.Managers
                 if (prefabHolder.NumberInputField.transform.Find("lock"))
                     DestroyImmediate(prefabHolder.NumberInputField.transform.Find("lock").gameObject);
 
+                var middleButtonLayout = floatInputFieldStorage.middleButton.GetComponent<LayoutElement>();
+                middleButtonLayout.minWidth = 8f;
+                middleButtonLayout.preferredWidth = 8f;
+
                 floatInputFieldStorage.subButton = floatInputFieldStorage.middleButton.gameObject.Duplicate(prefabHolder.NumberInputField.transform, "sub").GetComponent<Button>();
                 floatInputFieldStorage.subButton.image = floatInputFieldStorage.subButton.GetComponent<Image>();
                 floatInputFieldStorage.subButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_sub.png"));
+                var subButtonLayout = floatInputFieldStorage.subButton.GetComponent<LayoutElement>();
+                subButtonLayout.minWidth = 16f;
+                subButtonLayout.preferredWidth = 16f;
+
                 floatInputFieldStorage.subButton.gameObject.SetActive(false);
                 floatInputFieldStorage.addButton = floatInputFieldStorage.middleButton.gameObject.Duplicate(prefabHolder.NumberInputField.transform, "add").GetComponent<Button>();
                 floatInputFieldStorage.addButton.image = floatInputFieldStorage.addButton.GetComponent<Image>();
                 floatInputFieldStorage.addButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_add.png"));
+                var addButtonLayout = floatInputFieldStorage.addButton.GetComponent<LayoutElement>();
+                addButtonLayout.minWidth = 32f;
+                addButtonLayout.preferredWidth = 32f;
                 floatInputFieldStorage.addButton.gameObject.SetActive(false);
 
                 prefabHolder.StringInputField = floatInputFieldStorage.inputField.gameObject.Duplicate(prefabHolder.PrefabParent, "string input");
@@ -305,9 +316,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 prefabHolder.DeleteButton = PrefabEditor.inst.AddPrefab.transform.Find("delete").gameObject.Duplicate(prefabHolder.PrefabParent, "delete");
                 var deleteButtonStorage = prefabHolder.DeleteButton.AddComponent<DeleteButtonStorage>();
-                deleteButtonStorage.button = prefabHolder.DeleteButton.GetComponent<Button>();
-                deleteButtonStorage.baseImage = deleteButtonStorage.button.image;
-                deleteButtonStorage.image = prefabHolder.DeleteButton.transform.GetChild(0).GetComponent<Image>();
+                deleteButtonStorage.Assign(prefabHolder.DeleteButton);
 
                 prefabHolder.Tag = Creator.NewUIObject("Tag", transform);
                 var tagPrefabImage = prefabHolder.Tag.AddComponent<Image>();
@@ -337,8 +346,7 @@ namespace BetterLegacy.Editor.Managers
 
             prefabHolder.ToggleButton = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/grain/colored").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle button");
             var toggleButtonStorage = prefabHolder.ToggleButton.AddComponent<ToggleButtonStorage>();
-            toggleButtonStorage.label = prefabHolder.ToggleButton.transform.Find("Text").GetComponent<Text>();
-            toggleButtonStorage.toggle = prefabHolder.ToggleButton.GetComponent<Toggle>();
+            toggleButtonStorage.Assign(prefabHolder.ToggleButton);
 
             prefabHolder.SpriteButton = timelineBar.transform.Find("play").gameObject.Duplicate(prefabHolder.PrefabParent, "Sprite Button");
             DestroyImmediate(prefabHolder.SpriteButton.GetComponent<Animator>());

@@ -19,6 +19,101 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform Content { get; set; }
 
+        #region Top Properties
+
+        public RectTransform IDBase { get; set; }
+        public Text IDText { get; set; }
+        public Toggle LDMToggle { get; set; }
+
+        #endregion
+
+        #region Name Area
+
+        public InputField NameField { get; set; }
+        public Dropdown ObjectTypeDropdown { get; set; }
+        public RectTransform TagsContent { get; set; }
+
+        #endregion
+
+        #region Start Time / Autokill
+
+        public InputFieldStorage StartTimeField { get; set; }
+
+        public Dropdown AutokillDropdown { get; set; }
+        public InputField AutokillField { get; set; }
+        public Button AutokillSetButton { get; set; }
+        public Toggle CollapseToggle { get; set; }
+
+        #endregion
+
+        #region Parent
+
+        public FunctionButtonStorage ParentButton { get; set; }
+        public HoverTooltip ParentInfo { get; set; }
+        public Button ParentMoreButton { get; set; }
+        public GameObject ParentSettingsParent { get; set; }
+        public Toggle ParentDesyncToggle { get; set; }
+        public Button ParentSearchButton { get; set; }
+        public Button ParentClearButton { get; set; }
+        public Button ParentPickerButton { get; set; }
+
+        public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
+
+        #endregion
+
+        #region Origin
+
+        public RectTransform OriginParent { get; set; }
+        public InputFieldStorage OriginXField { get; set; }
+        public InputFieldStorage OriginYField { get; set; }
+
+        public List<Toggle> OriginXToggles { get; set; } = new List<Toggle>();
+        public List<Toggle> OriginYToggles { get; set; } = new List<Toggle>();
+
+        #endregion
+
+        #region Gradient / Shape
+
+        public RectTransform GradientParent { get; set; }
+        public List<Toggle> GradientToggles { get; set; } = new List<Toggle>();
+        public RectTransform ShapeTypesParent { get; set; }
+        public RectTransform ShapeOptionsParent { get; set; }
+
+        #endregion
+
+        #region Render Depth / Type
+
+        public RectTransform DepthParent { get; set; }
+        public InputFieldStorage DepthField { get; set; }
+        public Slider DepthSlider { get; set; }
+        public Button DepthSliderLeftButton { get; set; }
+        public Button DepthSliderRightButton { get; set; }
+        public Dropdown RenderTypeDropdown { get; set; }
+
+        #endregion
+
+        #region Editor Settings
+
+        public RectTransform EditorSettingsParent { get; set; }
+        public Slider BinSlider { get; set; }
+        public InputField EditorLayerField { get; set; }
+
+        #endregion
+
+        #region Prefab
+
+        public GameObject CollapsePrefabLabel { get; set; }
+        public FunctionButtonStorage CollapsePrefabButton { get; set; }
+        public GameObject AssignPrefabLabel { get; set; }
+        public FunctionButtonStorage AssignPrefabButton { get; set; }
+        public FunctionButtonStorage RemovePrefabButton { get; set; }
+
+        #endregion
+
+        public KeyframeDialog CurrentKeyframeDialog { get; set; }
+
+        public List<KeyframeDialog> keyframeDialogs = new List<KeyframeDialog>();
+
         public override void Init()
         {
             if (init)
@@ -153,114 +248,42 @@ namespace BetterLegacy.Editor.Data.Dialogs
             AssignPrefabButton = Content.Find("assign prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
             AssignPrefabButton.text = AssignPrefabButton.transform.Find("Text").GetComponent<Text>();
             AssignPrefabButton.button = AssignPrefabButton.GetComponent<Button>();
+
             RemovePrefabButton = Content.Find("remove prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
             RemovePrefabButton.text = RemovePrefabButton.transform.Find("Text").GetComponent<Text>();
             RemovePrefabButton.button = RemovePrefabButton.GetComponent<Button>();
 
+            #endregion
+
             for (int i = 0; i < ObjEditor.inst.KeyframeDialogs.Count; i++)
             {
-                var keyframeDialog = new KeyframeDialog();
+                var keyframeDialog = new KeyframeDialog(i);
                 keyframeDialog.GameObject = ObjEditor.inst.KeyframeDialogs[i];
+                keyframeDialog.isMulti = i == 4;
+                keyframeDialog.isObjectKeyframe = true;
+                keyframeDialog.Init();
                 keyframeDialogs.Add(keyframeDialog);
             }
-
-            #endregion
         }
 
-        #region Top Properties
+        public void OpenKeyframeDialog(int type)
+        {
+            for (int i = 0; i < keyframeDialogs.Count; i++)
+            {
+                var active = i == type;
+                keyframeDialogs[i].SetActive(active);
+                if (active)
+                    CurrentKeyframeDialog = keyframeDialogs[i];
+            }
+        }
 
-        public RectTransform IDBase { get; set; }
-        public Text IDText { get; set; }
-        public Toggle LDMToggle { get; set; }
-
-        #endregion
-
-        #region Name Area
-
-        public InputField NameField { get; set; }
-        public Dropdown ObjectTypeDropdown { get; set; }
-        public RectTransform TagsContent { get; set; }
-
-        #endregion
-
-        #region Start Time / Autokill
-
-        public InputFieldStorage StartTimeField { get; set; }
-
-        public Dropdown AutokillDropdown { get; set; }
-        public InputField AutokillField { get; set; }
-        public Button AutokillSetButton { get; set; }
-        public Toggle CollapseToggle { get; set; }
+        public void CloseKeyframeDialogs()
+        {
+            for (int i = 0; i < keyframeDialogs.Count; i++)
+                keyframeDialogs[i].SetActive(false);
+            CurrentKeyframeDialog = null;
+        }
 
         #endregion
-
-        #region Parent
-
-        public FunctionButtonStorage ParentButton { get; set; }
-        public HoverTooltip ParentInfo { get; set; }
-        public Button ParentMoreButton { get; set; }
-        public GameObject ParentSettingsParent { get; set; }
-        public Toggle ParentDesyncToggle { get; set; }
-        public Button ParentSearchButton { get; set; }
-        public Button ParentClearButton { get; set; }
-        public Button ParentPickerButton { get; set; }
-
-        public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
-
-        #endregion
-
-        #region Origin
-
-        public RectTransform OriginParent { get; set; }
-        public InputFieldStorage OriginXField { get; set; }
-        public InputFieldStorage OriginYField { get; set; }
-
-        public List<Toggle> OriginXToggles { get; set; } = new List<Toggle>();
-        public List<Toggle> OriginYToggles { get; set; } = new List<Toggle>();
-
-        #endregion
-
-        #region Gradient / Shape
-
-        public RectTransform GradientParent { get; set; }
-        public List<Toggle> GradientToggles { get; set; } = new List<Toggle>();
-        public RectTransform ShapeTypesParent { get; set; }
-        public RectTransform ShapeOptionsParent { get; set; }
-
-        #endregion
-
-        #region Render Depth / Type
-
-        public RectTransform DepthParent { get; set; }
-        public InputFieldStorage DepthField { get; set; }
-        public Slider DepthSlider { get; set; }
-        public Button DepthSliderLeftButton { get; set; }
-        public Button DepthSliderRightButton { get; set; }
-        public Dropdown RenderTypeDropdown { get; set; }
-
-        #endregion
-
-        #region Editor Settings
-
-        public RectTransform EditorSettingsParent { get; set; }
-        public Slider BinSlider { get; set; }
-        public InputField EditorLayerField { get; set; }
-
-        #endregion
-
-        #region Prefab
-
-        public GameObject CollapsePrefabLabel { get; set; }
-        public FunctionButtonStorage CollapsePrefabButton { get; set; }
-        public GameObject AssignPrefabLabel { get; set; }
-        public FunctionButtonStorage AssignPrefabButton { get; set; }
-        public FunctionButtonStorage RemovePrefabButton { get; set; }
-
-        #endregion
-
-        #endregion
-
-        public List<KeyframeDialog> keyframeDialogs = new List<KeyframeDialog>();
     }
-
 }

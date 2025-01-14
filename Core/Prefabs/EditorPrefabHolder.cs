@@ -75,6 +75,13 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Text label;
+
+        public void Assign(GameObject gameObject)
+        {
+            if (gameObject.transform.TryFind("Text", out Transform transform))
+                label = transform.GetComponent<Text>();
+            toggle = gameObject.GetComponent<Toggle>();
+        }
     }
 
     public class DeleteButtonStorage : MonoBehaviour
@@ -87,6 +94,20 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Image image;
+
+        public void Assign(GameObject gameObject)
+        {
+            button = gameObject.GetComponent<Button>();
+            if (gameObject.transform.TryFind("bg", out Transform bgTransform))
+            {
+                baseImage = bgTransform.GetComponent<Image>();
+                image = button.image;
+                return;
+            }
+
+            baseImage = button.image;
+            image = gameObject.transform.GetChild(0).GetComponent<Image>();
+        }
     }
 
     public class FunctionButtonStorage : MonoBehaviour
@@ -131,6 +152,12 @@ namespace BetterLegacy.Core.Prefabs
 
             if (gameObject.transform.TryFind("|", out Transform middle))
                 middleButton = middle.GetComponent<Button>();
+            else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("|", out Transform prefabMiddleTransform))
+            {
+                var index = leftButton?.transform?.GetSiblingIndex() ?? -2;
+                middleButton = prefabMiddleTransform.gameObject.Duplicate(gameObject.transform, "|", index + 1).GetComponent<Button>();
+                middleButton.gameObject.SetActive(false);
+            }
 
             if (gameObject.transform.TryFind(">", out Transform right))
                 rightButton = right.GetComponent<Button>();
@@ -145,8 +172,29 @@ namespace BetterLegacy.Core.Prefabs
             else if (gameObject.TryGetComponent(out InputField baseInput))
                 this.inputField = baseInput;
 
+            if (gameObject.transform.TryFind("sub", out Transform subTransform))
+                subButton = subTransform.GetComponent<Button>();
+            else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("sub", out Transform prefabSubTransform))
+            {
+                subButton = prefabSubTransform.gameObject.Duplicate(gameObject.transform, "sub").GetComponent<Button>();
+                subButton.gameObject.SetActive(false);
+            }
+
+            if (gameObject.transform.TryFind("add", out Transform addTransform))
+                addButton = addTransform.GetComponent<Button>();
+            else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("add", out Transform prefabAddTransform))
+            {
+                addButton = prefabAddTransform.gameObject.Duplicate(gameObject.transform, "add").GetComponent<Button>();
+                addButton.gameObject.SetActive(false);
+            }
+
             if (gameObject.transform.TryFind("lock", out Transform lockTransform))
                 lockToggle = lockTransform.GetComponent<Toggle>();
+
+            eventTrigger = gameObject.GetComponent<EventTrigger>();
+
+            if (!eventTrigger && gameObject.transform.childCount > 0)
+                eventTrigger = gameObject.transform.GetChild(0).GetComponent<EventTrigger>();
         }
     }
 

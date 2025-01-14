@@ -670,11 +670,11 @@ namespace BetterLegacy.Editor.Managers
                         var toggleLabelText = toggleLabel.transform.GetChild(0).GetComponent<Text>();
                         toggleLabelText.text = "Value Additive";
                         var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "relative");
-                        var toggleText = toggle.transform.GetChild(1).GetComponent<Text>();
-                        toggleText.text = "Relative";
+                        var toggleButtonStorage = toggle.GetComponent<ToggleButtonStorage>();
+                        toggleButtonStorage.label.text = "Relative";
 
-                        EditorThemeManager.AddLightText(toggleLabelText);
-                        EditorThemeManager.AddToggle(toggle.GetComponent<Toggle>(), graphic: toggleText);
+                        EditorThemeManager.AddLightText(toggleButtonStorage.label);
+                        EditorThemeManager.AddToggle(toggleButtonStorage.toggle, graphic: toggleButtonStorage.label);
 
                         var flipX = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipx");
                         var flipXText = flipX.transform.GetChild(0).GetComponent<Text>();
@@ -4791,197 +4791,228 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        void KeyframeHandler(Transform kfdialog, int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
+        void KeyframeHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
         {
-            var valueBase = kfdialog.Find(typeName);
-            var value = valueBase.Find(valueType);
+            var isSingle = selected.Count() == 1;
+            var dialog = Dialog.keyframeDialogs[type];
+            var inputFieldStorage = dialog.EventValueFields[valueIndex];
 
-            if (!value)
+            if (!inputFieldStorage.GetComponent<InputFieldSwapper>())
             {
-                CoreHelper.LogError($"Value {valueType} is null.");
-                return;
+                var ifh = inputFieldStorage.gameObject.AddComponent<InputFieldSwapper>();
+                ifh.Init(inputFieldStorage.inputField, InputFieldSwapper.Type.Num);
             }
 
-            var valueEventTrigger = typeName != "rotation" ? value.GetComponent<EventTrigger>() : kfdialog.GetChild(9).GetComponent<EventTrigger>();
-
-            var valueInputField = value.GetComponent<InputField>();
-            var valueButtonLeft = value.Find("<").GetComponent<Button>();
-            var valueButtonRight = value.Find(">").GetComponent<Button>();
-
-            if (!value.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = value.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(valueInputField, InputFieldSwapper.Type.Num);
-            }
-
-            valueEventTrigger.triggers.Clear();
+            inputFieldStorage.eventTrigger.triggers.Clear();
 
             switch (type)
             {
                 case 0:
                     {
-                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value, multi: true));
-                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(kfdialog.GetChild(9).GetChild(0).GetComponent<InputField>(), kfdialog.GetChild(9).GetChild(1).GetComponent<InputField>(), EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value));
+                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value, multi: true));
+                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(dialog.EventValueFields[0].inputField, dialog.EventValueFields[1].inputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value));
                         break;
                     }
                 case 1:
                     {
-                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value, multi: true));
-                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(kfdialog.GetChild(9).GetChild(0).GetComponent<InputField>(), kfdialog.GetChild(9).GetChild(1).GetComponent<InputField>(), EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value));
+                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value, multi: true));
+                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(dialog.EventValueFields[0].inputField, dialog.EventValueFields[1].inputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value));
                         break;
                     }
                 case 2:
                     {
-                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, EditorConfig.Instance.ObjectRotationScroll.Value, EditorConfig.Instance.ObjectRotationScrollMultiply.Value));
+                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectRotationScroll.Value, EditorConfig.Instance.ObjectRotationScrollMultiply.Value));
                         break;
                     }
             }
 
-            int current = i;
+            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+            inputFieldStorage.inputField.contentType = InputField.ContentType.Standard;
+            inputFieldStorage.inputField.keyboardType = TouchScreenKeyboardType.Default;
 
-            valueInputField.characterValidation = InputField.CharacterValidation.None;
-            valueInputField.contentType = InputField.ContentType.Standard;
-            valueInputField.keyboardType = TouchScreenKeyboardType.Default;
-
-            valueInputField.onEndEdit.ClearAll();
-            valueInputField.onValueChanged.ClearAll();
-            valueInputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.eventValues[i].ToString() : typeName == "rotation" ? "15" : "1";
-            valueInputField.onValueChanged.AddListener(_val =>
+            inputFieldStorage.inputField.onEndEdit.ClearAll();
+            inputFieldStorage.inputField.onValueChanged.ClearAll();
+            inputFieldStorage.inputField.text = isSingle ? firstKF.eventKeyframe.eventValues[valueIndex].ToString() : type == 2 ? "15" : "1";
+            inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
             {
-                if (float.TryParse(_val, out float num) && selected.Count() == 1)
+                if (isSingle && float.TryParse(_val, out float num))
                 {
-
-                    firstKF.eventKeyframe.eventValues[current] = num;
+                    firstKF.eventKeyframe.eventValues[valueIndex] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
-            valueInputField.onEndEdit.AddListener(_val =>
+            inputFieldStorage.inputField.onEndEdit.AddListener(_val =>
             {
+                if (!isSingle)
+                    return;
+
                 var variables = new Dictionary<string, float>
                 {
                     { "eventTime", firstKF.eventKeyframe.eventTime },
-                    { "currentValue", firstKF.eventKeyframe.eventValues[current] }
+                    { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
                 };
 
-                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.eventValues[current], variables, out float calc))
-                    valueInputField.text = calc.ToString();
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                    inputFieldStorage.inputField.text = calc.ToString();
             });
 
-            valueButtonLeft.onClick.ClearAll();
-            valueButtonLeft.onClick.AddListener(() =>
+            inputFieldStorage.leftButton.gameObject.SetActive(isSingle);
+            inputFieldStorage.rightButton.gameObject.SetActive(isSingle);
+            if (isSingle)
+                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage, type == 2 ? 15f : 0.1f, type == 2 ? 3f : 10f);
+
+            if (inputFieldStorage.addButton)
             {
-                if (float.TryParse(valueInputField.text, out float x))
-                {
-                    if (selected.Count() == 1)
+                inputFieldStorage.addButton.onClick.ClearAll();
+                inputFieldStorage.addButton.gameObject.SetActive(!isSingle);
+                if (!isSingle)
+                    inputFieldStorage.addButton.onClick.AddListener(() =>
                     {
-                        valueInputField.text = (x - (typeName == "rotation" ? 5f : 1f)).ToString();
-                        return;
-                    }
+                        if (float.TryParse(inputFieldStorage.inputField.text, out float x))
+                        {
+                            foreach (var keyframe in selected)
+                                keyframe.eventKeyframe.eventValues[valueIndex] += x;
 
-                    foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.eventValues[current] -= x;
+                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
+                        }
+                        else
+                        {
+                            var variables = new Dictionary<string, float>
+                            {
+                                { "eventTime", firstKF.eventKeyframe.eventTime },
+                                { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                            };
 
-                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        Updater.UpdateObject(beatmapObject, "Keyframes");
-                }
-            });
-
-            valueButtonRight.onClick.ClearAll();
-            valueButtonRight.onClick.AddListener(() =>
+                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                                foreach (var keyframe in selected)
+                                    keyframe.eventKeyframe.eventValues[valueIndex] += calc;
+                        }
+                    });
+            }
+            if (inputFieldStorage.subButton)
             {
-                if (float.TryParse(valueInputField.text, out float x))
-                {
-                    if (selected.Count() == 1)
+                inputFieldStorage.subButton.onClick.ClearAll();
+                inputFieldStorage.subButton.gameObject.SetActive(!isSingle);
+                if (!isSingle)
+                    inputFieldStorage.subButton.onClick.AddListener(() =>
                     {
-                        valueInputField.text = (x + (typeName == "rotation" ? 5f : 1f)).ToString();
-                        return;
-                    }
+                        if (float.TryParse(inputFieldStorage.inputField.text, out float x))
+                        {
+                            foreach (var keyframe in selected)
+                                keyframe.eventKeyframe.eventValues[valueIndex] -= x;
 
-                    foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.eventValues[current] += x;
+                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
+                        }
+                        else
+                        {
+                            var variables = new Dictionary<string, float>
+                            {
+                                { "eventTime", firstKF.eventKeyframe.eventTime },
+                                { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                            };
 
-                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        Updater.UpdateObject(beatmapObject, "Keyframes");
-                }
-            });
+                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                                foreach (var keyframe in selected)
+                                    keyframe.eventKeyframe.eventValues[valueIndex] -= calc;
+                        }
+                    });
+            }
+            if (inputFieldStorage.middleButton)
+            {
+                inputFieldStorage.middleButton.onClick.ClearAll();
+                inputFieldStorage.middleButton.gameObject.SetActive(!isSingle);
+                if (!isSingle)
+                    inputFieldStorage.middleButton.onClick.AddListener(() =>
+                    {
+                        if (float.TryParse(inputFieldStorage.inputField.text, out float x))
+                        {
+                            foreach (var keyframe in selected)
+                                keyframe.eventKeyframe.eventValues[valueIndex] = x;
+
+                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
+                        }
+                        else
+                        {
+                            var variables = new Dictionary<string, float>
+                            {
+                                { "eventTime", firstKF.eventKeyframe.eventTime },
+                                { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                            };
+
+                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                                foreach (var keyframe in selected)
+                                    keyframe.eventKeyframe.eventValues[valueIndex] = calc;
+                        }
+                    });
+            }
+
+            inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = isSingle ? 8f : 0f;
         }
 
-        void UpdateKeyframeRandomDialog(Transform kfdialog, Transform randomValueLabel, Transform randomValue, int type, int randomType)
+        void UpdateKeyframeRandomDialog(int type, int randomType)
         {
-            if (kfdialog.Find("r_axis"))
-                kfdialog.Find("r_axis").gameObject.SetActive(RTEditor.ShowModdedUI && (randomType == 5 || randomType == 6));
+            var dialog = Dialog.keyframeDialogs[type];
+            var kfdialog = dialog.GameObject.transform;
 
-            randomValueLabel.gameObject.SetActive(randomType != 0 && randomType != 5);
-            randomValue.gameObject.SetActive(randomType != 0 && randomType != 5);
-            randomValueLabel.GetChild(0).GetComponent<Text>().text = (randomType == 4) ? "Random Scale Min" : randomType == 6 ? "Minimum Range" : "Random X";
-            randomValueLabel.GetChild(1).gameObject.SetActive(type != 2 || randomType == 6);
-            randomValueLabel.GetChild(1).GetComponent<Text>().text = (randomType == 4) ? "Random Scale Max" : randomType == 6 ? "Maximum Range" : "Random Y";
-            kfdialog.Find("random/interval-input").gameObject.SetActive(randomType != 0 && randomType != 3 && randomType != 5);
+            if (dialog.RandomAxisDropdown)
+                dialog.RandomAxisDropdown.gameObject.SetActive(RTEditor.ShowModdedUI && (randomType == 5 || randomType == 6));
+
+            dialog.RandomEventValueLabels.SetActive(randomType != 0 && randomType != 5);
+            dialog.RandomEventValueParent.SetActive(randomType != 0 && randomType != 5);
+            dialog.RandomEventValueLabels.transform.GetChild(0).GetComponent<Text>().text = (randomType == 4) ? "Random Scale Min" : randomType == 6 ? "Minimum Range" : "Random X";
+            dialog.RandomEventValueLabels.transform.GetChild(1).gameObject.SetActive(type != 2 || randomType == 6);
+            dialog.RandomEventValueLabels.transform.GetChild(1).GetComponent<Text>().text = (randomType == 4) ? "Random Scale Max" : randomType == 6 ? "Maximum Range" : "Random Y";
+            dialog.RandomIntervalField.gameObject.SetActive(randomType != 0 && randomType != 3 && randomType != 5);
             kfdialog.Find("r_label/interval").gameObject.SetActive(randomType != 0 && randomType != 3 && randomType != 5);
 
-            if (kfdialog.Find("relative-label"))
+            if (dialog.RelativeToggle && kfdialog.TryFind("relative-label", out Transform relativeLabelTransform))
             {
-                kfdialog.Find("relative-label").gameObject.SetActive(RTEditor.ShowModdedUI);
+                relativeLabelTransform.gameObject.SetActive(RTEditor.ShowModdedUI);
                 if (RTEditor.ShowModdedUI)
                 {
-                    kfdialog.Find("relative-label").GetChild(0).GetComponent<Text>().text =
+                    relativeLabelTransform.GetChild(0).GetComponent<Text>().text =
                         randomType == 6 && type != 2 ? "Object Flees from Player" : randomType == 6 ? "Object Turns Away from Player" : "Value Additive";
-                    kfdialog.Find("relative").GetChild(1).GetComponent<Text>().text =
-                        randomType == 6 && type != 2 ? "Flee" : randomType == 6 ? "Turn Away" : "Relative";
+                    dialog.RelativeToggle.label.text = randomType == 6 && type != 2 ? "Flee" : randomType == 6 ? "Turn Away" : "Relative";
                 }
             }
 
-            randomValue.GetChild(1).gameObject.SetActive(type != 2 || randomType == 6);
+            dialog.RandomEventValueParent.transform.GetChild(1).gameObject.SetActive(type != 2 || randomType == 6);
 
-            randomValue.GetChild(0).GetChild(0).AsRT().sizeDelta = new Vector2(type != 2 || randomType == 6 ? 117 : 317f, 32f);
-            randomValue.GetChild(1).GetChild(0).AsRT().sizeDelta = new Vector2(type != 2 || randomType == 6 ? 117 : 317f, 32f);
+            dialog.RandomEventValueParent.transform.GetChild(0).GetChild(0).AsRT().sizeDelta = new Vector2(type != 2 || randomType == 6 ? 117 : 317f, 32f);
+            dialog.RandomEventValueParent.transform.GetChild(1).GetChild(0).AsRT().sizeDelta = new Vector2(type != 2 || randomType == 6 ? 117 : 317f, 32f);
 
             if (randomType != 0 && randomType != 3 && randomType != 5)
                 kfdialog.Find("r_label/interval").GetComponent<Text>().text = randomType == 6 ? "Speed" : "Random Interval";
         }
 
-        void KeyframeRandomHandler(Transform kfdialog, int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject, string typeName)
+        void KeyframeRandomHandler(int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
         {
-            var randomValueLabel = kfdialog.Find($"r_{typeName}_label");
-            var randomValue = kfdialog.Find($"r_{typeName}");
+            var dialog = Dialog.keyframeDialogs[type];
 
             int random = firstKF.eventKeyframe.random;
-
-            if (kfdialog.Find("r_axis") && kfdialog.Find("r_axis").gameObject.TryGetComponent(out Dropdown rAxis))
-            {
-                var active = (random == 5 || random == 6) && RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
-                rAxis.gameObject.SetActive(active);
-                rAxis.onValueChanged.ClearAll();
-                if (active)
-                {
-                    rAxis.value = Mathf.Clamp((int)firstKF.eventKeyframe.eventRandomValues[3], 0, 3);
-                    rAxis.onValueChanged.AddListener(_val =>
-                    {
-                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                            keyframe.eventRandomValues[3] = _val;
-                        Updater.UpdateObject(beatmapObject, "Keyframes");
-                    });
-                }
-            }
 
             for (int n = 0; n <= (type == 0 ? 5 : type == 2 ? 4 : 3); n++)
             {
                 // We skip the 2nd random type for compatibility with old PA levels (for some reason).
                 int buttonTmp = (n >= 2 && (type != 2 || n < 3)) ? (n + 1) : (n > 2 && type == 2) ? n + 2 : n;
 
-                var randomToggles = kfdialog.Find("random");
                 var active = buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
-                randomToggles.GetChild(n).gameObject.SetActive(active);
+
+                var toggle = dialog.RandomToggles[n];
+                toggle.gameObject.SetActive(active);
 
                 if (!active)
                     continue;
 
-                var toggle = randomToggles.GetChild(n).GetComponent<Toggle>();
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = random == buttonTmp;
                 toggle.onValueChanged.AddListener(_val =>
@@ -4996,26 +5027,40 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(beatmapObject, "Keyframes");
                     }
 
-                    UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, buttonTmp);
+                    UpdateKeyframeRandomDialog(type, buttonTmp);
                 });
-                if (!toggle.GetComponent<HoverUI>())
+            }
+
+            UpdateKeyframeRandomDialog(type, random);
+
+            if (dialog.RandomAxisDropdown)
+            {
+                var active = (random == 5 || random == 6) && RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
+                dialog.RandomAxisDropdown.gameObject.SetActive(active);
+                dialog.RandomAxisDropdown.onValueChanged.ClearAll();
+                if (active)
                 {
-                    var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
-                    hoverUI.animatePos = false;
-                    hoverUI.animateSca = true;
-                    hoverUI.size = 1.1f;
+                    dialog.RandomAxisDropdown.value = Mathf.Clamp((int)firstKF.eventKeyframe.eventRandomValues[3], 0, 3);
+                    dialog.RandomAxisDropdown.onValueChanged.AddListener(_val =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.eventRandomValues[3] = _val;
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                    });
                 }
             }
 
-            UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, random);
+            if (!dialog.RandomIntervalField)
+            {
+                CoreHelper.LogError($"Random Interval Field is null.");
+                return;
+            }
 
             float num = 0f;
             if (firstKF.eventKeyframe.eventRandomValues.Length > 2)
                 num = firstKF.eventKeyframe.eventRandomValues[2];
 
-            var randomInterval = kfdialog.Find("random/interval-input");
-            var randomIntervalIF = randomInterval.GetComponent<InputField>();
-            randomIntervalIF.NewValueChangedListener(num.ToString(), _val =>
+            dialog.RandomIntervalField.NewValueChangedListener(num.ToString(), _val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -5028,54 +5073,37 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            TriggerHelper.AddEventTriggers(randomIntervalIF.gameObject,
-                TriggerHelper.ScrollDelta(randomIntervalIF, 0.01f));
+            TriggerHelper.AddEventTriggers(dialog.RandomIntervalField.gameObject,
+                TriggerHelper.ScrollDelta(dialog.RandomIntervalField, 0.01f));
 
-            if (!randomInterval.GetComponent<InputFieldSwapper>())
+            if (!dialog.RandomIntervalField.GetComponent<InputFieldSwapper>())
             {
-                var ifh = randomInterval.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(randomIntervalIF, InputFieldSwapper.Type.Num);
+                var ifh = dialog.RandomIntervalField.gameObject.AddComponent<InputFieldSwapper>();
+                ifh.Init(dialog.RandomIntervalField, InputFieldSwapper.Type.Num);
             }
 
-            TriggerHelper.AddEventTriggers(randomInterval.gameObject, TriggerHelper.ScrollDelta(randomIntervalIF, max: random == 6 ? 1f : 0f));
+            TriggerHelper.AddEventTriggers(dialog.RandomIntervalField.gameObject, TriggerHelper.ScrollDelta(dialog.RandomIntervalField, max: random == 6 ? 1f : 0f));
         }
 
-        void KeyframeRandomValueHandler(Transform kfdialog, int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
+        void KeyframeRandomValueHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
         {
-            var randomValueLabel = kfdialog.Find($"r_{typeName}_label");
-            var randomValueBase = kfdialog.Find($"r_{typeName}");
-
-            if (!randomValueBase)
-            {
-                CoreHelper.LogError($"Value {valueType} (Base) is null.");
-                return;
-            }
-
-            var randomValue = randomValueBase.Find(valueType);
-
-            if (!randomValue)
-            {
-                CoreHelper.LogError($"Value {valueType} is null.");
-                return;
-            }
+            var dialog = Dialog.keyframeDialogs[type];
+            var kfdialog = dialog.GameObject.transform;
 
             var random = firstKF.eventKeyframe.random;
 
-            var valueButtonLeft = randomValue.Find("<").GetComponent<Button>();
-            var valueButtonRight = randomValue.Find(">").GetComponent<Button>();
+            var inputFieldStorage = dialog.RandomEventValueFields[valueIndex];
 
-            var randomValueInputField = randomValue.GetComponent<InputField>();
-
-            randomValueInputField.characterValidation = InputField.CharacterValidation.None;
-            randomValueInputField.contentType = InputField.ContentType.Standard;
-            randomValueInputField.keyboardType = TouchScreenKeyboardType.Default;
-            randomValueInputField.onValueChanged.ClearAll();
-            randomValueInputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.eventRandomValues[i].ToString() : typeName == "rotation" ? "15" : "1";
-            randomValueInputField.onValueChanged.AddListener(_val =>
+            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+            inputFieldStorage.inputField.contentType = InputField.ContentType.Standard;
+            inputFieldStorage.inputField.keyboardType = TouchScreenKeyboardType.Default;
+            inputFieldStorage.inputField.onValueChanged.ClearAll();
+            inputFieldStorage.inputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.eventRandomValues[valueIndex].ToString() : type == 2 ? "15" : "1";
+            inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
-                    firstKF.eventKeyframe.eventRandomValues[i] = num;
+                    firstKF.eventKeyframe.eventRandomValues[valueIndex] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5083,19 +5111,19 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            valueButtonLeft.onClick.ClearAll();
-            valueButtonLeft.onClick.AddListener(() =>
+            inputFieldStorage.leftButton.onClick.ClearAll();
+            inputFieldStorage.leftButton.onClick.AddListener(() =>
             {
-                if (float.TryParse(randomValueInputField.text, out float x))
+                if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                 {
                     if (selected.Count() == 1)
                     {
-                        randomValueInputField.text = (x - (typeName == "rotation" ? 15f : 1f)).ToString();
+                        inputFieldStorage.inputField.text = (x - (type == 2 ? 15f : 1f)).ToString();
                         return;
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.eventRandomValues[i] -= x;
+                        keyframe.eventKeyframe.eventRandomValues[valueIndex] -= x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5103,19 +5131,19 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            valueButtonRight.onClick.ClearAll();
-            valueButtonRight.onClick.AddListener(() =>
+            inputFieldStorage.rightButton.onClick.ClearAll();
+            inputFieldStorage.rightButton.onClick.AddListener(() =>
             {
-                if (float.TryParse(randomValueInputField.text, out float x))
+                if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                 {
                     if (selected.Count() == 1)
                     {
-                        randomValueInputField.text = (x + (typeName == "rotation" ? 15f : 1f)).ToString();
+                        inputFieldStorage.inputField.text = (x + (type == 2 ? 15f : 1f)).ToString();
                         return;
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.eventRandomValues[i] += x;
+                        keyframe.eventKeyframe.eventRandomValues[valueIndex] += x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5123,40 +5151,41 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            TriggerHelper.AddEventTriggers(randomValue.gameObject,
-                TriggerHelper.ScrollDelta(randomValueInputField, type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f, multi: true),
-                TriggerHelper.ScrollDeltaVector2(randomValueInputField, randomValueBase.GetChild(1).GetComponent<InputField>(), type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f));
+            TriggerHelper.AddEventTriggers(inputFieldStorage.gameObject,
+                TriggerHelper.ScrollDelta(inputFieldStorage.inputField, type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f, multi: true),
+                TriggerHelper.ScrollDeltaVector2(inputFieldStorage.inputField, dialog.RandomEventValueFields[1].inputField, type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f));
 
-            if (!randomValue.GetComponent<InputFieldSwapper>())
+            if (!inputFieldStorage.GetComponent<InputFieldSwapper>())
             {
-                var ifh = randomValue.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(randomValueInputField, InputFieldSwapper.Type.Num);
+                var ifh = inputFieldStorage.gameObject.AddComponent<InputFieldSwapper>();
+                ifh.Init(inputFieldStorage.inputField, InputFieldSwapper.Type.Num);
             }
         }
 
         public void RenderObjectKeyframesDialog(BeatmapObject beatmapObject)
         {
             var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
+            var count = selected.Count();
 
-            for (int i = 0; i < ObjEditor.inst.KeyframeDialogs.Count; i++)
-                ObjEditor.inst.KeyframeDialogs[i].SetActive(false);
-
-            if (selected.Count() < 1)
-                return;
-
-            if (!(selected.Count() == 1 || selected.All(x => x.Type == selected.Min(y => y.Type))))
+            if (count < 1)
             {
-                ObjEditor.inst.KeyframeDialogs[4].SetActive(true);
+                Dialog.CloseKeyframeDialogs();
+                return;
+            }
+
+            if (!(count == 1 || selected.All(x => x.Type == selected.Min(y => y.Type))))
+            {
+                Dialog.OpenKeyframeDialog(4);
 
                 try
                 {
-                    var dialog = ObjEditor.inst.KeyframeDialogs[4].transform;
-                    var time = dialog.Find("time/time/time").GetComponent<InputField>();
+                    var multiDialog = ObjEditor.inst.KeyframeDialogs[4].transform;
+                    var time = multiDialog.Find("time/time/time").GetComponent<InputField>();
                     time.onValueChanged.ClearAll();
                     if (time.text == "100.000")
                         time.text = "10";
 
-                    var setTime = dialog.Find("time/time").GetChild(3).GetComponent<Button>();
+                    var setTime = multiDialog.Find("time/time").GetChild(3).GetComponent<Button>();
                     setTime.onClick.ClearAll();
                     setTime.onClick.AddListener(() =>
                     {
@@ -5182,10 +5211,10 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                    var decreaseTimeGreat = dialog.Find("time/time/<<").GetComponent<Button>();
-                    var decreaseTime = dialog.Find("time/time/<").GetComponent<Button>();
-                    var increaseTimeGreat = dialog.Find("time/time/>>").GetComponent<Button>();
-                    var increaseTime = dialog.Find("time/time/>").GetComponent<Button>();
+                    var decreaseTimeGreat = multiDialog.Find("time/time/<<").GetComponent<Button>();
+                    var decreaseTime = multiDialog.Find("time/time/<").GetComponent<Button>();
+                    var increaseTimeGreat = multiDialog.Find("time/time/>>").GetComponent<Button>();
+                    var increaseTime = multiDialog.Find("time/time/>").GetComponent<Button>();
 
                     decreaseTime.onClick.ClearAll();
                     decreaseTime.onClick.AddListener(() =>
@@ -5289,8 +5318,8 @@ namespace BetterLegacy.Editor.Managers
 
                     TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
 
-                    var curvesMulti = dialog.Find("curves/curves").GetComponent<Dropdown>();
-                    var curvesMultiApplyButton = dialog.Find("curves/apply").GetComponent<Button>();
+                    var curvesMulti = multiDialog.Find("curves/curves").GetComponent<Dropdown>();
+                    var curvesMultiApplyButton = multiDialog.Find("curves/apply").GetComponent<Button>();
                     curvesMulti.onValueChanged.ClearAll();
                     curvesMultiApplyButton.onClick.AddListener(() =>
                     {
@@ -5310,7 +5339,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(beatmapObject, "Keyframes");
                     });
 
-                    var valueIndex = dialog.Find("value base/value index/input").GetComponent<InputField>();
+                    var valueIndex = multiDialog.Find("value base/value index/input").GetComponent<InputField>();
                     valueIndex.onValueChanged.ClearAll();
                     if (!int.TryParse(valueIndex.text, out int a))
                         valueIndex.text = "0";
@@ -5323,7 +5352,7 @@ namespace BetterLegacy.Editor.Managers
                     TriggerHelper.IncreaseDecreaseButtonsInt(valueIndex, t: valueIndex.transform.parent);
                     TriggerHelper.AddEventTriggers(valueIndex.gameObject, TriggerHelper.ScrollDeltaInt(valueIndex));
 
-                    var value = dialog.Find("value base/value/input").GetComponent<InputField>();
+                    var value = multiDialog.Find("value base/value/input").GetComponent<InputField>();
                     value.onValueChanged.ClearAll();
                     value.onValueChanged.AddListener(_val =>
                     {
@@ -5367,81 +5396,62 @@ namespace BetterLegacy.Editor.Managers
 
             var firstKF = selected.ElementAt(0);
             var type = firstKF.Type;
+            var isFirst = firstKF.Index == 0;
 
             CoreHelper.Log($"Selected Keyframe:\nID - {firstKF.ID}\nType: {firstKF.Type}\nIndex {firstKF.Index}");
 
-            ObjEditor.inst.KeyframeDialogs[type].SetActive(true);
+            Dialog.OpenKeyframeDialog(type);
 
             ObjEditor.inst.currentKeyframeKind = type;
             ObjEditor.inst.currentKeyframe = firstKF.Index;
 
-            var kfdialog = ObjEditor.inst.KeyframeDialogs[type].transform;
+            var dialog = Dialog.keyframeDialogs[type];
+            var kfdialog = dialog.GameObject.transform;
 
-            var timeDecreaseGreat = kfdialog.Find("time/<<").GetComponent<Button>();
-            var timeDecrease = kfdialog.Find("time/<").GetComponent<Button>();
-            var timeIncrease = kfdialog.Find("time/>").GetComponent<Button>();
-            var timeIncreaseGreat = kfdialog.Find("time/>>").GetComponent<Button>();
-            var timeSet = kfdialog.Find("time/time").GetComponent<InputField>();
+            dialog.EventTimeField.leftGreaterButton.interactable = !isFirst;
+            dialog.EventTimeField.leftButton.interactable = !isFirst;
+            dialog.EventTimeField.rightButton.interactable = !isFirst;
+            dialog.EventTimeField.rightGreaterButton.interactable = !isFirst;
+            dialog.EventTimeField.inputField.interactable = !isFirst;
 
-            timeDecreaseGreat.interactable = firstKF.Index != 0;
-            timeDecrease.interactable = firstKF.Index != 0;
-            timeIncrease.interactable = firstKF.Index != 0;
-            timeIncreaseGreat.interactable = firstKF.Index != 0;
-            timeSet.interactable = firstKF.Index != 0;
+            dialog.JumpToStartButton.onClick.ClearAll();
+            dialog.JumpToStartButton.interactable = !isFirst;
+            dialog.JumpToStartButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, 0, true));
 
-            var superLeft = kfdialog.Find("edit/<<").GetComponent<Button>();
+            dialog.JumpToPrevButton.onClick.ClearAll();
+            dialog.JumpToPrevButton.interactable = selected.Count() == 1 && firstKF.Index != 0;
+            dialog.JumpToPrevButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index - 1, true));
 
-            superLeft.onClick.ClearAll();
-            superLeft.interactable = firstKF.Index != 0;
-            superLeft.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, 0, true));
+            dialog.KeyframeIndexer.text = firstKF.Index == 0 ? "S" : firstKF.Index == beatmapObject.events[firstKF.Type].Count - 1 ? "E" : firstKF.Index.ToString();
 
-            var left = kfdialog.Find("edit/<").GetComponent<Button>();
+            dialog.JumpToNextButton.onClick.ClearAll();
+            dialog.JumpToNextButton.interactable = selected.Count() == 1 && firstKF.Index < beatmapObject.events[type].Count - 1;
+            dialog.JumpToNextButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index + 1, true));
 
-            left.onClick.ClearAll();
-            left.interactable = selected.Count() == 1 && firstKF.Index != 0;
-            left.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index - 1, true));
+            dialog.JumpToLastButton.onClick.ClearAll();
+            dialog.JumpToLastButton.interactable = selected.Count() == 1 && firstKF.Index < beatmapObject.events[type].Count - 1;
+            dialog.JumpToLastButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, beatmapObject.events[type].Count - 1, true));
 
-            kfdialog.Find("edit/|").GetComponentInChildren<Text>().text = firstKF.Index == 0 ? "S" : firstKF.Index == beatmapObject.events[firstKF.Type].Count - 1 ? "E" : firstKF.Index.ToString();
-
-            var right = kfdialog.Find("edit/>").GetComponent<Button>();
-
-            right.onClick.ClearAll();
-            right.interactable = selected.Count() == 1 && firstKF.Index < beatmapObject.events[type].Count - 1;
-            right.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index + 1, true));
-
-            var superRight = kfdialog.Find("edit/>>").GetComponent<Button>();
-
-            superRight.onClick.ClearAll();
-            superRight.interactable = selected.Count() == 1 && firstKF.Index < beatmapObject.events[type].Count - 1;
-            superRight.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, beatmapObject.events[type].Count - 1, true));
-
-            var copy = kfdialog.Find("edit/copy").GetComponent<Button>();
-            copy.onClick.ClearAll();
-            copy.onClick.AddListener(() =>
+            dialog.CopyButton.button.onClick.ClearAll();
+            dialog.CopyButton.button.onClick.AddListener(() =>
             {
                 CopyData(firstKF.Type, firstKF.eventKeyframe);
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
             });
 
-            var paste = kfdialog.Find("edit/paste").GetComponent<Button>();
-            paste.onClick.ClearAll();
-            paste.onClick.AddListener(() => PasteKeyframeData(type, selected, beatmapObject));
+            dialog.PasteButton.button.onClick.ClearAll();
+            dialog.PasteButton.button.onClick.AddListener(() => PasteKeyframeData(type, selected, beatmapObject));
 
-            var deleteKey = kfdialog.Find("edit/del").GetComponent<Button>();
+            dialog.DeleteButton.button.onClick.ClearAll();
+            dialog.DeleteButton.button.onClick.AddListener(DeleteKeyframes(beatmapObject).Start);
 
-            deleteKey.onClick.ClearAll();
-            deleteKey.onClick.AddListener(DeleteKeyframes(beatmapObject).Start);
+            dialog.EventTimeField.eventTrigger.triggers.Clear();
+            if (count == 1 && firstKF.Index != 0 || count > 1)
+                dialog.EventTimeField.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(dialog.EventTimeField.inputField));
 
-            var tet = kfdialog.Find("time").GetComponent<EventTrigger>();
-            var tif = kfdialog.Find("time/time").GetComponent<InputField>();
-
-            tet.triggers.Clear();
-            if (selected.Count() == 1 && firstKF.Index != 0 || selected.Count() > 1)
-                tet.triggers.Add(TriggerHelper.ScrollDelta(tif));
-
-            tif.onValueChanged.ClearAll();
-            tif.text = selected.Count() == 1 ? firstKF.Time.ToString() : "1";
-            tif.onValueChanged.AddListener(_val =>
+            dialog.EventTimeField.inputField.onValueChanged.ClearAll();
+            dialog.EventTimeField.inputField.text = count == 1 ? firstKF.Time.ToString() : "1";
+            dialog.EventTimeField.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && !ObjEditor.inst.timelineKeyframesDrag && selected.Count() == 1)
                 {
@@ -5464,26 +5474,21 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            if (selected.Count() == 1)
-                TriggerHelper.IncreaseDecreaseButtons(tif, t: kfdialog.Find("time"));
+            if (count == 1)
+                TriggerHelper.IncreaseDecreaseButtons(dialog.EventTimeField.inputField, t: dialog.EventTimeField.transform);
             else
             {
-                var btR = kfdialog.Find("time/<").GetComponent<Button>();
-                var btL = kfdialog.Find("time/>").GetComponent<Button>();
-                var btGR = kfdialog.Find("time/<<").GetComponent<Button>();
-                var btGL = kfdialog.Find("time/>>").GetComponent<Button>();
-
-                btR.onClick.ClearAll();
-                btR.onClick.AddListener(() =>
+                dialog.EventTimeField.leftButton.onClick.ClearAll();
+                dialog.EventTimeField.leftButton.onClick.AddListener(() =>
                 {
-                    if (float.TryParse(tif.text, out float result))
+                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
                         var num = Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f;
                         result -= num;
 
-                        if (selected.Count() == 1)
+                        if (count == 1)
                         {
-                            tif.text = result.ToString();
+                            dialog.EventTimeField.inputField.text = result.ToString();
                             return;
                         }
 
@@ -5492,17 +5497,17 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                btL.onClick.ClearAll();
-                btL.onClick.AddListener(() =>
+                dialog.EventTimeField.rightButton.onClick.ClearAll();
+                dialog.EventTimeField.rightButton.onClick.AddListener(() =>
                 {
-                    if (float.TryParse(tif.text, out float result))
+                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
                         var num = Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f;
                         result += num;
 
-                        if (selected.Count() == 1)
+                        if (count == 1)
                         {
-                            tif.text = result.ToString();
+                            dialog.EventTimeField.inputField.text = result.ToString();
                             return;
                         }
 
@@ -5511,17 +5516,17 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                btGR.onClick.ClearAll();
-                btGR.onClick.AddListener(() =>
+                dialog.EventTimeField.leftGreaterButton.onClick.ClearAll();
+                dialog.EventTimeField.leftGreaterButton.onClick.AddListener(() =>
                 {
-                    if (float.TryParse(tif.text, out float result))
+                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
                         var num = (Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f) * 10f;
                         result -= num;
 
-                        if (selected.Count() == 1)
+                        if (count == 1)
                         {
-                            tif.text = result.ToString();
+                            dialog.EventTimeField.inputField.text = result.ToString();
                             return;
                         }
 
@@ -5530,17 +5535,17 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                btGL.onClick.ClearAll();
-                btGL.onClick.AddListener(() =>
+                dialog.EventTimeField.rightGreaterButton.onClick.ClearAll();
+                dialog.EventTimeField.rightGreaterButton.onClick.AddListener(() =>
                 {
-                    if (float.TryParse(tif.text, out float result))
+                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
                         var num = (Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f) * 10f;
                         result += num;
 
-                        if (selected.Count() == 1)
+                        if (count == 1)
                         {
-                            tif.text = result.ToString();
+                            dialog.EventTimeField.inputField.text = result.ToString();
                             return;
                         }
 
@@ -5550,21 +5555,23 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            kfdialog.Find("curves_label").gameObject.SetActive(selected.Count() == 1 && firstKF.Index != 0 || selected.Count() > 1);
-            kfdialog.Find("curves").gameObject.SetActive(selected.Count() == 1 && firstKF.Index != 0 || selected.Count() > 1);
-            var curves = kfdialog.Find("curves").GetComponent<Dropdown>();
-            curves.onValueChanged.ClearAll();
+            dialog.CurvesLabel.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
+            dialog.CurvesDropdown.gameObject.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
+            dialog.CurvesDropdown.onValueChanged.ClearAll();
 
             if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(firstKF.eventKeyframe.curveType, out int animIndex))
-                curves.value = animIndex;
+                dialog.CurvesDropdown.value = animIndex;
 
-            curves.onValueChanged.AddListener(_val =>
+            dialog.CurvesDropdown.onValueChanged.AddListener(_val =>
             {
                 if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
                     return;
 
-                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                    keyframe.curveType = anim;
+                foreach (var keyframe in selected)
+                {
+                    if (keyframe.Index != 0)
+                        keyframe.eventKeyframe.curveType = anim;
+                }
 
                 // Since keyframe curve has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
@@ -5576,34 +5583,33 @@ namespace BetterLegacy.Editor.Managers
             {
                 case 0:
                     {
-                        KeyframeHandler(kfdialog, type, selected, firstKF, beatmapObject, "position", 0, "x");
-                        KeyframeHandler(kfdialog, type, selected, firstKF, beatmapObject, "position", 1, "y");
-                        KeyframeHandler(kfdialog, type, selected, firstKF, beatmapObject, "position", 2, "z");
+                        for (int i = 0; i < 3; i++)
+                            KeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
-                        KeyframeRandomHandler(kfdialog, type, selected, firstKF, beatmapObject, "position");
-                        KeyframeRandomValueHandler(kfdialog, type, selected, firstKF, beatmapObject, "position", 0, "x");
-                        KeyframeRandomValueHandler(kfdialog, type, selected, firstKF, beatmapObject, "position", 1, "y");
+                        KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
+                        for (int i = 0; i < 2; i++)
+                            KeyframeRandomValueHandler(type, i, selected, firstKF, beatmapObject);
 
                         break;
                     }
                 case 1:
                     {
-                        KeyframeHandler(kfdialog, type, selected, firstKF, beatmapObject, "scale", 0, "x");
-                        KeyframeHandler(kfdialog, type, selected, firstKF, beatmapObject, "scale", 1, "y");
+                        for (int i = 0; i < 2; i++)
+                            KeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
-                        KeyframeRandomHandler(kfdialog, type, selected, firstKF, beatmapObject, "scale");
-                        KeyframeRandomValueHandler(kfdialog, type, selected, firstKF, beatmapObject, "scale", 0, "x");
-                        KeyframeRandomValueHandler(kfdialog, type, selected, firstKF, beatmapObject, "scale", 1, "y");
+                        KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
+                        for (int i = 0; i < 2; i++)
+                            KeyframeRandomValueHandler(type, i, selected, firstKF, beatmapObject);
 
                         break;
                     }
                 case 2:
                     {
-                        KeyframeHandler(kfdialog, type, selected, firstKF, beatmapObject, "rotation", 0, "x");
+                        KeyframeHandler(type, 0, selected, firstKF, beatmapObject);
 
-                        KeyframeRandomHandler(kfdialog, type, selected, firstKF, beatmapObject, "rotation");
-                        KeyframeRandomValueHandler(kfdialog, type, selected, firstKF, beatmapObject, "rotation", 0, "x");
-                        KeyframeRandomValueHandler(kfdialog, type, selected, firstKF, beatmapObject, "rotation", 1, "y");
+                        KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
+                        for (int i = 0; i < 2; i++)
+                            KeyframeRandomValueHandler(type, i, selected, firstKF, beatmapObject);
 
                         break;
                     }
@@ -5904,18 +5910,15 @@ namespace BetterLegacy.Editor.Managers
                     }
             }
 
-            var relativeBase = kfdialog.Find("relative");
-
-            if (!relativeBase)
+            if (!dialog.RelativeToggle)
                 return;
 
-            RTEditor.SetActive(relativeBase.gameObject, RTEditor.ShowModdedUI);
+            RTEditor.SetActive(dialog.RelativeToggle.gameObject, RTEditor.ShowModdedUI);
             if (RTEditor.ShowModdedUI)
             {
-                var relative = relativeBase.GetComponent<Toggle>();
-                relative.onValueChanged.ClearAll();
-                relative.isOn = firstKF.eventKeyframe.relative;
-                relative.onValueChanged.AddListener(_val =>
+                dialog.RelativeToggle.toggle.onValueChanged.ClearAll();
+                dialog.RelativeToggle.toggle.isOn = firstKF.eventKeyframe.relative;
+                dialog.RelativeToggle.toggle.onValueChanged.AddListener(_val =>
                 {
                     foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         keyframe.relative = _val;
@@ -6187,6 +6190,16 @@ namespace BetterLegacy.Editor.Managers
             1 => "sca",
             2 => "rot",
             3 => "col",
+            _ => string.Empty,
+        };
+
+        public static string IntToTypeName(int num) => num switch
+        {
+            0 => "Position",
+            1 => "Scale",
+            2 => "Rotation",
+            3 => "Color",
+            4 => "Multi",
             _ => string.Empty,
         };
 
