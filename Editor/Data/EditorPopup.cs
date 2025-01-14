@@ -26,23 +26,7 @@ namespace BetterLegacy.Editor.Data
         public EditorPopup(string name)
         {
             Name = name;
-            var fileName = RTFile.FormatLegacyFileName(name) + FileFormat.JSON.Dot();
-            if (RTFile.FileExists(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/editor", fileName)))
-            {
-                try
-                {
-                    var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/editor", fileName)));
-                    customEditorAnimation = new CustomEditorAnimation(name);
-                    if (jn["open"] != null)
-                        customEditorAnimation.OpenAnimation = PAAnimation.Parse(jn["open"]);
-                    if (jn["close"] != null)
-                        customEditorAnimation.CloseAnimation = PAAnimation.Parse(jn["close"]);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-            }
+            UpdateCustom();
         }
 
         #region Properties
@@ -78,6 +62,11 @@ namespace BetterLegacy.Editor.Data
 
         #region Constants
 
+        /// <summary>
+        /// Path to customizable editor settings.
+        /// </summary>
+        public const string SETTINGS_EDITOR_PATH = "settings/editor";
+
         public const string NEW_FILE_POPUP = "New File Popup";
         public const string FILE_INFO_POPUP = "File Info Popup";
         public const string SAVE_AS_POPUP = "Save As Popup";
@@ -98,8 +87,11 @@ namespace BetterLegacy.Editor.Data
         public const string KEYBIND_LIST_POPUP = "Keybind List Popup";
         public const string PLAYER_MODELS_POPUP = "Player Models Popup";
         public const string DEFAULT_MODIFIERS_POPUP = "Default Modifiers Popup";
+        public const string DEFAULT_BACKGROUND_MODIFIERS_POPUP = "Default Background Modifiers Popup";
         public const string DOCUMENTATION_POPUP = "Documentation Popup";
         public const string FOLDER_CREATOR_POPUP = "Folder Creator Popup";
+        public const string PREFAB_TYPES_POPUP = "Prefab Types Popup";
+        public const string TEXT_EDITOR = "Text Editor";
 
         #endregion
 
@@ -406,6 +398,59 @@ namespace BetterLegacy.Editor.Data
             });
         }
 
+        /// <summary>
+        /// Updates the editor popups' customizable animations and layout.
+        /// </summary>
+        public void UpdateCustom()
+        {
+            var fileName = RTFile.FormatLegacyFileName(Name) + FileFormat.JSON.Dot();
+            if (!RTFile.FileExists(RTFile.CombinePaths(RTFile.ApplicationDirectory, SETTINGS_EDITOR_PATH, fileName)))
+            {
+                customEditorAnimation = null;
+                return;
+            }
+
+            try
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, SETTINGS_EDITOR_PATH, fileName)));
+
+                var jnLayout = jn["layout"];
+                if (jnLayout != null && GameObject)
+                {
+                    for (int i = 0; i < jnLayout.Count; i++)
+                    {
+                        string path = jnLayout[i]["path"];
+                        if (GameObject.transform.TryFind(path, out Transform transform) && transform is RectTransform rectTransform)
+                        {
+                            var rect = RectValues.Parse(jnLayout[i]["rect"]);
+                            rect.AssignToRectTransform(rectTransform);
+                        }
+                    }
+                }
+
+                if (jn["open"] == null || jn["close"] == null)
+                {
+                    customEditorAnimation = null;
+                    return;
+                }
+
+                customEditorAnimation = new CustomEditorAnimation(Name);
+                if (jn["open"] != null)
+                    customEditorAnimation.OpenAnimation = PAAnimation.Parse(jn["open"]);
+                if (jn["close"] != null)
+                    customEditorAnimation.CloseAnimation = PAAnimation.Parse(jn["close"]);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+                customEditorAnimation = null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the original dialog.
+        /// </summary>
+        /// <returns>Returns the vanilla dialog class.</returns>
         public EditorManager.EditorDialog GetLegacyDialog() => EditorManager.inst.GetDialog(Name);
 
         public override string ToString() => $"{Name} - {title}";
