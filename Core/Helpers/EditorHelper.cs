@@ -91,9 +91,9 @@ namespace BetterLegacy.Core.Helpers
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Flip Left/Right", () => { name.text = RTString.FlipLeftRight(name.text); }),
-                        new ButtonFunction("Flip Up/Down", () => { name.text = RTString.FlipUpDown(name.text); }),
-                        new ButtonFunction("Flip Upper/Lower", () => { name.text = RTString.FlipUpperLower(name.text); }),
+                        new ButtonFunction("Flip Left/Right", () => name.text = RTString.FlipLeftRight(name.text)),
+                        new ButtonFunction("Flip Up/Down", () => name.text = RTString.FlipUpDown(name.text)),
+                        new ButtonFunction("Flip Upper/Lower", () => name.text = RTString.FlipUpperLower(name.text)),
                         new ButtonFunction(true),
                         new ButtonFunction("Flip Number", () =>
                         {
