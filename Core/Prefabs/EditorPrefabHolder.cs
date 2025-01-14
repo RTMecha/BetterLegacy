@@ -37,6 +37,17 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject Slider { get; set; }
 
         public GameObject Tag { get; set; }
+
+        public GameObject Dialog { get; set; }
+    }
+
+    public class EditorDialogStorage : MonoBehaviour
+    {
+        [SerializeField]
+        public Image topPanel;
+
+        [SerializeField]
+        public Text title;
     }
 
     public class DropdownStorage : MonoBehaviour
