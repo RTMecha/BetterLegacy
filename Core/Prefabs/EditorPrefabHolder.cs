@@ -156,6 +156,7 @@ namespace BetterLegacy.Core.Prefabs
             {
                 var index = leftButton?.transform?.GetSiblingIndex() ?? -2;
                 middleButton = prefabMiddleTransform.gameObject.Duplicate(gameObject.transform, "|", index + 1).GetComponent<Button>();
+                middleButton.transform.AsRT().sizeDelta = new Vector2(8f, 32f);
                 middleButton.gameObject.SetActive(false);
             }
 
@@ -177,6 +178,7 @@ namespace BetterLegacy.Core.Prefabs
             else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("sub", out Transform prefabSubTransform))
             {
                 subButton = prefabSubTransform.gameObject.Duplicate(gameObject.transform, "sub").GetComponent<Button>();
+                subButton.transform.AsRT().sizeDelta = new Vector2(16f, 32f);
                 subButton.gameObject.SetActive(false);
             }
 
@@ -185,6 +187,7 @@ namespace BetterLegacy.Core.Prefabs
             else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("add", out Transform prefabAddTransform))
             {
                 addButton = prefabAddTransform.gameObject.Duplicate(gameObject.transform, "add").GetComponent<Button>();
+                addButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
                 addButton.gameObject.SetActive(false);
             }
 
