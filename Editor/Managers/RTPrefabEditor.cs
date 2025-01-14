@@ -1661,7 +1661,7 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(delete.GetComponent<LayoutElement>());
 
-            EditorHelper.AddEditorPopup("Prefab Types Popup", gameObject);
+            EditorHelper.AddEditorPopup(EditorPopup.PREFAB_TYPES_POPUP, gameObject);
             gameObject.SetActive(false);
 
             EditorHelper.AddEditorDropdown("View Prefab Types", "", "View", EditorSprites.SearchSprite, () =>
@@ -1678,7 +1678,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             });
 
-            RTEditor.inst.PrefabTypesPopup = new ContentPopup("Prefab Types Popup");
+            RTEditor.inst.PrefabTypesPopup = new ContentPopup(EditorPopup.PREFAB_TYPES_POPUP);
             RTEditor.inst.PrefabTypesPopup.GameObject = gameObject;
             RTEditor.inst.PrefabTypesPopup.Content = prefabTypeContent.AsRT();
         }
@@ -2219,7 +2219,7 @@ namespace BetterLegacy.Editor.Managers
             this.exportToVG = exportToVGStorage.button;
             exportToVGStorage.text.text = "Convert to VG Format";
 
-            EditorHelper.AddEditorDialog("Prefab External Dialog", editorDialog);
+            EditorHelper.AddEditorDialog(EditorDialog.PREFAB_EXTERNAL_EDITOR, editorDialog);
 
             EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddSelectable(importPrefabStorage.button, ThemeGroup.Function_2);

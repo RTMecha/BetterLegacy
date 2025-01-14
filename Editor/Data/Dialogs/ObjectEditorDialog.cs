@@ -13,6 +13,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class ObjectEditorDialog : EditorDialog
     {
+        public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
+
         #region Object Properties
 
         public RectTransform Content { get; set; }
@@ -24,8 +26,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
 
-            Name = OBJECT_EDITOR;
-            GameObject = GetLegacyDialog().Dialog.gameObject;
             Content = ObjEditor.inst.ObjectView.transform.AsRT();
 
             #region Top Properties

@@ -37,7 +37,7 @@ namespace BetterLegacy.Editor.Managers
             inst = this;
 
             CreateModifiersOnAwake();
-            DefaultModifiersPopup = RTEditor.inst.GeneratePopup("Default Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
+            DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
             {
                 searchTerm = _val;
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
@@ -2999,21 +2999,20 @@ namespace BetterLegacy.Editor.Managers
             this.addIndex = addIndex;
             defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
 
-            var dialog = EditorManager.inst.GetDialog("Default Modifiers Popup").Dialog.gameObject;
-
-            var contentM = dialog.transform.Find("mask/content");
-            LSHelpers.DeleteChildren(contentM);
+            LSHelpers.DeleteChildren(DefaultModifiersPopup.Content);
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {
-                if (string.IsNullOrEmpty(searchTerm) || defaultModifiers[i].commands[0].ToLower().Contains(searchTerm.ToLower()) ||
-                    searchTerm.ToLower() == "action" && defaultModifiers[i].type == ModifierBase.Type.Action || searchTerm.ToLower() == "trigger" && defaultModifiers[i].type == ModifierBase.Type.Trigger)
+                if (!RTString.SearchString(searchTerm, defaultModifiers[i].Name))
+                    continue;
+
+                if (searchTerm.ToLower() == "action" && defaultModifiers[i].type == ModifierBase.Type.Action || searchTerm.ToLower() == "trigger" && defaultModifiers[i].type == ModifierBase.Type.Trigger)
                 {
                     int tmpIndex = i;
 
-                    var name = defaultModifiers[i].commands[0] + " (" + defaultModifiers[i].type.ToString() + ")";
+                    var name = $"{defaultModifiers[i].Name} ({defaultModifiers[i].type})";
 
-                    var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(contentM, name);
+                    var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
 
                     TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}", 4f);
 
@@ -3024,7 +3023,7 @@ namespace BetterLegacy.Editor.Managers
                     button.onClick.ClearAll();
                     button.onClick.AddListener(() =>
                     {
-                        var cmd = defaultModifiers[tmpIndex].commands[0];
+                        var cmd = defaultModifiers[tmpIndex].Name;
                         if (cmd.Contains("Text") && !cmd.Contains("Other") && beatmapObject.shape != 4)
                         {
                             EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be a Text Object.", 2f, EditorManager.NotificationType.Error);

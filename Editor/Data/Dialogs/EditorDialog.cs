@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Editor.Managers;
 using System;
 using System.Collections.Generic;
@@ -10,34 +11,9 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    // todo: replace original editor dialog with this
-
-    /*
-     
-    DIALOGS:
-    Multi Object Editor
-    Object Editor = done
-    Event Editor
-    Checkpoint Editor
-    Background Editor
-    Metadata Editor
-    Prefab Editor
-    Settings Editor
-    Multi Keyframe Editor
-    Multi Keyframe Editor (Object) = ignore
-    Marker Editor
-    Prefab Selector
-    
-    New Level Template Dialog
-    Screenshot Dialog
-    Keybind Editor
-    Player Editor
-    Level Combiner
-    Uploaded Dialog
-    Documentation Dialog
-    Prefab External Dialog
-     */
-
+    /// <summary>
+    /// Represents a dialog window in the editor, where most things are edited.
+    /// </summary>
     public class EditorDialog : Exists
     {
         public EditorDialog() { }
@@ -46,6 +22,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             Name = name;
             GameObject = GetLegacyDialog().Dialog.gameObject;
+            if (GameObject)
+            {
+                var clickable = GameObject.AddComponent<Clickable>();
+                clickable.onEnter = eventData => MouseOver = true;
+                clickable.onExit = eventData => MouseOver = false;
+            }
         }
 
         #region Properties
@@ -59,6 +41,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// If this dialog is the currently open dialog.
         /// </summary>
         public bool IsCurrent => CurrentDialog && CurrentDialog.Name == Name;
+
+        /// <summary>
+        /// If the mouse cursor is over this dialog.
+        /// </summary>
+        public bool MouseOver { get; set; }
 
         /// <summary>
         /// Name of the editor dialog.
@@ -146,7 +133,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             if (GameObject)
                 GameObject.SetActive(active);
-            //EditorManager.inst.SetDialogStatus(Name, active);
+
+            if (!active)
+                MouseOver = false;
         }
 
         /// <summary>

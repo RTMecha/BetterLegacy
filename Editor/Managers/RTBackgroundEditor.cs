@@ -1147,7 +1147,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(removeBlockText, ThemeGroup.Delete_Text);
 
                 CreateModifiersOnAwake();
-                RTEditor.inst.GeneratePopup("Default Background Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
+                DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_BACKGROUND_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
                 {
                     searchTerm = _val;
                     if (CurrentSelectedBG)
@@ -2006,11 +2006,11 @@ namespace BetterLegacy.Editor.Managers
             foreach (var modifier in backgroundObject.modifiers[currentPage])
             {
                 int index = num;
-                var gameObject = modifierCardPrefab.Duplicate(content, modifier.commands[0]);
+                var gameObject = modifierCardPrefab.Duplicate(content, modifier.Name);
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
                 gameObject.transform.localScale = Vector3.one;
                 var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
-                modifierTitle.text = modifier.commands[0];
+                modifierTitle.text = modifier.Name;
                 EditorThemeManager.ApplyLightText(modifierTitle);
 
                 var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
@@ -2155,17 +2155,17 @@ namespace BetterLegacy.Editor.Managers
                     {
                         new ButtonFunction("Add", () =>
                         {
-                            ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
+                            DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(backgroundObject);
                         }),
                         new ButtonFunction("Add Above", () =>
                         {
-                            ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
+                            DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(backgroundObject, index);
                         }),
                         new ButtonFunction("Add Below", () =>
                         {
-                            ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
+                            DefaultModifiersPopup.Open();
                             RefreshDefaultModifiersList(backgroundObject, index + 1);
                         }),
                         new ButtonFunction("Delete", () =>
@@ -2265,7 +2265,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                 };
 
-                var cmd = modifier.commands[0];
+                var cmd = modifier.Name;
                 switch (cmd)
                 {
                     case "setActive":
@@ -2337,7 +2337,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    ObjectModifiersEditor.inst.DefaultModifiersPopup.Open();
+                    DefaultModifiersPopup.Open();
                     RefreshDefaultModifiersList(backgroundObject);
                 });
 
@@ -2423,6 +2423,8 @@ namespace BetterLegacy.Editor.Managers
 
         public int currentPage;
 
+        public ContentPopup DefaultModifiersPopup { get; set; }
+
         public string searchTerm;
         public int addIndex = -1;
         public void RefreshDefaultModifiersList(BackgroundObject backgroundObject, int addIndex = -1)
@@ -2430,40 +2432,37 @@ namespace BetterLegacy.Editor.Managers
             this.addIndex = addIndex;
             defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
-            var contentM = ObjectModifiersEditor.inst.DefaultModifiersPopup.Content;
-            LSHelpers.DeleteChildren(contentM);
+            LSHelpers.DeleteChildren(DefaultModifiersPopup.Content);
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {
-                if (string.IsNullOrEmpty(searchTerm) || defaultModifiers[i].commands[0].ToLower().Contains(searchTerm.ToLower()))
+                if (!RTString.SearchString(searchTerm, defaultModifiers[i].Name))
+                    continue;
+
+                int tmpIndex = i;
+
+                var name = $"{defaultModifiers[i].Name} ({defaultModifiers[i].type})";
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
+
+                var modifierName = gameObject.transform.GetChild(0).GetComponent<Text>();
+                modifierName.text = name;
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
                 {
-                    int tmpIndex = i;
+                    var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifiers[tmpIndex], backgroundObject);
+                    if (addIndex == -1)
+                        backgroundObject.modifiers[currentPage].Add(modifier);
+                    else
+                        backgroundObject.modifiers[currentPage].Insert(Mathf.Clamp(addIndex, 0, backgroundObject.modifiers[currentPage].Count), modifier);
+                    StartCoroutine(RenderModifiers(backgroundObject));
+                    DefaultModifiersPopup.Close();
+                });
 
-                    var name = defaultModifiers[i].commands[0] + " (" + defaultModifiers[i].type.ToString() + ")";
-
-                    var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(contentM, name);
-
-                    var modifierName = gameObject.transform.GetChild(0).GetComponent<Text>();
-                    modifierName.text = name;
-
-                    var button = gameObject.GetComponent<Button>();
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() =>
-                    {
-                        var cmd = defaultModifiers[tmpIndex].commands[0];
-
-                        var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifiers[tmpIndex], backgroundObject);
-                        if (addIndex == -1)
-                            backgroundObject.modifiers[currentPage].Add(modifier);
-                        else
-                            backgroundObject.modifiers[currentPage].Insert(Mathf.Clamp(addIndex, 0, backgroundObject.modifiers[currentPage].Count), modifier);
-                        StartCoroutine(RenderModifiers(backgroundObject));
-                        ObjectModifiersEditor.inst.DefaultModifiersPopup.Close();
-                    });
-
-                    EditorThemeManager.ApplyLightText(modifierName);
-                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                }
+                EditorThemeManager.ApplyLightText(modifierName);
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             }
         }
 

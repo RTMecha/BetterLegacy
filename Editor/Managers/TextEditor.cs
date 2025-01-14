@@ -8,6 +8,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -27,9 +28,8 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                var textEditor = EditorManager.inst.GetDialog("Save As Popup").Dialog.gameObject
-                    .Duplicate(EditorManager.inst.GetDialog("Save As Popup").Dialog.GetParent(), "Text Editor");
-                textEditor.transform.localPosition = Vector3.zero;
+                var textEditor = RTEditor.inst.SaveAsPopup.GameObject.Duplicate(RTEditor.inst.popups, "Text Editor");
+                textEditor.transform.AsRT().anchoredPosition = Vector3.zero;
 
                 var textEditorPopup = textEditor.transform.GetChild(0);
                 textEditorPopup.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.Unconstrained;
@@ -107,9 +107,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddToggle(toggle);
                 EditorThemeManager.AddLightText(label);
 
-                EditorHelper.AddEditorPopup("Text Editor", textEditor);
+                EditorHelper.AddEditorPopup(EditorPopup.TEXT_EDITOR, textEditor);
 
-                RTEditor.inst.TextEditorPopup = new Data.EditorPopup("Text Editor");
+                RTEditor.inst.TextEditorPopup = new EditorPopup(EditorPopup.TEXT_EDITOR);
                 RTEditor.inst.TextEditorPopup.GameObject = textEditor;
                 RTEditor.inst.editorPopups.Add(RTEditor.inst.TextEditorPopup);
             }

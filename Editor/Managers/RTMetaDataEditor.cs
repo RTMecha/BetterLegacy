@@ -400,7 +400,7 @@ namespace BetterLegacy.Editor.Managers
 
         void RenderDifficultyToggles()
         {
-            var content = EditorManager.inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content");
+            var content = Dialog.GameObject.transform.Find("Scroll View/Viewport/Content");
             var toggles = content.Find("song/difficulty/toggles");
             LSHelpers.DeleteChildren(toggles);
 
@@ -437,7 +437,7 @@ namespace BetterLegacy.Editor.Managers
 
         void RenderTags()
         {
-            var content = EditorManager.inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content");
+            var content = Dialog.GameObject.transform.Find("Scroll View/Viewport/Content");
             var parent = content.Find("creator/tags/Scroll View/Viewport/Content");
             var moddedMetadata = MetaData.Current;
 
@@ -551,7 +551,7 @@ namespace BetterLegacy.Editor.Managers
         {
             Debug.Log($"{MetadataEditor.inst.className}Render the Metadata Editor");
 
-            var content = EditorManager.inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content");
+            var content = Dialog.GameObject.transform.Find("Scroll View/Viewport/Content");
 
             if (!MetaData.IsValid)
             {

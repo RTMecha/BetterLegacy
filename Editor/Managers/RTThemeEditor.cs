@@ -188,13 +188,12 @@ namespace BetterLegacy.Editor.Managers
             themeKeyframe = dialog.Find("data/right/theme");
             themeKeyframeContent = themeKeyframe.Find("themes/viewport/content");
 
-            dialog.gameObject.AddComponent<ActiveState>().onStateChanged = OnDialog;
             dialog.Find("data/left/theme").gameObject.AddComponent<ActiveState>().onStateChanged = OnDialog;
 
             StartCoroutine(LoadThemes());
         }
 
-        void OnDialog(bool enabled)
+        public void OnDialog(bool enabled)
         {
             if (!enabled && EventEditor.inst)
                 EventEditor.inst.showTheme = false;
@@ -447,7 +446,7 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                RTEditor.inst.ThemesPopup = RTEditor.inst.GeneratePopup("Theme Popup", "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
+                RTEditor.inst.ThemesPopup = RTEditor.inst.GeneratePopup(EditorPopup.THEME_POPUP, "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
                 {
                     themeSearch = _val;
                     RefreshThemeSearch();

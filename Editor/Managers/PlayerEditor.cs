@@ -84,15 +84,13 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator GenerateUI()
         {
-            var dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "PlayerEditorDialog");
-
-            dialog.transform.localScale = Vector3.one;
-            dialog.transform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
+            var dialog = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "PlayerEditorDialog");
+            dialog.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
             dialog.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = dialog.GetComponent<EditorDialogStorage>();
 
-            var dialogTitle = dialog.transform.GetChild(0);
-            dialogTitle.GetComponent<Image>().color = LSColors.HexToColor("E57373");
-            dialogTitle.GetChild(0).GetComponent<Text>().text = "- Player Editor -";
+            dialogStorage.topPanel.color = LSColors.HexToColor(BeatmapTheme.PLAYER_1_COLOR);
+            dialogStorage.title.text = "- Player Editor -";
 
             dialog.transform.GetChild(1).AsRT().sizeDelta = new Vector2(765f, 54f);
 
@@ -100,7 +98,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            var search = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("search-box").gameObject.Duplicate(dialog.transform, "search");
+            var search = RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(dialog.transform, "search");
 
             var searchField = search.transform.GetChild(0).GetComponent<InputField>();
 
@@ -151,10 +149,10 @@ namespace BetterLegacy.Editor.Managers
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 512f);
 
-            EditorHelper.AddEditorDialog("Player Editor", dialog);
+            EditorHelper.AddEditorDialog(EditorDialog.PLAYER_EDITOR, dialog);
             var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", EditorSprites.PlayerSprite, () =>
             {
-                PlayerEditor.inst.Dialog.Open();
+                Dialog.Open();
                 StartCoroutine(RefreshEditor());
             });
             EditorHelper.SetComplexity(playerEditor, Complexity.Advanced);
@@ -1246,7 +1244,7 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.SetActiveChildren(content, false);
 
-            RTEditor.inst.PlayerModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, _val =>
+            RTEditor.inst.PlayerModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Player Models", Vector2.zero, Vector2.zero, _val =>
             {
                 modelSearchTerm = _val;
                 StartCoroutine(RefreshModels());

@@ -29,8 +29,6 @@ namespace BetterLegacy.Editor.Managers
 
         public static GameObject editorDialogObject;
         public static Transform editorDialogTransform;
-        public static Transform editorDialogTitle;
-        public static Transform editorDialogSpacer;
         public static Transform editorDialogContent;
         public static Transform editorDialogText;
 
@@ -58,20 +56,16 @@ namespace BetterLegacy.Editor.Managers
             else if (inst != this)
                 Destroy(gameObject);
 
-            editorDialogObject = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "LevelCombinerDialog");
-
+            editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "LevelCombinerDialog");
             editorDialogTransform = editorDialogObject.transform;
-            editorDialogObject.layer = 5;
-            editorDialogTransform.localScale = Vector3.one;
-            editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogObject.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 32f);
+            editorDialogTransform.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
 
-            editorDialogTitle = editorDialogTransform.GetChild(0);
-            editorDialogTitle.GetComponent<Image>().color = LSColors.HexToColor("E57373");
-            editorDialogTitle.GetChild(0).GetComponent<Text>().text = "- Level Combiner -";
+            dialogStorage.topPanel.color = LSColors.HexToColor("E57373");
+            dialogStorage.title.text = "- Level Combiner -";
 
-            editorDialogSpacer = editorDialogTransform.GetChild(1);
-            editorDialogSpacer.GetComponent<RectTransform>().sizeDelta = new Vector2(765f, 12f);
+            editorDialogTransform.GetChild(1).AsRT().sizeDelta = new Vector2(765f, 12f);
 
             editorDialogText = editorDialogTransform.GetChild(2);
 
@@ -92,10 +86,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddLightText(labelText);
             }
 
-            var search = Instantiate(EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("search-box").gameObject);
-            search.transform.SetParent(editorDialogTransform);
-            search.transform.localScale = Vector3.one;
-            search.name = "search";
+            var search = RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(editorDialogTransform, "search");
 
             searchField = search.transform.GetChild(0).GetComponent<InputField>();
 
@@ -119,7 +110,7 @@ namespace BetterLegacy.Editor.Managers
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 320f);
 
-            EditorHelper.AddEditorDialog("Level Combiner", editorDialogObject);
+            EditorHelper.AddEditorDialog(EditorDialog.LEVEL_COMBINER, editorDialogObject);
 
             // Save
             {
@@ -135,10 +126,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddLightText(labelText);
                 }
 
-                var save = Instantiate(EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("search-box").gameObject);
-                save.transform.SetParent(editorDialogTransform);
-                save.transform.localScale = Vector3.one;
-                save.name = "search";
+                var save = RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(editorDialogTransform, "save");
 
                 saveField = save.transform.GetChild(0).GetComponent<InputField>();
                 UIManager.SetRectTransform(saveField.image.rectTransform, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(700f, 32f));
@@ -167,13 +155,9 @@ namespace BetterLegacy.Editor.Managers
 
                 //Button 1
                 {
-                    var buttonBase = new GameObject("combine");
-                    buttonBase.transform.SetParent(editorDialogTransform);
-                    buttonBase.transform.localScale = Vector3.one;
-
-                    var buttonBaseRT = buttonBase.AddComponent<RectTransform>();
-                    buttonBaseRT.anchoredPosition = new Vector2(436f, 55f);
-                    buttonBaseRT.sizeDelta = new Vector2(100f, 50f);
+                    var buttonBase = Creator.NewUIObject("combine", editorDialogTransform);
+                    buttonBase.transform.AsRT().anchoredPosition = new Vector2(436f, 55f);
+                    buttonBase.transform.AsRT().sizeDelta = new Vector2(100f, 50f);
 
                     var button = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttonBase.transform, "combine");
                     button.transform.localScale = Vector3.one;

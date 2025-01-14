@@ -227,7 +227,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void GenerateKeybindEditorPopupDialog()
         {
-            var popup = RTEditor.inst.GeneratePopup("Keybind List Popup", "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f), _val =>
+            var popup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f), _val =>
             {
                 searchTerm = _val;
                 RefreshKeybindPopup();
@@ -254,11 +254,14 @@ namespace BetterLegacy.Editor.Managers
             reloadButton.image.sprite = EditorSprites.ReloadSprite;
             EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
 
-            editorDialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "KeybindEditor").transform;
-            editorDialog.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            ((RectTransform)editorDialog).sizeDelta = new Vector2(0f, 32f);
+            editorDialog = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "KeybindEditor").transform;
+            editorDialog.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            editorDialog.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = editorDialog.GetComponent<EditorDialogStorage>();
 
-            editorDialog.Find("title/Text").GetComponent<Text>().text = "- Keybind Editor -";
+            dialogStorage.topPanel.color = LSColors.HexToColor("D89356");
+            dialogStorage.title.text = "- Keybind Editor -";
+
             Destroy(editorDialog.Find("Text").gameObject);
 
             var clickable = editorDialog.gameObject.AddComponent<ActiveState>();
@@ -412,7 +415,7 @@ namespace BetterLegacy.Editor.Managers
                 delete.transform.AsRT().anchoredPosition = new Vector2(744f, -16f);
             }
 
-            EditorHelper.AddEditorDialog("Keybind Editor", editorDialog.gameObject);
+            EditorHelper.AddEditorDialog(EditorDialog.KEYBIND_EDITOR, editorDialog.gameObject);
 
             EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
 

@@ -37,7 +37,7 @@ namespace BetterLegacy.Editor.Managers
 
         void GenerateUI() // NEED TO UPDATE!
         {
-            RTEditor.inst.DocumentationPopup = RTEditor.inst.GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
+            RTEditor.inst.DocumentationPopup = RTEditor.inst.GeneratePopup(EditorPopup.DOCUMENTATION_POPUP, "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 documentationSearch = _val;
                 RefreshDocumentation();
@@ -49,28 +49,23 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDocumentation();
             });
 
-            var editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
-            var editorDialogTransform = editorDialogObject.transform;
-            editorDialogObject.name = "DocumentationDialog";
-            editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(EditorManager.inst.dialogs);
-            editorDialogTransform.localScale = Vector3.one;
-            editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "DocumentationDialog");
+            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
 
-            var editorDialogTitle = editorDialogTransform.GetChild(0);
-            editorDialogTitle.GetComponent<Image>().color = LSColors.HexToColor("D89356");
-            documentationTitle = editorDialogTitle.GetChild(0).GetComponent<Text>();
-            documentationTitle.text = "- Documentation -";
+            dialogStorage.topPanel.color = LSColors.HexToColor("D89356");
+            dialogStorage.title.text = "- Documentation -";
+            documentationTitle = dialogStorage.title;
 
-            var editorDialogSpacer = editorDialogTransform.GetChild(1);
+            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
 
-            Destroy(editorDialogTransform.GetChild(2).gameObject);
+            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
 
-            EditorHelper.AddEditorDialog("Documentation Dialog", editorDialogObject);
+            EditorHelper.AddEditorDialog(EditorDialog.DOCUMENTATION, editorDialogObject);
 
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogTransform, "Scroll View");
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             documentationContent = scrollView.transform.Find("Viewport/Content");
 
             var scrollViewLE = scrollView.AddComponent<LayoutElement>();

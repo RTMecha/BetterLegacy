@@ -46,33 +46,26 @@ namespace BetterLegacy.Editor.Managers
 
         void GenerateUI()
         {
-            var editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
-            var editorDialogTransform = editorDialogObject.transform;
-            editorDialogObject.name = "NewLevelTemplateDialog";
-            editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(EditorManager.inst.dialogs);
-            editorDialogTransform.localScale = Vector3.one;
-            editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "NewLevelTemplateDialog");
+            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
+
+            dialogStorage.title.text = "- Level Templates -";
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            var editorDialogTitle = editorDialogTransform.GetChild(0);
-            var editorDialogTitleImage = editorDialogTitle.GetComponent<Image>();
-            var editorDialogTitleText = editorDialogTitle.GetChild(0).GetComponent<Text>();
-            editorDialogTitleText.text = "- New Level Template -";
+            EditorThemeManager.AddGraphic(dialogStorage.topPanel, ThemeGroup.Add);
+            EditorThemeManager.AddGraphic(dialogStorage.title, ThemeGroup.Add_Text);
 
-            EditorThemeManager.AddGraphic(editorDialogTitleImage, ThemeGroup.Add);
-            EditorThemeManager.AddGraphic(editorDialogTitleText, ThemeGroup.Add_Text);
-
-            var editorDialogSpacer = editorDialogTransform.GetChild(1);
+            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
 
-            Destroy(editorDialogTransform.GetChild(2).gameObject);
+            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
 
-            EditorHelper.AddEditorDialog("New Level Template Dialog", editorDialogObject);
+            EditorHelper.AddEditorDialog(EditorDialog.LEVEL_TEMPLATE_SELECTOR, editorDialogObject);
 
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogTransform, "Scroll View");
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             newLevelTemplateContent = scrollView.transform.Find("Viewport/Content");
 
             var scrollViewLE = scrollView.AddComponent<LayoutElement>();
@@ -119,7 +112,7 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            var gameObject = Creator.NewUIObject("create", editorDialogTransform, 2);
+            var gameObject = Creator.NewUIObject("create", editorDialogObject.transform, 2);
             gameObject.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             var createLevelTemplateButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(gameObject.transform, "create");
@@ -135,16 +128,19 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Choose a level to create a template from.", 4f, EditorManager.NotificationType.Info);
             });
+            EditorThemeManager.AddSelectable(createLevelTemplateButtonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(createLevelTemplateButtonStorage.text, ThemeGroup.Function_2_Text);
 
-            var gameObject2 = Creator.NewUIObject("name", editorDialogTransform, 3);
+            var gameObject2 = Creator.NewUIObject("name", editorDialogObject.transform, 3);
             gameObject2.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             nameInput = EditorPrefabHolder.Instance.NumberInputField.GetComponent<InputFieldStorage>().inputField.gameObject.Duplicate(gameObject2.transform, "name").GetComponent<InputField>();
             nameInput.onValueChanged.ClearAll();
             nameInput.text = "New Level Template";
+            EditorThemeManager.AddInputField(nameInput);
             RectValues.Default.AnchoredPosition(160f, 42f).SizeDelta(400f, 32f).AssignToRectTransform(nameInput.image.rectTransform);
 
-            var gameObject3 = Creator.NewUIObject("preview", editorDialogTransform, 4);
+            var gameObject3 = Creator.NewUIObject("preview", editorDialogObject.transform, 4);
             gameObject3.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             var preview = Creator.NewUIObject("preview", gameObject3.transform);
@@ -199,6 +195,8 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.HideWarningPopup();
                 }, "System Browser", "Editor Browser");
             });
+            EditorThemeManager.AddSelectable(choosePreviewButtonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(choosePreviewButtonStorage.text, ThemeGroup.Function_2_Text);
         }
 
         #endregion

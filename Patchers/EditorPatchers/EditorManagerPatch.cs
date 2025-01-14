@@ -1209,14 +1209,7 @@ namespace BetterLegacy.Patchers
         static bool RefreshDialogDictionaryPrefix()
         {
             foreach (var dialog in Instance.EditorDialogs)
-            {
                 Instance.EditorDialogsDictionary[dialog.Name] = dialog;
-
-                if (dialog.Type == EditorManager.EditorDialog.DialogType.Timeline)
-                    continue;
-
-                TriggerHelper.AddEventTriggers(dialog.Dialog.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => Instance.SetDialogStatus(dialog.Name, dialog.Dialog.gameObject.activeSelf, true)));
-            }
             return false;
         }
 

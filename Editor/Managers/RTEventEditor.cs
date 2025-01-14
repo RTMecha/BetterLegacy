@@ -370,9 +370,10 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            var detector = EditorManager.inst.GetDialog("Event Editor").Dialog.gameObject.AddComponent<Clickable>();
-            detector.onEnable = _val =>
+            var detector = eventEditorDialog.gameObject.GetOrAddComponent<ActiveState>();
+            detector.onStateChanged = _val =>
             {
+                RTThemeEditor.inst.OnDialog(_val);
                 if (!_val)
                     for (int i = 0; i < EventEditor.inst.dialogRight.childCount; i++)
                         EventEditor.inst.dialogRight.GetChild(i).gameObject.SetActive(false);

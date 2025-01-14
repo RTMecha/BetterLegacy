@@ -170,6 +170,9 @@ namespace BetterLegacy.Editor.Managers
                 ObjectOptionsPopup = new EditorPopup(EditorPopup.OBJECT_OPTIONS_POPUP);
                 ObjectOptionsPopup.GameObject = ObjectOptionsPopup.GetLegacyDialog().Dialog.gameObject;
 
+                BGObjectOptionsPopup = new EditorPopup(EditorPopup.BG_OPTIONS_POPUP);
+                BGObjectOptionsPopup.GameObject = BGObjectOptionsPopup.GetLegacyDialog().Dialog.gameObject;
+
                 editorPopups.Add(NewLevelPopup);
                 editorPopups.Add(OpenLevelPopup);
                 editorPopups.Add(InfoPopup);
@@ -177,6 +180,7 @@ namespace BetterLegacy.Editor.Managers
                 editorPopups.Add(SaveAsPopup);
                 editorPopups.Add(PrefabPopups);
                 editorPopups.Add(ObjectOptionsPopup);
+                editorPopups.Add(BGObjectOptionsPopup);
             }
             catch (Exception ex)
             {
@@ -345,6 +349,11 @@ namespace BetterLegacy.Editor.Managers
             prefabHolder.Scrollbar = openFilePopup.Find("Scrollbar").gameObject.Duplicate(prefabHolder.PrefabParent, "Scrollbar");
 
             EditorTimeline.inst.binPrefab = EditorTimeline.inst.bins.GetChild(0).gameObject.Duplicate(prefabHolder.PrefabParent, "bin");
+
+            prefabHolder.Dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Dialog");
+            var dialogStorage = prefabHolder.Dialog.AddComponent<EditorDialogStorage>();
+            dialogStorage.topPanel = prefabHolder.Dialog.transform.GetChild(0).GetComponent<Image>();
+            dialogStorage.title = dialogStorage.topPanel.transform.GetChild(0).GetComponent<Text>();
         }
 
         // 5 - setup misc editor UI
@@ -367,7 +376,6 @@ namespace BetterLegacy.Editor.Managers
             CreateObjectSearch();
             CreateDebug();
             CreateAutosavePopup();
-            SetupMiscEditorThemes();
             CreateScreenshotsView();
         }
 
@@ -470,6 +478,8 @@ namespace BetterLegacy.Editor.Managers
             CreateFolderCreator();
             CreateWarningPopup();
             EditorContextMenu.Init();
+
+            SetupMiscEditorThemes();
         }
 
         #endregion
@@ -833,6 +843,7 @@ namespace BetterLegacy.Editor.Managers
         public PrefabPopup PrefabPopups { get; set; }
 
         public EditorPopup ObjectOptionsPopup { get; set; }
+        public EditorPopup BGObjectOptionsPopup { get; set; }
 
         public ContentPopup ObjectTemplatePopup { get; set; }
 
@@ -989,8 +1000,6 @@ namespace BetterLegacy.Editor.Managers
         public bool autosaving;
 
         public string autosaveSearch;
-        public Transform autosaveContent;
-        public InputField autosaveSearchField;
 
         public static float timeSinceAutosaved;
 
@@ -2694,7 +2703,7 @@ namespace BetterLegacy.Editor.Managers
             hexagon.onClick.ClearAll();
             hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
 
-            ObjectTemplatePopup = GeneratePopup("Object Templates Popup", "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
+            ObjectTemplatePopup = GeneratePopup(EditorPopup.OBJECT_TEMPLATES_POPUP, "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
         }
 
         void GenerateObjectTemplate(string name, string hint, Action action)
@@ -3031,8 +3040,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupPaths()
         {
-            var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
-            var panel = openFilePopup.Find("Panel");
+            var openFilePopup = OpenLevelPopup.GameObject.transform;
+            var panel = OpenLevelPopup.TopPanel;
 
             var sortList = EditorPrefabHolder.Instance.Dropdown.Duplicate(panel, "level sort");
             new RectValues(new Vector2(-132f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(200f, 32f)).AssignToRectTransform(sortList.transform.AsRT());
@@ -3100,12 +3109,6 @@ namespace BetterLegacy.Editor.Managers
             ((RectTransform)levelPathGameObject.transform).anchoredPosition = config.OpenLevelEditorPathPos.Value;
             ((RectTransform)levelPathGameObject.transform).sizeDelta = new Vector2(config.OpenLevelEditorPathLength.Value, 32f);
 
-            (levelPathGameObject.GetComponent<HoverTooltip>() ?? levelPathGameObject.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                keys = new List<string> { "Right click to select a folder" },
-                desc = "Level list path",
-                hint = "Input the path you want to load levels from within the beatmaps folder. For example: inputting \"editor\" into the input field will load levels from beatmaps/editor. You can also set it to sub-directories, like: \"editor/pa levels\" will take levels from \"beatmaps/editor/pa levels\"."
-            });
             TooltipHelper.AssignTooltip(levelPathGameObject, "Editor Path", 3f);
 
             editorPathField = levelPathGameObject.GetComponent<InputField>();
@@ -3148,7 +3151,7 @@ namespace BetterLegacy.Editor.Managers
             };
             EditorHelper.SetComplexity(levelPathGameObject, Complexity.Advanced);
 
-            var levelListReloader = EditorPrefabHolder.Instance.SpriteButton.Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "reload");
+            var levelListReloader = EditorPrefabHolder.Instance.SpriteButton.Duplicate(openFilePopup, "reload");
             levelListReloader.transform.AsRT().anchoredPosition = config.OpenLevelListRefreshPosition.Value;
             levelListReloader.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
@@ -3177,12 +3180,7 @@ namespace BetterLegacy.Editor.Managers
             themePathGameObject.transform.AsRT().anchoredPosition = new Vector2(80f, 0f);
             themePathGameObject.transform.AsRT().sizeDelta = new Vector2(160f, 34f);
 
-            (themePathGameObject.GetComponent<HoverTooltip>() ?? themePathGameObject.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                keys = new List<string> { "Right click to select a folder", },
-                desc = "Theme list path",
-                hint = "Input the path you want to load themes from within the beatmaps folder. For example: inputting \"themes\" into the input field will load themes from beatmaps/themes. You can also set it to sub-directories, like: \"themes/pa colors\" will take levels from \"beatmaps/themes/pa colors\"."
-            });
+            TooltipHelper.AssignTooltip(themePathGameObject, "Theme Path", 3f);
 
             themePathField = themePathGameObject.GetComponent<InputField>();
             themePathField.characterValidation = InputField.CharacterValidation.None;
@@ -3225,7 +3223,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.SetComplexity(themePathGameObject, Complexity.Advanced);
 
-            var themeListReload = GameObject.Find("TimelineBar/GameObject/play").Duplicate(themePathBase.transform, "reload themes");
+            var themeListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(themePathBase.transform, "reload themes");
             themeListReload.transform.AsRT().anchoredPosition = new Vector2(166f, 35f);
             themeListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
@@ -3295,17 +3293,12 @@ namespace BetterLegacy.Editor.Managers
 
             #region Prefab Path
 
-            var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "prefabs path");
+            var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(PrefabPopups.ExternalPrefabs.GameObject.transform, "prefabs path");
 
             prefabPathGameObject.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabPathPos.Value;
             prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(config.PrefabExternalPrefabPathLength.Value, 32f);
 
-            prefabPathGameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                keys = new List<string> { "Right click to select a folder", },
-                desc = "Prefab list path",
-                hint = "Input the path you want to load prefabs from within the beatmaps folder. For example: inputting \"prefabs\" into the input field will load levels from beatmaps/prefabs. You can also set it to sub-directories, like: \"prefabs/pa characters\" will take levels from \"beatmaps/prefabs/pa characters\"."
-            });
+            TooltipHelper.AssignTooltip(prefabPathGameObject, "Prefab Path", 3f);
 
             prefabPathField = prefabPathGameObject.GetComponent<InputField>();
             prefabPathField.characterValidation = InputField.CharacterValidation.None;
@@ -3348,8 +3341,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.SetComplexity(prefabPathGameObject, Complexity.Advanced);
 
-            var prefabListReload = GameObject.Find("TimelineBar/GameObject/play")
-                .Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "reload prefabs");
+            var prefabListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(PrefabPopups.ExternalPrefabs.GameObject.transform, "reload prefabs");
             prefabListReload.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
             prefabListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
@@ -3372,7 +3364,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupFileBrowser()
         {
-            var fileBrowser = EditorManager.inst.GetDialog("New File Popup").Dialog.Find("Browser Popup").gameObject.Duplicate(EditorManager.inst.GetDialog("New File Popup").Dialog.parent, "Browser Popup");
+            var fileBrowser = NewLevelPopup.GameObject.transform.Find("Browser Popup").gameObject.Duplicate(EditorManager.inst.GetDialog("New File Popup").Dialog.parent, "Browser Popup");
             fileBrowser.gameObject.SetActive(false);
             UIManager.SetRectTransform(fileBrowser.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(600f, 364f));
             var close = fileBrowser.transform.Find("Panel/x").GetComponent<Button>();
@@ -3402,7 +3394,7 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(fileBrowserBase);
 
-            EditorHelper.AddEditorPopup("Browser Popup", fileBrowser);
+            EditorHelper.AddEditorPopup(EditorPopup.BROWSER_POPUP, fileBrowser);
 
             EditorThemeManager.AddGraphic(fileBrowser.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
@@ -3418,7 +3410,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                BrowserPopup = new EditorPopup("Browser Popup");
+                BrowserPopup = new EditorPopup(EditorPopup.BROWSER_POPUP);
                 BrowserPopup.Assign(BrowserPopup.GetLegacyDialog().Dialog.gameObject);
                 BrowserPopup.size = BrowserPopup.GameObject.transform.AsRT().sizeDelta;
                 editorPopups.Add(BrowserPopup);
@@ -3441,7 +3433,8 @@ namespace BetterLegacy.Editor.Managers
             gui.transform.SetSiblingIndex(0);
 
             Destroy(gui.transform.Find("Health").gameObject);
-            Destroy(gui.transform.Find("Interface").gameObject);
+            if (gui.transform.TryFind("Interface", out Transform dupIC))
+                Destroy(dupIC.gameObject);
 
             gui.transform.localPosition = new Vector3(-382.5f, 184.05f, 0f);
             gui.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
@@ -3523,7 +3516,6 @@ namespace BetterLegacy.Editor.Managers
                 grid.transform.AsRT().anchoredPosition = new Vector2(-40f, -40f);
                 grid.transform.AsRT().sizeDelta = Vector2.one;
 
-
                 UpdateGrid();
             }
             catch (Exception ex)
@@ -3534,7 +3526,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupNewFilePopup()
         {
-            var newFilePopupBase = EditorManager.inst.GetDialog("New File Popup").Dialog;
+            var newFilePopupBase = NewLevelPopup.GameObject.transform;
 
             var newFilePopup = newFilePopupBase.Find("New File Popup");
 
@@ -3608,7 +3600,7 @@ namespace BetterLegacy.Editor.Managers
                     if (!string.IsNullOrEmpty(_val))
                     {
                         path.text = _val;
-                        RTEditor.inst.BrowserPopup.Close();
+                        BrowserPopup.Close();
                     }
                 });
             });
@@ -3642,7 +3634,7 @@ namespace BetterLegacy.Editor.Managers
             songTitleInputField.onValueChanged.ClearAll();
             songTitleInputField.onEndEdit.ClearAll();
             songTitleInputField.text = newLevelSongTitle;
-            songTitleInputField.onValueChanged.AddListener(x => { newLevelSongTitle = x; });
+            songTitleInputField.onValueChanged.AddListener(x => newLevelSongTitle = x);
 
             EditorThemeManager.AddLightText(newFilePopup.Find("Level Name").GetComponent<Text>());
             EditorThemeManager.AddInputField(newFilePopup.Find("level-name").GetComponent<InputField>());
@@ -3689,7 +3681,7 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateObjectSearch()
         {
-            ObjectSearchPopup = GeneratePopup("Object Search Popup", "Object Search", Vector2.zero, new Vector2(600f, 450f), _val =>
+            ObjectSearchPopup = GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 objectSearchTerm = _val;
                 RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
@@ -3706,9 +3698,8 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateWarningPopup()
         {
-            var saveAsPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog;
-            var warningPopup = saveAsPopup.gameObject.Duplicate(saveAsPopup.GetParent(), "Warning Popup");
-            warningPopup.transform.localPosition = Vector3.zero;
+            var warningPopup = SaveAsPopup.GameObject.Duplicate(popups, "Warning Popup");
+            warningPopup.transform.AsRT().anchoredPosition = Vector2.zero;
 
             var main = warningPopup.transform.GetChild(0);
 
@@ -3762,7 +3753,7 @@ namespace BetterLegacy.Editor.Managers
             var title = panel.Find("Text").GetComponent<Text>();
             title.text = "Warning!";
 
-            EditorHelper.AddEditorPopup("Warning Popup", warningPopup);
+            EditorHelper.AddEditorPopup(EditorPopup.WARNING_POPUP, warningPopup);
 
             EditorThemeManager.AddGraphic(main.GetComponent<Image>(), ThemeGroup.Background_1, true);
             EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
@@ -3803,7 +3794,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(() => { action?.Invoke(); });
+            button.onClick.AddListener(() => action?.Invoke());
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             var text = gameObject.transform.GetChild(0).GetComponent<Text>();
@@ -3817,17 +3808,16 @@ namespace BetterLegacy.Editor.Managers
             if (!ModCompatibility.UnityExplorerInstalled)
                 return;
 
-            DebuggerPopup = GeneratePopup("Debugger Popup", "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
+            DebuggerPopup = GeneratePopup(EditorPopup.DEBUGGER_POPUP, "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 debugSearch = _val;
                 RefreshDebugger();
             }, placeholderText: "Search for function...");
 
-            var reload = GameObject.Find("TimelineBar/GameObject/play")
-                .Duplicate(DebuggerPopup.TopPanel, "reload");
+            var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(DebuggerPopup.TopPanel, "reload");
             UIManager.SetRectTransform(reload.transform.AsRT(), new Vector2(-42f, 0f), Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
 
-            (reload.GetComponent<HoverTooltip>() ?? reload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
+            reload.GetOrAddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
                 desc = "Refresh the function list",
                 hint = "Clicking this will reload the function list."
@@ -3841,7 +3831,7 @@ namespace BetterLegacy.Editor.Managers
 
             reloadButton.image.sprite = EditorSprites.ReloadSprite;
 
-            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger.png"), () =>
+            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger{FileFormat.PNG.Dot()}"), () =>
             {
                 DebuggerPopup.Open();
                 RefreshDebugger();
@@ -3951,16 +3941,11 @@ namespace BetterLegacy.Editor.Managers
             RefreshDebugger();
         }
 
-        void CreateAutosavePopup()
-        {
-            AutosavePopup = GeneratePopup("Autosave Popup", "Autosaves", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
-            autosaveSearchField = AutosavePopup.SearchField;
-            autosaveContent = AutosavePopup.Content;
-        }
+        void CreateAutosavePopup() => AutosavePopup = GeneratePopup(EditorPopup.AUTOSAVE_POPUP, "Autosaves", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
 
         void SetupMiscEditorThemes()
         {
-            var checkpointEditor = EditorManager.inst.GetDialog("Checkpoint Editor").Dialog;
+            var checkpointEditor = CheckpointEditorDialog.GameObject.transform;
             if (CheckpointEditor.inst.right == null)
                 CheckpointEditor.inst.right = checkpointEditor.Find("data/right");
 
@@ -4048,7 +4033,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Setting Object Options Popup");
             // Object Options
             {
-                var options = EditorManager.inst.GetDialog("Object Options Popup").Dialog;
+                var options = ObjectOptionsPopup.GameObject.transform;
 
                 EditorThemeManager.AddGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.AddGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
@@ -4072,7 +4057,7 @@ namespace BetterLegacy.Editor.Managers
 
             // BG Options
             {
-                var options = EditorManager.inst.GetDialog("BG Options Popup").Dialog;
+                var options = BGObjectOptionsPopup.GameObject.transform;
 
                 EditorThemeManager.AddGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.AddGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
@@ -4086,25 +4071,23 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
         }
+
         void CreateScreenshotsView()
         {
-            var editorDialogObject = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs);
-            editorDialogObject.name = "ScreenshotDialog";
-            editorDialogObject.transform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogObject.transform.localScale = Vector3.one;
+            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "ScreenshotDialog");
+            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
             editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
 
-            var editorDialogTitle = editorDialogObject.transform.GetChild(0);
-            editorDialogTitle.GetComponent<Image>().color = LSColors.HexToColor("00FF8C");
-            var title = editorDialogTitle.GetChild(0).GetComponent<Text>();
-            title.text = "- Screenshots -";
+            dialogStorage.topPanel.color = LSColors.HexToColor("00FF8C");
+            dialogStorage.title.text = "- Screenshots -";
 
             var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
 
             Destroy(editorDialogObject.transform.GetChild(2).gameObject);
 
-            EditorHelper.AddEditorDialog("Screenshot Dialog", editorDialogObject);
+            EditorHelper.AddEditorDialog(EditorDialog.SCREENSHOTS, editorDialogObject);
 
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"));
             var pageStorage = page.GetComponent<InputFieldStorage>();
@@ -4192,8 +4175,7 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                var folderCreator = EditorManager.inst.GetDialog("Save As Popup").Dialog.gameObject
-                    .Duplicate(EditorManager.inst.GetDialog("Save As Popup").Dialog.GetParent(), "Folder Creator Popup");
+                var folderCreator = SaveAsPopup.GameObject.Duplicate(popups, "Folder Creator Popup");
                 folderCreator.transform.localPosition = Vector3.zero;
 
                 var folderCreatorPopup = folderCreator.transform.GetChild(0);
@@ -4232,9 +4214,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(submitImage, ThemeGroup.Function_1, true);
                 EditorThemeManager.AddGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
 
-                EditorHelper.AddEditorPopup("Folder Creator Popup", folderCreator);
+                EditorHelper.AddEditorPopup(EditorPopup.FOLDER_CREATOR_POPUP, folderCreator);
 
-                NamePopup = new EditorPopup("Folder Creator Popup");
+                NamePopup = new EditorPopup(EditorPopup.FOLDER_CREATOR_POPUP);
                 NamePopup.Assign(NamePopup.GetLegacyDialog().Dialog.gameObject);
                 NamePopup.size = NamePopup.GameObject.transform.AsRT().sizeDelta;
                 editorPopups.Add(NamePopup);
@@ -5547,14 +5529,14 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to get autosaves from.</param>
         public void RefreshAutosaveList(LevelPanel levelPanel)
         {
-            autosaveSearchField.onValueChanged.ClearAll();
-            autosaveSearchField.onValueChanged.AddListener(_val =>
+            AutosavePopup.SearchField.onValueChanged.ClearAll();
+            AutosavePopup.SearchField.onValueChanged.AddListener(_val =>
             {
                 autosaveSearch = _val;
                 RefreshAutosaveList(levelPanel);
             });
 
-            LSHelpers.DeleteChildren(autosaveContent);
+            LSHelpers.DeleteChildren(AutosavePopup.Content);
 
             if (levelPanel.isFolder)
             {
@@ -5569,7 +5551,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var file in files)
             {
                 var path = RTFile.ReplaceSlash(file);
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(autosaveContent, $"Folder [{Path.GetFileName(file)}]");
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(AutosavePopup.Content, $"Folder [{Path.GetFileName(file)}]");
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                 folderButtonStorage.button.onClick.ClearAll();
 

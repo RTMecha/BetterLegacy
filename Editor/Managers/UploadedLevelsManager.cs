@@ -36,23 +36,20 @@ namespace BetterLegacy.Editor.Managers
 
         IEnumerator GenerateUI()
         {
-            var editorDialogObject = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs);
-            editorDialogObject.name = "UploadedDialog";
-            editorDialogObject.transform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogObject.transform.localScale = Vector3.one;
+            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "UploadedDialog");
+            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
             editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
 
-            var editorDialogTitle = editorDialogObject.transform.GetChild(0);
-            editorDialogTitle.GetComponent<Image>().color = LSColors.HexToColor("F05355");
-            var title = editorDialogTitle.GetChild(0).GetComponent<Text>();
-            title.text = "- Levels -";
+            dialogStorage.topPanel.color = LSColors.HexToColor("F05355");
+            dialogStorage.title.text = "- Uploaded Levels -";
 
             var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
 
             Destroy(editorDialogObject.transform.GetChild(2).gameObject);
 
-            EditorHelper.AddEditorDialog("Uploaded Dialog", editorDialogObject);
+            EditorHelper.AddEditorDialog(EditorDialog.UPLOADED_LEVELS, editorDialogObject);
 
             var search = EditorPrefabHolder.Instance.StringInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "search");
             RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(search.transform.AsRT());
@@ -60,7 +57,7 @@ namespace BetterLegacy.Editor.Managers
             searchField.onValueChanged.ClearAll();
             searchField.text = "";
             searchField.GetPlaceholderText().text = "Search levels...";
-            searchField.onValueChanged.AddListener(_val => { this.search = _val; });
+            searchField.onValueChanged.AddListener(_val => this.search = _val);
 
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "page");
             RectValues.Default.AnchoredPosition(-40f, 0f).SizeDelta(0f, 32f).AssignToRectTransform(page.transform.AsRT());
@@ -119,6 +116,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(searchButtonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(searchButtonStorage.text, ThemeGroup.Function_2_Text);
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             content = scrollView.transform.Find("Viewport/Content");
