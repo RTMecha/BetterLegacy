@@ -305,8 +305,8 @@ namespace BetterLegacy.Editor.Data
             }
             else
             {
-                GameObject.transform.AsRT().anchoredPosition = new Vector2(time * zoom - EditorManager.BaseUnit / 2, 0.0f);
-                GameObject.transform.AsRT().pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
+                rectTransform.anchoredPosition = new Vector2(time * zoom - EditorManager.BaseUnit / 2, 0.0f);
+                rectTransform.pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
             }
         }
 
