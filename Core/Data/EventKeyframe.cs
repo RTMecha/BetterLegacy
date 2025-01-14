@@ -33,6 +33,10 @@ namespace BetterLegacy.Core.Data
                 this.curveType = anim;
         }
 
+        public EventKeyframe(float eventTime, float value, string curveType) : this(eventTime, new float[1] { value }, curveType) { }
+        public EventKeyframe(float eventTime, Vector2 value, string curveType) : this(eventTime, new float[2] { value.x, value.y }, curveType) { }
+        public EventKeyframe(float eventTime, Vector3 value, string curveType) : this(eventTime, new float[3] { value.x, value.y, value.z }, curveType) { }
+
         public EventKeyframe(float eventTime, float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventTime, eventValues, eventRandomValues, random)
         {
             id = LSText.randomNumString(8);
