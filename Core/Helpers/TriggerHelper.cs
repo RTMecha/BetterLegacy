@@ -446,6 +446,7 @@ namespace BetterLegacy.Core.Helpers
                 ObjectEditor.inst.RenderKeyframes(beatmapObject);
                 ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                ObjectEditor.inst.RenderMarkers(beatmapObject);
                 ObjEditor.inst.timelineKeyframesDrag = false;
             }
             else

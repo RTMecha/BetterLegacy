@@ -166,10 +166,13 @@ namespace BetterLegacy.Editor.Data
             var markerColor = Color;
 
             GameObject.SetActive(true);
-            RenderPosition(Marker.time, EditorManager.inst.Zoom);
+            RenderPosition();
             RenderTooltip(markerColor);
             RenderName();
+            RenderTextWidth();
             RenderColor(markerColor, EditorConfig.Instance.MarkerLineColor.Value);
+            RenderLine();
+            RenderLineWidth();
         }
 
         /// <summary>
@@ -187,6 +190,7 @@ namespace BetterLegacy.Editor.Data
             RenderTooltip(handleColor);
             RenderName(name);
             RenderColor(handleColor, lineColor);
+            RenderLine();
         }
 
         /// <summary>
@@ -199,14 +203,10 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         /// <param name="time">Time position.</param>
         /// <param name="zoom">Timeline zoom.</param>
-        public void RenderPosition(float time, float zoom)
+        public void RenderPosition(float time, float zoom, float offset = 6f)
         {
             RectTransform.sizeDelta = new Vector2(12f, 12f);
-            RectTransform.anchoredPosition = new Vector2(time * zoom - 6f, -12f);
-
-            Text.transform.AsRT().sizeDelta = new Vector2(EditorConfig.Instance.MarkerTextWidth.Value, 20f);
-
-            Line.rectTransform.sizeDelta = new Vector2(EditorConfig.Instance.MarkerLineWidth.Value, 301f);
+            RectTransform.anchoredPosition = new Vector2(time * zoom - offset, -12f);
         }
 
         /// <summary>
@@ -248,6 +248,17 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
+        /// Renders the timeline markers' names' width.
+        /// </summary>
+        public void RenderTextWidth() => RenderTextWidth(EditorConfig.Instance.MarkerTextWidth.Value);
+
+        /// <summary>
+        /// Renders the timeline markers' names' width.
+        /// </summary>
+        /// <param name="width">Width of the name text UI.</param>
+        public void RenderTextWidth(float width) => Text.transform.AsRT().sizeDelta = new Vector2(width, 20f);
+
+        /// <summary>
         /// Renders the timeline markers' colors.
         /// </summary>
         public void RenderColor() => RenderColor(Color);
@@ -268,6 +279,32 @@ namespace BetterLegacy.Editor.Data
             Handle.color = handleColor;
             Line.color = lineColor;
         }
+
+        /// <summary>
+        /// Renders the timeline markers' line.
+        /// </summary>
+        public void RenderLine() => RenderLine(EditorConfig.Instance.MarkerLineDotted.Value);
+
+        /// <summary>
+        /// Renders the timeline markers' line.
+        /// </summary>
+        /// <param name="line">If the line should be dotted..</param>
+        public void RenderLine(bool line)
+        {
+            Line.sprite = line ? EditorSprites.DottedLineSprite : null;
+            Line.type = line ? Image.Type.Tiled : Image.Type.Simple;
+        }
+
+        /// <summary>
+        /// Renders the timeline markers' lines' width.
+        /// </summary>
+        public void RenderLineWidth() => RenderLineWidth(EditorConfig.Instance.MarkerLineWidth.Value);
+
+        /// <summary>
+        /// Renders the timeline markers' lines' width.
+        /// </summary>
+        /// <param name="width">Width of the line.</param>
+        public void RenderLineWidth(float width) => Line.rectTransform.sizeDelta = new Vector2(width, 301f);
 
         #endregion
     }

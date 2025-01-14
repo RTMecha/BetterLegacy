@@ -1610,6 +1610,7 @@ namespace BetterLegacy.Editor.Managers
                     ResizeKeyframeTimeline(beatmapObject);
 
                     RenderObjectKeyframesDialog(beatmapObject);
+                    RenderMarkers(beatmapObject);
 
                     // Keyframes affect both physical object and timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -1950,6 +1951,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderKeyframes(beatmapObject);
+                RenderMarkerPositions(beatmapObject);
             }
 
             CoreHelper.StartCoroutine(SetTimelinePosition(beatmapObject, position));
@@ -2004,7 +2006,7 @@ namespace BetterLegacy.Editor.Managers
             if (!ObjEditor.inst.changingTime && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
             {
                 // Sets new audio time using the Object Keyframe timeline cursor.
-                ObjEditor.inst.newTime = Mathf.Clamp(EditorManager.inst.CurrentAudioPos,
+                ObjEditor.inst.newTime = Mathf.Clamp(AudioManager.inst.CurrentAudioSource.time,
                     EditorTimeline.inst.CurrentSelection.Time,
                     EditorTimeline.inst.CurrentSelection.Time + EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset));
                 ObjEditor.inst.objTimelineSlider.value = ObjEditor.inst.newTime;
@@ -2115,6 +2117,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RenderStartTime(beatmapObject);
                     ResizeKeyframeTimeline(beatmapObject);
+                    RenderMarkerPositions(beatmapObject);
                 }
             }
 
@@ -2136,6 +2139,7 @@ namespace BetterLegacy.Editor.Managers
             var selected = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
             var startTime = beatmapObject.StartTime;
 
+            bool changed = false;
             foreach (var timelineObject in selected)
             {
                 if (timelineObject.Index == 0 || timelineObject.Locked)
@@ -2154,6 +2158,7 @@ namespace BetterLegacy.Editor.Managers
                 ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(TimeTimelineCalc(st), 0f);
 
                 timelineObject.Render();
+                changed = true;
             }
 
             Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -2161,10 +2166,12 @@ namespace BetterLegacy.Editor.Managers
             RenderObjectKeyframesDialog(beatmapObject);
             ResizeKeyframeTimeline(beatmapObject);
 
+            RenderMarkerPositions(beatmapObject);
+
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
-            if (!selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
+            if (changed && !selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
             {
                 if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive && snap || !RTEditor.DraggingPlaysSoundBPM))
                     SoundManager.inst.PlaySound(DefaultSounds.LeftRight, SettingEditor.inst.SnapActive && snap ? 0.6f : 0.1f, 0.8f);
@@ -2328,9 +2335,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             for (int i = 0; i < beatmapObject.events.Count; i++)
-            {
                 beatmapObject.events[i].RemoveAll(x => strs.Contains(((EventKeyframe)x).id));
-            }
 
             bmTimelineObject.InternalTimelineObjects.Where(x => x.Selected).ToList().ForEach(x => Destroy(x.GameObject));
             bmTimelineObject.InternalTimelineObjects.RemoveAll(x => x.Selected);
@@ -2349,6 +2354,7 @@ namespace BetterLegacy.Editor.Managers
                 SetCurrentKeyframe(beatmapObject, type, 0);
 
             ResizeKeyframeTimeline(beatmapObject);
+            RenderMarkers(beatmapObject);
 
             EditorManager.inst.DisplayNotification("Deleted Object Keyframes [ " + count + " ]", 2f, EditorManager.NotificationType.Success);
 
@@ -2418,6 +2424,7 @@ namespace BetterLegacy.Editor.Managers
             ResizeKeyframeTimeline(beatmapObject);
             UpdateKeyframeOrder(beatmapObject);
             RenderKeyframes(beatmapObject);
+            RenderMarkers(beatmapObject);
 
             if (EditorConfig.Instance.SelectPasted.Value)
             {
@@ -3344,10 +3351,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                if (EditorConfig.Instance.ShowMarkersInObjectEditor.Value)
-                    RenderMarkers(beatmapObject);
-                else
-                    LSHelpers.DeleteChildren(ObjEditor.inst.objTimelineSlider.transform.Find("Markers"));
+                RenderMarkers(beatmapObject);
             }
             catch (Exception ex)
             {
@@ -3606,12 +3610,14 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.StartTime = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                    ResizeKeyframeTimeline(beatmapObject);
 
                     // StartTime affects both physical object and timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "StartTime");
+
+                    ResizeKeyframeTimeline(beatmapObject);
+                    RenderMarkers(beatmapObject);
                 }
             });
 
@@ -3625,14 +3631,13 @@ namespace BetterLegacy.Editor.Managers
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 startTimeField.inputField.text = moveTime.ToString();
 
-                ResizeKeyframeTimeline(beatmapObject);
-
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
+                RenderMarkers(beatmapObject);
             });
 
             startTimeField.leftButton.onClick.ClearAll();
@@ -3643,14 +3648,13 @@ namespace BetterLegacy.Editor.Managers
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 startTimeField.inputField.text = moveTime.ToString();
 
-                ResizeKeyframeTimeline(beatmapObject);
-
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
+                RenderMarkers(beatmapObject);
             });
 
             startTimeField.middleButton.onClick.ClearAll();
@@ -3658,14 +3662,13 @@ namespace BetterLegacy.Editor.Managers
             {
                 startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
 
-                ResizeKeyframeTimeline(beatmapObject);
-
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
+                RenderMarkers(beatmapObject);
             });
 
             startTimeField.rightButton.onClick.ClearAll();
@@ -3675,14 +3678,13 @@ namespace BetterLegacy.Editor.Managers
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 startTimeField.inputField.text = moveTime.ToString();
 
-                ResizeKeyframeTimeline(beatmapObject);
-
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
+                RenderMarkers(beatmapObject);
             });
 
             startTimeField.rightGreaterButton.onClick.ClearAll();
@@ -3692,14 +3694,13 @@ namespace BetterLegacy.Editor.Managers
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 startTimeField.inputField.text = moveTime.ToString();
 
-                ResizeKeyframeTimeline(beatmapObject);
-
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
+                RenderMarkers(beatmapObject);
             });
         }
 
@@ -3720,6 +3721,7 @@ namespace BetterLegacy.Editor.Managers
                     Updater.UpdateObject(beatmapObject, "Autokill");
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderAutokill(beatmapObject);
+                RenderMarkers(beatmapObject);
             });
 
             if (beatmapObject.autoKillType == AutoKillType.FixedTime ||
@@ -3750,7 +3752,9 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                         if (UpdateObjects)
                             Updater.UpdateObject(beatmapObject, "Autokill");
+
                         ResizeKeyframeTimeline(beatmapObject);
+                        RenderMarkers(beatmapObject);
                     }
                 });
 
@@ -4803,6 +4807,9 @@ namespace BetterLegacy.Editor.Managers
                 ifh.Init(inputFieldStorage.inputField, InputFieldSwapper.Type.Num);
             }
 
+            if (!inputFieldStorage.eventTrigger)
+                inputFieldStorage.eventTrigger = inputFieldStorage.gameObject.AddComponent<EventTrigger>();
+
             inputFieldStorage.eventTrigger.triggers.Clear();
 
             switch (type)
@@ -5200,7 +5207,6 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var kf in selected.Where(x => x.Index != 0))
                                 kf.Time = num;
 
-                            ResizeKeyframeTimeline(beatmapObject);
 
                             RenderKeyframes(beatmapObject);
 
@@ -5208,6 +5214,9 @@ namespace BetterLegacy.Editor.Managers
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
                                 Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                            ResizeKeyframeTimeline(beatmapObject);
+                            RenderMarkers(beatmapObject);
                         }
                     });
 
@@ -5230,14 +5239,15 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var kf in selected.Where(x => x.Index != 0))
                                 kf.Time = Mathf.Clamp(kf.Time - num, 0f, float.MaxValue);
 
-                            ResizeKeyframeTimeline(beatmapObject);
-
                             RenderKeyframes(beatmapObject);
 
                             // Keyframe Time affects both physical object and timeline object.
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
                                 Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                            ResizeKeyframeTimeline(beatmapObject);
+                            RenderMarkers(beatmapObject);
                         }
                     });
 
@@ -5255,14 +5265,15 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var kf in selected.Where(x => x.Index != 0))
                                 kf.Time = Mathf.Clamp(kf.Time + num, 0f, float.MaxValue);
 
-                            ResizeKeyframeTimeline(beatmapObject);
-
                             RenderKeyframes(beatmapObject);
 
                             // Keyframe Time affects both physical object and timeline object.
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
                                 Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                            ResizeKeyframeTimeline(beatmapObject);
+                            RenderMarkers(beatmapObject);
                         }
                     });
 
@@ -5280,14 +5291,15 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var kf in selected.Where(x => x.Index != 0))
                                 kf.Time = Mathf.Clamp(kf.Time - (num * 10f), 0f, float.MaxValue);
 
-                            ResizeKeyframeTimeline(beatmapObject);
-
                             RenderKeyframes(beatmapObject);
 
                             // Keyframe Time affects both physical object and timeline object.
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
                                 Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                            ResizeKeyframeTimeline(beatmapObject);
+                            RenderMarkers(beatmapObject);
                         }
                     });
 
@@ -5305,14 +5317,15 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var kf in selected.Where(x => x.Index != 0))
                                 kf.Time = Mathf.Clamp(kf.Time + (num * 10f), 0f, float.MaxValue);
 
-                            ResizeKeyframeTimeline(beatmapObject);
-
                             RenderKeyframes(beatmapObject);
 
                             // Keyframe Time affects both physical object and timeline object.
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
                                 Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                            ResizeKeyframeTimeline(beatmapObject);
+                            RenderMarkers(beatmapObject);
                         }
                     });
 
@@ -5463,14 +5476,15 @@ namespace BetterLegacy.Editor.Managers
 
                     firstKF.Time = num;
 
-                    ResizeKeyframeTimeline(beatmapObject);
-
                     RenderKeyframes(beatmapObject);
 
                     // Keyframe Time affects both physical object and timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                    ResizeKeyframeTimeline(beatmapObject);
+                    RenderMarkers(beatmapObject);
                 }
             });
 
@@ -5494,6 +5508,16 @@ namespace BetterLegacy.Editor.Managers
 
                         foreach (var keyframe in selected)
                             keyframe.Time = Mathf.Clamp(keyframe.Time - num, 0.001f, float.PositiveInfinity);
+
+                        RenderKeyframes(beatmapObject);
+
+                        // Keyframe Time affects both physical object and timeline object.
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        if (UpdateObjects)
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                        ResizeKeyframeTimeline(beatmapObject);
+                        RenderMarkers(beatmapObject);
                     }
                 });
 
@@ -5513,6 +5537,16 @@ namespace BetterLegacy.Editor.Managers
 
                         foreach (var keyframe in selected)
                             keyframe.Time = Mathf.Clamp(keyframe.Time + num, 0.001f, float.PositiveInfinity);
+
+                        RenderKeyframes(beatmapObject);
+
+                        // Keyframe Time affects both physical object and timeline object.
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        if (UpdateObjects)
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                        ResizeKeyframeTimeline(beatmapObject);
+                        RenderMarkers(beatmapObject);
                     }
                 });
 
@@ -5532,6 +5566,16 @@ namespace BetterLegacy.Editor.Managers
 
                         foreach (var keyframe in selected)
                             keyframe.Time = Mathf.Clamp(keyframe.Time - num, 0.001f, float.PositiveInfinity);
+
+                        RenderKeyframes(beatmapObject);
+
+                        // Keyframe Time affects both physical object and timeline object.
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        if (UpdateObjects)
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                        ResizeKeyframeTimeline(beatmapObject);
+                        RenderMarkers(beatmapObject);
                     }
                 });
 
@@ -5551,6 +5595,16 @@ namespace BetterLegacy.Editor.Managers
 
                         foreach (var keyframe in selected)
                             keyframe.Time = Mathf.Clamp(keyframe.Time + num, 0.001f, float.PositiveInfinity);
+
+                        RenderKeyframes(beatmapObject);
+
+                        // Keyframe Time affects both physical object and timeline object.
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        if (UpdateObjects)
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
+
+                        ResizeKeyframeTimeline(beatmapObject);
+                        RenderMarkers(beatmapObject);
                     }
                 });
             }
@@ -5930,31 +5984,55 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();
+        bool renderedMarkers;
         public void RenderMarkers(BeatmapObject beatmapObject)
         {
             var parent = ObjEditor.inst.objTimelineSlider.transform.Find("Markers");
 
-            var dottedLine = ObjEditor.inst.KeyframeEndPrefab.GetComponent<Image>().sprite;
-            LSHelpers.DeleteChildren(parent);
+            if (renderedMarkers)
+            {
+                LSHelpers.DeleteChildren(parent);
+                timelineMarkers.Clear();
+                renderedMarkers = false;
+            }
 
+            if (!EditorConfig.Instance.ShowMarkersInObjectEditor.Value)
+                return;
+
+            var length = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
             for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
             {
                 var marker = GameData.Current.beatmapData.markers[i];
-                var length = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
                 if (marker.time < beatmapObject.StartTime || marker.time > beatmapObject.StartTime + length)
                     continue;
+
+                var timelineMarker = new TimelineMarker();
+                timelineMarker.Marker = marker;
                 int index = i;
 
                 var gameObject = MarkerEditor.inst.markerPrefab.Duplicate(parent, $"Marker {index}");
-                var pos = (marker.time - beatmapObject.StartTime) / length;
-                UIManager.SetRectTransform(gameObject.transform.AsRT(), new Vector2(0f, -12f), new Vector2(pos, 1f), new Vector2(pos, 1f), new Vector2(0.5f, 1f), new Vector2(12f, 12f));
 
-                gameObject.GetComponent<Image>().color = MarkerEditor.inst.markerColors[Mathf.Clamp(marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
-                gameObject.GetComponentInChildren<Text>().text = marker.name;
-                var line = gameObject.transform.Find("line").GetComponent<Image>();
-                line.rectTransform.sizeDelta = new Vector2(5f, 301f);
-                line.sprite = dottedLine;
-                line.type = Image.Type.Tiled;
+                timelineMarker.Index = index;
+                timelineMarker.GameObject = gameObject;
+                timelineMarker.RectTransform = gameObject.transform.AsRT();
+                timelineMarker.Handle = gameObject.GetComponent<Image>();
+                timelineMarker.Line = gameObject.transform.Find("line").GetComponent<Image>();
+                timelineMarker.Text = gameObject.GetComponentInChildren<Text>();
+                timelineMarker.HoverTooltip = gameObject.GetComponent<HoverTooltip>();
+
+                var markerColor = timelineMarker.Color;
+
+                timelineMarker.GameObject.SetActive(true);
+                timelineMarker.RenderPosition(marker.time - beatmapObject.StartTime, ObjEditor.inst.Zoom * 14f, 0f);
+                timelineMarker.RenderTooltip(markerColor);
+                timelineMarker.RenderName();
+                timelineMarker.RenderTextWidth(EditorConfig.Instance.ObjectMarkerTextWidth.Value);
+                timelineMarker.RenderColor(markerColor, EditorConfig.Instance.ObjectMarkerLineColor.Value);
+                timelineMarker.RenderLine(EditorConfig.Instance.ObjectMarkerLineDotted.Value);
+                timelineMarker.RenderLineWidth(EditorConfig.Instance.ObjectMarkerLineWidth.Value);
+
+                EditorThemeManager.ApplyLightText(timelineMarker.Text);
 
                 TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
                 {
@@ -5967,7 +6045,6 @@ namespace BetterLegacy.Editor.Managers
                     {
                         case PointerEventData.InputButton.Left:
                             {
-                                //RTMarkerEditor.inst.SetCurrentMarker(marker.timelineMarker);
                                 AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
                                 break;
                             }
@@ -5986,7 +6063,19 @@ namespace BetterLegacy.Editor.Managers
                             }
                     }
                 }));
+
+                timelineMarkers.Add(timelineMarker);
+                renderedMarkers = true;
             }
+        }
+
+        public void RenderMarkerPositions(BeatmapObject beatmapObject)
+        {
+            if (!renderedMarkers)
+                return;
+
+            for (int i = 0; i < timelineMarkers.Count; i++)
+                timelineMarkers[i].RenderPosition(timelineMarkers[i].Marker.time - beatmapObject.StartTime, ObjEditor.inst.Zoom * 14f, 0f);
         }
 
         public void OpenImageSelector(BeatmapObject beatmapObject)

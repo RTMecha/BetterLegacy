@@ -108,13 +108,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> TimelineGridEnabled { get; set; }
         public Setting<Color> TimelineGridColor { get; set; }
         public Setting<float> TimelineGridThickness { get; set; }
-        public Setting<bool> ShowMarkers { get; set; }
-        public Setting<PointerEventData.InputButton> MarkerDragButton { get; set; }
-        public Setting<bool> MarkerShowContextMenu { get; set; }
-        public Setting<Color> MarkerLineColor { get; set; }
-        public Setting<float> MarkerLineWidth { get; set; }
-        public Setting<float> MarkerTextWidth { get; set; }
-        public Setting<int> MarkerDefaultColor { get; set; }
 
         #endregion
 
@@ -178,7 +171,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowDropdownOnHover { get; set; }
         public Setting<bool> HideVisualElementsWhenObjectIsEmpty { get; set; }
         public Setting<Vector2Int> RenderDepthRange { get; set; }
-        public Setting<bool> ShowMarkersInObjectEditor { get; set; }
         public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
 
         public Setting<Vector2> OpenLevelPosition { get; set; }
@@ -254,6 +246,24 @@ namespace BetterLegacy.Configs
         public Setting<HorizontalWrapMode> PrefabExternalTypeHorizontalWrap { get; set; }
         public Setting<VerticalWrapMode> PrefabExternalTypeVerticalWrap { get; set; }
         public Setting<int> PrefabExternalTypeFontSize { get; set; }
+
+        #endregion
+
+        #region Markers
+
+        public Setting<bool> ShowMarkers { get; set; }
+        public Setting<bool> ShowMarkersInObjectEditor { get; set; }
+        public Setting<int> MarkerDefaultColor { get; set; }
+        public Setting<PointerEventData.InputButton> MarkerDragButton { get; set; }
+        public Setting<bool> MarkerShowContextMenu { get; set; }
+        public Setting<Color> MarkerLineColor { get; set; }
+        public Setting<float> MarkerLineWidth { get; set; }
+        public Setting<float> MarkerTextWidth { get; set; }
+        public Setting<bool> MarkerLineDotted { get; set; }
+        public Setting<Color> ObjectMarkerLineColor { get; set; }
+        public Setting<float> ObjectMarkerLineWidth { get; set; }
+        public Setting<float> ObjectMarkerTextWidth { get; set; }
+        public Setting<bool> ObjectMarkerLineDotted { get; set; }
 
         #endregion
 
@@ -1313,13 +1323,6 @@ namespace BetterLegacy.Configs
             TimelineGridEnabled = Bind(this, "Timeline", "Timeline Grid Enabled", true, "If the timeline grid renders.");
             TimelineGridColor = Bind(this, "Timeline", "Timeline Grid Color", new Color(0.2157f, 0.2157f, 0.2196f, 1f), "The color of the timeline grid.");
             TimelineGridThickness = Bind(this, "Timeline", "Timeline Grid Thickness", 2f, "The size of each line of the timeline grid.");
-            ShowMarkers = Bind(this, "Timeline", "Show Markers", true, "If markers should show in the editor timeline.");
-            MarkerDragButton = BindEnum(this, "Timeline", "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
-            MarkerShowContextMenu = Bind(this, "Timeline", "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
-            MarkerLineColor = Bind(this, "Timeline", "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
-            MarkerLineWidth = Bind(this, "Timeline", "Marker Line Width", 2f, "The width of the marker lines.");
-            MarkerTextWidth = Bind(this, "Timeline", "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
-            MarkerDefaultColor = Bind(this, "Timeline", "Marker Default Color", 0, "The default color assigned to a new marker.");
 
             #endregion
 
@@ -1351,7 +1354,7 @@ namespace BetterLegacy.Configs
             FileBrowserAudioPreviewLength = Bind(this, "Data", "File Browser Audio Preview Length", 3f, "How long the file browser audio preview should be.");
             ThemeSavesIndents = Bind(this, "Data", "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
             FileBrowserRemembersLocation = Bind(this, "Data", "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");
-            PasteBackgroundObjectsOverwrites = Bind(this, "Data", "PasteBackgroundObjectsOverwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
+            PasteBackgroundObjectsOverwrites = Bind(this, "Data", "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
 
             #endregion
 
@@ -1383,7 +1386,6 @@ namespace BetterLegacy.Configs
             ShowDropdownOnHover = Bind(this, "Editor GUI", "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
             HideVisualElementsWhenObjectIsEmpty = Bind(this, "Editor GUI", "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
             RenderDepthRange = Bind(this, "Editor GUI", "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
-            ShowMarkersInObjectEditor = Bind(this, "Editor GUI", "Show Markers in Object Editor", false, "If markers should display in the object editor. (Experimental)");
             OpenNewLevelCreatorIfNoLevels = Bind(this, "Editor GUI", "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
 
             OpenLevelPosition = Bind(this, "Editor GUI", "Open Level Position", Vector2.zero, "The position of the Open Level popup.");
@@ -1461,6 +1463,24 @@ namespace BetterLegacy.Configs
 
             #endregion
 
+            #region Markers
+
+            ShowMarkers = Bind(this, "Markers", "Show Markers", true, "If markers should show in the editor timeline.");
+            ShowMarkersInObjectEditor = Bind(this, "Markers", "Show Markers in Object Editor", false, "If markers should display in the object editor.");
+            MarkerDefaultColor = Bind(this, "Markers", "Marker Default Color", 0, "The default color assigned to a new marker.");
+            MarkerDragButton = BindEnum(this, "Markers", "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
+            MarkerShowContextMenu = Bind(this, "Markers", "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
+            MarkerLineColor = Bind(this, "Markers", "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
+            MarkerLineWidth = Bind(this, "Markers", "Marker Line Width", 2f, "The width of the marker lines.");
+            MarkerTextWidth = Bind(this, "Markers", "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
+            MarkerLineDotted = Bind(this, "Markers", "Marker Line Dotted", false, "If the markers' line should be dotted.");
+            ObjectMarkerLineColor = Bind(this, "Markers", "Object Marker Line Color", new Color(1f, 1f, 1f, 0.5f), "The color of the marker lines.");
+            ObjectMarkerLineWidth = Bind(this, "Markers", "Object Marker Line Width", 4f, "The width of the marker lines.");
+            ObjectMarkerTextWidth = Bind(this, "Markers", "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
+            ObjectMarkerLineDotted = Bind(this, "Markers", "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
+
+            #endregion
+
             #region Fields
 
             ScrollwheelLargeAmountKey = BindEnum(this, "Fields", "Scrollwheel Large Amount Key", KeyCode.LeftControl, "If this key is being held while you are scrolling over a number field, the number will change by a large amount. If the key is set to None, you will not need to hold a key.");
@@ -1482,10 +1502,10 @@ namespace BetterLegacy.Configs
             ThemeTemplateGUI = Bind(this, "Fields", "Theme Template GUI", LSColors.white, "GUI Color of the template theme.");
             ThemeTemplateTail = Bind(this, "Fields", "Theme Template Tail", LSColors.white, "Tail Color of the template theme.");
             ThemeTemplateBG = Bind(this, "Fields", "Theme Template BG", LSColors.gray900, "BG Color of the template theme.");
-            ThemeTemplatePlayer1 = Bind(this, "Fields", "Theme Template Player 1", LSColors.HexToColor("E57373"), "Player 1 Color of the template theme.");
-            ThemeTemplatePlayer2 = Bind(this, "Fields", "Theme Template Player 2", LSColors.HexToColor("64B5F6"), "Player 2 Color of the template theme.");
-            ThemeTemplatePlayer3 = Bind(this, "Fields", "Theme Template Player 3", LSColors.HexToColor("81C784"), "Player 3 Color of the template theme.");
-            ThemeTemplatePlayer4 = Bind(this, "Fields", "Theme Template Player 4", LSColors.HexToColor("FFB74D"), "Player 4 Color of the template theme.");
+            ThemeTemplatePlayer1 = Bind(this, "Fields", "Theme Template Player 1", LSColors.HexToColor(BeatmapTheme.PLAYER_1_COLOR), "Player 1 Color of the template theme.");
+            ThemeTemplatePlayer2 = Bind(this, "Fields", "Theme Template Player 2", LSColors.HexToColor(BeatmapTheme.PLAYER_2_COLOR), "Player 2 Color of the template theme.");
+            ThemeTemplatePlayer3 = Bind(this, "Fields", "Theme Template Player 3", LSColors.HexToColor(BeatmapTheme.PLAYER_3_COLOR), "Player 3 Color of the template theme.");
+            ThemeTemplatePlayer4 = Bind(this, "Fields", "Theme Template Player 4", LSColors.HexToColor(BeatmapTheme.PLAYER_4_COLOR), "Player 4 Color of the template theme.");
             ThemeTemplateOBJ1 = Bind(this, "Fields", "Theme Template OBJ 1", LSColors.gray100, "OBJ 1 Color of the template theme.");
             ThemeTemplateOBJ2 = Bind(this, "Fields", "Theme Template OBJ 2", LSColors.gray200, "OBJ 2 Color of the template theme.");
             ThemeTemplateOBJ3 = Bind(this, "Fields", "Theme Template OBJ 3", LSColors.gray300, "OBJ 3 Color of the template theme.");
@@ -2607,6 +2627,17 @@ namespace BetterLegacy.Configs
 
             TimelineCursorColor.SettingChanged += TimelineColorsChanged;
             KeyframeCursorColor.SettingChanged += TimelineColorsChanged;
+
+            MarkerLineDotted.SettingChanged += MarkerLineDottedChanged;
+        }
+
+        void MarkerLineDottedChanged()
+        {
+            if (!CoreHelper.InEditor)
+                return;
+
+            for (int i = 0; i < RTMarkerEditor.inst.timelineMarkers.Count; i++)
+                RTMarkerEditor.inst.timelineMarkers[i].RenderLine();
         }
 
         void NotificationChanged()
