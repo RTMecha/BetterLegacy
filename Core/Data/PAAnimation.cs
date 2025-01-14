@@ -11,6 +11,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Optimization.Objects;
 
 namespace BetterLegacy.Core.Data
 {
@@ -226,6 +227,61 @@ namespace BetterLegacy.Core.Data
                 jn["col"][i] = (colorKeyframes[i] as EventKeyframe).ToJSON();
 
             return jn;
+        }
+
+        public RTAnimation ToRTAnimation(Transform transform) => ToRTAnimation(transform, Vector3.zero, Vector2.one, 0f);
+
+        public RTAnimation ToRTAnimation(Transform transform, Vector3 positionOffset, Vector2 scaleOffset, float rotationOffset)
+        {
+            var runtimeAnim = new RTAnimation("PA Animation");
+
+            if (!transform)
+                return runtimeAnim;
+
+            if (animatePosition)
+                for (int i = 0; i < positionKeyframes.Count; i++)
+                {
+                    var positionKeyframes = ObjectConverter.GetVector3Keyframes(this.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
+
+                    if (transition)
+                        positionKeyframes[0].SetValue(transform.localPosition);
+
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, vector =>
+                    {
+                        if (transform)
+                            transform.localPosition = vector + positionOffset;
+                    }, interpolateOnComplete: true));
+                }
+            if (animateScale)
+                for (int i = 0; i < scaleKeyframes.Count; i++)
+                {
+                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(this.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+
+                    if (transition)
+                        scaleKeyframes[0].SetValue(transform.localScale);
+
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
+                    {
+                        if (transform)
+                            transform.localScale = new Vector3(scaleOffset.x * vector.x, scaleOffset.y * vector.y, 1f);
+                    }, interpolateOnComplete: true));
+                }
+            if (animateRotation)
+                for (int i = 0; i < rotationKeyframes.Count; i++)
+                {
+                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(this.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+
+                    if (transition)
+                        rotationKeyframes[0].SetValue(transform.localEulerAngles.z);
+
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
+                    {
+                        if (transform)
+                            transform.localEulerAngles = (new Vector3(0f, 0f, rotationOffset + x));
+                    }, interpolateOnComplete: true));
+                }
+
+            return runtimeAnim;
         }
 
         #endregion
