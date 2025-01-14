@@ -6,6 +6,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
+using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,27 @@ namespace BetterLegacy.Editor.Data
     {
         public EditorPopup() { }
 
-        public EditorPopup(string name) => Name = name;
+        public EditorPopup(string name)
+        {
+            Name = name;
+            var fileName = RTFile.FormatLegacyFileName(name) + FileFormat.JSON.Dot();
+            if (RTFile.FileExists(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/editor", fileName)))
+            {
+                try
+                {
+                    var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/editor", fileName)));
+                    customEditorAnimation = new CustomEditorAnimation(name);
+                    if (jn["open"] != null)
+                        customEditorAnimation.OpenAnimation = PAAnimation.Parse(jn["open"]);
+                    if (jn["close"] != null)
+                        customEditorAnimation.CloseAnimation = PAAnimation.Parse(jn["close"]);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+        }
 
         #region Properties
 
@@ -89,6 +110,10 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public EditorAnimation editorAnimation;
 
+        public CustomEditorAnimation customEditorAnimation;
+
+        RTAnimation cachedRTAnim;
+
         /// <summary>
         /// Title of the editor popup.
         /// </summary>
@@ -131,7 +156,19 @@ namespace BetterLegacy.Editor.Data
         {
             var play = EditorConfig.Instance.PlayEditorAnimations.Value;
 
-            if (!editorAnimation && RTEditor.inst.editorAnimations.TryFind(x => x.name == Name, out EditorAnimation dialogAnimation))
+            if (play && customEditorAnimation)
+            {
+                if (cachedRTAnim)
+                {
+                    AnimationManager.inst.Remove(cachedRTAnim.id);
+                    cachedRTAnim = null;
+                }
+
+                cachedRTAnim = customEditorAnimation.Play(active, this);
+                return;
+            }
+
+            if (play && !editorAnimation && RTEditor.inst.editorAnimations.TryFind(x => x.name == Name, out EditorAnimation dialogAnimation))
                 editorAnimation = dialogAnimation;
 
             if (play && editorAnimation && IsOpen != active)
@@ -378,7 +415,7 @@ namespace BetterLegacy.Editor.Data
 
     public class InfoPopup : EditorPopup
     {
-        public InfoPopup(string name) => Name = name;
+        public InfoPopup(string name) : base(name) { }
 
         public Text Info { get; set; }
         public Image Doggo { get; set; }
@@ -399,11 +436,10 @@ namespace BetterLegacy.Editor.Data
     
     public class ContentPopup : EditorPopup
     {
-        public ContentPopup(string name) => Name = name;
+        public ContentPopup(string name) : base(name) { }
 
-        public ContentPopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        public ContentPopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...") : base(name)
         {
-            Name = name;
             this.title = title;
             this.defaultPosition = defaultPosition;
             this.size = size;
@@ -566,7 +602,7 @@ namespace BetterLegacy.Editor.Data
 
     public class PrefabPopup : EditorPopup
     {
-        public PrefabPopup(string name) => Name = name;
+        public PrefabPopup(string name) : base(name) { }
 
         public ContentPopup InternalPrefabs { get; set; }
         public ContentPopup ExternalPrefabs { get; set; }

@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using System;
 using System.Collections.Generic;
@@ -92,5 +93,51 @@ namespace BetterLegacy.Editor.Data
         public string RotEndEase => RotCloseEaseConfig.Value.ToString();
 
         #endregion
+    }
+
+    public class CustomEditorAnimation : Exists
+    {
+        public CustomEditorAnimation(string name) => this.name = name;
+
+        public string name;
+
+        public Setting<bool> ActiveConfig { get; set; }
+
+        public bool Active => ActiveConfig.Value;
+
+        public PAAnimation OpenAnimation { get; set; }
+        public PAAnimation CloseAnimation { get; set; }
+
+        public RTAnimation Play(bool active, EditorPopup editorPopup) => active ? PlayOpen(editorPopup) : PlayClose(editorPopup);
+
+        public RTAnimation PlayOpen(EditorPopup editorPopup)
+        {
+            editorPopup.SetActive(true);
+            if (!OpenAnimation)
+                return null;
+
+            var runtimeAnim = OpenAnimation.ToRTAnimation(editorPopup.GameObject.transform);
+            runtimeAnim.onComplete = () => AnimationManager.inst.Remove(runtimeAnim.id);
+            AnimationManager.inst.Play(runtimeAnim);
+            return runtimeAnim;
+        }
+
+        public RTAnimation PlayClose(EditorPopup editorPopup)
+        {
+            if (!CloseAnimation)
+            {
+                editorPopup.SetActive(false);
+                return null;
+            }
+
+            var runtimeAnim = CloseAnimation.ToRTAnimation(editorPopup.GameObject.transform);
+            runtimeAnim.onComplete = () =>
+            {
+                AnimationManager.inst.Remove(runtimeAnim.id);
+                editorPopup.SetActive(false);
+            };
+            AnimationManager.inst.Play(runtimeAnim);
+            return runtimeAnim;
+        }
     }
 }
