@@ -27,5 +27,7 @@ namespace BetterLegacy.Editor
         public static Sprite CheckmarkSprite { get; set; }
 
         public static Sprite PlayerSprite { get; set; }
+
+        public static Sprite DottedLineSprite { get; set; }
     }
 }

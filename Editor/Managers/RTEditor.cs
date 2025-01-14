@@ -127,6 +127,8 @@ namespace BetterLegacy.Editor.Managers
             EditorSprites.ReloadSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_refresh-white{FileFormat.PNG.Dot()}"));
             EditorSprites.CheckmarkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_checkmark{FileFormat.PNG.Dot()}"));
             EditorSprites.PlayerSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_player{FileFormat.PNG.Dot()}"));
+
+            EditorSprites.DottedLineSprite = ObjEditor.inst.KeyframeEndPrefab.GetComponent<Image>().sprite;
         }
 
         // 3 - register existing popups
