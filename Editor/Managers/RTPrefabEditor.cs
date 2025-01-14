@@ -1959,10 +1959,6 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            var config = EditorConfig.Instance;
-
-            var hoverSize = config.PrefabButtonHoverSize.Value;
-
             if (!prefabExternalAddButton)
             {
                 CoreHelper.DeleteChildren(PrefabEditor.inst.externalContent);
@@ -2007,25 +2003,8 @@ namespace BetterLegacy.Editor.Managers
                 var hover = prefabExternalAddButton.GetComponent<HoverUI>();
                 hover.animateSca = true;
                 hover.animatePos = false;
-                hover.size = hoverSize;
+                hover.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
             }
-
-            bool isExternal = true;
-
-            var nameHorizontalOverflow = isExternal ? config.PrefabExternalNameHorizontalWrap.Value : config.PrefabInternalNameHorizontalWrap.Value;
-
-            var nameVerticalOverflow = isExternal ? config.PrefabExternalNameVerticalWrap.Value : config.PrefabInternalNameVerticalWrap.Value;
-
-            var nameFontSize = isExternal ? config.PrefabExternalNameFontSize.Value : config.PrefabInternalNameFontSize.Value;
-
-            var typeHorizontalOverflow = isExternal ? config.PrefabExternalTypeHorizontalWrap.Value : config.PrefabInternalTypeHorizontalWrap.Value;
-
-            var typeVerticalOverflow = isExternal ? config.PrefabExternalTypeVerticalWrap.Value : config.PrefabInternalTypeVerticalWrap.Value;
-
-            var typeFontSize = isExternal ? config.PrefabExternalTypeFontSize.Value : config.PrefabInternalTypeFontSize.Value;
-
-            var deleteAnchoredPosition = isExternal ? config.PrefabExternalDeleteButtonPos.Value : config.PrefabInternalDeleteButtonPos.Value;
-            var deleteSizeDelta = isExternal ? config.PrefabExternalDeleteButtonSca.Value : config.PrefabInternalDeleteButtonSca.Value;
 
             while (loadingPrefabTypes)
                 yield return null;
@@ -2038,7 +2017,7 @@ namespace BetterLegacy.Editor.Managers
                 var folderButtonFunctionFolder = prefabExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
 
                 var hoverUIFolder = prefabExternalUpAFolderButton.AddComponent<HoverUI>();
-                hoverUIFolder.size = hoverSize;
+                hoverUIFolder.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
