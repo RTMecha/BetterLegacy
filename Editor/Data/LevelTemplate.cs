@@ -157,9 +157,11 @@ namespace BetterLegacy.Editor.Data
         /// <param name="preview">Preview to render.</param>
         public void RenderPreview(Sprite preview)
         {
-            PreviewImage.color = new Color(1f, 1f, 1f, preview ? 1f : 0.1f);
-            PreviewImage.sprite = preview;
-            GameObject.transform.Find("No Preview").gameObject.SetActive(!preview);
+            var noPreview = !preview;
+
+            PreviewImage.color = new Color(1f, 1f, 1f, noPreview ? 0.1f : 1f);
+            PreviewImage.sprite = noPreview ? LevelTemplateEditor.inst.newLevelTemplateBaseSprite : preview;
+            GameObject.transform.Find("No Preview").gameObject.SetActive(noPreview);
         }
 
         /// <summary>
