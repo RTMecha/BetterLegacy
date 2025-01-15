@@ -488,7 +488,45 @@ namespace BetterLegacy.Core.Helpers
                         EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction("Paste Data", () => ObjectEditor.inst.PasteKeyframeData(timelineKeyframe.Type, beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected), beatmapObject)),
-                    new ButtonFunction("Delete", RTEditor.inst.Delete)
+                    new ButtonFunction("Delete", RTEditor.inst.Delete),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Set to Camera", () =>
+                    {
+                        switch (timelineKeyframe.Type)
+                        {
+                            case 0:
+                                {
+                                    timelineKeyframe.eventKeyframe.eventValues[0] = EventManager.inst.cam.transform.position.x;
+                                    timelineKeyframe.eventKeyframe.eventValues[1] = EventManager.inst.cam.transform.position.y;
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    timelineKeyframe.eventKeyframe.eventValues[0] = EventManager.inst.cam.orthographicSize / 20f;
+                                    timelineKeyframe.eventKeyframe.eventValues[1] = EventManager.inst.cam.orthographicSize / 20f;
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    timelineKeyframe.eventKeyframe.eventValues[0] = EventManager.inst.cam.transform.eulerAngles.x;
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                                    break;
+                                }
+                            case 3:
+                                {
+                                    EditorManager.inst.DisplayNotification("Cannot apply any camera values to the color keyframe.", 3f, EditorManager.NotificationType.Warning);
+                                    break;
+                                }
+                        }
+                    })
                     );
             }
             else
