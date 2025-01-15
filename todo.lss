@@ -43,6 +43,7 @@
 
 ### Misc
 - Color picker rework. > 1.8.0
+- Font Search via Context Menu.
 - Multi language support.
 - Rework the level combiner into just a selection system.
 - Game Timeline Editor. (skipping regions, custom images, etc)
