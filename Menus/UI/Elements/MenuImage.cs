@@ -132,6 +132,16 @@ namespace BetterLegacy.Menus.UI.Elements
         public Action onWaitEndFunc;
 
         /// <summary>
+        /// Function JSON to parse per tick.
+        /// </summary>
+        public JSONNode tickFuncJSON;
+
+        /// <summary>
+        /// Function to call per tick.
+        /// </summary>
+        public Action tickFunc;
+
+        /// <summary>
         /// Interaction component.
         /// </summary>
         public Clickable clickable;
@@ -358,52 +368,6 @@ namespace BetterLegacy.Menus.UI.Elements
             for (int i = 0; i < animations.Count; i++)
                 AnimationManager.inst.Remove(animations[i].id);
             animations.Clear();
-        }
-
-        public string ParseText(string input)
-        {
-            RTString.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
-            });
-
-            return input
-                .Replace("{{CurrentPlayingChapterNumber}}", RTString.ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex))
-                .Replace("{{CurrentPlayingLevelNumber}}", RTString.ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex))
-                .Replace("{{SaveSlotNumber}}", RTString.ToStoryNumber(StoryManager.inst.SaveSlot))
-                ;
         }
 
         #region Functions

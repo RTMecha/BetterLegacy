@@ -149,6 +149,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
         public bool playSound = true;
 
+        public bool updateTextOnTick;
+
         #endregion
 
         #region Private Fields
@@ -306,7 +308,7 @@ namespace BetterLegacy.Menus.UI.Elements
             }
 
             if (!string.IsNullOrEmpty(jnElement["text"]))
-                text = ParseText(RTString.ReplaceProperties(Lang.Parse(jnElement["text"])));
+                text = InterfaceManager.inst.ParseText(Lang.Parse(jnElement["text"]));
             if (!string.IsNullOrEmpty(jnElement["icon"]))
                 icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
             if (!string.IsNullOrEmpty(jnElement["icon_path"]))
@@ -520,7 +522,10 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public void UpdateText()
         {
-            //time = (Time.time - timeOffset) * length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed;
+            var text = this.text;
+            if (updateTextOnTick)
+                text = InterfaceManager.inst.ParseTickText(text);
+
             if (textInterpolation != null)
                 time = textInterpolation.Time;
             else

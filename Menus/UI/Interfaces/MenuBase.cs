@@ -870,7 +870,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuText.textUI = (TextMeshProUGUI)t["Text"];
             menuText.textUI.gameObject.layer = 5;
-            menuText.text = ParseText(menuText.text);
+            menuText.text = InterfaceManager.inst.ParseSpawnText(menuText.text);
             menuText.textUI.text = menuText.text;
             menuText.textUI.maxVisibleCharacters = 0;
             menuText.textUI.enableWordWrapping = menuText.enableWordWrapping;
@@ -948,7 +948,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuButton.textUI = (TextMeshProUGUI)t["Text"];
             menuButton.textUI.gameObject.layer = 5;
-            menuButton.text = ParseText(menuButton.text);
+            menuButton.text = InterfaceManager.inst.ParseSpawnText(menuButton.text);
             menuButton.textUI.text = menuButton.text;
             menuButton.textUI.maxVisibleCharacters = 0;
             menuButton.textUI.enableWordWrapping = menuButton.enableWordWrapping;
@@ -1045,57 +1045,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuInputField.spawnFunc?.Invoke();
 
             menuInputField.Spawn();
-        }
-
-        public static string ParseText(string input)
-        {
-            RTString.RegexMatches(input, new Regex(@"{{Date=(.*?)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString()));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
-            });
-
-            return input
-                .Replace("{{CurrentPlayingChapterNumber}}", (StoryManager.inst.currentPlayingChapterIndex + 1).ToString("00"))
-                .Replace("{{CurrentPlayingLevelNumber}}", (StoryManager.inst.currentPlayingLevelSequenceIndex + 1).ToString("00"))
-                .Replace("{{SaveSlotNumber}}", (StoryManager.inst.SaveSlot + 1).ToString("00"))
-                ;
         }
 
         #endregion
@@ -1257,6 +1206,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
+
+                element.tickFunc?.Invoke();
+                if (element.tickFuncJSON != null)
+                    InterfaceManager.inst.ParseFunction(element.tickFuncJSON, element);
+
                 if (!element.image)
                     continue;
 

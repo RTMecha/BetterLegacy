@@ -261,7 +261,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (jnChild["file"] != null)
                 {
                     if (jnChild["path"] != null)
-                        InterfaceManager.inst.MainDirectory = MenuBase.ParseText(RTFile.ParsePaths(jnChild["path"]));
+                        InterfaceManager.inst.MainDirectory = InterfaceManager.inst.ParseText(jnChild["path"]);
 
                     if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                         InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);

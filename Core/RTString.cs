@@ -683,20 +683,6 @@ namespace BetterLegacy.Core
             return str;
         }
 
-        public static string ReplaceProperties(string str)
-        {
-            if (string.IsNullOrEmpty(str))
-                return str;
-
-            str = RTFile.ParsePaths(str);
-
-            return str
-                .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
-                .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
-                .Replace("{{DisplayName}}", CoreConfig.Instance.DisplayName.Value)
-                .Replace("{{SplashText}}", LegacyPlugin.SplashText);
-        }
-
         public static string ToStoryNumber(int num) => (num + 1).ToString("00");
 
         public static string PreciseToMilliSeconds(float seconds, string format = "{0:000}") => string.Format(format, TimeSpan.FromSeconds(seconds).Milliseconds);
