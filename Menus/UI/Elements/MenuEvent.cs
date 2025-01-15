@@ -12,7 +12,7 @@
         {
             func?.Invoke();
             if (funcJSON != null)
-                ParseFunction(funcJSON);
+                InterfaceManager.inst.ParseFunction(funcJSON, this);
             Spawn();
         }
 

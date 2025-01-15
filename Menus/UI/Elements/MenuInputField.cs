@@ -146,7 +146,7 @@ namespace BetterLegacy.Menus.UI.Elements
             if (valueChangedFuncJSON == null)
                 return;
             valueChangedFuncJSON["text"] = text;
-            ParseFunction(valueChangedFuncJSON);
+            InterfaceManager.inst.ParseFunction(valueChangedFuncJSON, this);
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 return;
 
             endEditFuncJSON["text"] = text;
-            ParseFunction(endEditFuncJSON);
+            InterfaceManager.inst.ParseFunction(endEditFuncJSON, this);
         }
 
         #endregion

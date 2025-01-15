@@ -475,7 +475,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuEvent.onWaitEndFuncJSON != null)
-                        menuEvent.ParseFunction(menuEvent.onWaitEndFuncJSON);
+                        InterfaceManager.inst.ParseFunction(menuEvent.onWaitEndFuncJSON, menuEvent);
                     menuEvent.onWaitEndFunc?.Invoke();
 
                     continue;
@@ -507,7 +507,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuButton.onWaitEndFuncJSON != null)
-                        menuButton.ParseFunction(menuButton.onWaitEndFuncJSON);
+                        InterfaceManager.inst.ParseFunction(menuButton.onWaitEndFuncJSON, menuButton);
                     menuButton.onWaitEndFunc?.Invoke();
 
                     if (menuButton.clickable)
@@ -517,7 +517,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
 
                             if (menuButton.funcJSON != null)
-                                menuButton.ParseFunction(menuButton.funcJSON);
+                                InterfaceManager.inst.ParseFunction(menuButton.funcJSON, menuButton);
                             menuButton.func?.Invoke();
                         };
 
@@ -530,13 +530,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             if (pointerData.scrollDelta.y > 0f)
                             {
                                 if (menuButton.onScrollUpFuncJSON != null)
-                                    menuButton.ParseFunction(menuButton.onScrollUpFuncJSON);
+                                    InterfaceManager.inst.ParseFunction(menuButton.onScrollUpFuncJSON, menuButton);
                                 menuButton.onScrollUpFunc?.Invoke();
                             }
                             if (pointerData.scrollDelta.y < 0f)
                             {
                                 if (menuButton.onScrollDownFuncJSON != null)
-                                    menuButton.ParseFunction(menuButton.onScrollDownFuncJSON);
+                                    InterfaceManager.inst.ParseFunction(menuButton.onScrollDownFuncJSON, menuButton);
                                 menuButton.onScrollDownFunc?.Invoke();
                             }
                         }));
@@ -556,7 +556,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuInputField.onWaitEndFuncJSON != null)
-                        menuInputField.ParseFunction(menuInputField.onWaitEndFuncJSON);
+                        InterfaceManager.inst.ParseFunction(menuInputField.onWaitEndFuncJSON, menuInputField);
                     menuInputField.onWaitEndFunc?.Invoke();
 
                     continue;
@@ -572,7 +572,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuText.onWaitEndFuncJSON != null)
-                        menuText.ParseFunction(menuText.onWaitEndFuncJSON);
+                        InterfaceManager.inst.ParseFunction(menuText.onWaitEndFuncJSON, menuText);
                     menuText.onWaitEndFunc?.Invoke();
                 }
                 else
@@ -585,7 +585,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (element.onWaitEndFuncJSON != null)
-                        element.ParseFunction(element.onWaitEndFuncJSON);
+                        InterfaceManager.inst.ParseFunction(element.onWaitEndFuncJSON, element);
                     element.onWaitEndFunc?.Invoke();
                 }
 
@@ -595,7 +595,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         if (element.playBlipSound)
                             SoundManager.inst.PlaySound(DefaultSounds.blip);
                         if (element.funcJSON != null)
-                            element.ParseFunction(element.funcJSON);
+                            InterfaceManager.inst.ParseFunction(element.funcJSON, element);
                         element.func?.Invoke();
                     };
 
@@ -608,13 +608,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         if (pointerData.scrollDelta.y > 0f)
                         {
                             if (element.onScrollUpFuncJSON != null)
-                                element.ParseFunction(element.onScrollUpFuncJSON);
+                                InterfaceManager.inst.ParseFunction(element.onScrollUpFuncJSON, element);
                             element.onScrollUpFunc?.Invoke();
                         }
                         if (pointerData.scrollDelta.y < 0f)
                         {
                             if (element.onScrollDownFuncJSON != null)
-                                element.ParseFunction(element.onScrollDownFuncJSON);
+                                InterfaceManager.inst.ParseFunction(element.onScrollDownFuncJSON, element);
                             element.onScrollDownFunc?.Invoke();
                         }
                     }));
@@ -786,13 +786,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (pointerData.scrollDelta.y > 0f)
                     {
                         if (layout.onScrollUpFuncJSON != null)
-                            new MenuImage().ParseFunction(layout.onScrollUpFuncJSON);
+                            InterfaceManager.inst.ParseFunction(layout.onScrollUpFuncJSON);
                         layout.onScrollUpFunc?.Invoke();
                     }
                     if (pointerData.scrollDelta.y < 0f)
                     {
                         if (layout.onScrollDownFuncJSON != null)
-                            new MenuImage().ParseFunction(layout.onScrollDownFuncJSON);
+                            InterfaceManager.inst.ParseFunction(layout.onScrollDownFuncJSON);
                         layout.onScrollDownFunc?.Invoke();
                     }
                 }));
@@ -836,7 +836,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuImage.gameObject.AddComponent<Mask>();
 
             if (menuImage.spawnFuncJSON != null)
-                menuImage.ParseFunction(menuImage.spawnFuncJSON);
+                InterfaceManager.inst.ParseFunction(menuImage.spawnFuncJSON, menuImage);
             menuImage.spawnFunc?.Invoke();
 
             menuImage.Spawn();
@@ -907,7 +907,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuText.gameObject.AddComponent<Mask>();
 
             if (menuText.spawnFuncJSON != null)
-                menuText.ParseFunction(menuText.spawnFuncJSON);
+                InterfaceManager.inst.ParseFunction(menuText.spawnFuncJSON, menuText);
             menuText.spawnFunc?.Invoke();
 
             menuText.Spawn();
@@ -985,7 +985,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuButton.gameObject.AddComponent<Mask>();
 
             if (menuButton.spawnFuncJSON != null)
-                menuButton.ParseFunction(menuButton.spawnFuncJSON);
+                InterfaceManager.inst.ParseFunction(menuButton.spawnFuncJSON, menuButton);
             menuButton.spawnFunc?.Invoke();
 
             menuButton.Spawn();
@@ -1041,7 +1041,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuInputField.gameObject.AddComponent<Mask>();
 
             if (menuInputField.spawnFuncJSON != null)
-                menuInputField.ParseFunction(menuInputField.spawnFuncJSON);
+                InterfaceManager.inst.ParseFunction(menuInputField.spawnFuncJSON, menuInputField);
             menuInputField.spawnFunc?.Invoke();
 
             menuInputField.Spawn();
@@ -1233,9 +1233,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 exitFunc?.Invoke();
 
                 if (exitFuncJSON != null)
-                {
-                    new MenuEvent().ParseFunction(exitFuncJSON);
-                }
+                    InterfaceManager.inst.ParseFunction(exitFuncJSON);
             }
         }
 

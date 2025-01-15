@@ -216,7 +216,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                         loop = loop,
                                                     };
 
-                                                    if (jnElement["spawn_if_func"] == null || prefabObject.ParseIfFunction(jnElement["spawn_if_func"]))
+                                                    if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], prefabObject))
                                                     {
                                                         foreach (var array in from["array"][k]["elements"])
                                                             prefabObject.elementSettings[array.Key] = array.Value;
@@ -243,7 +243,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     loop = loop,
                                 };
 
-                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
 
                                 //for (int k = 0; k < prefab.elements.Count; k++)
@@ -288,7 +288,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                         if (element.id != toElement.Key)
                                                             continue;
 
-                                                        if (toElement.Value["spawn_if_func"] != null && !element.ParseIfFunction(toElement.Value["spawn_if_func"]))
+                                                        if (toElement.Value["spawn_if_func"] != null && !InterfaceManager.inst.ParseIfFunction(toElement.Value["spawn_if_func"], element))
                                                             continue;
 
                                                         element.Read(toElement.Value, j, loop, spriteAssets);
@@ -313,7 +313,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                         if (element.id != toElement.Key)
                                                             continue;
 
-                                                        if (toElement.Value["spawn_if_func"] != null && !element.ParseIfFunction(toElement.Value["spawn_if_func"]))
+                                                        if (toElement.Value["spawn_if_func"] != null && !InterfaceManager.inst.ParseIfFunction(toElement.Value["spawn_if_func"], element))
                                                             continue;
 
                                                         element.Read(toElement.Value, j, loop, spriteAssets);
@@ -352,7 +352,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     loop = loop,
                                 };
 
-                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
                                 break;
                             }
@@ -360,7 +360,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             {
                                 var element = MenuImage.Parse(jnElement, j, loop, spriteAssets);
 
-                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
 
                                 break;
@@ -368,7 +368,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         case "text":
                             {
                                 var element = MenuText.Parse(jnElement, j, loop, spriteAssets);
-                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
 
                                 break;
@@ -377,7 +377,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             {
                                 var element = MenuButton.Parse(jnElement, j, loop, spriteAssets);
 
-                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
 
                                 break;

@@ -425,7 +425,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             if (enterFuncJSON != null)
             {
-                ParseFunction(enterFuncJSON);
+                InterfaceManager.inst.ParseFunction(enterFuncJSON, this);
                 if (!allowOriginalHoverMethods)
                     return;
             }
@@ -472,7 +472,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             if (exitFuncJSON != null)
             {
-                ParseFunction(exitFuncJSON);
+                InterfaceManager.inst.ParseFunction(exitFuncJSON, this);
                 if (!allowOriginalHoverMethods)
                     return;
             }
