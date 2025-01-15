@@ -2997,61 +2997,61 @@ namespace BetterLegacy.Editor.Managers
         public void RefreshDefaultModifiersList(BeatmapObject beatmapObject, int addIndex = -1)
         {
             this.addIndex = addIndex;
-            defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
+            var defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
 
             LSHelpers.DeleteChildren(DefaultModifiersPopup.Content);
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {
-                if (!RTString.SearchString(searchTerm, defaultModifiers[i].Name))
+                var defaultModifier = defaultModifiers[i];
+                if (!SearchModifier(searchTerm, defaultModifier))
                     continue;
 
-                if (searchTerm.ToLower() == "action" && defaultModifiers[i].type == ModifierBase.Type.Action || searchTerm.ToLower() == "trigger" && defaultModifiers[i].type == ModifierBase.Type.Trigger)
+                var name = $"{defaultModifier.Name} ({defaultModifier.type})";
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
+
+                TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}");
+
+                var modifierName = gameObject.transform.GetChild(0).GetComponent<Text>();
+                modifierName.text = name;
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
                 {
-                    int tmpIndex = i;
-
-                    var name = $"{defaultModifiers[i].Name} ({defaultModifiers[i].type})";
-
-                    var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
-
-                    TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}", 4f);
-
-                    var modifierName = gameObject.transform.GetChild(0).GetComponent<Text>();
-                    modifierName.text = name;
-
-                    var button = gameObject.GetComponent<Button>();
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() =>
+                    var cmd = defaultModifier.Name;
+                    if (cmd.Contains("Text") && !cmd.Contains("Other") && beatmapObject.shape != 4)
                     {
-                        var cmd = defaultModifiers[tmpIndex].Name;
-                        if (cmd.Contains("Text") && !cmd.Contains("Other") && beatmapObject.shape != 4)
-                        {
-                            EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be a Text Object.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
+                        EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be a Text Object.", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                        if (cmd.Contains("Image") && !cmd.Contains("Other") && beatmapObject.shape != 6)
-                        {
-                            EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be an Image Object.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
+                    if (cmd.Contains("Image") && !cmd.Contains("Other") && beatmapObject.shape != 6)
+                    {
+                        EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be an Image Object.", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                        var modifier = Modifier<BeatmapObject>.DeepCopy(defaultModifiers[tmpIndex], beatmapObject);
-                        if (addIndex == -1)
-                            beatmapObject.modifiers.Add(modifier);
-                        else
-                            beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
-                        RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(beatmapObject));
-                        DefaultModifiersPopup.Close();
-                    });
+                    var modifier = Modifier<BeatmapObject>.DeepCopy(defaultModifier, beatmapObject);
+                    if (addIndex == -1)
+                        beatmapObject.modifiers.Add(modifier);
+                    else
+                        beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
+                    RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(beatmapObject));
+                    DefaultModifiersPopup.Close();
+                });
 
-                    EditorThemeManager.ApplyLightText(modifierName);
-                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                }
+                EditorThemeManager.ApplyLightText(modifierName);
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             }
         }
 
-        public List<Modifier<BeatmapObject>> defaultModifiers = new List<Modifier<BeatmapObject>>();
+        public bool SearchModifier(string searchTerm, ModifierBase modifier) =>
+            string.IsNullOrEmpty(searchTerm) ||
+            RTString.SearchString(searchTerm, modifier.Name) ||
+            searchTerm.ToLower() == "action" && modifier.type == ModifierBase.Type.Action ||
+            searchTerm.ToLower() == "trigger" && modifier.type == ModifierBase.Type.Trigger;
 
         #endregion
 

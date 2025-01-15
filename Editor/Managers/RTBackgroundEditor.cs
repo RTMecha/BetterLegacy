@@ -2430,18 +2430,17 @@ namespace BetterLegacy.Editor.Managers
         public void RefreshDefaultModifiersList(BackgroundObject backgroundObject, int addIndex = -1)
         {
             this.addIndex = addIndex;
-            defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
+            var defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
             LSHelpers.DeleteChildren(DefaultModifiersPopup.Content);
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {
-                if (!RTString.SearchString(searchTerm, defaultModifiers[i].Name))
+                var defaultModifier = defaultModifiers[i];
+                if (!ObjectModifiersEditor.inst.SearchModifier(searchTerm, defaultModifier))
                     continue;
 
-                int tmpIndex = i;
-
-                var name = $"{defaultModifiers[i].Name} ({defaultModifiers[i].type})";
+                var name = $"{defaultModifier.Name} ({defaultModifier.type})";
 
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
 
@@ -2452,7 +2451,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifiers[tmpIndex], backgroundObject);
+                    var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifier, backgroundObject);
                     if (addIndex == -1)
                         backgroundObject.modifiers[currentPage].Add(modifier);
                     else
@@ -2465,8 +2464,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             }
         }
-
-        public List<Modifier<BackgroundObject>> defaultModifiers = new List<Modifier<BackgroundObject>>();
 
         #endregion
 
