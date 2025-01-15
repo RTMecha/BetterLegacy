@@ -54,12 +54,7 @@ namespace BetterLegacy.Configs
 
         #endregion
 
-        public static void Init()
-        {
-            var gameObject = new GameObject(nameof(ConfigManager));
-            DontDestroyOnLoad(gameObject);
-            gameObject.AddComponent<ConfigManager>();
-        }
+        public static void Init() => Creator.NewPersistentGameObject(nameof(ConfigManager)).AddComponent<ConfigManager>();
 
         void Awake()
         {
@@ -69,8 +64,7 @@ namespace BetterLegacy.Configs
             canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
             configBase = Creator.NewUIObject("Base", canvas.GameObject.transform);
-            configBase.transform.AsRT().anchoredPosition = Vector2.zero;
-            configBase.transform.AsRT().sizeDelta = new Vector2(1000f, 800f);
+            RectValues.Default.SizeDelta(1000f, 800f).AssignToRectTransform(configBase.transform.AsRT());
             var configBaseImage = configBase.AddComponent<Image>();
 
             EditorThemeManager.ApplyGraphic(configBaseImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
@@ -79,13 +73,13 @@ namespace BetterLegacy.Configs
             selectable.target = configBase.transform;
 
             var panel = Creator.NewUIObject("Panel", configBase.transform);
-            UIManager.SetRectTransform(panel.transform.AsRT(), Vector2.zero, Vector2.one, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 32f));
+            new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 32f)).AssignToRectTransform(panel.transform.AsRT());
 
             var panelImage = panel.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(panelImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var title = Creator.NewUIObject("Title", panel.transform);
-            UIManager.SetRectTransform(title.transform.AsRT(), new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
+            RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f).AssignToRectTransform(title.transform.AsRT());
 
             var titleText = title.AddComponent<Text>();
             titleText.alignment = TextAnchor.MiddleLeft;
@@ -95,7 +89,7 @@ namespace BetterLegacy.Configs
             EditorThemeManager.ApplyLightText(titleText);
 
             var close = Creator.NewUIObject("x", panel.transform);
-            UIManager.SetRectTransform(close.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
+            RectValues.TopRightAnchored.SizeDelta(32f, 32f).AssignToRectTransform(close.transform.AsRT());
 
             var closeImage = close.AddComponent<Image>();
             var closeButton = close.AddComponent<Button>();
@@ -106,7 +100,7 @@ namespace BetterLegacy.Configs
             closeButton.onClick.AddListener(Hide);
 
             var closeX = Creator.NewUIObject("Image", close.transform);
-            UIManager.SetRectTransform(closeX.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+            RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(closeX.transform.AsRT());
 
             var closeXImage = closeX.AddComponent<Image>();
             closeXImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
@@ -114,7 +108,7 @@ namespace BetterLegacy.Configs
             EditorThemeManager.ApplyGraphic(closeXImage, ThemeGroup.Close_X);
 
             var tabs = Creator.NewUIObject("Tabs", configBase.transform);
-            UIManager.SetRectTransform(tabs.transform.AsRT(), Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 42f));
+            new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 42f)).AssignToRectTransform(tabs.transform.AsRT());
 
             var tabsImage = tabs.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(tabsImage, ThemeGroup.Background_3, true);
@@ -152,13 +146,13 @@ namespace BetterLegacy.Configs
                 var tab = Creator.NewUIObject($"Tab {i}", tabs.transform);
 
                 var tabBase = Creator.NewUIObject("Image", tab.transform);
-                UIManager.SetRectTransform(tabBase.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(tabBase.transform.AsRT());
                 var tabBaseImage = tabBase.AddComponent<Image>();
 
                 tabBaseImage.color = tabColors[i];
 
                 var tabTitle = Creator.NewUIObject("Title", tabBase.transform);
-                UIManager.SetRectTransform(tabTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                RectValues.FullAnchored.AssignToRectTransform(tabTitle.transform.AsRT());
                 var tabTitleText = tabTitle.AddComponent<Text>();
                 tabTitleText.alignment = TextAnchor.MiddleCenter;
                 tabTitleText.font = Font.GetDefault();
@@ -188,7 +182,7 @@ namespace BetterLegacy.Configs
             }
 
             var subTabs = Creator.NewUIObject("Tabs", configBase.transform);
-            UIManager.SetRectTransform(subTabs.transform.AsRT(), Vector2.zero, new Vector2(0f, 0.948f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(132f, 0f));
+            new RectValues(Vector2.zero, new Vector2(0f, 0.948f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(132f, 0f)).AssignToRectTransform(subTabs.transform.AsRT());
 
             var subTabsImage = subTabs.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(subTabsImage, ThemeGroup.Background_2, true);
@@ -205,10 +199,10 @@ namespace BetterLegacy.Configs
             contentVerticalLayoutGroup.spacing = 8f;
             contentVerticalLayoutGroup.childControlHeight = false;
             contentVerticalLayoutGroup.childForceExpandHeight = false;
-            UIManager.SetRectTransform(this.content.AsRT(), Vector2.zero, new Vector2(0.995f, 0.88f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero);
+            new RectValues(Vector2.zero, new Vector2(0.995f, 0.88f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(this.content.AsRT());
 
             var pagePanel = Creator.NewUIObject("Page Panel", configBase.transform);
-            UIManager.SetRectTransform(pagePanel.transform.AsRT(), Vector2.zero, new Vector2(1f, 0f), new Vector2(0.132f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 64f));
+            new RectValues(Vector2.zero, new Vector2(1f, 0f), new Vector2(0.132f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 64f)).AssignToRectTransform(pagePanel.transform.AsRT());
 
             var pagePanelImage = pagePanel.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(pagePanelImage, ThemeGroup.Background_3, true);
@@ -216,7 +210,7 @@ namespace BetterLegacy.Configs
             // Prefab
             {
                 var page = Creator.NewUIObject("Page", transform);
-                UIManager.SetRectTransform(page.transform.AsRT(), new Vector2(580f, 32f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                RectValues.BottomLeftAnchored.AnchoredPosition(580f, 32f).Pivot(0.5f, 0.5f).SizeDelta(0f, 32f).AssignToRectTransform(page.transform.AsRT());
 
                 numberFieldStorage = page;
 
@@ -232,7 +226,7 @@ namespace BetterLegacy.Configs
                 var pageInputField = pageInput.AddComponent<InputField>();
                 var pageInputLayoutElement = pageInput.AddComponent<LayoutElement>();
                 pageInputLayoutElement.preferredWidth = 10000f;
-                UIManager.SetRectTransform(pageInput.transform.AsRT(), Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(151f, 32f));
+                RectValues.LeftAnchored.SizeDelta(151f, 32f).AssignToRectTransform(pageInput.transform.AsRT());
 
                 var pageInputPlaceholder = Creator.NewUIObject("Placeholder", pageInput.transform);
                 var pageInputPlaceholderText = pageInputPlaceholder.AddComponent<Text>();
@@ -243,7 +237,8 @@ namespace BetterLegacy.Configs
                 pageInputPlaceholderText.horizontalOverflow = HorizontalWrapMode.Wrap;
                 pageInputPlaceholderText.verticalOverflow = VerticalWrapMode.Overflow;
                 pageInputPlaceholderText.color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
-                UIManager.SetRectTransform(pageInputPlaceholder.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+                pageInputPlaceholderText.text = "Set number...";
+                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(pageInputPlaceholder.transform.AsRT());
 
                 var pageInputText = Creator.NewUIObject("Text", pageInput.transform);
                 var pageInputTextText = pageInputText.AddComponent<Text>();
@@ -254,7 +249,7 @@ namespace BetterLegacy.Configs
                 pageInputTextText.horizontalOverflow = HorizontalWrapMode.Wrap;
                 pageInputTextText.verticalOverflow = VerticalWrapMode.Overflow;
                 pageInputTextText.color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
-                UIManager.SetRectTransform(pageInputText.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(pageInputText.transform.AsRT());
 
                 pageInputField.placeholder = pageInputPlaceholderText;
                 pageInputField.textComponent = pageInputTextText;
@@ -275,7 +270,7 @@ namespace BetterLegacy.Configs
                 var leftGreaterLayoutElement = leftGreater.AddComponent<LayoutElement>();
                 leftGreaterLayoutElement.minWidth = 32f;
                 leftGreaterLayoutElement.preferredWidth = 32f;
-                UIManager.SetRectTransform(leftGreater.transform.AsRT(), new Vector2(175f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                RectValues.LeftAnchored.AnchoredPosition(175f, -16f).Pivot(0.5f, 0.5f).SizeDelta(32f, 32f).AssignToRectTransform(leftGreater.transform.AsRT());
 
                 var left = Creator.NewUIObject("<", page.transform);
                 var leftImage = left.AddComponent<Image>();
@@ -285,7 +280,7 @@ namespace BetterLegacy.Configs
                 var leftLayoutElement = left.AddComponent<LayoutElement>();
                 leftLayoutElement.minWidth = 32f;
                 leftLayoutElement.preferredWidth = 32f;
-                UIManager.SetRectTransform(left.transform.AsRT(), new Vector2(199f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, 32f));
+                RectValues.LeftAnchored.AnchoredPosition(199f, -16f).SizeDelta(16f, 32f).AssignToRectTransform(left.transform.AsRT());
 
                 var right = Creator.NewUIObject(">", page.transform);
                 var rightImage = right.AddComponent<Image>();
@@ -295,7 +290,7 @@ namespace BetterLegacy.Configs
                 var rightLayoutElement = right.AddComponent<LayoutElement>();
                 rightLayoutElement.minWidth = 32f;
                 rightLayoutElement.preferredWidth = 32f;
-                UIManager.SetRectTransform(right.transform.AsRT(), new Vector2(247f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, 32f));
+                RectValues.LeftAnchored.AnchoredPosition(247f, -16f).SizeDelta(16f, 32f).AssignToRectTransform(right.transform.AsRT());
 
                 var rightGreater = Creator.NewUIObject(">>", page.transform);
                 var rightGreaterImage = rightGreater.AddComponent<Image>();
@@ -305,7 +300,7 @@ namespace BetterLegacy.Configs
                 var rightGreaterLayoutElement = rightGreater.AddComponent<LayoutElement>();
                 rightGreaterLayoutElement.minWidth = 32f;
                 rightGreaterLayoutElement.preferredWidth = 32f;
-                UIManager.SetRectTransform(rightGreater.transform.AsRT(), new Vector2(271f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                RectValues.LeftAnchored.AnchoredPosition(271f, -16f).Pivot(0.5f, 0.5f).SizeDelta(32f, 32f).AssignToRectTransform(rightGreater.transform.AsRT());
 
                 var fieldStorage = page.AddComponent<InputFieldStorage>();
                 fieldStorage.inputField = pageInputField;
@@ -316,7 +311,7 @@ namespace BetterLegacy.Configs
             }
 
             var searchField = numberFieldStorage.transform.Find("input").gameObject.Duplicate(configBase.transform);
-            UIManager.SetRectTransform(searchField.transform.AsRT(), new Vector2(134f, -50f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(856f, 32f));
+            RectValues.LeftAnchored.AnchoredPosition(134f, -50f).SizeDelta(856f, 32f).AssignToRectTransform(searchField.transform.AsRT());
             var searchFieldInput = searchField.GetComponent<InputField>();
             searchFieldInput.textComponent.alignment = TextAnchor.MiddleLeft;
             searchFieldInput.onValueChanged.ClearAll();
@@ -346,7 +341,7 @@ namespace BetterLegacy.Configs
             }
 
             var pageObject = numberFieldStorage.Duplicate(pagePanel.transform, "Page");
-            UIManager.SetRectTransform(pageObject.transform.AsRT(), new Vector2(580f, 32f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+            RectValues.BottomLeftAnchored.AnchoredPosition(580f, 32f).Pivot(0.5f, 0.5f).SizeDelta(0f, 32f).AssignToRectTransform(pageObject.transform.AsRT());
 
             pageFieldStorage = pageObject.GetComponent<InputFieldStorage>();
             pageFieldStorage.inputField.GetPlaceholderText().text = "Go to page...";
@@ -357,11 +352,11 @@ namespace BetterLegacy.Configs
             EditorThemeManager.ApplySelectable(pageFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
             var descriptionBase = Creator.NewUIObject("Description Base", configBase.transform);
-            UIManager.SetRectTransform(descriptionBase.transform.AsRT(), new Vector2(500f, -180f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(240f, 350f));
+            RectValues.Default.AnchoredPosition(500f, -180f).Pivot(0f, 0.5f).SizeDelta(240f, 350f).AssignToRectTransform(descriptionBase.transform.AsRT());
             var descriptionBaseImage = descriptionBase.AddComponent<Image>();
 
             var description = Creator.NewUIObject("Description", descriptionBase.transform);
-            UIManager.SetRectTransform(description.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+            RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(description.transform.AsRT());
             descriptionText = description.AddComponent<Text>();
             descriptionText.font = Font.GetDefault();
             descriptionText.fontSize = 18;
@@ -453,11 +448,11 @@ namespace BetterLegacy.Configs
                 tab.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
                 var tabBase = Creator.NewUIObject("Image", tab.transform);
-                UIManager.SetRectTransform(tabBase.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(tabBase.transform.AsRT());
                 var tabBaseImage = tabBase.AddComponent<Image>();
 
                 var tabTitle = Creator.NewUIObject("Title", tabBase.transform);
-                UIManager.SetRectTransform(tabTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                RectValues.FullAnchored.AssignToRectTransform(tabTitle.transform.AsRT());
                 var tabTitleText = tabTitle.AddComponent<Text>();
                 tabTitleText.alignment = TextAnchor.MiddleCenter;
                 tabTitleText.font = Font.GetDefault();
@@ -511,7 +506,7 @@ namespace BetterLegacy.Configs
                     var image = gameObject.AddComponent<Image>();
 
                     var label = Creator.NewUIObject("Label", gameObject.transform);
-                    UIManager.SetRectTransform(label.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, 0f));
+                    RectValues.FullAnchored.SizeDelta(-12f, 0f).AssignToRectTransform(label.transform.AsRT());
 
                     var labelText = label.AddComponent<Text>();
                     labelText.alignment = TextAnchor.MiddleLeft;
@@ -528,11 +523,11 @@ namespace BetterLegacy.Configs
                     {
                         var boolSetting = (Setting<bool>)setting;
                         var boolean = Creator.NewUIObject("Toggle", gameObject.transform);
-                        UIManager.SetRectTransform(boolean.transform.AsRT(), new Vector2(330f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                        RectValues.Default.AnchoredPosition(330f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(boolean.transform.AsRT());
                         var booleanImage = boolean.AddComponent<Image>();
 
                         var checkmark = Creator.NewUIObject("Checkmark", boolean.transform);
-                        UIManager.SetRectTransform(checkmark.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+                        RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(checkmark.transform.AsRT());
                         var checkmarkImage = checkmark.AddComponent<Image>();
                         checkmarkImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_checkmark.png");
 
@@ -541,7 +536,7 @@ namespace BetterLegacy.Configs
                         booleanToggle.graphic = checkmarkImage;
                         booleanToggle.onValueChanged.ClearAll();
                         booleanToggle.isOn = boolSetting.Value;
-                        booleanToggle.onValueChanged.AddListener(_val => { setting.BoxedValue = _val; });
+                        booleanToggle.onValueChanged.AddListener(_val => setting.BoxedValue = _val);
 
                         EditorThemeManager.ApplyToggle(booleanToggle);
                     }
@@ -550,7 +545,7 @@ namespace BetterLegacy.Configs
                     {
                         var intSetting = (Setting<int>)setting;
                         var integer = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                        UIManager.SetRectTransform(integer.transform.AsRT(), new Vector2(480f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                        new RectValues(new Vector2(480f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f)).AssignToRectTransform(integer.transform.AsRT());
 
                         var integerStorage = integer.GetComponent<InputFieldStorage>();
 
@@ -581,7 +576,7 @@ namespace BetterLegacy.Configs
                     {
                         var floatSetting = (Setting<float>)setting;
                         var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                        UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(480f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                        new RectValues(new Vector2(480f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f)).AssignToRectTransform(floatingPoint.transform.AsRT());
 
                         var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
@@ -615,7 +610,7 @@ namespace BetterLegacy.Configs
                         // X
                         {
                             var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(340f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                            new RectValues(new Vector2(340f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f)).AssignToRectTransform(floatingPoint.transform.AsRT());
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
@@ -641,7 +636,7 @@ namespace BetterLegacy.Configs
                         // Y
                         {
                             var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                            new RectValues(new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f)).AssignToRectTransform(floatingPoint.transform.AsRT());
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
@@ -672,7 +667,7 @@ namespace BetterLegacy.Configs
                         // X
                         {
                             var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(340f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                            new RectValues(new Vector2(340f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f)).AssignToRectTransform(floatingPoint.transform.AsRT());
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
@@ -698,7 +693,7 @@ namespace BetterLegacy.Configs
                         // Y
                         {
                             var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                            new RectValues(new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f)).AssignToRectTransform(floatingPoint.transform.AsRT());
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
@@ -771,11 +766,11 @@ namespace BetterLegacy.Configs
                         if (type == typeof(KeyCode))
                         {
                             var watchKeyCodeBase = Creator.NewUIObject("Image", gameObject.transform);
-                            UIManager.SetRectTransform(watchKeyCodeBase.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(136f, 32f));
+                            RectValues.Default.AnchoredPosition(-32f, 0f).SizeDelta(136f, 32f).AssignToRectTransform(watchKeyCodeBase.transform.AsRT());
                             var watchKeyCodeBaseImage = watchKeyCodeBase.AddComponent<Image>();
 
                             var watchKeyCodeTitle = Creator.NewUIObject("Title", watchKeyCodeBase.transform);
-                            UIManager.SetRectTransform(watchKeyCodeTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                            RectValues.FullAnchored.AssignToRectTransform(watchKeyCodeTitle.transform.AsRT());
                             var watchKeyCodeTitleText = watchKeyCodeTitle.AddComponent<Text>();
                             watchKeyCodeTitleText.alignment = TextAnchor.MiddleCenter;
                             watchKeyCodeTitleText.font = Font.GetDefault();
@@ -807,7 +802,7 @@ namespace BetterLegacy.Configs
                         var dropdown = (Dropdown)enumObject["Dropdown"];
                         var hide = ((GameObject)enumObject["GameObject"]).AddComponent<HideDropdownOptions>();
 
-                        UIManager.SetRectTransform(dropdown.transform.AsRT(), new Vector2(196f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
+                        RectValues.Default.AnchoredPosition(196f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
 
                         dropdown.onValueChanged.ClearAll();
                         dropdown.options.Clear();
@@ -909,10 +904,7 @@ namespace BetterLegacy.Configs
         }
     }
 
-    public class ConfigManagerUI : MonoBehaviour
-    {
-        void OnEnable() => ConfigManager.inst.SetTab(ConfigManager.inst.currentTab);
-    }
+    public class ConfigManagerUI : MonoBehaviour { void OnEnable() => ConfigManager.inst.SetTab(ConfigManager.inst.currentTab); }
 
     public class HoverConfig : MonoBehaviour, IPointerEnterHandler
     {
