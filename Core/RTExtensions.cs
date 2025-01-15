@@ -586,7 +586,7 @@ namespace BetterLegacy.Core
             var length = array.Length;
             if (length == 0)
                 return;
-            if (length == 1)
+            if (length == 1) // we do this because using a for loop on an array of 1 item seems to be slower than just accessing the index of 0
             {
                 action.Invoke(array[0], 0);
                 return;
@@ -606,7 +606,7 @@ namespace BetterLegacy.Core
             var count = list.Count;
             if (count == 0)
                 return;
-            if (count == 1)
+            if (count == 1) // we do this because using a for loop on a list of 1 item seems to be slower than just accessing the index of 0
             {
                 action.Invoke(list[0], 0);
                 return;
@@ -614,6 +614,46 @@ namespace BetterLegacy.Core
 
             for (int i = 0; i < count; i++)
                 action?.Invoke(list[i], i);
+        }
+
+        /// <summary>
+        /// Performs a for loop to the array. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void ForLoop<T>(this T[] array, Action<T> action)
+        {
+            var length = array.Length;
+            if (length == 0)
+                return;
+            if (length == 1) // we do this because using a for loop on an array of 1 item seems to be slower than just accessing the index of 0
+            {
+                action.Invoke(array[0]);
+                return;
+            }
+
+            for (int i = 0; i < length; i++)
+                action?.Invoke(array[i]);
+        }
+
+        /// <summary>
+        /// Performs a for loop to the list. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void ForLoop<T>(this List<T> list, Action<T> action)
+        {
+            var count = list.Count;
+            if (count == 0)
+                return;
+            if (count == 1) // we do this because using a for loop on a list of 1 item seems to be slower than just accessing the index of 0
+            {
+                action.Invoke(list[0]);
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
+                action?.Invoke(list[i]);
         }
 
         /// <summary>
