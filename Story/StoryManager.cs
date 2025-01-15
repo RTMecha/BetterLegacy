@@ -59,8 +59,6 @@ namespace BetterLegacy.Story
         /// </summary>
         public static StoryMode StoryModeDebugRef => StoryMode.Instance;
 
-        public static bool implementedChapterTransition;
-
         #endregion
 
         #region Save File
