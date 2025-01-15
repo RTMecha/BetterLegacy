@@ -43,7 +43,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (!CoreHelper.Paused)
+            if (!CoreHelper.Paused && !CoreHelper.Parsing && !CoreHelper.Loading)
                 LevelTick?.Invoke();
 
             return false;
