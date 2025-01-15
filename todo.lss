@@ -83,9 +83,6 @@
 - Make Example's animations read from a file.
 - Change how modifiers are saved for better consistency.
 - Clean up UIManager.
-- Clean up PlayerManager.
-- Rework Editor Dialogs to have custom ones under the BetterLegacy.Editor.Dialogs namespace.
-- Move some game related properties and methods from CoreHelper to ArcadeHelper or to GameData.
 - Move interface JSON functions to InterfaceManager and add a way to parse a function to text, color, etc.
 - Summary and note as much as I can (or need to).
 
