@@ -82,6 +82,16 @@ namespace BetterLegacy.Core.Managers
                 quickElements.Add("blink_loop", blinkLoop);
             }
 
+            if (RTFile.FileExists(RTFile.GetAsset($"default_quick_elements{FileFormat.JSON.Dot()}")))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_quick_elements{FileFormat.JSON.Dot()}")));
+                for (int i = 0; i < jn["quick_elements"].Count; i++)
+                {
+                    var quickElement = Parse(jn["quick_elements"][i]);
+                    quickElements[quickElement.name] = quickElement;
+                }
+            }
+
             inst.StartCoroutine(LoadExternalQuickElements());
         }
 
@@ -213,66 +223,72 @@ namespace BetterLegacy.Core.Managers
             {
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
-                var quickElement = ScriptableObject.CreateInstance<QuickElement>();
-
-                quickElement.name = Path.GetFileName(file).Replace(FileFormat.LSQE.Dot(), "");
-                if (!string.IsNullOrEmpty(jn["name"]))
-                    quickElement.name = jn["name"];
-
-                try
-                {
-                    ((ScriptableObject)quickElement).name = quickElement.name;
-                }
-                catch (System.Exception ex)
-                {
-                    Helpers.CoreHelper.LogError($"Error: {ex}");
-                }
-
-                quickElement.keyframes = new List<QuickElement.Keyframe>();
-                quickElement.effects = new List<QuickElement.Effect>();
-
-                if (jn["keys"] != null)
-                {
-                    for (int i = 0; i < jn["keys"].Count; i++)
-                    {
-                        var keyframe = new QuickElement.Keyframe();
-                        keyframe.text = jn["keys"][i]["text"];
-
-                        keyframe.time = 1f;
-                        if (float.TryParse(jn["keys"][i]["time"], out float result))
-                            keyframe.time = result;
-
-                        quickElement.keyframes.Add(keyframe);
-                    }
-                }
-                else
-                {
-                    var keyframe = new QuickElement.Keyframe();
-                    keyframe.text = "null";
-                    keyframe.time = 1f;
-
-                    quickElement.keyframes.Add(keyframe);
-                }
-
-                if (jn["effects"] != null)
-                {
-                    for (int i = 0; i < jn["effects"].Count; i++)
-                    {
-                        var effect = new QuickElement.Effect();
-                        effect.name = jn["effects"][i]["name"];
-                        effect.data = new List<string>();
-                        for (int j = 0; j < jn["effects"][i]["data"].Count; j++)
-                            effect.data.Add(jn["effects"][i]["data"][j]);
-
-                        quickElement.effects.Add(effect);
-                    }
-                }
+                var quickElement = Parse(jn);
 
                 if (!AllQuickElements.ContainsKey(quickElement.name))
                     customQuickElements.Add(quickElement.name, quickElement);
             }
 
             yield break;
+        }
+
+        public static QuickElement Parse(JSONNode jn)
+        {
+            var quickElement = ScriptableObject.CreateInstance<QuickElement>();
+
+            if (!string.IsNullOrEmpty(jn["name"]))
+                quickElement.name = jn["name"];
+
+            try
+            {
+                ((ScriptableObject)quickElement).name = quickElement.name;
+            }
+            catch (System.Exception ex)
+            {
+                Helpers.CoreHelper.LogError($"Error: {ex}");
+            }
+
+            quickElement.keyframes = new List<QuickElement.Keyframe>();
+            quickElement.effects = new List<QuickElement.Effect>();
+
+            if (jn["keys"] != null)
+            {
+                for (int i = 0; i < jn["keys"].Count; i++)
+                {
+                    var keyframe = new QuickElement.Keyframe();
+                    keyframe.text = jn["keys"][i]["text"];
+
+                    keyframe.time = 1f;
+                    if (float.TryParse(jn["keys"][i]["time"], out float result))
+                        keyframe.time = result;
+
+                    quickElement.keyframes.Add(keyframe);
+                }
+            }
+            else
+            {
+                var keyframe = new QuickElement.Keyframe();
+                keyframe.text = "null";
+                keyframe.time = 1f;
+
+                quickElement.keyframes.Add(keyframe);
+            }
+
+            if (jn["effects"] != null)
+            {
+                for (int i = 0; i < jn["effects"].Count; i++)
+                {
+                    var effect = new QuickElement.Effect();
+                    effect.name = jn["effects"][i]["name"];
+                    effect.data = new List<string>();
+                    for (int j = 0; j < jn["effects"][i]["data"].Count; j++)
+                        effect.data.Add(jn["effects"][i]["data"][j]);
+
+                    quickElement.effects.Add(effect);
+                }
+            }
+
+            return quickElement;
         }
 
         public static IEnumerator PlayQuickElement(TextMeshPro tmp, QuickElement quickElement)
