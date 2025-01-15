@@ -48,10 +48,8 @@ namespace BetterLegacy.Core.Helpers
         public static bool CheckTriggers<T>(List<Modifier<T>> triggers)
         {
             bool result = true;
-            for (int i = 0; i < triggers.Count; i++)
+            triggers.ForLoop(trigger =>
             {
-                var trigger = triggers[i];
-
                 var innerResult = !trigger.active && (trigger.not ? !trigger.Trigger(trigger) : trigger.Trigger(trigger));
 
                 if (trigger.elseIf && !result && innerResult)
@@ -61,7 +59,7 @@ namespace BetterLegacy.Core.Helpers
                     result = false;
 
                 trigger.triggered = innerResult;
-            }
+            });
             return result;
         }
 
@@ -110,9 +108,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var actions = new List<Modifier<T>>();
             var triggers = new List<Modifier<T>>();
-            for (int j = 0; j < modifiers.Count; j++)
+            modifiers.ForLoop(modifier =>
             {
-                var modifier = modifiers[j];
                 switch (modifier.type)
                 {
                     case ModifierBase.Type.Action:
@@ -132,7 +129,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                 }
-            }
+            });
 
             if (active)
             {
@@ -141,63 +138,58 @@ namespace BetterLegacy.Core.Helpers
                     // If all triggers are active
                     if (CheckTriggers(triggers))
                     {
-                        foreach (var act in actions)
+                        actions.ForLoop(act =>
                         {
                             if (act.active) // Continue if modifier is not constant and was already activated
-                                continue;
+                                return;
 
                             if (!act.constant)
                                 act.active = true;
 
                             act.running = true;
                             act.Action?.Invoke(act);
-                        }
-
-                        foreach (var trig in triggers)
+                        });
+                        triggers.ForLoop(trig =>
                         {
                             if (!trig.constant)
                                 trig.active = true;
                             trig.running = true;
-                        }
+                        });
+                        return;
                     }
-                    else
-                    {
-                        // Deactivate both action and trigger modifiers
-                        foreach (var modifier in modifiers)
-                        {
-                            if (!modifier.active && (modifier.type == ModifierBase.Type.Trigger || !modifier.running))
-                                continue;
 
-                            modifier.active = false;
-                            modifier.running = false;
-                            modifier.Inactive?.Invoke(modifier);
-                        }
-                    }
+                    // Deactivate both action and trigger modifiers
+                    modifiers.ForLoop(modifier =>
+                    {
+                        if (!modifier.active && (modifier.type == ModifierBase.Type.Trigger || !modifier.running))
+                            return;
+
+                        modifier.active = false;
+                        modifier.running = false;
+                        modifier.Inactive?.Invoke(modifier);
+                    });
+                    return;
                 }
-                else
+
+                actions.ForLoop(act =>
                 {
-                    foreach (var act in actions)
-                    {
-                        if (act.active)
-                            continue;
+                    if (act.active)
+                        return;
 
-                        if (!act.constant)
-                            act.active = true;
+                    if (!act.constant)
+                        act.active = true;
 
-                        act.running = true;
-                        act.Action?.Invoke(act);
-                    }
-                }
+                    act.running = true;
+                    act.Action?.Invoke(act);
+                });
             }
             else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
-            {
-                foreach (var act in findAll)
+                findAll.ForLoop(act =>
                 {
                     act.active = false;
                     act.running = false;
                     act.Inactive?.Invoke(act);
-                }
-            }
+                });
         }
 
         /// <summary>
@@ -212,10 +204,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
                 ModifierBase.Type previousType = ModifierBase.Type.Action;
-                for (int i = 0; i < modifiers.Count; i++)
+                modifiers.ForLoop(modifier =>
                 {
-                    var modifier = modifiers[i];
-
                     var isAction = modifier.type == ModifierBase.Type.Action;
                     var isTrigger = modifier.type == ModifierBase.Type.Trigger;
 
@@ -248,14 +238,14 @@ namespace BetterLegacy.Core.Helpers
                         modifier.Inactive?.Invoke(modifier);
 
                         previousType = modifier.type;
-                        continue;
+                        return;
                     }
 
                     // Continue if modifier was already active with constant on
                     if (modifier.active || !result)
                     {
                         previousType = modifier.type;
-                        continue;
+                        return;
                     }
 
                     // Only occur once
@@ -265,20 +255,18 @@ namespace BetterLegacy.Core.Helpers
                     modifier.running = true;
 
                     if (isAction && result) // Only run modifier if result is true
-                            modifier.Action?.Invoke(modifier);
+                        modifier.Action?.Invoke(modifier);
 
                     previousType = modifier.type;
-                }
+                });
             }
             else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
-            {
-                foreach (var act in findAll)
+                findAll.ForLoop(modifier =>
                 {
-                    act.active = false;
-                    act.running = false;
-                    act.Inactive?.Invoke(act);
-                }
-            }
+                    modifier.active = false;
+                    modifier.running = false;
+                    modifier.Inactive?.Invoke(modifier);
+                });
         }
 
         #endregion
@@ -1587,8 +1575,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "loadLevelPrevious":
-                        {
+                    case "loadLevelPrevious": {
                             if (CoreHelper.InEditor)
                                 return;
 
@@ -1596,8 +1583,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "loadLevelHub":
-                        {
+                    case "loadLevelHub": {
                             if (CoreHelper.InEditor)
                                 return;
 
