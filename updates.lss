@@ -1,3 +1,14 @@
+snapshot-2025.1.6 - (pre-1.7.0) [Jan 16, 2025]
+- Story mode chapter 1 now has a "chapter transition" level, meaning you can technically complete chapter 1 now. However, the story is not finished and needs more work.
+- Updated some story levels.
+- Reworked some editor timeline stuff.
+- You can now click and hold the mouse scrollwheel to drag the editor timeline around.
+- Added a context menu to objects' editor layer field.
+- Reworked Editor Dialog and Editor Popup open / close systems. If you encounter any issues with these changes, please let me know!
+- Fixed Level Template default preview not displaying correctly.
+- Changed the way multiple selected object keyframes of the same type are handled in the editor. You can now properly set, add and subtract a value to multiple keyframes.
+- Moved Marker settings in the config to their own sub-tab.
+- Markers in the object timeline now properly update when the start time / autokill time is changed.
 snapshot-2025.1.5 - (pre-1.7.0) [Jan 9, 2025]
 - Fixed a really old bug with colliders scaled to 0, 0 crashing the game. (Looking at you, pseudo-3D animations)
 snapshot-2025.1.4 - (pre-1.7.0) [Jan 9, 2025]
