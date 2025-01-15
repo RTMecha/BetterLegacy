@@ -3258,6 +3258,7 @@ namespace BetterLegacy.Editor.Managers
             themePage.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
             themePageStorage.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
 
+            themePageStorage.inputField.GetComponent<LayoutElement>().minWidth = 60f;
             themePageStorage.inputField.onValueChanged.ClearAll();
             themePageStorage.inputField.text = "0";
             themePageStorage.inputField.onValueChanged.AddListener(_val =>
