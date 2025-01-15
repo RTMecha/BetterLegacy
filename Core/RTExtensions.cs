@@ -581,9 +581,18 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <typeparam name="T">Type of the array.</typeparam>
         /// <param name="action">Action to perform for each element.</param>
-        public static void For<T>(this T[] array, Action<T, int> action)
+        public static void ForLoop<T>(this T[] array, Action<T, int> action)
         {
-            for (int i = 0; i < array.Length; i++)
+            var length = array.Length;
+            if (length == 0)
+                return;
+            if (length == 1)
+            {
+                action.Invoke(array[0], 0);
+                return;
+            }
+
+            for (int i = 0; i < length; i++)
                 action?.Invoke(array[i], i);
         }
 
@@ -592,9 +601,18 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
         /// <param name="action">Action to perform for each element.</param>
-        public static void For<T>(this List<T> list, Action<T, int> action)
+        public static void ForLoop<T>(this List<T> list, Action<T, int> action)
         {
-            for (int i = 0; i < list.Count; i++)
+            var count = list.Count;
+            if (count == 0)
+                return;
+            if (count == 1)
+            {
+                action.Invoke(list[0], 0);
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
                 action?.Invoke(list[i], i);
         }
 
