@@ -369,7 +369,7 @@ namespace BetterLegacy.Editor.Managers
                     for (int i = 1; i < gradient.transform.childCount; i++)
                         listToDestroy.Add(gradient.transform.GetChild(i).gameObject);
                     for (int i = 0; i < listToDestroy.Count; i++)
-                        Destroy(listToDestroy[i]);
+                        CoreHelper.Delete(listToDestroy[i]);
 
                     Destroy(gradient.GetComponent<ToggleGroup>());
 
@@ -4274,6 +4274,10 @@ namespace BetterLegacy.Editor.Managers
                 );
         }
 
+        /// <summary>
+        /// Renders the Gradient ToggleGroup.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderGradient(BeatmapObject beatmapObject)
         {
             for (int i = 0; i < Dialog.GradientToggles.Count; i++)
@@ -5169,6 +5173,10 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders the keyframe editors.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderObjectKeyframesDialog(BeatmapObject beatmapObject)
         {
             var selected = beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected);
@@ -5186,7 +5194,7 @@ namespace BetterLegacy.Editor.Managers
 
                 try
                 {
-                    var multiDialog = ObjEditor.inst.KeyframeDialogs[4].transform;
+                    var multiDialog = Dialog.keyframeDialogs[4].GameObject.transform;
                     var time = multiDialog.Find("time/time/time").GetComponent<InputField>();
                     time.onValueChanged.ClearAll();
                     if (time.text == "100.000")
@@ -5986,6 +5994,11 @@ namespace BetterLegacy.Editor.Managers
 
         List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();
         bool renderedMarkers;
+
+        /// <summary>
+        /// Renders the Markers in the object timeline.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderMarkers(BeatmapObject beatmapObject)
         {
             var parent = ObjEditor.inst.objTimelineSlider.transform.Find("Markers");
@@ -6069,6 +6082,10 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders the Markers in the object timeline.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderMarkerPositions(BeatmapObject beatmapObject)
         {
             if (!renderedMarkers)

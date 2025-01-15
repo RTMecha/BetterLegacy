@@ -225,6 +225,15 @@ namespace BetterLegacy.Core.Helpers
                 Destroy(objects[i], instant, t);
         }
 
+        public static void Delete(GameObject gameObject)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.transform.SetParent(null);
+            UnityEngine.Object.Destroy(gameObject);
+        }
+
         /// <summary>
         /// Deletes all children from a transform.
         /// </summary>
