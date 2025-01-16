@@ -22,7 +22,10 @@ namespace BetterLegacy.Patchers
             ArcadeHelper.fromLevel = false;
 
             if (MenuConfig.Instance.PlayInputSelectMusic.Value)
+            {
                 SoundManager.inst.PlayMusic(DefaultMusic.loading);
+                CoreHelper.Notify($"Now playing: Creo - Staring Down the Barrels", Menus.InterfaceManager.inst.CurrentTheme.guiColor);
+            }
         }
 
         [HarmonyPatch(nameof(InputSelectManager.Update))]

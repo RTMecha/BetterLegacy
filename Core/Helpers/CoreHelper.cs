@@ -799,6 +799,77 @@ namespace BetterLegacy.Core.Helpers
                 action?.Invoke(current);
         }
 
+        // CoreHelper.Notify("abcdefghijklmnopqrstuvwxyz", Color.white);
+        static UICanvas currentNotification;
+        static RTAnimation currentNotificationAnim;
+
+        /// <summary>
+        /// Notifies the user of a song or something else.
+        /// </summary>
+        /// <param name="notifText">Text to display.</param>
+        /// <param name="color">Color to set.</param>
+        /// <param name="fontSize">Font size.</param>
+        public static void Notify(string notifText, Color color, int fontSize = 30)
+        {
+            if (currentNotification != null)
+            {
+                if (currentNotification.GameObject)
+                    Destroy(currentNotification.GameObject);
+
+                if (currentNotificationAnim)
+                    AnimationManager.inst.Remove(currentNotificationAnim.id);
+            }
+
+            var uiCanvas = UIManager.GenerateUICanvas("Screenshot Canvas", null, true);
+            currentNotification = uiCanvas;
+
+            var textObj = Creator.NewUIObject("text", uiCanvas.GameObject.transform);
+
+            RectValues.BottomLeftAnchored.SizeDelta(1000f, 100f).AssignToRectTransform(textObj.transform.AsRT());
+
+            var text = textObj.AddComponent<Text>();
+            text.font = FontManager.inst.DefaultFont;
+            text.text = notifText;
+            text.color = color;
+            text.fontSize = fontSize;
+
+            var animation = new RTAnimation("Notification");
+            animation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(1f, 1f, Ease.SineOut),
+                    new FloatKeyframe(2f, 1f, Ease.Linear),
+                    new FloatKeyframe(3.5f, 0f, Ease.SineIn),
+                }, x =>
+                {
+                    if (text)
+                        text.color = LSColors.fadeColor(text.color, x);
+                }),
+                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                {
+                    new Vector2Keyframe(0f, new Vector2(10f, -60f), Ease.Linear),
+                    new Vector2Keyframe(1f, new Vector2(10f, -40f), Ease.BackOut),
+                    new Vector2Keyframe(2f, new Vector2(10f, -40f), Ease.Linear),
+                    new Vector2Keyframe(3.5f, new Vector2(10f, -60f), Ease.BackIn)
+                }, vector => textObj.transform.AsRT().anchoredPosition = vector),
+            };
+
+            animation.onComplete = () =>
+            {
+                if (uiCanvas.GameObject)
+                    Destroy(uiCanvas.GameObject);
+                uiCanvas = null;
+
+                AnimationManager.inst?.Remove(animation.id);
+                currentNotification = null;
+            };
+
+            AnimationManager.inst?.Play(animation);
+            currentNotificationAnim = animation;
+        }
+
         public static void SetConfigPreset(UserPreferenceType preset)
         {
             switch (preset)

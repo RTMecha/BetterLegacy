@@ -109,6 +109,15 @@ namespace BetterLegacy.Menus
 
             if (!CoreHelper.InGame)
             {
+                try
+                {
+                    if (!string.IsNullOrEmpty(music.name) && AudioManager.inst.CurrentAudioSource.clip && !string.IsNullOrEmpty(AudioManager.inst.CurrentAudioSource.clip.name) && music.name != AudioManager.inst.CurrentAudioSource.clip.name)
+                        CoreHelper.Notify($"Now playing: {music.name}", CurrentTheme.guiColor);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Could not notify music name due to the exception: {ex}");
+                }
                 AudioManager.inst.PlayMusic(music.name, music, allowSame, fadeDuration, loop);
                 return;
             }
@@ -124,6 +133,16 @@ namespace BetterLegacy.Menus
             CurrentAudioSource.time = 0f;
             CurrentAudioSource.loop = loop;
             CurrentAudioSource.Play();
+
+            try
+            {
+                if (!string.IsNullOrEmpty(music.name) && !string.IsNullOrEmpty(CurrentAudioSource.clip.name) && music.name != CurrentAudioSource.clip.name)
+                    CoreHelper.Notify($"Now playing: {music.name}", CurrentTheme.guiColor);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not notify music name due to the exception: {ex}");
+            }
         }
 
         /// <summary>
