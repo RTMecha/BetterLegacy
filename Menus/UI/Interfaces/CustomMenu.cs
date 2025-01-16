@@ -342,18 +342,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             }
                         case "event":
                             {
-                                var element = new MenuEvent
-                                {
-                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
-                                    name = jnElement["name"],
-                                    length = jnElement["anim_length"].AsFloat, // how long the UI pauses for when this element spawns.
-                                    funcJSON = jnElement["func"], // the function to run.
-                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
-                                    loop = loop,
-                                };
+                                var element = MenuEvent.Parse(jnElement, j, loop, spriteAssets);
 
                                 if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
+
                                 break;
                             }
                         case "image":
