@@ -286,7 +286,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 modifier.verified = true;
 
-                if (modifier.commands.Count > 0 && !modifier.commands[0].Contains("DEVONLY"))
+                if (modifier.commands.Count > 0 && !modifier.Name.Contains("DEVONLY"))
                     modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
@@ -1225,7 +1225,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "levelPathExists": {
                         var basePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, modifier.value);
-                        return RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_VGD));
+                        return RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_VGD)) || RTFile.FileExists(basePath + FileFormat.ASSET.Dot());
                     }
 
                 #endregion
@@ -1324,7 +1324,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 modifier.verified = true;
 
-                if (modifier.commands.Count > 0 && !modifier.commands[0].Contains("DEVONLY"))
+                if (modifier.commands.Count > 0 && !modifier.Name.Contains("DEVONLY"))
                     modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
@@ -1501,10 +1501,8 @@ namespace BetterLegacy.Core.Helpers
                                 break;
 
                             var levelPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{modifier.value}");
-                            if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_LSB)))
-                                LevelManager.Load(RTFile.CombinePaths(levelPath, Level.LEVEL_LSB));
-                            else if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_VGD)))
-                                LevelManager.Load(RTFile.CombinePaths(levelPath, Level.LEVEL_VGD));
+                            if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_VGD)) || RTFile.FileExists(levelPath + FileFormat.ASSET.Dot()))
+                                LevelManager.Load(levelPath);
                             else
                                 SoundManager.inst.PlaySound(DefaultSounds.Block);
 
@@ -1515,7 +1513,20 @@ namespace BetterLegacy.Core.Helpers
                             if (string.IsNullOrEmpty(id) || id == "0" || id == "-1")
                                 break;
 
-                            if (CoreHelper.IsEditing && RTEditor.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
+                            if (!CoreHelper.InEditor)
+                            {
+                                if (LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
+                                    LevelManager.Play(level);
+                                else
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
+
+                                break;
+                            }
+
+                            if (!CoreHelper.IsEditing)
+                                break;
+
+                            if (RTEditor.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
                             {
                                 if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
                                     break;
@@ -1536,17 +1547,23 @@ namespace BetterLegacy.Core.Helpers
                                     CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(editorWrapper.Level));
                                 }, RTEditor.inst.HideWarningPopup);
                             }
-                            else if (CoreHelper.IsEditing)
-                                SoundManager.inst.PlaySound(DefaultSounds.Block);
-
-                            if (!CoreHelper.InEditor && LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
-                                LevelManager.Play(level);
-                            else if (!CoreHelper.InEditor)
+                            else
                                 SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                             break;
                         }
                     case "loadLevelInternal": {
+                            if (!CoreHelper.InEditor)
+                            {
+                                var filePath = RTFile.CombinePaths(RTFile.BasePath, modifier.value);
+                                if (!CoreHelper.InEditor && (RTFile.FileExists(RTFile.CombinePaths(filePath, Level.LEVEL_LSB)) || RTFile.FileIsFormat(RTFile.CombinePaths(filePath, Level.LEVEL_VGD)) || RTFile.FileExists(filePath + FileFormat.ASSET.Dot())))
+                                    LevelManager.Load(filePath);
+                                else
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
+
+                                break;
+                            }
+
                             if (CoreHelper.IsEditing && RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, EditorManager.inst.currentLoadedLevel, modifier.value, Level.LEVEL_LSB)))
                             {
                                 if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
@@ -1566,12 +1583,6 @@ namespace BetterLegacy.Core.Helpers
                                     CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, modifier.value))));
                                 }, RTEditor.inst.HideWarningPopup);
                             }
-
-                            var filePath = RTFile.CombinePaths(RTFile.BasePath, modifier.value, Level.LEVEL_LSB);
-                            if (!CoreHelper.InEditor && RTFile.FileExists(filePath))
-                                LevelManager.Load(filePath);
-                            else if (!CoreHelper.InEditor)
-                                SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                             break;
                         }

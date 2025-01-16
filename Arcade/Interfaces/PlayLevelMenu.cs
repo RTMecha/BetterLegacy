@@ -376,8 +376,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         LevelManager.CurrentLevel = CurrentLevel;
 
                     InterfaceManager.inst.CloseMenus();
-                    LevelManager.OnLevelEnd = ArcadeHelper.EndOfLevel;
-                    LevelManager.Play(LevelManager.CurrentLevel);
+                    LevelManager.Play(LevelManager.CurrentLevel, ArcadeHelper.EndOfLevel);
                 },
             });
 

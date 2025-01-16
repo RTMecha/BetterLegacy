@@ -2201,8 +2201,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public void StartQueue()
         {
             InterfaceManager.inst.CloseMenus();
-            LevelManager.OnLevelEnd = ArcadeHelper.EndOfLevel;
-            LevelManager.Play(LevelManager.ArcadeQueue[0]);
+            LevelManager.Play(LevelManager.ArcadeQueue[0], ArcadeHelper.EndOfLevel);
         }
 
         public void ShuffleQueue(bool play)

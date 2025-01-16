@@ -205,6 +205,20 @@ namespace BetterLegacy.Core.Managers
         /// Loads the game scene and plays a level.
         /// </summary>
         /// <param name="level">The level to play.</param>
+        /// <param name="onLevelEnd">Function to run when the level ends.</param>
+        public static void Play(Level level, Action onLevelEnd)
+        {
+            if (level)
+            {
+                OnLevelEnd = onLevelEnd;
+                CoreHelper.StartCoroutine(IPlay(level));
+            }
+        }
+
+        /// <summary>
+        /// Loads the game scene and plays a level.
+        /// </summary>
+        /// <param name="level">The level to play.</param>
         public static IEnumerator IPlay(Level level)
         {
             Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level.isStory}");
@@ -425,7 +439,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            Play(new Level(path.Replace(Level.LEVEL_LSB, "").Replace(Level.LEVEL_VGD, "")));
+            Play(new Level(path.Remove(Level.LEVEL_LSB).Remove(Level.LEVEL_VGD)));
         }
 
         /// <summary>
@@ -433,7 +447,6 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void ResetTransition()
         {
-            //CoreHelper.Log($"Song Fade Transition: {songFadeTransition}\nDo Intro Fade: {GameStorageManager.doIntroFade}");
             songFadeTransition = 0.5f;
             RTGameManager.doIntroFade = true;
         }
@@ -667,6 +680,31 @@ namespace BetterLegacy.Core.Managers
         #region Player Data
 
         /// <summary>
+        /// Arcade saves list.
+        /// </summary>
+        public static List<PlayerData> Saves { get; set; } = new List<PlayerData>();
+
+        /// <summary>
+        /// Level rank dictionary indexer.
+        /// </summary>
+        public static Dictionary<string, int> levelRankIndexes = new Dictionary<string, int>
+        {
+            { "-", 0 },
+            { "SS", 1 },
+            { "S", 2 },
+            { "A", 3 },
+            { "B", 4 },
+            { "C", 5 },
+            { "D", 6 },
+            { "F", 7 },
+        };
+
+        /// <summary>
+        /// Level rank to use in the editor.
+        /// </summary>
+        public static DataManager.LevelRank EditorRank => DataManager.inst.levelRanks[(int)EditorConfig.Instance.EditorRank.Value];
+
+        /// <summary>
         /// Finds and sets the levels' player data.
         /// </summary>
         /// <param name="level">Level to assign to.</param>
@@ -679,6 +717,9 @@ namespace BetterLegacy.Core.Managers
             playerData.LevelName = level.metadata?.beatmap?.name;
         }
 
+        /// <summary>
+        /// Updates the players played level data.
+        /// </summary>
         public static void UpdateCurrentLevelProgress()
         {
             if (!IsArcade || !CurrentLevel && !NextLevelInCollection)
@@ -700,19 +741,23 @@ namespace BetterLegacy.Core.Managers
             if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
             {
                 if (NextLevelInCollection && CurrentLevel.metadata && CurrentLevel.metadata.song.LevelDifficulty == LevelDifficulty.Animation)
-                    SetLevelData(levels, NextLevelInCollection, NextLevelInCollection.playerData == null, false);
+                    SetLevelData(levels, NextLevelInCollection, false);
                 return;
             }
 
             if (NextLevelInCollection)
-                SetLevelData(levels, NextLevelInCollection, NextLevelInCollection.playerData == null, false);
-            SetLevelData(levels, CurrentLevel, CurrentLevel.playerData == null, true);
+                SetLevelData(levels, NextLevelInCollection, false);
+            SetLevelData(levels, CurrentLevel, true);
         }
 
-        public static void SetLevelData(List<Level> levels, Level currentLevel, bool makeNewPlayerData, bool update)
+        static void SetLevelData(List<Level> levels, Level currentLevel, bool update)
         {
-            if (makeNewPlayerData)
+            bool makeNewPlayerData = false;
+            if (!currentLevel.playerData)
+            {
+                makeNewPlayerData = true;
                 currentLevel.playerData = new PlayerData(currentLevel);
+            }
             if (currentLevel && currentLevel.playerData)
                 currentLevel.playerData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
 
@@ -739,7 +784,6 @@ namespace BetterLegacy.Core.Managers
                 level.playerData = currentLevel.playerData;
 
             SaveProgress();
-
         }
 
         /// <summary>
@@ -820,6 +864,28 @@ namespace BetterLegacy.Core.Managers
         public static PlayerData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
 
         /// <summary>
+        /// Maximum amount of data points for the End Level Menu.
+        /// </summary>
+        public const int DATA_POINT_MAX = 24;
+
+        /// <summary>
+        /// Gets the normalized amount of hits.
+        /// </summary>
+        /// <param name="hits">Hits to normalize.</param>
+        /// <returns>Returns an array representing the normalized hits.</returns>
+        public static int[] GetHitsNormalized(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
+        {
+            int[] hitsNormalized = new int[DATA_POINT_MAX + 1];
+            foreach (var playerDataPoint in hits)
+            {
+                int num5 = (int)RTMath.SuperLerp(0f, AudioManager.inst.CurrentAudioSource.clip.length, 0f, (float)DATA_POINT_MAX, playerDataPoint.time);
+                hitsNormalized[num5]++;
+            }
+
+            return hitsNormalized;
+        }
+
+        /// <summary>
         /// The regular level rank calculation method.
         /// </summary>
         /// <param name="hits">Hits player data list.</param>
@@ -832,14 +898,7 @@ namespace BetterLegacy.Core.Managers
             if (!CoreHelper.InStory && (PlayerManager.IsZenMode || PlayerManager.IsPractice))
                 return DataManager.inst.levelRanks[0];
 
-            int dataPointMax = 24;
-            int[] hitsNormalized = new int[dataPointMax + 1];
-            foreach (var playerDataPoint in hits)
-            {
-                int num5 = (int)RTMath.SuperLerp(0f, AudioManager.inst.CurrentAudioSource.clip.length, 0f, (float)dataPointMax, playerDataPoint.time);
-                hitsNormalized[num5]++;
-            }
-
+            var hitsNormalized = GetHitsNormalized(hits);
             return DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
         }
 
@@ -856,38 +915,23 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="level">Level to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
-        public static DataManager.LevelRank GetLevelRank(Level level)
-            => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.TryFind(LevelRankPredicate(level), out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
+        public static DataManager.LevelRank GetLevelRank(Level level) => GetLevelRank(level?.playerData?.Hits ?? -1);
 
         /// <summary>
         /// Gets a levels' rank.
         /// </summary>
         /// <param name="playerData">PlayerData to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
-        public static DataManager.LevelRank GetLevelRank(PlayerData playerData)
-            => CoreHelper.InEditor ? EditorRank : playerData != null && DataManager.inst.levelRanks.TryFind(x => playerData.Hits >= x.minHits && playerData.Hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
+        public static DataManager.LevelRank GetLevelRank(PlayerData playerData) => GetLevelRank(playerData?.Hits ?? -1);
 
-        public static Dictionary<string, int> levelRankIndexes = new Dictionary<string, int>
-        {
-            { "-", 0 },
-            { "SS", 1 },
-            { "S", 2 },
-            { "A", 3 },
-            { "B", 4 },
-            { "C", 5 },
-            { "D", 6 },
-            { "F", 7 },
-        };
-
-        public static DataManager.LevelRank EditorRank => DataManager.inst.levelRanks[(int)EditorConfig.Instance.EditorRank.Value];
-
+        /// <summary>
+        /// Calculates the players' accuracy in a level.
+        /// </summary>
+        /// <param name="hits">Amount of hits.</param>
+        /// <param name="length">Total length of the level contributes to the accuracy.</param>
+        /// <returns>Returns a calculated accuracy.</returns>
         public static float CalculateAccuracy(int hits, float length)
             => 100f / ((hits / (length / PlayerManager.AcurracyDivisionAmount)) + 1f);
-
-        public static Predicate<DataManager.LevelRank> LevelRankPredicate(Level level)
-             => x => level.playerData != null && level.playerData.Hits >= x.minHits && level.playerData.Hits <= x.maxHits;
-
-        public static List<PlayerData> Saves { get; set; } = new List<PlayerData>();
 
         #endregion
     }
