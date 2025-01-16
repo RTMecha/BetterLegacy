@@ -2552,6 +2552,8 @@ namespace BetterLegacy.Core.Components.Player
             Assign(boost, currentModel.boostPart, true);
             Assign(boostTail, currentModel.boostTailPart);
 
+            int initialHealthCount = CustomPlayer ? this.initialHealthCount : currentModel.basePart.health;
+
             while (tailParts.Count > initialHealthCount)
             {
                 Destroy(tailParts[tailParts.Count - 1].gameObject);
