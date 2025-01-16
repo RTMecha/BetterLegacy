@@ -185,6 +185,17 @@ namespace BetterLegacy.Story
         }
 
         /// <summary>
+        /// Saves the progress of the story mode.
+        /// </summary>
+        /// <param name="chapter">Chapter to save.</param>
+        /// <param name="level">Level to save.</param>
+        public void SaveProgress(int chapter, int level)
+        {
+            SaveInt("Chapter", chapter);
+            SaveInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", level);
+        }
+
+        /// <summary>
         /// Saves a <see cref="bool"/> value to the current story save slot.
         /// </summary>
         /// <param name="name">Name of the value to save.</param>
@@ -613,12 +624,11 @@ namespace BetterLegacy.Story
             if (!string.IsNullOrEmpty(videoClipPath))
                 storyLevel.videoClip = Resources.Load<UnityEngine.Video.VideoClip>($"beatmaps/{videoClipPath}");
 
-            LevelManager.OnLevelEnd = () =>
+            LevelManager.Play(storyLevel, () =>
             {
                 LevelManager.OnLevelEnd = null;
                 SceneHelper.LoadScene(SceneName.Main_Menu);
-            };
-            LevelManager.Play(storyLevel);
+            });
         }
 
         public static GameData ParseSave(JSONNode jn)
@@ -979,9 +989,7 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Loading story mode level... {path}");
             if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                SetLevelEnd(level, isCutscene, cutsceneIndex);
-
-                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true });
+                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }, () => OnLevelEnd(level, isCutscene, cutsceneIndex));
                 yield break;
             }
 
@@ -998,15 +1006,13 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                SetLevelEnd(level, isCutscene, cutsceneIndex);
-
                 if (!storyLevel.music)
                 {
                     CoreHelper.LogError($"Music is null for some reason wtf");
                     return;
                 }
 
-                LevelManager.Play(storyLevel);
+                LevelManager.Play(storyLevel, () => OnLevelEnd(level, isCutscene, cutsceneIndex));
             }));
 
             yield break;
@@ -1032,9 +1038,7 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Loading story mode level... {path}");
             if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                SetLevelEnd();
-
-                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true });
+                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }, OnLevelEnd);
                 yield break;
             }
 
@@ -1051,172 +1055,124 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                SetLevelEnd();
-
                 if (!storyLevel.music)
                 {
                     CoreHelper.LogError($"Music is null for some reason wtf");
                     return;
                 }
 
-                LevelManager.Play(storyLevel);
+                LevelManager.Play(storyLevel, OnLevelEnd);
             }));
 
             yield break;
         }
 
-        /// <summary>
-        /// Plays a story level directly from a path.
-        /// </summary>
-        /// <param name="path">Path to a story level.</param>
-        public IEnumerator IPlayOnce(string path)
+        void UnlockChapterAchievement(int chapter) => AchievementManager.inst.UnlockAchievement($"story_doc{RTString.ToStoryNumber(chapter)}_complete");
+
+        void OnLevelEnd()
         {
-            if (!RTFile.FileExists(path))
+            LevelManager.Clear();
+            Updater.OnLevelEnd();
+            UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+            if (!ContinueStory)
             {
-                CoreHelper.LogError($"File \'{path}\' does not exist.");
-                SoundManager.inst.PlaySound(DefaultSounds.Block);
-                Loaded = false;
-                CoreHelper.InStory = false;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadScene(SceneName.Main_Menu);
-                yield break;
+                Return();
+                return;
             }
 
-            CoreHelper.Log($"Loading story mode level... {path}");
-            if (RTFile.FileIsFormat(path, FileFormat.LSB))
-            {
-                SetLevelEnd();
+            int chapter = ChapterIndex;
+            int level = LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0);
 
-                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true });
-                yield break;
+            if (chapter >= StoryMode.Instance.chapters.Count)
+            {
+                Return();
+                return;
             }
 
-            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
+            level++;
+            if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
             {
-                Loaded = true;
+                UnlockChapterAchievement(chapter);
+                chapter++;
+                level = 0;
+            }
 
-                CoreHelper.InStory = true;
+            SaveProgress(chapter, level);
 
-                if (storyLevel == null)
-                {
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                    return;
-                }
-
-                SetLevelEnd();
-
-                if (!storyLevel.music)
-                {
-                    CoreHelper.LogError($"Music is null for some reason wtf");
-                    return;
-                }
-
-                LevelManager.Play(storyLevel);
-            }));
-
-            yield break;
+            CoreHelper.InStory = true;
+            LevelManager.OnLevelEnd = null;
+            SceneHelper.LoadInterfaceScene();
         }
 
-        void UnlockChapterAchievement(int chapter) => AchievementManager.inst.UnlockAchievement($"story_doc{(chapter + 1).ToString("00")}_complete");
-
-        void SetLevelEnd()
+        void OnLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
         {
-            LevelManager.OnLevelEnd = () =>
-            {
-                LevelManager.Clear();
-                Updater.OnLevelEnd();
+            LevelManager.Clear();
+            Updater.UpdateObjects(false);
+            if (!isCutscene)
                 UpdateCurrentLevelProgress(); // allow players to get a better rank
 
-                if (!ContinueStory)
-                {
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    ContinueStory = true;
-                    SceneHelper.LoadInterfaceScene();
-                    return;
-                }
+            int chapterIndex = currentPlayingChapterIndex;
+            int levelIndex = currentPlayingLevelSequenceIndex;
 
-                int chapter = ChapterIndex;
-                int level = LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0);
-                level++;
-                if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
-                {
-                    UnlockChapterAchievement(chapter);
-                    chapter++;
-                    level = 0;
-                }
+            if (!isCutscene && !level.isChapterTransition)
+                SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}_{RTString.ToStoryNumber(levelIndex)}Complete", true);
 
-                chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+            if (!ContinueStory)
+            {
+                Return();
+                return;
+            }
 
-                SaveInt("Chapter", chapter);
-                SaveInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", level);
+            cutsceneIndex++;
+            levelIndex++;
 
-                CoreHelper.InStory = true;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadInterfaceScene();
-            };
+            SaveProgress(chapterIndex, levelIndex);
+
+            // chapter completion should only occur after beating the transition level.
+            if (!isCutscene && level.isChapterTransition)
+            {
+                UnlockChapterAchievement(chapterIndex);
+                SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}Complete", true);
+                chapterIndex++;
+                levelIndex = 0;
+
+                SaveProgress(chapterIndex, levelIndex);
+            }
+
+            if (cutsceneIndex < level.Count)
+            {
+                StartCoroutine(IPlay(level, cutsceneIndex));
+                return;
+            }
+
+            if (chapterIndex >= StoryMode.Instance.chapters.Count)
+            {
+                StoryCompletion();
+                return;
+            }
+
+            CoreHelper.InStory = true;
+            LevelManager.OnLevelEnd = null;
+            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.Parse(level.returnInterface);
+            SceneHelper.LoadInterfaceScene();
         }
 
-        void SetLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
+        void Return()
         {
-            LevelManager.OnLevelEnd = () =>
-            {
-                LevelManager.Clear();
-                Updater.UpdateObjects(false);
-                if (!isCutscene)
-                    UpdateCurrentLevelProgress(); // allow players to get a better rank
+            CoreHelper.InStory = true;
+            LevelManager.OnLevelEnd = null;
+            ContinueStory = true;
+            SceneHelper.LoadInterfaceScene();
+        }
 
-                int chapterIndex = currentPlayingChapterIndex;
-                int levelIndex = currentPlayingLevelSequenceIndex;
-
-                if (!isCutscene && !level.isChapterTransition)
-                    SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}_{RTString.ToStoryNumber(levelIndex)}Complete", true);
-
-                if (!ContinueStory)
-                {
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    ContinueStory = true;
-                    SceneHelper.LoadInterfaceScene();
-                    return;
-                }
-
-                cutsceneIndex++;
-                levelIndex++;
-
-                if (cutsceneIndex < level.Count)
-                {
-                    StartCoroutine(IPlay(level, cutsceneIndex));
-                    return;
-                }
-
-                // chapter completion should only occur after beating the transition level.
-                if (!isCutscene && level.isChapterTransition)
-                {
-                    UnlockChapterAchievement(chapterIndex);
-                    SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}Complete", true);
-                    chapterIndex++;
-                    levelIndex = 0;
-                }
-
-                SaveInt("Chapter", chapterIndex);
-                SaveInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", levelIndex);
-
-                if (chapterIndex >= StoryMode.Instance.chapters.Count)
-                {
-                    SoundManager.inst.PlaySound(DefaultSounds.loadsound);
-                    CoreHelper.InStory = false;
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadScene(SceneName.Main_Menu);
-                    return;
-                }
-
-                CoreHelper.InStory = true;
-                LevelManager.OnLevelEnd = null;
-                InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.Parse(level.returnInterface);
-                SceneHelper.LoadInterfaceScene();
-            };
+        // function to run when completing the story mode
+        void StoryCompletion()
+        {
+            SoundManager.inst.PlaySound(DefaultSounds.loadsound);
+            CoreHelper.InStory = false;
+            LevelManager.OnLevelEnd = null;
+            SceneHelper.LoadScene(SceneName.Main_Menu);
         }
 
         #endregion
