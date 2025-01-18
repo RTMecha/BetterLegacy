@@ -2068,9 +2068,9 @@ namespace BetterLegacy.Core.Components.Player
 
                 if (!CustomPlayer || !customObject.gameObject)
                     continue;
+
                 var active = customObject.active && (customObject.reference.visibilitySettings.Count < 1 && customObject.reference.active || customObject.reference.visibilitySettings.Count > 0 &&
-                        (!customObject.reference.requireAll && customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)) ||
-                    customObject.reference.visibilitySettings.All(x => CheckVisibility(x))));
+                        !customObject.reference.requireAll ? customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)) : customObject.reference.visibilitySettings.All(x => CheckVisibility(x)));
 
                 customObject.gameObject.SetActive(active);
 
@@ -2086,35 +2086,31 @@ namespace BetterLegacy.Core.Components.Player
                 if (!customObject.idle)
                     continue;
 
-                for (int i = 0; i < reference.animations.Count; i++)
+                reference.animations.ForLoop(animation =>
                 {
-                    var animation = reference.animations[i];
                     if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != customObject.currentIdleAnimation)
-                        continue;
+                        return;
 
                     var length = animation.GetLength();
-
                     if (animation.animatePosition)
                     {
                         var position = GameData.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
                         var origPos = reference.position;
                         customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position);
                     }
-
                     if (animation.animateScale)
                     {
                         var scale = GameData.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
                         var origSca = reference.scale;
                         customObject.gameObject.transform.localScale = (new Vector3(origSca.x * scale.x, origSca.y * scale.y, 1f));
                     }
-
                     if (animation.animateRotation)
                     {
                         var rotation = GameData.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
                         var origRot = reference.rotation;
                         customObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, origRot + rotation);
                     }
-                }
+                });
             }
         }
 
@@ -2125,10 +2121,10 @@ namespace BetterLegacy.Core.Components.Player
 
             var index = PlayersData.Current.GetMaxIndex(playerIndex);
 
-            foreach (var boost in emitted)
+            emitted.ForLoop(boost =>
             {
-                if (boost == null)
-                    continue;
+                if (!boost)
+                    return;
 
                 int startCol = boost.startColor;
                 int endCol = boost.endColor;
@@ -2144,7 +2140,7 @@ namespace BetterLegacy.Core.Components.Player
 
                 if (boost.renderer)
                     boost.renderer.material.color = Color.Lerp(startColor, endColor, colorTween);
-            }
+            });
         }
 
         #endregion
