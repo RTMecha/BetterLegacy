@@ -3289,11 +3289,13 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (!Dialog.IsCurrent)
+            EditorManager.inst.ClearPopups();
+            RTEditor.inst.editorDialogs.ForLoop(editorDialog =>
             {
-                EditorManager.inst.ClearPopups();
-                Dialog.Open();
-            }
+                if (editorDialog.GameObject && editorDialog.GameObject.activeInHierarchy)
+                    editorDialog.Close();
+            });
+            Dialog.Open();
 
             if (EditorTimeline.inst.CurrentSelection.ID != beatmapObject.id)
                 for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
