@@ -3281,7 +3281,10 @@ namespace BetterLegacy.Editor.Managers
         public void OpenDialog(BeatmapObject beatmapObject)
         {
             if (!EditorManager.inst.hasLoadedLevel || string.IsNullOrEmpty(beatmapObject.id))
+            {
+                EditorManager.inst.DisplayNotification("Open a level first before trying to select an object.", 2f, EditorManager.NotificationType.Error);
                 return;
+            }
 
             if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
             {
