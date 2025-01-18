@@ -2069,8 +2069,11 @@ namespace BetterLegacy.Core.Components.Player
                 if (!CustomPlayer || !customObject.gameObject)
                     continue;
 
-                var active = customObject.active && (customObject.reference.visibilitySettings.Count < 1 && customObject.reference.active || customObject.reference.visibilitySettings.Count > 0 &&
-                        !customObject.reference.requireAll ? customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)) : customObject.reference.visibilitySettings.All(x => CheckVisibility(x)));
+                var active = customObject.active &&
+                    (customObject.reference.visibilitySettings.Count < 1 ? customObject.reference.active :
+                        customObject.reference.requireAll ?
+                            customObject.reference.visibilitySettings.All(x => CheckVisibility(x)) :
+                            customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)));
 
                 customObject.gameObject.SetActive(active);
 
@@ -2659,19 +2662,16 @@ namespace BetterLegacy.Core.Components.Player
                 };
 
                 var shape = reference.shape;
-                var pos = reference.position;
-                var sca = reference.scale;
-                var rot = reference.rotation;
-
-                var depth = reference.depth;
 
                 int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                 int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
                 customObj.parent = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent).transform;
                 customObj.gameObject = customObj.parent.GetChild(0).gameObject;
-                customObj.gameObject.transform.localScale = Vector3.one;
-                customObj.gameObject.transform.localRotation = Quaternion.identity;
+                customObj.parent.transform.localPosition = Vector3.zero;
+                customObj.parent.transform.localScale = Vector3.one;
+                customObj.parent.transform.localRotation = Quaternion.identity;
+                Destroy(customObj.gameObject.GetComponent<SelectObjectInEditor>());
 
                 customObj.delayTracker = customObj.parent.gameObject.AddComponent<PlayerDelayTracker>();
                 customObj.delayTracker.offset = 0;
@@ -2682,9 +2682,9 @@ namespace BetterLegacy.Core.Components.Player
                 customObj.delayTracker.rotationParent = reference.rotationParent;
                 customObj.delayTracker.player = this;
 
-                customObj.gameObject.transform.localPosition = new Vector3(pos.x, pos.y, depth);
-                customObj.gameObject.transform.localScale = new Vector3(sca.x, sca.y, 1f);
-                customObj.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, rot);
+                customObj.gameObject.transform.localPosition = new Vector3(reference.position.x, reference.position.y, reference.depth);
+                customObj.gameObject.transform.localScale = new Vector3(reference.scale.x, reference.scale.y, 1f);
+                customObj.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, reference.rotation);
 
                 customObj.gameObject.tag = "Helper";
                 customObj.gameObject.tag = "Helper";
