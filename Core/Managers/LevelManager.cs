@@ -374,10 +374,8 @@ namespace BetterLegacy.Core.Managers
 
             if (!storyLevel)
                 PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
-            else if (!string.IsNullOrEmpty(storyLevel.jsonPlayers))
-                PlayersData.LoadJSON(JSON.Parse(storyLevel.jsonPlayers));
             else
-                PlayersData.LoadJSON(new JSONNull());
+                PlayersData.LoadJSON(!string.IsNullOrEmpty(storyLevel.jsonPlayers) ? JSON.Parse(storyLevel.jsonPlayers) : new JSONNull());
 
             PlayerManager.ValidatePlayers();
             PlayerManager.AssignPlayerModels();
