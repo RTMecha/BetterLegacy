@@ -3289,7 +3289,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (EditorManager.inst.ActiveDialogs.Count > 2 || !EditorManager.inst.ActiveDialogs.Has(x => x.Name == "Object Editor")) // Only need to clear the dialogs if object editor isn't the only active dialog.
+            if (!Dialog.IsCurrent)
             {
                 EditorManager.inst.ClearPopups();
                 Dialog.Open();
