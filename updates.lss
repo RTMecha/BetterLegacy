@@ -1,3 +1,8 @@
+snapshot-2025.1.7 - (pre-1.7.0) [Jan 18, 2025]
+- Interfaces now notify you of what song is currently playing.
+- Fixed Player Shapes removing their tail.
+- Implemented more story elements.
+- Fixed Object Editor not opening.
 snapshot-2025.1.6 - (pre-1.7.0) [Jan 16, 2025]
 - Story mode chapter 1 now has a "chapter transition" level, meaning you can technically complete chapter 1 now. However, the story is not finished and needs more work.
 - Updated some story levels.
