@@ -2056,18 +2056,18 @@ namespace BetterLegacy.Core.Components.Player
                 return;
 
             var index = PlayersData.Current.GetMaxIndex(playerIndex);
-            foreach (var playerObject in playerObjects)
+            playerObjects.ForLoop(playerObject =>
             {
                 if (!playerObject.isCustom)
                 {
                     playerObject.gameObject.SetActive(playerObject.active);
-                    continue;
+                    return;
                 }
 
                 var customObject = playerObject as CustomObject;
 
                 if (!CustomPlayer || !customObject.gameObject)
-                    continue;
+                    return;
 
                 var active = customObject.active &&
                     (customObject.reference.visibilitySettings.Count < 1 ? customObject.reference.active :
@@ -2078,7 +2078,7 @@ namespace BetterLegacy.Core.Components.Player
                 customObject.gameObject.SetActive(active);
 
                 if (!active)
-                    continue;
+                    return;
 
                 var reference = customObject.reference;
                 if (customObject.text)
@@ -2087,7 +2087,7 @@ namespace BetterLegacy.Core.Components.Player
                     customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
 
                 if (!customObject.idle)
-                    continue;
+                    return;
 
                 reference.animations.ForLoop(animation =>
                 {
@@ -2114,7 +2114,7 @@ namespace BetterLegacy.Core.Components.Player
                         customObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, origRot + rotation);
                     }
                 });
-            }
+            });
         }
 
         void UpdateBoostTheme()
