@@ -3705,14 +3705,13 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (!levelObject.isGradient)
                                 {
-                                    var color = levelObject.visualObject.Renderer.material.color;
-                                    levelObject.visualObject.Renderer.material.color =
-                                        string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), color.a);
+                                    var color = levelObject.visualObject.GetPrimaryColor();
+                                    levelObject.visualObject.SetColor(string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), color.a));
                                 }
                                 else
                                 {
-                                    var startColor = levelObject.visualObject.Renderer.material.GetColor("_Color");
-                                    var endColor = levelObject.visualObject.Renderer.material.GetColor("_ColorSecondary");
+                                    var startColor = levelObject.gradientObject.GetPrimaryColor();
+                                    var endColor = levelObject.gradientObject.GetSecondaryColor();
                                     levelObject.gradientObject.SetColor(
                                         string.IsNullOrEmpty(modifier.value) ? startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), startColor.a),
                                         string.IsNullOrEmpty(modifier.commands[1]) ? endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.commands[1]), endColor.a));
@@ -3732,14 +3731,13 @@ namespace BetterLegacy.Core.Helpers
 
                                     if (!levelObject.isGradient)
                                     {
-                                        var color = levelObject.visualObject.Renderer.material.color;
-                                        levelObject.visualObject.Renderer.material.color =
-                                            string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), color.a);
+                                        var color = levelObject.visualObject.GetPrimaryColor();
+                                        levelObject.visualObject.SetColor(string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), color.a));
                                     }
                                     else
                                     {
-                                        var startColor = levelObject.visualObject.Renderer.material.GetColor("_Color");
-                                        var endColor = levelObject.visualObject.Renderer.material.GetColor("_ColorSecondary");
+                                        var startColor = levelObject.gradientObject.GetPrimaryColor();
+                                        var endColor = levelObject.gradientObject.GetSecondaryColor();
                                         levelObject.gradientObject.SetColor(
                                             string.IsNullOrEmpty(modifier.value) ? startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), startColor.a),
                                             string.IsNullOrEmpty(modifier.commands[2]) ? endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.commands[2]), endColor.a));
@@ -5826,7 +5824,7 @@ namespace BetterLegacy.Core.Helpers
             }
             catch (Exception ex)
             {
-                CoreHelper.LogError($"Modifier ({modifier.commands[0]}) had an error. {ex}");
+                CoreHelper.LogError($"Modifier ({modifier.Name}) had an error. {ex}");
             }
         }
 
