@@ -2733,7 +2733,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             var reference = customObject.reference;
 
-            if (!reference || reference.animations == null || reference.animations.Empty())
+            if (!reference || reference.animations == null || reference.animations.IsEmpty())
                 return;
 
             for (int j = 0; j < reference.animations.Count; j++)

@@ -108,17 +108,17 @@ namespace BetterLegacy.Core.Data
         public float GetLength()
         {
             var objectsLength = GetLength(0) + GetLength(1) + GetLength(2) + GetLength(3);
-            var markersLength = markers.Empty() ? 0f : markers.Max(x => x.time);
+            var markersLength = markers.IsEmpty() ? 0f : markers.Max(x => x.time);
 
             return objectsLength > markersLength ? objectsLength : markersLength;
         }
 
         public float GetLength(int type) => type switch
         {
-            0 => positionKeyframes.Empty() ? 0f : positionKeyframes.Max(x => x.eventTime),
-            1 => scaleKeyframes.Empty() ? 0f : scaleKeyframes.Max(x => x.eventTime),
-            2 => rotationKeyframes.Empty() ? 0f : rotationKeyframes.Max(x => x.eventTime),
-            3 => colorKeyframes.Empty() ? 0f : colorKeyframes.Max(x => x.eventTime),
+            0 => positionKeyframes.IsEmpty() ? 0f : positionKeyframes.Max(x => x.eventTime),
+            1 => scaleKeyframes.IsEmpty() ? 0f : scaleKeyframes.Max(x => x.eventTime),
+            2 => rotationKeyframes.IsEmpty() ? 0f : rotationKeyframes.Max(x => x.eventTime),
+            3 => colorKeyframes.IsEmpty() ? 0f : colorKeyframes.Max(x => x.eventTime),
             _ => 0f,
         };
 

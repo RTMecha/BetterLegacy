@@ -32,7 +32,7 @@ namespace BetterLegacy.Core.Animation
 
             timeOffset = GlobalTime - startTime;
 
-            if (events != null && !events.Empty())
+            if (events != null && !events.IsEmpty())
             {
                 for (int i = 0; i < events.Count; i++)
                 {
@@ -45,7 +45,7 @@ namespace BetterLegacy.Core.Animation
                 }
             }
 
-            if (animationHandlers == null || animationHandlers.Empty())
+            if (animationHandlers == null || animationHandlers.IsEmpty())
                 return;
 
             for (int i = 0; i < animationHandlers.Count; i++)
@@ -307,7 +307,7 @@ namespace BetterLegacy.Core.Animation
         /// <summary>
         /// If all sequences have completed.
         /// </summary>
-        public bool Completed => animationHandlers.All(x => x.completed) && (events == null || events.Empty() || events.All(x => x.completed));
+        public bool Completed => animationHandlers.All(x => x.completed) && (events == null || events.IsEmpty() || events.All(x => x.completed));
 
         /// <summary>
         /// ID of the command to run when the animation is completed.
