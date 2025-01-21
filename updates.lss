@@ -1,3 +1,5 @@
+snapshot-2025.1.9 - (pre-1.7.0) > [Jan 21, 2025]
+- Fixed editor tick throwing an error in some cases.
 snapshot-2025.1.8 - (pre-1.7.0) > [Jan 18, 2025]
 - Actually hopefully fixed Object Editor not opening in some cases?????
 - Fixed Custom Player Objects not having their visibility properly set.
