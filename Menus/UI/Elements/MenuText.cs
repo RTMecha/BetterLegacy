@@ -93,6 +93,11 @@ namespace BetterLegacy.Menus.UI.Elements
         public string text = "";
 
         /// <summary>
+        /// If the text should be interpolated.
+        /// </summary>
+        public bool interpolateText = true;
+
+        /// <summary>
         /// If the text should wrap when it overflows the sides of the element.
         /// </summary>
         public bool enableWordWrapping = false;
@@ -147,9 +152,20 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         AudioClip cachedTextSound;
 
+        /// <summary>
+        /// If text interpolation sound should play.
+        /// </summary>
         public bool playSound = true;
 
+        /// <summary>
+        /// If text should be updated per-tick.
+        /// </summary>
         public bool updateTextOnTick;
+
+        /// <summary>
+        /// If quick element animations should play at the end of interpolation instead of during it.
+        /// </summary>
+        public bool runAnimationsOnEnd;
 
         #endregion
 
