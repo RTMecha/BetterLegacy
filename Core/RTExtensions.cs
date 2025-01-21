@@ -684,14 +684,30 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <returns>Returns true if the list contains elements.</returns>
-        public static bool Empty<T>(this List<T> list) => list.Count < 1;
+        public static bool IsEmpty<T>(this List<T> list) => list.Count < 1;
         
         /// <summary>
         /// Checks if an array contains no elements.
         /// </summary>
         /// <typeparam name="T">Type of the array.</typeparam>
         /// <returns>Returns true if the array contains elements.</returns>
-        public static bool Empty<T>(this T[] array) => array.Length < 1;
+        public static bool IsEmpty<T>(this T[] array) => array.Length < 1;
+
+        /// <summary>
+        /// Checks if an index is in the range of a list.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="index">Index to verify.</param>
+        /// <returns>Returns true if the <paramref name="index"/> is in the range of the list, otherwise returns false.</returns>
+        public static bool InRange<T>(this List<T> list, int index) => index >= 0 && index < list.Count;
+
+        /// <summary>
+        /// Checks if an index is in the range of an array.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="index">Index to verify.</param>
+        /// <returns>Returns true if the <paramref name="index"/> is in the range of the array, otherwise returns false.</returns>
+        public static bool InRange<T>(this T[] array, int index) => index >= 0 && index < array.Length;
 
         /// <summary>
         /// Removes a specified string from the input string.
