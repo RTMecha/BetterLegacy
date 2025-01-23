@@ -19,6 +19,9 @@ using Version = BetterLegacy.Core.Data.Version;
 
 namespace BetterLegacy.Core.Managers
 {
+    /// <summary>
+    /// Manages <see cref="Level"/>, <see cref="LevelCollection"/> and Arcade player data.
+    /// </summary>
     public class LevelManager : MonoBehaviour
     {
         #region Init
@@ -72,6 +75,9 @@ namespace BetterLegacy.Core.Managers
 
         #region Data
 
+        /// <summary>
+        /// Total time a user has been in a level.
+        /// </summary>
         public static float timeInLevel = 0f;
         public static float timeInLevelOffset = 0f;
 
@@ -125,17 +131,24 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static List<Level> Levels { get; set; }
 
+        /// <summary>
+        /// The level collection that is currently open.
+        /// </summary>
         public static LevelCollection CurrentLevelCollection { get; set; }
 
+        /// <summary>
+        /// Index of the current level in <see cref="CurrentLevelCollection"/>. Used for collection progression.
+        /// </summary>
         public static int currentLevelIndex;
 
-        public static Level NextLevel =>
-            CurrentLevelCollection && CurrentLevelCollection.Count > currentLevelIndex ?
-                CurrentLevelCollection[currentLevelIndex] :
-                ArcadeQueue.Count > currentQueueIndex ?
-                    ArcadeQueue[currentQueueIndex] :
-                    null;
+        /// <summary>
+        /// The next level in the current Arcade Queue.
+        /// </summary>
+        public static Level NextLevel => ArcadeQueue.InRange(currentQueueIndex) ? ArcadeQueue[currentQueueIndex] : null;
 
+        /// <summary>
+        /// The next level to play in the level collection.
+        /// </summary>
         public static Level NextLevelInCollection =>
             CurrentLevelCollection && CurrentLevelCollection.Count > currentLevelIndex + 1 ?
                 CurrentLevelCollection[currentLevelIndex + 1] : null;

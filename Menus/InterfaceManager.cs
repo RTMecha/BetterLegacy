@@ -28,6 +28,8 @@ namespace BetterLegacy.Menus
     /// </summary>
     public class InterfaceManager : MonoBehaviour
     {
+        #region Init
+
         /// <summary>
         /// The global instance reference.
         /// </summary>
@@ -43,27 +45,13 @@ namespace BetterLegacy.Menus
         /// </summary>
         public string MainDirectory { get; set; }
 
-        #region Constants
-
-        /// <summary>
-        /// The normal menu music group.
-        /// </summary>
-        public const string RANDOM_MUSIC_NAME = "menu";
-        public const string MAIN_MENU_ID = "0";
-        public const string STORY_SAVES_MENU_ID = "1";
-        public const string CHAPTER_SELECT_MENU_ID = "2";
-        public const string PROFILE_MENU_ID = "3";
-
-        #endregion
-
         void Awake()
         {
             inst = this;
 
             CurrentAudioSource = gameObject.AddComponent<AudioSource>();
             CurrentAudioSource.loop = true;
-            var path = RTFile.ApplicationDirectory + "beatmaps/interfaces/";
-            MainDirectory = path;
+            MainDirectory = RTFile.ApplicationDirectory + "beatmaps/interfaces/";
             RTFile.CreateDirectory(MainDirectory);
         }
 
@@ -82,6 +70,21 @@ namespace BetterLegacy.Menus
             CurrentInterface.UpdateControls();
             CurrentInterface.UpdateTheme();
         }
+
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// The normal menu music group.
+        /// </summary>
+        public const string RANDOM_MUSIC_NAME = "menu";
+        public const string MAIN_MENU_ID = "0";
+        public const string STORY_SAVES_MENU_ID = "1";
+        public const string CHAPTER_SELECT_MENU_ID = "2";
+        public const string PROFILE_MENU_ID = "3";
+
+        #endregion
 
         #region Music
 

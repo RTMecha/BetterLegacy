@@ -94,7 +94,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
-            LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]);
+            LevelManager.Play(LevelManager.NextLevel);
         }
 
         public static void NextLevel()
@@ -138,7 +138,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
-            LevelManager.Play(LevelManager.ArcadeQueue[LevelManager.currentQueueIndex]);
+            LevelManager.Play(LevelManager.NextLevel);
         }
 
         public static void RestartLevel()
