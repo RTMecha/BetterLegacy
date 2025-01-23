@@ -143,8 +143,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             switch (CurrentTab)
             {
-                case Tab.Local:
-                    {
+                case Tab.Local: {
                         layouts.Add("local settings", new MenuHorizontalLayout
                         {
                             name = "local settings",
@@ -376,8 +375,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         break;
                     }
-                case Tab.Online:
-                    {
+                case Tab.Online: {
                         layouts.Add("online settings", new MenuHorizontalLayout
                         {
                             name = "online settings",
@@ -481,8 +479,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         break;
                     }
-                case Tab.Browser:
-                    {
+                case Tab.Browser: {
                         layouts.Add("browser settings", new MenuHorizontalLayout
                         {
                             name = "browser settings",
@@ -634,8 +631,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         // todo: make browser download zip levels and also browse local files for a level.
                         break;
                     }
-                case Tab.Queue:
-                    {
+                case Tab.Queue: {
                         layouts.Add("queue settings", new MenuHorizontalLayout
                         {
                             name = "queue settings",
@@ -894,8 +890,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         break;
                     }
-                case Tab.Steam:
-                    {
+                case Tab.Steam: {
                         layouts.Add("steam settings", new MenuHorizontalLayout
                         {
                             name = "steam settings",
