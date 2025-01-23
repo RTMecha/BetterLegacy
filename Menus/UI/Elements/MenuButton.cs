@@ -412,6 +412,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 allowOriginalHoverMethods = jnElement["allow_original_hover_func"].AsBool;
             else if (!parsed)
                 allowOriginalHoverMethods = true;
+            if (jnElement["tick_func"] != null)
+                tickFuncJSON = jnElement["tick_func"];
 
             #endregion
         }

@@ -27,7 +27,7 @@ namespace BetterLegacy.Menus.UI.Elements
     /// <summary>
     /// Base class used for handling image elements and other types in the interface. To be used either as a base for other elements or an image element on its own.
     /// </summary>
-    public class MenuImage
+    public class MenuImage : Exists
     {
         #region Public Fields
 
@@ -329,11 +329,13 @@ namespace BetterLegacy.Menus.UI.Elements
             onScrollDownFuncJSON = orig.onScrollDownFuncJSON,
             spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
             onWaitEndFuncJSON = orig.onWaitEndFuncJSON,
+            tickFuncJSON = orig.tickFuncJSON,
             func = orig.func,
             onScrollUpFunc = orig.onScrollUpFunc,
             onScrollDownFunc = orig.onScrollDownFunc,
             spawnFunc = orig.spawnFunc,
             onWaitEndFunc = orig.onWaitEndFunc,
+            tickFunc = orig.tickFunc,
 
             #endregion
         };
@@ -474,6 +476,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
             if (jnElement["on_wait_end_func"] != null)
                 onWaitEndFuncJSON = jnElement["on_wait_end_func"];
+            if (jnElement["tick_func"] != null)
+                tickFuncJSON = jnElement["tick_func"];
 
             #endregion
         }
@@ -514,7 +518,5 @@ namespace BetterLegacy.Menus.UI.Elements
         };
 
         #endregion
-
-        public static implicit operator bool(MenuImage element) => element != null;
     }
 }

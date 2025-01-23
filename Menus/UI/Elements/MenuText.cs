@@ -148,11 +148,6 @@ namespace BetterLegacy.Menus.UI.Elements
         public List<Vector2Int> textSoundRanges;
 
         /// <summary>
-        /// Cached text interpolation sound when an external sound is loaded.
-        /// </summary>
-        AudioClip cachedTextSound;
-
-        /// <summary>
         /// If text interpolation sound should play.
         /// </summary>
         public bool playSound = true;
@@ -170,6 +165,11 @@ namespace BetterLegacy.Menus.UI.Elements
         #endregion
 
         #region Private Fields
+
+        /// <summary>
+        /// Cached text interpolation sound when an external sound is loaded.
+        /// </summary>
+        AudioClip cachedTextSound;
 
         float currentSpeed = 1f;
 
@@ -212,6 +212,8 @@ namespace BetterLegacy.Menus.UI.Elements
             textSpeeds = orig.textSpeeds?.Select(x => Speed.DeepCopy(x))?.ToList(),
             text = orig.text,
             icon = orig.icon,
+            iconPath = orig.iconPath,
+            interpolateText = orig.interpolateText,
             rect = orig.rect,
             textRect = orig.textRect,
             iconRect = orig.iconRect,
@@ -222,6 +224,8 @@ namespace BetterLegacy.Menus.UI.Elements
             alignment = orig.alignment,
             enableWordWrapping = orig.enableWordWrapping,
             overflowMode = orig.overflowMode,
+            updateTextOnTick = orig.updateTextOnTick,
+            runAnimationsOnEnd = orig.runAnimationsOnEnd,
 
             #endregion
 
@@ -267,11 +271,13 @@ namespace BetterLegacy.Menus.UI.Elements
             onScrollDownFuncJSON = orig.onScrollDownFuncJSON,
             spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
             onWaitEndFuncJSON = orig.onWaitEndFuncJSON,
+            tickFunc = orig.tickFunc,
             func = orig.func,
             onScrollUpFunc = orig.onScrollUpFunc,
             onScrollDownFunc = orig.onScrollDownFunc,
             spawnFunc = orig.spawnFunc,
             onWaitEndFunc = orig.onWaitEndFunc,
+            tickFuncJSON = orig.tickFuncJSON,
 
             #endregion
         };
@@ -349,6 +355,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 enableWordWrapping = jnElement["word_wrap"].AsBool;
             if (jnElement["overflow_mode"] != null)
                 overflowMode = Parser.TryParse(jnElement["overflow_mode"], TextOverflowModes.Masking);
+            if (jnElement["update_text"] != null)
+                updateTextOnTick = jnElement["update_text"].AsBool;
+            if (jnElement["run_animations_end"] != null)
+                runAnimationsOnEnd = jnElement["run_animations_end"].AsBool;
 
             #endregion
 
@@ -426,6 +436,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
             if (jnElement["on_wait_end_func"] != null)
                 onWaitEndFuncJSON = jnElement["on_wait_end_func"];
+            if (jnElement["tick_func"] != null)
+                tickFuncJSON = jnElement["tick_func"];
 
             #endregion
         }

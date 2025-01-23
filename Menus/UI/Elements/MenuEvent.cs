@@ -70,6 +70,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 funcJSON = jnElement["func"]; // function to run when the element is clicked.
             if (jnElement["spawn_func"] != null)
                 spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+            if (jnElement["tick_func"] != null)
+                tickFuncJSON = jnElement["tick_func"];
 
             #endregion
         }
