@@ -380,7 +380,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            if (LevelManager.CurrentLevelCollection == null)
+            if (!LevelManager.CurrentLevelCollection)
             {
                 var queueButton = new MenuButton
                 {
