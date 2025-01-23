@@ -1145,6 +1145,7 @@ namespace BetterLegacy.Editor.Managers
             BinCount++;
             CoreHelper.Log($"Add bin count: {BinCount}");
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
+            AchievementManager.inst.UnlockAchievement("more_bins");
 
             if (layerType == LayerType.Events)
                 return;
@@ -1176,6 +1177,7 @@ namespace BetterLegacy.Editor.Managers
             BinCount--;
             CoreHelper.Log($"Remove bin count: {BinCount}");
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
+            AchievementManager.inst.UnlockAchievement("more_bins");
 
             if (layerType == LayerType.Events)
                 return;
@@ -1212,6 +1214,7 @@ namespace BetterLegacy.Editor.Managers
             BinCount = count;
             CoreHelper.Log($"Set bin count: {BinCount}");
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
+            AchievementManager.inst.UnlockAchievement("more_bins");
 
             if (layerType == LayerType.Events)
                 return;
@@ -1304,6 +1307,5 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #endregion
-
     }
 }
