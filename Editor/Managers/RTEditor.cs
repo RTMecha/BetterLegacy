@@ -2491,15 +2491,19 @@ namespace BetterLegacy.Editor.Managers
                         while (GameData.Current.beatmapObjects.Has(x => x.editorData != null && x.editorData.layer == layer))
                             layer++;
                         EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
+                    }),
+                    new ButtonFunction("Toggle Object Preview Visibility", () =>
+                    {
+                        EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value = !EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value;
                     })//,
                     //new ButtonFunction("Pin Editor Layer", () =>
                     //{
 
-                   //})//,
+                    //})//,
                     //new ButtonFunction("View Pinned Editor Layers", () =>
                     //{
 
-                   //})
+                    //})
                     );
             };
         }
