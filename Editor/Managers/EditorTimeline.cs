@@ -30,9 +30,17 @@ namespace BetterLegacy.Editor.Managers
 
         public static void Init() => EditorManager.inst.gameObject.AddComponent<EditorTimeline>();
 
-        void Awake()
+        void Awake() => inst = this;
+
+        void Update()
         {
-            inst = this;
+            if (!movingTimeline)
+                return;
+
+            var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            float multiply = 12f / EditorManager.inst.Zoom;
+            SetTimelinePosition(Mathf.Clamp(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply), 0f, 1f));
+            SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
         }
 
         #endregion
@@ -54,6 +62,8 @@ namespace BetterLegacy.Editor.Managers
 
         public Transform wholeTimeline;
 
+        public Vector2 cachedTimelinePos;
+
         /// <summary>
         /// Sets the main timeline position.
         /// </summary>
@@ -67,7 +77,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
         /// <param name="render">If the timeline should render.</param>
         /// <param name="log">If the zoom amount should be logged.</param>
-        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
+        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = false)
         {
             try
             {
@@ -108,7 +118,6 @@ namespace BetterLegacy.Editor.Managers
             yield return new WaitForFixedUpdate();
             var pos = position >= 0f ? position : AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
             EditorManager.inst.timelineScrollRectBar.value = pos;
-            CoreHelper.Log($"Pos: {pos} - Scrollbar: {EditorManager.inst.timelineScrollRectBar.value}");
         }
 
         /// <summary>
@@ -149,6 +158,12 @@ namespace BetterLegacy.Editor.Managers
                 newTime = timelineSlider.value / EditorManager.inst.Zoom;
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
             }
+        }
+
+        public void StartTimelineDrag()
+        {
+            cachedTimelinePos = new Vector2(EditorManager.inst.timelineScrollRectBar.value, binSlider.value);
+            movingTimeline = true;
         }
 
         #endregion
@@ -1141,19 +1156,23 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (layerType == LayerType.Events)
+            {
+                EditorManager.inst.DisplayNotification("Cannot change the bin count of the event layer.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             int prevBinCount = BinCount;
             BinCount++;
+            if (prevBinCount == BinCount)
+                return;
+
             CoreHelper.Log($"Add bin count: {BinCount}");
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (layerType == LayerType.Events)
-                return;
-
             RenderTimelineObjectsPositions();
             RenderBins();
-            if (prevBinCount == BinCount)
-                return;
 
             if (EditorConfig.Instance.MoveToChangedBin.Value)
                 SetBinPosition(BinCount);
@@ -1173,19 +1192,23 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (layerType == LayerType.Events)
+            {
+                EditorManager.inst.DisplayNotification("Cannot change the bin count of the event layer.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             int prevBinCount = BinCount;
             BinCount--;
+            if (prevBinCount == BinCount)
+                return;
+
             CoreHelper.Log($"Remove bin count: {BinCount}");
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (layerType == LayerType.Events)
-                return;
-
             RenderTimelineObjectsPositions();
             RenderBins();
-            if (prevBinCount == BinCount)
-                return;
 
             if (EditorConfig.Instance.MoveToChangedBin.Value)
                 SetBinPosition(BinCount);
@@ -1210,19 +1233,23 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (layerType == LayerType.Events)
+            {
+                EditorManager.inst.DisplayNotification("Cannot change the bin count of the event layer.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             int prevBinCount = BinCount;
             BinCount = count;
+            if (prevBinCount == BinCount)
+                return;
+
             CoreHelper.Log($"Set bin count: {BinCount}");
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (layerType == LayerType.Events)
-                return;
-
             RenderTimelineObjectsPositions();
             RenderBins();
-            if (prevBinCount == BinCount)
-                return;
 
             if (EditorConfig.Instance.MoveToChangedBin.Value)
                 SetBinPosition(BinCount);

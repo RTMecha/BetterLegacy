@@ -317,16 +317,13 @@ namespace BetterLegacy.Core.Helpers
 
         #region Timeline
 
-        static Vector2 cachedTimelinePos;
-
         public static EventTrigger.Entry StartDragTrigger() => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
             var pointerEventData = (PointerEventData)eventData;
             EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
             if (pointerEventData.button == PointerEventData.InputButton.Middle)
             {
-                EditorTimeline.inst.movingTimeline = true;
-                cachedTimelinePos = new Vector2(EditorManager.inst.timelineScrollRectBar.value, EditorTimeline.inst.binSlider.value);
+                EditorTimeline.inst.StartTimelineDrag();
                 return;
             }
 
@@ -339,13 +336,7 @@ namespace BetterLegacy.Core.Helpers
             var vector = ((PointerEventData)eventData).position * CoreHelper.ScreenScaleInverse;
 
             if (EditorTimeline.inst.movingTimeline)
-            {
-                float multiply = 12f / EditorManager.inst.Zoom;
-                EditorTimeline.inst.SetTimelinePosition(Mathf.Clamp(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply), 0f, 1f));
-                EditorTimeline.inst.SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
-
                 return;
-            }
 
             EditorManager.inst.SelectionRect.xMin = vector.x < EditorManager.inst.DragStartPos.x ? vector.x : EditorManager.inst.DragStartPos.x;
             EditorManager.inst.SelectionRect.xMax = vector.x < EditorManager.inst.DragStartPos.x ? EditorManager.inst.DragStartPos.x : vector.x;
@@ -569,6 +560,14 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry CreateBeatmapObjectStartDragTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
+            var pointerEventData = (PointerEventData)eventData;
+            if (pointerEventData.button == PointerEventData.InputButton.Middle)
+            {
+                EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+                EditorTimeline.inst.StartTimelineDrag();
+                return;
+            }
+
             int bin = timelineObject.Bin;
 
             foreach (var otherTLO in EditorTimeline.inst.timelineObjects)
@@ -591,6 +590,12 @@ namespace BetterLegacy.Core.Helpers
         {
             ObjEditor.inst.beatmapObjectsDrag = false;
 
+            if (EditorTimeline.inst.movingTimeline)
+            {
+                EditorTimeline.inst.movingTimeline = false;
+                return;
+            }
+
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
@@ -612,9 +617,9 @@ namespace BetterLegacy.Core.Helpers
         public static EventTrigger.Entry CreateBeatmapObjectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerUp, eventData =>
         {
             var pointerEventData = (PointerEventData)eventData;
-            if (ObjEditor.inst.beatmapObjectsDrag)
+            if (ObjEditor.inst.beatmapObjectsDrag || pointerEventData.button == PointerEventData.InputButton.Middle)
                 return;
-
+            
             CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
 
             if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled && EditorTimeline.inst.onSelectTimelineObject == null)
