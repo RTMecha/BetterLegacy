@@ -56,7 +56,7 @@ namespace BetterLegacy.Core.Data
         public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[3]);
         public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[3]);
         public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[3]) { relative = true };
-        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[5], new float[3]);
+        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
 
         public string id;
         public int index;

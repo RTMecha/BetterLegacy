@@ -2743,9 +2743,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.history.Add(new History.Command("Create New Object", () => CreateNewObject(action, select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewNormalObject(bool _select = true, bool setHistory = true)
+        public void CreateNewNormalObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             if (SetToCenterCam)
@@ -2763,18 +2763,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Object", () =>
-            {
-                CreateNewNormalObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Object", () => CreateNewNormalObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewCircleObject(bool _select = true, bool setHistory = true)
+        public void CreateNewCircleObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 1;
@@ -2796,18 +2790,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", () =>
-            {
-                CreateNewCircleObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", () => CreateNewCircleObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewTriangleObject(bool _select = true, bool setHistory = true)
+        public void CreateNewTriangleObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 2;
@@ -2829,18 +2817,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", () =>
-            {
-                CreateNewTriangleObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", () => CreateNewTriangleObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewTextObject(bool _select = true, bool setHistory = true)
+        public void CreateNewTextObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 4;
@@ -2873,18 +2855,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", () =>
-            {
-                CreateNewTextObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", () => CreateNewTextObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewHexagonObject(bool _select = true, bool setHistory = true)
+        public void CreateNewHexagonObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 5;
@@ -2906,18 +2882,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", () =>
-            {
-                CreateNewHexagonObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", () => CreateNewHexagonObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewHelperObject(bool _select = true, bool setHistory = true)
+        public void CreateNewHelperObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = CoreHelper.AprilFools ? "totally not deprecated object" : "helper";
@@ -2940,18 +2910,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Helper Object", () =>
-            {
-                CreateNewHelperObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Helper Object", () => CreateNewHelperObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewDecorationObject(bool _select = true, bool setHistory = true)
+        public void CreateNewDecorationObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = "decoration";
@@ -2973,18 +2937,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", () =>
-            {
-                CreateNewDecorationObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", () => CreateNewDecorationObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewEmptyObject(bool _select = true, bool setHistory = true)
+        public void CreateNewEmptyObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = "empty";
@@ -3006,18 +2964,12 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Empty Object", () =>
-            {
-                CreateNewEmptyObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New Empty Object", () => CreateNewEmptyObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public void CreateNewNoAutokillObject(bool _select = true, bool setHistory = true)
+        public void CreateNewNoAutokillObject(bool select = true, bool setHistory = true)
         {
-            var timelineObject = CreateNewDefaultObject(_select);
+            var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = CoreHelper.AprilFools ? "dead" : "no autokill";
@@ -3038,16 +2990,10 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", () =>
-            {
-                CreateNewNoAutokillObject(_select, false);
-            }, () =>
-            {
-                inst.StartCoroutine(DeleteObject(timelineObject));
-            }));
+            EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", () => CreateNewNoAutokillObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public TimelineObject CreateNewDefaultObject(bool _select = true)
+        public TimelineObject CreateNewDefaultObject(bool select = true)
         {
             if (!EditorManager.inst.hasLoadedLevel)
             {
@@ -3055,59 +3001,23 @@ namespace BetterLegacy.Editor.Managers
                 return null;
             }
 
-            var list = new List<List<BaseEventKeyframe>>
-            {
-                new List<BaseEventKeyframe>(),
-                new List<BaseEventKeyframe>(),
-                new List<BaseEventKeyframe>(),
-                new List<BaseEventKeyframe>()
-            };
-
-            // Position
-            list[0].Add(new EventKeyframe(0f, new float[3], new float[4], 0));
-            // Scale
-            list[1].Add(new EventKeyframe(0f, new float[]  { 1f, 1f }, new float[3], 0));
-            // Rotation
-            list[2].Add(new EventKeyframe(0f, new float[1], new float[3], 0) { relative = true });
-            // Color
-            list[3].Add(new EventKeyframe(0f, new float[10]
-            {
-                0f, // start color slot
-                0f, // start opacity
-                0f, // start hue
-                0f, // start saturation
-                0f, // start value
-                1f, // end color slot
-                0f, // end opacity
-                0f, // end hue
-                0f, // end saturation
-                0f, // end value
-            }, new float[4], 0));
-
-            var beatmapObject = new BeatmapObject(true, AudioManager.inst.CurrentAudioSource.time, "", 0, "", list);
-            beatmapObject.id = LSText.randomString(16);
+            var beatmapObject = CreateNewBeatmapObject(AudioManager.inst.CurrentAudioSource.time);
             beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 5f;
             beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
-            if (!CoreHelper.AprilFools)
-                beatmapObject.editorData.layer = EditorTimeline.inst.Layer;
             beatmapObject.parentType = EditorConfig.Instance.CreateObjectsScaleParentDefault.Value ? "111" : "101";
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
+                EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
 
-            int num = GameData.Current.beatmapObjects.FindIndex(x => x.fromPrefab);
-            if (num == -1)
-                GameData.Current.beatmapObjects.Add(beatmapObject);
-            else
-                GameData.Current.beatmapObjects.Insert(num, beatmapObject);
+            GameData.Current.beatmapObjects.Add(beatmapObject);
 
-            var timelineObject = new TimelineObject(beatmapObject);
+            var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
 
             AudioManager.inst.SetMusicTime(AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
 
-            if (_select)
+            if (select)
                 EditorTimeline.inst.SetCurrentObject(timelineObject);
 
             if (ExampleManager.inst && ExampleManager.inst.Visible && RandomHelper.PercentChance(20))
@@ -3116,55 +3026,18 @@ namespace BetterLegacy.Editor.Managers
             return timelineObject;
         }
 
-        public static BeatmapObject CreateNewBeatmapObject(float _time, bool _add = true)
+        public BeatmapObject CreateNewBeatmapObject(float time)
         {
-            var beatmapObject = new BeatmapObject(_time);
+            var beatmapObject = new BeatmapObject(time);
 
             if (!CoreHelper.AprilFools)
                 beatmapObject.editorData.layer = EditorTimeline.inst.Layer;
 
-            var positionKeyframe = new EventKeyframe(0f);
-            positionKeyframe.SetEventValues(new float[3]);
-            positionKeyframe.SetEventRandomValues(new float[4]);
+            beatmapObject.events[0].Add(EventKeyframe.DefaultPositionKeyframe);
+            beatmapObject.events[1].Add(EventKeyframe.DefaultScaleKeyframe);
+            beatmapObject.events[2].Add(EventKeyframe.DefaultRotationKeyframe);
+            beatmapObject.events[3].Add(EventKeyframe.DefaultColorKeyframe);
 
-            var scaleKeyframe = new EventKeyframe(0f);
-            scaleKeyframe.SetEventValues(1f, 1f);
-
-            var rotationKeyframe = new EventKeyframe(0f) { relative = true };
-            rotationKeyframe.SetEventValues(new float[1]);
-
-            var colorKeyframe = new EventKeyframe(0f, new float[10]
-            {
-                0f, // start color slot
-                0f, // start opacity
-                0f, // start hue
-                0f, // start saturation
-                0f, // start value
-                1f, // end color slot
-                0f, // end opacity
-                0f, // end hue
-                0f, // end saturation
-                0f, // end value
-            }, new float[4], 0);
-
-            beatmapObject.events[0].Add(positionKeyframe);
-            beatmapObject.events[1].Add(scaleKeyframe);
-            beatmapObject.events[2].Add(rotationKeyframe);
-            beatmapObject.events[3].Add(colorKeyframe);
-
-            if (_add)
-            {
-                GameData.Current.beatmapObjects.Add(beatmapObject);
-
-                if (inst)
-                {
-                    var timelineObject = new TimelineObject(beatmapObject);
-
-                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                    Updater.UpdateObject(beatmapObject);
-                    EditorTimeline.inst.SetCurrentObject(timelineObject);
-                }
-            }
             return beatmapObject;
         }
 

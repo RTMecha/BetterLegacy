@@ -24,6 +24,11 @@ namespace BetterLegacy.Core.Data
             editorData = new ObjectEditorData();
         }
 
+        public BeatmapObject(float startTime, List<List<BaseEventKeyframe>> eventKeyframes) : this(true, startTime, string.Empty, 0, string.Empty, eventKeyframes)
+        {
+
+        }
+
         public BeatmapObject(bool active, float startTime, string name, int shape, string text, List<List<BaseEventKeyframe>> eventKeyframes) : base(active, startTime, name, shape, text, eventKeyframes)
         {
             editorData = new ObjectEditorData();

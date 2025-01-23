@@ -4934,9 +4934,7 @@ namespace BetterLegacy.Editor.Managers
                 var backgroundObject = new BackgroundObject();
                 backgroundObject.name = "bg - " + i;
                 if (UnityEngine.Random.value > 0.5f)
-                {
                     backgroundObject.scale = new Vector2(UnityEngine.Random.Range(2, 8), UnityEngine.Random.Range(2, 8));
-                }
                 else
                 {
                     float num = UnityEngine.Random.Range(2, 6);
@@ -4948,18 +4946,7 @@ namespace BetterLegacy.Editor.Managers
                 backgroundObject.reactive = UnityEngine.Random.value > 0.5f;
                 if (backgroundObject.reactive)
                 {
-                    switch (UnityEngine.Random.Range(0, 4))
-                    {
-                        case 0:
-                            backgroundObject.reactiveType = BaseBackgroundObject.ReactiveType.LOW;
-                            break;
-                        case 1:
-                            backgroundObject.reactiveType = BaseBackgroundObject.ReactiveType.MID;
-                            break;
-                        case 2:
-                            backgroundObject.reactiveType = BaseBackgroundObject.ReactiveType.HIGH;
-                            break;
-                    }
+                    backgroundObject.reactiveType = (BaseBackgroundObject.ReactiveType)UnityEngine.Random.Range(0, 4);
                     backgroundObject.reactiveScale = UnityEngine.Random.Range(0.01f, 0.04f);
                 }
 
@@ -4973,7 +4960,7 @@ namespace BetterLegacy.Editor.Managers
                 gameData.backgroundObjects.Add(backgroundObject);
             }
 
-            var beatmapObject = ObjectEditor.CreateNewBeatmapObject(0.5f, false);
+            var beatmapObject = ObjectEditor.inst.CreateNewBeatmapObject(0.5f);
             beatmapObject.events[0].Add(new EventKeyframe(4f, new float[3] { 10f, 0f, 0f }, new float[3]));
             if (CoreHelper.AprilFools)
                 beatmapObject.events[2].Add(new EventKeyframe(12f, new float[1] { 360000f }, new float[3]));
