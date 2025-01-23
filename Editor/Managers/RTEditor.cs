@@ -2587,7 +2587,9 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
                         new ButtonFunction(true),
                         new ButtonFunction("Add Bin", EditorTimeline.inst.AddBin),
-                        new ButtonFunction("Remove Bin", EditorTimeline.inst.RemoveBin)
+                        new ButtonFunction("Remove Bin", EditorTimeline.inst.RemoveBin),
+                        new ButtonFunction("Set Max Bin Count", () => EditorTimeline.inst.SetBinCount(EditorTimeline.MAX_BINS)),
+                        new ButtonFunction("Set Default Bin Count", () => EditorTimeline.inst.SetBinCount(EditorTimeline.DEFAULT_BIN_COUNT))
                         );
                 }));
 
