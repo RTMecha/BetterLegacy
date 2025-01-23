@@ -1044,7 +1044,7 @@ namespace BetterLegacy.Core.Components.Player
 
             tailParent = transform.Find("trail");
             tailTracker = Creator.NewGameObject("tail-tracker", rb.transform);
-            tailTracker.transform.localPosition = new Vector3(-0.5f, 0f, 0.1f);
+            tailTracker.transform.localPosition = new Vector3(0f, 0f, 0.1f);
             tailTracker.transform.localRotation = Quaternion.identity;
 
             var boost = transform.Find("Player/boost").gameObject;
@@ -1130,7 +1130,7 @@ namespace BetterLegacy.Core.Components.Player
                 tailBase.layer = 8;
 
                 var playerDelayTracker = tailBase.AddComponent<PlayerDelayTracker>();
-                playerDelayTracker.offset = -i * tailDistance / 2f;
+                playerDelayTracker.offset = (-i * tailDistance / 2f) + -0.5f;
                 playerDelayTracker.positionOffset *= (-i + 4);
                 playerDelayTracker.player = this;
                 playerDelayTracker.leader = tailTracker.transform;
@@ -1209,9 +1209,7 @@ namespace BetterLegacy.Core.Components.Player
         void OnDestroy()
         {
             if (CustomPlayer)
-            {
                 CustomPlayer.Player = null;
-            }
         }
 
         #endregion
@@ -1277,20 +1275,14 @@ namespace BetterLegacy.Core.Components.Player
 
             UpdateTailTransform(); UpdateTailDev(); UpdateTailSizes();
 
-            var player = rb.gameObject;
-
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
             if (!OutOfBounds && !EventsConfig.Instance.EditorCameraEnabled && CoreHelper.Playing)
             {
-                var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.transform.position);
+                var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
                 cameraToViewportPoint.x = Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f);
                 cameraToViewportPoint.y = Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f);
                 if (Camera.main.orthographicSize > 0f && (!includeNegativeZoom || Camera.main.orthographicSize < 0f) && CustomPlayer)
-                {
-                    var pos = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
-                    pos.z = player.transform.position.z;
-                    player.transform.position = pos;
-                }
+                    rb.position = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
             }
 
             if (!Model || !Model.faceControlActive || FaceController == null)
@@ -1358,33 +1350,21 @@ namespace BetterLegacy.Core.Components.Player
         {
             path[0].pos = rb.transform.position;
             path[0].rot = rb.transform.rotation;
+            if (tailMode == 1 || CoreHelper.Paused)
+                return;
+
             for (int i = 1; i < path.Count; i++)
             {
-                int num = i - 1;
+                int prev = i - 1;
 
-                if (i == 2 && !path[1].active)
-                    num = i - 2;
+                while (prev > 0 && !path[prev].active) // when the last tail part is inactive, we don't want it to be a part of the path
+                    prev--;
 
-                if (Vector3.Distance(path[i].pos, path[num].pos) <= tailDistance)
+                if (Vector3.Distance(path[i].pos, path[prev].pos) <= tailDistance)
                     continue;
 
-                Vector3 pos = Vector3.Lerp(path[i].pos, path[num].pos, Time.deltaTime * 12f);
-                Quaternion rot = Quaternion.Lerp(path[i].rot, path[num].rot, Time.deltaTime * 12f);
-
-                if (tailMode == 0)
-                {
-                    path[i].pos = pos;
-                    path[i].rot = rot;
-                }
-
-                if (tailMode > 1)
-                {
-                    path[i].pos = new Vector3(RTMath.RoundToNearestDecimal(pos.x, 1), RTMath.RoundToNearestDecimal(pos.y, 1), RTMath.RoundToNearestDecimal(pos.z, 1));
-
-                    var r = rot.eulerAngles;
-
-                    path[i].rot = Quaternion.Euler((int)r.x, (int)r.y, (int)r.z);
-                }
+                path[i].pos = Vector3.Lerp(path[i].pos, path[prev].pos, Time.deltaTime * 12f);
+                path[i].rot = Quaternion.Lerp(path[i].rot, path[prev].rot, Time.deltaTime * 12f);
             }
         }
 
@@ -1397,13 +1377,13 @@ namespace BetterLegacy.Core.Components.Player
             float num = Time.deltaTime * (tailBaseTime == 0f ? 200f : tailBaseTime);
             for (int i = 1; i < path.Count; i++)
             {
-                if (path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
-                {
-                    num *= Vector3.Distance(path[i].lastPos, path[i].pos);
-                    path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
-                    path[i].lastPos = path[i].transform.position;
-                    path[i].transform.rotation = path[i].rot;
-                }
+                if (!path[i].transform || !path[i].active)
+                    continue;
+
+                num *= Vector3.Distance(path[i].lastPos, path[i].pos);
+                path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
+                path[i].lastPos = path[i].transform.position;
+                path[i].transform.rotation = path[i].rot;
             }
         }
 
@@ -1631,23 +1611,30 @@ namespace BetterLegacy.Core.Components.Player
                             float xt = 1f * e + ym + stretchVector.x;
                             float yt = 1f * e + xm + stretchVector.y;
 
-                            if (rotateMode == RotateMode.FlipX)
+                            switch (rotateMode)
                             {
-                                if (lastMovement.x > 0f)
-                                    player.transform.localScale = new Vector3(xt, yt, 1f);
-                                if (lastMovement.x < 0f)
-                                    player.transform.localScale = new Vector3(-xt, yt, 1f);
+                                case RotateMode.RotateFlipX:
+                                case RotateMode.FlipX: {
+                                        if (lastMovement.x > 0f)
+                                            player.transform.localScale = new Vector3(xt, yt, 1f);
+                                        if (lastMovement.x < 0f)
+                                            player.transform.localScale = new Vector3(-xt, yt, 1f);
+                                        break;
+                                    }
+                                case RotateMode.RotateFlipY:
+                                case RotateMode.FlipY: {
+                                        if (lastMovement.y > 0f)
+                                            player.transform.localScale = new Vector3(xt, yt, 1f);
+                                        if (lastMovement.y < 0f)
+                                            player.transform.localScale = new Vector3(xt, -yt, 1f);
+                                        break;
+                                    }
+                                default: {
+                                        player.transform.localScale = new Vector3(xt, yt, 1f);
+                                        break;
+                                    }
                             }
 
-                            if (rotateMode == RotateMode.FlipY)
-                            {
-                                if (lastMovement.y > 0f)
-                                    player.transform.localScale = new Vector3(xt, yt, 1f);
-                                if (lastMovement.y < 0f)
-                                    player.transform.localScale = new Vector3(xt, -yt, 1f);
-                            }
-                            if (rotateMode == RotateMode.None)
-                                player.transform.localScale = new Vector3(xt, yt, 1f);
                         }
                     }
                     else if (stretch)
@@ -1657,6 +1644,7 @@ namespace BetterLegacy.Core.Components.Player
 
                         switch (rotateMode)
                         {
+                            case RotateMode.RotateFlipX:
                             case RotateMode.FlipX: {
                                     if (lastMovement.x > 0f)
                                         player.transform.localScale = new Vector3(xt, yt, 1f);
@@ -1664,6 +1652,7 @@ namespace BetterLegacy.Core.Components.Player
                                         player.transform.localScale = new Vector3(-xt, yt, 1f);
                                     break;
                                 }
+                            case RotateMode.RotateFlipY:
                             case RotateMode.FlipY: {
                                     if (lastMovement.y > 0f)
                                         player.transform.localScale = new Vector3(xt, yt, 1f);
@@ -1671,14 +1660,13 @@ namespace BetterLegacy.Core.Components.Player
                                         player.transform.localScale = new Vector3(xt, -yt, 1f);
                                     break;
                                 }
-                            case RotateMode.None: {
+                            default: {
                                     player.transform.localScale = new Vector3(xt, yt, 1f);
                                     break;
                                 }
                         }
                     }
                 }
-                //anim.SetFloat("Speed", Mathf.Abs(vector.x + vector.y));
 
                 if (rb.velocity != Vector2.zero)
                     lastVelocity = rb.velocity;
@@ -1697,24 +1685,21 @@ namespace BetterLegacy.Core.Components.Player
                 var c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
                 switch (rotateMode)
                 {
-                    case RotateMode.RotateToDirection:
-                        {
+                    case RotateMode.RotateToDirection: {
                             player.transform.rotation = c;
 
                             face.parent.localRotation = Quaternion.identity;
                             
                             break;
                         }
-                    case RotateMode.None:
-                        {
+                    case RotateMode.None: {
                             player.transform.rotation = Quaternion.identity;
 
                             face.parent.rotation = c;
 
                             break;
                         }
-                    case RotateMode.FlipX:
-                        {
+                    case RotateMode.FlipX: {
                             b = Quaternion.AngleAxis(Mathf.Atan2(lastMovementTotal.y, lastMovementTotal.x) * 57.29578f, player.transform.forward);
                             c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
 
@@ -1750,8 +1735,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.FlipY:
-                        {
+                    case RotateMode.FlipY: {
                             b = Quaternion.AngleAxis(Mathf.Atan2(lastMovementTotal.y, lastMovementTotal.x) * 57.29578f, player.transform.forward);
                             c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
 
@@ -1787,8 +1771,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.RotateReset:
-                        {
+                    case RotateMode.RotateReset: {
                             if (!moved)
                             {
                                 animatingRotateReset = false;
@@ -1851,8 +1834,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.RotateFlipX:
-                        {
+                    case RotateMode.RotateFlipX: {
                             var vectorRotation = c.eulerAngles;
                             if (vectorRotation.z > 90f && vectorRotation.z < 270f)
                                 vectorRotation.z += 180f;
@@ -1885,8 +1867,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.RotateFlipY:
-                        {
+                    case RotateMode.RotateFlipY: {
                             var vectorRotation = c.eulerAngles;
                             if (vectorRotation.z > 0f && vectorRotation.z < 180f)
                                 vectorRotation.z = -vectorRotation.z + 90f;
