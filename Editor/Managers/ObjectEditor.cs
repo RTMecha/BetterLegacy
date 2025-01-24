@@ -3781,7 +3781,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
-                    Updater.UpdateObject(beatmapObject, "Parent");
+                    Updater.UpdateObject(beatmapObject);
 
                 RenderParent(beatmapObject);
             });
