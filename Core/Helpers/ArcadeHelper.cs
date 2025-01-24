@@ -21,13 +21,42 @@ using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Core.Helpers
 {
+    /// <summary>
+    /// Helper class for the game / arcade.
+    /// </summary>
     public static class ArcadeHelper
     {
+        #region Values
+
+        /// <summary>
+        /// Function to run when the level ends in the Arcade.
+        /// </summary>
+        public static EndLevelFunction endLevelFunc;
+
+        /// <summary>
+        /// End level function data.
+        /// </summary>
+        public static string endLevelData;
+
+        /// <summary>
+        /// If level progress should be updated.
+        /// </summary>
+        public static bool endLevelUpdateProgress = true;
+
+        /// <summary>
+        /// If the level has ended.
+        /// </summary>
         public static bool endedLevel;
 
-        public static EndLevelFunction endLevelFunc;
-        public static string endLevelData;
-        public static bool endLevelUpdateProgress = true;
+        /// <summary>
+        /// If the user has entered the Arcade menu from a level.
+        /// </summary>
+        public static bool fromLevel;
+
+        /// <summary>
+        /// If the Arcade & Steam levels are loading.
+        /// </summary>
+        public static bool currentlyLoading;
 
         /// <summary>
         /// If the song has reached the end.
@@ -41,6 +70,13 @@ namespace BetterLegacy.Core.Helpers
             (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.levelData == null || !GameData.Current.beatmapData.levelData.forceReplayLevelOff) &&
             CoreConfig.Instance.ReplayLevel.Value;
 
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Enters the Input Select menu.
+        /// </summary>
         public static void LoadInputSelect()
         {
             LevelManager.Levels.Clear();
@@ -48,6 +84,9 @@ namespace BetterLegacy.Core.Helpers
             SceneHelper.LoadInputSelect();
         }
 
+        /// <summary>
+        /// Returns to the loaded hub level.
+        /// </summary>
         public static void ReturnToHub()
         {
             if (!LevelManager.Hub)
@@ -59,6 +98,9 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Play(LevelManager.Hub);
         }
 
+        /// <summary>
+        /// Returns to the first collection / queue level.
+        /// </summary>
         public static void FirstLevel()
         {
             if (LevelManager.CurrentLevelCollection != null)
@@ -97,6 +139,9 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Play(LevelManager.NextLevel);
         }
 
+        /// <summary>
+        /// Plays the next Arcade level in the current collection / queue.
+        /// </summary>
         public static void NextLevel()
         {
             if (LevelManager.CurrentLevelCollection)
@@ -141,6 +186,9 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Play(LevelManager.NextLevel);
         }
 
+        /// <summary>
+        /// Restarts the current level.
+        /// </summary>
         public static void RestartLevel()
         {
             if (CoreHelper.InEditor || !CoreHelper.InGame)
@@ -159,6 +207,9 @@ namespace BetterLegacy.Core.Helpers
             endedLevel = false;
         }
 
+        /// <summary>
+        /// Quits to the Arcade menu.
+        /// </summary>
         public static void QuitToArcade()
         {
             InterfaceManager.inst.CloseMenus();
@@ -169,6 +220,7 @@ namespace BetterLegacy.Core.Helpers
 
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
+            LevelManager.PreviousLevel = null;
 
             if (CoreHelper.InEditor)
             {
@@ -187,6 +239,9 @@ namespace BetterLegacy.Core.Helpers
             SceneHelper.LoadScene(SceneName.Arcade_Select);
         }
 
+        /// <summary>
+        /// Quits to the Main menu.
+        /// </summary>
         public static void QuitToMainMenu()
         {
             InterfaceManager.inst.CloseMenus();
@@ -197,10 +252,14 @@ namespace BetterLegacy.Core.Helpers
 
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
+            LevelManager.PreviousLevel = null;
 
             SceneHelper.LoadScene(SceneName.Main_Menu);
         }
 
+        /// <summary>
+        /// Runs the custom end level function.
+        /// </summary>
         public static void EndOfLevel()
         {
             endedLevel = true;
@@ -212,33 +271,28 @@ namespace BetterLegacy.Core.Helpers
 
                 switch (endLevelFunc)
                 {
-                    case EndLevelFunction.EndLevelMenu:
-                        {
+                    case EndLevelFunction.EndLevelMenu: {
                             if (!EndLevelMenu.Current)
                                 EndLevelMenu.Init();
 
                             break;
                         }
-                    case EndLevelFunction.QuitToArcade:
-                        {
+                    case EndLevelFunction.QuitToArcade: {
                             QuitToArcade();
 
                             break;
                         }
-                    case EndLevelFunction.ReturnToHub:
-                        {
-                            EndLoadLevel(LevelManager.Hub);
+                    case EndLevelFunction.ReturnToHub: {
+                            LevelManager.Play(LevelManager.Hub);
 
                             break;
                         }
-                    case EndLevelFunction.ReturnToPrevious:
-                        {
-                            EndLoadLevel(LevelManager.PreviousLevel);
+                    case EndLevelFunction.ReturnToPrevious: {
+                            LevelManager.Play(LevelManager.PreviousLevel);
 
                             break;
                         }
-                    case EndLevelFunction.ContinueCollection:
-                        {
+                    case EndLevelFunction.ContinueCollection: {
                             var metadata = LevelManager.CurrentLevel.metadata;
                             var nextLevel = LevelManager.NextLevelInCollection;
                             if (LevelManager.CurrentLevelCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || nextLevel && nextLevel.playerData && nextLevel.playerData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
@@ -256,32 +310,29 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case EndLevelFunction.LoadLevel:
-                        {
+                    case EndLevelFunction.LoadLevel: {
                             if (string.IsNullOrEmpty(endLevelData))
                                 break;
 
                             if (LevelManager.Levels.TryFind(x => x.id == endLevelData, out Level level))
-                                EndLoadLevel(level);
+                                LevelManager.Play(level);
                             else if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == endLevelData, out Level steamLevel))
-                                EndLoadLevel(steamLevel);
+                                LevelManager.Play(steamLevel);
 
                             break;
                         }
-                    case EndLevelFunction.LoadLevelInCollection:
-                        {
+                    case EndLevelFunction.LoadLevelInCollection: {
                             if (string.IsNullOrEmpty(endLevelData) || !LevelManager.CurrentLevelCollection)
                                 break;
 
                             if (LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == endLevelData, out Level level))
-                                EndLoadLevel(level);
+                                LevelManager.Play(level);
                             else if (LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.id == endLevelData, out LevelInfo levelInfo))
                                 LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, LevelManager.Play);
 
                             break;
                         }
-                    case EndLevelFunction.ParseInterface:
-                        {
+                    case EndLevelFunction.ParseInterface: {
                             if (CoreHelper.IsEditing) // don't want interfaces to load in editor
                             {
                                 EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
@@ -323,8 +374,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case EndLevelFunction.Loop:
-                        {
+                    case EndLevelFunction.Loop: {
                             GameManager.inst.gameState = GameManager.State.Playing;
                             AudioManager.inst.SetMusicTime(0f);
 
@@ -334,8 +384,7 @@ namespace BetterLegacy.Core.Helpers
                             LevelManager.LevelEnded = false;
                             break;
                         }
-                    case EndLevelFunction.Restart:
-                        {
+                    case EndLevelFunction.Restart: {
                             GameManager.inst.gameState = GameManager.State.Playing;
                             RestartLevel();
                             AudioManager.inst.CurrentAudioSource.Play();
@@ -360,6 +409,9 @@ namespace BetterLegacy.Core.Helpers
             ResetEndLevelVariables();
         }
 
+        /// <summary>
+        /// Resets the end level function.
+        /// </summary>
         public static void ResetEndLevelVariables()
         {
             endLevelFunc = 0;
@@ -367,14 +419,9 @@ namespace BetterLegacy.Core.Helpers
             endLevelUpdateProgress = true;
         }
 
-        static void EndLoadLevel(Level level)
-        {
-            if (level)
-                LevelManager.Play(level);
-        }
-
-        public static bool fromLevel = false;
-
+        /// <summary>
+        /// Removes old stuff.
+        /// </summary>
         public static void DeleteComponents()
         {
             CoreHelper.Destroy(GameObject.Find("Interface"));
@@ -387,6 +434,9 @@ namespace BetterLegacy.Core.Helpers
             CoreHelper.Destroy(GameObject.Find("Main Camera").GetComponent<GUILayer>());
         }
 
+        /// <summary>
+        /// Reloads the current Arcade menu.
+        /// </summary>
         public static void ReloadMenu()
         {
             if (!fromLevel)
@@ -408,7 +458,10 @@ namespace BetterLegacy.Core.Helpers
             LevelListMenu.Init(currentCollection.levels);
         }
 
-        public static bool currentlyLoading = false;
+        /// <summary>
+        /// Loads the Arcade & Steam levels.
+        /// </summary>
+        /// <param name="onLoadingEnd">Function to run when loading ends.</param>
         public static IEnumerator GetLevelList(Action onLoadingEnd = null)
         {
             float delay = 0f;
@@ -571,6 +624,9 @@ namespace BetterLegacy.Core.Helpers
             yield break;
         }
 
+        /// <summary>
+        /// Copies the current Arcade queue.
+        /// </summary>
         public static void CopyArcadeQueue()
         {
             var jn = JSON.Parse("{}");
@@ -592,6 +648,9 @@ namespace BetterLegacy.Core.Helpers
             LSText.CopyToClipboard(jn.ToString(3));
         }
 
+        /// <summary>
+        /// If the clipboard is in the correct format, pastes the clipboard into an Arcade queue.
+        /// </summary>
         public static void PasteArcadeQueue()
         {
             try
@@ -637,6 +696,9 @@ namespace BetterLegacy.Core.Helpers
 
         }
 
+        /// <summary>
+        /// Function to run when loading ends.
+        /// </summary>
         public static IEnumerator OnLoadingEnd()
         {
             yield return new WaitForSeconds(0.1f);
@@ -644,5 +706,7 @@ namespace BetterLegacy.Core.Helpers
             ArcadeMenu.Init();
             yield break;
         }
+
+        #endregion
     }
 }
