@@ -1733,26 +1733,7 @@ namespace BetterLegacy.Core.Data
             var beatmapObjects = GameData.Current.beatmapObjects;
 
             foreach (var obj in beatmapObjects)
-            {
-                bool canParent = true;
-                if (!string.IsNullOrEmpty(obj.parent))
-                {
-                    string parentID = id;
-                    while (!string.IsNullOrEmpty(parentID))
-                    {
-                        if (parentID == obj.parent)
-                        {
-                            canParent = false;
-                            break;
-                        }
-
-                        int index = beatmapObjects.FindIndex(x => x.parent == parentID);
-                        parentID = index != -1 ? beatmapObjects[index].id : null;
-                    }
-                }
-
-                dictionary[obj.id] = canParent;
-            }
+                dictionary[obj.id] = CanParent(obj, beatmapObjects);
 
             dictionary[id] = false;
 
@@ -1768,6 +1749,34 @@ namespace BetterLegacy.Core.Data
             }
 
             return shouldParent;
+        }
+
+        /// <summary>
+        /// Checks if another object can be parented to this object.
+        /// </summary>
+        /// <param name="obj">Object to check the parent compatibility of.</param>
+        /// <param name="beatmapObjects">Beatmap objects to search through.</param>
+        /// <returns>Returns true if <paramref name="obj"/> can be parented to this.</returns>
+        public bool CanParent(BeatmapObject obj, List<BeatmapObject> beatmapObjects)
+        {
+            if (string.IsNullOrEmpty(obj.parent))
+                return true;
+
+            bool canParent = true;
+            string parentID = id;
+
+            while (!string.IsNullOrEmpty(parentID))
+            {
+                if (parentID == obj.parent)
+                {
+                    canParent = false;
+                    break;
+                }
+
+                parentID = beatmapObjects.TryFind(x => x.parent == parentID, out BeatmapObject parentObj) ? parentObj.id : null;
+            }
+
+            return canParent;
         }
 
         #endregion

@@ -906,8 +906,9 @@ namespace BetterLegacy.Core.Helpers
                             success = true;
                             continue;
                         }
-                        success = SetParent(otherTimelineObject, timelineObject);
+                        success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>(), false);
                     }
+                    Updater.RecalculateObjectStates();
 
                     if (!success)
                         EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
@@ -928,7 +929,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                var tryParent = SetParent(EditorTimeline.inst.CurrentSelection, timelineObject);
+                var tryParent = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
 
                 if (!tryParent)
                     EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
@@ -936,48 +937,6 @@ namespace BetterLegacy.Core.Helpers
                     RTEditor.inst.parentPickerEnabled = false;
             }
         });
-
-        public static bool SetParent(TimelineObject currentSelection, TimelineObject timelineObjectToParentTo)
-        {
-            var dictionary = new Dictionary<string, bool>();
-
-            var beatmapObjects = GameData.Current.beatmapObjects;
-            foreach (var obj in beatmapObjects)
-            {
-                bool canParent = true;
-                if (!string.IsNullOrEmpty(obj.parent))
-                {
-                    string parentID = currentSelection.ID;
-                    while (!string.IsNullOrEmpty(parentID))
-                    {
-                        if (parentID == obj.parent)
-                        {
-                            canParent = false;
-                            break;
-                        }
-
-                        int num2 = beatmapObjects.FindIndex(x => x.parent == parentID);
-                        parentID = num2 != -1 ? beatmapObjects[num2].id : null;
-                    }
-                }
-
-                dictionary[obj.id] = canParent;
-            }
-
-            dictionary[currentSelection.ID] = false;
-
-            var canBeParented = dictionary.TryGetValue(timelineObjectToParentTo.ID, out bool value) && value;
-
-            if (canBeParented)
-            {
-                currentSelection.GetData<BeatmapObject>().parent = timelineObjectToParentTo.ID;
-                Updater.UpdateObject(currentSelection.GetData<BeatmapObject>());
-
-                RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(currentSelection.GetData<BeatmapObject>()));
-            }
-
-            return canBeParented;
-        }
 
         #endregion
 
