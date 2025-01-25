@@ -4259,9 +4259,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.shapeOption = 0;
 
                         if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
-                        {
                             beatmapObject.shape = 0;
-                        }
 
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
@@ -4293,6 +4291,45 @@ namespace BetterLegacy.Editor.Managers
                             if (UpdateObjects)
                                 Updater.UpdateObject(beatmapObject, "Shape");
                         });
+
+                        var textContextClickable = textIF.gameObject.GetOrAddComponent<ContextClickable>();
+                        textContextClickable.onClick = eventData =>
+                        {
+                            if (eventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction($"Open Text Editor", () => TextEditor.inst.SetInputField(textIF)),
+                                new ButtonFunction(true),
+                                new ButtonFunction($"Insert a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text = font + textIF.text)),
+                                new ButtonFunction($"Add a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text += font)),
+                                new ButtonFunction(true),
+                                new ButtonFunction($"Clear Formatting", () =>
+                                {
+                                    RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the fomratting of this text? This cannot be undone!", () =>
+                                    {
+                                        textIF.text = Regex.Replace(beatmapObject.text, @"<(.*?)>", string.Empty);
+                                        RTEditor.inst.HideWarningPopup();
+                                    }, RTEditor.inst.HideWarningPopup);
+                                }),
+                                new ButtonFunction($"Force Modded Formatting", () =>
+                                {
+                                    var formatText = "formatText";
+                                    if (beatmapObject.modifiers.Has(x => x.Name == formatText))
+                                        return;
+
+                                    if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out Modifier<BeatmapObject> formatTextModifier))
+                                    {
+                                        beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(formatTextModifier, beatmapObject));
+                                        StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
+                                    }
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Align Left", () => textIF.text = "<align=left>" + textIF.text),
+                                new ButtonFunction("Align Center", () => textIF.text = "<align=center>" + textIF.text),
+                                new ButtonFunction("Align Right", () => textIF.text = "<align=right>" + textIF.text)
+                                );
+                        };
 
                         break;
                     }

@@ -92,6 +92,7 @@ namespace BetterLegacy.Editor.Data
         public const string FOLDER_CREATOR_POPUP = "Folder Creator Popup";
         public const string PREFAB_TYPES_POPUP = "Prefab Types Popup";
         public const string TEXT_EDITOR = "Text Editor";
+        public const string FONT_SELECTOR_POPUP = "Font Selector Popup";
 
         #endregion
 
@@ -511,6 +512,11 @@ namespace BetterLegacy.Editor.Data
         public Scrollbar ContentScrollbar { get; set; }
 
         /// <summary>
+        /// Gets and sets the search input field text.
+        /// </summary>
+        public string SearchTerm { get => SearchField.text; set => SearchField.text = value; }
+
+        /// <summary>
         /// Refresh search function.
         /// </summary>
         public Action<string> refreshSearch;
@@ -519,6 +525,11 @@ namespace BetterLegacy.Editor.Data
         /// The placeholder string of the editor popups' search field.
         /// </summary>
         public string placeholderText = "Search...";
+
+        /// <summary>
+        /// Clears the content from the popup.
+        /// </summary>
+        public void ClearContent() => LSHelpers.DeleteChildren(Content);
 
         /// <summary>
         /// Assigns the elements of a game object to this editor popup.

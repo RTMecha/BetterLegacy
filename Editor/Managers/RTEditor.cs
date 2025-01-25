@@ -387,6 +387,7 @@ namespace BetterLegacy.Editor.Managers
             CreateDebug();
             CreateAutosavePopup();
             CreateScreenshotsView();
+            CreateFontSelector();
         }
 
         // 6 - initialize editors
@@ -816,6 +817,8 @@ namespace BetterLegacy.Editor.Managers
         Button folderCreatorSubmit;
         Text folderCreatorSubmitText;
 
+        GameObject fontSelectionPrefab;
+
         #endregion
 
         #region Levels
@@ -877,6 +880,7 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup ThemesPopup { get; set; }
 
         public EditorPopup TextEditorPopup { get; set; }
+        public ContentPopup FontSelectorPopup { get; set; }
 
         #endregion
 
@@ -3958,7 +3962,7 @@ namespace BetterLegacy.Editor.Managers
             RefreshDebugger();
         }
 
-        void CreateAutosavePopup() => AutosavePopup = GeneratePopup(EditorPopup.AUTOSAVE_POPUP, "Autosaves", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
+        void CreateAutosavePopup() => AutosavePopup = GeneratePopup(EditorPopup.AUTOSAVE_POPUP, "Open / Backup an Autosave", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
 
         void SetupMiscEditorThemes()
         {
@@ -4245,6 +4249,41 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogException(ex);
             }
+        }
+
+        void CreateFontSelector()
+        {
+            FontSelectorPopup = GeneratePopup(EditorPopup.FONT_SELECTOR_POPUP, "Select a Font", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search fonts...");
+
+            fontSelectionPrefab = Creator.NewUIObject("element", transform);
+            RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(fontSelectionPrefab.transform.AsRT());
+
+            var horizontalLayoutGroup = fontSelectionPrefab.AddComponent<HorizontalLayoutGroup>();
+
+            horizontalLayoutGroup.childControlHeight = false;
+            horizontalLayoutGroup.childControlWidth = false;
+            horizontalLayoutGroup.childForceExpandWidth = false;
+            horizontalLayoutGroup.spacing = 8f;
+            fontSelectionPrefab.AddComponent<Image>();
+            fontSelectionPrefab.AddComponent<Button>();
+
+            var labels = Creator.NewUIObject("label", fontSelectionPrefab.transform);
+            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(labels.transform.AsRT());
+
+            var labelsHLG = labels.AddComponent<HorizontalLayoutGroup>();
+
+            labelsHLG.childControlHeight = false;
+            labelsHLG.childControlWidth = false;
+            labelsHLG.spacing = 8f;
+
+            var label = Creator.NewUIObject("text", labels.transform);
+            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(label.transform.AsRT());
+
+            var text = label.AddComponent<TextMeshProUGUI>();
+            text.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
+            text.fontSize = 20;
+            text.enableWordWrapping = true;
+            text.text = "font";
         }
 
         #endregion
@@ -5084,12 +5123,18 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObjects">List of <see cref="BeatmapObject"/> to render.</param>
         public void RefreshObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
         {
-            var dialog = EditorManager.inst.GetDialog("Object Search Popup").Dialog;
-            var content = dialog.Find("mask/content");
+            ObjectSearchPopup.SearchField.onValueChanged.ClearAll();
+            ObjectSearchPopup.SearchField.onValueChanged.AddListener(_val =>
+            {
+                objectSearchTerm = _val;
+                RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
+            });
+
+            ObjectSearchPopup.ClearContent();
 
             if (clearParent)
             {
-                var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(content, "Clear Parents");
+                var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(ObjectSearchPopup.Content, "Clear Parents");
                 buttonPrefab.transform.GetChild(0).GetComponent<Text>().text = "Clear Parents";
 
                 var button = buttonPrefab.GetComponent<Button>();
@@ -5103,21 +5148,10 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                var x = EditorManager.inst.GetDialog("Object Search Popup").Dialog.Find("Panel/x/Image").GetComponent<Image>().sprite;
                 var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
                 image.color = Color.red;
-                image.sprite = x;
+                image.sprite = EditorSprites.CloseSprite;
             }
-
-            var searchBar = dialog.Find("search-box/search").GetComponent<InputField>();
-            searchBar.onValueChanged.ClearAll();
-            searchBar.onValueChanged.AddListener(_val =>
-            {
-                objectSearchTerm = _val;
-                RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
-            });
-
-            LSHelpers.DeleteChildren(content);
 
             if (beatmapObjects == null)
                 beatmapObjects = GameData.Current.beatmapObjects;
@@ -5134,7 +5168,7 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.name.ToLower().Contains(objectSearchTerm.ToLower()))
                 {
                     string nm = $"[{(list.IndexOf(beatmapObject) + 1).ToString("0000")}/{list.Count.ToString("0000")} - {beatmapObject.id}] : {beatmapObject.name}";
-                    var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(content, nm);
+                    var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(ObjectSearchPopup.Content, nm);
                     var buttonText = buttonPrefab.transform.GetChild(0).GetComponent<Text>();
                     buttonText.text = nm;
 
@@ -5218,8 +5252,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="search">The search term.</param>
         public void RefreshObjectTemplates(string search)
         {
-            LSHelpers.DeleteChildren(ObjectTemplatePopup.Content);
-
+            ObjectTemplatePopup.ClearContent();
             for (int i = 0; i < objectOptions.Count; i++)
                 if (RTString.SearchString(search, objectOptions[i].name))
                     GenerateObjectTemplate(objectOptions[i].name, objectOptions[i].hint, objectOptions[i].Create);
@@ -5689,6 +5722,47 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        public void ShowFontSelector(Action<string> onFontSelected)
+        {
+            FontSelectorPopup.Open();
+            RefreshFontSelector(onFontSelected);
+        }
+
+        public void RefreshFontSelector(Action<string> onFontSelected)
+        {
+            FontSelectorPopup.SearchField.onValueChanged.ClearAll();
+            FontSelectorPopup.SearchField.onValueChanged.AddListener(_val => RefreshFontSelector(onFontSelected));
+            FontSelectorPopup.ClearContent();
+
+            foreach (var font in FontManager.inst.allFonts)
+            {
+                if (!RTString.SearchString(FontSelectorPopup.SearchTerm, font.Key))
+                    continue;
+
+                var gameObject = fontSelectionPrefab.Duplicate(FontSelectorPopup.Content, font.Key);
+                RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(gameObject.transform.AsRT());
+
+                var image = gameObject.GetComponent<Image>();
+
+                var text = gameObject.transform.Find("label/text").GetComponent<TextMeshProUGUI>();
+                text.text = $"<font={font.Key}>ABCDEF abcdef 123</font> - {font.Key}";
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
+                {
+                    onFontSelected?.Invoke($"<font={font.Key}>");
+                    FontSelectorPopup.Close();
+                });
+
+                RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(gameObject.transform.Find("label").AsRT());
+                RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(gameObject.transform.Find("label/text").AsRT());
+
+                EditorThemeManager.ApplyGraphic(text, ThemeGroup.Light_Text);
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+            }
+        }
+
         /// <summary>
         /// Refreshes the debugger.
         /// </summary>
@@ -5870,15 +5944,9 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.SetActive(active);
         }
 
-        public void ShowDialog(string name)
-        {
-            EditorManager.inst.ShowDialog(name);
-        }
+        public void ShowDialog(string name) => EditorManager.inst.ShowDialog(name);
 
-        public void HideDialog(string name)
-        {
-            EditorManager.inst.HideDialog(name);
-        }
+        public void HideDialog(string name) => EditorManager.inst.HideDialog(name);
 
         /// <summary>
         /// Sets a dialogs' status.
@@ -5926,7 +5994,7 @@ namespace BetterLegacy.Editor.Managers
         // todo: replace this with a different system that can be customized more and is better coding-wise.
         public List<EditorAnimation> editorAnimations = new List<EditorAnimation>
         {
-            new EditorAnimation("Open File Popup")
+            new EditorAnimation(EditorPopup.OPEN_FILE_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.OpenFilePopupActive,
 
@@ -5958,7 +6026,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.OpenFilePopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.OpenFilePopupRotCloseEase,
             },
-            new EditorAnimation("New File Popup")
+            new EditorAnimation(EditorPopup.NEW_FILE_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
 
@@ -5990,7 +6058,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
             },
-            new EditorAnimation("Save As Popup")
+            new EditorAnimation(EditorPopup.SAVE_AS_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.SaveAsPopupActive,
 
@@ -6022,7 +6090,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.SaveAsPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.SaveAsPopupRotCloseEase,
             },
-            new EditorAnimation("Quick Actions Popup")
+            new EditorAnimation(EditorPopup.QUICK_ACTIONS_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
 
@@ -6054,7 +6122,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
             },
-            new EditorAnimation("Parent Selector")
+            new EditorAnimation(EditorPopup.PARENT_SELECTOR)
             {
                 ActiveConfig = EditorConfig.Instance.ParentSelectorPopupActive,
 
@@ -6086,7 +6154,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.ParentSelectorPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.ParentSelectorPopupRotCloseEase,
             },
-            new EditorAnimation("Prefab Popup")
+            new EditorAnimation(EditorPopup.PREFAB_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.PrefabPopupActive,
 
@@ -6118,7 +6186,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.PrefabPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.PrefabPopupRotCloseEase,
             },
-            new EditorAnimation("Object Options Popup")
+            new EditorAnimation(EditorPopup.OBJECT_OPTIONS_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.NewFilePopupActive,
 
@@ -6150,7 +6218,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.NewFilePopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.NewFilePopupRotCloseEase,
             },
-            new EditorAnimation("BG Options Popup")
+            new EditorAnimation(EditorPopup.BG_OPTIONS_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.BGOptionsPopupActive,
 
@@ -6182,7 +6250,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.BGOptionsPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.BGOptionsPopupRotCloseEase,
             },
-            new EditorAnimation("Browser Popup")
+            new EditorAnimation(EditorPopup.BROWSER_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.BrowserPopupActive,
 
@@ -6214,7 +6282,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.BrowserPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.BrowserPopupRotCloseEase,
             },
-            new EditorAnimation("Object Search Popup")
+            new EditorAnimation(EditorPopup.OBJECT_SEARCH_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.ObjectSearchPopupActive,
 
@@ -6246,7 +6314,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotCloseEase,
             },
-            new EditorAnimation("Warning Popup")
+            new EditorAnimation(EditorPopup.WARNING_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.WarningPopupActive,
 
@@ -6278,7 +6346,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.WarningPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.WarningPopupRotCloseEase,
             },
-            new EditorAnimation("Folder Creator Popup")
+            new EditorAnimation(EditorPopup.FOLDER_CREATOR_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.FilePopupActive,
 
@@ -6310,7 +6378,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.FilePopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.FilePopupRotCloseEase,
             },
-            new EditorAnimation("Text Editor")
+            new EditorAnimation(EditorPopup.TEXT_EDITOR)
             {
                 ActiveConfig = EditorConfig.Instance.TextEditorActive,
 
@@ -6342,39 +6410,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.TextEditorRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.TextEditorRotCloseEase,
             },
-            new EditorAnimation("Editor Properties Popup")
-            {
-                ActiveConfig = EditorConfig.Instance.EditorPropertiesPopupActive,
-
-                PosActiveConfig = EditorConfig.Instance.EditorPropertiesPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.EditorPropertiesPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.EditorPropertiesPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupPosYCloseEase,
-
-                ScaActiveConfig = EditorConfig.Instance.EditorPropertiesPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.EditorPropertiesPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.EditorPropertiesPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupScaYCloseEase,
-
-                RotActiveConfig = EditorConfig.Instance.EditorPropertiesPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.EditorPropertiesPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.EditorPropertiesPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.EditorPropertiesPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.EditorPropertiesPopupRotCloseEase,
-            },
-            new EditorAnimation("Documentation Popup")
+            new EditorAnimation(EditorPopup.DOCUMENTATION_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.DocumentationPopupActive,
 
@@ -6406,7 +6442,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.DocumentationPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.DocumentationPopupRotCloseEase,
             },
-            new EditorAnimation("Debugger Popup")
+            new EditorAnimation(EditorPopup.DEBUGGER_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.DebuggerPopupActive,
 
@@ -6438,7 +6474,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.DebuggerPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.DebuggerPopupRotCloseEase,
             },
-            new EditorAnimation("Autosaves Popup")
+            new EditorAnimation(EditorPopup.AUTOSAVE_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.AutosavesPopupActive,
 
@@ -6470,7 +6506,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.AutosavesPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.AutosavesPopupRotCloseEase,
             },
-            new EditorAnimation("Default Modifiers Popup")
+            new EditorAnimation(EditorPopup.DEFAULT_MODIFIERS_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.DefaultModifiersPopupActive,
 
@@ -6502,7 +6538,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotCloseEase,
             },
-            new EditorAnimation("Keybind List Popup")
+            new EditorAnimation(EditorPopup.KEYBIND_LIST_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.KeybindListPopupActive,
 
@@ -6534,7 +6570,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.KeybindListPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.KeybindListPopupRotCloseEase,
             },
-            new EditorAnimation("Theme Popup")
+            new EditorAnimation(EditorPopup.THEME_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.ThemePopupActive,
 
@@ -6566,7 +6602,7 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.ThemePopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.ThemePopupRotCloseEase,
             },
-            new EditorAnimation("Prefab Types Popup")
+            new EditorAnimation(EditorPopup.PREFAB_TYPES_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.PrefabTypesPopupActive,
 
@@ -6598,6 +6634,39 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.PrefabTypesPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.PrefabTypesPopupRotCloseEase,
             },
+            new EditorAnimation(EditorPopup.FONT_SELECTOR_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.FontSelectorPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.FontSelectorPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.FontSelectorPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.FontSelectorPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.FontSelectorPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.FontSelectorPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.FontSelectorPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.FontSelectorPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.FontSelectorPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.FontSelectorPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.FontSelectorPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.FontSelectorPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.FontSelectorPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.FontSelectorPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.FontSelectorPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.FontSelectorPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupRotCloseEase,
+            },
+
             new EditorAnimation("File Dropdown")
             {
                 ActiveConfig = EditorConfig.Instance.FileDropdownActive,
