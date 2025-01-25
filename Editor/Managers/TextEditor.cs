@@ -9,6 +9,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {

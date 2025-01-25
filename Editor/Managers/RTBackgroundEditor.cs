@@ -19,6 +19,7 @@ using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -2432,7 +2433,7 @@ namespace BetterLegacy.Editor.Managers
             this.addIndex = addIndex;
             var defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
-            LSHelpers.DeleteChildren(DefaultModifiersPopup.Content);
+            DefaultModifiersPopup.ClearContent();
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {

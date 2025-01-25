@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Editor.Data.Popups;
 using System;
 using System.Collections.Generic;
 using System.Linq;

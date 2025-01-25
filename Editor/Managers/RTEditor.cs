@@ -16,6 +16,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Example;
 using CielaSpike;
 using Crosstales.FB;
@@ -825,8 +826,6 @@ namespace BetterLegacy.Editor.Managers
 
         public Level CurrentLevel { get; set; }
         public List<LevelPanel> LevelPanels { get; set; } = new List<LevelPanel>();
-
-        public Transform editorLevelContent;
 
         public bool fromNewLevel;
 
@@ -4357,10 +4356,7 @@ namespace BetterLegacy.Editor.Managers
         {
             LevelPanels.Clear();
 
-            if (!editorLevelContent)
-                editorLevelContent = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask/content");
-
-            LSHelpers.DeleteChildren(editorLevelContent);
+            OpenLevelPopup.ClearContent();
 
             var list = new List<Coroutine>();
             var files = Directory.GetDirectories(RTFile.ApplicationDirectory + editorListPath);
@@ -4369,7 +4365,7 @@ namespace BetterLegacy.Editor.Managers
             // Back
             if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(RTFile.ApplicationDirectory + editorListPath) != RTFile.ApplicationDirectory + "beatmaps")
             {
-                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(editorLevelContent, "back");
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(OpenLevelPopup.Content, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -5264,11 +5260,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="timelineObject">The object to parent.</param>
         public void RefreshParentSearch(TimelineObject timelineObject)
         {
-            var transform = EditorManager.inst.GetDialog("Parent Selector").Dialog.Find("mask/content");
+            ParentSelectorPopup.ClearContent();
 
-            LSHelpers.DeleteChildren(transform);
-
-            var noParent = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "No Parent");
+            var noParent = EditorManager.inst.folderButtonPrefab.Duplicate(ParentSelectorPopup.Content, "No Parent");
             noParent.transform.localScale = Vector3.one;
             var noParentText = noParent.transform.GetChild(0).GetComponent<Text>();
             noParentText.text = "No Parent";
@@ -5306,7 +5300,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTString.SearchString(EditorManager.inst.parentSearch, "camera"))
             {
-                var cam = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "Camera");
+                var cam = EditorManager.inst.folderButtonPrefab.Duplicate(ParentSelectorPopup.Content, "Camera");
                 var camText = cam.transform.GetChild(0).GetComponent<Text>();
                 var camButton = cam.GetComponent<Button>();
 
@@ -5348,69 +5342,49 @@ namespace BetterLegacy.Editor.Managers
                     continue;
 
                 int index = GameData.Current.beatmapObjects.IndexOf(obj);
-                if ((string.IsNullOrEmpty(EditorManager.inst.parentSearch) || (obj.name + " " + index.ToString("0000")).ToLower().Contains(EditorManager.inst.parentSearch.ToLower())) && obj.id != timelineObject.ID)
+
+                if (!RTString.SearchString(EditorManager.inst.parentSearch, obj.name + " " + index.ToString("0000")) || obj.id == timelineObject.ID ||
+                    !timelineObject.isPrefabObject && !timelineObject.GetData<BeatmapObject>().CanParent(obj, GameData.Current.beatmapObjects))
+                    continue;
+
+                string s = $"{obj.name} {index.ToString("0000")}";
+                var objectToParent = EditorManager.inst.folderButtonPrefab.Duplicate(ParentSelectorPopup.Content, s);
+                var objectToParentText = objectToParent.transform.GetChild(0).GetComponent<Text>();
+                var objectToParentButton = objectToParent.GetComponent<Button>();
+
+                objectToParentText.text = s;
+                objectToParentButton.onClick.ClearAll();
+                objectToParentButton.onClick.AddListener(() =>
                 {
-                    bool canParent = true;
-                    if (!string.IsNullOrEmpty(obj.parent))
+                    string id = obj.id;
+
+                    var list = EditorTimeline.inst.SelectedObjects;
+                    foreach (var timelineObject in list)
                     {
-                        string parentID = timelineObject.ID;
-                        while (!string.IsNullOrEmpty(parentID))
+                        if (timelineObject.isPrefabObject)
                         {
-                            if (parentID == obj.parent)
-                            {
-                                canParent = false;
-                                break;
-                            }
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.parent = id;
+                            Updater.UpdatePrefab(prefabObject);
 
-                            int parentIndex = GameData.Current.beatmapObjects.FindIndex(x => x.parent == parentID);
-
-                            parentID = parentIndex != -1 ? GameData.Current.beatmapObjects[parentIndex].id : null;
+                            continue;
                         }
+
+                        timelineObject.GetData<BeatmapObject>().SetParent(obj, false);
                     }
 
-                    if (!canParent)
-                        continue;
+                    Updater.RecalculateObjectStates();
 
-                    string s = $"{obj.name} {index.ToString("0000")}";
-                    var objectToParent = EditorManager.inst.folderButtonPrefab.Duplicate(transform, s);
-                    var objectToParentText = objectToParent.transform.GetChild(0).GetComponent<Text>();
-                    var objectToParentButton = objectToParent.GetComponent<Button>();
+                    ParentSelectorPopup.Close();
 
-                    objectToParentText.text = s;
-                    objectToParentButton.onClick.ClearAll();
-                    objectToParentButton.onClick.AddListener(() =>
-                    {
-                        string id = obj.id;
+                    if (list.Count == 1 && timelineObject.isPrefabObject)
+                        RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
 
-                        var list = EditorTimeline.inst.SelectedObjects;
-                        foreach (var timelineObject in list)
-                        {
-                            if (timelineObject.isPrefabObject)
-                            {
-                                var prefabObject = timelineObject.GetData<PrefabObject>();
-                                prefabObject.parent = id;
-                                Updater.UpdatePrefab(prefabObject);
+                    Debug.Log($"{ EditorManager.inst.className}Set Parent ID: {id}");
+                });
 
-                                continue;
-                            }
-
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            TriggerHelper.SetParent(timelineObject, EditorTimeline.inst.GetTimelineObject(obj));
-                            Updater.UpdateObject(bm);
-                        }
-
-                        ParentSelectorPopup.Close();
-                        if (list.Count == 1 && timelineObject.isBeatmapObject)
-                            StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
-                        if (list.Count == 1 && timelineObject.isPrefabObject)
-                            RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
-
-                        Debug.Log($"{ EditorManager.inst.className}Set Parent ID: {id}");
-                    });
-
-                    EditorThemeManager.ApplySelectable(objectToParentButton, ThemeGroup.List_Button_1);
-                    EditorThemeManager.ApplyLightText(objectToParentText);
-                }
+                EditorThemeManager.ApplySelectable(objectToParentButton, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(objectToParentText);
             }
         }
 
@@ -5573,7 +5547,7 @@ namespace BetterLegacy.Editor.Managers
                 RefreshAutosaveList(levelPanel);
             });
 
-            LSHelpers.DeleteChildren(AutosavePopup.Content);
+            AutosavePopup.ClearContent();
 
             if (levelPanel.isFolder)
             {

@@ -148,7 +148,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.editorLevelContent, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             GameObject = gameObject;
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
@@ -182,7 +182,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.editorLevelContent, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 

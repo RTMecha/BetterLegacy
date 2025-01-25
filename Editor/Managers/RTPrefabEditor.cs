@@ -9,6 +9,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Example;
 using LSFunctions;
 using SimpleJSON;
@@ -60,7 +61,6 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject prefabTypePrefab;
         public GameObject prefabTypeTogglePrefab;
-        public Transform prefabTypeContent;
 
         public Button prefabTypeReloadButton;
 
@@ -1574,8 +1574,6 @@ namespace BetterLegacy.Editor.Managers
             var content = Creator.NewUIObject("Content", mask.transform);
             RectValues.Default.AnchoredPosition(0f, -16f).AnchorMax(0f, 1f).AnchorMin(0f, 1f).Pivot(0f, 1f).SizeDelta(400f, 104f).AssignToRectTransform(content.transform.AsRT());
 
-            prefabTypeContent = content.transform;
-
             var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
             contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
             contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
@@ -1680,7 +1678,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.PrefabTypesPopup = new ContentPopup(EditorPopup.PREFAB_TYPES_POPUP);
             RTEditor.inst.PrefabTypesPopup.GameObject = gameObject;
-            RTEditor.inst.PrefabTypesPopup.Content = prefabTypeContent.AsRT();
+            RTEditor.inst.PrefabTypesPopup.Content = content.transform.AsRT();
         }
 
         /// <summary>
@@ -1757,9 +1755,9 @@ namespace BetterLegacy.Editor.Managers
                 RenderPrefabTypesPopup(NewPrefabTypeID, onSelect);
             });
 
-            LSHelpers.DeleteChildren(prefabTypeContent);
+            RTEditor.inst.PrefabTypesPopup.ClearContent();
 
-            var createPrefabType = PrefabEditor.inst.CreatePrefab.Duplicate(prefabTypeContent, "Create Prefab Type");
+            var createPrefabType = PrefabEditor.inst.CreatePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, "Create Prefab Type");
             createPrefabType.transform.AsRT().sizeDelta = new Vector2(402f, 32f);
             var createPrefabTypeText = createPrefabType.transform.Find("Text").GetComponent<Text>();
             createPrefabTypeText.text = "Create New Prefab Type";
@@ -1792,7 +1790,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
             {
                 int index = num;
-                var gameObject = prefabTypePrefab.Duplicate(prefabTypeContent, prefabType.Name);
+                var gameObject = prefabTypePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, prefabType.Name);
 
                 var toggle = gameObject.transform.Find("Toggle").GetComponent<Toggle>();
                 toggle.onValueChanged.ClearAll();
@@ -2726,8 +2724,8 @@ namespace BetterLegacy.Editor.Managers
 
             yield return new WaitForSeconds(0.03f);
 
-            LSHelpers.DeleteChildren(PrefabEditor.inst.internalContent);
-            CreatePrefabButton(PrefabEditor.inst.internalContent, "New Internal Prefab", eventData =>
+            RTEditor.inst.PrefabPopups.InternalPrefabs.ClearContent();
+            CreatePrefabButton(RTEditor.inst.PrefabPopups.InternalPrefabs.Content, "New Internal Prefab", eventData =>
             {
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {

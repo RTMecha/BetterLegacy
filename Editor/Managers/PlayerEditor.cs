@@ -22,6 +22,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -2272,7 +2273,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshModels()
         {
-            LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
+            RTEditor.inst.PlayerModelsPopup.ClearContent();
 
             int num = 0;
             foreach (var playerModel in PlayersData.externalPlayerModels)
@@ -2385,7 +2386,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshCustomObjects()
         {
-            LSHelpers.DeleteChildren(RTEditor.inst.PlayerModelsPopup.Content);
+            RTEditor.inst.PlayerModelsPopup.ClearContent();
 
             var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
 

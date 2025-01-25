@@ -7,6 +7,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Popups;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -440,7 +441,6 @@ namespace BetterLegacy.Editor.Managers
 
         public string themeSearch;
         public int themePage;
-        public Transform themeContent;
         public InputFieldStorage pageStorage;
         public void CreateThemePopup()
         {
@@ -451,8 +451,6 @@ namespace BetterLegacy.Editor.Managers
                     themeSearch = _val;
                     RefreshThemeSearch();
                 }, placeholderText: "Search for theme...");
-
-                themeContent = RTEditor.inst.ThemesPopup.Content;
 
                 RTEditor.inst.ThemesPopup.Grid.cellSize = new Vector2(600f, 362f);
 
@@ -753,7 +751,7 @@ namespace BetterLegacy.Editor.Managers
         public static int themesPerPage = 10;
         public void RefreshThemeSearch()
         {
-            LSHelpers.DeleteChildren(themeContent);
+            RTEditor.inst.ThemesPopup.ClearContent();
 
             var layer = themePage + 1;
 
@@ -765,106 +763,106 @@ namespace BetterLegacy.Editor.Managers
                 int max = layer * themesPerPage;
 
                 var name = beatmapTheme.name == null ? "theme" : beatmapTheme.name;
-                if ((string.IsNullOrEmpty(themeSearch) || name.ToLower().Contains(themeSearch.ToLower())))
+                if (!RTString.SearchString(themeSearch, name) || num < max - themesPerPage || num >= max)
                 {
-                    if (num >= max - themesPerPage && num < max)
-                    {
-                        var gameObject = themePopupPanelPrefab.Duplicate(themeContent, name);
-                        gameObject.transform.localScale = Vector3.one;
-
-                        var viewThemeStorage = gameObject.GetComponent<ViewThemePanelStorage>();
-                        viewThemeStorage.text.text = $"{name} [ ID: {beatmapTheme.id} ]";
-
-                        EditorThemeManager.ApplyLightText(viewThemeStorage.baseColorsText);
-                        EditorThemeManager.ApplyLightText(viewThemeStorage.playerColorsText);
-                        EditorThemeManager.ApplyLightText(viewThemeStorage.objectColorsText);
-                        EditorThemeManager.ApplyLightText(viewThemeStorage.backgroundColorsText);
-                        EditorThemeManager.ApplyLightText(viewThemeStorage.effectColorsText);
-
-                        for (int i = 0; i < viewThemeStorage.baseColors.Count; i++)
-                        {
-                            viewThemeStorage.baseColors[i].color = i == 0 ? beatmapTheme.backgroundColor : i == 1 ? beatmapTheme.guiAccentColor : beatmapTheme.guiAccentColor;
-                            EditorThemeManager.ApplyGraphic(viewThemeStorage.baseColors[i], ThemeGroup.Null, true);
-                        }
-
-                        for (int i = 0; i < viewThemeStorage.playerColors.Count; i++)
-                        {
-                            if (i < beatmapTheme.playerColors.Count)
-                            {
-                                viewThemeStorage.playerColors[i].color = beatmapTheme.playerColors[i];
-                                EditorThemeManager.ApplyGraphic(viewThemeStorage.playerColors[i], ThemeGroup.Null, true);
-                            }
-                            else
-                                viewThemeStorage.playerColors[i].gameObject.SetActive(false);
-                        }
-
-                        for (int i = 0; i < viewThemeStorage.objectColors.Count; i++)
-                        {
-                            if (i < beatmapTheme.objectColors.Count)
-                            {
-                                viewThemeStorage.objectColors[i].color = beatmapTheme.objectColors[i];
-                                EditorThemeManager.ApplyGraphic(viewThemeStorage.objectColors[i], ThemeGroup.Null, true);
-                            }
-                            else
-                                viewThemeStorage.objectColors[i].gameObject.SetActive(false);
-                        }
-
-                        for (int i = 0; i < viewThemeStorage.backgroundColors.Count; i++)
-                        {
-                            if (i < beatmapTheme.backgroundColors.Count)
-                            {
-                                viewThemeStorage.backgroundColors[i].color = beatmapTheme.backgroundColors[i];
-                                EditorThemeManager.ApplyGraphic(viewThemeStorage.backgroundColors[i], ThemeGroup.Null, true);
-                            }
-                            else
-                                viewThemeStorage.backgroundColors[i].gameObject.SetActive(false);
-                        }
-
-                        for (int i = 0; i < viewThemeStorage.effectColors.Count; i++)
-                        {
-                            if (i < beatmapTheme.effectColors.Count)
-                            {
-                                viewThemeStorage.effectColors[i].color = beatmapTheme.effectColors[i];
-                                EditorThemeManager.ApplyGraphic(viewThemeStorage.effectColors[i], ThemeGroup.Null, true);
-                            }
-                            else
-                                viewThemeStorage.effectColors[i].gameObject.SetActive(false);
-                        }
-
-                        var use = viewThemeStorage.useButton;
-                        var useStorage = use.GetComponent<FunctionButtonStorage>();
-                        use.onClick.ClearAll();
-                        use.onClick.AddListener(() =>
-                        {
-                            if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => x.Type == 4))
-                                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                    timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            else if (EventEditor.inst.currentEventType == 4)
-                                GameData.Current.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            else if (GameData.Current.eventObjects.allEvents[4].Count > 0)
-                                GameData.Current.eventObjects.allEvents[4].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-
-                            EventManager.inst.updateEvents();
-                        });
-
-                        var convert = viewThemeStorage.convertButton;
-                        var convertStorage = convert.GetComponent<FunctionButtonStorage>();
-                        convert.onClick.ClearAll();
-                        convert.onClick.AddListener(() => ConvertTheme(beatmapTheme));
-
-                        EditorThemeManager.ApplyGraphic(viewThemeStorage.baseImage, ThemeGroup.List_Button_1_Normal, true);
-                        EditorThemeManager.ApplyLightText(viewThemeStorage.text);
-                        EditorThemeManager.ApplySelectable(use, ThemeGroup.Function_2);
-                        EditorThemeManager.ApplyGraphic(useStorage.text, ThemeGroup.Function_2_Text);
-                        EditorThemeManager.ApplySelectable(convert, ThemeGroup.Function_2);
-                        EditorThemeManager.ApplyGraphic(convertStorage.text, ThemeGroup.Function_2_Text);
-
-                        use.gameObject.SetActive(true);
-                        convert.gameObject.SetActive(true);
-                    }
-
                     num++;
+                    continue;
                 }
+
+                var gameObject = themePopupPanelPrefab.Duplicate(RTEditor.inst.ThemesPopup.Content, name);
+                gameObject.transform.localScale = Vector3.one;
+
+                var viewThemeStorage = gameObject.GetComponent<ViewThemePanelStorage>();
+                viewThemeStorage.text.text = $"{name} [ ID: {beatmapTheme.id} ]";
+
+                EditorThemeManager.ApplyLightText(viewThemeStorage.baseColorsText);
+                EditorThemeManager.ApplyLightText(viewThemeStorage.playerColorsText);
+                EditorThemeManager.ApplyLightText(viewThemeStorage.objectColorsText);
+                EditorThemeManager.ApplyLightText(viewThemeStorage.backgroundColorsText);
+                EditorThemeManager.ApplyLightText(viewThemeStorage.effectColorsText);
+
+                for (int i = 0; i < viewThemeStorage.baseColors.Count; i++)
+                {
+                    viewThemeStorage.baseColors[i].color = i == 0 ? beatmapTheme.backgroundColor : i == 1 ? beatmapTheme.guiAccentColor : beatmapTheme.guiAccentColor;
+                    EditorThemeManager.ApplyGraphic(viewThemeStorage.baseColors[i], ThemeGroup.Null, true);
+                }
+
+                for (int i = 0; i < viewThemeStorage.playerColors.Count; i++)
+                {
+                    if (i < beatmapTheme.playerColors.Count)
+                    {
+                        viewThemeStorage.playerColors[i].color = beatmapTheme.playerColors[i];
+                        EditorThemeManager.ApplyGraphic(viewThemeStorage.playerColors[i], ThemeGroup.Null, true);
+                    }
+                    else
+                        viewThemeStorage.playerColors[i].gameObject.SetActive(false);
+                }
+
+                for (int i = 0; i < viewThemeStorage.objectColors.Count; i++)
+                {
+                    if (i < beatmapTheme.objectColors.Count)
+                    {
+                        viewThemeStorage.objectColors[i].color = beatmapTheme.objectColors[i];
+                        EditorThemeManager.ApplyGraphic(viewThemeStorage.objectColors[i], ThemeGroup.Null, true);
+                    }
+                    else
+                        viewThemeStorage.objectColors[i].gameObject.SetActive(false);
+                }
+
+                for (int i = 0; i < viewThemeStorage.backgroundColors.Count; i++)
+                {
+                    if (i < beatmapTheme.backgroundColors.Count)
+                    {
+                        viewThemeStorage.backgroundColors[i].color = beatmapTheme.backgroundColors[i];
+                        EditorThemeManager.ApplyGraphic(viewThemeStorage.backgroundColors[i], ThemeGroup.Null, true);
+                    }
+                    else
+                        viewThemeStorage.backgroundColors[i].gameObject.SetActive(false);
+                }
+
+                for (int i = 0; i < viewThemeStorage.effectColors.Count; i++)
+                {
+                    if (i < beatmapTheme.effectColors.Count)
+                    {
+                        viewThemeStorage.effectColors[i].color = beatmapTheme.effectColors[i];
+                        EditorThemeManager.ApplyGraphic(viewThemeStorage.effectColors[i], ThemeGroup.Null, true);
+                    }
+                    else
+                        viewThemeStorage.effectColors[i].gameObject.SetActive(false);
+                }
+
+                var use = viewThemeStorage.useButton;
+                var useStorage = use.GetComponent<FunctionButtonStorage>();
+                use.onClick.ClearAll();
+                use.onClick.AddListener(() =>
+                {
+                    if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => x.Type == 4))
+                        foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                            timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                    else if (EventEditor.inst.currentEventType == 4)
+                        GameData.Current.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                    else if (GameData.Current.eventObjects.allEvents[4].Count > 0)
+                        GameData.Current.eventObjects.allEvents[4].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+
+                    EventManager.inst.updateEvents();
+                });
+
+                var convert = viewThemeStorage.convertButton;
+                var convertStorage = convert.GetComponent<FunctionButtonStorage>();
+                convert.onClick.ClearAll();
+                convert.onClick.AddListener(() => ConvertTheme(beatmapTheme));
+
+                EditorThemeManager.ApplyGraphic(viewThemeStorage.baseImage, ThemeGroup.List_Button_1_Normal, true);
+                EditorThemeManager.ApplyLightText(viewThemeStorage.text);
+                EditorThemeManager.ApplySelectable(use, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(useStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(convert, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(convertStorage.text, ThemeGroup.Function_2_Text);
+
+                use.gameObject.SetActive(true);
+                convert.gameObject.SetActive(true);
+
+                num++;
             }
         }
 

@@ -15,6 +15,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -2999,7 +3000,7 @@ namespace BetterLegacy.Editor.Managers
             this.addIndex = addIndex;
             var defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
 
-            LSHelpers.DeleteChildren(DefaultModifiersPopup.Content);
+            DefaultModifiersPopup.ClearContent();
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {

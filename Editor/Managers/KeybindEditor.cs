@@ -21,6 +21,7 @@ using BetterLegacy.Editor.Data;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -214,7 +215,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Dialog
 
-        public Transform content;
         public Transform editorDialog;
         public Dropdown actionDropdown;
         public RectTransform keysContent;
@@ -232,7 +232,6 @@ namespace BetterLegacy.Editor.Managers
                 searchTerm = _val;
                 RefreshKeybindPopup();
             }, placeholderText: "Search for keybind...");
-            content = popup.Content;
             Popup = popup;
 
             var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(popup.TopPanel, "Reload");
@@ -437,9 +436,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RefreshKeybindPopup()
         {
-            LSHelpers.DeleteChildren(content);
+            Popup.ClearContent();
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(content);
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
             var addText = add.transform.Find("Text").GetComponent<Text>();
             addText.text = "Add new Keybind";
             var addButton = add.GetComponent<Button>();
@@ -470,7 +469,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(content, name);
+                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, name);
 
                 EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
 
@@ -603,7 +602,7 @@ namespace BetterLegacy.Editor.Managers
                 type.onValueChanged.AddListener(_val =>
                 {
                     key.InteractType = (Keybind.Key.Type)_val;
-                    if (content.gameObject.activeInHierarchy)
+                    if (Popup.IsOpen)
                         RefreshKeybindPopup();
                     Save();
                     text.text = "Set Key";
@@ -618,7 +617,7 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.setKey = keyCode =>
                     {
                         key.KeyCode = keyCode;
-                        if (content.gameObject.activeInHierarchy)
+                        if (Popup.IsOpen)
                             RefreshKeybindPopup();
                         Save();
                         text.text = "Set Key";
@@ -628,7 +627,7 @@ namespace BetterLegacy.Editor.Managers
                         code.onValueChanged.AddListener(_val =>
                         {
                             key.KeyCode = (KeyCode)_val;
-                            if (content.gameObject.activeInHierarchy)
+                            if (Popup.IsOpen)
                                 RefreshKeybindPopup();
                             Save();
                             text.text = "Set Key";
@@ -646,7 +645,7 @@ namespace BetterLegacy.Editor.Managers
                 code.onValueChanged.AddListener(_val =>
                 {
                     key.KeyCode = (KeyCode)_val;
-                    if (content.gameObject.activeInHierarchy)
+                    if (Popup.IsOpen)
                         RefreshKeybindPopup();
                     Save();
                     text.text = "Set Key";
@@ -659,7 +658,7 @@ namespace BetterLegacy.Editor.Managers
                 delete.button.onClick.AddListener(() =>
                 {
                     keybind.keys.RemoveAt(index);
-                    if (content.gameObject.activeInHierarchy)
+                    if (Popup.IsOpen)
                         RefreshKeybindPopup();
                     RefreshKeybindEditor(keybind);
                     Save();

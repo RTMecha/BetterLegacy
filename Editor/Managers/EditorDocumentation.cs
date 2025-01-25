@@ -18,6 +18,7 @@ using TMPro;
 using System.IO;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -1043,7 +1044,7 @@ namespace BetterLegacy.Editor.Managers
             if (documents.Count > 0)
                 foreach (var document in documents)
                 {
-                    var active = string.IsNullOrEmpty(documentationSearch) || document.Name.ToLower().Contains(documentationSearch.ToLower());
+                    var active = RTString.SearchString(documentationSearch, document.Name);
                     document.PopupButton?.SetActive(active);
                     if (active && document.PopupButton && document.PopupButton.TryGetComponent(out Button button))
                     {

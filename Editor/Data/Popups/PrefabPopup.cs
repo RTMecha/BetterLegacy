@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BetterLegacy.Editor.Data.Popups
+{
+    /// <summary>
+    /// Represents the set of prefab popups.
+    /// </summary>
+    public class PrefabPopup : EditorPopup
+    {
+        public PrefabPopup(string name) : base(name) { }
+
+        /// <summary>
+        /// The popup for internal prefabs loaded from the game data.
+        /// </summary>
+        public ContentPopup InternalPrefabs { get; set; }
+
+        /// <summary>
+        /// The popup for external prefabs loaded from the users' set prefabs folder.
+        /// </summary>
+        public ContentPopup ExternalPrefabs { get; set; }
+
+        /// <summary>
+        /// Gets the internal / external popup.
+        /// </summary>
+        /// <param name="prefabDialog">Type of prefab popup to get.</param>
+        /// <returns>Returns a prefab popup.</returns>
+        public ContentPopup GetPopup(PrefabDialog prefabDialog) => prefabDialog switch
+        {
+            PrefabDialog.External => ExternalPrefabs,
+            PrefabDialog.Internal => InternalPrefabs,
+            _ => null,
+        };
+    }
+}

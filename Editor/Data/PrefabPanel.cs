@@ -190,8 +190,7 @@ namespace BetterLegacy.Editor.Data
             Prefab = prefab;
             var dialog = Dialog;
 
-            bool isExternal = Dialog == PrefabDialog.External;
-            gameObject = PrefabEditor.inst.AddPrefab.Duplicate(isExternal ? PrefabEditor.inst.externalContent : PrefabEditor.inst.internalContent);
+            gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTEditor.inst.PrefabPopups.GetPopup(dialog).Content);
 
             var hover = gameObject.AddComponent<HoverUI>();
             hover.animateSca = true;
