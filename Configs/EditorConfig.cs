@@ -786,40 +786,6 @@ namespace BetterLegacy.Configs
 
         #endregion
 
-        #region Editor Properties Popup
-
-        public Setting<bool> EditorPropertiesPopupActive { get; set; }
-
-        public Setting<bool> EditorPropertiesPopupPosActive { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupPosOpen { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupPosClose { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupPosOpenDuration { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupPosCloseDuration { get; set; }
-        public Setting<Easings> EditorPropertiesPopupPosXOpenEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupPosXCloseEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupPosYOpenEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupPosYCloseEase { get; set; }
-
-        public Setting<bool> EditorPropertiesPopupScaActive { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupScaOpen { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupScaClose { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupScaOpenDuration { get; set; }
-        public Setting<Vector2> EditorPropertiesPopupScaCloseDuration { get; set; }
-        public Setting<Easings> EditorPropertiesPopupScaXOpenEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupScaXCloseEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupScaYOpenEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupScaYCloseEase { get; set; }
-
-        public Setting<bool> EditorPropertiesPopupRotActive { get; set; }
-        public Setting<float> EditorPropertiesPopupRotOpen { get; set; }
-        public Setting<float> EditorPropertiesPopupRotClose { get; set; }
-        public Setting<float> EditorPropertiesPopupRotOpenDuration { get; set; }
-        public Setting<float> EditorPropertiesPopupRotCloseDuration { get; set; }
-        public Setting<Easings> EditorPropertiesPopupRotOpenEase { get; set; }
-        public Setting<Easings> EditorPropertiesPopupRotCloseEase { get; set; }
-
-        #endregion
-
         #region Documentation Popup
 
         public Setting<bool> DocumentationPopupActive { get; set; }
@@ -1055,6 +1021,40 @@ namespace BetterLegacy.Configs
         public Setting<float> PrefabTypesPopupRotCloseDuration { get; set; }
         public Setting<Easings> PrefabTypesPopupRotOpenEase { get; set; }
         public Setting<Easings> PrefabTypesPopupRotCloseEase { get; set; }
+
+        #endregion
+
+        #region Font Selector Popup
+
+        public Setting<bool> FontSelectorPopupActive { get; set; }
+
+        public Setting<bool> FontSelectorPopupPosActive { get; set; }
+        public Setting<Vector2> FontSelectorPopupPosOpen { get; set; }
+        public Setting<Vector2> FontSelectorPopupPosClose { get; set; }
+        public Setting<Vector2> FontSelectorPopupPosOpenDuration { get; set; }
+        public Setting<Vector2> FontSelectorPopupPosCloseDuration { get; set; }
+        public Setting<Easings> FontSelectorPopupPosXOpenEase { get; set; }
+        public Setting<Easings> FontSelectorPopupPosXCloseEase { get; set; }
+        public Setting<Easings> FontSelectorPopupPosYOpenEase { get; set; }
+        public Setting<Easings> FontSelectorPopupPosYCloseEase { get; set; }
+
+        public Setting<bool> FontSelectorPopupScaActive { get; set; }
+        public Setting<Vector2> FontSelectorPopupScaOpen { get; set; }
+        public Setting<Vector2> FontSelectorPopupScaClose { get; set; }
+        public Setting<Vector2> FontSelectorPopupScaOpenDuration { get; set; }
+        public Setting<Vector2> FontSelectorPopupScaCloseDuration { get; set; }
+        public Setting<Easings> FontSelectorPopupScaXOpenEase { get; set; }
+        public Setting<Easings> FontSelectorPopupScaXCloseEase { get; set; }
+        public Setting<Easings> FontSelectorPopupScaYOpenEase { get; set; }
+        public Setting<Easings> FontSelectorPopupScaYCloseEase { get; set; }
+
+        public Setting<bool> FontSelectorPopupRotActive { get; set; }
+        public Setting<float> FontSelectorPopupRotOpen { get; set; }
+        public Setting<float> FontSelectorPopupRotClose { get; set; }
+        public Setting<float> FontSelectorPopupRotOpenDuration { get; set; }
+        public Setting<float> FontSelectorPopupRotCloseDuration { get; set; }
+        public Setting<Easings> FontSelectorPopupRotOpenEase { get; set; }
+        public Setting<Easings> FontSelectorPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -2000,40 +2000,6 @@ namespace BetterLegacy.Configs
 
             #endregion
 
-            #region Editor Properties Popup
-
-            EditorPropertiesPopupActive = Bind(this, "Animations", "Editor Properties Popup Active", true, "If the popup animation should play.");
-
-            EditorPropertiesPopupPosActive = Bind(this, "Animations", "Editor Properties Popup Animate Position", false, "If position should be animated.");
-            EditorPropertiesPopupPosOpen = Bind(this, "Animations", "Editor Properties Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            EditorPropertiesPopupPosClose = Bind(this, "Animations", "Editor Properties Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            EditorPropertiesPopupPosOpenDuration = Bind(this, "Animations", "Editor Properties Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            EditorPropertiesPopupPosCloseDuration = Bind(this, "Animations", "Editor Properties Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            EditorPropertiesPopupPosXOpenEase = BindEnum(this, "Animations", "Editor Properties Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            EditorPropertiesPopupPosXCloseEase = BindEnum(this, "Animations", "Editor Properties Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            EditorPropertiesPopupPosYOpenEase = BindEnum(this, "Animations", "Editor Properties Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            EditorPropertiesPopupPosYCloseEase = BindEnum(this, "Animations", "Editor Properties Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
-
-            EditorPropertiesPopupScaActive = Bind(this, "Animations", "Editor Properties Popup Animate Scale", true, "If scale should be animated.");
-            EditorPropertiesPopupScaOpen = Bind(this, "Animations", "Editor Properties Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            EditorPropertiesPopupScaClose = Bind(this, "Animations", "Editor Properties Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            EditorPropertiesPopupScaOpenDuration = Bind(this, "Animations", "Editor Properties Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            EditorPropertiesPopupScaCloseDuration = Bind(this, "Animations", "Editor Properties Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            EditorPropertiesPopupScaXOpenEase = BindEnum(this, "Animations", "Editor Properties Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            EditorPropertiesPopupScaXCloseEase = BindEnum(this, "Animations", "Editor Properties Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            EditorPropertiesPopupScaYOpenEase = BindEnum(this, "Animations", "Editor Properties Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            EditorPropertiesPopupScaYCloseEase = BindEnum(this, "Animations", "Editor Properties Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
-
-            EditorPropertiesPopupRotActive = Bind(this, "Animations", "Editor Properties Popup Animate Rotation", false, "If rotation should be animated.");
-            EditorPropertiesPopupRotOpen = Bind(this, "Animations", "Editor Properties Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            EditorPropertiesPopupRotClose = Bind(this, "Animations", "Editor Properties Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            EditorPropertiesPopupRotOpenDuration = Bind(this, "Animations", "Editor Properties Popup Open Rotation Duration", 0f, "The duration of opening.");
-            EditorPropertiesPopupRotCloseDuration = Bind(this, "Animations", "Editor Properties Popup Close Rotation Duration", 0f, "The duration of closing.");
-            EditorPropertiesPopupRotOpenEase = BindEnum(this, "Animations", "Editor Properties Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            EditorPropertiesPopupRotCloseEase = BindEnum(this, "Animations", "Editor Properties Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
-
-            #endregion
-
             #region Documentation Popup
 
             DocumentationPopupActive = Bind(this, "Animations", "Documentation Popup Active", true, "If the popup animation should play.");
@@ -2269,6 +2235,40 @@ namespace BetterLegacy.Configs
             PrefabTypesPopupRotCloseDuration = Bind(this, "Animations", "Prefab Types Popup Close Rotation Duration", 0f, "The duration of closing.");
             PrefabTypesPopupRotOpenEase = BindEnum(this, "Animations", "Prefab Types Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
             PrefabTypesPopupRotCloseEase = BindEnum(this, "Animations", "Prefab Types Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+
+            #endregion
+            
+            #region Font Selector Popup
+
+            FontSelectorPopupActive = Bind(this, "Animations", "Font Selector Popup Active", true, "If the popup animation should play.");
+
+            FontSelectorPopupPosActive = Bind(this, "Animations", "Font Selector Popup Animate Position", false, "If position should be animated.");
+            FontSelectorPopupPosOpen = Bind(this, "Animations", "Font Selector Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FontSelectorPopupPosClose = Bind(this, "Animations", "Font Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FontSelectorPopupPosOpenDuration = Bind(this, "Animations", "Font Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            FontSelectorPopupPosCloseDuration = Bind(this, "Animations", "Font Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            FontSelectorPopupPosXOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosXCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosYOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosYCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+
+            FontSelectorPopupScaActive = Bind(this, "Animations", "Font Selector Popup Animate Scale", true, "If scale should be animated.");
+            FontSelectorPopupScaOpen = Bind(this, "Animations", "Font Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FontSelectorPopupScaClose = Bind(this, "Animations", "Font Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FontSelectorPopupScaOpenDuration = Bind(this, "Animations", "Font Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            FontSelectorPopupScaCloseDuration = Bind(this, "Animations", "Font Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            FontSelectorPopupScaXOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            FontSelectorPopupScaXCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            FontSelectorPopupScaYOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            FontSelectorPopupScaYCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+
+            FontSelectorPopupRotActive = Bind(this, "Animations", "Font Selector Popup Animate Rotation", false, "If rotation should be animated.");
+            FontSelectorPopupRotOpen = Bind(this, "Animations", "Font Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FontSelectorPopupRotClose = Bind(this, "Animations", "Font Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FontSelectorPopupRotOpenDuration = Bind(this, "Animations", "Font Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
+            FontSelectorPopupRotCloseDuration = Bind(this, "Animations", "Font Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
+            FontSelectorPopupRotOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupRotCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
