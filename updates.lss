@@ -1,3 +1,12 @@
+snapshot-2025.1.10 - (pre-1.7.0) > [Jan 26, 2025]
+- Fixed color modifiers not working with text objects.
+- Added more_bins achievement.
+- You can now drag the timeline around when you drag on timeline objects.
+- Added max bin count and default bin count buttons in the timeline context menu.
+- Fixed player tail length being offset.
+- Added Toggle Object Preview Visibility to the editor layer field context menu. This is ease of access for the "Only Objects on Current Layer Visible" setting.
+- Removed unused Editor Properties settings since that was removed a long while ago.
+- Added a Text Object context menu. Comes with a new Font Selector Popup list.
 snapshot-2025.1.9 - (pre-1.7.0) > [Jan 21, 2025]
 - Fixed editor tick throwing an error in some cases.
 snapshot-2025.1.8 - (pre-1.7.0) > [Jan 18, 2025]
