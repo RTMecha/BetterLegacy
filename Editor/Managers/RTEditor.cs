@@ -881,6 +881,8 @@ namespace BetterLegacy.Editor.Managers
         public EditorPopup TextEditorPopup { get; set; }
         public ContentPopup FontSelectorPopup { get; set; }
 
+        public ContentPopup KeybindListPopup { get; set; }
+
         #endregion
 
         #region Dragging
