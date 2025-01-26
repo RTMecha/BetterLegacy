@@ -684,6 +684,40 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Object Template Popup
+
+        public Setting<bool> ObjectTemplatePopupActive { get; set; }
+
+        public Setting<bool> ObjectTemplatePopupPosActive { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupPosOpen { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupPosClose { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupPosOpenDuration { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupPosCloseDuration { get; set; }
+        public Setting<Easings> ObjectTemplatePopupPosXOpenEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupPosXCloseEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupPosYOpenEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupPosYCloseEase { get; set; }
+
+        public Setting<bool> ObjectTemplatePopupScaActive { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupScaOpen { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupScaClose { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupScaOpenDuration { get; set; }
+        public Setting<Vector2> ObjectTemplatePopupScaCloseDuration { get; set; }
+        public Setting<Easings> ObjectTemplatePopupScaXOpenEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupScaXCloseEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupScaYOpenEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupScaYCloseEase { get; set; }
+
+        public Setting<bool> ObjectTemplatePopupRotActive { get; set; }
+        public Setting<float> ObjectTemplatePopupRotOpen { get; set; }
+        public Setting<float> ObjectTemplatePopupRotClose { get; set; }
+        public Setting<float> ObjectTemplatePopupRotOpenDuration { get; set; }
+        public Setting<float> ObjectTemplatePopupRotCloseDuration { get; set; }
+        public Setting<Easings> ObjectTemplatePopupRotOpenEase { get; set; }
+        public Setting<Easings> ObjectTemplatePopupRotCloseEase { get; set; }
+
+        #endregion
+
         #region Warning Popup
 
         public Setting<bool> WarningPopupActive { get; set; }
@@ -1895,6 +1929,40 @@ namespace BetterLegacy.Configs
             ObjectSearchPopupRotCloseDuration = Bind(this, "Animations", "Object Search Popup Close Rotation Duration", 0f, "The duration of closing.");
             ObjectSearchPopupRotOpenEase = BindEnum(this, "Animations", "Object Search Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
             ObjectSearchPopupRotCloseEase = BindEnum(this, "Animations", "Object Search Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Object Template Popup
+
+            ObjectTemplatePopupActive = Bind(this, "Animations", "Object Template Popup Active", true, "If the popup animation should play.");
+
+            ObjectTemplatePopupPosActive = Bind(this, "Animations", "Object Template Popup Animate Position", false, "If position should be animated.");
+            ObjectTemplatePopupPosOpen = Bind(this, "Animations", "Object Template Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectTemplatePopupPosClose = Bind(this, "Animations", "Object Template Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectTemplatePopupPosOpenDuration = Bind(this, "Animations", "Object Template Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            ObjectTemplatePopupPosCloseDuration = Bind(this, "Animations", "Object Template Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            ObjectTemplatePopupPosXOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosXCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosYOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosYCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+
+            ObjectTemplatePopupScaActive = Bind(this, "Animations", "Object Template Popup Animate Scale", true, "If scale should be animated.");
+            ObjectTemplatePopupScaOpen = Bind(this, "Animations", "Object Template Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectTemplatePopupScaClose = Bind(this, "Animations", "Object Template Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectTemplatePopupScaOpenDuration = Bind(this, "Animations", "Object Template Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ObjectTemplatePopupScaCloseDuration = Bind(this, "Animations", "Object Template Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ObjectTemplatePopupScaXOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectTemplatePopupScaXCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ObjectTemplatePopupScaYOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectTemplatePopupScaYCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+
+            ObjectTemplatePopupRotActive = Bind(this, "Animations", "Object Template Popup Animate Rotation", false, "If rotation should be animated.");
+            ObjectTemplatePopupRotOpen = Bind(this, "Animations", "Object Template Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectTemplatePopupRotClose = Bind(this, "Animations", "Object Template Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectTemplatePopupRotOpenDuration = Bind(this, "Animations", "Object Template Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ObjectTemplatePopupRotCloseDuration = Bind(this, "Animations", "Object Template Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ObjectTemplatePopupRotOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupRotCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 

@@ -5911,6 +5911,38 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.ObjectSearchPopupRotCloseEase,
             },
+            new EditorAnimation(EditorPopup.OBJECT_TEMPLATES_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.ObjectTemplatePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.ObjectTemplatePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.ObjectTemplatePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.ObjectTemplatePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.ObjectTemplatePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.ObjectTemplatePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.ObjectTemplatePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.ObjectTemplatePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.ObjectTemplatePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.ObjectTemplatePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.ObjectTemplatePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.ObjectTemplatePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.ObjectTemplatePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.ObjectTemplatePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.ObjectTemplatePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.ObjectTemplatePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.ObjectTemplatePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.ObjectTemplatePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.ObjectTemplatePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.ObjectTemplatePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.ObjectTemplatePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.ObjectTemplatePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.ObjectTemplatePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.ObjectTemplatePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.ObjectTemplatePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.ObjectTemplatePopupRotCloseEase,
+            },
             new EditorAnimation(EditorPopup.WARNING_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.WarningPopupActive,
