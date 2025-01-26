@@ -79,6 +79,7 @@
 - ApplyElement function that parses a JSON from the parameters and applies it to an element.
 - Possible multi object editor rework???
 - Customizable object templates.
+- Custom Shape type (alpha shape generator support if that ever happens)
 
 ### Internal
 - Make Editor Documentation read from a json file. > 1.8.0
