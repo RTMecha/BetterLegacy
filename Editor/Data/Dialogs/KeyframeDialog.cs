@@ -23,10 +23,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public KeyframeDialog(int type) => this.type = type;
 
-        public int type;
-        public bool isMulti;
-        public bool isObjectKeyframe;
+        #region Properties
 
+        /// <summary>
+        /// Name of the keyframes' type.
+        /// </summary>
+        public string Name => isObjectKeyframe ? ObjectEditor.IntToTypeName(type) : RTEventEditor.EventTypes[type];
+
+        /// <summary>
+        /// Game object of the keyframe editor.
+        /// </summary>
         public GameObject GameObject { get; set; }
 
         #region Edit
@@ -64,10 +70,28 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
-        /// Name of the keyframes' type.
+        /// The type of the keyframe. (e.g. position, scale, etc)
         /// </summary>
-        public string Name => isObjectKeyframe ? ObjectEditor.IntToTypeName(type) : RTEventEditor.EventTypes[type];
+        public int type;
+
+        /// <summary>
+        /// If the keyframe editor is a multi keyframe editor.
+        /// </summary>
+        public bool isMulti;
+
+        /// <summary>
+        /// If the keyframe is from an object.
+        /// </summary>
+        public bool isObjectKeyframe;
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Initializes the keyframe dialog.
@@ -192,5 +216,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         }
 
         public override string ToString() => GameObject?.name;
+
+        #endregion
     }
 }

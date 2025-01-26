@@ -11,11 +11,14 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
+    /// <summary>
+    /// Represents the object editor dialog for editing a <see cref="Core.Data.BeatmapObject"/>.
+    /// </summary>
     public class ObjectEditorDialog : EditorDialog
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 
-        #region Object Properties
+        #region Object Values
 
         public RectTransform Content { get; set; }
 
@@ -110,9 +113,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        #endregion
+
+        #region Keyframe Editors
+
+        /// <summary>
+        /// The currently open object keyframe editor.
+        /// </summary>
         public KeyframeDialog CurrentKeyframeDialog { get; set; }
 
+        /// <summary>
+        /// A list containing all the event keyframe editors.
+        /// </summary>
         public List<KeyframeDialog> keyframeDialogs = new List<KeyframeDialog>();
+
+        #endregion
 
         public override void Init()
         {
@@ -266,6 +281,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
+        /// <summary>
+        /// Opens an object keyframe editor.
+        /// </summary>
+        /// <param name="type">The type of object keyframe.</param>
         public void OpenKeyframeDialog(int type)
         {
             for (int i = 0; i < keyframeDialogs.Count; i++)
@@ -277,13 +296,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
+        /// <summary>
+        /// Checks if <see cref="CurrentKeyframeDialog"/> is of a specific keyframe type.
+        /// </summary>
+        /// <param name="type">The type of object keyframe.</param>
+        /// <returns>Returns true if the current keyframe dialog type matches the specific type, otherwise returns false.</returns>
+        public bool IsCurrentKeyframeType(int type) => CurrentKeyframeDialog && CurrentKeyframeDialog.type == type;
+
+        /// <summary>
+        /// Closes the keyframe dialogs.
+        /// </summary>
         public void CloseKeyframeDialogs()
         {
             for (int i = 0; i < keyframeDialogs.Count; i++)
                 keyframeDialogs[i].SetActive(false);
             CurrentKeyframeDialog = null;
         }
-
-        #endregion
     }
 }
