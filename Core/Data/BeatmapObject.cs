@@ -1651,15 +1651,33 @@ namespace BetterLegacy.Core.Data
         #region Parent / Child
 
         /// <summary>
+        /// Gets the parent of the object.
+        /// </summary>
+        /// <returns>Returns a <see cref="BeatmapObject"/> that this object is parented to. If no object was found, returns null.</returns>
+        public BeatmapObject GetParent() => GetParent(GameData.Current.beatmapObjects);
+
+        /// <summary>
+        /// Gets the parent of the object.
+        /// </summary>
+        /// <param name="beatmapObjects">Beatmap Object list to search for a parent.</param>
+        /// <returns>Returns a <see cref="BeatmapObject"/> that this object is parented to. If no object was found, returns null.</returns>
+        public BeatmapObject GetParent(List<BeatmapObject> beatmapObjects) => beatmapObjects.Find(x => x.id == parent);
+
+        /// <summary>
         /// Iterates through the object parent chain (including the object itself).
         /// </summary>
-        /// <param name="beatmapObject">Beatmap Object to get the parent chain of.</param>
-        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
-        public List<BeatmapObject> GetParentChain()
+        /// <returns>Returns a list of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public List<BeatmapObject> GetParentChain() => GetParentChain(GameData.Current.beatmapObjects);
+
+        /// <summary>
+        /// Iterates through the object parent chain (including the object itself).
+        /// </summary>
+        /// <param name="beatmapObjects">Beatmap Object list to find the parent chain in.</param>
+        /// <returns>Returns a list of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public List<BeatmapObject> GetParentChain(List<BeatmapObject> beatmapObjects)
         {
             var list = new List<BeatmapObject>();
 
-            var beatmapObjects = GameData.Current.beatmapObjects;
             string parent = this.parent;
             int index = beatmapObjects.FindIndex(x => x.id == parent);
 
@@ -1676,20 +1694,21 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Iterates through the object parent chain (including the object itself).
         /// </summary>
-        /// <param name="beatmapObject">Beatmap Object to get the parent chain of.</param>
-        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
-        public IEnumerable<BeatmapObject> IGetParentChain()
-        {
-            var beatmapObjects = GameData.Current.beatmapObjects;
-            string parent = this.parent;
-            int index = beatmapObjects.FindIndex(x => x.id == parent);
+        /// <returns>Returns a list of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public IEnumerable<BeatmapObject> IGetParentChain() => IGetParentChain(GameData.Current.beatmapObjects);
 
-            yield return this;
-            while (index >= 0)
+        /// <summary>
+        /// Iterates through the object parent chain (including the object itself).
+        /// </summary>
+        /// <param name="beatmapObjects">Beatmap Object list to find the parent chain in.</param>
+        /// <returns>Returns a list of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public IEnumerable<BeatmapObject> IGetParentChain(List<BeatmapObject> beatmapObjects)
+        {
+            var beatmapObject = this;
+            while (beatmapObject)
             {
-                yield return beatmapObjects[index];
-                parent = beatmapObjects[index].parent;
-                index = beatmapObjects.FindIndex(x => x.id == parent);
+                yield return beatmapObject;
+                beatmapObject = beatmapObject.GetParent(beatmapObjects);
             }
         }
 
