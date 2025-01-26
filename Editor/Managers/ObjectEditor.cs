@@ -1373,7 +1373,7 @@ namespace BetterLegacy.Editor.Managers
 
                         st = -(st - RTEditor.SnapToBPM(st + timelineObject.Time));
 
-                        float timePosition = ObjectEditor.TimeTimelineCalc(st);
+                        float timePosition = TimeTimelineCalc(st);
 
                         ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(timePosition, 0f);
 
@@ -1928,6 +1928,74 @@ namespace BetterLegacy.Editor.Managers
         public static float TimelineObjectHoverSize { get; set; }
 
         public static float TimelineCollapseLength { get; set; }
+
+        // TODO: Make this data-driven via a "create_object.json" file.
+        /// <summary>
+        /// List of extra options used to create objects.
+        /// </summary>
+        public List<ObjectOption> objectOptions = new List<ObjectOption>()
+        {
+            new ObjectOption("Normal", "A regular square object that hits the player.", null),
+            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Helper;
+                bm.name = nameof(ObjectType.Helper);
+            }),
+            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Decoration;
+                bm.name = nameof(ObjectType.Decoration);
+            }),
+            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Solid;
+                bm.name = nameof(ObjectType.Solid);
+            }),
+            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Decoration;
+                bm.name = nameof(ObjectType.Helper);
+                bm.events[3][0].eventValues[1] = 0.65f;
+            }),
+            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Normal;
+                bm.name = "Collision";
+                bm.events[3][0].eventValues[1] = 1f;
+            }),
+            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Solid;
+                bm.name = "Collision";
+                bm.events[3][0].eventValues[1] = 1f;
+            }),
+            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+            }),
+            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
+                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
+            }),
+        };
 
         #endregion
 
@@ -3688,7 +3756,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ParentClearButton.onClick.ClearAll();
             Dialog.ParentPickerButton.onClick.ClearAll();
 
-            Dialog.ParentSearchButton.onClick.AddListener(EditorManager.inst.OpenParentPopup);
+            Dialog.ParentSearchButton.onClick.AddListener(ShowParentSearch);
             var parentSearchContextMenu = Dialog.ParentSearchButton.gameObject.GetOrAddComponent<ContextClickable>();
             parentSearchContextMenu.onClick = eventData =>
             {
@@ -3696,7 +3764,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Open Parent Popup", EditorManager.inst.OpenParentPopup),
+                    new ButtonFunction("Open Parent Popup", () => ShowParentSearch(EditorTimeline.inst.GetTimelineObject(beatmapObject))),
                     new ButtonFunction("Parent to Camera", () =>
                     {
                         beatmapObject.parent = BeatmapObject.CAMERA_PARENT;
@@ -3726,7 +3794,7 @@ namespace BetterLegacy.Editor.Managers
                     if (parentChain.Count > 0)
                         list.Add(new ButtonFunction("View Parent Chain", () =>
                         {
-                            RTEditor.inst.ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: parentChain);
+                            ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: parentChain);
                         }));
                 }
 
@@ -3736,7 +3804,7 @@ namespace BetterLegacy.Editor.Managers
                     if (childTree.Count > 0)
                         list.Add(new ButtonFunction("View Child Tree", () =>
                         {
-                            RTEditor.inst.ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: childTree);
+                            ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: childTree);
                         }));
                 }
 
@@ -6041,6 +6109,337 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(beatmapObject, "Shape");
 
             RenderShape(beatmapObject);
+        }
+
+        #endregion
+
+        #region Object Search
+
+        public string objectSearchTerm = string.Empty;
+
+        /// <summary>
+        /// Shows a list of <see cref="BeatmapObject"/>s in the level.
+        /// </summary>
+        /// <param name="onSelect">Function to run when a button is clicked.</param>
+        /// <param name="clearParent">If the Clear Parents button should render.</param>
+        /// <param name="beatmapObjects">List of <see cref="BeatmapObject"/> to render.</param>
+        public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
+        {
+            RTEditor.inst.ObjectSearchPopup.Open();
+            RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
+        }
+
+        /// <summary>
+        /// Refreshes the list of <see cref="BeatmapObject"/>s in the level.
+        /// </summary>
+        /// <param name="onSelect">Function to run when a button is clicked.</param>
+        /// <param name="clearParent">If the Clear Parents button should render.</param>
+        /// <param name="beatmapObjects">List of <see cref="BeatmapObject"/> to render.</param>
+        public void RefreshObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
+        {
+            RTEditor.inst.ObjectSearchPopup.SearchField.onValueChanged.ClearAll();
+            RTEditor.inst.ObjectSearchPopup.SearchField.onValueChanged.AddListener(_val =>
+            {
+                objectSearchTerm = _val;
+                RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
+            });
+
+            RTEditor.inst.ObjectSearchPopup.ClearContent();
+
+            if (clearParent)
+            {
+                var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.ObjectSearchPopup.Content, "Clear Parents");
+                buttonPrefab.transform.GetChild(0).GetComponent<Text>().text = "Clear Parents";
+
+                var button = buttonPrefab.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
+                {
+                    foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    {
+                        bm.parent = "";
+                        Updater.UpdateObject(bm);
+                    }
+                });
+
+                var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
+                image.color = Color.red;
+                image.sprite = EditorSprites.CloseSprite;
+            }
+
+            if (beatmapObjects == null)
+                beatmapObjects = GameData.Current.beatmapObjects;
+
+            var list = beatmapObjects.FindAll(x => !x.fromPrefab);
+            foreach (var beatmapObject in list)
+            {
+                var regex = new Regex(@"\[([0-9])\]");
+                var match = regex.Match(objectSearchTerm);
+
+                if (string.IsNullOrEmpty(objectSearchTerm) ||
+                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < beatmapObjects.Count && beatmapObjects.IndexOf(beatmapObject) == index ||
+                    beatmapObject.id == objectSearchTerm ||
+                    beatmapObject.name.ToLower().Contains(objectSearchTerm.ToLower()))
+                {
+                    string nm = $"[{(list.IndexOf(beatmapObject) + 1).ToString("0000")}/{list.Count.ToString("0000")} - {beatmapObject.id}] : {beatmapObject.name}";
+                    var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.ObjectSearchPopup.Content, nm);
+                    var buttonText = buttonPrefab.transform.GetChild(0).GetComponent<Text>();
+                    buttonText.text = nm;
+
+                    var button = buttonPrefab.GetComponent<Button>();
+                    button.onClick.ClearAll();
+                    button.onClick.AddListener(() => { onSelect?.Invoke(beatmapObject); });
+
+                    var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
+                    image.color = RTEditor.GetObjectColor(beatmapObject, false);
+
+                    var shape = Mathf.Clamp(beatmapObject.shape, 0, ShapeManager.inst.Shapes2D.Count - 1);
+                    var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ShapeManager.inst.Shapes2D[shape].Count - 1);
+
+                    image.sprite = ShapeManager.inst.Shapes2D[shape][shapeOption].icon;
+
+                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                    EditorThemeManager.ApplyLightText(buttonText);
+
+                    string desc = "";
+                    string hint = "";
+
+                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                    {
+                        var transform = levelObject.visualObject.GameObject.transform;
+
+                        string parent = "";
+                        if (!string.IsNullOrEmpty(beatmapObject.parent))
+                            parent = "<br>P: " + beatmapObject.parent + " (" + beatmapObject.GetParentType() + ")";
+                        else
+                            parent = "<br>P: No Parent" + " (" + beatmapObject.GetParentType() + ")";
+
+                        string text = "";
+                        if (beatmapObject.shape != 4 || beatmapObject.shape != 6)
+                            text = "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption) +
+                                "<br>T: " + beatmapObject.text;
+                        if (beatmapObject.shape == 4)
+                            text = "<br>S: Text" +
+                                "<br>T: " + beatmapObject.text;
+                        if (beatmapObject.shape == 6)
+                            text = "<br>S: Image" +
+                                "<br>T: " + beatmapObject.text;
+
+                        string ptr = "";
+                        if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
+                            ptr = "<br><#" + CoreHelper.ColorToHex((beatmapObject).Prefab.PrefabType.Color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
+                        else
+                            ptr = "<br>Not from prefab";
+
+                        desc = "N/ST: " + beatmapObject.name + " [ " + beatmapObject.StartTime + " ]";
+                        hint = "ID: {" + beatmapObject.id + "}" +
+                            parent +
+                            "<br>Alive: " + beatmapObject.Alive.ToString() +
+                            "<br>Origin: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
+                            text +
+                            "<br>Depth: " + beatmapObject.Depth +
+                            "<br>ED: {L: " + beatmapObject.editorData.layer + ", B: " + beatmapObject.editorData.Bin + "}" +
+                            "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
+                            "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
+                            "<br>ROT: " + transform.eulerAngles.z +
+                            "<br>COL: " + "<#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, false)) + ">" + "█ <b>#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, true)) + "</b></color>" +
+                            ptr;
+
+                        TooltipHelper.AddHoverTooltip(buttonPrefab, desc, hint);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows extra object templates.
+        /// </summary>
+        public void ShowObjectTemplates()
+        {
+            RTEditor.inst.ObjectTemplatePopup.Open();
+            RTEditor.inst.ObjectTemplatePopup.UpdateSearchFunction(RefreshObjectTemplates);
+            RefreshObjectTemplates(RTEditor.inst.ObjectTemplatePopup.SearchField.text);
+        }
+
+        /// <summary>
+        /// Refreshes the list of extra object templates.
+        /// </summary>
+        /// <param name="search">The search term.</param>
+        public void RefreshObjectTemplates(string search)
+        {
+            RTEditor.inst.ObjectTemplatePopup.ClearContent();
+            for (int i = 0; i < objectOptions.Count; i++)
+            {
+                if (!RTString.SearchString(search, objectOptions[i].name))
+                    continue;
+
+                var name = objectOptions[i].name;
+                var hint = objectOptions[i].hint;
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ObjectTemplatePopup.Content, "Function");
+
+                gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(objectOptions[i].Create);
+
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
+                text.text = name;
+                EditorThemeManager.ApplyLightText(text);
+            }
+        }
+
+        /// <summary>
+        /// Shows the parent search.
+        /// </summary>
+        public void ShowParentSearch() => ShowParentSearch(EditorTimeline.inst.CurrentSelection);
+
+        /// <summary>
+        /// Shows the parent search.
+        /// </summary>
+        /// <param name="timelineObject">The object to parent.</param>
+        public void ShowParentSearch(TimelineObject timelineObject)
+        {
+            RTEditor.inst.ParentSelectorPopup.Open();
+            RefreshParentSearch(timelineObject);
+        }
+
+        /// <summary>
+        /// Refrehes the parent search.
+        /// </summary>
+        /// <param name="timelineObject">The object to parent.</param>
+        public void RefreshParentSearch(TimelineObject timelineObject)
+        {
+            RTEditor.inst.ParentSelectorPopup.ClearContent();
+
+            var noParent = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ParentSelectorPopup.Content, "No Parent");
+            noParent.transform.localScale = Vector3.one;
+            var noParentText = noParent.transform.GetChild(0).GetComponent<Text>();
+            noParentText.text = "No Parent";
+            var noParentButton = noParent.GetComponent<Button>();
+            noParentButton.onClick.ClearAll();
+            noParentButton.onClick.AddListener(() =>
+            {
+                var list = EditorTimeline.inst.SelectedObjects;
+                foreach (var timelineObject in list)
+                {
+                    if (timelineObject.isPrefabObject)
+                    {
+                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                        prefabObject.parent = "";
+                        Updater.UpdatePrefab(prefabObject, recalculate: false);
+                        RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+
+                        continue;
+                    }
+
+                    var bm = timelineObject.GetData<BeatmapObject>();
+                    bm.parent = "";
+                    Updater.UpdateObject(bm, recalculate: false);
+                }
+
+                Updater.RecalculateObjectStates();
+                RTEditor.inst.ParentSelectorPopup.Close();
+                if (list.Count == 1 && timelineObject.isBeatmapObject)
+                    StartCoroutine(RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                if (list.Count == 1 && timelineObject.isPrefabObject)
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
+            });
+
+            EditorThemeManager.ApplySelectable(noParentButton, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(noParentText);
+
+            if (RTString.SearchString(EditorManager.inst.parentSearch, "camera"))
+            {
+                var cam = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ParentSelectorPopup.Content, "Camera");
+                var camText = cam.transform.GetChild(0).GetComponent<Text>();
+                var camButton = cam.GetComponent<Button>();
+
+                camText.text = "Camera";
+                camButton.onClick.ClearAll();
+                camButton.onClick.AddListener(() =>
+                {
+                    var list = EditorTimeline.inst.SelectedObjects;
+                    foreach (var timelineObject in list)
+                    {
+                        if (timelineObject.isPrefabObject)
+                        {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.parent = BeatmapObject.CAMERA_PARENT;
+                            Updater.UpdatePrefab(prefabObject, recalculate: false);
+
+                            continue;
+                        }
+
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.parent = BeatmapObject.CAMERA_PARENT;
+                        Updater.UpdateObject(bm, recalculate: false);
+                    }
+
+                    Updater.RecalculateObjectStates();
+                    RTEditor.inst.ParentSelectorPopup.Close();
+                    if (list.Count == 1 && timelineObject.isBeatmapObject)
+                        StartCoroutine(RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                    if (list.Count == 1 && timelineObject.isPrefabObject)
+                        RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
+                });
+
+                EditorThemeManager.ApplySelectable(camButton, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(camText);
+            }
+
+            foreach (var obj in GameData.Current.beatmapObjects)
+            {
+                if (obj.fromPrefab)
+                    continue;
+
+                int index = GameData.Current.beatmapObjects.IndexOf(obj);
+
+                if (!RTString.SearchString(EditorManager.inst.parentSearch, obj.name + " " + index.ToString("0000")) || obj.id == timelineObject.ID ||
+                    !timelineObject.isPrefabObject && !timelineObject.GetData<BeatmapObject>().CanParent(obj, GameData.Current.beatmapObjects))
+                    continue;
+
+                string s = $"{obj.name} {index.ToString("0000")}";
+                var objectToParent = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ParentSelectorPopup.Content, s);
+                var objectToParentText = objectToParent.transform.GetChild(0).GetComponent<Text>();
+                var objectToParentButton = objectToParent.GetComponent<Button>();
+
+                objectToParentText.text = s;
+                objectToParentButton.onClick.ClearAll();
+                objectToParentButton.onClick.AddListener(() =>
+                {
+                    string id = obj.id;
+
+                    var list = EditorTimeline.inst.SelectedObjects;
+                    foreach (var timelineObject in list)
+                    {
+                        if (timelineObject.isPrefabObject)
+                        {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.parent = id;
+                            Updater.UpdatePrefab(prefabObject);
+
+                            continue;
+                        }
+
+                        timelineObject.GetData<BeatmapObject>().SetParent(obj, false);
+                    }
+
+                    Updater.RecalculateObjectStates();
+
+                    RTEditor.inst.ParentSelectorPopup.Close();
+
+                    if (list.Count == 1 && timelineObject.isPrefabObject)
+                        RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
+
+                    Debug.Log($"{EditorManager.inst.className}Set Parent ID: {id}");
+                });
+
+                EditorThemeManager.ApplySelectable(objectToParentButton, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(objectToParentText);
+            }
         }
 
         #endregion

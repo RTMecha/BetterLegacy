@@ -783,12 +783,12 @@ namespace BetterLegacy.Editor.Managers
             parentText.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
 
             parentParent.onClick.ClearAll();
-            parentParent.onClick.AddListener(() => { EditorManager.inst.OpenParentPopup(); });
+            parentParent.onClick.AddListener(() => ObjectEditor.inst.ShowParentSearch(EditorTimeline.inst.GetTimelineObject(prefabObject)));
 
             parentClear.onClick.ClearAll();
 
             parentPicker.onClick.ClearAll();
-            parentPicker.onClick.AddListener(() => { RTEditor.inst.parentPickerEnabled = true; });
+            parentPicker.onClick.AddListener(() => RTEditor.inst.parentPickerEnabled = true);
 
             parentClear.gameObject.SetActive(!string.IsNullOrEmpty(parent));
 

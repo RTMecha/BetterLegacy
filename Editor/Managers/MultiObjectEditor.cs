@@ -653,7 +653,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 GenerateLabels(parent, 32f, "Set Parent");
                 GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("Search list", EditorManager.inst.OpenParentPopup),
+                    new ButtonFunction("Search list", ObjectEditor.inst.ShowParentSearch),
                     new ButtonFunction("Picker", () =>
                     {
                         RTEditor.inst.parentPickerEnabled = true;
@@ -2861,7 +2861,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(400f,
                     new ButtonFunction($"Sync {nameContext} via Search", () =>
                     {
-                        RTEditor.inst.ShowObjectSearch(beatmapObject =>
+                        ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
                         {
                             SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
                             RTEditor.inst.ObjectSearchPopup.Close();
@@ -2879,7 +2879,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            RTEditor.inst.ShowObjectSearch(beatmapObject =>
+            ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
             {
                 SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
                 RTEditor.inst.ObjectSearchPopup.Close();

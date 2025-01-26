@@ -895,7 +895,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderParentSearchListPrefix()
         {
-            RTEditor.inst.RefreshParentSearch(EditorTimeline.inst.CurrentSelection);
+            ObjectEditor.inst.RefreshParentSearch(EditorTimeline.inst.CurrentSelection);
             return false;
         }
 
