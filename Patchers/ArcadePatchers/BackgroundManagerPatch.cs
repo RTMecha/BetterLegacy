@@ -128,13 +128,12 @@ namespace BetterLegacy.Patchers
                         }
                     }
                     else
-                        for (int i = 0; i < backgroundObject.renderers.Count; i++)
+                        backgroundObject.renderers.ForLoop((renderer, i) =>
                         {
-                            var renderer = backgroundObject.renderers[i];
                             if (i == 0)
                             {
                                 renderer.material.color = mainColor;
-                                continue;
+                                return;
                             }
 
                             if (!renderer.gameObject.activeSelf)
@@ -143,57 +142,55 @@ namespace BetterLegacy.Patchers
                             float t = 1f / layer * i;
 
                             renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
-                        }
+                        });
 
-                    if (backgroundObject.reactive)
-                    {
-                        switch (backgroundObject.reactiveType)
-                        {
-                            case DataManager.GameData.BackgroundObject.ReactiveType.LOW:
-                                backgroundObject.reactiveSize = new Vector2(__instance.sampleLow, __instance.sampleLow) * backgroundObject.reactiveScale;
-                                break;
-                            case DataManager.GameData.BackgroundObject.ReactiveType.MID:
-                                backgroundObject.reactiveSize = new Vector2(__instance.sampleMid, __instance.sampleMid) * backgroundObject.reactiveScale;
-                                break;
-                            case DataManager.GameData.BackgroundObject.ReactiveType.HIGH:
-                                backgroundObject.reactiveSize = new Vector2(__instance.sampleHigh, __instance.sampleHigh) * backgroundObject.reactiveScale;
-                                break;
-                            case (DataManager.GameData.BackgroundObject.ReactiveType)3:
-                                {
-                                    float xr = Updater.GetSample(backgroundObject.reactiveScaSamples[0], backgroundObject.reactiveScaIntensity[0]);
-                                    float yr = Updater.GetSample(backgroundObject.reactiveScaSamples[1], backgroundObject.reactiveScaIntensity[1]);
-
-                                    backgroundObject.reactiveSize =
-                                        new Vector2(xr, yr) * backgroundObject.reactiveScale;
-                                    break;
-                                }
-                        }
-
-                        float x = Updater.GetSample(backgroundObject.reactivePosSamples[0], backgroundObject.reactivePosIntensity[0]);
-                        float y = Updater.GetSample(backgroundObject.reactivePosSamples[1], backgroundObject.reactivePosIntensity[1]);
-                        float z = Updater.GetSample(backgroundObject.reactiveZSample, backgroundObject.reactiveZIntensity);
-
-                        float rot = Updater.GetSample(backgroundObject.reactiveRotSample, backgroundObject.reactiveRotIntensity);
-
-                        gameObject.transform.localPosition =
-                            new Vector3(backgroundObject.pos.x + x,
-                            backgroundObject.pos.y + y,
-                            32f + backgroundObject.layer * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
-                        gameObject.transform.localScale =
-                            new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
-                            new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
-                        gameObject.transform.localRotation = Quaternion.Euler(
-                            new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
-                            backgroundObject.rot + rot) + backgroundObject.rotationOffset);
-                    }
-                    else
+                    if (!backgroundObject.reactive)
                     {
                         backgroundObject.reactiveSize = Vector2.zero;
 
                         gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
                         gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
                         gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
+                        continue;
                     }
+
+                    switch (backgroundObject.reactiveType)
+                    {
+                        case DataManager.GameData.BackgroundObject.ReactiveType.LOW:
+                            backgroundObject.reactiveSize = new Vector2(__instance.sampleLow, __instance.sampleLow) * backgroundObject.reactiveScale;
+                            break;
+                        case DataManager.GameData.BackgroundObject.ReactiveType.MID:
+                            backgroundObject.reactiveSize = new Vector2(__instance.sampleMid, __instance.sampleMid) * backgroundObject.reactiveScale;
+                            break;
+                        case DataManager.GameData.BackgroundObject.ReactiveType.HIGH:
+                            backgroundObject.reactiveSize = new Vector2(__instance.sampleHigh, __instance.sampleHigh) * backgroundObject.reactiveScale;
+                            break;
+                        case (DataManager.GameData.BackgroundObject.ReactiveType)3:
+                            {
+                                float xr = Updater.GetSample(backgroundObject.reactiveScaSamples[0], backgroundObject.reactiveScaIntensity[0]);
+                                float yr = Updater.GetSample(backgroundObject.reactiveScaSamples[1], backgroundObject.reactiveScaIntensity[1]);
+
+                                backgroundObject.reactiveSize = new Vector2(xr, yr) * backgroundObject.reactiveScale;
+                                break;
+                            }
+                    }
+
+                    float x = Updater.GetSample(backgroundObject.reactivePosSamples[0], backgroundObject.reactivePosIntensity[0]);
+                    float y = Updater.GetSample(backgroundObject.reactivePosSamples[1], backgroundObject.reactivePosIntensity[1]);
+                    float z = Updater.GetSample(backgroundObject.reactiveZSample, backgroundObject.reactiveZIntensity);
+
+                    float rot = Updater.GetSample(backgroundObject.reactiveRotSample, backgroundObject.reactiveRotIntensity);
+
+                    gameObject.transform.localPosition =
+                        new Vector3(backgroundObject.pos.x + x,
+                        backgroundObject.pos.y + y,
+                        32f + backgroundObject.layer * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
+                    gameObject.transform.localScale =
+                        new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
+                        new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
+                    gameObject.transform.localRotation = Quaternion.Euler(
+                        new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
+                        backgroundObject.rot + rot) + backgroundObject.rotationOffset);
                 }
             }
 
