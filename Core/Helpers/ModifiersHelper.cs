@@ -5805,9 +5805,15 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "enableExampleDEVONLY": {
+                    case "exampleEnableDEVONLY": {
                             if (Example.ExampleManager.inst)
                                 Example.ExampleManager.inst.SetActive(modifier.GetBool(0, false));
+
+                            break;
+                        }
+                    case "exampleSayDEVONLY": {
+                            if (Example.ExampleManager.inst)
+                                Example.ExampleManager.inst.Say(modifier.GetValue(0));
 
                             break;
                         }

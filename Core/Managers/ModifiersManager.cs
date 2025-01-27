@@ -256,9 +256,19 @@ namespace BetterLegacy.Core.Managers
                 constant = false,
                 commands = new List<string>
                 {
-                    "enableExampleDEVONLY"
+                    "exampleEnableDEVONLY"
                 },
                 value = "False"
+            });
+            defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "exampleSayDEVONLY"
+                },
+                value = "Something!"
             });
         }
 
