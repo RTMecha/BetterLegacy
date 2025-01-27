@@ -165,14 +165,14 @@ namespace BetterLegacy.Story
             /// <summary>
             /// File path to where the .asset or .lsb level is.
             /// </summary>
-            public string filePath;
+            public LevelPath filePath;
 
             /// <summary>
             /// If the level is a bonus level. Used for ChapterFullyRanked if function.
             /// </summary>
             public bool bonus;
 
-            public string this[int index]
+            public LevelPath this[int index]
             {
                 get
                 {
@@ -192,20 +192,23 @@ namespace BetterLegacy.Story
             /// <summary>
             /// Cutscenes to play before the level starts.
             /// </summary>
-            public List<string> preCutscenes = new List<string>();
+            public List<LevelPath> preCutscenes = new List<LevelPath>();
+
             /// <summary>
             /// Cutscenes to play after the level is completed.
             /// </summary>
-            public List<string> postCutscenes = new List<string>();
+            public List<LevelPath> postCutscenes = new List<LevelPath>();
 
             /// <summary>
             /// Interface to return to when the level is completed.
             /// </summary>
             public string returnInterface;
+
             /// <summary>
             /// If the return interface is replayable after completion.
             /// </summary>
             public bool returnReplayable;
+
             /// <summary>
             /// Level to return to when the level is completed. Currently only used for custom stories.
             /// </summary>
@@ -230,17 +233,17 @@ namespace BetterLegacy.Story
                     id = jn["id"],
                     songTitle = jn["song_title"],
                     name = jn["name"],
-                    filePath = RTFile.ParsePaths(jn["file"]),
+                    filePath = LevelPath.Parse(jn["file"]),
                     bonus = jn["bonus"].AsBool,
                 };
 
                 if (jn["pre_cutscenes"] != null)
                     for (int i = 0; i < jn["pre_cutscenes"].Count; i++)
-                        level.preCutscenes.Add(RTFile.ParsePaths(jn["pre_cutscenes"][i]));
+                        level.preCutscenes.Add(LevelPath.Parse(jn["pre_cutscenes"][i]));
 
                 if (jn["post_cutscenes"] != null)
                     for (int i = 0; i < jn["post_cutscenes"].Count; i++)
-                        level.postCutscenes.Add(RTFile.ParsePaths(jn["post_cutscenes"][i]));
+                        level.postCutscenes.Add(LevelPath.Parse(jn["post_cutscenes"][i]));
 
                 level.returnInterface = RTFile.ParsePaths(jn["return_interface"]);
                 level.returnReplayable = jn["return_replayable"].AsBool;
@@ -250,6 +253,32 @@ namespace BetterLegacy.Story
             }
 
             public override string ToString() => $"{name} | {songTitle} - {Count}";
+        }
+
+        /// <summary>
+        /// Represents a path to a story level.
+        /// </summary>
+        public class LevelPath
+        {
+            public LevelPath(string filePath) => this.filePath = filePath;
+
+            public LevelPath(string filePath, string songName) : this(filePath) => this.songName = songName;
+
+            /// <summary>
+            /// Path to the level file.
+            /// </summary>
+            public string filePath;
+
+            /// <summary>
+            /// Song to override to save on space.
+            /// </summary>
+            public string songName;
+
+            public static LevelPath Parse(JSONNode jn) => jn.IsString ? new LevelPath(RTFile.ParsePaths(jn)) : new LevelPath(RTFile.ParsePaths(jn["path"]), jn["song"]);
+
+            public static implicit operator string(LevelPath levelPath) => levelPath.filePath;
+
+            public override string ToString() => System.IO.Path.GetFileName(filePath);
         }
 
         /// <summary>

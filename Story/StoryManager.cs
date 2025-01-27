@@ -933,7 +933,7 @@ namespace BetterLegacy.Story
         /// Plays a story level directly from a path.
         /// </summary>
         /// <param name="path">Path to a story level.</param>
-        public void Play(string path) => StartCoroutine(IPlay(path));
+        public void Play(string path, string songName = null) => StartCoroutine(IPlay(path, songName));
 
         /// <summary>
         /// Gets a story level from the <see cref="StoryMode"/> and plays it.
@@ -989,7 +989,9 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Loading story mode level... {path}");
             if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }, () => OnLevelEnd(level, isCutscene, cutsceneIndex));
+                var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
+                AssignStoryLevelMusic(path.songName, storyLevel);
+                LevelManager.Play(storyLevel, () => OnLevelEnd(level, isCutscene, cutsceneIndex));
                 yield break;
             }
 
@@ -1005,6 +1007,8 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadInterfaceScene();
                     return;
                 }
+
+                AssignStoryLevelMusic(path.songName, storyLevel);
 
                 if (!storyLevel.music)
                 {
@@ -1022,7 +1026,7 @@ namespace BetterLegacy.Story
         /// Plays a story level directly from a path.
         /// </summary>
         /// <param name="path">Path to a story level.</param>
-        public IEnumerator IPlay(string path)
+        public IEnumerator IPlay(string path, string songName = null)
         {
             if (!RTFile.FileExists(path))
             {
@@ -1038,7 +1042,9 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Loading story mode level... {path}");
             if (RTFile.FileIsFormat(path, FileFormat.LSB))
             {
-                LevelManager.Play(new Level(RTFile.GetDirectory(path)) { isStory = true }, OnLevelEnd);
+                var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
+                AssignStoryLevelMusic(songName, storyLevel);
+                LevelManager.Play(storyLevel, OnLevelEnd);
                 yield break;
             }
 
@@ -1054,6 +1060,8 @@ namespace BetterLegacy.Story
                     SceneHelper.LoadInterfaceScene();
                     return;
                 }
+
+                AssignStoryLevelMusic(songName, storyLevel);
 
                 if (!storyLevel.music)
                 {
@@ -1173,6 +1181,15 @@ namespace BetterLegacy.Story
             CoreHelper.InStory = false;
             LevelManager.OnLevelEnd = null;
             SceneHelper.LoadScene(SceneName.Main_Menu);
+        }
+
+        void AssignStoryLevelMusic(string songName, Level level)
+        {
+            if (string.IsNullOrEmpty(songName) || !SoundManager.inst.TryGetMusic(songName, out AudioClip audioClip))
+                return;
+
+            CoreHelper.Log($"Setting song to: {songName}");
+            level.music = audioClip;
         }
 
         #endregion

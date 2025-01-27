@@ -3452,11 +3452,12 @@ namespace BetterLegacy.Menus
 
                         var isArray = parameters.IsArray;
                         var path = isArray ? parameters[0] : parameters["path"];
+                        var songName = isArray ? parameters[1] : parameters["song"];
 
-                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 1 && parameters[1].AsBool || parameters.IsObject && parameters["continue"].AsBool;
+                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 2 && parameters[2].AsBool || parameters.IsObject && parameters["continue"].AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
-                        StoryManager.inst.Play(path);
+                        StoryManager.inst.Play(path, songName);
 
                         break;
                     }

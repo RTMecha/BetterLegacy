@@ -89,9 +89,6 @@ namespace BetterLegacy.Story
             var metadataJSON = assets.LoadAsset<TextAsset>($"metadata{FileFormat.JSON.Dot()}");
             var players = assets.LoadAsset<TextAsset>($"players{FileFormat.JSON.Dot()}");
 
-            if (!song)
-                return null;
-
             var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text), false);
             var storyLevel = new StoryLevel
             {
