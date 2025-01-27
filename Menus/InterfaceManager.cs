@@ -3443,6 +3443,26 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
+                #region LoadStoryLevelPath
+
+                case "LoadStoryLevelPath":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && (parameters["chapter"] == null || parameters["level"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        var path = isArray ? parameters[0] : parameters["path"];
+
+                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 1 && parameters[1].AsBool || parameters.IsObject && parameters["continue"].AsBool;
+
+                        ArcadeHelper.ResetModifiedStates();
+                        StoryManager.inst.Play(path);
+
+                        break;
+                    }
+
+                #endregion
+
                 #region LoadNextStoryLevel
 
                 case "LoadNextStoryLevel":
