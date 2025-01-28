@@ -97,6 +97,7 @@
 - Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
 - Fix parent desync not working for specific parent chains.
 - Fix some issues with Player Models and extra tail parts.
+- Investigate pasting prefabs breaking the timeline object.
 
 ### Examples
 - Homing objects using animateObjectMath.
