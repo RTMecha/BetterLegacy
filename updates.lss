@@ -1,3 +1,6 @@
+snapshot-2025.2.1 - (pre-1.7.0) > [Feb 3, 2025]
+- Added animations to the Object Templates Popup.
+- Fixed Object Editor not opening.
 snapshot-2025.1.10 - (pre-1.7.0) > [Jan 26, 2025]
 - Fixed color modifiers not working with text objects.
 - Added more_bins achievement.
