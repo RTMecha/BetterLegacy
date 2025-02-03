@@ -3221,24 +3221,38 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to edit.</param>
         public void OpenDialog(BeatmapObject beatmapObject)
         {
-            if (!EditorManager.inst.hasLoadedLevel || string.IsNullOrEmpty(beatmapObject.id))
+            if (!EditorManager.inst.hasLoadedLevel)
             {
                 EditorManager.inst.DisplayNotification("Open a level first before trying to select an object.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
-            if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+            if (!beatmapObject || string.IsNullOrEmpty(beatmapObject.id))
             {
                 EditorManager.inst.DisplayNotification("Cannot edit non-object!", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
-            EditorManager.inst.ClearPopups();
-            RTEditor.inst.editorDialogs.ForLoop(editorDialog =>
+            try
             {
-                if (editorDialog.GameObject && editorDialog.GameObject.activeInHierarchy)
-                    editorDialog.Close();
-            });
+                EditorManager.inst.ClearPopups();
+                RTEditor.inst.editorDialogs.ForLoop(editorDialog =>
+                {
+                    try
+                    {
+                        if (editorDialog.GameObject && editorDialog.GameObject.activeInHierarchy)
+                            editorDialog.Close();
+                    }
+                    catch
+                    {
+
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error with trying to close popups. Exception: {ex}");
+            }
             Dialog.Open();
 
             if (EditorTimeline.inst.CurrentSelection.ID != beatmapObject.id)
