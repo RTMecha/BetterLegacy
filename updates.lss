@@ -1,3 +1,5 @@
+snapshot-2025.2.2 - (pre-1.7.0) > [Feb 7, 2025]
+- Actually fixed Object Editor not opening. This was due to the Object Editor initialization code ending before the UI was assigned.
 snapshot-2025.2.1 - (pre-1.7.0) > [Feb 3, 2025]
 - Added animations to the Object Templates Popup.
 - Fixed Object Editor not opening.
