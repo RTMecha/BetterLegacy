@@ -1661,21 +1661,6 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                var prefabFilePath = RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}");
-                if (!RTFile.FileExists(prefabFilePath))
-                    return;
-
-                var jn = JSON.Parse(RTFile.ReadFromFile(prefabFilePath));
-                ObjEditor.inst.beatmapObjCopy = Prefab.Parse(jn);
-                ObjEditor.inst.hasCopiedObject = true;
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Could not load global copied objects.\n{ex}");
-            } // load global copy
-
-            try
-            {
                 Dialog = new ObjectEditorDialog();
                 Dialog.Init();
             }
@@ -1683,6 +1668,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogException(ex);
             } // init dialog
+
+            LoadGlobalCopy();
         }
 
         void InitShapes()
@@ -2449,6 +2436,27 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Copy / Paste
+
+        /// <summary>
+        /// Loads the globally copied file.
+        /// </summary>
+        public void LoadGlobalCopy()
+        {
+            try
+            {
+                var prefabFilePath = RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}");
+                if (!RTFile.FileExists(prefabFilePath))
+                    return;
+
+                var jn = JSON.Parse(RTFile.ReadFromFile(prefabFilePath));
+                ObjEditor.inst.beatmapObjCopy = Prefab.Parse(jn);
+                ObjEditor.inst.hasCopiedObject = true;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not load global copied objects.\n{ex}");
+            } // load global copy
+        }
 
         public void CopyAllSelectedEvents(BeatmapObject beatmapObject)
         {
@@ -3233,26 +3241,14 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            try
-            {
-                EditorManager.inst.ClearPopups();
-                RTEditor.inst.editorDialogs.ForLoop(editorDialog =>
-                {
-                    try
-                    {
-                        if (editorDialog.GameObject && editorDialog.GameObject.activeInHierarchy)
-                            editorDialog.Close();
-                    }
-                    catch
-                    {
+            EditorManager.inst.ClearPopups();
 
-                    }
-                });
-            }
-            catch (Exception ex)
+            if (!Dialog)
             {
-                CoreHelper.LogError($"Had an error with trying to close popups. Exception: {ex}");
+                EditorManager.inst.DisplayNotification("Object Editor Dialog is null. Please report this to RTMecha.", 4f, EditorManager.NotificationType.Error);
+                return;
             }
+
             Dialog.Open();
 
             if (EditorTimeline.inst.CurrentSelection.ID != beatmapObject.id)
