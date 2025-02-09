@@ -39,7 +39,7 @@
         /// <summary>
         /// The vanilla version number of PA Legacy.
         /// </summary>
-        public static Version VanillaVersion = new Version(VANILLA_VERSION);
+        public static Version VanillaVersion = new Version(Versions.LEGACY);
 
         #endregion
 
@@ -50,7 +50,7 @@
         /// </summary>
         /// <param name="version">Version number to compare.</param>
         /// <returns>Returns true if the version number matches the PA Legacy version numbers.</returns>
-        public static bool IsMatchingVersion(string version) => version == GAME_VERSION || version == VANILLA_VERSION;
+        public static bool IsMatchingVersion(string version) => version == GAME_VERSION || version == Versions.LEGACY;
 
         /// <summary>
         /// Checks if the version matches PA Legacy's version.
@@ -64,7 +64,7 @@
         /// </summary>
         /// <param name="version">Version to compare.</param>
         /// <returns>Returns true if the version doesn't match the PA Legacy versions.</returns>
-        public static bool RequireUpdate(string version) => version != GAME_VERSION && version != VANILLA_VERSION;
+        public static bool RequireUpdate(string version) => version != GAME_VERSION && version != Versions.LEGACY;
 
         /// <summary>
         /// Checks if an update is required.
@@ -74,5 +74,44 @@
         public static bool RequireUpdate(Version version) => version != GameVersion && version != VanillaVersion;
 
         #endregion
+
+        /// <summary>
+        /// A list of updates.
+        /// </summary>
+        public class Versions
+        {
+            /// <summary>
+            /// Legacy branch version.
+            /// </summary>
+            public const string LEGACY = "20.4.4";
+            /// <summary>
+            /// Depths' default value was changed.
+            /// </summary>
+            public const string DEPTH_DEFAULT_CHANGED = "23.1.4";
+            /// <summary>
+            /// Opacity slider was added.
+            /// </summary>
+            public const string OPACITY = "24.1.6a";
+            /// <summary>
+            /// Mode value was added to gradient event keyframes.
+            /// </summary>
+            public const string GRADIENT_MODE_EVENT = "24.1.7a";
+            /// <summary>
+            /// Text sprites changed and player bubble.
+            /// </summary>
+            public const string SPRITES_CHANGED = "24.2.2";
+            /// <summary>
+            /// Triggers were added.
+            /// </summary>
+            public const string EVENT_TRIGGER = "24.3.1";
+            /// <summary>
+            /// The Polygon shape was added.
+            /// </summary>
+            public const string CUSTOM_SHAPES = "25.2.1";
+            /// <summary>
+            /// Rotation keyframes now have a fixed setting and shake has more values.
+            /// </summary>
+            public const string FIXED_ROTATION_SHAKE = "25.2.2";
+        }
     }
 }
