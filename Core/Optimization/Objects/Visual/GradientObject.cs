@@ -11,6 +11,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         public override GameObject GameObject { get; set; }
         public override Renderer Renderer { get; set; }
         public override Collider2D Collider { get; set; }
+
+        public bool IsFlipped => gradientType == 1 || gradientType == 3;
         public Material material;
 
         readonly bool opacityCollision;
@@ -63,7 +65,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                     color2.a = 0;
             }
 
-            if (gradientType == 1 || gradientType == 3)
+            if (IsFlipped)
             {
                 material.SetColor("_Color", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
                 material.SetColor("_ColorSecondary", new Color(color.r, color.g, color.b, color.a * opacity));
@@ -85,7 +87,22 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         /// <returns>Returns the secondary color of the gradient object.</returns>
         public Color GetSecondaryColor() => material.GetColor("_ColorSecondary");
-        
+
+        /// <summary>
+        /// Gets a specified color based on the gradients' flipped state.
+        /// </summary>
+        /// <param name="primary">If the color should be primary.</param>
+        /// <returns>Returns a gradients color.</returns>
+        public Color GetColor(bool primary)
+        {
+            if (primary)
+                return IsFlipped ? GetSecondaryColor() : GetPrimaryColor();
+
+            return IsFlipped ? GetPrimaryColor() : GetSecondaryColor();
+        }
+
+        public GradientColors GetColors() => new GradientColors(GetColor(true), GetColor(false));
+
         public override void Clear()
         {
             GameObject = null;
@@ -93,5 +110,17 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             Collider = null;
             material = null;
         }
+    }
+
+    public struct GradientColors
+    {
+        public GradientColors(Color startColor, Color endColor)
+        {
+            this.startColor = startColor;
+            this.endColor = endColor;
+        }
+
+        public Color startColor;
+        public Color endColor;
     }
 }
