@@ -2,6 +2,7 @@
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
@@ -15,7 +16,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
-using ObjectType = BetterLegacy.Core.Data.BeatmapObject.ObjectType;
+using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 using SelectionType = ObjEditor.ObjectSelection.SelectionType;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Arcade.Managers;

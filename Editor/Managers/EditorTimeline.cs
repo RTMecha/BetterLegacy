@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Components;
@@ -18,7 +19,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-using ObjectType = BetterLegacy.Core.Data.BeatmapObject.ObjectType;
+using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers
 {

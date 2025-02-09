@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 using BaseBeatmapTheme = DataManager.BeatmapTheme;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BeatmapTheme : BaseBeatmapTheme
     {

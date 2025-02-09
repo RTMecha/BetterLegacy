@@ -10,6 +10,7 @@ using BetterLegacy.Editor.Managers;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Optimization.Objects;
 

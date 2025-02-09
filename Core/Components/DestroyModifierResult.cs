@@ -1,4 +1,4 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Core.Data.Beatmap;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Components

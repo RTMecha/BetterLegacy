@@ -15,7 +15,7 @@ using UnityEngine;
 using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BeatmapObject : BaseBeatmapObject
     {

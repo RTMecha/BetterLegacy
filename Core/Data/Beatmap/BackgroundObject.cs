@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using BaseBackground = DataManager.GameData.BackgroundObject;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BackgroundObject : BaseBackground
     {

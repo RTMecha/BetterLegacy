@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using System.Collections.Generic;
 using UnityEngine;

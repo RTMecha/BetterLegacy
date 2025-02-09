@@ -1,7 +1,7 @@
 ﻿using SimpleJSON;
 using BaseEditorData = DataManager.GameData.BeatmapData.EditorData;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class LevelEditorData : BaseEditorData
     {

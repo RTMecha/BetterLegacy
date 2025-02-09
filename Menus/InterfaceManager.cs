@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using System.Collections;
 using SimpleJSON;
 using BetterLegacy.Configs;

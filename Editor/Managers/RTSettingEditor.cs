@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Components;

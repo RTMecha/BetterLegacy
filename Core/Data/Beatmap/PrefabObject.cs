@@ -8,7 +8,7 @@ using System.Text;
 using UnityEngine;
 using BasePrefabObject = DataManager.GameData.PrefabObject;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class PrefabObject : BasePrefabObject
     {

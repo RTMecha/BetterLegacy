@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
@@ -23,7 +24,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using ObjectType = BetterLegacy.Core.Data.BeatmapObject.ObjectType;
+using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 using BetterLegacy.Core.Components;
 using TMPro;
 using BetterLegacy.Core.Animation;

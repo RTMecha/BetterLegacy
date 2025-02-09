@@ -17,7 +17,7 @@ using BaseBeatmapTheme = DataManager.BeatmapTheme;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 using BaseGameData = DataManager.GameData;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents a Project Arrhythmia level.
@@ -46,7 +46,7 @@ namespace BetterLegacy.Core.Data
         public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
 
         bool BeatmapObjectsModded => beatmapObjects.Any(x => x.modifiers.Count > 0
-                    || x.objectType == Data.BeatmapObject.ObjectType.Solid
+                    || x.objectType == Beatmap.BeatmapObject.ObjectType.Solid
                     || x.desync
                     || x.background
                     || x.LDM
@@ -54,9 +54,9 @@ namespace BetterLegacy.Core.Data
                     || x.parentAdditive != "000"
                     || x.shape > UnmoddedShapeOptions.Length - 1
                     || x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length - 1)]
-                    || x.events[0].Any(x => x.random > 4 || x.eventValues.Length > 2 && x.eventValues[2] != 0f || ((Data.EventKeyframe)x).relative)
-                    || x.events[1].Any(x => ((Data.EventKeyframe)x).relative)
-                    || x.events[2].Any(x => x.random > 4 || !((Data.EventKeyframe)x).relative)
+                    || x.events[0].Any(x => x.random > 4 || x.eventValues.Length > 2 && x.eventValues[2] != 0f || ((Beatmap.EventKeyframe)x).relative)
+                    || x.events[1].Any(x => ((Beatmap.EventKeyframe)x).relative)
+                    || x.events[2].Any(x => x.random > 4 || !((Beatmap.EventKeyframe)x).relative)
                     || x.events[3].Any(x => x.random > 4 || x.eventValues[0] > 8f || x.eventValues[2] != 0f || x.eventValues[3] != 0f || x.eventValues[4] != 0f));
 
         bool EventKeyframesModded
@@ -69,7 +69,7 @@ namespace BetterLegacy.Core.Data
                 {
                     for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
                     {
-                        var eventKeyframe = (Data.EventKeyframe)eventObjects.allEvents[i][j];
+                        var eventKeyframe = (Beatmap.EventKeyframe)eventObjects.allEvents[i][j];
 
                         for (int k = 0; k < eventKeyframe.eventValues.Length; k++)
                         {
@@ -92,7 +92,7 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Data.PrefabObject.AutoKillType.Regular);
+        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Beatmap.PrefabObject.AutoKillType.Regular);
 
         #endregion
 
@@ -183,26 +183,26 @@ namespace BetterLegacy.Core.Data
         public static List<BaseEventKeyframe> DefaultKeyframes = new List<BaseEventKeyframe>
         {
             #region Vanilla
-            new Data.EventKeyframe
+            new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2],
                 id = LSText.randomNumString(8),
             }, // Move
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1]
                 { 20f },
                 id = LSText.randomNumString(8),
             }, // Zoom
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1],
                 id = LSText.randomNumString(8),
             }, // Rotate
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[5]
@@ -215,19 +215,19 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Shake
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1],
                 id = LSText.randomNumString(8),
             }, // Theme
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1],
                 id = LSText.randomNumString(8),
             }, // Chroma
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[8]
@@ -243,7 +243,7 @@ namespace BetterLegacy.Core.Data
 				},
                 id = LSText.randomNumString(8),
             }, // Bloom
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[10]
@@ -261,7 +261,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Vignette
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[6]
@@ -275,7 +275,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Lens
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[3],
@@ -284,13 +284,13 @@ namespace BetterLegacy.Core.Data
             #endregion
 
             #region Modded
-            new Data.EventKeyframe
+            new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[9],
                 id = LSText.randomNumString(8),
             }, // ColorGrading
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[6]
@@ -304,7 +304,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Ripples
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2]
@@ -314,19 +314,19 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // RadialBlur
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2],
                 id = LSText.randomNumString(8),
             }, // ColorSplit
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2],
                 id = LSText.randomNumString(8),
             }, // Offset
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[13]
@@ -347,19 +347,19 @@ namespace BetterLegacy.Core.Data
 				},
                 id = LSText.randomNumString(8),
             }, // Gradient
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2],
                 id = LSText.randomNumString(8),
             }, // DoubleVision
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[3],
                 id = LSText.randomNumString(8),
             }, // ScanLines
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2]
@@ -369,13 +369,13 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Blur
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1],
                 id = LSText.randomNumString(8),
             }, // Pixelize
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[5]
@@ -388,13 +388,13 @@ namespace BetterLegacy.Core.Data
 				},
                 id = LSText.randomNumString(8),
             }, // BG
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1],
                 id = LSText.randomNumString(8),
             }, // Invert
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[11]
@@ -413,13 +413,13 @@ namespace BetterLegacy.Core.Data
 				},
                 id = LSText.randomNumString(8),
             }, // Timeline
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[6],
                 id = LSText.randomNumString(8),
             }, // Player
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[10]
@@ -437,7 +437,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Follow Player
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2]
@@ -447,7 +447,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Audio
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[9]
@@ -464,7 +464,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Video BG Parent
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[10]
@@ -482,7 +482,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Video BG
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1]
@@ -491,7 +491,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Sharpen
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2]
@@ -501,7 +501,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Bars
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[7]
@@ -516,7 +516,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Danger
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2]
@@ -526,7 +526,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // 3D Rotation
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[3]
@@ -537,7 +537,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Camera Depth
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[4]
@@ -549,7 +549,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Window Base
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1]
@@ -558,7 +558,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Window Position X
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1]
@@ -567,7 +567,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Window Position Y
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[2]
@@ -577,7 +577,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Player Force
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1]
@@ -586,7 +586,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Mosaic
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[5]
@@ -599,7 +599,7 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Analog Glitch
-			new Data.EventKeyframe
+			new Beatmap.EventKeyframe
             {
                 eventTime = 0f,
                 eventValues = new float[1]
@@ -642,11 +642,11 @@ namespace BetterLegacy.Core.Data
         public static GameData DeepCopy(GameData orig)
         {
             if (orig.beatmapObjects == null)
-                orig.beatmapObjects = new List<Data.BeatmapObject>();
+                orig.beatmapObjects = new List<Beatmap.BeatmapObject>();
             if (orig.eventObjects == null)
                 orig.eventObjects = new EventObjects();
             if (orig.backgroundObjects == null)
-                orig.backgroundObjects = new List<Data.BackgroundObject>();
+                orig.backgroundObjects = new List<Beatmap.BackgroundObject>();
 
             var gameData = new GameData();
             var beatmapData = new LevelBeatmapData();
@@ -666,10 +666,10 @@ namespace BetterLegacy.Core.Data
             beatmapData.markers = orig.beatmapData.markers.Select(x => Marker.DeepCopy(x)).ToList();
 
             gameData.beatmapData = beatmapData;
-            gameData.beatmapObjects = new List<Data.BeatmapObject>((from obj in orig.beatmapObjects
-                                                                   select Data.BeatmapObject.DeepCopy(obj, false)).ToList());
-            gameData.backgroundObjects = new List<Data.BackgroundObject>((from obj in orig.backgroundObjects
-                                                                         select Data.BackgroundObject.DeepCopy(obj)).ToList());
+            gameData.beatmapObjects = new List<Beatmap.BeatmapObject>((from obj in orig.beatmapObjects
+                                                                   select Beatmap.BeatmapObject.DeepCopy(obj, false)).ToList());
+            gameData.backgroundObjects = new List<Beatmap.BackgroundObject>((from obj in orig.backgroundObjects
+                                                                         select Beatmap.BackgroundObject.DeepCopy(obj)).ToList());
             gameData.eventObjects = EventObjects.DeepCopy(orig.eventObjects);
             return gameData;
         }
@@ -747,7 +747,7 @@ namespace BetterLegacy.Core.Data
 
             CoreHelper.Log($"Parsing Objects");
             for (int i = 0; i < jn["objects"].Count; i++)
-                gameData.beatmapObjects.Add(Data.BeatmapObject.ParseVG(jn["objects"][i], version));
+                gameData.beatmapObjects.Add(Beatmap.BeatmapObject.ParseVG(jn["objects"][i], version));
 
             if (parseOptimizations)
                 for (int i = 0; i < gameData.beatmapObjects.Count; i++)
@@ -755,11 +755,11 @@ namespace BetterLegacy.Core.Data
 
             CoreHelper.Log($"Parsing Prefab Objects");
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
-                gameData.prefabObjects.Add(Data.PrefabObject.ParseVG(jn["prefab_objects"][i]));
+                gameData.prefabObjects.Add(Beatmap.PrefabObject.ParseVG(jn["prefab_objects"][i]));
 
             CoreHelper.Log($"Parsing Prefabs");
             for (int i = 0; i < jn["prefabs"].Count; i++)
-                gameData.prefabs.Add(Data.Prefab.ParseVG(jn["prefabs"][i], version));
+                gameData.prefabs.Add(Beatmap.Prefab.ParseVG(jn["prefabs"][i], version));
 
             Dictionary<string, string> idConversion = new Dictionary<string, string>();
 
@@ -812,7 +812,7 @@ namespace BetterLegacy.Core.Data
                 }
             }
 
-            gameData.backgroundObjects.Add(new Data.BackgroundObject
+            gameData.backgroundObjects.Add(new Beatmap.BackgroundObject
             {
                 active = false,
                 pos = new Vector2(9999f, 9999f),
@@ -830,7 +830,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][0].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][0][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -849,7 +849,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][1].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][1][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -868,7 +868,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][2].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][2][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -887,7 +887,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][3].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][3][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -910,7 +910,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][4].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][4][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -933,7 +933,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][5].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][5][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -952,7 +952,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][6].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][6][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -976,7 +976,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][7].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][7][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -1002,7 +1002,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][8].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][8][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -1027,7 +1027,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][9].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][9][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -1049,7 +1049,7 @@ namespace BetterLegacy.Core.Data
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][12].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][12][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -1065,20 +1065,20 @@ namespace BetterLegacy.Core.Data
                 }
 
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
-                gameData.eventObjects.allEvents[11].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[11]));
+                gameData.eventObjects.allEvents[11].Add(Beatmap.EventKeyframe.DeepCopy((Beatmap.EventKeyframe)DefaultKeyframes[11]));
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
-                gameData.eventObjects.allEvents[12].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[12]));
+                gameData.eventObjects.allEvents[12].Add(Beatmap.EventKeyframe.DeepCopy((Beatmap.EventKeyframe)DefaultKeyframes[12]));
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
-                gameData.eventObjects.allEvents[13].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[13]));
+                gameData.eventObjects.allEvents[13].Add(Beatmap.EventKeyframe.DeepCopy((Beatmap.EventKeyframe)DefaultKeyframes[13]));
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
-                gameData.eventObjects.allEvents[14].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[14]));
+                gameData.eventObjects.allEvents[14].Add(Beatmap.EventKeyframe.DeepCopy((Beatmap.EventKeyframe)DefaultKeyframes[14]));
 
                 // Gradient
                 breakContext = "Gradient";
                 gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
                 for (int i = 0; i < jn["events"][10].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][10][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -1100,7 +1100,7 @@ namespace BetterLegacy.Core.Data
                 for (int i = 16; i < DefaultKeyframes.Count; i++)
                 {
                     gameData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
-                    gameData.eventObjects.allEvents[i].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[i]));
+                    gameData.eventObjects.allEvents[i].Add(Beatmap.EventKeyframe.DeepCopy((Beatmap.EventKeyframe)DefaultKeyframes[i]));
                 }
             }
             catch (Exception ex)
@@ -1119,7 +1119,7 @@ namespace BetterLegacy.Core.Data
             if (jn["events"].Count > 13 && jn["events"][13] != null && gameData.eventObjects.allEvents.Count > 36)
             {
                 var playerForce = gameData.eventObjects.allEvents[36];
-                var firstKF = (Data.EventKeyframe)playerForce[0];
+                var firstKF = (Beatmap.EventKeyframe)playerForce[0];
 
                 firstKF.id = LSText.randomNumString(8);
                 firstKF.eventTime = 0f;
@@ -1127,7 +1127,7 @@ namespace BetterLegacy.Core.Data
 
                 for (int i = 1; i < jn["events"][13].Count; i++)
                 {
-                    var eventKeyframe = new Data.EventKeyframe();
+                    var eventKeyframe = new Beatmap.EventKeyframe();
                     var kfjn = jn["events"][13][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
@@ -1196,14 +1196,14 @@ namespace BetterLegacy.Core.Data
 
             for (int i = 0; i < jn["prefabs"].Count; i++)
             {
-                var prefab = Data.Prefab.Parse(jn["prefabs"][i]);
+                var prefab = Beatmap.Prefab.Parse(jn["prefabs"][i]);
                 if (gameData.prefabs.Find(x => x.ID == prefab.ID) == null)
                     gameData.prefabs.Add(prefab);
             }
 
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
             {
-                var prefab = Data.PrefabObject.Parse(jn["prefab_objects"][i]);
+                var prefab = Beatmap.PrefabObject.Parse(jn["prefab_objects"][i]);
                 if (gameData.prefabObjects.Find(x => x.ID == prefab.ID) == null)
                     gameData.prefabObjects.Add(prefab);
             }
@@ -1249,7 +1249,7 @@ namespace BetterLegacy.Core.Data
 
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
             {
-                var beatmapObject = Data.BeatmapObject.Parse(jn["beatmap_objects"][i]);
+                var beatmapObject = Beatmap.BeatmapObject.Parse(jn["beatmap_objects"][i]);
 
                 if (gameData.beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
                     gameData.beatmapObjects.RemoveAt(index);
@@ -1296,7 +1296,7 @@ namespace BetterLegacy.Core.Data
             }
 
             for (int i = 0; i < jn["bg_objects"].Count; i++)
-                gameData.backgroundObjects.Add(Data.BackgroundObject.Parse(jn["bg_objects"][i]));
+                gameData.backgroundObjects.Add(Beatmap.BackgroundObject.Parse(jn["bg_objects"][i]));
 
             gameData.eventObjects.allEvents = ParseEventkeyframes(jn["events"], false);
 
@@ -1675,7 +1675,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < eventObjects.allEvents.Count; i++)
                 for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
                     if (EventTypes.Length > i)
-                        jn["events"][EventTypes[i]][j] = ((Data.EventKeyframe)eventObjects.allEvents[i][j]).ToJSON();
+                        jn["events"][EventTypes[i]][j] = ((Beatmap.EventKeyframe)eventObjects.allEvents[i][j]).ToJSON();
 
             return jn;
         }
@@ -1758,7 +1758,7 @@ namespace BetterLegacy.Core.Data
                 allEvents.Add(new List<BaseEventKeyframe>());
                 if (jn[EventTypes[i]] != null)
                     for (int j = 0; j < jn[EventTypes[i]].Count; j++)
-                        allEvents[i].Add(Data.EventKeyframe.Parse(jn[EventTypes[i]][j], i, DefaultKeyframes[i].eventValues.Length));
+                        allEvents[i].Add(Beatmap.EventKeyframe.Parse(jn[EventTypes[i]][j], i, DefaultKeyframes[i].eventValues.Length));
             }
 
             if (clamp)
@@ -1790,7 +1790,7 @@ namespace BetterLegacy.Core.Data
 
                 // add an event if the list contains none.
                 if (eventKeyframes[type].Count < 1)
-                    eventKeyframes[type].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[type]));
+                    eventKeyframes[type].Add(Beatmap.EventKeyframe.DeepCopy((Beatmap.EventKeyframe)DefaultKeyframes[type]));
 
                 // verify the event value lengths are correct.
                 for (int index = 0; index < eventKeyframes[type].Count; index++)
@@ -1843,17 +1843,17 @@ namespace BetterLegacy.Core.Data
             return 0;
         }
 
-        public bool TryFindObjectWithTag(Modifier<Data.BeatmapObject> modifier, string tag, out Data.BeatmapObject result)
+        public bool TryFindObjectWithTag(Modifier<Beatmap.BeatmapObject> modifier, string tag, out Beatmap.BeatmapObject result)
         {
             result = FindObjectWithTag(modifier, tag);
             return result;
         }
 
-        public Data.BeatmapObject FindObjectWithTag(string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
+        public Beatmap.BeatmapObject FindObjectWithTag(string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
 
-        public Data.BeatmapObject FindObjectWithTag(Modifier<Data.BeatmapObject> modifier, string tag)
+        public Beatmap.BeatmapObject FindObjectWithTag(Modifier<Beatmap.BeatmapObject> modifier, string tag)
         {
-            if (modifier.reference.fromPrefab && modifier.prefabInstanceOnly && prefabObjects.TryFind(x => x.ID == modifier.reference.prefabInstanceID, out Data.PrefabObject prefabObject))
+            if (modifier.reference.fromPrefab && modifier.prefabInstanceOnly && prefabObjects.TryFind(x => x.ID == modifier.reference.prefabInstanceID, out Beatmap.PrefabObject prefabObject))
             {
                 var bm = beatmapObjects.Find(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
@@ -1864,11 +1864,11 @@ namespace BetterLegacy.Core.Data
             return beatmapObjects.Find(x => x.tags.Contains(tag));
         }
 
-        public Data.BeatmapObject FindObjectWithTag(List<Data.BeatmapObject> beatmapObjects, Data.BeatmapObject beatmapObject, string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
+        public Beatmap.BeatmapObject FindObjectWithTag(List<Beatmap.BeatmapObject> beatmapObjects, Beatmap.BeatmapObject beatmapObject, string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
 
-        public Data.BeatmapObject FindObjectWithTag(List<Data.BeatmapObject> beatmapObjects, List<Data.PrefabObject> prefabObjects, Data.BeatmapObject beatmapObject, string tag)
+        public Beatmap.BeatmapObject FindObjectWithTag(List<Beatmap.BeatmapObject> beatmapObjects, List<Beatmap.PrefabObject> prefabObjects, Beatmap.BeatmapObject beatmapObject, string tag)
         {
-            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Data.PrefabObject prefabObject))
+            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Beatmap.PrefabObject prefabObject))
             {
                 var bm = beatmapObjects.Find(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
@@ -1879,21 +1879,21 @@ namespace BetterLegacy.Core.Data
             return beatmapObjects.Find(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
         }
 
-        public List<Data.BeatmapObject> FindObjectsWithTag(string tag) => Current.beatmapObjects.FindAll(x => x.tags.Contains(tag));
+        public List<Beatmap.BeatmapObject> FindObjectsWithTag(string tag) => Current.beatmapObjects.FindAll(x => x.tags.Contains(tag));
 
-        public List<Data.BeatmapObject> FindObjectsWithTag(Data.BeatmapObject beatmapObject, string tag)
+        public List<Beatmap.BeatmapObject> FindObjectsWithTag(Beatmap.BeatmapObject beatmapObject, string tag)
         {
-            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Data.PrefabObject prefabObject))
+            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Beatmap.PrefabObject prefabObject))
                 return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
             return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
         }
 
-        public List<Data.BeatmapObject> FindObjectsWithTag(List<Data.BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
+        public List<Beatmap.BeatmapObject> FindObjectsWithTag(List<Beatmap.BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
 
-        public List<Data.BeatmapObject> FindObjectsWithTag(List<Data.BeatmapObject> beatmapObjects, List<Data.PrefabObject> prefabObjects, Data.BeatmapObject beatmapObject, string tag)
+        public List<Beatmap.BeatmapObject> FindObjectsWithTag(List<Beatmap.BeatmapObject> beatmapObjects, List<Beatmap.PrefabObject> prefabObjects, Beatmap.BeatmapObject beatmapObject, string tag)
         {
-            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Data.PrefabObject prefabObject))
+            if (beatmapObject.fromPrefab && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out Beatmap.PrefabObject prefabObject))
                 return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
             return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
@@ -1912,8 +1912,8 @@ namespace BetterLegacy.Core.Data
             if (prevKFIndex < 0)
                 prevKFIndex = 0;
 
-            var nextKF = list[nextKFIndex] as Data.EventKeyframe;
-            var prevKF = list[prevKFIndex] as Data.EventKeyframe;
+            var nextKF = list[nextKFIndex] as Beatmap.EventKeyframe;
+            var prevKF = list[prevKFIndex] as Beatmap.EventKeyframe;
 
             if (prevKF.eventValues.Length <= valueIndex)
                 return 0f;
@@ -1922,12 +1922,12 @@ namespace BetterLegacy.Core.Data
             var prevtotal = 0f;
             for (int k = 0; k < nextKFIndex; k++)
             {
-                if (((Data.EventKeyframe)list[k + 1]).relative)
+                if (((Beatmap.EventKeyframe)list[k + 1]).relative)
                     total += list[k].eventValues[valueIndex];
                 else
                     total = 0f;
 
-                if (((Data.EventKeyframe)list[k]).relative)
+                if (((Beatmap.EventKeyframe)list[k]).relative)
                     prevtotal += list[k].eventValues[valueIndex];
                 else
                     prevtotal = 0f;
@@ -1972,8 +1972,8 @@ namespace BetterLegacy.Core.Data
             if (prevKFIndex < 0)
                 prevKFIndex = 0;
 
-            var nextKF = list[nextKFIndex] as Data.EventKeyframe;
-            var prevKF = list[prevKFIndex] as Data.EventKeyframe;
+            var nextKF = list[nextKFIndex] as Beatmap.EventKeyframe;
+            var prevKF = list[prevKFIndex] as Beatmap.EventKeyframe;
 
             if (prevKF.eventValues.Length <= 0)
                 return Vector2.zero;
@@ -1982,12 +1982,12 @@ namespace BetterLegacy.Core.Data
             Vector2 prevtotal = Vector3.zero;
             for (int k = 0; k < nextKFIndex; k++)
             {
-                if (((Data.EventKeyframe)list[k + 1]).relative)
+                if (((Beatmap.EventKeyframe)list[k + 1]).relative)
                     total += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
                 else
                     total = Vector3.zero;
 
-                if (((Data.EventKeyframe)list[k]).relative)
+                if (((Beatmap.EventKeyframe)list[k]).relative)
                     prevtotal += new Vector2(list[k].eventValues[0], list[k].eventValues[1]);
                 else
                     prevtotal = Vector2.zero;
@@ -2029,8 +2029,8 @@ namespace BetterLegacy.Core.Data
             if (prevKFIndex < 0)
                 prevKFIndex = 0;
 
-            var nextKF = list[nextKFIndex] as Data.EventKeyframe;
-            var prevKF = list[prevKFIndex] as Data.EventKeyframe;
+            var nextKF = list[nextKFIndex] as Beatmap.EventKeyframe;
+            var prevKF = list[prevKFIndex] as Beatmap.EventKeyframe;
 
             if (prevKF.eventValues.Length <= 0)
                 return Vector3.zero;
@@ -2039,12 +2039,12 @@ namespace BetterLegacy.Core.Data
             Vector3 prevtotal = Vector3.zero;
             for (int k = 0; k < nextKFIndex; k++)
             {
-                if (((Data.EventKeyframe)list[k + 1]).relative)
+                if (((Beatmap.EventKeyframe)list[k + 1]).relative)
                     total += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
                 else
                     total = Vector3.zero;
 
-                if (((Data.EventKeyframe)list[k]).relative)
+                if (((Beatmap.EventKeyframe)list[k]).relative)
                     prevtotal += new Vector3(list[k].eventValues[0], list[k].eventValues[1], list[k].eventValues[2]);
                 else
                     prevtotal = Vector3.zero;
@@ -2083,13 +2083,13 @@ namespace BetterLegacy.Core.Data
 
         public new LevelBeatmapData beatmapData;
 
-        public new List<Data.BeatmapObject> beatmapObjects = new List<Data.BeatmapObject>();
+        public new List<Beatmap.BeatmapObject> beatmapObjects = new List<Beatmap.BeatmapObject>();
 
-        public new List<Data.PrefabObject> prefabObjects = new List<Data.PrefabObject>();
+        public new List<Beatmap.PrefabObject> prefabObjects = new List<Beatmap.PrefabObject>();
 
-        public new List<Data.Prefab> prefabs = new List<Data.Prefab>();
+        public new List<Beatmap.Prefab> prefabs = new List<Beatmap.Prefab>();
 
-        public new List<Data.BackgroundObject> backgroundObjects = new List<Data.BackgroundObject>();
+        public new List<Beatmap.BackgroundObject> backgroundObjects = new List<Beatmap.BackgroundObject>();
 
         public List<LevelModifier> levelModifiers = new List<LevelModifier>();
 
@@ -2425,17 +2425,17 @@ namespace BetterLegacy.Core.Data
                         }
 
                         if (baseData.beatmapObjects == null)
-                            baseData.beatmapObjects = new List<Data.BeatmapObject>();
+                            baseData.beatmapObjects = new List<Beatmap.BeatmapObject>();
 
                         baseData.beatmapObjects.AddRange(gameDatas[i].beatmapObjects.FindAll(x => !baseData.beatmapObjects.Has(y => y.id == x.id)));
 
                         if (baseData.prefabObjects == null)
-                            baseData.prefabObjects = new List<Data.PrefabObject>();
+                            baseData.prefabObjects = new List<Beatmap.PrefabObject>();
 
                         baseData.prefabObjects.AddRange(gameDatas[i].prefabObjects.Where(x => !baseData.prefabObjects.Has(y => y.ID == x.ID)));
 
                         if (baseData.prefabs == null)
-                            baseData.prefabs = new List<Data.Prefab>();
+                            baseData.prefabs = new List<Beatmap.Prefab>();
 
                         baseData.prefabs.AddRange(gameDatas[i].prefabs.FindAll(x => !baseData.prefabs.Has(y => y.ID == x.ID)));
 

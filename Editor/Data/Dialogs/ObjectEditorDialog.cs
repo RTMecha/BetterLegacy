@@ -12,7 +12,7 @@ using UnityEngine.UI;
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     /// <summary>
-    /// Represents the object editor dialog for editing a <see cref="Core.Data.BeatmapObject"/>.
+    /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
     /// </summary>
     public class ObjectEditorDialog : EditorDialog
     {

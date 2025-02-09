@@ -4,7 +4,7 @@ using SimpleJSON;
 
 using BaseMarker = DataManager.GameData.BeatmapData.Marker;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Marker : BaseMarker
     {

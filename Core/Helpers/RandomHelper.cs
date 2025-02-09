@@ -1,5 +1,5 @@
 ﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using System;
 
 namespace BetterLegacy.Core.Helpers

@@ -12,6 +12,7 @@ using UnityEngine.UI;
 
 using TMPro;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Menus.UI.Elements;

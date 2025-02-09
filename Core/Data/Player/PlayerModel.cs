@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
 using System;

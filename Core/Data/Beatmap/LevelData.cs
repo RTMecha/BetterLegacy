@@ -2,7 +2,7 @@
 using UnityEngine;
 using BaseLevelData = DataManager.GameData.BeatmapData.LevelData;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class LevelData : BaseLevelData
     {

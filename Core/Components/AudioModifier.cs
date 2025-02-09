@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Optimization;
 
 using UnityEngine;

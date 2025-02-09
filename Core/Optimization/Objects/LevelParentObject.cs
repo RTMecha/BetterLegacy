@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects
@@ -35,6 +36,6 @@ namespace BetterLegacy.Core.Optimization.Objects
         public Transform transform;
         public string id;
         public bool desync;
-        public Data.BeatmapObject BeatmapObject { get; set; }
+        public BeatmapObject BeatmapObject { get; set; }
     }
 }

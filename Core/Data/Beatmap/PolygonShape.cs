@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using SimpleJSON;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents a custom polygon shape used for objects.

@@ -9,7 +9,7 @@ using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BasePrefab = DataManager.GameData.Prefab;
 using BasePrefabObject = DataManager.GameData.PrefabObject;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Prefab : BasePrefab
     {

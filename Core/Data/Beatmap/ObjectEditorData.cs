@@ -3,7 +3,7 @@ using SimpleJSON;
 using UnityEngine;
 using BaseEditorData = DataManager.GameData.BeatmapObject.EditorData;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Contains info about a PA objects' layer, bin, etc.

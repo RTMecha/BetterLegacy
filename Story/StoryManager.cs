@@ -6,6 +6,7 @@ using UnityEngine;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using BetterLegacy.Core.Optimization;

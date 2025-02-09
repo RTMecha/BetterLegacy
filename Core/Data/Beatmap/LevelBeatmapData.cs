@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BaseBeatmapData = DataManager.GameData.BeatmapData;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class LevelBeatmapData : BaseBeatmapData
     {
@@ -15,13 +15,13 @@ namespace BetterLegacy.Core.Data
         {
             var beatmapData = new LevelBeatmapData
             {
-                levelData = new Data.LevelData(),
+                levelData = new Beatmap.LevelData(),
                 editorData = new LevelEditorData(),
-                markers = new List<Data.Marker>()
+                markers = new List<Beatmap.Marker>()
             };
 
             for (int i = 0; i < jn["markers"].Count; i++)
-                beatmapData.markers.Add(Data.Marker.ParseVG(jn["markers"][i]));
+                beatmapData.markers.Add(Beatmap.Marker.ParseVG(jn["markers"][i]));
 
             return beatmapData;
         }
@@ -30,13 +30,13 @@ namespace BetterLegacy.Core.Data
         {
             var beatmapData = new LevelBeatmapData
             {
-                levelData = Data.LevelData.Parse(jn["level_data"]),
+                levelData = Beatmap.LevelData.Parse(jn["level_data"]),
                 editorData = LevelEditorData.Parse(jn["ed"]),
-                markers = new List<Data.Marker>()
+                markers = new List<Beatmap.Marker>()
             };
 
             for (int i = 0; i < jn["ed"]["markers"].Count; i++)
-                beatmapData.markers.Add(Data.Marker.Parse(jn["ed"]["markers"][i]));
+                beatmapData.markers.Add(Beatmap.Marker.Parse(jn["ed"]["markers"][i]));
 
             return beatmapData;
         }
@@ -49,9 +49,9 @@ namespace BetterLegacy.Core.Data
 
         public Checkpoint GetLastCheckpoint() => checkpoints[GetLastCheckpointIndex()];
 
-        public new List<Data.Marker> markers = new List<Data.Marker>();
+        public new List<Beatmap.Marker> markers = new List<Beatmap.Marker>();
 
-        public new Data.LevelData levelData;
+        public new Beatmap.LevelData levelData;
         public new LevelEditorData editorData;
     }
 }

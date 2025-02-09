@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class EventKeyframe : BaseEventKeyframe
     {

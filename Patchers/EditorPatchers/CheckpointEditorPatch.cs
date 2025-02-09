@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;

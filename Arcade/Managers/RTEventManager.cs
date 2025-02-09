@@ -5,6 +5,7 @@ using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;

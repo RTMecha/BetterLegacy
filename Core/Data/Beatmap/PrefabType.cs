@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using BasePrefabType = DataManager.PrefabType;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class PrefabType : BasePrefabType
     {

@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Example;
 using BetterLegacy.Menus;
@@ -194,7 +195,7 @@ namespace BetterLegacy.Core.Helpers
                 try
                 {
                     CoreHelper.StartCoroutine(LoopSprite(0.1f));
-                    if (SceneManager.inst.background.TryGetComponent(out Image image) && InterfaceManager.inst && InterfaceManager.inst.CurrentTheme is Data.BeatmapTheme beatmapTheme)
+                    if (SceneManager.inst.background.TryGetComponent(out Image image) && InterfaceManager.inst && InterfaceManager.inst.CurrentTheme is BeatmapTheme beatmapTheme)
                         image.color = beatmapTheme.backgroundColor;
                 }
                 catch (Exception ex)

@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 using BetterLegacy.Core;
 using LSFunctions;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;

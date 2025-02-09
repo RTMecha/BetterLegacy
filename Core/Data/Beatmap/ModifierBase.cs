@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class ModifierBase
     {

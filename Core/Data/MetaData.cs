@@ -137,7 +137,7 @@ namespace BetterLegacy.Core.Data
         /// <param name="path">File to parse.</param>
         /// <param name="fileType">The type of Project Arrhythmia the file is from.</param>
         /// <param name="setDefaultValues">If defaults should be set when a value is null.</param>
-        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
+        /// <returns>Returns a parsed <see cref="MetaData"/>.</returns>
         public static MetaData ReadFromFile(string path, ArrhythmiaType fileType, bool setDefaultValues = true) => fileType switch
         {
             ArrhythmiaType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), setDefaultValues),

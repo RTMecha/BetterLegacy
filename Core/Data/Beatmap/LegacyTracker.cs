@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Beatmap
 {
     public class LegacyTracker
     {

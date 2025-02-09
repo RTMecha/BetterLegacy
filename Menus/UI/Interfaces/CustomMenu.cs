@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using System.Collections.Generic;
 
 using SimpleJSON;
