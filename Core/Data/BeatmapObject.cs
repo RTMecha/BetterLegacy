@@ -91,6 +91,11 @@ namespace BetterLegacy.Core.Data
         }
 
         /// <summary>
+        /// Settings for the custom polygon shape.
+        /// </summary>
+        public PolygonShape polygonShapeSettings = new PolygonShape();
+
+        /// <summary>
         /// Type of gradient the object should render as. Does not support text, image and player objects.
         /// </summary>
         public GradientType gradientType;
@@ -299,6 +304,11 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public PrefabObject PrefabObject => GameData.Current.prefabObjects.Find(x => x.ID == prefabInstanceID);
 
+        /// <summary>
+        /// Type of the shape.
+        /// </summary>
+        public ShapeType ShapeType => (ShapeType)shape;
+
         #endregion
 
         #region Methods
@@ -463,6 +473,9 @@ namespace BetterLegacy.Core.Data
                             kfjn["er"][2].AsFloat);
 
                         eventKeyframe.relative = true;
+                        if (version >= new Version(ProjectArrhythmia.Versions.FIXED_ROTATION_SHAKE) && kfjn["ev"].Count > 1 && !kfjn["ev"][1].IsNull && kfjn["ev"][1].AsFloat == 1)
+                            eventKeyframe.relative = false;
+
                         eventKeyframe.active = false;
                         events[2].Add(eventKeyframe);
                     }
@@ -560,13 +573,16 @@ namespace BetterLegacy.Core.Data
             if (jn["d"] != null)
                 beatmapObject.Depth = jn["d"].AsInt;
             else
-                beatmapObject.Depth = version == new Version("23.1.4") ? 0 : 20; // fixes default depth not being correct
+                beatmapObject.Depth = version == new Version(ProjectArrhythmia.Versions.DEPTH_DEFAULT_CHANGED) ? 0 : 20; // fixes default depth not being correct
 
             if (jn["s"] != null)
                 beatmapObject.shape = jn["s"].AsInt;
 
             if (jn["so"] != null)
                 beatmapObject.shapeOption = jn["so"].AsInt;
+
+            if (jn["csp"] != null)
+                beatmapObject.polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
 
             if (jn["gt"] != null)
                 beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
@@ -830,6 +846,9 @@ namespace BetterLegacy.Core.Data
             if (jn["so"] != null)
                 beatmapObject.shapeOption = jn["so"].AsInt;
 
+            if (jn["csp"] != null)
+                beatmapObject.polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
+
             if (jn["gt"] != null)
                 beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
 
@@ -907,6 +926,9 @@ namespace BetterLegacy.Core.Data
             if (shapeOption != 0)
                 jn["so"] = shapeOption;
 
+            if (polygonShapeSettings != null)
+                jn["csp"] = polygonShapeSettings.ToJSON();
+
             if (gradientType != GradientType.Normal)
                 jn["gt"] = ((int)gradientType).ToString();
 
@@ -965,11 +987,14 @@ namespace BetterLegacy.Core.Data
                 // Rotation
                 for (int j = 0; j < events[2].Count; j++)
                 {
-                    var eventKeyframe = events[2][j];
+                    var eventKeyframe = events[2][j] as EventKeyframe;
                     jn["e"][2]["k"][j]["t"] = eventKeyframe.eventTime;
                     jn["e"][2]["k"][j]["ct"] = eventKeyframe.curveType.Name;
 
                     jn["e"][2]["k"][j]["ev"][0] = eventKeyframe.eventValues[0];
+
+                    if (!eventKeyframe.relative)
+                        jn["e"][2]["k"][j]["ev"][1] = 1.0f;
 
                     jn["e"][2]["k"][j]["r"] = eventKeyframe.random;
 
@@ -1065,6 +1090,9 @@ namespace BetterLegacy.Core.Data
             if (shapeOption != 0)
                 jn["so"] = shapeOption.ToString();
 
+            if (ShapeType == ShapeType.Polygon && polygonShapeSettings != null)
+                jn["csp"] = polygonShapeSettings.ToJSON();
+
             if (!string.IsNullOrEmpty(text))
                 jn["text"] = text;
 
@@ -1073,9 +1101,7 @@ namespace BetterLegacy.Core.Data
                     jn["tags"][i] = tags[i];
 
             if (origin.x != 0f || origin.y != 0f)
-            {
                 jn["o"] = origin.ToJSON();
-            }
 
             if (editorData.locked)
                 jn["ed"]["locked"] = editorData.locked.ToString();
