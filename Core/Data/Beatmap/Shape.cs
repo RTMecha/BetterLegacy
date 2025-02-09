@@ -290,10 +290,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public enum Property
         {
-            RegularObject,
-            TextObject,
-            ImageObject,
-            PlayerObject,
+            RegularObject = 0,
+            TextObject = 1,
+            ImageObject = 2,
+            PlayerObject = 3,
+            PolygonObject = 4,
+            ParticlesObject = 5,
         }
 
         public enum CollisionType
