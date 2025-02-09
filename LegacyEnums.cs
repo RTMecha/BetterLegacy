@@ -489,6 +489,25 @@ namespace BetterLegacy
         Unrecognized
     }
 
+    /// <summary>
+    /// Represents all shape types.
+    /// </summary>
+    public enum ShapeType
+    {
+        Square = 0,
+        Circle = 1,
+        Triangle = 2,
+        Arrow = 3,
+        Text = 4,
+        Hexagon = 5,
+        Image = 6,
+        Pentagon = 7,
+        Misc = 8,
+        Player = 9,
+        Polygon = 10,
+        Particles = 11,
+    }
+
     #endregion
 
     #region Arcade / Game
