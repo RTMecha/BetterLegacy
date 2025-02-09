@@ -1,5 +1,7 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
 using SteamworksFacepunch.Ugc;
@@ -1116,11 +1118,26 @@ namespace BetterLegacy.Core
             return ValueType.Unrecognized;
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the directory of the menu music load mode.
+        /// </summary>
+        /// <param name="menuMusic">Menu music to get a directory from.</param>
+        /// <returns>Returns a directory to use for the custom menu music.</returns>
+        public static string GetDirectory(this MenuMusicLoadMode menuMusic) => menuMusic switch
+        {
+            MenuMusicLoadMode.ArcadeFolder => $"{RTFile.ApplicationDirectory}{LevelManager.ListPath}",
+            MenuMusicLoadMode.StoryFolder => $"{RTFile.ApplicationDirectory}beatmaps/story",
+            MenuMusicLoadMode.EditorFolder => $"{RTFile.ApplicationDirectory}beatmaps/editor",
+            MenuMusicLoadMode.InterfacesFolder => $"{RTFile.ApplicationDirectory}beatmaps/interfaces/music",
+            MenuMusicLoadMode.GlobalFolder => MenuConfig.Instance.MusicGlobalPath.Value,
+            _ => RTFile.ApplicationDirectory + "settings/menus",
+        };
 
-        #region Misc
+    #endregion
 
-        public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
+    #region Misc
+
+    public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
         {
             if (meshFilter.mesh == null)
                 return;

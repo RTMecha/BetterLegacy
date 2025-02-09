@@ -187,15 +187,7 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            var directory = MenuConfig.Instance.MusicLoadMode.Value switch
-            {
-                MenuMusicLoadMode.ArcadeFolder => $"{RTFile.ApplicationDirectory}{LevelManager.ListPath}",
-                MenuMusicLoadMode.StoryFolder => $"{RTFile.ApplicationDirectory}beatmaps/story",
-                MenuMusicLoadMode.EditorFolder => $"{RTFile.ApplicationDirectory}beatmaps/editor",
-                MenuMusicLoadMode.InterfacesFolder => $"{RTFile.ApplicationDirectory}beatmaps/interfaces/music",
-                MenuMusicLoadMode.GlobalFolder => MenuConfig.Instance.MusicGlobalPath.Value,
-                _ => RTFile.ApplicationDirectory + "settings/menus",
-            };
+            var directory = MenuConfig.Instance.MusicLoadMode.Value.GetDirectory();
 
             if (!RTFile.DirectoryExists(directory))
             {
