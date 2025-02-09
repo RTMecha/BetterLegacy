@@ -896,7 +896,11 @@ namespace BetterLegacy.Core.Data
                         eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, 1f, 1f);
+
+                    if (kfjn["ev"].Count > 3)
+                        eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat, kfjn["ev"][2].AsFloat);
+                    else
+                        eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, 1f, 1f);
 
                     gameData.eventObjects.allEvents[3].Add(eventKeyframe);
                 }
@@ -1468,6 +1472,8 @@ namespace BetterLegacy.Core.Data
                     jn["events"][3][i]["ct"] = eventKeyframe.curveType.Name;
                     jn["events"][3][i]["t"] = eventKeyframe.eventTime;
                     jn["events"][3][i]["ev"][0] = eventKeyframe.eventValues[0];
+                    jn["events"][3][i]["ev"][1] = eventKeyframe.eventValues[1];
+                    jn["events"][3][i]["ev"][2] = eventKeyframe.eventValues[2];
                 }
 
                 // Themes
