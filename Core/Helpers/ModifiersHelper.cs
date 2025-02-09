@@ -3342,7 +3342,7 @@ namespace BetterLegacy.Core.Helpers
                     #region Color
 
                     case "addColor": {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer &&
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                                 int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float multiply) &&
                                 float.TryParse(modifier.commands[2], out float hue) && float.TryParse(modifier.commands[3], out float sat) && float.TryParse(modifier.commands[4], out float val))
                             {
@@ -3363,7 +3363,7 @@ namespace BetterLegacy.Core.Helpers
                                 float.TryParse(modifier.commands[3], out float hue) && float.TryParse(modifier.commands[4], out float sat) && float.TryParse(modifier.commands[5], out float val))
                                 foreach (var bm in list)
                                 {
-                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || !levelObject.visualObject.Renderer)
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
                                         continue;
 
                                     var color = CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val) * multiply;
@@ -3376,15 +3376,13 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "lerpColor": {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer &&
+                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null &&
                                 int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float multiply) &&
                                 float.TryParse(modifier.commands[2], out float hue) && float.TryParse(modifier.commands[3], out float sat) && float.TryParse(modifier.commands[4], out float val))
                             {
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                                if (levelObject.visualObject != null && levelObject.visualObject.Renderer)
-                                    levelObject.visualObject.Renderer.material.color =
-                                        RTMath.Lerp(levelObject.visualObject.Renderer.material.color, CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply);
+                                levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply));
                             }
 
                             break;
@@ -3409,12 +3407,7 @@ namespace BetterLegacy.Core.Helpers
                                     if (!Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject == null)
                                         continue;
 
-                                    var renderer = levelObject.visualObject.Renderer;
-                                    if (!renderer)
-                                        continue;
-
-                                    var material = renderer.material;
-                                    material.color = RTMath.Lerp(material.color, color, multiply);
+                                    levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), color, multiply));
                                 }
                             }
 
@@ -3422,7 +3415,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "addColorPlayerDistance": {
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
-                                levelObject.visualObject.GameObject && levelObject.visualObject.Renderer &&
+                                levelObject.visualObject.GameObject &&
                                 int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float offset) && float.TryParse(modifier.commands[2], out float multiply))
                             {
                                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
@@ -3434,14 +3427,14 @@ namespace BetterLegacy.Core.Helpers
 
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                                levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * -(distance * multiply - offset);
+                                levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + GameManager.inst.LiveTheme.objectColors[index] * -(distance * multiply - offset));
                             }
 
                             break;
                         }
                     case "lerpColorPlayerDistance": {
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
-                                levelObject.visualObject.GameObject && levelObject.visualObject.Renderer &&
+                                levelObject.visualObject.GameObject &&
                                 int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float offset) && float.TryParse(modifier.commands[2], out float multiply) &&
                                 float.TryParse(modifier.commands[3], out float opacity) &&
                                 float.TryParse(modifier.commands[4], out float hue) && float.TryParse(modifier.commands[5], out float sat) && float.TryParse(modifier.commands[6], out float val))
@@ -3455,23 +3448,17 @@ namespace BetterLegacy.Core.Helpers
 
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                                levelObject.visualObject.Renderer.material.color =
-                                    Color.Lerp(levelObject.visualObject.Renderer.material.color,
+                                levelObject.visualObject.SetColor(Color.Lerp(levelObject.visualObject.GetPrimaryColor(),
                                                 LSColors.fadeColor(CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), opacity),
-                                                -(distance * multiply - offset));
+                                                -(distance * multiply - offset)));
                             }
 
                             break;
                         }
                     case "setAlpha":
                     case "setOpacity": {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && float.TryParse(modifier.value, out float num))
-                            {
-                                if (levelObject.visualObject is not TextObject)
-                                    levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
-                                else
-                                    ((TextObject)levelObject.visualObject).textMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
-                            }
+                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && float.TryParse(modifier.value, out float num))
+                                levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), num));
 
                             break;
                         }
@@ -3482,13 +3469,10 @@ namespace BetterLegacy.Core.Helpers
                             if (list.Count > 0 && float.TryParse(modifier.value, out float num))
                                 foreach (var bm in list)
                                 {
-                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || !levelObject.visualObject.Renderer)
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
                                         continue;
 
-                                    if (levelObject.visualObject is TextObject textObject)
-                                        textObject.textMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
-                                    else
-                                        levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                    levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), num));
                                 }
 
                             break;
@@ -3498,84 +3482,29 @@ namespace BetterLegacy.Core.Helpers
                                 break;
 
                             if (!Updater.TryGetObject(beatmapObject, out LevelObject otherLevelObject) ||
-                                !otherLevelObject.visualObject.Renderer ||
-                                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
-                                !levelObject.visualObject.Renderer)
+                                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                                 break;
 
-                            var isFlipped = modifier.reference.gradientType == BeatmapObject.GradientType.RightLinear || modifier.reference.gradientType == BeatmapObject.GradientType.OutInRadial;
-                            var otherIsFlipped = beatmapObject.gradientType == BeatmapObject.GradientType.RightLinear || beatmapObject.gradientType == BeatmapObject.GradientType.OutInRadial;
-                            var otherMaterial = otherLevelObject.visualObject.Renderer.material;
-                            if (!levelObject.isGradient)
-                                levelObject.visualObject.Renderer.material.color =
-                                    otherLevelObject.isGradient ?
-                                        Parser.TryParse(modifier.commands[1], true) ? (!otherIsFlipped ? otherMaterial.GetColor("_Color") : otherMaterial.GetColor("_ColorSecondary")) :
-                                            (!otherIsFlipped ? otherMaterial.GetColor("_ColorSecondary") : otherMaterial.GetColor("_Color")) :
-                                    otherMaterial.color;
-                            else
-                            {
-                                if (otherLevelObject.isGradient)
-                                {
-                                    var startColor = isFlipped ? otherMaterial.GetColor("_ColorSecondary") : otherMaterial.GetColor("_Color");
-                                    var endColor = isFlipped ? otherMaterial.GetColor("_Color") : otherMaterial.GetColor("_ColorSecondary");
-                                    levelObject.gradientObject.SetColor(startColor, endColor);
-                                }
-                                else
-                                {
-                                    var material = otherLevelObject.visualObject.Renderer.material;
-
-                                    var startColor = isFlipped ? material.GetColor("_ColorSecondary") : material.GetColor("_Color");
-                                    var endColor = isFlipped ? material.GetColor("_Color") : material.GetColor("_ColorSecondary");
-                                    levelObject.gradientObject.SetColor(
-                                        Parser.TryParse(modifier.commands[1], true) ? otherMaterial.color : startColor,
-                                        Parser.TryParse(modifier.commands[2], true) ? otherMaterial.color : startColor);
-                                }
-                            }
+                            CopyColor(levelObject, otherLevelObject, Parser.TryParse(modifier.commands[1], true), Parser.TryParse(modifier.commands[2], true));
 
                             break;
                         }
                     case "copyColorOther": {
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
-                            if (list.Count > 0 && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
+                            if (list.Count > 0 && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
+                            {
+                                var applyColor1 = Parser.TryParse(modifier.commands[1], true);
+                                var applyColor2 = Parser.TryParse(modifier.commands[2], true);
+
                                 foreach (var bm in list)
                                 {
-                                    if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject) || !otherLevelObject.visualObject.Renderer)
+                                    if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject))
                                         continue;
 
-                                    var material = levelObject.visualObject.Renderer.material;
-
-                                    var isFlipped = modifier.reference.gradientType == BeatmapObject.GradientType.RightLinear || modifier.reference.gradientType == BeatmapObject.GradientType.OutInRadial;
-
-                                    if (!otherLevelObject.isGradient)
-                                        otherLevelObject.visualObject.Renderer.material.color =
-                                            levelObject.isGradient ?
-                                                Parser.TryParse(modifier.commands[1], true) ? (!isFlipped ? material.GetColor("_Color") : material.GetColor("_ColorSecondary")) :
-                                                    (!isFlipped ? material.GetColor("_ColorSecondary") : material.GetColor("_Color")) :
-                                                material.color;
-                                    else
-                                    {
-                                        if (levelObject.isGradient)
-                                        {
-                                            var otherIsFlipped = bm.gradientType == BeatmapObject.GradientType.RightLinear || bm.gradientType == BeatmapObject.GradientType.OutInRadial;
-
-                                            var startColor = otherIsFlipped ? material.GetColor("_ColorSecondary") : material.GetColor("_Color");
-                                            var endColor = otherIsFlipped ? material.GetColor("_Color") : material.GetColor("_ColorSecondary");
-                                            otherLevelObject.gradientObject.SetColor(startColor, endColor);
-                                        }
-                                        else
-                                        {
-                                            var otherIsFlipped = bm.gradientType == BeatmapObject.GradientType.RightLinear || bm.gradientType == BeatmapObject.GradientType.OutInRadial;
-                                            var otherMaterial = otherLevelObject.visualObject.Renderer.material;
-
-                                            var startColor = otherIsFlipped ? otherMaterial.GetColor("_ColorSecondary") : otherMaterial.GetColor("_Color");
-                                            var endColor = otherIsFlipped ? otherMaterial.GetColor("_Color") : otherMaterial.GetColor("_ColorSecondary");
-                                            otherLevelObject.gradientObject.SetColor(
-                                                Parser.TryParse(modifier.commands[1], true) ? material.color : startColor,
-                                                Parser.TryParse(modifier.commands[2], true) ? material.color : startColor);
-                                        }
-                                    }
+                                    CopyColor(otherLevelObject, levelObject, applyColor1, applyColor2);
                                 }
+                            }
 
                             break;
                         }
@@ -3592,7 +3521,7 @@ namespace BetterLegacy.Core.Helpers
                                     var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.eventTime < time);
 
                                     if (prevKFIndex < 0)
-                                        return;
+                                        break;
 
                                     var prevKF = beatmapObject.events[3][prevKFIndex];
                                     var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
@@ -3678,22 +3607,15 @@ namespace BetterLegacy.Core.Helpers
 
                                 foreach (var bm in list)
                                 {
-                                    if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject) || !otherLevelObject.visualObject.Renderer)
+                                    if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject))
                                         return;
 
-                                    var material = otherLevelObject.visualObject.Renderer.material;
-
                                     if (!otherLevelObject.isGradient)
-                                    {
-                                        material.color = Color.Lerp(otherLevelObject.visualObject.Renderer.material.color, color, t);
-                                    }
+                                        otherLevelObject.visualObject.SetColor(Color.Lerp(otherLevelObject.visualObject.GetPrimaryColor(), color, t));
                                     else
                                     {
-                                        var isFlipped = bm.gradientType == BeatmapObject.GradientType.RightLinear || bm.gradientType == BeatmapObject.GradientType.OutInRadial;
-
-                                        var startColor = isFlipped ? material.GetColor("_ColorSecondary") : material.GetColor("_Color");
-                                        var endColor = isFlipped ? material.GetColor("_Color") : material.GetColor("_ColorSecondary");
-                                        otherLevelObject.gradientObject.SetColor(Color.Lerp(startColor, color, t), Color.Lerp(endColor, secondColor, t));
+                                        var colors = otherLevelObject.gradientObject.GetColors();
+                                        otherLevelObject.gradientObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
                                     }
                                 }
                             }
@@ -3701,7 +3623,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setColorHex": {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
+                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                             {
                                 if (!levelObject.isGradient)
                                 {
@@ -3710,11 +3632,10 @@ namespace BetterLegacy.Core.Helpers
                                 }
                                 else
                                 {
-                                    var startColor = levelObject.gradientObject.GetPrimaryColor();
-                                    var endColor = levelObject.gradientObject.GetSecondaryColor();
+                                    var colors = levelObject.gradientObject.GetColors();
                                     levelObject.gradientObject.SetColor(
-                                        string.IsNullOrEmpty(modifier.value) ? startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), startColor.a),
-                                        string.IsNullOrEmpty(modifier.commands[1]) ? endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.commands[1]), endColor.a));
+                                        string.IsNullOrEmpty(modifier.value) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), colors.startColor.a),
+                                        string.IsNullOrEmpty(modifier.commands[1]) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.commands[1]), colors.endColor.a));
                                 }
                             }
 
@@ -3726,7 +3647,7 @@ namespace BetterLegacy.Core.Helpers
                             if (list.Count > 0)
                                 foreach (var bm in list)
                                 {
-                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || !levelObject.visualObject.Renderer)
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
                                         continue;
 
                                     if (!levelObject.isGradient)
@@ -3736,11 +3657,10 @@ namespace BetterLegacy.Core.Helpers
                                     }
                                     else
                                     {
-                                        var startColor = levelObject.gradientObject.GetPrimaryColor();
-                                        var endColor = levelObject.gradientObject.GetSecondaryColor();
+                                        var colors = levelObject.gradientObject.GetColors();
                                         levelObject.gradientObject.SetColor(
-                                            string.IsNullOrEmpty(modifier.value) ? startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), startColor.a),
-                                            string.IsNullOrEmpty(modifier.commands[2]) ? endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.commands[2]), endColor.a));
+                                            string.IsNullOrEmpty(modifier.value) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), colors.startColor.a),
+                                            string.IsNullOrEmpty(modifier.commands[2]) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.commands[2]), colors.endColor.a));
                                     }
                                 }
 
@@ -6676,6 +6596,31 @@ namespace BetterLegacy.Core.Helpers
                 return Mathf.Clamp((levelObject.visualObject.GameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
 
             return 0f;
+        }
+
+        public static void CopyColor(LevelObject applyTo, LevelObject takeFrom, bool applyColor1, bool applyColor2)
+        {
+            if (applyTo.isGradient && takeFrom.isGradient) // both are gradients
+            {
+                var colors = takeFrom.gradientObject.GetColors();
+                applyTo.gradientObject.SetColor(colors.startColor, colors.endColor);
+            }
+
+            if (applyTo.isGradient && !takeFrom.isGradient) // only main object is a gradient
+            {
+                var color = takeFrom.visualObject.GetPrimaryColor();
+                var colors = applyTo.gradientObject.GetColors();
+                applyTo.gradientObject.SetColor(applyColor1 ? color : colors.startColor, applyColor2 ? color : colors.endColor);
+            }
+
+            if (!applyTo.isGradient && takeFrom.isGradient)
+            {
+                var colors = takeFrom.gradientObject.GetColors();
+                applyTo.visualObject.SetColor(applyColor1 ? colors.startColor : applyColor2 ? colors.endColor : takeFrom.gradientObject.GetPrimaryColor());
+            }
+
+            if (!applyTo.isGradient && !takeFrom.isGradient)
+                applyTo.visualObject.SetColor(takeFrom.visualObject.GetPrimaryColor());
         }
     }
 }
