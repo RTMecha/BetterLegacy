@@ -615,163 +615,131 @@ namespace BetterLegacy.Core.Helpers
                 #region JSON
 
                 case "loadEquals": {
-                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json) &&
+                            int.TryParse(modifier.GetValue(4), out int type) && float.TryParse(modifier.GetValue(0), out float num))
                         {
-                            string json = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses");
+                            var jn = JSON.Parse(json);
 
-                            if (modifier.commands.Count < 5)
-                                modifier.commands.Add("0");
-
-                            if (!string.IsNullOrEmpty(json) && int.TryParse(modifier.commands[4], out int type))
-                            {
-                                var jn = JSON.Parse(json);
-
-                                return
-                                    !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) && (type == 0 &&
-                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
-                                    float.TryParse(modifier.value, out float num) && eq == num || type == 1 && jn[modifier.commands[2]][modifier.commands[3]]["string"] == modifier.value);
-                            }
+                            return
+                                !string.IsNullOrEmpty(jn[modifier.GetValue(2)][modifier.GetValue(3)]["float"]) &&
+                                    (type == 0 ?
+                                        float.TryParse(jn[modifier.GetValue(2)][modifier.GetValue(3)]["float"], out float eq) && eq == num :
+                                        jn[modifier.GetValue(2)][modifier.GetValue(3)]["string"] == modifier.GetValue(0));
                         }
+
                         break;
                     }
                 case "loadLesserEquals": {
-                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                         {
-                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+                            var jn = JSON.Parse(json);
 
-                            if (!string.IsNullOrEmpty(json))
-                            {
-                                var jn = JSON.Parse(json);
-
-                                return
-                                    !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
-                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
-                                    float.TryParse(modifier.value, out float num) && eq <= num;
-                            }
+                            return
+                                !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
+                                float.TryParse(modifier.value, out float num) && eq <= num;
                         }
+
                         break;
                     }
                 case "loadGreaterEquals": {
-                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                         {
-                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+                            var jn = JSON.Parse(json);
 
-                            if (!string.IsNullOrEmpty(json))
-                            {
-                                var jn = JSON.Parse(json);
-
-                                return
-                                    !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
-                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
-                                    float.TryParse(modifier.value, out float num) && eq >= num;
-                            }
+                            return
+                                !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
+                                float.TryParse(modifier.value, out float num) && eq >= num;
                         }
+
                         break;
                     }
                 case "loadLesser": {
-                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                         {
-                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+                            var jn = JSON.Parse(json);
 
-                            if (!string.IsNullOrEmpty(json))
-                            {
-                                var jn = JSON.Parse(json);
-
-                                return
-                                    !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
-                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
-                                    float.TryParse(modifier.value, out float num) && eq < num;
-                            }
+                            return
+                                !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
+                                float.TryParse(modifier.value, out float num) && eq < num;
                         }
+
                         break;
                     }
                 case "loadGreater": {
-                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                         {
-                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+                            var jn = JSON.Parse(json);
 
-                            if (!string.IsNullOrEmpty(json))
-                            {
-                                var jn = JSON.Parse(json);
-
-                                return
-                                    !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
-                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
-                                    float.TryParse(modifier.value, out float num) && eq > num;
-                            }
+                            return
+                                !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq) &&
+                                float.TryParse(modifier.value, out float num) && eq > num;
                         }
+
                         break;
                     }
                 case "loadExists": {
-                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
-                        {
-                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
-
-                            if (!string.IsNullOrEmpty(json))
-                            {
-                                var jn = JSON.Parse(json);
-
-                                return !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]);
-                            }
-                        }
-                        break;
+                        return RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json) && !string.IsNullOrEmpty(JSON.Parse(json)[modifier.commands[2]][modifier.commands[3]]);
                     }
 
                 #endregion
                 #region Variable
 
                 case "variableEquals": {
-                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable == num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && modifier.reference && modifier.reference.integerVariable == num;
                     }
                 case "variableLesserEquals": {
-                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable <= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && modifier.reference && modifier.reference.integerVariable <= num;
                     }
                 case "variableGreaterEquals": {
-                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable >= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && modifier.reference && modifier.reference.integerVariable >= num;
                     }
                 case "variableLesser": {
-                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable < num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && modifier.reference && modifier.reference.integerVariable < num;
                     }
                 case "variableGreater": {
-                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable > num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && modifier.reference && modifier.reference.integerVariable > num;
                     }
                 case "variableOtherEquals": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                         return
-                            int.TryParse(modifier.value, out int num) &&
+                            int.TryParse(modifier.GetValue(0), out int num) &&
                             modifier.reference &&
                             beatmapObjects.Any(x => x.integerVariable == num);
                     }
                 case "variableOtherLesserEquals": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                         return
-                            int.TryParse(modifier.value, out int num) &&
+                            int.TryParse(modifier.GetValue(0), out int num) &&
                             modifier.reference &&
                             beatmapObjects.Any(x => x.integerVariable <= num);
                     }
                 case "variableOtherGreaterEquals": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                         return
-                            int.TryParse(modifier.value, out int num) &&
+                            int.TryParse(modifier.GetValue(0), out int num) &&
                             modifier.reference &&
                             beatmapObjects.Any(x => x.integerVariable >= num);
                     }
                 case "variableOtherLesser": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                         return
-                            int.TryParse(modifier.value, out int num) &&
+                            int.TryParse(modifier.GetValue(0), out int num) &&
                             modifier.reference &&
                             beatmapObjects.Any(x => x.integerVariable < num);
                     }
                 case "variableOtherGreater": {
-                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+                        var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                         return
-                            int.TryParse(modifier.value, out int num) &&
+                            int.TryParse(modifier.GetValue(0), out int num) &&
                             modifier.reference &&
                             beatmapObjects.Any(x => x.integerVariable > num);
                     }
@@ -780,25 +748,25 @@ namespace BetterLegacy.Core.Helpers
                 #region Audio
 
                 case "pitchEquals": {
-                        return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch == num;
+                        return float.TryParse(modifier.GetValue(0), out float num) && AudioManager.inst.pitch == num;
                     }
                 case "pitchLesserEquals": {
-                        return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch <= num;
+                        return float.TryParse(modifier.GetValue(0), out float num) && AudioManager.inst.pitch <= num;
                     }
                 case "pitchGreaterEquals": {
-                        return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch >= num;
+                        return float.TryParse(modifier.GetValue(0), out float num) && AudioManager.inst.pitch >= num;
                     }
                 case "pitchLesser": {
-                        return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch < num;
+                        return float.TryParse(modifier.GetValue(0), out float num) && AudioManager.inst.pitch < num;
                     }
                 case "pitchGreater": {
-                        return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch > num;
+                        return float.TryParse(modifier.GetValue(0), out float num) && AudioManager.inst.pitch > num;
                     }
                 case "musicTimeGreater": {
-                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) > x;
+                        return float.TryParse(modifier.GetValue(0), out float x) && AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) > x;
                     }
                 case "musicTimeLesser": {
-                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) < x;
+                        return float.TryParse(modifier.GetValue(0), out float x) && AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) < x;
                     }
                 case "musicPlaying": {
                         return AudioManager.inst.CurrentAudioSource.isPlaying;
@@ -828,19 +796,19 @@ namespace BetterLegacy.Core.Helpers
 
                 case "randomGreater": {
                         if (modifier.Result == null)
-                            modifier.Result = int.TryParse(modifier.commands[1], out int x) && int.TryParse(modifier.commands[2], out int y) && int.TryParse(modifier.value, out int z) && UnityEngine.Random.Range(x, y) > z;
+                            modifier.Result = int.TryParse(modifier.GetValue(1), out int x) && int.TryParse(modifier.GetValue(2), out int y) && int.TryParse(modifier.GetValue(0), out int z) && UnityEngine.Random.Range(x, y) > z;
 
                         return modifier.Result != null && (bool)modifier.Result;
                     }
                 case "randomLesser": {
                         if (modifier.Result == null)
-                            modifier.Result = int.TryParse(modifier.commands[1], out int x) && int.TryParse(modifier.commands[2], out int y) && int.TryParse(modifier.value, out int z) && UnityEngine.Random.Range(x, y) < z;
+                            modifier.Result = int.TryParse(modifier.GetValue(1), out int x) && int.TryParse(modifier.GetValue(2), out int y) && int.TryParse(modifier.GetValue(0), out int z) && UnityEngine.Random.Range(x, y) > z;
 
                         return modifier.Result != null && (bool)modifier.Result;
                     }
                 case "randomEquals": {
                         if (modifier.Result == null)
-                            modifier.Result = int.TryParse(modifier.commands[1], out int x) && int.TryParse(modifier.commands[2], out int y) && int.TryParse(modifier.value, out int z) && UnityEngine.Random.Range(x, y) == z;
+                            modifier.Result = int.TryParse(modifier.GetValue(1), out int x) && int.TryParse(modifier.GetValue(2), out int y) && int.TryParse(modifier.GetValue(0), out int z) && UnityEngine.Random.Range(x, y) > z;
 
                         return modifier.Result != null && (bool)modifier.Result;
                     }
@@ -850,34 +818,34 @@ namespace BetterLegacy.Core.Helpers
 
                 case "mathEquals": {
                         var variables = modifier.reference.GetObjectVariables();
-                        return RTMath.Parse(modifier.value, variables) == RTMath.Parse(modifier.commands[1], variables);
+                        return RTMath.Parse(modifier.GetValue(0), variables) == RTMath.Parse(modifier.GetValue(1), variables);
                     }
                 case "mathLesserEquals": {
                         var variables = modifier.reference.GetObjectVariables();
-                        return RTMath.Parse(modifier.value, variables) <= RTMath.Parse(modifier.commands[1], variables);
+                        return RTMath.Parse(modifier.GetValue(0), variables) <= RTMath.Parse(modifier.GetValue(1), variables);
                     }
                 case "mathGreaterEquals": {
                         var variables = modifier.reference.GetObjectVariables();
-                        return RTMath.Parse(modifier.value, variables) >= RTMath.Parse(modifier.commands[1], variables);
+                        return RTMath.Parse(modifier.GetValue(0), variables) >= RTMath.Parse(modifier.GetValue(1), variables);
                     }
                 case "mathLesser": {
                         var variables = modifier.reference.GetObjectVariables();
-                        return RTMath.Parse(modifier.value, variables) < RTMath.Parse(modifier.commands[1], variables);
+                        return RTMath.Parse(modifier.GetValue(0), variables) < RTMath.Parse(modifier.GetValue(1), variables);
                     }
                 case "mathGreater": {
                         var variables = modifier.reference.GetObjectVariables();
-                        return RTMath.Parse(modifier.value, variables) > RTMath.Parse(modifier.commands[1], variables);
+                        return RTMath.Parse(modifier.GetValue(0), variables) > RTMath.Parse(modifier.GetValue(1), variables);
                     }
 
                 #endregion
                 #region Axis
 
                 case "axisEquals": {
-                        if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                            && float.TryParse(modifier.commands[3], out float delay) && float.TryParse(modifier.commands[4], out float multiply)
-                            && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
-                            && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
-                            && float.TryParse(modifier.commands[10], out float loop)
+                        if (int.TryParse(modifier.GetValue(1), out int fromType) && int.TryParse(modifier.GetValue(2), out int fromAxis)
+                            && float.TryParse(modifier.GetValue(3), out float delay) && float.TryParse(modifier.GetValue(4), out float multiply)
+                            && float.TryParse(modifier.GetValue(5), out float offset) && float.TryParse(modifier.GetValue(6), out float min) && float.TryParse(modifier.GetValue(7), out float max)
+                            && float.TryParse(modifier.GetValue(8), out float equals) && bool.TryParse(modifier.GetValue(9), out bool visual)
+                            && float.TryParse(modifier.GetValue(10), out float loop)
                             && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
@@ -894,11 +862,11 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case "axisLesserEquals": {
-                        if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                            && float.TryParse(modifier.commands[3], out float delay) && float.TryParse(modifier.commands[4], out float multiply)
-                            && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
-                            && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
-                            && float.TryParse(modifier.commands[10], out float loop)
+                        if (int.TryParse(modifier.GetValue(1), out int fromType) && int.TryParse(modifier.GetValue(2), out int fromAxis)
+                            && float.TryParse(modifier.GetValue(3), out float delay) && float.TryParse(modifier.GetValue(4), out float multiply)
+                            && float.TryParse(modifier.GetValue(5), out float offset) && float.TryParse(modifier.GetValue(6), out float min) && float.TryParse(modifier.GetValue(7), out float max)
+                            && float.TryParse(modifier.GetValue(8), out float equals) && bool.TryParse(modifier.GetValue(9), out bool visual)
+                            && float.TryParse(modifier.GetValue(10), out float loop)
                             && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
@@ -915,11 +883,11 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case "axisGreaterEquals": {
-                        if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                            && float.TryParse(modifier.commands[3], out float delay) && float.TryParse(modifier.commands[4], out float multiply)
-                            && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
-                            && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
-                            && float.TryParse(modifier.commands[10], out float loop)
+                        if (int.TryParse(modifier.GetValue(1), out int fromType) && int.TryParse(modifier.GetValue(2), out int fromAxis)
+                            && float.TryParse(modifier.GetValue(3), out float delay) && float.TryParse(modifier.GetValue(4), out float multiply)
+                            && float.TryParse(modifier.GetValue(5), out float offset) && float.TryParse(modifier.GetValue(6), out float min) && float.TryParse(modifier.GetValue(7), out float max)
+                            && float.TryParse(modifier.GetValue(8), out float equals) && bool.TryParse(modifier.GetValue(9), out bool visual)
+                            && float.TryParse(modifier.GetValue(10), out float loop)
                             && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
@@ -936,11 +904,11 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case "axisLesser": {
-                        if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                            && float.TryParse(modifier.commands[3], out float delay) && float.TryParse(modifier.commands[4], out float multiply)
-                            && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
-                            && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
-                            && float.TryParse(modifier.commands[10], out float loop)
+                        if (int.TryParse(modifier.GetValue(1), out int fromType) && int.TryParse(modifier.GetValue(2), out int fromAxis)
+                            && float.TryParse(modifier.GetValue(3), out float delay) && float.TryParse(modifier.GetValue(4), out float multiply)
+                            && float.TryParse(modifier.GetValue(5), out float offset) && float.TryParse(modifier.GetValue(6), out float min) && float.TryParse(modifier.GetValue(7), out float max)
+                            && float.TryParse(modifier.GetValue(8), out float equals) && bool.TryParse(modifier.GetValue(9), out bool visual)
+                            && float.TryParse(modifier.GetValue(10), out float loop)
                             && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
@@ -957,11 +925,11 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case "axisGreater": {
-                        if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                            && float.TryParse(modifier.commands[3], out float delay) && float.TryParse(modifier.commands[4], out float multiply)
-                            && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
-                            && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
-                            && float.TryParse(modifier.commands[10], out float loop)
+                        if (int.TryParse(modifier.GetValue(1), out int fromType) && int.TryParse(modifier.GetValue(2), out int fromAxis)
+                            && float.TryParse(modifier.GetValue(3), out float delay) && float.TryParse(modifier.GetValue(4), out float multiply)
+                            && float.TryParse(modifier.GetValue(5), out float offset) && float.TryParse(modifier.GetValue(6), out float min) && float.TryParse(modifier.GetValue(7), out float max)
+                            && float.TryParse(modifier.GetValue(8), out float equals) && bool.TryParse(modifier.GetValue(9), out bool visual)
+                            && float.TryParse(modifier.GetValue(10), out float loop)
                             && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
@@ -982,49 +950,54 @@ namespace BetterLegacy.Core.Helpers
                 #region Level Rank
 
                 case "levelRankEquals": {
-                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] == num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == num;
                     }
                 case "levelRankLesserEquals": {
-                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] <= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= num;
                     }
                 case "levelRankGreaterEquals": {
-                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] >= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= num;
                     }
                 case "levelRankLesser": {
-                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] < num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < num;
                     }
                 case "levelRankGreater": {
-                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] > num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > num;
                     }
                 case "levelRankOtherEquals": {
-                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] == num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) &&
+                            GetLevelRank(level, out int levelRankIndex) && levelRankIndex == num;
                     }
                 case "levelRankOtherLesserEquals": {
-                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] <= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) &&
+                            GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= num;
                     }
                 case "levelRankOtherGreaterEquals": {
-                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] >= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) &&
+                            GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= num;
                     }
                 case "levelRankOtherLesser": {
-                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] < num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) &&
+                            GetLevelRank(level, out int levelRankIndex) && levelRankIndex < num;
                     }
                 case "levelRankOtherGreater": {
-                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] > num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) &&
+                            GetLevelRank(level, out int levelRankIndex) && levelRankIndex > num;
                     }
                 case "levelRankCurrentEquals": {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] == num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] == num;
                     }
                 case "levelRankCurrentLesserEquals": {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] <= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] <= num;
                     }
                 case "levelRankCurrentGreaterEquals": {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] >= num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] >= num;
                     }
                 case "levelRankCurrentLesser": {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] < num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] < num;
                     }
                 case "levelRankCurrentGreater": {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] > num;
+                        return int.TryParse(modifier.GetValue(0), out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] > num;
                     }
 
                 #endregion
@@ -1239,10 +1212,10 @@ namespace BetterLegacy.Core.Helpers
                         return CoreConfig.Instance.LDM.Value;
                     }
                 case "usernameEquals": {
-                        return CoreConfig.Instance.DisplayName.Value == modifier.value;
+                        return CoreConfig.Instance.DisplayName.Value == modifier.GetValue(0);
                     }
                 case "languageEquals": {
-                        return CoreConfig.Instance.Language.Value == (Language)Parser.TryParse(modifier.value, 0);
+                        return CoreConfig.Instance.Language.Value == (Language)Parser.TryParse(modifier.GetValue(0), 0);
                     }
                 case "configShowEffects": {
                         return EventsConfig.Instance.ShowFX.Value;
@@ -1254,7 +1227,7 @@ namespace BetterLegacy.Core.Helpers
                         return EventsConfig.Instance.ShowIntro.Value;
                     }
                 case "requireSignal": {
-                        return modifier.Result != null;
+                        return modifier.HasResult();
                     }
                 case "isFullscreen": {
                         return Screen.fullScreen;
@@ -1343,32 +1316,32 @@ namespace BetterLegacy.Core.Helpers
                     #region Audio
 
                     case "setPitch": {
-                            if (float.TryParse(modifier.value, out float num))
+                            if (float.TryParse(modifier.GetValue(0), out float num))
                                 RTEventManager.inst.pitchOffset = num;
 
                             break;
                         }
                     case "addPitch": {
-                            if (float.TryParse(modifier.value, out float num))
+                            if (float.TryParse(modifier.GetValue(0), out float num))
                                 RTEventManager.inst.pitchOffset += num;
 
                             break;
                         }
                     case "setPitchMath": {
-                            RTEventManager.inst.pitchOffset = RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables());
+                            RTEventManager.inst.pitchOffset = RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
                             break;
                         }
                     case "addPitchMath": {
-                            RTEventManager.inst.pitchOffset += RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables());
+                            RTEventManager.inst.pitchOffset += RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
                             break;
                         }
                     case "setMusicTime": {
-                            if (float.TryParse(modifier.value, out float num))
+                            if (float.TryParse(modifier.GetValue(0), out float num))
                                 AudioManager.inst.SetMusicTime(num);
                             break;
                         }
                     case "setMusicTimeMath": {
-                            AudioManager.inst.SetMusicTime(RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables()));
+                            AudioManager.inst.SetMusicTime(RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables()));
                             break;
                         }
                     case "setMusicTimeStartTime": {
@@ -1380,19 +1353,19 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "playSound": {
-                            if (bool.TryParse(modifier.commands[1], out bool global) && float.TryParse(modifier.commands[2], out float pitch) && float.TryParse(modifier.commands[3], out float vol) && bool.TryParse(modifier.commands[4], out bool loop))
-                                ModifiersManager.GetSoundPath(modifier.reference.id, modifier.value, global, pitch, vol, loop);
+                            if (bool.TryParse(modifier.GetValue(1), out bool global) && float.TryParse(modifier.GetValue(2), out float pitch) && float.TryParse(modifier.GetValue(3), out float vol) && bool.TryParse(modifier.GetValue(4), out bool loop))
+                                ModifiersManager.GetSoundPath(modifier.reference.id, modifier.GetValue(0), global, pitch, vol, loop);
 
                             break;
                         }
                     case "playSoundOnline": {
-                            if (float.TryParse(modifier.commands[1], out float pitch) && float.TryParse(modifier.commands[2], out float vol) && bool.TryParse(modifier.commands[3], out bool loop) && !string.IsNullOrEmpty(modifier.value))
-                                ModifiersManager.DownloadSoundAndPlay(modifier.reference.id, modifier.value, pitch, vol, loop);
+                            if (float.TryParse(modifier.GetValue(1), out float pitch) && float.TryParse(modifier.GetValue(2), out float vol) && bool.TryParse(modifier.GetValue(3), out bool loop) && !string.IsNullOrEmpty(modifier.GetValue(0)))
+                                ModifiersManager.DownloadSoundAndPlay(modifier.reference.id, modifier.GetValue(0), pitch, vol, loop);
 
                             break;
                         }
                     case "playDefaultSound": {
-                            if (!float.TryParse(modifier.commands[1], out float pitch) || !float.TryParse(modifier.commands[2], out float vol) || !bool.TryParse(modifier.commands[3], out bool loop) || !AudioManager.inst.library.soundClips.TryGetValue(modifier.value, out AudioClip[] audioClips))
+                            if (!float.TryParse(modifier.GetValue(1), out float pitch) || !float.TryParse(modifier.GetValue(2), out float vol) || !bool.TryParse(modifier.GetValue(3), out bool loop) || !AudioManager.inst.library.soundClips.TryGetValue(modifier.GetValue(0), out AudioClip[] audioClips))
                                 break;
 
                             var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
@@ -1423,9 +1396,9 @@ namespace BetterLegacy.Core.Helpers
                                 break;
 
                             string fullPath =
-                                !bool.TryParse(modifier.commands[1], out bool global) || !global ?
-                                RTFile.CombinePaths(RTFile.BasePath, modifier.value) :
-                                RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, modifier.value);
+                                !bool.TryParse(modifier.GetValue(1), out bool global) || !global ?
+                                RTFile.CombinePaths(RTFile.BasePath, modifier.GetValue(0)) :
+                                RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, modifier.GetValue(0));
 
                             var audioDotFormats = RTFile.AudioDotFormats;
                             for (int i = 0; i < audioDotFormats.Length; i++)
@@ -6573,7 +6546,7 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        public static void ApplyAnimationTo(
+        static void ApplyAnimationTo(
             BeatmapObject applyTo, BeatmapObject takeFrom,
             bool useVisual, float time, float currentTime,
             bool animatePos, bool animateSca, bool animateRot,
@@ -6631,7 +6604,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float GetAnimation(BeatmapObject bm, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
+        static float GetAnimation(BeatmapObject bm, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
         {
             var time = Updater.CurrentTime;
 
@@ -6649,7 +6622,7 @@ namespace BetterLegacy.Core.Helpers
             return 0f;
         }
 
-        public static void CopyColor(LevelObject applyTo, LevelObject takeFrom, bool applyColor1, bool applyColor2)
+        static void CopyColor(LevelObject applyTo, LevelObject takeFrom, bool applyColor1, bool applyColor2)
         {
             if (applyTo.isGradient && takeFrom.isGradient) // both are gradients
             {
@@ -6673,5 +6646,14 @@ namespace BetterLegacy.Core.Helpers
             if (!applyTo.isGradient && !takeFrom.isGradient) // neither are gradients
                 applyTo.visualObject.SetColor(takeFrom.visualObject.GetPrimaryColor());
         }
+
+        static bool GetLevelRank(Level level, out int levelRankIndex)
+        {
+            var active = level && level.playerData;
+            levelRankIndex = active ? LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] : 0;
+            return active;
+        }
+
+        static string GetSaveFile(string file) => RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", file + FileFormat.SES.Dot());
     }
 }
