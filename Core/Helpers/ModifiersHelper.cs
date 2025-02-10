@@ -3672,6 +3672,7 @@ namespace BetterLegacy.Core.Helpers
                     #region Shape
 
                         // todo: figure out how to get this to work
+                        // todo: add polygon modifier stuff
                     case "actorFrameTexture": {
                             if (modifier.reference.shape != 6 || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not ImageObject imageObject)
                                 break;
@@ -6427,6 +6428,12 @@ namespace BetterLegacy.Core.Helpers
                 case "isBoosting": {
                         return modifier.reference.Player && modifier.reference.Player.isBoosting;
                     }
+                case "isColliding": {
+                        return modifier.reference.Player && modifier.reference.Player.triggerColliding;
+                    }
+                case "isSolidColliding": {
+                        return modifier.reference.Player && modifier.reference.Player.colliding;
+                    }
             }
 
             return false;
@@ -6466,6 +6473,26 @@ namespace BetterLegacy.Core.Helpers
                             modifier.reference.Player.Hit();
                         break;
                     }
+                case "boost": {
+                        if (modifier.reference.Player)
+                            modifier.reference.Player.StartBoost();
+                        break;
+                    }
+                case "shoot": {
+                        if (modifier.reference.Player)
+                            modifier.reference.Player.CreateBullet();
+                        break;
+                    }
+                case "pulse": {
+                        if (modifier.reference.Player)
+                            modifier.reference.Player.CreatePulse();
+                        break;
+                    }
+                case "jump": {
+                        if (modifier.reference.Player)
+                            modifier.reference.Player.Jump();
+                        break;
+                    }
                 case "signalModifier": {
                         var list = GameData.Current.FindObjectsWithTag(modifier.commands[1]);
 
@@ -6487,6 +6514,29 @@ namespace BetterLegacy.Core.Helpers
                 case "setIdleAnimation": {
                         if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(0), out RTPlayer.CustomObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == modifier.GetValue(1), out PAAnimation animation))
                             customObject.currentIdleAnimation = animation.ReferenceID;
+
+                        break;
+                    }
+                case "playDefaultSound": {
+                        if (!float.TryParse(modifier.commands[1], out float pitch) || !float.TryParse(modifier.commands[2], out float vol) || !bool.TryParse(modifier.commands[3], out bool loop) || !AudioManager.inst.library.soundClips.TryGetValue(modifier.value, out AudioClip[] audioClips))
+                            break;
+
+                        var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
+                        var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+                        audioSource.clip = clip;
+                        audioSource.playOnAwake = true;
+                        audioSource.loop = loop;
+                        audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+                        audioSource.volume = vol * AudioManager.inst.sfxVol;
+                        audioSource.Play();
+
+                        float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+                        if (x == 0f)
+                            x = 1f;
+                        if (x < 0f)
+                            x = -x;
+
+                        CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
 
                         break;
                     }
@@ -6614,13 +6664,13 @@ namespace BetterLegacy.Core.Helpers
                 applyTo.gradientObject.SetColor(applyColor1 ? color : colors.startColor, applyColor2 ? color : colors.endColor);
             }
 
-            if (!applyTo.isGradient && takeFrom.isGradient)
+            if (!applyTo.isGradient && takeFrom.isGradient) // only copying object is a gradient
             {
                 var colors = takeFrom.gradientObject.GetColors();
                 applyTo.visualObject.SetColor(applyColor1 ? colors.startColor : applyColor2 ? colors.endColor : takeFrom.gradientObject.GetPrimaryColor());
             }
 
-            if (!applyTo.isGradient && !takeFrom.isGradient)
+            if (!applyTo.isGradient && !takeFrom.isGradient) // neither are gradients
                 applyTo.visualObject.SetColor(takeFrom.visualObject.GetPrimaryColor());
         }
     }

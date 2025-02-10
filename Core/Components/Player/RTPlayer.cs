@@ -398,6 +398,7 @@ namespace BetterLegacy.Core.Components.Player
         #endregion
 
         public bool colliding;
+        public bool triggerColliding;
         public bool updated;
         public bool playerNeedsUpdating;
 
@@ -1549,8 +1550,10 @@ namespace BetterLegacy.Core.Components.Player
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 colliding = false;
-                float x = Actions.Move.Vector.x;
-                float y = Actions.Move.Vector.y;
+                var x = Actions.Move.Vector.x;
+                var y = Actions.Move.Vector.y;
+                var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
+
                 if (x != 0f)
                 {
                     lastMoveHorizontal = x;
@@ -1563,8 +1566,6 @@ namespace BetterLegacy.Core.Components.Player
                     if (x == 0f)
                         lastMoveHorizontal = 0f;
                 }
-
-                var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
                 Vector2 vector;
                 if (isBoosting)
@@ -2291,6 +2292,34 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         /// <summary>
+        /// Forces the player to jump if the gamemode is set to <see cref="GameMode.Platformer"/>.
+        /// </summary>
+        public void Jump()
+        {
+            if (!JumpMode)
+                return;
+
+            var velocity = rb.velocity;
+            if ((jumpCount != 0 && colliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
+            {
+                velocity.y = jumpIntensity * JumpIntensity;
+
+                if (PlayBoostSound)
+                    SoundManager.inst.PlaySound(DefaultSounds.boost);
+
+                if (colliding)
+                {
+                    currentJumpCount = 0;
+                    currentJumpBoostCount = 0;
+                    colliding = false;
+                }
+                currentJumpCount++;
+            }
+
+            rb.velocity = velocity;
+        }
+
+        /// <summary>
         /// Sets all path points to a single position.
         /// </summary>
         /// <param name="pos">Position to set.</param>
@@ -2348,6 +2377,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void HandleCollision(Component other, bool stay = true)
         {
+            triggerColliding = true;
             if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
         }
@@ -3169,7 +3199,7 @@ namespace BetterLegacy.Core.Components.Player
             burst.Play();
         }
 
-        void CreatePulse()
+        public void CreatePulse()
         {
             if (!Model)
                 return;
@@ -3253,7 +3283,7 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         // to do: aiming so you don't need to be facing the direction of the bullet (maybe create a parent that rotates in the direction of the right stick?)
-        void CreateBullet()
+        public void CreateBullet()
         {
             var currentModel = Model;
 

@@ -547,29 +547,64 @@ namespace BetterLegacy.Core.Managers
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
-                constant = true,
+                constant = false,
                 commands = new List<string> { "kill" },
                 value = "0"
             },
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
-                constant = true,
+                constant = false,
                 commands = new List<string> { "hit" },
                 value = "0"
             },
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
-                constant = true,
+                constant = false,
+                commands = new List<string> { "boost" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string> { "shoot" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string> { "pulse" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string> { "jump" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
                 commands = new List<string> { "signalModifier", "Object Group" },
                 value = "0"
             },
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
-                constant = true,
+                constant = false,
                 commands = new List<string> { "playAnimation", "boost" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string> { "setIdleAnimation", "boost" },
                 value = "0"
             },
             new Modifier<CustomPlayer>
@@ -717,6 +752,13 @@ namespace BetterLegacy.Core.Managers
                 type = ModifierBase.Type.Trigger,
                 constant = true,
                 commands = new List<string> { "isBoosting" },
+                value = "0"
+            },
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "isColliding" },
                 value = "0"
             },
         };

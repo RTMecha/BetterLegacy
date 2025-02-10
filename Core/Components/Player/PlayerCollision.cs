@@ -17,6 +17,18 @@ namespace BetterLegacy.Core.Components.Player
 
         void OnTriggerStay(Collider other) => player?.HandleCollision(other, false);
 
+        void OnTriggerExit2D(Collider2D other)
+        {
+            if (player)
+                player.triggerColliding = false;
+        }
+        
+        void OnTriggerExit(Collider other)
+        {
+            if (player)
+                player.triggerColliding = false;
+        }
+
         void OnCollisionEnter2D()
         {
             if (player)
