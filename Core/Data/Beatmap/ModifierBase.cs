@@ -95,6 +95,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             return false;
         }
 
+        public bool HasResult() => Result != null;
+
         /// <summary>
         /// Reference value indexes here since I was pretty stupid with how I implemented the value system initially.
         /// </summary>
