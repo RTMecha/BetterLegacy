@@ -421,6 +421,12 @@ namespace BetterLegacy.Core
             }
         }
 
+        public static bool TryReadFromFile(string path, out string file)
+        {
+            file = ReadFromFile(path);
+            return !string.IsNullOrEmpty(file);
+        }
+
         /// <summary>
         /// Reads bytes from a Stream.
         /// </summary>
