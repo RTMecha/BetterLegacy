@@ -25,8 +25,8 @@ namespace BetterLegacy.Core.Components
 
         void OnMouseExit() => hovered = false;
 
-        bool CheckCollider(Collider other) => other.tag != "Player" && other.gameObject.name.Contains("bullet (Player");
-        bool CheckCollider(Collider2D other) => other.tag != "Player" && other.gameObject.name.Contains("bullet (Player") && !colliders.Contains(other);
+        bool CheckCollider(Collider other) => other.tag != Tags.PLAYER && other.gameObject.name.Contains("bullet (Player");
+        bool CheckCollider(Collider2D other) => other.tag != Tags.PLAYER && other.gameObject.name.Contains("bullet (Player") && !colliders.Contains(other);
 
         void OnTriggerEnter2D(Collider2D other)
         {

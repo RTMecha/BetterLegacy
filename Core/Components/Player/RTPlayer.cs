@@ -2382,7 +2382,7 @@ namespace BetterLegacy.Core.Components.Player
                 Hit();
         }
 
-        bool CollisionCheck(Component other) => other.tag != "Helper" && (other.tag == "Player" && AllowPlayersToHitOthers || other.tag != "Player") && other.name != $"bullet (Player {playerIndex + 1})";
+        bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {playerIndex + 1})";
 
         IEnumerator BoostCooldownLoop()
         {
@@ -3319,8 +3319,8 @@ namespace BetterLegacy.Core.Components.Player
 
             if (!AllowPlayersToTakeBulletDamage || !currentModel.bulletPart.hurtPlayers)
             {
-                pulse.tag = "Helper";
-                pulse.transform.GetChild(0).tag = "Helper";
+                pulse.tag = Tags.HELPER;
+                pulse.transform.GetChild(0).tag = Tags.HELPER;
             }
 
             pulse.transform.GetChild(0).gameObject.name = "bullet (Player " + (playerIndex + 1).ToString() + ")";

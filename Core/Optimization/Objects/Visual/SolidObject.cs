@@ -37,7 +37,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             {
                 Collider.enabled = true;
                 if (hasCollider)
-                    Collider.tag = "Helper";
+                    Collider.tag = Tags.HELPER;
 
                 Collider.isTrigger = !solid;
             }
