@@ -2063,8 +2063,17 @@ namespace BetterLegacy.Core.Components.Player
                 else if (customObject.renderer)
                     customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
 
-                if (!customObject.idle)
+                if (!customObject.idle || reference.animations.Count < 1)
+                {
+                    var origPos = reference.position;
+                    var origSca = reference.scale;
+                    var origRot = reference.rotation;
+
+                    customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z);
+                    customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z);
+                    customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z);
                     return;
+                }
 
                 reference.animations.ForLoop(animation =>
                 {
@@ -2072,24 +2081,33 @@ namespace BetterLegacy.Core.Components.Player
                         return;
 
                     var length = animation.GetLength();
+                    var origPos = reference.position;
+                    var origSca = reference.scale;
+                    var origRot = reference.rotation;
+
                     if (animation.animatePosition)
                     {
                         var position = GameData.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
-                        var origPos = reference.position;
-                        customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position);
+                        customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position + customObject.positionOffset);
                     }
+                    else
+                        customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z);
+
                     if (animation.animateScale)
                     {
                         var scale = GameData.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
-                        var origSca = reference.scale;
-                        customObject.gameObject.transform.localScale = (new Vector3(origSca.x * scale.x, origSca.y * scale.y, 1f));
+                        customObject.gameObject.transform.localScale = (new Vector3(origSca.x * scale.x + customObject.scaleOffset.x, origSca.y * scale.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z));
                     }
+                    else
+                        customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z);
+
                     if (animation.animateRotation)
                     {
                         var rotation = GameData.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
-                        var origRot = reference.rotation;
-                        customObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, origRot + rotation);
+                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + rotation + customObject.rotationOffset.z);
                     }
+                    else
+                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z);
                 });
             });
         }
@@ -3584,6 +3602,61 @@ namespace BetterLegacy.Core.Components.Player
             public TextMeshPro text;
             public bool idle = true;
             public string currentIdleAnimation = "idle";
+
+            public Vector3 positionOffset;
+            public Vector3 scaleOffset;
+            public Vector3 rotationOffset;
+
+            public Vector3 GetTransformOffset(int type) => type switch
+            {
+                0 => positionOffset,
+                1 => scaleOffset,
+                _ => rotationOffset,
+            };
+
+            public void SetTransform(int toType, Vector3 value)
+            {
+                switch (toType)
+                {
+                    case 0:
+                        {
+                            positionOffset = value;
+                            break;
+                        }
+                    case 1:
+                        {
+                            scaleOffset = value;
+                            break;
+                        }
+                    case 2:
+                        {
+                            rotationOffset = value;
+                            break;
+                        }
+                }
+            }
+
+            public void SetTransform(int toType, int toAxis, float value)
+            {
+                switch (toType)
+                {
+                    case 0:
+                        {
+                            positionOffset[toAxis] = value;
+                            break;
+                        }
+                    case 1:
+                        {
+                            scaleOffset[toAxis] = value;
+                            break;
+                        }
+                    case 2:
+                        {
+                            rotationOffset[toAxis] = value;
+                            break;
+                        }
+                }
+            }
         }
 
         /// <summary>

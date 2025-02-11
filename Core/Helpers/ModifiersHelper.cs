@@ -6513,6 +6513,42 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "animateObject": {
+                        if (int.TryParse(modifier.GetValue(1), out int type)
+                            && float.TryParse(modifier.GetValue(2), out float x) && float.TryParse(modifier.GetValue(3), out float y) && float.TryParse(modifier.GetValue(4), out float z)
+                            && bool.TryParse(modifier.GetValue(5), out bool relative) && float.TryParse(modifier.GetValue(0), out float time)
+                            && modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(7), out RTPlayer.CustomObject customObject))
+                        {
+                            string easing = modifier.GetValue(6);
+                            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                                easing = DataManager.inst.AnimationList[e].Name;
+
+                            Vector3 vector = customObject.GetTransformOffset(type);
+
+                            var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+
+                            if (!modifier.constant)
+                            {
+                                var animation = new RTAnimation("Animate Object Offset");
+
+                                animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                                        {
+                                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                                        }, vector3 => customObject.SetTransform(type, vector3), interpolateOnComplete: true),
+                                    };
+                                animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
+                                AnimationManager.inst.Play(animation);
+                                break;
+                            }
+
+                            customObject.SetTransform(type, setVector);
+                        }
+
+                        break;
+                    }
             }
         }
 

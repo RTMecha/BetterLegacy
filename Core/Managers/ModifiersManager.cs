@@ -543,70 +543,88 @@ namespace BetterLegacy.Core.Managers
                 constant = true,
                 commands = new List<string> { "setCustomActive", "0", "True" },
                 value = "False"
-            },
+            }, // setCustomActive
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "kill" },
                 value = "0"
-            },
+            }, // kill
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "hit" },
                 value = "0"
-            },
+            }, // hit
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "boost" },
                 value = "0"
-            },
+            }, // boost
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "shoot" },
                 value = "0"
-            },
+            }, // shoot
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "pulse" },
                 value = "0"
-            },
+            }, // pulse
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "jump" },
                 value = "0"
-            },
+            }, // jump
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "signalModifier", "Object Group" },
                 value = "0"
-            },
+            }, // signalModifier
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "playAnimation", "boost" },
                 value = "0"
-            },
+            }, // playAnimation
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Action,
                 constant = false,
                 commands = new List<string> { "setIdleAnimation", "boost" },
                 value = "0"
-            },
+            }, // setIdleAnimation
+            new Modifier<CustomPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string>
+                {
+                    "animateObject",
+                    "0", // Pos / Sca / Rot
+                    "0", // X
+                    "0", // Y
+                    "0", // Z
+                    "True", // Relative
+                    "0", // Easing
+                    "0", // ID
+                },
+                value = "1"
+            }, //animateObject
+
             new Modifier<CustomPlayer>
             {
                 type = ModifierBase.Type.Trigger,
