@@ -154,6 +154,7 @@ namespace BetterLegacy.Core.Data.Player
                     alphaPlayer.IsDefault = true;
                     alphaPlayer.basePart.id = ALPHA_ID;
                     alphaPlayer.basePart.name = "Alpha";
+                    alphaPlayer.basePart.canBoost = false;
                     alphaPlayer.guiPart.active = true;
                     alphaPlayer.guiPart.mode = GUI.GUIHealthMode.Images;
                     alphaPlayer.headPart.scale = new Vector2(1.1f, 1f);
