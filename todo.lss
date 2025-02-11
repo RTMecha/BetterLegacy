@@ -82,6 +82,7 @@
 - Custom Polygon Shape type
 - color math modifiers
 - Ignore opacity toggle for color modifiers
+- Require Version field / toggle for metadata.
 
 ### Internal
 - Make Editor Documentation read from a json file. > 1.8.0
