@@ -83,6 +83,7 @@
 - color math modifiers
 - Ignore opacity toggle for color modifiers
 - Require Version field / toggle for metadata.
+- Variable Modifier that registers an object variable based on what the modifier takes.
 
 ### Internal
 - Make Editor Documentation read from a json file. > 1.8.0
