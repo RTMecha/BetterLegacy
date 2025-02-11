@@ -27,6 +27,7 @@
 - Editor online backups
 - Sprites list popup that show images in the game data and level folder.
 - Versus Mode (Players can attack other players)
+- Player shooting aiming
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)
@@ -43,7 +44,6 @@
 
 ### Misc
 - Color picker rework. > 1.8.0
-- Font Search via Context Menu.
 - Multi language support.
 - Rework the level combiner into just a selection system.
 - Game Timeline Editor. (skipping regions, custom images, etc)
