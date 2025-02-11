@@ -250,6 +250,8 @@ namespace BetterLegacy.Core.Components.Player
         public float idleSpeed = 20f;
         public float boostSpeed = 85f;
 
+        public float SprintSneakSpeed => Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+
         /// <summary>
         /// If negative zoom should be included with calculating player bounds.
         /// </summary>
@@ -414,6 +416,8 @@ namespace BetterLegacy.Core.Components.Player
 
         public float time;
 
+        public bool resetVelocity = true;
+
         /// <summary>
         /// If the player can take damage.
         /// </summary>
@@ -573,6 +577,10 @@ namespace BetterLegacy.Core.Components.Player
         public RTAnimation hitAnimationCustom;
 
         public RTAnimation deathAnimationCustom;
+
+        public RTAnimation shootAnimationCustom;
+
+        public RTAnimation jumpAnimationCustom;
 
         #endregion
 
@@ -1514,30 +1522,14 @@ namespace BetterLegacy.Core.Components.Player
                     return;
                 }
 
-                var velocity = rb.velocity;
-                if (Actions.Boost.WasPressed && (jumpCount != 0 && colliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
-                {
-                    velocity.y = jumpIntensity * JumpIntensity;
-
-                    if (PlayBoostSound)
-                        SoundManager.inst.PlaySound(DefaultSounds.boost);
-
-                    if (colliding)
-                    {
-                        currentJumpCount = 0;
-                        currentJumpBoostCount = 0;
-                        colliding = false;
-                    }
-                    currentJumpCount++;
-                }
+                if (Actions.Boost.WasPressed)
+                    Jump();
 
                 if (x != 0f)
                     lastMoveHorizontal = x;
 
-                var sp = Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
-
-                velocity.x = x * idleSpeed * pitch * sp * SpeedMultiplier;
-
+                var velocity = rb.velocity;
+                velocity.x = x * idleSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
                 rb.velocity = velocity;
 
                 return;
@@ -1586,9 +1578,11 @@ namespace BetterLegacy.Core.Components.Player
                     if (vector.magnitude > 1f)
                         vector = vector.normalized;
 
-                    var sp = Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+                    var velocity = PlayerForce + vector * idleSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
 
-                    rb.velocity = PlayerForce + vector * idleSpeed * pitch * sp * SpeedMultiplier;
+                    if (velocity != Vector2.zero || resetVelocity)
+                        rb.velocity = velocity;
+
                     if (stretch && rb.velocity.magnitude > 0f)
                     {
                         if (rotateMode != RotateMode.None && rotateMode != RotateMode.FlipX && rotateMode != RotateMode.RotateFlipX)
@@ -1673,7 +1667,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (rb.velocity != Vector2.zero)
                     lastVelocity = rb.velocity;
             }
-            else if (CanMove)
+            else if (CanMove && resetVelocity)
                 rb.velocity = Vector3.zero;
         }
 
@@ -2317,6 +2311,9 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             rb.velocity = velocity;
+
+            if (jumpAnimationCustom)
+                animationController.Play(jumpAnimationCustom);
         }
 
         /// <summary>
@@ -2656,6 +2653,18 @@ namespace BetterLegacy.Core.Components.Player
                 animationController.Remove(deathAnimationCustom.id);
                 deathAnimationCustom = null;
             }
+            
+            if (shootAnimationCustom)
+            {
+                animationController.Remove(shootAnimationCustom.id);
+                shootAnimationCustom = null;
+            }
+            
+            if (jumpAnimationCustom)
+            {
+                animationController.Remove(jumpAnimationCustom.id);
+                jumpAnimationCustom = null;
+            }
 
             if (currentModelCustomObjects == null || currentModelCustomObjects.Count < 1)
                 return;
@@ -2698,8 +2707,7 @@ namespace BetterLegacy.Core.Components.Player
                 customObj.gameObject.transform.localScale = new Vector3(reference.scale.x, reference.scale.y, 1f);
                 customObj.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, reference.rotation);
 
-                customObj.gameObject.tag = "Helper";
-                customObj.gameObject.tag = "Helper";
+                customObj.gameObject.tag = Tags.HELPER;
 
                 var renderer = customObj.gameObject.GetComponentInChildren<Renderer>();
                 renderer.enabled = true;
@@ -2780,6 +2788,18 @@ namespace BetterLegacy.Core.Components.Player
                             if (!deathAnimationCustom)
                                 deathAnimationCustom = new RTAnimation("Player Death Custom Animation");
                             runtimeAnim = deathAnimationCustom;
+                            break;
+                        }
+                    case "shoot": {
+                            if (!shootAnimationCustom)
+                                shootAnimationCustom = new RTAnimation("Player Shoot Custom Animation");
+                            runtimeAnim = shootAnimationCustom;
+                            break;
+                        }
+                    case "jump": {
+                            if (!jumpAnimationCustom)
+                                jumpAnimationCustom = new RTAnimation("Player Jump Custom Animation");
+                            runtimeAnim = jumpAnimationCustom;
                             break;
                         }
                 }
@@ -3289,6 +3309,9 @@ namespace BetterLegacy.Core.Components.Player
 
             if (currentModel == null || !currentModel.bulletPart.active)
                 return;
+
+            if (shootAnimationCustom)
+                animationController.Play(shootAnimationCustom);
 
             if (PlayShootSound)
                 SoundManager.inst.PlaySound(gameObject, DefaultSounds.shoot, pitch: CoreHelper.ForwardPitch);
