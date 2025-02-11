@@ -55,7 +55,7 @@ namespace BetterLegacy.Arcade.Managers
 
             var rotator = ObjectManager.inst.objectPrefabs[1].options[4].transform.GetChild(0).gameObject.Duplicate(objectDragger, "Rotator");
             Destroy(rotator.GetComponent<SelectObjectInEditor>());
-            rotator.tag = "Helper";
+            rotator.tag = Tags.HELPER;
             rotator.transform.localScale = new Vector3(2f, 2f, 1f);
             var rotatorRenderer = rotator.GetComponent<Renderer>();
             rotatorRenderer.enabled = true;
@@ -90,7 +90,7 @@ namespace BetterLegacy.Arcade.Managers
         {
             var scaler = ObjectManager.inst.objectPrefabs[3].options[0].transform.GetChild(0).gameObject.Duplicate(objectDragger, "Scaler");
             Destroy(scaler.GetComponent<SelectObjectInEditor>());
-            scaler.tag = "Helper";
+            scaler.tag = Tags.HELPER;
             scaler.transform.localScale = new Vector3(2f, 2f, 1f);
             scaler.GetComponent<Collider2D>().enabled = true;
 
