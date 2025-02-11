@@ -1490,7 +1490,7 @@ namespace BetterLegacy.Core.Components.Player
                         currentJumpBoostCount++;
                     }
 
-                    StartBoost();
+                    Boost();
                     return;
                 }
 
@@ -1499,7 +1499,7 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             if (Alive && FaceController != null && Model.bulletPart.active && (Model.bulletPart.constant ? FaceController.Shoot.IsPressed : FaceController.Shoot.WasPressed) && canShoot)
-                CreateBullet();
+                Shoot();
 
             var player = rb.gameObject;
 
@@ -2248,14 +2248,13 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Makes the player boost.
         /// </summary>
-        public void StartBoost()
+        public void Boost()
         {
             if (!CanBoost || isBoosting)
                 return;
 
             startBoostTime = Time.time;
             InitBeforeBoost();
-            //anim.SetTrigger("boost");
             InitBoostAnimation();
 
             var ps = boost.particleSystem;
@@ -2269,7 +2268,7 @@ namespace BetterLegacy.Core.Components.Player
             if (PlayBoostSound)
                 SoundManager.inst.PlaySound(DefaultSounds.boost);
 
-            CreatePulse();
+            Pulse();
 
             stretchVector = new Vector2(stretchAmount * 1.5f, -(stretchAmount * 1.5f));
 
@@ -2358,6 +2357,228 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         /// <summary>
+        /// Emits a pulse effect from the player.
+        /// </summary>
+        public void Pulse()
+        {
+            if (!Model)
+                return;
+
+            var currentModel = Model;
+
+            if (!currentModel.pulsePart.active)
+                return;
+
+            var player = rb.gameObject;
+
+            int s = Mathf.Clamp(currentModel.pulsePart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            int so = Mathf.Clamp(currentModel.pulsePart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+
+            if (s == 4 || s == 6)
+            {
+                s = 0;
+                so = 0;
+            }
+
+            var pulse = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(ObjectManager.inst.objectParent.transform);
+            pulse.transform.localScale = new Vector3(currentModel.pulsePart.startScale.x, currentModel.pulsePart.startScale.y, 1f);
+            pulse.transform.position = player.transform.position;
+            pulse.transform.GetChild(0).localPosition = new Vector3(currentModel.pulsePart.startPosition.x, currentModel.pulsePart.startPosition.y, currentModel.pulsePart.depth);
+            pulse.transform.GetChild(0).localRotation = Quaternion.Euler(new Vector3(0f, 0f, currentModel.pulsePart.startRotation));
+
+            if (currentModel.pulsePart.rotateToHead)
+                pulse.transform.localRotation = player.transform.localRotation;
+
+            //Destroy
+            {
+                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObjectInEditor>());
+                Destroy(pulse.transform.GetChild(0).GetComponent<BoxCollider2D>());
+                Destroy(pulse.transform.GetChild(0).GetComponent<PolygonCollider2D>());
+                Destroy(pulse.transform.GetChild(0).gameObject.GetComponent<SelectObject>());
+            }
+
+            MeshRenderer pulseRenderer = pulse.transform.GetChild(0).GetComponent<MeshRenderer>();
+            var pulseObject = new EmittedObject
+            {
+                renderer = pulseRenderer,
+                startColor = currentModel.pulsePart.startColor,
+                endColor = currentModel.pulsePart.endColor,
+                startCustomColor = currentModel.pulsePart.startCustomColor,
+                endCustomColor = currentModel.pulsePart.endCustomColor,
+            };
+
+            emitted.Add(pulseObject);
+
+            pulseRenderer.enabled = true;
+            pulseRenderer.material = head.renderer.material;
+            pulseRenderer.material.shader = head.renderer.material.shader;
+            Color colorBase = head.renderer.material.color;
+
+            int easingPos = currentModel.pulsePart.easingPosition;
+            int easingSca = currentModel.pulsePart.easingScale;
+            int easingRot = currentModel.pulsePart.easingRotation;
+            int easingOpa = currentModel.pulsePart.easingOpacity;
+            int easingCol = currentModel.pulsePart.easingColor;
+
+            float duration = Mathf.Clamp(currentModel.pulsePart.duration, 0.001f, 20f) / CoreHelper.ForwardPitch;
+
+            pulse.transform.GetChild(0).DOLocalMove(new Vector3(currentModel.pulsePart.endPosition.x, currentModel.pulsePart.endPosition.y, currentModel.pulsePart.depth), duration).SetEase(DataManager.inst.AnimationList[easingPos].Animation);
+            var tweenScale = pulse.transform.DOScale(new Vector3(currentModel.pulsePart.endScale.x, currentModel.pulsePart.endScale.y, 1f), duration).SetEase(DataManager.inst.AnimationList[easingSca].Animation);
+            pulse.transform.GetChild(0).DOLocalRotate(new Vector3(0f, 0f, currentModel.pulsePart.endRotation), duration).SetEase(DataManager.inst.AnimationList[easingRot].Animation);
+
+            DOTween.To(x =>
+            {
+                pulseObject.opacity = x;
+            }, currentModel.pulsePart.startOpacity, currentModel.pulsePart.endOpacity, duration).SetEase(DataManager.inst.AnimationList[easingOpa].Animation);
+            DOTween.To(x =>
+            {
+                pulseObject.colorTween = x;
+            }, 0f, 1f, duration).SetEase(DataManager.inst.AnimationList[easingCol].Animation);
+
+            tweenScale.OnComplete(() =>
+            {
+                Destroy(pulse);
+                emitted.Remove(pulseObject);
+            });
+        }
+
+        // to do: aiming so you don't need to be facing the direction of the bullet (maybe create a parent that rotates in the direction of the right stick?)
+        /// <summary>
+        /// Shoots a bullet from the player that can damage objects or other players.
+        /// </summary>
+        public void Shoot()
+        {
+            var currentModel = Model;
+
+            if (currentModel == null || !currentModel.bulletPart.active)
+                return;
+
+            if (shootAnimationCustom)
+                animationController.Play(shootAnimationCustom);
+
+            if (PlayShootSound)
+                SoundManager.inst.PlaySound(gameObject, DefaultSounds.shoot, pitch: CoreHelper.ForwardPitch);
+
+            canShoot = false;
+
+            var player = rb.gameObject;
+
+            int s = Mathf.Clamp(currentModel.bulletPart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            int so = Mathf.Clamp(currentModel.bulletPart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+
+            if (s == 4 || s == 6)
+            {
+                s = 0;
+                so = 0;
+            }
+
+            var pulse = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(ObjectManager.inst.objectParent.transform);
+            pulse.transform.localScale = new Vector3(currentModel.bulletPart.startScale.x, currentModel.bulletPart.startScale.y, 1f);
+
+            var vec = new Vector3(currentModel.bulletPart.origin.x, currentModel.bulletPart.origin.y, 0f);
+            if (rotateMode == RotateMode.FlipX && lastMovement.x < 0f)
+                vec.x = -vec.x;
+
+            pulse.transform.position = player.transform.position + vec;
+            pulse.transform.GetChild(0).localPosition = new Vector3(currentModel.bulletPart.startPosition.x, currentModel.bulletPart.startPosition.y, currentModel.bulletPart.depth);
+            pulse.transform.GetChild(0).localRotation = Quaternion.Euler(new Vector3(0f, 0f, currentModel.bulletPart.startRotation));
+
+            if (!AllowPlayersToTakeBulletDamage || !currentModel.bulletPart.hurtPlayers)
+            {
+                pulse.tag = Tags.HELPER;
+                pulse.transform.GetChild(0).tag = Tags.HELPER;
+            }
+
+            pulse.transform.GetChild(0).gameObject.name = "bullet (Player " + (playerIndex + 1).ToString() + ")";
+
+            float speed = Mathf.Clamp(currentModel.bulletPart.speed, 0.001f, 20f) / CoreHelper.ForwardPitch;
+            var b = pulse.AddComponent<Bullet>();
+            b.speed = speed;
+            b.player = this;
+            b.Assign();
+
+            pulse.transform.localRotation = player.transform.localRotation;
+
+            //Destroy
+            {
+                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObjectInEditor>());
+                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObject>());
+            }
+
+            MeshRenderer pulseRenderer = pulse.transform.GetChild(0).GetComponent<MeshRenderer>();
+            var pulseObject = new EmittedObject
+            {
+                renderer = pulseRenderer,
+                startColor = currentModel.bulletPart.startColor,
+                endColor = currentModel.bulletPart.endColor,
+                startCustomColor = currentModel.bulletPart.startCustomColor,
+                endCustomColor = currentModel.bulletPart.endCustomColor,
+            };
+
+            emitted.Add(pulseObject);
+
+            pulseRenderer.enabled = true;
+            pulseRenderer.material = head.renderer.material;
+            pulseRenderer.material.shader = head.renderer.material.shader;
+            Color colorBase = head.renderer.material.color;
+
+            var collider2D = pulse.transform.GetChild(0).GetComponent<Collider2D>();
+            collider2D.enabled = true;
+            //collider2D.isTrigger = false;
+
+            var rb2D = pulse.transform.GetChild(0).gameObject.AddComponent<Rigidbody2D>();
+            rb2D.gravityScale = 0f;
+
+            var bulletCollider = pulse.transform.GetChild(0).gameObject.AddComponent<BulletCollider>();
+            bulletCollider.rb = rb;
+            bulletCollider.kill = currentModel.bulletPart.autoKill;
+            bulletCollider.player = this;
+            bulletCollider.emit = pulseObject;
+
+            int easingPos = currentModel.bulletPart.easingPosition;
+            int easingSca = currentModel.bulletPart.easingScale;
+            int easingRot = currentModel.bulletPart.easingRotation;
+            int easingOpa = currentModel.bulletPart.easingOpacity;
+            int easingCol = currentModel.bulletPart.easingColor;
+
+            float posDuration = Mathf.Clamp(currentModel.bulletPart.durationPosition, 0.001f, 20f) / CoreHelper.ForwardPitch;
+            float scaDuration = Mathf.Clamp(currentModel.bulletPart.durationScale, 0.001f, 20f) / CoreHelper.ForwardPitch;
+            float rotDuration = Mathf.Clamp(currentModel.bulletPart.durationScale, 0.001f, 20f) / CoreHelper.ForwardPitch;
+            float lifeTime = Mathf.Clamp(currentModel.bulletPart.lifeTime, 0.001f, 20f) / CoreHelper.ForwardPitch;
+
+            pulse.transform.GetChild(0).DOLocalMove(new Vector3(currentModel.bulletPart.endPosition.x, currentModel.bulletPart.endPosition.y, currentModel.bulletPart.depth), posDuration).SetEase(DataManager.inst.AnimationList[easingPos].Animation);
+            pulse.transform.DOScale(new Vector3(currentModel.bulletPart.endScale.x, currentModel.bulletPart.endScale.y, 1f), scaDuration).SetEase(DataManager.inst.AnimationList[easingSca].Animation);
+            pulse.transform.GetChild(0).DOLocalRotate(new Vector3(0f, 0f, currentModel.bulletPart.endRotation), rotDuration).SetEase(DataManager.inst.AnimationList[easingRot].Animation);
+
+            DOTween.To(x =>
+            {
+                pulseObject.opacity = x;
+            }, currentModel.bulletPart.startOpacity, currentModel.bulletPart.endOpacity, posDuration).SetEase(DataManager.inst.AnimationList[easingOpa].Animation);
+            DOTween.To(x =>
+            {
+                pulseObject.colorTween = x;
+            }, 0f, 1f, posDuration).SetEase(DataManager.inst.AnimationList[easingCol].Animation);
+
+            StartCoroutine(CanShoot());
+
+            var tweener = DOTween.To(x => { }, 1f, 1f, lifeTime).SetEase(DataManager.inst.AnimationList[easingOpa].Animation);
+            bulletCollider.tweener = tweener;
+
+            tweener.OnComplete(() =>
+            {
+                var tweenScale = pulse.transform.GetChild(0).DOScale(Vector3.zero, 0.2f).SetEase(DataManager.inst.AnimationList[2].Animation);
+                bulletCollider.tweener = tweenScale;
+
+                tweenScale.OnComplete(() =>
+                {
+                    Destroy(pulse);
+                    emitted.Remove(pulseObject);
+                    pulseObject = null;
+                });
+            });
+        }
+
+        /// <summary>
         /// Changes how the players collision works.
         /// </summary>
         /// <param name="enabled">True if the player can phase through walls.</param>
@@ -2366,6 +2587,28 @@ namespace BetterLegacy.Core.Components.Player
             //circleCollider2D.isTrigger = enabled;
             //polygonCollider2D.isTrigger = enabled;
         }
+
+        #region Particles
+
+        public void PlaySpawnParticles()
+        {
+            CoreHelper.Log($"Spawn particles");
+            spawn.Play();
+        }
+
+        public void PlayDeathParticles()
+        {
+            CoreHelper.Log($"Death particles");
+            death.Play();
+        }
+
+        public void PlayHitParticles()
+        {
+            CoreHelper.Log($"Hit particles");
+            burst.Play();
+        }
+
+        #endregion
 
         #region Internal
 
@@ -2514,6 +2757,135 @@ namespace BetterLegacy.Core.Components.Player
             CanMove = true;
             CanBoost = true;
         }
+
+        IEnumerator CanShoot()
+        {
+            var currentModel = Model;
+            if (currentModel)
+            {
+                var delay = currentModel.bulletPart.delay;
+                yield return new WaitForSeconds(delay);
+            }
+            canShoot = true;
+
+            yield break;
+        }
+
+        KeyCode GetKeyCode(int key)
+        {
+            if (key < 91)
+                switch (key)
+                {
+                    case 0: return KeyCode.None;
+                    case 1: return KeyCode.Backspace;
+                    case 2: return KeyCode.Tab;
+                    case 3: return KeyCode.Clear;
+                    case 4: return KeyCode.Return;
+                    case 5: return KeyCode.Pause;
+                    case 6: return KeyCode.Escape;
+                    case 7: return KeyCode.Space;
+                    case 8: return KeyCode.Quote;
+                    case 9: return KeyCode.Comma;
+                    case 10: return KeyCode.Minus;
+                    case 11: return KeyCode.Period;
+                    case 12: return KeyCode.Slash;
+                    case 13: return KeyCode.Alpha0;
+                    case 14: return KeyCode.Alpha1;
+                    case 15: return KeyCode.Alpha2;
+                    case 16: return KeyCode.Alpha3;
+                    case 17: return KeyCode.Alpha4;
+                    case 18: return KeyCode.Alpha5;
+                    case 19: return KeyCode.Alpha6;
+                    case 20: return KeyCode.Alpha7;
+                    case 21: return KeyCode.Alpha8;
+                    case 22: return KeyCode.Alpha9;
+                    case 23: return KeyCode.Semicolon;
+                    case 24: return KeyCode.Equals;
+                    case 25: return KeyCode.LeftBracket;
+                    case 26: return KeyCode.RightBracket;
+                    case 27: return KeyCode.Backslash;
+                    case 28: return KeyCode.A;
+                    case 29: return KeyCode.B;
+                    case 30: return KeyCode.C;
+                    case 31: return KeyCode.D;
+                    case 32: return KeyCode.E;
+                    case 33: return KeyCode.F;
+                    case 34: return KeyCode.G;
+                    case 35: return KeyCode.H;
+                    case 36: return KeyCode.I;
+                    case 37: return KeyCode.J;
+                    case 38: return KeyCode.K;
+                    case 39: return KeyCode.L;
+                    case 40: return KeyCode.M;
+                    case 41: return KeyCode.N;
+                    case 42: return KeyCode.O;
+                    case 43: return KeyCode.P;
+                    case 44: return KeyCode.Q;
+                    case 45: return KeyCode.R;
+                    case 46: return KeyCode.S;
+                    case 47: return KeyCode.T;
+                    case 48: return KeyCode.U;
+                    case 49: return KeyCode.V;
+                    case 50: return KeyCode.W;
+                    case 51: return KeyCode.X;
+                    case 52: return KeyCode.Y;
+                    case 53: return KeyCode.Z;
+                    case 54: return KeyCode.Keypad0;
+                    case 55: return KeyCode.Keypad1;
+                    case 56: return KeyCode.Keypad2;
+                    case 57: return KeyCode.Keypad3;
+                    case 58: return KeyCode.Keypad4;
+                    case 59: return KeyCode.Keypad5;
+                    case 60: return KeyCode.Keypad6;
+                    case 61: return KeyCode.Keypad7;
+                    case 62: return KeyCode.Keypad8;
+                    case 63: return KeyCode.Keypad9;
+                    case 64: return KeyCode.KeypadDivide;
+                    case 65: return KeyCode.KeypadMultiply;
+                    case 66: return KeyCode.KeypadMinus;
+                    case 67: return KeyCode.KeypadPlus;
+                    case 68: return KeyCode.KeypadEnter;
+                    case 69: return KeyCode.UpArrow;
+                    case 70: return KeyCode.DownArrow;
+                    case 71: return KeyCode.RightArrow;
+                    case 72: return KeyCode.LeftArrow;
+                    case 73: return KeyCode.Insert;
+                    case 74: return KeyCode.Home;
+                    case 75: return KeyCode.End;
+                    case 76: return KeyCode.PageUp;
+                    case 77: return KeyCode.PageDown;
+                    case 78: return KeyCode.RightShift;
+                    case 79: return KeyCode.LeftShift;
+                    case 80: return KeyCode.RightControl;
+                    case 81: return KeyCode.LeftControl;
+                    case 82: return KeyCode.RightAlt;
+                    case 83: return KeyCode.LeftAlt;
+                    case 84: return KeyCode.Mouse0;
+                    case 85: return KeyCode.Mouse1;
+                    case 86: return KeyCode.Mouse2;
+                    case 87: return KeyCode.Mouse3;
+                    case 88: return KeyCode.Mouse4;
+                    case 89: return KeyCode.Mouse5;
+                    case 90: return KeyCode.Mouse6;
+                }
+
+            if (key > 90)
+            {
+                int num = key + 259;
+
+                if (IndexToInt(CustomPlayer.playerIndex) > 0)
+                {
+                    string str = (IndexToInt(CustomPlayer.playerIndex) * 2).ToString() + "0";
+                    num += int.Parse(str);
+                }
+
+                return (KeyCode)num;
+            }
+
+            return KeyCode.None;
+        }
+
+        int IndexToInt(PlayerIndex playerIndex) => (int)playerIndex;
 
         #endregion
 
@@ -3196,373 +3568,6 @@ namespace BetterLegacy.Core.Components.Player
                     _ => tailParts[reference.parent - 4].parent,
                 };
         }
-
-        #endregion
-
-        #region Emitting
-
-        public void PlaySpawnParticles()
-        {
-            CoreHelper.Log($"Spawn particles");
-            spawn.Play();
-        }
-
-        public void PlayDeathParticles()
-        {
-            CoreHelper.Log($"Death particles");
-            death.Play();
-        }
-
-        public void PlayHitParticles()
-        {
-            CoreHelper.Log($"Hit particles");
-            burst.Play();
-        }
-
-        public void CreatePulse()
-        {
-            if (!Model)
-                return;
-
-            var currentModel = Model;
-
-            if (!currentModel.pulsePart.active)
-                return;
-
-            var player = rb.gameObject;
-
-            int s = Mathf.Clamp(currentModel.pulsePart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-            int so = Mathf.Clamp(currentModel.pulsePart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
-
-            if (s == 4 || s == 6)
-            {
-                s = 0;
-                so = 0;
-            }
-
-            var pulse = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(ObjectManager.inst.objectParent.transform);
-            pulse.transform.localScale = new Vector3(currentModel.pulsePart.startScale.x, currentModel.pulsePart.startScale.y, 1f);
-            pulse.transform.position = player.transform.position;
-            pulse.transform.GetChild(0).localPosition = new Vector3(currentModel.pulsePart.startPosition.x, currentModel.pulsePart.startPosition.y, currentModel.pulsePart.depth);
-            pulse.transform.GetChild(0).localRotation = Quaternion.Euler(new Vector3(0f, 0f, currentModel.pulsePart.startRotation));
-
-            if (currentModel.pulsePart.rotateToHead)
-                pulse.transform.localRotation = player.transform.localRotation;
-
-            //Destroy
-            {
-                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObjectInEditor>());
-                Destroy(pulse.transform.GetChild(0).GetComponent<BoxCollider2D>());
-                Destroy(pulse.transform.GetChild(0).GetComponent<PolygonCollider2D>());
-                Destroy(pulse.transform.GetChild(0).gameObject.GetComponent<SelectObject>());
-            }
-
-            MeshRenderer pulseRenderer = pulse.transform.GetChild(0).GetComponent<MeshRenderer>();
-            var pulseObject = new EmittedObject
-            {
-                renderer = pulseRenderer,
-                startColor = currentModel.pulsePart.startColor,
-                endColor = currentModel.pulsePart.endColor,
-                startCustomColor = currentModel.pulsePart.startCustomColor,
-                endCustomColor = currentModel.pulsePart.endCustomColor,
-            };
-
-            emitted.Add(pulseObject);
-
-            pulseRenderer.enabled = true;
-            pulseRenderer.material = head.renderer.material;
-            pulseRenderer.material.shader = head.renderer.material.shader;
-            Color colorBase = head.renderer.material.color;
-
-            int easingPos = currentModel.pulsePart.easingPosition;
-            int easingSca = currentModel.pulsePart.easingScale;
-            int easingRot = currentModel.pulsePart.easingRotation;
-            int easingOpa = currentModel.pulsePart.easingOpacity;
-            int easingCol = currentModel.pulsePart.easingColor;
-
-            float duration = Mathf.Clamp(currentModel.pulsePart.duration, 0.001f, 20f) / CoreHelper.ForwardPitch;
-
-            pulse.transform.GetChild(0).DOLocalMove(new Vector3(currentModel.pulsePart.endPosition.x, currentModel.pulsePart.endPosition.y, currentModel.pulsePart.depth), duration).SetEase(DataManager.inst.AnimationList[easingPos].Animation);
-            var tweenScale = pulse.transform.DOScale(new Vector3(currentModel.pulsePart.endScale.x, currentModel.pulsePart.endScale.y, 1f), duration).SetEase(DataManager.inst.AnimationList[easingSca].Animation);
-            pulse.transform.GetChild(0).DOLocalRotate(new Vector3(0f, 0f, currentModel.pulsePart.endRotation), duration).SetEase(DataManager.inst.AnimationList[easingRot].Animation);
-
-            DOTween.To(x =>
-            {
-                pulseObject.opacity = x;
-            }, currentModel.pulsePart.startOpacity, currentModel.pulsePart.endOpacity, duration).SetEase(DataManager.inst.AnimationList[easingOpa].Animation);
-            DOTween.To(x =>
-            {
-                pulseObject.colorTween = x;
-            }, 0f, 1f, duration).SetEase(DataManager.inst.AnimationList[easingCol].Animation);
-
-            tweenScale.OnComplete(() =>
-            {
-                Destroy(pulse);
-                emitted.Remove(pulseObject);
-            });
-        }
-
-        // to do: aiming so you don't need to be facing the direction of the bullet (maybe create a parent that rotates in the direction of the right stick?)
-        public void CreateBullet()
-        {
-            var currentModel = Model;
-
-            if (currentModel == null || !currentModel.bulletPart.active)
-                return;
-
-            if (shootAnimationCustom)
-                animationController.Play(shootAnimationCustom);
-
-            if (PlayShootSound)
-                SoundManager.inst.PlaySound(gameObject, DefaultSounds.shoot, pitch: CoreHelper.ForwardPitch);
-
-            canShoot = false;
-
-            var player = rb.gameObject;
-
-            int s = Mathf.Clamp(currentModel.bulletPart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-            int so = Mathf.Clamp(currentModel.bulletPart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
-
-            if (s == 4 || s == 6)
-            {
-                s = 0;
-                so = 0;
-            }
-
-            var pulse = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(ObjectManager.inst.objectParent.transform);
-            pulse.transform.localScale = new Vector3(currentModel.bulletPart.startScale.x, currentModel.bulletPart.startScale.y, 1f);
-
-            var vec = new Vector3(currentModel.bulletPart.origin.x, currentModel.bulletPart.origin.y, 0f);
-            if (rotateMode == RotateMode.FlipX && lastMovement.x < 0f)
-                vec.x = -vec.x;
-
-            pulse.transform.position = player.transform.position + vec;
-            pulse.transform.GetChild(0).localPosition = new Vector3(currentModel.bulletPart.startPosition.x, currentModel.bulletPart.startPosition.y, currentModel.bulletPart.depth);
-            pulse.transform.GetChild(0).localRotation = Quaternion.Euler(new Vector3(0f, 0f, currentModel.bulletPart.startRotation));
-
-            if (!AllowPlayersToTakeBulletDamage || !currentModel.bulletPart.hurtPlayers)
-            {
-                pulse.tag = Tags.HELPER;
-                pulse.transform.GetChild(0).tag = Tags.HELPER;
-            }
-
-            pulse.transform.GetChild(0).gameObject.name = "bullet (Player " + (playerIndex + 1).ToString() + ")";
-
-            float speed = Mathf.Clamp(currentModel.bulletPart.speed, 0.001f, 20f) / CoreHelper.ForwardPitch;
-            var b = pulse.AddComponent<Bullet>();
-            b.speed = speed;
-            b.player = this;
-            b.Assign();
-
-            pulse.transform.localRotation = player.transform.localRotation;
-
-            //Destroy
-            {
-                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObjectInEditor>());
-                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObject>());
-            }
-
-            MeshRenderer pulseRenderer = pulse.transform.GetChild(0).GetComponent<MeshRenderer>();
-            var pulseObject = new EmittedObject
-            {
-                renderer = pulseRenderer,
-                startColor = currentModel.bulletPart.startColor,
-                endColor = currentModel.bulletPart.endColor,
-                startCustomColor = currentModel.bulletPart.startCustomColor,
-                endCustomColor = currentModel.bulletPart.endCustomColor,
-            };
-
-            emitted.Add(pulseObject);
-
-            pulseRenderer.enabled = true;
-            pulseRenderer.material = head.renderer.material;
-            pulseRenderer.material.shader = head.renderer.material.shader;
-            Color colorBase = head.renderer.material.color;
-
-            var collider2D = pulse.transform.GetChild(0).GetComponent<Collider2D>();
-            collider2D.enabled = true;
-            //collider2D.isTrigger = false;
-
-            var rb2D = pulse.transform.GetChild(0).gameObject.AddComponent<Rigidbody2D>();
-            rb2D.gravityScale = 0f;
-
-            var bulletCollider = pulse.transform.GetChild(0).gameObject.AddComponent<BulletCollider>();
-            bulletCollider.rb = rb;
-            bulletCollider.kill = currentModel.bulletPart.autoKill;
-            bulletCollider.player = this;
-            bulletCollider.emit = pulseObject;
-
-            int easingPos = currentModel.bulletPart.easingPosition;
-            int easingSca = currentModel.bulletPart.easingScale;
-            int easingRot = currentModel.bulletPart.easingRotation;
-            int easingOpa = currentModel.bulletPart.easingOpacity;
-            int easingCol = currentModel.bulletPart.easingColor;
-
-            float posDuration = Mathf.Clamp(currentModel.bulletPart.durationPosition, 0.001f, 20f) / CoreHelper.ForwardPitch;
-            float scaDuration = Mathf.Clamp(currentModel.bulletPart.durationScale, 0.001f, 20f) / CoreHelper.ForwardPitch;
-            float rotDuration = Mathf.Clamp(currentModel.bulletPart.durationScale, 0.001f, 20f) / CoreHelper.ForwardPitch;
-            float lifeTime = Mathf.Clamp(currentModel.bulletPart.lifeTime, 0.001f, 20f) / CoreHelper.ForwardPitch;
-
-            pulse.transform.GetChild(0).DOLocalMove(new Vector3(currentModel.bulletPart.endPosition.x, currentModel.bulletPart.endPosition.y, currentModel.bulletPart.depth), posDuration).SetEase(DataManager.inst.AnimationList[easingPos].Animation);
-            pulse.transform.DOScale(new Vector3(currentModel.bulletPart.endScale.x, currentModel.bulletPart.endScale.y, 1f), scaDuration).SetEase(DataManager.inst.AnimationList[easingSca].Animation);
-            pulse.transform.GetChild(0).DOLocalRotate(new Vector3(0f, 0f, currentModel.bulletPart.endRotation), rotDuration).SetEase(DataManager.inst.AnimationList[easingRot].Animation);
-
-            DOTween.To(x =>
-            {
-                pulseObject.opacity = x;
-            }, currentModel.bulletPart.startOpacity, currentModel.bulletPart.endOpacity, posDuration).SetEase(DataManager.inst.AnimationList[easingOpa].Animation);
-            DOTween.To(x =>
-            {
-                pulseObject.colorTween = x;
-            }, 0f, 1f, posDuration).SetEase(DataManager.inst.AnimationList[easingCol].Animation);
-
-            StartCoroutine(CanShoot());
-
-            var tweener = DOTween.To(x => { }, 1f, 1f, lifeTime).SetEase(DataManager.inst.AnimationList[easingOpa].Animation);
-            bulletCollider.tweener = tweener;
-
-            tweener.OnComplete(() =>
-            {
-                var tweenScale = pulse.transform.GetChild(0).DOScale(Vector3.zero, 0.2f).SetEase(DataManager.inst.AnimationList[2].Animation);
-                bulletCollider.tweener = tweenScale;
-
-                tweenScale.OnComplete(() =>
-                {
-                    Destroy(pulse);
-                    emitted.Remove(pulseObject);
-                    pulseObject = null;
-                });
-            });
-        }
-
-        IEnumerator CanShoot()
-        {
-            var currentModel = Model;
-            if (currentModel)
-            {
-                var delay = currentModel.bulletPart.delay;
-                yield return new WaitForSeconds(delay);
-            }
-            canShoot = true;
-
-            yield break;
-        }
-
-        KeyCode GetKeyCode(int key)
-        {
-            if (key < 91)
-                switch (key)
-                {
-                    case 0: return KeyCode.None;
-                    case 1: return KeyCode.Backspace;
-                    case 2: return KeyCode.Tab;
-                    case 3: return KeyCode.Clear;
-                    case 4: return KeyCode.Return;
-                    case 5: return KeyCode.Pause;
-                    case 6: return KeyCode.Escape;
-                    case 7: return KeyCode.Space;
-                    case 8: return KeyCode.Quote;
-                    case 9: return KeyCode.Comma;
-                    case 10: return KeyCode.Minus;
-                    case 11: return KeyCode.Period;
-                    case 12: return KeyCode.Slash;
-                    case 13: return KeyCode.Alpha0;
-                    case 14: return KeyCode.Alpha1;
-                    case 15: return KeyCode.Alpha2;
-                    case 16: return KeyCode.Alpha3;
-                    case 17: return KeyCode.Alpha4;
-                    case 18: return KeyCode.Alpha5;
-                    case 19: return KeyCode.Alpha6;
-                    case 20: return KeyCode.Alpha7;
-                    case 21: return KeyCode.Alpha8;
-                    case 22: return KeyCode.Alpha9;
-                    case 23: return KeyCode.Semicolon;
-                    case 24: return KeyCode.Equals;
-                    case 25: return KeyCode.LeftBracket;
-                    case 26: return KeyCode.RightBracket;
-                    case 27: return KeyCode.Backslash;
-                    case 28: return KeyCode.A;
-                    case 29: return KeyCode.B;
-                    case 30: return KeyCode.C;
-                    case 31: return KeyCode.D;
-                    case 32: return KeyCode.E;
-                    case 33: return KeyCode.F;
-                    case 34: return KeyCode.G;
-                    case 35: return KeyCode.H;
-                    case 36: return KeyCode.I;
-                    case 37: return KeyCode.J;
-                    case 38: return KeyCode.K;
-                    case 39: return KeyCode.L;
-                    case 40: return KeyCode.M;
-                    case 41: return KeyCode.N;
-                    case 42: return KeyCode.O;
-                    case 43: return KeyCode.P;
-                    case 44: return KeyCode.Q;
-                    case 45: return KeyCode.R;
-                    case 46: return KeyCode.S;
-                    case 47: return KeyCode.T;
-                    case 48: return KeyCode.U;
-                    case 49: return KeyCode.V;
-                    case 50: return KeyCode.W;
-                    case 51: return KeyCode.X;
-                    case 52: return KeyCode.Y;
-                    case 53: return KeyCode.Z;
-                    case 54: return KeyCode.Keypad0;
-                    case 55: return KeyCode.Keypad1;
-                    case 56: return KeyCode.Keypad2;
-                    case 57: return KeyCode.Keypad3;
-                    case 58: return KeyCode.Keypad4;
-                    case 59: return KeyCode.Keypad5;
-                    case 60: return KeyCode.Keypad6;
-                    case 61: return KeyCode.Keypad7;
-                    case 62: return KeyCode.Keypad8;
-                    case 63: return KeyCode.Keypad9;
-                    case 64: return KeyCode.KeypadDivide;
-                    case 65: return KeyCode.KeypadMultiply;
-                    case 66: return KeyCode.KeypadMinus;
-                    case 67: return KeyCode.KeypadPlus;
-                    case 68: return KeyCode.KeypadEnter;
-                    case 69: return KeyCode.UpArrow;
-                    case 70: return KeyCode.DownArrow;
-                    case 71: return KeyCode.RightArrow;
-                    case 72: return KeyCode.LeftArrow;
-                    case 73: return KeyCode.Insert;
-                    case 74: return KeyCode.Home;
-                    case 75: return KeyCode.End;
-                    case 76: return KeyCode.PageUp;
-                    case 77: return KeyCode.PageDown;
-                    case 78: return KeyCode.RightShift;
-                    case 79: return KeyCode.LeftShift;
-                    case 80: return KeyCode.RightControl;
-                    case 81: return KeyCode.LeftControl;
-                    case 82: return KeyCode.RightAlt;
-                    case 83: return KeyCode.LeftAlt;
-                    case 84: return KeyCode.Mouse0;
-                    case 85: return KeyCode.Mouse1;
-                    case 86: return KeyCode.Mouse2;
-                    case 87: return KeyCode.Mouse3;
-                    case 88: return KeyCode.Mouse4;
-                    case 89: return KeyCode.Mouse5;
-                    case 90: return KeyCode.Mouse6;
-                }
-
-            if (key > 90)
-            {
-                int num = key + 259;
-
-                if (IndexToInt(CustomPlayer.playerIndex) > 0)
-                {
-                    string str = (IndexToInt(CustomPlayer.playerIndex) * 2).ToString() + "0";
-                    num += int.Parse(str);
-                }
-
-                return (KeyCode)num;
-            }
-
-            return KeyCode.None;
-        }
-
-        int IndexToInt(PlayerIndex playerIndex) => (int)playerIndex;
 
         #endregion
 

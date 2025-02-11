@@ -2522,19 +2522,19 @@ namespace BetterLegacy.Core.Helpers
 
                     case "playerBoost": {
                             if (!modifier.constant && modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                                PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position)?.Player?.StartBoost();
+                                PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position)?.Player?.Boost();
 
                             break;
                         }
                     case "playerBoostIndex": {
                             if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer) && customPlayer.Player)
-                                customPlayer.Player.StartBoost();
+                                customPlayer.Player.Boost();
 
                             break;
                         }
                     case "playerBoostAll": {
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                                player.Player.StartBoost();
+                                player.Player.Boost();
 
                             break;
                         }
@@ -6448,17 +6448,17 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "boost": {
                         if (modifier.reference.Player)
-                            modifier.reference.Player.StartBoost();
+                            modifier.reference.Player.Boost();
                         break;
                     }
                 case "shoot": {
                         if (modifier.reference.Player)
-                            modifier.reference.Player.CreateBullet();
+                            modifier.reference.Player.Shoot();
                         break;
                     }
                 case "pulse": {
                         if (modifier.reference.Player)
-                            modifier.reference.Player.CreatePulse();
+                            modifier.reference.Player.Pulse();
                         break;
                     }
                 case "jump": {
