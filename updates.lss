@@ -1,3 +1,8 @@
+snapshot-2025.2.3 - (pre-1.7.0) > [Feb 13, 2025]
+- Added support for Shake X & Y from alpha / default branch.
+- Preparing for polygon shape and particle shape port.
+- Alpha (Arrhythmia) player model no longer can boost to be more accurate to the era the model is from.
+- Added Require Version to metadata values. This is for better level compatibility.
 snapshot-2025.2.2 - (pre-1.7.0) > [Feb 7, 2025]
 - Actually fixed Object Editor not opening. This was due to the Object Editor initialization code ending before the UI was assigned.
 snapshot-2025.2.1 - (pre-1.7.0) > [Feb 3, 2025]
