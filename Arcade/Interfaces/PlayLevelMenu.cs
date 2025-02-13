@@ -386,14 +386,14 @@ namespace BetterLegacy.Arcade.Interfaces
                             return;
                         }
                         
-                        if (LevelManager.CurrentLevel.metadata.versionRange == DataManager.VersionComparison.GreaterThan && LevelManager.CurrentLevel.metadata.ModVersion >= LegacyPlugin.ModVersion)
+                        if (LevelManager.CurrentLevel.metadata.versionRange == DataManager.VersionComparison.GreaterThan && LevelManager.CurrentLevel.metadata.ModVersion > LegacyPlugin.ModVersion)
                         {
                             SoundManager.inst.PlaySound(DefaultSounds.Block);
                             CoreHelper.Notify($"Level is only playable after and in BetterLegacy version {LevelManager.CurrentLevel.metadata.ModVersion}", InterfaceManager.inst.CurrentTheme.guiColor);
                             return;
                         }
                         
-                        if (LevelManager.CurrentLevel.metadata.versionRange == DataManager.VersionComparison.LessThan && LevelManager.CurrentLevel.metadata.ModVersion <= LegacyPlugin.ModVersion)
+                        if (LevelManager.CurrentLevel.metadata.versionRange == DataManager.VersionComparison.LessThan && LevelManager.CurrentLevel.metadata.ModVersion < LegacyPlugin.ModVersion)
                         {
                             SoundManager.inst.PlaySound(DefaultSounds.Block);
                             CoreHelper.Notify($"Level is only playable before and in BetterLegacy version {LevelManager.CurrentLevel.metadata.ModVersion}", InterfaceManager.inst.CurrentTheme.guiColor);
