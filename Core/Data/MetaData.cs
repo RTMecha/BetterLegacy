@@ -129,6 +129,7 @@ namespace BetterLegacy.Core.Data
             prevID = orig.prevID,
             visibility = orig.visibility,
             changelog = orig.changelog,
+            requireVersion = orig.requireVersion,
         };
 
         /// <summary>
@@ -447,6 +448,12 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["changelog"]))
                     result.changelog = jn["changelog"];
+
+                if (!string.IsNullOrEmpty(jn["require_version"]))
+                    result.requireVersion = jn["require_version"].AsBool;
+
+                if (!string.IsNullOrEmpty(jn["version_comparison"]))
+                    result.versionRange = (DataManager.VersionComparison)jn["version_comparison"].AsInt;
             }
             catch
             {
@@ -580,6 +587,12 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(changelog))
                 jn["changelog"] = changelog;
 
+            if (requireVersion)
+                jn["require_version"] = requireVersion.ToString();
+            
+            if (versionRange != DataManager.VersionComparison.EqualTo)
+                jn["version_comparison"] = ((int)versionRange).ToString();
+
             return jn;
         }
 
@@ -617,6 +630,11 @@ namespace BetterLegacy.Core.Data
         public bool unlockAfterCompletion = true;
         public ServerVisibility visibility;
         public string changelog;
+        /// <summary>
+        /// Marks the level as requiring a specific version. This means levels made in a specific version with specific features can only be playable on that version.
+        /// </summary>
+        public bool requireVersion;
+        public DataManager.VersionComparison versionRange = DataManager.VersionComparison.EqualTo;
 
         #endregion
 

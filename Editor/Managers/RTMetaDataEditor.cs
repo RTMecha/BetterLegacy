@@ -234,11 +234,16 @@ namespace BetterLegacy.Editor.Managers
             GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Players", 7);
             GenerateToggle(content, creatorLinkTitle, "show intro", "Show Intro", 8);
             GenerateToggle(content, creatorLinkTitle, "replay end level off", "Replay End Level Off", 9);
+            GenerateToggle(content, creatorLinkTitle, "require version", "Require Version", 10);
+            GenerateDropdown(content, creatorLinkTitle, "version comparison", "Version Comparison", 11);
 
-            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 14);
+            TooltipHelper.AssignTooltip(content.Find("require version").gameObject, "Require Version");
+            TooltipHelper.AssignTooltip(content.Find("version comparison").gameObject, "Version Comparison");
+
+            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 16);
             Destroy(serverID.transform.GetChild(1).gameObject);
 
-            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 10);
+            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 12);
 
             try
             {
@@ -785,6 +790,19 @@ namespace BetterLegacy.Editor.Managers
             preferredPlayerCount.onValueChanged.AddListener(_val =>
             {
                 metadata.beatmap.preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)_val;
+            });
+
+            var requireVersion = content.Find("require version/toggle").GetComponent<Toggle>();
+            requireVersion.onValueChanged.ClearAll();
+            requireVersion.isOn = metadata.requireVersion;
+            requireVersion.onValueChanged.AddListener(_val => metadata.requireVersion = _val);
+
+            var versionComparison = content.Find("version comparison/dropdown").GetComponent<Dropdown>();
+            versionComparison.options = CoreHelper.ToOptionData<DataManager.VersionComparison>();
+            versionComparison.value = (int)metadata.versionRange;
+            versionComparison.onValueChanged.AddListener(_val =>
+            {
+                metadata.versionRange = (DataManager.VersionComparison)_val;
             });
 
             var serverVisibility = content.Find("upload/server visibility/dropdown").GetComponent<Dropdown>();
