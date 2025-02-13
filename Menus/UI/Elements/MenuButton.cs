@@ -220,6 +220,7 @@ namespace BetterLegacy.Menus.UI.Elements
             #region Func
 
             playBlipSound = orig.playBlipSound,
+            selectable = orig.selectable,
             funcJSON = orig.funcJSON, // function to run when the element is clicked.
             spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
             func = orig.func,
@@ -396,6 +397,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
             if (jnElement["play_blip_sound"] != null)
                 playBlipSound = jnElement["play_blip_sound"].AsBool;
+            if (jnElement["selectable"] != null)
+                selectable = jnElement["selectable"].AsBool;
             if (jnElement["func"] != null)
                 funcJSON = jnElement["func"]; // function to run when the element is clicked.
             if (jnElement["spawn_func"] != null)

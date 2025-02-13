@@ -2500,6 +2500,44 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
+                #region SetElementSelectable
+
+                // Sets an element selectable value. Buttons will deselect when selectable is turned off.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = id
+                // 1 = actiive
+                // Example:
+                // [
+                //   "525778246", < finds an element with this ID.
+                //   "False" < disables element selection.
+                // ]
+                //
+                // - JSON Object Structure -
+                // "id"
+                // "active"
+                // Example:
+                // {
+                //   "id": "525778246",
+                //   "selectable": "True" < sets the element as selectable.
+                // }
+                case "SetElementSelectable":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || !CurrentInterface)
+                            return;
+
+                        if (CurrentInterface.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
+                            bool.TryParse(parameters.IsArray ? parameters[1] : parameters["selectable"], out bool selectable))
+                        {
+                            menuImage.selectable = selectable;
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
                 #endregion
 
                 #region Effects

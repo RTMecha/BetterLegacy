@@ -514,6 +514,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (menuButton.clickable)
                         menuButton.clickable.onClick = p =>
                         {
+                            if (!menuButton.selectable)
+                            {
+                                if (menuButton.playBlipSound)
+                                    SoundManager.inst.PlaySound(DefaultSounds.Block);
+
+                                return;
+                            }
+
                             if (menuButton.playBlipSound)
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
 
@@ -593,6 +601,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element.clickable != null)
                     element.clickable.onClick = p =>
                     {
+                        if (!element.selectable)
+                        {
+                            if (element.playBlipSound)
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
+
+                            return;
+                        }
+
                         if (element.playBlipSound)
                             SoundManager.inst.PlaySound(DefaultSounds.blip);
                         if (element.funcJSON != null)
@@ -1157,7 +1173,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is not MenuButton button)
                     continue;
 
-                if (button.selectionPosition == selected)
+                if (button.selectionPosition == selected && button.selectable)
                 {
                     if (button.gameObject.activeInHierarchy && actions.Submit.WasPressed)
                         button.clickable?.onClick?.Invoke(null);
