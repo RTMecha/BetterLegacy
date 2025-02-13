@@ -415,370 +415,72 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
+        static Modifier<T> RegisterModifier<T>(ModifierBase.Type type, string name, bool constant, params string[] values)
+        {
+            var modifier = new Modifier<T>
+            {
+                type = type,
+                constant = constant,
+                commands = new List<string> { name },
+                value = values == null || values.Length < 1 ? string.Empty : values[0],
+            };
+            for (int i = 1; i < values.Length; i++)
+                modifier.commands.Add(values[i]);
+            return modifier;
+        }
+
         public static List<Modifier<BeatmapObject>> defaultBeatmapObjectModifiers = new List<Modifier<BeatmapObject>>();
 
         public static List<Modifier<BackgroundObject>> defaultBackgroundObjectModifiers = new List<Modifier<BackgroundObject>>
         {
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string>
-                {
-                    "setActive"
-                },
-                value = "False"
-            }, //setActive
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string>
-                {
-                    "setActiveOther",
-                    "BG Group",
-                },
-                value = "False"
-            }, //setOtherActive
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string>
-                {
-                    "animateObject",
-                    "0", // Pos / Sca / Rot
-                    "0", // X
-                    "0", // Y
-                    "0", // Z
-                    "True", // Relative
-                    "0", // Easing
-                },
-                value = "1"
-            }, //animateObject
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string>
-                {
-                    "animateObjectOther",
-                    "0", // Pos / Sca / Rot
-                    "0", // X
-                    "0", // Y
-                    "0", // Z
-                    "True", // Relative
-                    "0", // Easing
-                    "BG Group", // BG Group
-                },
-                value = "1"
-            }, //animateObjectOther
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string>
-                {
-                    "copyAxis",
-                    "0", // From Type
-                    "0", // From Axis
-                    "0", // To Type
-                    "0", // To Axis
-                    "0", // Delay
-                    "1", // Multiply
-                    "0", // Offset
-                    "-99999", // Min
-                    "99999", // Max
-                    "99999", // Loop
-                },
-                value = "Object Group"
-            }, //copyAxis
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string>
-                {
-                    "timeLesserEquals"
-                },
-                value = "0"
-            }, //timeLesserEquals
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string>
-                {
-                    "timeGreaterEquals"
-                },
-                value = "0"
-            }, //timeGreaterEquals
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string>
-                {
-                    "timeLesser"
-                },
-                value = "0"
-            }, //timeLesser
-            new Modifier<BackgroundObject>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string>
-                {
-                    "timeGreater"
-                },
-                value = "0"
-            }, //timeGreater
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "setActive", true, "False"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "setActiveOther", true, "False", "BG Group"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "animateObject", true, "1", "0", "0", "0", "0", "True", "0"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "animateObjectOther", true, "1", "0", "0", "0", "0", "True", "0", "BG Group"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "copyAxis", true, "Object Group", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeLesserEquals", true, "0"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeGreaterEquals", true, "0"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeLesser", true, "0"),
+            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeGreater", true, "0"),
         };
 
         public static List<Modifier<CustomPlayer>> defaultPlayerModifiers = new List<Modifier<CustomPlayer>>
         {
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string> { "setCustomActive", "0", "True" },
-                value = "False"
-            }, // setCustomActive
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "kill" },
-                value = "0"
-            }, // kill
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "hit" },
-                value = "0"
-            }, // hit
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "boost" },
-                value = "0"
-            }, // boost
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "shoot" },
-                value = "0"
-            }, // shoot
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "pulse" },
-                value = "0"
-            }, // pulse
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "jump" },
-                value = "0"
-            }, // jump
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "signalModifier", "Object Group" },
-                value = "0"
-            }, // signalModifier
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "playAnimation", "boost" },
-                value = "0"
-            }, // playAnimation
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string> { "setIdleAnimation", "boost" },
-                value = "0"
-            }, // setIdleAnimation
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Action,
-                constant = true,
-                commands = new List<string>
-                {
-                    "animateObject",
-                    "0", // Pos / Sca / Rot
-                    "0", // X
-                    "0", // Y
-                    "0", // Z
-                    "True", // Relative
-                    "0", // Easing
-                    "0", // ID
-                },
-                value = "1"
-            }, //animateObject
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "setCustomActive", true, "False", "0", "True"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "kill", false, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "hit", false, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "boost", false, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "shoot", false, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "pulse", false, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "jump", false, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "signalModifier", false, "0", "Object Group"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "playAnimation", false, "0", "boost"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "setIdleAnimation", false, "0", "boost"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "animateObject", true, "1", "0", "0", "0", "0", "True", "0", "0"),
 
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "keyPressDown" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "keyPress" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "keyPressUp" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "mouseButtonDown" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "mouseButton" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "mouseButtonUp" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "controlPress" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "controlPressDown" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "controlPressUp" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthEquals" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthGreaterEquals" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthLesserEquals" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthGreater" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthLesser" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthPerEquals" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthPerGreaterEquals" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthPerLesserEquals" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthPerGreater" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "healthPerLesser" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "isDead" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "isBoosting" },
-                value = "0"
-            },
-            new Modifier<CustomPlayer>
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string> { "isColliding" },
-                value = "0"
-            },
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "keyPressDown", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "keyPress", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "keyPressUp", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "mouseButtonDown", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "mouseButton", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "mouseButtonUp", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "controlPressDown", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "controlPress", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "controlPressUp", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthEquals", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthGreaterEquals", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthLesserEquals", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthGreater", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthLesser", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthPerEquals", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthPerGreaterEquals", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthPerLesserEquals", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthPerGreater", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "healthPerLesser", true, "0"),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "isDead", true, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "isBoosting", true, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "isColliding", true, ""),
+            RegisterModifier<CustomPlayer>(ModifierBase.Type.Trigger, "isSolidColliding", true, ""),
         };
     }
 }
