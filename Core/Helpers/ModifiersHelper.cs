@@ -6337,17 +6337,17 @@ namespace BetterLegacy.Core.Helpers
                 case "mouseButtonUp": {
                         return int.TryParse(modifier.value, out int num) && Input.GetMouseButtonUp(num);
                     }
-                case "controlPress": {
-                        var type = modifier.GetInt(0, 0);
-                        var device = modifier.reference.device;
-
-                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
-                    }
                 case "controlPressDown": {
                         var type = modifier.GetInt(0, 0);
                         var device = modifier.reference.device;
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
+                    }
+                case "controlPress": {
+                        var type = modifier.GetInt(0, 0);
+                        var device = modifier.reference.device;
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
                     }
                 case "controlPressUp": {
                         var type = modifier.GetInt(0, 0);
