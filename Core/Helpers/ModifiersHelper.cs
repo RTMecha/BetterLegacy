@@ -20,6 +20,7 @@ using DG.Tweening;
 using LSFunctions;
 using SimpleJSON;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -528,7 +529,7 @@ namespace BetterLegacy.Core.Helpers
                                 if (modifier.reference.detector.hovered && list.Count() > 0)
                                 {
                                     foreach (var bm in list)
-                                        CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.value, 0f)));
+                                        CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
                                 }
 
                                 if (modifier.reference.detector.hovered)
@@ -1354,13 +1355,13 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playSound": {
                             if (bool.TryParse(modifier.GetValue(1), out bool global) && float.TryParse(modifier.GetValue(2), out float pitch) && float.TryParse(modifier.GetValue(3), out float vol) && bool.TryParse(modifier.GetValue(4), out bool loop))
-                                ModifiersManager.GetSoundPath(modifier.reference.id, modifier.GetValue(0), global, pitch, vol, loop);
+                                GetSoundPath(modifier.reference.id, modifier.GetValue(0), global, pitch, vol, loop);
 
                             break;
                         }
                     case "playSoundOnline": {
                             if (float.TryParse(modifier.GetValue(1), out float pitch) && float.TryParse(modifier.GetValue(2), out float vol) && bool.TryParse(modifier.GetValue(3), out bool loop) && !string.IsNullOrEmpty(modifier.GetValue(0)))
-                                ModifiersManager.DownloadSoundAndPlay(modifier.reference.id, modifier.GetValue(0), pitch, vol, loop);
+                                DownloadSoundAndPlay(modifier.reference.id, modifier.GetValue(0), pitch, vol, loop);
 
                             break;
                         }
@@ -1421,7 +1422,7 @@ namespace BetterLegacy.Core.Helpers
                                 break;
                             }
 
-                            CoreHelper.StartCoroutine(ModifiersManager.LoadMusicFileRaw(fullPath, audioClip =>
+                            CoreHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip =>
                             {
                                 if (!audioClip)
                                 {
@@ -3032,26 +3033,26 @@ namespace BetterLegacy.Core.Helpers
 
                     case "saveFloat": {
                             if (CoreHelper.InEditorPreview && float.TryParse(modifier.value, out float num))
-                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], num);
+                                SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], num);
 
                             break;
                         }
                     case "saveString": {
                             if (CoreHelper.InEditorPreview)
-                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.value);
+                                SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.value);
 
                             break;
                         }
                     case "saveText": {
                             if (CoreHelper.InEditorPreview && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject)
                                 && levelObject.visualObject is TextObject textObject)
-                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.textMeshPro.text);
+                                SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.textMeshPro.text);
 
                             break;
                         }
                     case "saveVariable": {
                             if (CoreHelper.InEditorPreview)
-                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.reference.integerVariable);
+                                SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.reference.integerVariable);
 
                             break;
                         }
@@ -3930,7 +3931,7 @@ namespace BetterLegacy.Core.Helpers
                                 if (SoundManager.inst.TryGetSound(modifier.GetValue(4), out AudioClip audioClip))
                                     SoundManager.inst.PlaySound(audioClip, volume, pitch);
                                 else
-                                    ModifiersManager.GetSoundPath(modifier.reference.id, modifier.GetValue(4), modifier.GetBool(5, false), pitch, volume, false);
+                                    GetSoundPath(modifier.reference.id, modifier.GetValue(4), modifier.GetBool(5, false), pitch, volume, false);
 
                                 break;
                             }
@@ -4115,7 +4116,7 @@ namespace BetterLegacy.Core.Helpers
                                         var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                         foreach (var bm in list)
-                                            CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.commands[8], 0f)));
+                                            CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.commands[8], 0f)));
                                     };
                                     AnimationManager.inst.Play(animation);
                                     break;
@@ -4176,7 +4177,7 @@ namespace BetterLegacy.Core.Helpers
                                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                             foreach (var bm in list)
-                                                CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.commands[9], 0f)));
+                                                CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.commands[9], 0f)));
                                         };
                                         AnimationManager.inst.Play(animation);
                                         break;
@@ -4329,7 +4330,7 @@ namespace BetterLegacy.Core.Helpers
                                     var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                     foreach (var bm in list)
-                                        CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, signalTime));
+                                        CoreHelper.StartCoroutine(ActivateModifier(bm, signalTime));
                                 };
                                 AnimationManager.inst.Play(animation);
                                 break;
@@ -4395,7 +4396,7 @@ namespace BetterLegacy.Core.Helpers
                                         var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                         foreach (var bm in list)
-                                            CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, signalTime));
+                                            CoreHelper.StartCoroutine(ActivateModifier(bm, signalTime));
                                     };
                                     AnimationManager.inst.Play(animation);
                                     break;
@@ -5117,7 +5118,7 @@ namespace BetterLegacy.Core.Helpers
                             var repeatOffsetTime = modifier.GetFloat(7, 0f);
                             var speed = modifier.GetFloat(8, 0f);
 
-                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                            var prefabObject = AddPrefabObjectToLevel(prefab,
                                 modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
                                 new Vector2(posX, posY),
                                 new Vector2(scaX, scaY),
@@ -5149,7 +5150,7 @@ namespace BetterLegacy.Core.Helpers
                             var repeatOffsetTime = modifier.GetFloat(7, 0f);
                             var speed = modifier.GetFloat(8, 0f);
 
-                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                            var prefabObject = AddPrefabObjectToLevel(prefab,
                                 modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
                                 new Vector2(posX, posY) + (Vector2)animationResult.position,
                                 new Vector2(scaX, scaY) * animationResult.scale,
@@ -5183,7 +5184,7 @@ namespace BetterLegacy.Core.Helpers
                                 var repeatOffsetTime = modifier.GetFloat(7, 0f);
                                 var speed = modifier.GetFloat(8, 0f);
 
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                                var prefabObject = AddPrefabObjectToLevel(prefab,
                                     modifier.GetBool(12, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(11, 0f) : modifier.GetFloat(11, 0f),
                                     new Vector2(posX, posY) + (Vector2)animationResult.position,
                                     new Vector2(scaX, scaY) * animationResult.scale,
@@ -5218,7 +5219,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = new List<PrefabObject>();
 
                             var list = modifier.GetResult<List<PrefabObject>>();
-                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                            var prefabObject = AddPrefabObjectToLevel(prefab,
                                 modifier.GetBool(10, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f) : modifier.GetFloat(9, 0f),
                                 new Vector2(posX, posY),
                                 new Vector2(scaX, scaY),
@@ -5256,7 +5257,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = new List<PrefabObject>();
 
                             var list = modifier.GetResult<List<PrefabObject>>();
-                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                            var prefabObject = AddPrefabObjectToLevel(prefab,
                                 modifier.GetBool(10, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f) : modifier.GetFloat(9, 0f),
                                 new Vector2(posX, posY) + (Vector2)animationResult.position,
                                 new Vector2(scaX, scaY) * animationResult.scale,
@@ -5296,7 +5297,7 @@ namespace BetterLegacy.Core.Helpers
                                     modifier.Result = new List<PrefabObject>();
 
                                 var list = modifier.GetResult<List<PrefabObject>>();
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                                var prefabObject = AddPrefabObjectToLevel(prefab,
                                     modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
                                     new Vector2(posX, posY) + (Vector2)animationResult.position,
                                     new Vector2(scaX, scaY) * animationResult.scale,
@@ -5565,7 +5566,7 @@ namespace BetterLegacy.Core.Helpers
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             foreach (var bm in list)
-                                CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+                                CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
 
                             break;
                         }
@@ -6539,7 +6540,7 @@ namespace BetterLegacy.Core.Helpers
                         var list = GameData.Current.FindObjectsWithTag(modifier.commands[1]);
 
                         foreach (var bm in list)
-                            CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+                            CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
 
                         break;
                     }
@@ -6652,6 +6653,136 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Internal Functions
+
+        static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false)
+        {
+            string fullPath = !fromSoundLibrary ? RTFile.CombinePaths(RTFile.BasePath, path) : RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
+
+            var audioDotFormats = RTFile.AudioDotFormats;
+            for (int i = 0; i < audioDotFormats.Length; i++)
+            {
+                var audioDotFormat = audioDotFormats[i];
+                if (!path.Contains(audioDotFormat) && RTFile.FileExists(fullPath + audioDotFormat))
+                    fullPath += audioDotFormat;
+            }
+
+            if (!RTFile.FileExists(fullPath))
+                return;
+
+            if (!fullPath.EndsWith(FileFormat.MP3.Dot()))
+                CoreHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop)));
+            else
+                PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop);
+        }
+
+        static void DownloadSoundAndPlay(string id, string path, float pitch = 1f, float volume = 1f, bool loop = false)
+        {
+            try
+            {
+                var audioType = RTFile.GetAudioType(path);
+
+                if (audioType != AudioType.UNKNOWN)
+                    CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
+            }
+            catch
+            {
+
+            }
+        }
+
+        static void PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop)
+        {
+            var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch * AudioManager.inst.CurrentAudioSource.pitch, loop);
+            if (loop && !ModifiersManager.audioSources.ContainsKey(id))
+                ModifiersManager.audioSources.Add(id, audioSource);
+        }
+
+        static IEnumerator LoadMusicFileRaw(string path, Action<AudioClip> callback)
+        {
+            if (!RTFile.FileExists(path))
+            {
+                CoreHelper.Log($"Could not load Music file [{path}]");
+                yield break;
+            }
+
+            var www = new WWW("file://" + path);
+            while (!www.isDone)
+                yield return null;
+
+            var beatmapAudio = www.GetAudioClip(false, false);
+            while (beatmapAudio.loadState != AudioDataLoadState.Loaded)
+                yield return null;
+            callback?.Invoke(beatmapAudio);
+            beatmapAudio = null;
+            www = null;
+
+            yield break;
+        }
+
+        static PrefabObject AddPrefabObjectToLevel(Prefab prefab, float startTime, Vector2 pos, Vector2 sca, float rot, int repeatCount, float repeatOffsetTime, float speed)
+        {
+            var prefabObject = new PrefabObject();
+            prefabObject.ID = LSText.randomString(16);
+            prefabObject.prefabID = prefab.ID;
+
+            prefabObject.StartTime = startTime;
+
+            prefabObject.events[0].eventValues[0] = pos.x;
+            prefabObject.events[0].eventValues[1] = pos.y;
+            prefabObject.events[1].eventValues[0] = sca.x;
+            prefabObject.events[1].eventValues[1] = sca.y;
+            prefabObject.events[2].eventValues[0] = rot;
+
+            prefabObject.RepeatCount = repeatCount;
+            prefabObject.RepeatOffsetTime = repeatOffsetTime;
+            prefabObject.speed = speed;
+
+            prefabObject.fromModifier = true;
+
+            return prefabObject;
+        }
+
+        static void SaveProgress(string path, string chapter, string level, float data)
+        {
+            if (path.Contains("\\") || path.Contains("/") || path.Contains(".."))
+                return;
+
+            var profile = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            RTFile.CreateDirectory(profile);
+
+            var file = RTFile.CombinePaths(profile, $"{path}{FileFormat.SES.Dot()}");
+            var jn = JSON.Parse(RTFile.FileExists(file) ? RTFile.ReadFromFile(file) : "{}");
+
+            jn[chapter][level]["float"] = data.ToString();
+
+            RTFile.WriteToFile(file, jn.ToString(3));
+        }
+
+        static void SaveProgress(string path, string chapter, string level, string data)
+        {
+            if (path.Contains("\\") || path.Contains("/") || path.Contains(".."))
+                return;
+
+            var profile = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            RTFile.CreateDirectory(profile);
+
+            var file = RTFile.CombinePaths(profile, $"{path}{FileFormat.SES.Dot()}");
+            var jn = JSON.Parse(RTFile.FileExists(file) ? RTFile.ReadFromFile(file) : "{}");
+
+            jn[chapter][level]["string"] = data.ToString();
+
+            RTFile.WriteToFile(file, jn.ToString(3));
+        }
+
+        static IEnumerator ActivateModifier(BeatmapObject beatmapObject, float delay)
+        {
+            if (delay != 0.0)
+                yield return new WaitForSeconds(delay);
+
+            if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> modifier))
+                modifier.Result = "death hd";
+            yield break;
+        }
 
         static void ApplyAnimationTo(
             BeatmapObject applyTo, BeatmapObject takeFrom,
