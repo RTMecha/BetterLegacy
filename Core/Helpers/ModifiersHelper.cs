@@ -5099,57 +5099,91 @@ namespace BetterLegacy.Core.Helpers
                     #endregion
                     #region Prefab
 
-                        // todo: change from index to ID.
                     case "spawnPrefab": {
-                            if (!modifier.constant && modifier.Result == null && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
-                            {
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
-                                    modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
-                                    new Vector2(posX, posY),
-                                    new Vector2(scaX, scaY),
-                                    rot, repeatCount, repeatOffsetTime, speed);
+                            if (modifier.constant || modifier.HasResult())
+                                break;
 
-                                modifier.Result = prefabObject;
-                                GameData.Current.prefabObjects.Add(prefabObject);
-                                Updater.AddPrefabToLevel(prefabObject);
-                            }
+                            var prefab = GetPrefab(modifier.GetInt(12, 0), modifier.GetValue(0));
+
+                            if (!prefab)
+                                break;
+
+                            var posX = modifier.GetFloat(1, 0f);
+                            var posY = modifier.GetFloat(2, 0f);
+                            var scaX = modifier.GetFloat(3, 0f);
+                            var scaY = modifier.GetFloat(4, 0f);
+                            var rot = modifier.GetFloat(5, 0f);
+                            var repeatCount = modifier.GetInt(6, 0);
+                            var repeatOffsetTime = modifier.GetFloat(7, 0f);
+                            var speed = modifier.GetFloat(8, 0f);
+
+                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                                modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
+                                new Vector2(posX, posY),
+                                new Vector2(scaX, scaY),
+                                rot, repeatCount, repeatOffsetTime, speed);
+
+                            modifier.Result = prefabObject;
+                            GameData.Current.prefabObjects.Add(prefabObject);
+                            Updater.AddPrefabToLevel(prefabObject);
 
                             break;
                         }
                     case "spawnPrefabOffset": {
-                            if (!modifier.constant && modifier.Result == null && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
-                            {
-                                var animationResult = modifier.reference.InterpolateChain();
+                            if (modifier.constant || modifier.HasResult())
+                                break;
 
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
-                                    modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
-                                    new Vector2(posX, posY) + (Vector2)animationResult.position,
-                                    new Vector2(scaX, scaY) * animationResult.scale,
-                                    rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+                            var prefab = GetPrefab(modifier.GetInt(12, 0), modifier.GetValue(0));
 
-                                modifier.Result = prefabObject;
-                                GameData.Current.prefabObjects.Add(prefabObject);
-                                Updater.AddPrefabToLevel(prefabObject);
-                            }
+                            if (!prefab)
+                                break;
+
+                            var animationResult = modifier.reference.InterpolateChain();
+
+                            var posX = modifier.GetFloat(1, 0f);
+                            var posY = modifier.GetFloat(2, 0f);
+                            var scaX = modifier.GetFloat(3, 0f);
+                            var scaY = modifier.GetFloat(4, 0f);
+                            var rot = modifier.GetFloat(5, 0f);
+                            var repeatCount = modifier.GetInt(6, 0);
+                            var repeatOffsetTime = modifier.GetFloat(7, 0f);
+                            var speed = modifier.GetFloat(8, 0f);
+
+                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                                modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
+                                new Vector2(posX, posY) + (Vector2)animationResult.position,
+                                new Vector2(scaX, scaY) * animationResult.scale,
+                                rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+                            modifier.Result = prefabObject;
+                            GameData.Current.prefabObjects.Add(prefabObject);
+                            Updater.AddPrefabToLevel(prefabObject);
 
                             break;
                         }
                     case "spawnPrefabOffsetOther": {
-                            if (!modifier.constant && modifier.Result == null && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed)
-                                && GameData.Current.TryFindObjectWithTag(modifier, modifier.commands[10], out BeatmapObject beatmapObject))
+                            if (modifier.constant || modifier.HasResult())
+                                break;
+
+                            var prefab = GetPrefab(modifier.GetInt(13, 0), modifier.GetValue(0));
+
+                            if (!prefab)
+                                break;
+
+                            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(10), out BeatmapObject beatmapObject))
                             {
                                 var animationResult = beatmapObject.InterpolateChain();
 
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
+                                var posX = modifier.GetFloat(1, 0f);
+                                var posY = modifier.GetFloat(2, 0f);
+                                var scaX = modifier.GetFloat(3, 0f);
+                                var scaY = modifier.GetFloat(4, 0f);
+                                var rot = modifier.GetFloat(5, 0f);
+                                var repeatCount = modifier.GetInt(6, 0);
+                                var repeatOffsetTime = modifier.GetFloat(7, 0f);
+                                var speed = modifier.GetFloat(8, 0f);
+
+                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
                                     modifier.GetBool(12, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(11, 0f) : modifier.GetFloat(11, 0f),
                                     new Vector2(posX, posY) + (Vector2)animationResult.position,
                                     new Vector2(scaX, scaY) * animationResult.scale,
@@ -5163,71 +5197,106 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "spawnMultiPrefab": {
-                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
-                            {
-                                if (modifier.Result == null)
-                                    modifier.Result = new List<PrefabObject>();
+                            if (modifier.constant || modifier.HasResult())
+                                break;
 
-                                var list = modifier.GetResult<List<PrefabObject>>();
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
-                                    modifier.GetBool(10, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f) : modifier.GetFloat(9, 0f),
-                                    new Vector2(posX, posY),
-                                    new Vector2(scaX, scaY),
-                                    rot, repeatCount, repeatOffsetTime, speed);
+                            var prefab = GetPrefab(modifier.GetInt(11, 0), modifier.GetValue(0));
 
-                                list.Add(prefabObject);
-                                modifier.Result = list;
+                            if (!prefab)
+                                break;
 
-                                GameData.Current.prefabObjects.Add(prefabObject);
-                                Updater.AddPrefabToLevel(prefabObject);
-                            }
+                            var posX = modifier.GetFloat(1, 0f);
+                            var posY = modifier.GetFloat(2, 0f);
+                            var scaX = modifier.GetFloat(3, 0f);
+                            var scaY = modifier.GetFloat(4, 0f);
+                            var rot = modifier.GetFloat(5, 0f);
+                            var repeatCount = modifier.GetInt(6, 0);
+                            var repeatOffsetTime = modifier.GetFloat(7, 0f);
+                            var speed = modifier.GetFloat(8, 0f);
+
+                            if (modifier.Result == null)
+                                modifier.Result = new List<PrefabObject>();
+
+                            var list = modifier.GetResult<List<PrefabObject>>();
+                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                                modifier.GetBool(10, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f) : modifier.GetFloat(9, 0f),
+                                new Vector2(posX, posY),
+                                new Vector2(scaX, scaY),
+                                rot, repeatCount, repeatOffsetTime, speed);
+
+                            list.Add(prefabObject);
+                            modifier.Result = list;
+
+                            GameData.Current.prefabObjects.Add(prefabObject);
+                            Updater.AddPrefabToLevel(prefabObject);
 
                             break;
                         }
                     case "spawnMultiPrefabOffset": {
-                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
-                            {
-                                var animationResult = modifier.reference.InterpolateChain();
+                            if (modifier.constant || modifier.HasResult())
+                                break;
 
-                                if (modifier.Result == null)
-                                    modifier.Result = new List<PrefabObject>();
+                            var prefab = GetPrefab(modifier.GetInt(11, 0), modifier.GetValue(0));
 
-                                var list = modifier.GetResult<List<PrefabObject>>();
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
-                                    modifier.GetBool(10, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f) : modifier.GetFloat(9, 0f),
-                                    new Vector2(posX, posY) + (Vector2)animationResult.position,
-                                    new Vector2(scaX, scaY) * animationResult.scale,
-                                    rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+                            if (!prefab)
+                                break;
 
-                                list.Add(prefabObject);
-                                modifier.Result = list;
+                            var animationResult = modifier.reference.InterpolateChain();
 
-                                GameData.Current.prefabObjects.Add(prefabObject);
-                                Updater.AddPrefabToLevel(prefabObject);
-                            }
+                            var posX = modifier.GetFloat(1, 0f);
+                            var posY = modifier.GetFloat(2, 0f);
+                            var scaX = modifier.GetFloat(3, 0f);
+                            var scaY = modifier.GetFloat(4, 0f);
+                            var rot = modifier.GetFloat(5, 0f);
+                            var repeatCount = modifier.GetInt(6, 0);
+                            var repeatOffsetTime = modifier.GetFloat(7, 0f);
+                            var speed = modifier.GetFloat(8, 0f);
+
+                            if (modifier.Result == null)
+                                modifier.Result = new List<PrefabObject>();
+
+                            var list = modifier.GetResult<List<PrefabObject>>();
+                            var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
+                                modifier.GetBool(10, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f) : modifier.GetFloat(9, 0f),
+                                new Vector2(posX, posY) + (Vector2)animationResult.position,
+                                new Vector2(scaX, scaY) * animationResult.scale,
+                                rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+                            list.Add(prefabObject);
+                            modifier.Result = list;
+
+                            GameData.Current.prefabObjects.Add(prefabObject);
+                            Updater.AddPrefabToLevel(prefabObject);
 
                             break;
                         }
                     case "spawnMultiPrefabOffsetOther": {
-                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed)
-                                && GameData.Current.TryFindObjectWithTag(modifier, modifier.commands[9], out BeatmapObject beatmapObject))
+                            if (modifier.constant || modifier.HasResult())
+                                break;
+
+                            var prefab = GetPrefab(modifier.GetInt(12, 0), modifier.GetValue(0));
+
+                            if (!prefab)
+                                break;
+
+                            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.commands[9], out BeatmapObject beatmapObject))
                             {
                                 var animationResult = beatmapObject.InterpolateChain();
+
+                                var posX = modifier.GetFloat(1, 0f);
+                                var posY = modifier.GetFloat(2, 0f);
+                                var scaX = modifier.GetFloat(3, 0f);
+                                var scaY = modifier.GetFloat(4, 0f);
+                                var rot = modifier.GetFloat(5, 0f);
+                                var repeatCount = modifier.GetInt(6, 0);
+                                var repeatOffsetTime = modifier.GetFloat(7, 0f);
+                                var speed = modifier.GetFloat(8, 0f);
 
                                 if (modifier.Result == null)
                                     modifier.Result = new List<PrefabObject>();
 
                                 var list = modifier.GetResult<List<PrefabObject>>();
-                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
+                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(prefab,
                                     modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f) : modifier.GetFloat(10, 0f),
                                     new Vector2(posX, posY) + (Vector2)animationResult.position,
                                     new Vector2(scaX, scaY) * animationResult.scale,
@@ -6582,6 +6651,8 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
+        #region Internal Functions
+
         static void ApplyAnimationTo(
             BeatmapObject applyTo, BeatmapObject takeFrom,
             bool useVisual, float time, float currentTime,
@@ -6691,5 +6762,15 @@ namespace BetterLegacy.Core.Helpers
         }
 
         static string GetSaveFile(string file) => RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", file + FileFormat.SES.Dot());
+
+        static Prefab GetPrefab(int findType, string reference) => findType switch
+        {
+            0 => GameData.Current.prefabs.GetAt(Parser.TryParse(reference, -1)),
+            1 => GameData.Current.prefabs.Find(x => x.Name == reference),
+            2 => GameData.Current.prefabs.Find(x => x.ID == reference),
+            _ => null,
+        };
+
+        #endregion
     }
 }

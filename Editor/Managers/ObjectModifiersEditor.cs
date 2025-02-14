@@ -1809,42 +1809,14 @@ namespace BetterLegacy.Editor.Managers
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
 
-                            var prefabIndex = numberInput.Duplicate(layout, "Index");
-                            var prefabIndexLabel = prefabIndex.transform.Find("Text").GetComponent<Text>();
-                            prefabIndexLabel.text = "Prefab Index";
+                            int valueIndex = 10;
+                            if (isOther)
+                                valueIndex++;
+                            if (isMulti)
+                                valueIndex--;
 
-                            var prefabIndexIF = prefabIndex.transform.Find("Input").GetComponent<InputField>();
-                            prefabIndexIF.onValueChanged.ClearAll();
-                            prefabIndexIF.textComponent.alignment = TextAnchor.MiddleCenter;
-                            prefabIndexIF.text = Parser.TryParse(modifier.value, 0).ToString();
-                            prefabIndexIF.onValueChanged.AddListener(_val =>
-                            {
-                                if (int.TryParse(_val, out int result))
-                                {
-                                    try
-                                    {
-                                        modifier.Inactive?.Invoke(modifier);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        CoreHelper.LogException(ex);
-                                    }
-                                    modifier.value = Mathf.Clamp(result, 0, GameData.Current.prefabs.Count - 1).ToString();
-                                    modifier.active = false;
-                                }
-                            });
-
-                            EditorThemeManager.ApplyLightText(prefabIndexLabel);
-                            EditorThemeManager.ApplyInputField(prefabIndexIF);
-                            var prefabIndexLeftButton = prefabIndex.transform.Find("<").GetComponent<Button>();
-                            var prefabIndexRightButton = prefabIndex.transform.Find(">").GetComponent<Button>();
-                            prefabIndexLeftButton.transition = Selectable.Transition.ColorTint;
-                            prefabIndexRightButton.transition = Selectable.Transition.ColorTint;
-                            EditorThemeManager.ApplySelectable(prefabIndexLeftButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.ApplySelectable(prefabIndexRightButton, ThemeGroup.Function_2, false);
-
-                            TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, GameData.Current.prefabs.Count - 1, prefabIndex.transform);
-                            TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, GameData.Current.prefabs.Count - 1));
+                            DropdownGenerator(modifier, layout, "Search Prefab Using", valueIndex + 2, CoreHelper.StringToOptionData("Index", "ID", "Name"));
+                            StringGenerator(modifier, layout, "Prefab Reference", 0);
 
                             SingleGenerator(modifier, layout, "Position X", 1, 0f);
                             SingleGenerator(modifier, layout, "Position Y", 2, 0f);
@@ -1858,12 +1830,6 @@ namespace BetterLegacy.Editor.Managers
 
                             if (!isMulti)
                                 BoolGenerator(modifier, layout, "Permanent", 9, false);
-
-                            int valueIndex = 10;
-                            if (isOther)
-                                valueIndex++;
-                            if (isMulti)
-                                valueIndex--;
 
                             SingleGenerator(modifier, layout, "Time Offset", valueIndex, 0f);
                             BoolGenerator(modifier, layout, "Time Relative", valueIndex + 1, true);
