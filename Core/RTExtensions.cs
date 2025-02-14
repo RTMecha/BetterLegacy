@@ -490,6 +490,30 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Gets an item at an index.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="index">Index of the item to get.</param>
+        /// <returns>If the index is in the range of the list, returns the item at the index, otherwise returns default.</returns>
+        public static T GetAt<T>(this List<T> list, int index)
+        {
+            list.TryGetAt(index, out T result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets an item at an index.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="index">Index of the item to get.</param>
+        /// <returns>If the index is in the range of the array, returns the item at the index, otherwise returns default.</returns>
+        public static T GetAt<T>(this T[] array, int index)
+        {
+            array.TryGetAt(index, out T result);
+            return result;
+        }
+
+        /// <summary>
         /// Moves an item in a list to a different index.
         /// </summary>
         /// <typeparam name="T">The type of the List</typeparam>
