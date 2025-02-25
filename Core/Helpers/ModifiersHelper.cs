@@ -4652,7 +4652,7 @@ namespace BetterLegacy.Core.Helpers
                                     var max = Parser.TryParse(modifier.commands[i + 6], 0f);
                                     var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
 
-                                    var beatmapObject = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectWithTag(group) : GameData.Current.FindObjectWithTag(beatmapObjects, prefabObjects, modifier.reference, group);
+                                    var beatmapObject = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectWithTag(group) : GameData.Current.FindObjectWithTag(beatmapObjects, modifier.reference, group);
 
                                     if (!beatmapObject)
                                         continue;
