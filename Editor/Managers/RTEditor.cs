@@ -2450,6 +2450,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelineTriggers()
         {
+            #region Bin Controls
+
             var binScroll = EditorPrefabHolder.Instance.Slider.Duplicate(EditorTimeline.inst.wholeTimeline, "Bin Scrollbar");
             var binScrollImage = binScroll.transform.Find("Image").GetComponent<Image>();
             EditorTimeline.inst.binSlider = binScroll.GetComponent<Slider>();
@@ -2473,14 +2475,13 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.binSlider.colors = UIManager.SetColorBlock(EditorTimeline.inst.binSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
 
-            EditorThemeManager.AddGraphic(binScrollImage, ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(EditorTimeline.inst.binSlider.image, ThemeGroup.Slider_2_Handle, true);
-
             TriggerHelper.AddEventTriggers(binScroll, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
                 EditorTimeline.inst.binSlider.value += pointerEventData.scrollDelta.y * -EditorConfig.Instance.BinControlScrollAmount.Value * 0.5f;
             }));
+
+            #endregion
 
             TriggerHelper.AddEventTriggers(EditorManager.inst.timeline,
                 TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData =>
@@ -2489,9 +2490,7 @@ namespace BetterLegacy.Editor.Managers
                     SetDialogStatus("Timeline", true);
                 }),
                 TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => EditorTimeline.inst.isOverMainTimeline = false),
-                TriggerHelper.StartDragTrigger(),
-                TriggerHelper.DragTrigger(),
-                TriggerHelper.EndDragTrigger(),
+                TriggerHelper.StartDragTrigger(), TriggerHelper.DragTrigger(), TriggerHelper.EndDragTrigger(),
                 TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
                 {
                     if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
@@ -2577,6 +2576,11 @@ namespace BetterLegacy.Editor.Managers
                 scrollBar.value = pointerEventData.scrollDelta.y > 0f ? scrollBar.value + (0.005f * multiply) : pointerEventData.scrollDelta.y < 0f ? scrollBar.value - (0.005f * multiply) : 0f;
             }));
 
+            #region Editor Themes
+
+            EditorThemeManager.AddGraphic(binScrollImage, ThemeGroup.Slider_2, true);
+            EditorThemeManager.AddGraphic(EditorTimeline.inst.binSlider.image, ThemeGroup.Slider_2_Handle, true);
+
             EditorThemeManager.AddScrollbar(EditorManager.inst.timelineScrollbar.GetComponent<Scrollbar>(),
                 scrollbarGroup: ThemeGroup.Timeline_Scrollbar_Base, handleGroup: ThemeGroup.Timeline_Scrollbar, canSetScrollbarRounded: false);
 
@@ -2592,6 +2596,23 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(EditorManager.inst.zoomSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
             EditorThemeManager.AddGraphic(EditorManager.inst.zoomSlider.transform.Find("Fill Area/Fill").GetComponent<Image>(), ThemeGroup.Slider_2, true);
             EditorThemeManager.AddGraphic(EditorManager.inst.zoomSlider.image, ThemeGroup.Slider_2_Handle, true);
+
+            #endregion
+
+            var scrollRects = EditorManager.inst.timelineScrollRect.gameObject.GetComponents<ScrollRect>();
+            for (int i = 0; i < scrollRects.Length; i++)
+                scrollRects[i].movementType = ScrollRect.MovementType.Unrestricted;
+            EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>().movementType = ScrollRect.MovementType.Unrestricted;
+            EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>().movementType = ScrollRect.MovementType.Unrestricted;
+
+            TriggerHelper.AddEventTriggers(EditorTimeline.inst.wholeTimeline.gameObject,
+                TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData =>
+                {
+                    EditorTimeline.inst.isOverMainTimeline = true;
+                    SetDialogStatus("Timeline", true);
+                }),
+                TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => EditorTimeline.inst.isOverMainTimeline = false),
+                TriggerHelper.StartDragTrigger(), TriggerHelper.DragTrigger(), TriggerHelper.EndDragTrigger());
         }
 
         void SetupSelectGUI()

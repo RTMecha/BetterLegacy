@@ -1271,7 +1271,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(ref float value)
         {
-            EditorTimeline.inst.SetTimeline(value);
+            EditorTimeline.inst.SetTimelineZoom(value);
             return false;
         }
     }

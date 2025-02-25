@@ -2085,6 +2085,8 @@ namespace BetterLegacy.Editor.Managers
             if (!ObjEditor.inst.beatmapObjectsDrag)
                 return;
 
+            var musicLength = SoundManager.inst.MusicLength;
+
             if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
             {
                 int binOffset = 14 - Mathf.RoundToInt((float)((Input.mousePosition.y - 25) * EditorManager.inst.ScreenScaleInverse / 20)) + ObjEditor.inst.mouseOffsetYForDrag;
@@ -2118,8 +2120,10 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            float timeOffset = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime() + ObjEditor.inst.mouseOffsetXForDrag,
-                0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+            float timeOffset = EditorTimeline.inst.GetTimelineTime() + ObjEditor.inst.mouseOffsetXForDrag;
+            if (EditorConfig.Instance.ClampedTimelineDrag.Value)
+                timeOffset = Mathf.Clamp(timeOffset, 0f, musicLength);
+            timeOffset = Mathf.Round(timeOffset * 1000f) / 1000f;
 
             if (RTEditor.inst.dragOffset != timeOffset && !EditorTimeline.inst.SelectedObjects.All(x => x.Locked))
             {
@@ -2139,7 +2143,11 @@ namespace BetterLegacy.Editor.Managers
                 if (timelineObject.Locked)
                     continue;
 
-                timelineObject.Time = Mathf.Clamp(timeOffset + timelineObject.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                var time = timeOffset + timelineObject.timeOffset;
+                if (EditorConfig.Instance.ClampedTimelineDrag.Value)
+                    time = Mathf.Clamp(time, 0f, musicLength);
+
+                timelineObject.Time = time;
 
                 timelineObject.RenderPosLength();
 
@@ -3565,8 +3573,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (float.TryParse(_val, out float num))
                 {
-                    beatmapObject.StartTime = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-
+                    if (EditorConfig.Instance.ClampedTimelineDrag.Value)
+                        num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    beatmapObject.StartTime = num;
 
                     // StartTime affects both physical object and timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));

@@ -40,7 +40,7 @@ namespace BetterLegacy.Editor.Managers
 
             var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
             float multiply = 12f / EditorManager.inst.Zoom;
-            SetTimelinePosition(Mathf.Clamp(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply), 0f, 1f));
+            SetTimelinePosition(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply));
             SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
         }
 
@@ -68,8 +68,14 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Sets the main timeline position.
         /// </summary>
-        /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
+        /// <param name="position">The position to set the timeline scroll.</param>
         public void SetTimelinePosition(float position) => SetTimeline(EditorManager.inst.zoomFloat, position);
+
+        /// <summary>
+        /// Sets the main timeline zoom.
+        /// </summary>
+        /// <param name="zoom">The zoom to set to the timeline.</param>
+        public void SetTimelineZoom(float zoom) => SetTimeline(zoom, AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? GetTimelineTime() : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length);
 
         /// <summary>
         /// Sets the main timeline zoom and position.
@@ -78,12 +84,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
         /// <param name="render">If the timeline should render.</param>
         /// <param name="log">If the zoom amount should be logged.</param>
-        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = false)
+        public void SetTimeline(float zoom, float position, bool render = true)
         {
             try
             {
-                var timelineTime = GetTimelineTime();
-
                 float prevZoom = EditorManager.inst.zoomFloat;
                 EditorManager.inst.zoomFloat = Mathf.Clamp01(zoom);
                 EditorManager.inst.zoomVal =
@@ -92,20 +96,11 @@ namespace BetterLegacy.Editor.Managers
                 if (render)
                     EditorManager.inst.RenderTimeline();
 
-                CoreHelper.StartCoroutine(SetTimelinePosition(timelineTime, position));
+                CoreHelper.StartCoroutine(ISetTimelinePosition(position));
 
                 EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
                 EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
                 EditorManager.inst.zoomSlider.onValueChanged.AddListener(_val => EditorManager.inst.Zoom = _val);
-
-                if (log)
-                    CoreHelper.Log($"SET MAIN ZOOM\n" +
-                        $"ZoomFloat: {EditorManager.inst.zoomFloat}\n" +
-                        $"ZoomVal: {EditorManager.inst.zoomVal}\n" +
-                        $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
-                        $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}\n" +
-                        $"Timeline Time: {timelineTime}\n" +
-                        $"Timeline Position Calculation: {(AudioManager.inst.CurrentAudioSource.clip == null ? -1f : position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length)}");
             }
             catch (Exception ex)
             {
@@ -114,11 +109,10 @@ namespace BetterLegacy.Editor.Managers
         }
 
         // i have no idea why the timeline scrollbar doesn't like to be set in the frame the zoom is also set in.
-        IEnumerator SetTimelinePosition(float timelineTime, float position = 0f)
+        IEnumerator ISetTimelinePosition(float position)
         {
             yield return new WaitForFixedUpdate();
-            var pos = position >= 0f ? position : AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
-            EditorManager.inst.timelineScrollRectBar.value = pos;
+            EditorManager.inst.timelineScrollRectBar.value = position;
         }
 
         /// <summary>

@@ -76,6 +76,7 @@ namespace BetterLegacy.Configs
 
         #region Timeline
 
+        public Setting<bool> ClampedTimelineDrag { get; set; }
         public Setting<bool> DraggingMainCursorPausesLevel { get; set; }
         public Setting<bool> DraggingMainCursorFix { get; set; }
         public Setting<bool> UseMouseAsZoomPoint { get; set; }
@@ -1325,6 +1326,7 @@ namespace BetterLegacy.Configs
 
             #region Timeline
 
+            ClampedTimelineDrag = Bind(this, "Timeline", "Clamped Timeline Drag", true, "If dragging objects around in the timeline prevents their start times from going outside the range of the song. Turning this off can be good for having objects spawn at the start of the level.");
             DraggingMainCursorPausesLevel = Bind(this, "Timeline", "Dragging Main Cursor Pauses Level", true, "If dragging the cursor pauses the level.");
             DraggingMainCursorFix = Bind(this, "Timeline", "Dragging Main Cursor Fix", true, "If the main cursor should act like the object cursor.");
             UseMouseAsZoomPoint = Bind(this, "Timeline", "Use Mouse As Zooming Point", false, "If zooming in should use your mouse as a point instead of the timeline cursor. Applies to both main and object timelines..");
