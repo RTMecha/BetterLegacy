@@ -1157,11 +1157,11 @@ namespace BetterLegacy.Core
             _ => RTFile.ApplicationDirectory + "settings/menus",
         };
 
-    #endregion
+        #endregion
 
-    #region Misc
+        #region Misc
 
-    public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
+        public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
         {
             if (meshFilter.mesh == null)
                 return;
