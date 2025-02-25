@@ -653,7 +653,7 @@ namespace BetterLegacy.Core.Helpers
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime);
                         }),
-                        new ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
+                        new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
                         new ButtonFunction("Duplicate (Keep Prefab)", () =>
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
@@ -661,7 +661,7 @@ namespace BetterLegacy.Core.Helpers
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
-                        new ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); }),
+                        new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
                         new ButtonFunction(true),
                         new ButtonFunction("Move Backwards", () =>
                         {
