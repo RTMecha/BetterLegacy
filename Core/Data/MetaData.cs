@@ -608,6 +608,30 @@ namespace BetterLegacy.Core.Data
         /// <param name="path">The file to save to.</param>
         public void WriteToFileVG(string path) => RTFile.WriteToFile(path, ToJSONVG().ToString(3));
 
+        /// <summary>
+        /// Checks if the levels' version is incompatible with the games' current version.
+        /// </summary>
+        /// <returns>Returns true if the level is playable in the games' current version, otherwise returns false.</returns>
+        public bool IsIncompatible() => requireVersion && versionRange switch
+        {
+            DataManager.VersionComparison.EqualTo => ModVersion != LegacyPlugin.ModVersion,
+            DataManager.VersionComparison.GreaterThan => ModVersion > LegacyPlugin.ModVersion,
+            DataManager.VersionComparison.LessThan => ModVersion < LegacyPlugin.ModVersion,
+            _ => false,
+        };
+
+        /// <summary>
+        /// Gets a message for the levels' incompatibility.
+        /// </summary>
+        /// <returns>Returns a string representing the incompatibility of the level.</returns>
+        public string GetIncompatibleMessage() => versionRange switch
+        {
+            DataManager.VersionComparison.EqualTo => $"Level is only playable in BetterLegacy version {ModVersion}",
+            DataManager.VersionComparison.GreaterThan => $"Level is only playable after and in BetterLegacy version {ModVersion}",
+            DataManager.VersionComparison.LessThan => $"Level is only playable before and in BetterLegacy version {ModVersion}",
+            _ => string.Empty,
+        };
+
         #endregion
 
         #region Fields
