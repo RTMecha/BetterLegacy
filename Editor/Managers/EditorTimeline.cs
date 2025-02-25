@@ -161,6 +161,20 @@ namespace BetterLegacy.Editor.Managers
             movingTimeline = true;
         }
 
+        /// <summary>
+        /// Prevents the timeline from being navigated outside the normal range.
+        /// </summary>
+        /// <param name="clamp">If the timeline should clamp.</param>
+        public void ClampTimeline(bool clamp)
+        {
+            var movementType = clamp ? ScrollRect.MovementType.Clamped : ScrollRect.MovementType.Unrestricted;
+            var scrollRects = EditorManager.inst.timelineScrollRect.gameObject.GetComponents<ScrollRect>();
+            for (int i = 0; i < scrollRects.Length; i++)
+                scrollRects[i].movementType = movementType;
+            EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>().movementType = movementType;
+            EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>().movementType = movementType;
+        }
+
         #endregion
 
         #region Timeline Objects
@@ -1028,26 +1042,31 @@ namespace BetterLegacy.Editor.Managers
                 UpdateTimelineObjects();
                 switch (layerType)
                 {
-                    case LayerType.Objects:
-                        {
+                    case LayerType.Objects: {
                             RenderBins();
                             RenderTimelineObjectsPositions();
 
                             if (prevLayerType != layerType)
                                 CheckpointEditor.inst.CreateGhostCheckpoints();
 
+                            ClampTimeline(false);
+
                             break;
                         }
-                    case LayerType.Events:
-                        {
-                            RenderBinPosition(0f); // sets the position to the default.
+                    case LayerType.Events: {
+                            SetBinScroll(0f);
                             RenderBins(); // makes sure the bins look normal on the event layer
                             ShowBinControls(false);
+
+                            if (EditorManager.inst.timelineScrollRectBar.value < 0f)
+                                EditorManager.inst.timelineScrollRectBar.value = 0f;
 
                             RTEventEditor.inst.RenderEventObjects();
                             CheckpointEditor.inst.CreateCheckpoints();
 
                             RTEventEditor.inst.RenderLayerBins();
+
+                            ClampTimeline(true);
 
                             break;
                         }
@@ -1105,32 +1124,28 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateBinControls()
         {
-            if (binSlider)
+            if (!binSlider)
+                return;
+
+            switch (EditorConfig.Instance.BinControlActiveBehavior.Value)
             {
-                switch (EditorConfig.Instance.BinControlActiveBehavior.Value)
-                {
-                    case BinSliderControlActive.Always:
-                        {
-                            ShowBinControls(layerType == LayerType.Objects);
-                            break;
-                        }
-                    case BinSliderControlActive.Never:
-                        {
-                            ShowBinControls(false);
-                            break;
-                        }
-                    case BinSliderControlActive.KeyToggled:
-                        {
-                            if (Input.GetKeyDown(EditorConfig.Instance.BinControlKey.Value))
-                                ShowBinControls(!binSlider.gameObject.activeSelf);
-                            break;
-                        }
-                    case BinSliderControlActive.KeyHeld:
-                        {
-                            ShowBinControls(Input.GetKey(EditorConfig.Instance.BinControlKey.Value));
-                            break;
-                        }
-                }
+                case BinSliderControlActive.Always: {
+                        ShowBinControls(layerType == LayerType.Objects);
+                        break;
+                    }
+                case BinSliderControlActive.Never: {
+                        ShowBinControls(false);
+                        break;
+                    }
+                case BinSliderControlActive.KeyToggled: {
+                        if (Input.GetKeyDown(EditorConfig.Instance.BinControlKey.Value))
+                            ShowBinControls(!binSlider.gameObject.activeSelf);
+                        break;
+                    }
+                case BinSliderControlActive.KeyHeld: {
+                        ShowBinControls(Input.GetKey(EditorConfig.Instance.BinControlKey.Value));
+                        break;
+                    }
             }
         }
 
@@ -1285,13 +1300,7 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the slider value for the Bin Control slider.
         /// </summary>
         /// <param name="scroll">Value to set.</param>
-        public void SetBinScroll(float scroll)
-        {
-            if (layerType == LayerType.Events)
-                return;
-
-            binSlider.value = scroll;
-        }
+        public void SetBinScroll(float scroll) => binSlider.value = layerType == LayerType.Events ? 0f : scroll;
 
         public void RenderBinPosition()
         {

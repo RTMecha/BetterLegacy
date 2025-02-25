@@ -2463,10 +2463,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.binSlider.value = 0f;
             EditorTimeline.inst.binSlider.onValueChanged.AddListener(_val =>
             {
-                if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                    return;
-
-                EditorTimeline.inst.BinScroll = _val;
+                EditorTimeline.inst.BinScroll = EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? 0f : _val;
                 EditorTimeline.inst.RenderBinPosition();
             });
             RectValues.Default.AnchoredPosition(960f, 134f).Pivot(1f, 1f).SizeDelta(32f, 268f).AssignToRectTransform(binScroll.transform.AsRT());
@@ -2475,11 +2472,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.binSlider.colors = UIManager.SetColorBlock(EditorTimeline.inst.binSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
 
-            TriggerHelper.AddEventTriggers(binScroll, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
-            {
-                var pointerEventData = (PointerEventData)eventData;
-                EditorTimeline.inst.binSlider.value += pointerEventData.scrollDelta.y * -EditorConfig.Instance.BinControlScrollAmount.Value * 0.5f;
-            }));
+            TriggerHelper.AddEventTriggers(binScroll, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData => EditorTimeline.inst.binSlider.value += ((PointerEventData)eventData).scrollDelta.y * -EditorConfig.Instance.BinControlScrollAmount.Value * 0.5f));
 
             #endregion
 
@@ -2599,11 +2592,7 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            var scrollRects = EditorManager.inst.timelineScrollRect.gameObject.GetComponents<ScrollRect>();
-            for (int i = 0; i < scrollRects.Length; i++)
-                scrollRects[i].movementType = ScrollRect.MovementType.Unrestricted;
-            EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>().movementType = ScrollRect.MovementType.Unrestricted;
-            EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>().movementType = ScrollRect.MovementType.Unrestricted;
+            EditorTimeline.inst.ClampTimeline(false);
 
             TriggerHelper.AddEventTriggers(EditorTimeline.inst.wholeTimeline.gameObject,
                 TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData =>
