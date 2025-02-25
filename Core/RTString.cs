@@ -729,6 +729,28 @@ namespace BetterLegacy.Core
 
         public static string ReplaceSpace(string input) => input?.Replace(" ", "_");
 
+        /// <summary>
+        /// Splits the words in a single word.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <returns>Returns a split set of words based on capitals. For example: ParaBoss > Para Boss or paLegacy > pa Legacy.</returns>
+        public static string SplitWords(string input)
+        {
+            int index = 0;
+            while (index < input.Length)
+            {
+                if (char.IsUpper(input[index]))
+                {
+                    input = input.Insert(index, " ");
+                    index++;
+                }
+
+                index++;
+            }
+
+            return input;
+        }
+
         #region Code Encryptions
 
         public static string ByteEncrypt(string input, string seperator = " ")
