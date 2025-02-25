@@ -883,7 +883,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = true;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = true;
-                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Legacy;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Split;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
                         EditorConfig.Instance.WaveformTopColor.Reset();
@@ -922,7 +922,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.RoundedUI.Value = false;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = true;
-                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Legacy;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Split;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
                         EditorConfig.Instance.WaveformTopColor.Reset();
@@ -961,7 +961,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = false;
-                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Modern;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Bottom;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
                         EditorConfig.Instance.WaveformTopColor.Value = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -1000,7 +1000,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = true;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = false;
-                        EditorConfig.Instance.WaveformMode.Value = WaveformType.LegacyFast;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.SplitDetailed;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Value = LSColors.HexToColor("2FCBD6");
                         EditorConfig.Instance.WaveformTopColor.Value = LSColors.HexToColor("F6AC1A");

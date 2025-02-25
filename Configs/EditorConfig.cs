@@ -1350,7 +1350,7 @@ namespace BetterLegacy.Configs
             WaveformGenerate = Bind(this, "Timeline", "Waveform Generate", true, "Allows the timeline waveform to generate. (Waveform might not show on some devices and will increase level load times)");
             WaveformSaves = Bind(this, "Timeline", "Waveform Saves", true, "Turn off if you don't want the timeline waveform to save.");
             WaveformRerender = Bind(this, "Timeline", "Waveform Re-render", false, "If the timeline waveform should update when a value is changed.");
-            WaveformMode = BindEnum(this, "Timeline", "Waveform Mode", WaveformType.Legacy, "The mode of the timeline waveform.");
+            WaveformMode = BindEnum(this, "Timeline", "Waveform Mode", WaveformType.Split, "The mode of the timeline waveform.");
             WaveformBGColor = Bind(this, "Timeline", "Waveform BG Color", Color.clear, "Color of the background for the waveform.");
             WaveformTopColor = Bind(this, "Timeline", "Waveform Top Color", LSColors.red300, "If waveform mode is Legacy, this will be the top color. Otherwise, it will be the regular color.");
             WaveformBottomColor = Bind(this, "Timeline", "Waveform Bottom Color", LSColors.blue300, "If waveform is Legacy, this will be the bottom color. Otherwise, it will be unused.");

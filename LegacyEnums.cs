@@ -1037,21 +1037,12 @@ namespace BetterLegacy
     /// </summary>
     public enum WaveformType
     {
-        /// <summary>
-        /// The vanilla rendering type.
-        /// </summary>
-        Legacy,
-        /// <summary>
-        /// Old rendering type.
-        /// </summary>
-        Beta,
-        /// <summary>
-        /// New rendering type based on alpha waveform.
-        /// </summary>
-        Modern,
-        LegacyFast,
-        BetaFast,
-        ModernFast
+        Split,
+        Centered,
+        Bottom,
+        SplitDetailed,
+        CenteredDetailed,
+        BottomDetailed
     }
 
     /// <summary>

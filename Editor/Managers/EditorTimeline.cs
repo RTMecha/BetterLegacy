@@ -508,33 +508,27 @@ namespace BetterLegacy.Editor.Managers
 
                 switch (config.WaveformMode.Value)
                 {
-                    case WaveformType.Legacy:
-                        {
+                    case WaveformType.Split: {
                             yield return CoreHelper.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                             break;
                         }
-                    case WaveformType.Beta:
-                        {
+                    case WaveformType.Centered: {
                             yield return CoreHelper.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                             break;
                         }
-                    case WaveformType.Modern:
-                        {
+                    case WaveformType.Bottom: {
                             yield return CoreHelper.StartCoroutineAsync(Modern(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                             break;
                         }
-                    case WaveformType.LegacyFast:
-                        {
+                    case WaveformType.SplitDetailed: {
                             yield return CoreHelper.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                             break;
                         }
-                    case WaveformType.BetaFast:
-                        {
+                    case WaveformType.CenteredDetailed: {
                             yield return CoreHelper.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                             break;
                         }
-                    case WaveformType.ModernFast:
-                        {
+                    case WaveformType.BottomDetailed: {
                             yield return CoreHelper.StartCoroutineAsync(ModernFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                             break;
                         }
