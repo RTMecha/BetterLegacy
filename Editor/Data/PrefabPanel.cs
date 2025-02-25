@@ -224,11 +224,11 @@ namespace BetterLegacy.Editor.Data
             HoverUI = hover;
             Button = addPrefabObject;
             DeleteButton = delete;
-            Dialog = dialog;
             Name = name;
             TypeText = typeName;
             TypeImage = typeImage;
             TypeIcon = typeIconImage;
+            FilePath = prefab.filePath;
 
             Render(updateCurrentPrefab);
             SetActive(RTPrefabEditor.inst.ContainsName(Prefab, dialog));
