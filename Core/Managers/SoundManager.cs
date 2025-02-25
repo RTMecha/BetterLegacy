@@ -119,6 +119,11 @@ namespace BetterLegacy.Core.Managers
 
         #region Music
 
+        /// <summary>
+        /// Length of the current audio clip.
+        /// </summary>
+        public float MusicLength => BaseManager && BaseManager.CurrentAudioSource && BaseManager.CurrentAudioSource.clip ? BaseManager.CurrentAudioSource.clip.length : 0f;
+
         public void PlayMusic(DefaultMusic defaultMusic, float volume = 1f, float pitch = 1f, float fadeDuration = 0.5f, bool loop = true, bool allowSame = false) => PlayMusic(defaultMusic.ToString(), volume, pitch, fadeDuration, loop, allowSame);
 
         public void PlayMusic(string musicName, float volume = 1f, float pitch = 1f, float fadeDuration = 0.5f, bool loop = true, bool allowSame = false) => PlayMusic(Library.GetMusicFromName(musicName), volume, pitch, fadeDuration, loop, allowSame);
