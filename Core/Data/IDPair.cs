@@ -7,7 +7,7 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public struct IDPair
     {
-        public IDPair(string oldID) : this(oldID, LSText.randomNumString(16)) { }
+        public IDPair(string oldID) : this(oldID, LSText.randomString(16)) { }
 
         public IDPair(string oldID, string newID)
         {
