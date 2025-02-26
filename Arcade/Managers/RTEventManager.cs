@@ -503,9 +503,9 @@ namespace BetterLegacy.Arcade.Managers
                 else
                 {
                     if (!editorCam)
-                        EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
+                        EventManager.inst.camPer.transform.position = new Vector3(0f, 0f, -EventManager.inst.camZoom + inst.perspectiveZoom);
                     else
-                        EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -inst.editorZoom + inst.perspectiveZoom);
+                        EventManager.inst.camPer.transform.position = new Vector3(0f, 0f, -inst.editorZoom + inst.perspectiveZoom);
                 }
 
                 if (inst.setPerspectiveCamClip)
