@@ -549,8 +549,8 @@ namespace BetterLegacy.Editor.Managers
             if (RTEditor.inst.CurrentLevel)
                 iconImage.sprite = RTEditor.inst.CurrentLevel.icon;
 
+            Dialog.Open();
             RenderEditor();
-            MetadataEditor.inst.OpenDialog();
         }
 
         public void RenderEditor()

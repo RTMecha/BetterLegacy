@@ -27,9 +27,17 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(MetadataEditor.OpenDialog))]
+        [HarmonyPrefix]
+        static bool OpenDialogPrefix()
+        {
+            RTMetaDataEditor.inst.OpenEditor();
+            return false;
+        }
+        
         [HarmonyPatch(nameof(MetadataEditor.Render))]
         [HarmonyPrefix]
-        static bool Render()
+        static bool RenderPrefix()
         {
             RTMetaDataEditor.inst.RenderEditor();
             return false;
