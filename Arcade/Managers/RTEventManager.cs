@@ -486,27 +486,20 @@ namespace BetterLegacy.Arcade.Managers
                 else if (!float.IsNaN(inst.editorRotate))
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.editorPerRotate.x, inst.editorPerRotate.y, inst.editorRotate));
 
-                if (!editorCam)
-                    EventManager.inst.camParentTop.transform.localPosition = new Vector3(EventManager.inst.camPos.x, EventManager.inst.camPos.y, inst.zPosition);
-                else
-                    EventManager.inst.camParentTop.transform.localPosition = new Vector3(inst.editorOffset.x, inst.editorOffset.y, inst.zPosition);
+                var camPos = editorCam ? inst.editorOffset : EventManager.inst.camPos;
+                EventManager.inst.camParentTop.transform.localPosition = new Vector3(camPos.x, camPos.y, inst.zPosition);
 
                 EventManager.inst.camPer.fieldOfView = inst.fieldOfView;
 
+                var bgZoom = editorCam ? -inst.editorZoom + inst.perspectiveZoom : - EventManager.inst.camZoom + inst.perspectiveZoom;
                 if (!inst.bgGlobalPosition)
-                {
-                    if (!editorCam)
-                        EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
-                    else
-                        EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -inst.editorZoom + inst.perspectiveZoom);
-                }
+                    EventManager.inst.camPer.transform.SetLocalPositionZ(bgZoom);
                 else
-                {
-                    if (!editorCam)
-                        EventManager.inst.camPer.transform.position = new Vector3(0f, 0f, -EventManager.inst.camZoom + inst.perspectiveZoom);
-                    else
-                        EventManager.inst.camPer.transform.position = new Vector3(0f, 0f, -inst.editorZoom + inst.perspectiveZoom);
-                }
+                    EventManager.inst.camPer.transform.SetPositionZ(bgZoom);
+
+                // fixes bg camera position being offset if rotated for some reason...
+                EventManager.inst.camPer.transform.SetLocalPositionX(0f);
+                EventManager.inst.camPer.transform.SetLocalPositionY(0f);
 
                 if (inst.setPerspectiveCamClip)
                     EventManager.inst.camPer.nearClipPlane = -EventManager.inst.camPer.transform.position.z + inst.camPerspectiveOffset;
