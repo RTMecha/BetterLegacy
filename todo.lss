@@ -28,6 +28,15 @@
 - Sprites list popup that show images in the game data and level folder.
 - Versus Mode (Players can attack other players)
 - Player shooting aiming
+- Player toolkit inventory system. Includes customizable tools and weapons that can be used with triggers and specific object tags.
+Toolkit mechanics:
+> Damage (sends a damage signal to a damage modifier, can have a set damage amount)
+> Shoot (spawns a custom built bullet / missile with custom movement behavior)
+> Spawn (spawns a prefab at the player)
+> Heal (heals the player but consumes the item)
+> Movement (controls the players velocity)
+> Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
+> Aiming behavior (mouse, right stick, rotate with player, etc)
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)
