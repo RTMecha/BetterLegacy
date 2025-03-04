@@ -39,6 +39,19 @@ namespace BetterLegacy.Core.Components
             animation.Start();
         }
 
+        /// <summary>
+        /// Stops all the animations in the animation list and clears it.
+        /// </summary>
+        public void StopAll()
+        {
+            for (int i = 0; i < animations.Count; i++)
+            {
+                var anim = animations[i];
+                anim.Stop();
+            }
+            animations.Clear();
+        }
+
         #region Remove
 
         /// <summary>
