@@ -30,13 +30,38 @@ namespace BetterLegacy.Example
     {
         public static ExampleManager inst;
         public static string className = "[<color=#3F59FC>ExampleManager</color>]\n";
-        bool spawning = false;
-
-        public bool Visible => baseCanvas && baseCanvas.activeSelf;
 
         public static bool DebugsOn => false;
 
         public GameObject blocker;
+
+        #region Active State
+
+        public bool Visible => baseCanvas && baseCanvas.activeSelf;
+
+        public bool Active { get; set; }
+
+        public void SetActive(bool active)
+        {
+            Active = active;
+            UpdateActive();
+        }
+
+        public void UpdateActive()
+        {
+            if (!baseCanvas)
+                return;
+
+            if (EditorManager.inst && EditorManager.inst.isEditing)
+                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInEditor.Value);
+            else if (GameManager.inst)
+                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInGame.Value);
+            else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic || Menus.InterfaceManager.inst && Menus.InterfaceManager.inst.CurrentInterface || LoadLevelsManager.inst)
+                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInMenus.Value);
+            else baseCanvas.SetActive(Active);
+        }
+
+        #endregion
 
         #region Sprites
 
@@ -123,6 +148,8 @@ namespace BetterLegacy.Example
         #endregion
 
         #region Dialogue
+
+        public bool talking;
 
         public string lastDialogue;
 
@@ -391,6 +418,12 @@ namespace BetterLegacy.Example
 
         public float dragDelay = 0.3f;
 
+        public void SetLastInteracted()
+        {
+            timeSinceLastInteractedOffset = Time.time;
+            StopDancing();
+        }
+
         #endregion
 
         #region Memories
@@ -407,7 +440,7 @@ namespace BetterLegacy.Example
 
         #endregion
 
-        #region Talk
+        #region Commands
 
         void LoadCommands()
         {
@@ -475,59 +508,13 @@ namespace BetterLegacy.Example
 
         #endregion
 
-        public float time = 0f;
-
-        float timeOffset;
-
-        public bool talking;
-
-        public bool dying;
+        #region Tick Update
 
         public bool pokingEyes;
 
-        /// <summary>
-        /// Spawns Example.
-        /// </summary>
-        public static void Init()
-        {
-            if (!inst && ExampleConfig.Instance.ExampleSpawns.Value)
-            {
-                onInit?.Invoke();
-                return;
-            }
+        public float time = 0f;
 
-            if (inst)
-                inst.Say("I'm already here!");
-        }
-
-        void Awake()
-        {
-            timeOffset = Time.time;
-            timeSinceLastInteractedOffset = Time.time;
-
-            if (inst == null)
-                inst = this;
-            else if (inst != this)
-            {
-                Kill();
-                return;
-            }
-
-            try
-            {
-                LoadMemory();
-                LoadTutorials();
-                LoadDialogue();
-                LoadCommands();
-                animationController = gameObject.AddComponent<AnimationController>();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Could not load Example data.\nException: {ex}");
-            }
-
-            StartCoroutine(SpawnExample());
-        }
+        float timeOffset;
 
         void Update()
         {
@@ -701,35 +688,57 @@ namespace BetterLegacy.Example
             }
         }
 
-        public bool Active { get; set; }
-
-        public void SetActive(bool active)
-        {
-            Active = active;
-            UpdateActive();
-        }
-
-        public void UpdateActive()
-        {
-            if (!baseCanvas)
-                return;
-
-            if (EditorManager.inst && EditorManager.inst.isEditing)
-                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInEditor.Value);
-            else if (GameManager.inst)
-                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInGame.Value);
-            else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic || Menus.InterfaceManager.inst && Menus.InterfaceManager.inst.CurrentInterface || LoadLevelsManager.inst)
-                baseCanvas.SetActive(Active && ExampleConfig.Instance.EnabledInMenus.Value);
-            else baseCanvas.SetActive(Active);
-        }
-
-        public void SetLastInteracted()
-        {
-            timeSinceLastInteractedOffset = Time.time;
-            StopDancing();
-        }
+        #endregion
 
         #region Spawning
+
+        bool spawning = false;
+
+        public bool dying;
+
+        /// <summary>
+        /// Spawns Example.
+        /// </summary>
+        public static void Init()
+        {
+            if (!inst && ExampleConfig.Instance.ExampleSpawns.Value)
+            {
+                onInit?.Invoke();
+                return;
+            }
+
+            if (inst)
+                inst.Say("I'm already here!");
+        }
+
+        void Awake()
+        {
+            timeOffset = Time.time;
+            timeSinceLastInteractedOffset = Time.time;
+
+            if (inst == null)
+                inst = this;
+            else if (inst != this)
+            {
+                Kill();
+                return;
+            }
+
+            try
+            {
+                LoadMemory();
+                LoadTutorials();
+                LoadDialogue();
+                LoadCommands();
+                animationController = gameObject.AddComponent<AnimationController>();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not load Example data.\nException: {ex}");
+            }
+
+            StartCoroutine(SpawnExample());
+        }
 
         RTAnimation danceAnimLoop;
 
