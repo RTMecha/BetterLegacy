@@ -26,7 +26,7 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
-        void InitDefault()
+        public override void InitDefault()
         {
 
         }
@@ -67,16 +67,27 @@ namespace BetterLegacy.Companion.Entity
             {
                 SetupOptionButton("Chat", () =>
                 {
-                    //if (!chatterBase.gameObject.activeSelf)
-                    //    Say("What do you want to talk about?");
+                    var active = reference.discussion.chatterBase.gameObject.activeSelf;
+                    if (!active)
+                        reference.chatBubble.Say("What do you want to talk about?");
 
-                    //chatterBase.gameObject.SetActive(!chatterBase.gameObject.activeSelf);
+                    reference.discussion.chatterBase.gameObject.SetActive(!active);
                 });
-                SetupOptionButton("Tutorials", () => { });
+                SetupOptionButton("Tutorials", () =>
+                {
+                    // tutorials module goes here
+                    reference.chatBubble.Say("I can't do that yet, sorry.");
+                });
                 SetupOptionButton("Cya later", () =>
                 {
                     // begone
                 });
+
+                for (int i = 0; i < this.options.Count; i++)
+                {
+                    var option = this.options[i];
+                    SetupOptionButton(option.text, option.action, option.index);
+                }
             }
             catch (Exception ex)
             {
@@ -134,6 +145,22 @@ namespace BetterLegacy.Companion.Entity
         public static bool optionsActive;
         public Transform optionsLayout;
         public Transform optionsBase;
+
+        public List<Option> options = new List<Option>();
+
+        public class Option
+        {
+            public Option(string text, UnityAction action, int index = -1)
+            {
+                this.text = text;
+                this.action = action;
+                this.index = index;
+            }
+
+            public string text;
+            public UnityAction action;
+            public int index = -1;
+        }
 
         #endregion
     }
