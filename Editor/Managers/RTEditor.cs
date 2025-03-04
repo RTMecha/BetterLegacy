@@ -18,7 +18,7 @@ using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
-using BetterLegacy.Example;
+using BetterLegacy.Companion;
 using CielaSpike;
 using Crosstales.FB;
 using HarmonyLib;

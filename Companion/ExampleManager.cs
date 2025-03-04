@@ -22,7 +22,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace BetterLegacy.Example
+namespace BetterLegacy.Companion
 {
     public delegate bool DialogueFunction();
 
@@ -338,21 +338,21 @@ namespace BetterLegacy.Example
         public bool faceCanLook = true;
         public float faceLookMultiplier = 0.006f;
 
-        Vector2 pupilsOffset;
-        float pupilsLookRate = 3f;
-        bool pupilsCanChange = true;
+        public Vector2 pupilsOffset;
+        public float pupilsLookRate = 3f;
+        public bool pupilsCanChange = true;
 
         public bool allowBlinking = true;
 
-        float blinkRate = 5f;
+        public float blinkRate = 5f;
 
-        bool blinkCanChange = true;
-        bool canBlink = true;
-        int blinkChance = 45;
+        public bool blinkCanChange = true;
+        public bool canBlink = true;
+        public int blinkChance = 45;
 
         public bool lookAt = true;
 
-        float lookMultiplier = 0.004f;
+        public float lookMultiplier = 0.004f;
 
         public Vector2 MousePosition
         {

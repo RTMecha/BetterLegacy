@@ -5771,14 +5771,18 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "exampleEnableDEVONLY": {
-                            if (Example.ExampleManager.inst)
-                                Example.ExampleManager.inst.SetActive(modifier.GetBool(0, false));
+                            if (Companion.ExampleManager.inst)
+                                Companion.ExampleManager.inst.SetActive(modifier.GetBool(0, false));
+                            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
+                                Companion.Entity.Example.Current.model.SetActive(modifier.GetBool(0, false));
 
                             break;
                         }
                     case "exampleSayDEVONLY": {
-                            if (Example.ExampleManager.inst)
-                                Example.ExampleManager.inst.Say(modifier.GetValue(0));
+                            if (Companion.ExampleManager.inst)
+                                Companion.ExampleManager.inst.Say(modifier.GetValue(0));
+                            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.chatBubble)
+                                Companion.Entity.Example.Current.chatBubble.Say(modifier.GetValue(0));
 
                             break;
                         }

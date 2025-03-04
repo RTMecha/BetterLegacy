@@ -154,7 +154,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             var saying = levelRank.sayings[Random.Range(0, levelRank.sayings.Length)];
 
-            if (Example.ExampleManager.inst && Example.ExampleManager.inst.Visible)
+            if (Companion.ExampleManager.inst && Companion.ExampleManager.inst.Visible)
             {
                 var matches = Regex.Matches(saying, @"{{QuickElement=(.*?)}}");
                 foreach (var obj in matches)
@@ -163,7 +163,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     saying = saying.Replace(match.Groups[0].ToString(), "");
                 }
 
-                Example.ExampleManager.inst.Say(saying);
+                Companion.ExampleManager.inst.Say(saying);
             }
             else
             {

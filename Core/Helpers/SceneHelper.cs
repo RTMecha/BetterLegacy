@@ -1,7 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Example;
+using BetterLegacy.Companion;
 using BetterLegacy.Menus;
 using System;
 using System.Collections;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BetterLegacy.Example
+namespace BetterLegacy.Companion
 {
     public class DialogueGroup
     {

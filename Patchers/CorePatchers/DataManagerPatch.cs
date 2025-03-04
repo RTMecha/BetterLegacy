@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Companion;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -41,6 +42,7 @@ namespace BetterLegacy.Patchers
             LevelManager.Init();
             PlayerManager.Init();
             StoryManager.Init();
+            CompanionManager.Init();
 
             AudioManager.inst.gameObject.AddComponent<SoundManager>();
 

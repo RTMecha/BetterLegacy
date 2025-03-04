@@ -10,7 +10,7 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Example;
+using BetterLegacy.Companion;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using HarmonyLib;

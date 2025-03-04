@@ -12,7 +12,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Example;
+using BetterLegacy.Companion;
 using BetterLegacy.Menus;
 using Crosstales.FB;
 using HarmonyLib;
@@ -109,6 +109,8 @@ namespace BetterLegacy.Patchers
             CoreHelper.InStory = false;
             if (ExampleManager.inst)
                 ExampleManager.inst.SetActive(true); // if Example was disabled
+            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
+                Companion.Entity.Example.Current.model.SetActive(true);
 
             #region Editor Theme Setup
 

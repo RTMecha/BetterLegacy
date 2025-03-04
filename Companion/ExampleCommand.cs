@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace BetterLegacy.Example
+namespace BetterLegacy.Companion
 {
     public class ExampleCommand
     {

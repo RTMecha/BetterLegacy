@@ -1,6 +1,6 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Example;
+using BetterLegacy.Companion;
 using HarmonyLib;
 using UnityEngine;
 

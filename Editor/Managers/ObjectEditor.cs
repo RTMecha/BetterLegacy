@@ -8,7 +8,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
-using BetterLegacy.Example;
+using BetterLegacy.Companion;
 using Crosstales.FB;
 using HarmonyLib;
 using LSFunctions;
