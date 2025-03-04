@@ -518,6 +518,7 @@ namespace BetterLegacy
         Multiply,
         Divide,
         Modulo,
+        Set,
     }
 
     #endregion

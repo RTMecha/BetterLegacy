@@ -355,6 +355,10 @@ namespace BetterLegacy.Core
                         num %= value;
                         break;
                     }
+                case MathOperation.Set: {
+                        num = value;
+                        break;
+                    }
             }
         }
 
