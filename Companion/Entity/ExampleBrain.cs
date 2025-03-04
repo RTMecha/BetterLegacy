@@ -30,7 +30,7 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
-        void InitDefault()
+        public override void InitDefault()
         {
             AddAttribute("HAPPINESS", 0, 0, 0);
         }
@@ -79,6 +79,14 @@ namespace BetterLegacy.Companion.Entity
         {
             timeSinceLastInteractedOffset = Time.time;
             onInteract?.Invoke(context);
+
+            switch (context)
+            {
+                case ExampleInteractions.HOLD_HAND: {
+                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
+                        break;
+                    }
+            }
         }
 
         float dialogueRepeatRate;
@@ -121,8 +129,8 @@ namespace BetterLegacy.Companion.Entity
             timeSinceLastInteracted = Time.time - timeSinceLastInteractedOffset;
 
             // does Example want to dance to the music?
-            if (reference.brain.canDance && reference.Dragging && !reference.brain.talking &&
-                CompanionManager.MusicPlaying && !reference.brain.dancing && RandomHelper.PercentChanceSingle(0.02f * (timeSinceLastInteracted / 1000f)))
+            if (reference.brain.canDance && !reference.Dragging && !reference.brain.talking &&
+                CompanionManager.MusicPlaying && !reference.brain.dancing && RandomHelper.PercentChanceSingle(0.02f * (timeSinceLastInteracted / 100f)))
                                                                                                                     // increases desire to dance the longer you leave him alone
             {
                 dancing = true;
