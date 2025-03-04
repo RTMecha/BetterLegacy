@@ -41,7 +41,7 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
-        void InitDefault()
+        public override void InitDefault()
         {
             attributes.Clear();
             AddAttribute("POKING_EYES", 0.0, 0.0, 1.0);
@@ -320,8 +320,6 @@ namespace BetterLegacy.Companion.Entity
                 reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
                 reference.startDragPos = new Vector2(part.transform.localPosition.x, part.transform.localPosition.y);
                 reference.draggingLeftHand = true;
-
-                SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
             })
             .OnUp((part, pointerEventData) =>
             {
@@ -346,8 +344,8 @@ namespace BetterLegacy.Companion.Entity
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
                             new Vector2Keyframe(0f, part.transform.AsRT().anchoredPosition, Ease.Linear),
-                            new Vector2Keyframe(0.3f, new Vector2(-40f, 0f), Ease.SineOut),
-                            new Vector2Keyframe(0.32f, new Vector2(-40f, 0f), Ease.Linear),
+                            new Vector2Keyframe(0.3f, new Vector2(40f, 0f), Ease.SineOut),
+                            new Vector2Keyframe(0.32f, new Vector2(40f, 0f), Ease.Linear),
                         }, x =>
                         {
                             if (part && part.transform)
@@ -379,8 +377,6 @@ namespace BetterLegacy.Companion.Entity
                 reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
                 reference.startDragPos = new Vector2(part.transform.localPosition.x, part.transform.localPosition.y);
                 reference.draggingRightHand = true;
-
-                SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
             })
             .OnUp((part, pointerEventData) =>
             {
