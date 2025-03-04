@@ -17,6 +17,18 @@ namespace BetterLegacy.Core.Data
             this.pivot = pivot;
             this.sizeDelta = sizeDelta;
             this.rotation = rotation;
+            scale = Vector2.one;
+        }
+        
+        public RectValues(Vector2 anchoredPosition, Vector2 anchorMax, Vector2 anchorMin, Vector2 pivot, Vector2 sizeDelta, float rotation, Vector2 scale)
+        {
+            this.anchoredPosition = anchoredPosition;
+            this.anchorMax = anchorMax;
+            this.anchorMin = anchorMin;
+            this.pivot = pivot;
+            this.sizeDelta = sizeDelta;
+            this.rotation = rotation;
+            this.scale = scale;
         }
 
         #region Properties
@@ -32,6 +44,7 @@ namespace BetterLegacy.Core.Data
             pivot = CenterPivot,
             sizeDelta = new Vector2(100f, 100f),
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -45,6 +58,7 @@ namespace BetterLegacy.Core.Data
             pivot = CenterPivot,
             sizeDelta = Vector2.zero,
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -58,6 +72,7 @@ namespace BetterLegacy.Core.Data
             pivot = Vector2.one,
             sizeDelta = Vector2.zero,
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -71,6 +86,7 @@ namespace BetterLegacy.Core.Data
             pivot = new Vector2(0f, 1f),
             sizeDelta = Vector2.zero,
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -84,6 +100,7 @@ namespace BetterLegacy.Core.Data
             pivot = Vector2.zero,
             sizeDelta = Vector2.zero,
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -97,6 +114,7 @@ namespace BetterLegacy.Core.Data
             pivot = CenterPivot,
             sizeDelta = Vector2.zero,
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -110,6 +128,7 @@ namespace BetterLegacy.Core.Data
             pivot = CenterPivot,
             sizeDelta = Vector2.zero,
             rotation = 0f,
+            scale = Vector2.one,
         };
 
         /// <summary>
@@ -127,6 +146,7 @@ namespace BetterLegacy.Core.Data
         public Vector2 pivot;
         public Vector2 sizeDelta;
         public float rotation;
+        public Vector2 scale;
 
         #endregion
 
@@ -185,6 +205,13 @@ namespace BetterLegacy.Core.Data
             return this;
         }
 
+        /// <summary>
+        /// Sets only the <see cref="scale"/> value of RectValues.
+        /// </summary>
+        /// <param name="scale">Scale value.</param>
+        /// <returns>Returns the current RectValue.</returns>
+        public RectValues Scale(float x, float y) => Scale(new Vector2(x, y));
+
         #endregion
 
         #region Modify Internal
@@ -216,6 +243,12 @@ namespace BetterLegacy.Core.Data
         RectValues SizeDelta(Vector2 sizeDelta)
         {
             this.sizeDelta = sizeDelta;
+            return this;
+        }
+
+        RectValues Scale(Vector2 scale)
+        {
+            this.scale = scale;
             return this;
         }
 
@@ -252,6 +285,7 @@ namespace BetterLegacy.Core.Data
             pivot = Parser.TryParse(jn["pivot"], CenterPivot),
             sizeDelta = Parser.TryParse(jn["size"], new Vector2(100f, 100f)),
             rotation = jn["rot"].AsFloat,
+            scale = Parser.TryParse(jn["sca"], Vector2.one),
         };
 
         /// <summary>
@@ -268,6 +302,7 @@ namespace BetterLegacy.Core.Data
             pivot = Parser.TryParse(jn["pivot"], defaultValue.pivot),
             sizeDelta = Parser.TryParse(jn["size"], defaultValue.sizeDelta),
             rotation = jn["rot"] != null ? jn["rot"].AsFloat : defaultValue.rotation,
+            scale = Parser.TryParse(jn["sca"], defaultValue.scale),
         };
 
         /// <summary>
@@ -300,6 +335,9 @@ namespace BetterLegacy.Core.Data
             if (rotation != 0f)
                 jn["rot"] = rotation.ToString();
 
+            if (scale != Vector2.one)
+                jn["sca"] = scale.ToJSON();
+
             return jn;
         }
 
@@ -316,6 +354,7 @@ namespace BetterLegacy.Core.Data
             pivot = rectTransform.pivot,
             sizeDelta = rectTransform.sizeDelta,
             rotation = rectTransform.eulerAngles.z,
+            scale = rectTransform.localScale,
         };
 
         /// <summary>
@@ -330,11 +369,13 @@ namespace BetterLegacy.Core.Data
             rectTransform.pivot = pivot;
             rectTransform.sizeDelta = sizeDelta;
             rectTransform.SetLocalRotationEulerZ(rotation);
+            rectTransform.SetLocalScaleX(scale.x);
+            rectTransform.SetLocalScaleY(scale.y);
         }
 
         #endregion
 
-        public override string ToString() => $"Pos: {anchoredPosition}, Max: {anchorMax}, Min: {anchorMin}, Pivot: {pivot}, Size: {sizeDelta}, Rot: {rotation}";
+        public override string ToString() => $"Pos: {anchoredPosition}, Max: {anchorMax}, Min: {anchorMin}, Pivot: {pivot}, Size: {sizeDelta}, Rot: {rotation}, Scale: {scale}";
 
         #endregion
 
