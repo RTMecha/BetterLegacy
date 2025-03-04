@@ -19,7 +19,7 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
-        void InitDefault()
+        public override void InitDefault()
         {
 
         }

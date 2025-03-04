@@ -9,6 +9,8 @@ namespace BetterLegacy.Companion.Entity
 {
     public abstract class ExampleModule : Exists
     {
+        public abstract void InitDefault();
+
         public void SetReference(Example reference) => this.reference = reference;
         public Example reference;
 
