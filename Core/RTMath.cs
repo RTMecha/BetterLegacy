@@ -216,7 +216,7 @@ namespace BetterLegacy.Core
         public static Vector3Int Clamp(Vector3Int value, Vector3Int min, Vector3Int max) => new Vector3Int(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
 
         public static double ClampZero(double value, double min, double max)
-            => min != 0 && max != 0 ? Clamp(value, min, max) : value;
+            => min != 0.0 || max != 0.0 ? Clamp(value, min, max) : value;
 
         public static float ClampZero(float value, float min, float max)
             => min != 0f || max != 0f ? Clamp(value, min, max) : value;
@@ -302,6 +302,8 @@ namespace BetterLegacy.Core
 
             return Mathf.Round(value * num) / num;
         }
+
+        public static int Round(double num) => (int)Math.Round(num);
 
         public static double Distance(double a, double b) => a > b ? -(-a + b) : (-a + b);
         public static float Distance(float a, float b) => a > b ? -(-a + b) : (-a + b);
