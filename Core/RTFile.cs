@@ -382,7 +382,14 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="path">The file to read from.</param>
         /// <returns>If the file exists, returns the text from the file, otherwise returns null.</returns>
-        public static string ReadFromFile(string path)
+        public static string ReadFromFile(string path) => ReadFromFile(path, true);
+
+        /// <summary>
+        /// Reads text from a file.
+        /// </summary>
+        /// <param name="path">The file to read from.</param>
+        /// <returns>If the file exists, returns the text from the file, otherwise returns null.</returns>
+        public static string ReadFromFile(string path, bool log)
         {
             if (!FileExists(path))
             {
@@ -423,7 +430,7 @@ namespace BetterLegacy.Core
 
         public static bool TryReadFromFile(string path, out string file)
         {
-            file = ReadFromFile(path);
+            file = ReadFromFile(path, false);
             return !string.IsNullOrEmpty(file);
         }
 
