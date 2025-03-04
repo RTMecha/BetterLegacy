@@ -521,8 +521,8 @@ namespace BetterLegacy.Companion
             time = Time.time - timeOffset;
             timeSinceLastInteracted = Time.time - timeSinceLastInteractedOffset;
 
-            if (Input.GetKeyDown(ExampleConfig.Instance.ExampleVisiblityToggle.Value) && !CoreHelper.IsUsingInputField)
-                ExampleConfig.Instance.ExampleVisible.Value = !ExampleConfig.Instance.ExampleVisible.Value;
+            if (Input.GetKeyDown(ExampleConfig.Instance.TransparencyKeyToggle.Value) && !CoreHelper.IsUsingInputField)
+                ExampleConfig.Instance.IsTransparent.Value = !ExampleConfig.Instance.IsTransparent.Value;
 
             if (ProjectPlanner.inst && animationController.animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)
                 foreach (var schedule in ProjectPlanner.inst.schedules)
@@ -678,7 +678,7 @@ namespace BetterLegacy.Companion
                 optionsBase.localPosition = new Vector3(TotalPosition.x + addToOptionsX, TotalPosition.y);
 
             if (canvasGroup)
-                canvasGroup.alpha = ExampleConfig.Instance.ExampleVisible.Value ? ExampleConfig.Instance.ExampleVisibility.Value : 1f;
+                canvasGroup.alpha = ExampleConfig.Instance.IsTransparent.Value ? ExampleConfig.Instance.TransparencyOpacity.Value : 1f;
 
             if (mouthLower != null)
             {
@@ -701,7 +701,7 @@ namespace BetterLegacy.Companion
         /// </summary>
         public static void Init()
         {
-            if (!inst && ExampleConfig.Instance.ExampleSpawns.Value)
+            if (!inst && ExampleConfig.Instance.ShouldSpawn.Value)
             {
                 onInit?.Invoke();
                 return;
@@ -2090,7 +2090,7 @@ namespace BetterLegacy.Companion
 
             lastDialogue = dialogue;
 
-            if (!ExampleConfig.Instance.ExampleSpeaks.Value)
+            if (!ExampleConfig.Instance.CanSpeak.Value)
             {
                 onComplete?.Invoke();
                 dialogueBase.transform.localScale = new Vector3(0f, 0f, 1f);

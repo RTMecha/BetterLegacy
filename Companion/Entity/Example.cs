@@ -1,6 +1,9 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using LSFunctions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +20,8 @@ namespace BetterLegacy.Companion.Entity
     {
         public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleDiscussion discussion, ExampleInteractions interactions)
         {
+            internalID = LSText.randomNumString(8);
+
             this.brain = brain;
             this.model = model;
             this.chatBubble = chatBubble;
@@ -31,6 +36,8 @@ namespace BetterLegacy.Companion.Entity
             this.discussion.SetReference(this);
             this.interactions.SetReference(this);
         }
+
+        string internalID;
 
         #region Modules
 
@@ -163,6 +170,8 @@ namespace BetterLegacy.Companion.Entity
             options.Build();
             discussion.Build();
             interactions.Build();
+
+            Enter();
         }
 
         /// <summary>
@@ -188,6 +197,102 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public ulong tickCount;
 
+        // TODO: random entrance and exit animations?
+        /// <summary>
+        /// Enters the scene.
+        /// </summary>
+        public virtual void Enter()
+        {
+            if (CoreHelper.InEditor)
+                chatBubble?.SayDialogue("SpawnText");
+            else
+                chatBubble?.SayDialogue("Greeting");
+
+            var arm = model.GetPart("HAND_LEFT");
+
+            var animation = new RTAnimation("Hiii");
+            animation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.5f, 800f, Ease.SineOut),
+                    new FloatKeyframe(0.8f, 750f, Ease.SineInOut),
+                }, x => model.position.x = x, interpolateOnComplete: true),
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, -1200f, Ease.Linear),
+                    new FloatKeyframe(0.3f, -380f, Ease.SineOut),
+                    new FloatKeyframe(0.6f, -410f, Ease.SineInOut),
+                }, x => model.position.y = x, interpolateOnComplete: true),
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.5f, 150f, Ease.SineOut),
+                    new FloatKeyframe(0.8f, 130f, Ease.SineInOut),
+                    new FloatKeyframe(1.2f, 150f, Ease.SineInOut),
+                    new FloatKeyframe(1.7f, 130f, Ease.SineInOut),
+                    new FloatKeyframe(2f, 0f, Ease.SineInOut),
+                }, x => arm.rotation = x, interpolateOnComplete: true),
+            };
+            animation.onComplete = () =>
+            {
+                CompanionManager.inst.animationController.Remove(animation.id);
+            };
+            CompanionManager.inst.animationController.Play(animation);
+        }
+
+        /// <summary>
+        /// Leaves the scene.
+        /// </summary>
+        public virtual void Exit()
+        {
+            chatBubble?.Say("Okay, I'll get out of your way.");
+
+            model.GetAttribute("FACE_CAN_LOOK").Value = 0.0;
+
+            var animation = new RTAnimation("Cya");
+            animation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                // Base
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, model.position.x, Ease.Linear),
+                    new FloatKeyframe(0.5f, model.position.x, Ease.Linear),
+                    new FloatKeyframe(1.5f, model.position.x + -400f, Ease.SineOut),
+                }, x => { if (model) model.position.x = x; }, interpolateOnComplete: true),
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, model.position.y, Ease.Linear),
+                    new FloatKeyframe(0.5f, model.position.y - 10f, Ease.Linear),
+                    new FloatKeyframe(0.8f, model.position.y + 80f, Ease.SineOut),
+                    new FloatKeyframe(1.5f, model.position.y + -1200f, Ease.CircIn),
+                }, x => { if (model) model.position.y = x; }, interpolateOnComplete: true),
+                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                {
+                    new Vector2Keyframe(0f, model.scale, Ease.Linear),
+                    new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
+                    new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
+                    new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
+                    new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
+                }, vector2 => { if (model) model.scale = vector2; }, interpolateOnComplete: true),
+
+                // Face
+                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                {
+                    new Vector2Keyframe(0f, model.facePosition, Ease.Linear),
+                    new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
+                    new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
+                }, vector2 => { if (model) model.facePosition = vector2; }, interpolateOnComplete: true),
+            };
+            animation.onComplete = () =>
+            {
+                CompanionManager.inst.animationController.animations.Clear();
+                Kill();
+            };
+            CompanionManager.inst.animationController.Play(animation);
+        }
+
         /// <summary>
         /// Kills Example.
         /// </summary>
@@ -206,7 +311,7 @@ namespace BetterLegacy.Companion.Entity
             interactions?.Clear();
             interactions = null;
 
-            if (Current == this)
+            if (Current && Current.internalID == internalID)
                 Current = null;
         }
     }

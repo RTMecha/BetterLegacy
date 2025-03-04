@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Companion;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;

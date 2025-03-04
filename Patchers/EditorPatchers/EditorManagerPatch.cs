@@ -26,6 +26,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Patchers
 {
@@ -107,10 +108,11 @@ namespace BetterLegacy.Patchers
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
+
             if (ExampleManager.inst)
                 ExampleManager.inst.SetActive(true); // if Example was disabled
-            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
-                Companion.Entity.Example.Current.model.SetActive(true);
+            if (Example.Current && Example.Current.model)
+                Example.Current.model.SetActive(true);
 
             #region Editor Theme Setup
 
@@ -250,6 +252,16 @@ namespace BetterLegacy.Patchers
             __instance.loading = false;
 
             ExampleManager.onEditorAwake?.Invoke(__instance);
+
+            Example.Current?.chatBubble?.SayDialogue("SpawnText");
+
+            // spawn Example on load
+            if (ModCompatibility.ShouldLoadExample)
+            {
+                ModCompatibility.ShouldLoadExample = false;
+                if (!Example.Current)
+                    Example.Init();
+            }
 
             return false;
         }

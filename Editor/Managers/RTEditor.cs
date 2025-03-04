@@ -39,6 +39,7 @@ using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 using MetadataWrapper = EditorManager.MetadataWrapper;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -2934,7 +2935,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetObjectVariables, Complexity.Advanced);
 
-            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), ExampleManager.Init);
+            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), Example.Init);
             
             EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
 

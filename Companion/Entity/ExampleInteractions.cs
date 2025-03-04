@@ -24,10 +24,26 @@ namespace BetterLegacy.Companion.Entity
 
         }
 
+        /// <summary>
+        /// When Example's head is clicked.
+        /// </summary>
         public const string PET = "Pet";
+        /// <summary>
+        /// When you chat with Example.
+        /// </summary>
         public const string CHAT = "Chat";
+        /// <summary>
+        /// When you hold one of Example's hands.
+        /// </summary>
         public const string HOLD_HAND = "Hold Hand";
+        /// <summary>
+        /// When you touch Example's tail. Why would you do that.
+        /// </summary>
         public const string TOUCHIE = "Touchie";
+        /// <summary>
+        /// When you interupt Example while he's dancing. Bruh.
+        /// </summary>
+        public const string INTERRUPT = "Interrupt";
 
         public override void Build()
         {

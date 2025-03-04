@@ -61,7 +61,7 @@ namespace BetterLegacy.Companion.Entity
             if (currentChatAnimation)
                 CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
 
-            if (!ExampleConfig.Instance.ExampleSpeaks.Value)
+            if (!ExampleConfig.Instance.CanSpeak.Value)
             {
                 dialogueBase.transform.localScale = new Vector3(0f, 0f, 1f);
                 return;

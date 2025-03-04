@@ -288,7 +288,11 @@ namespace BetterLegacy
             try
             {
                 if (AccessTools.TypeByName("EditorOnStartup.Plugin") != null)
+                {
+                    ModCompatibility.EditorOnStartupInstalled = true;
+                    ModCompatibility.ShouldLoadExample = true;
                     SceneHelper.CurrentScene = "Editor";
+                }
             }
             catch (Exception ex)
             {

@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Core.Helpers
 {
@@ -264,6 +265,17 @@ namespace BetterLegacy.Core.Helpers
         {
             OnSceneLoad?.Invoke(level);
             OnSceneLoad = null;
+
+            try
+            {
+                CoreHelper.Log($"Spawn Example to Scene: {ExampleConfig.Instance.SpawnScene.Value.ToName()} = {level} {ExampleConfig.Instance.SpawnScene.Value.ToName() == level}");
+                if (!Example.Current && ExampleConfig.Instance.SpawnScene.Value.ToName() == level)
+                    Example.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         #endregion

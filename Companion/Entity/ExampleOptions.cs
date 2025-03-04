@@ -1,4 +1,6 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
@@ -44,7 +46,7 @@ namespace BetterLegacy.Companion.Entity
             }));
             options.Add(new Option("Cya later", () =>
             {
-
+                reference?.Exit();
             }));
         }
 

@@ -89,6 +89,11 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+                case ExampleInteractions.CHAT: {
+                        SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
+
+                        break;
+                    }
                 case ExampleInteractions.HOLD_HAND: {
                         SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
                         break;
@@ -122,6 +127,36 @@ namespace BetterLegacy.Companion.Entity
                         CompanionManager.inst.animationController.Play(animation);
 
                         AchievementManager.inst.UnlockAchievement("example_touch");
+
+                        break;
+                    }
+                case ExampleInteractions.INTERRUPT: {
+                        SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
+
+                        reference.chatBubble.Say("Hey!");
+
+                        var browLeft = reference.model.GetPart("BROW_LEFT");
+                        var browRight = reference.model.GetPart("BROW_RIGHT");
+
+                        var animation = new RTAnimation("Angry");
+                        animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
+                                new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                            }, x => browLeft.rotation = x, interpolateOnComplete: true),
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
+                                new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                            }, x => browRight.rotation = x, interpolateOnComplete: true),
+                        };
+                        animation.onComplete = () =>
+                        {
+                            CompanionManager.inst.animationController.Remove(animation.id);
+                        };
+                        CompanionManager.inst.animationController.Play(animation);
 
                         break;
                     }
@@ -160,22 +195,28 @@ namespace BetterLegacy.Companion.Entity
 
             // does Example want to dance to the music?
             if (reference.brain.canDance && !reference.Dragging && !reference.brain.talking &&
-                CompanionManager.MusicPlaying && !reference.brain.dancing && RandomHelper.PercentChanceSingle(0.02f * (timeSinceLastInteracted / 100f)))
+                CompanionManager.MusicPlaying && !reference.brain.dancing && RandomHelper.PercentChanceSingle(0.02f * ((timeSinceLastInteracted + (float)GetAttribute("HAPPINESS").Value) / 100f)))
                                                                                                                     // increases desire to dance the longer you leave him alone
-            {
-                dancing = true;
-                reference?.model?.startDancing?.Invoke();
-            }
+                StartDancing();
 
             // should he stop dancing?
             else if (!CompanionManager.MusicPlaying && reference.brain.dancing)
-            {
-                dancing = false;
-                reference?.model?.startDancing?.Invoke();
-            }
+                StopDancing();
 
             if (!dancing)
                 RepeatDialogues();
+        }
+
+        public void StartDancing()
+        {
+            dancing = true;
+            reference?.model?.startDancing?.Invoke();
+        }
+
+        public void StopDancing()
+        {
+            dancing = false;
+            reference?.model?.stopDancing?.Invoke();
         }
 
         public override void Clear()

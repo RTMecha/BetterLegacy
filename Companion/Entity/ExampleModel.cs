@@ -95,10 +95,10 @@ namespace BetterLegacy.Companion.Entity
 
                 // start dragging
 
-                reference?.brain?.Interact(ExampleInteractions.PET);
-
                 if (pointerEventData.button != PointerEventData.InputButton.Left || !reference.canDrag)
                     return;
+
+                reference?.brain?.Interact(ExampleInteractions.PET);
 
                 CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
 
@@ -108,6 +108,12 @@ namespace BetterLegacy.Companion.Entity
                 reference.dragging = true;
 
                 SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.6f, 0.7f), UnityEngine.Random.Range(1.1f, 1.3f));
+
+                if (reference.brain.dancing)
+                {
+                    reference.brain.Interact(ExampleInteractions.INTERRUPT);
+                    reference.brain.StopDancing();
+                }
 
                 PlayStartDragAnimation();
             })
@@ -137,11 +143,13 @@ namespace BetterLegacy.Companion.Entity
                     part.transform.localPosition = new Vector3(lerp.x, lerp.y, 0f);
                     facePosition = part.transform.localPosition;
                 }
+                else
+                    part.transform.localPosition = facePosition;
 
                 if (reference.dragging)
-                {
-                    facePosition = new Vector3(Mathf.Clamp(-((reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay), -14f, 14f), Mathf.Clamp(-((reference.DragTarget.y - reference.dragPos.y) * reference.DragDelay), -14f, 14f));
-                }
+                    facePosition = new Vector2(
+                        Mathf.Clamp(-((reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay), -14f, 14f),
+                        Mathf.Clamp(-((reference.DragTarget.y - reference.dragPos.y) * reference.DragDelay), -14f, 14f));
             }));
 
             #region Ears
@@ -374,6 +382,9 @@ namespace BetterLegacy.Companion.Entity
                 reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
                 reference.startDragPos = new Vector2(part.transform.localPosition.x, part.transform.localPosition.y);
                 reference.draggingLeftHand = true;
+
+                if (reference.brain.dancing)
+                    reference.brain.StopDancing();
             })
             .OnUp((part, pointerEventData) =>
             {
@@ -431,6 +442,9 @@ namespace BetterLegacy.Companion.Entity
                 reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
                 reference.startDragPos = new Vector2(part.transform.localPosition.x, part.transform.localPosition.y);
                 reference.draggingRightHand = true;
+
+                if (reference.brain.dancing)
+                    reference.brain.StopDancing();
             })
             .OnUp((part, pointerEventData) =>
             {
@@ -570,14 +584,14 @@ namespace BetterLegacy.Companion.Entity
         {
             onPreTick?.Invoke(this);
 
-            if (!Application.isFocused || !Visible)
-                return;
-
             if (baseCanvas && canvas)
             {
                 UpdateActive();
                 canvas.scaleFactor = CoreHelper.ScreenScale;
             }
+
+            if (!Application.isFocused || !Visible)
+                return;
 
             for (int i = 0; i < parts.Count; i++)
                 parts[i].Tick();
@@ -585,7 +599,7 @@ namespace BetterLegacy.Companion.Entity
             onPostTick?.Invoke(this);
 
             if (canvasGroup)
-                canvasGroup.alpha = ExampleConfig.Instance.ExampleVisible.Value ? ExampleConfig.Instance.ExampleVisibility.Value : 1f;
+                canvasGroup.alpha = ExampleConfig.Instance.IsTransparent.Value ? ExampleConfig.Instance.TransparencyOpacity.Value : 1f;
         }
 
         /// <summary>
@@ -646,7 +660,7 @@ namespace BetterLegacy.Companion.Entity
 
         #region Transforms
 
-        public Vector2 position;
+        public Vector2 position = new Vector2(0f, -1200f);
         public Vector2 scale = Vector2.one;
         public float rotation;
 
@@ -1301,6 +1315,9 @@ namespace BetterLegacy.Companion.Entity
                 danceLoopAnimation = null;
             }
 
+            GetAttribute("FACE_CAN_LOOK").Value = 0.0;
+            GetAttribute("ALLOW_BLINKING").Value = 0.0;
+
             Transform lips = GetPart("LIPS").transform;
             Transform handLeft = GetPart("HAND_LEFT").transform;
             Transform handRight = GetPart("HAND_RIGHT").transform;
@@ -1421,6 +1438,7 @@ namespace BetterLegacy.Companion.Entity
             {
                 CompanionManager.inst.animationController.animations.Remove(animation);
                 GetAttribute("FACE_CAN_LOOK").Value = 1.0;
+                GetAttribute("ALLOW_BLINKING").Value = 1.0;
             };
 
             CompanionManager.inst.animationController.Play(animation);

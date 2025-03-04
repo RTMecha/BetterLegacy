@@ -15,8 +15,8 @@ namespace BetterLegacy.Patchers
         {
             Debug.unityLogger.logEnabled = CoreConfig.Instance.DebugsOn.Value;
 
-            if (!ExampleManager.inst) // Don't call Init due to SystemManager.inst.Awake() being called every time a scene is loaded. This prevents Example from saying he's already here.
-                ExampleManager.Init();
+            //if (!ExampleManager.inst) // Don't call Init due to SystemManager.inst.Awake() being called every time a scene is loaded. This prevents Example from saying he's already here.
+            //    ExampleManager.Init();
         }
 
         [HarmonyPatch(nameof(SystemManager.Update))]

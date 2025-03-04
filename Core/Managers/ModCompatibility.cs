@@ -31,6 +31,10 @@ namespace BetterLegacy.Core.Managers
             UnityExplorerInstalled = bepinex.GetComponentByName("ExplorerBepInPlugin");
         }
 
+        public static bool EditorOnStartupInstalled { get; set; }
+
+        public static bool ShouldLoadExample { get; set; }
+
         public static bool UnityExplorerInstalled { get; private set; }
         public static Type UEInspector => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
         public static Type UEUIManager => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;

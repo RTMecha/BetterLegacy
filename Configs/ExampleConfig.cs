@@ -24,12 +24,17 @@ namespace BetterLegacy.Configs
         /// <summary>
         /// If Example should spawn.
         /// </summary>
-        public Setting<bool> ExampleSpawns { get; set; }
+        public Setting<bool> ShouldSpawn { get; set; }
 
         /// <summary>
         /// If Example should spawn.
         /// </summary>
-        public Setting<bool> ExampleSpeaks { get; set; }
+        public Setting<bool> CanSpeak { get; set; }
+
+        /// <summary>
+        /// Where Example should spawn.
+        /// </summary>
+        public Setting<SceneName> SpawnScene { get; set; }
 
         #endregion
 
@@ -38,17 +43,17 @@ namespace BetterLegacy.Configs
         /// <summary>
         /// If Example becomes transparent.
         /// </summary>
-        public Setting<bool> ExampleVisible { get; set; }
+        public Setting<bool> IsTransparent { get; set; }
 
         /// <summary>
         /// The opacity of Example if visibility is turned off.
         /// </summary>
-        public Setting<float> ExampleVisibility { get; set; }
+        public Setting<float> TransparencyOpacity { get; set; }
 
         /// <summary>
         /// The key to press to make Example become transparent.
         /// </summary>
-        public Setting<KeyCode> ExampleVisiblityToggle { get; set; }
+        public Setting<KeyCode> TransparencyKeyToggle { get; set; }
 
         /// <summary>
         /// If Example is enabled in game. Includes Editor Preview.
@@ -76,12 +81,13 @@ namespace BetterLegacy.Configs
         {
             Load();
 
-            ExampleSpawns = Bind(this, "General", "Spawns", true, "If Example should spawn.");
-            ExampleSpeaks = Bind(this, "General", "Speaks", true, "If Example can talk.");
+            ShouldSpawn = Bind(this, "General", "Should Spawn", true, "If Example should spawn.");
+            CanSpeak = Bind(this, "General", "Speaks", true, "If Example can talk.");
+            SpawnScene = BindEnum(this, "General", "Spawn Scene", SceneName.Editor, "Where Example should spawn.");
 
-            ExampleVisible = Bind(this, "Visibility", "Set Opacity", false, "If Example becomes transparent.");
-            ExampleVisibility = Bind(this, "Visibility", "Amount", 0.5f, "The opacity of Example if visibility is turned off.");
-            ExampleVisiblityToggle = Bind(this, "Visibility", "Toggle KeyCode", KeyCode.O, "The key to press to make Example become transparent.");
+            IsTransparent = Bind(this, "Visibility", "Is Transparent", false, "If Example becomes transparent.");
+            TransparencyOpacity = Bind(this, "Visibility", "Transparency Opacity", 0.5f, "The opacity of Example if visibility is turned off.");
+            TransparencyKeyToggle = Bind(this, "Visibility", "Transparency Key Toggle", KeyCode.O, "The key to press to make Example become transparent.");
 
             EnabledInGame = Bind(this, "Visibility", "In Game", false, "If Example is enabled in game. Includes Editor Preview.");
             EnabledInEditor = Bind(this, "Visibility", "In Editor", true, "If Example is enabled in editor.");
