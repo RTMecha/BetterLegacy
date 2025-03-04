@@ -414,7 +414,7 @@ namespace BetterLegacy.Arcade.Managers
         }
 
         public float fieldOfView = 50f;
-        public bool setPerspectiveCamClip = false;
+        public bool setPerspectiveCamClip = true;
         public float camPerspectiveOffset = 10f;
 
         public float currentTime;
@@ -501,8 +501,7 @@ namespace BetterLegacy.Arcade.Managers
                 EventManager.inst.camPer.transform.SetLocalPositionX(0f);
                 EventManager.inst.camPer.transform.SetLocalPositionY(0f);
 
-                if (inst.setPerspectiveCamClip)
-                    EventManager.inst.camPer.nearClipPlane = -EventManager.inst.camPer.transform.position.z + inst.camPerspectiveOffset;
+                EventManager.inst.camPer.nearClipPlane = inst.setPerspectiveCamClip ? -EventManager.inst.camPer.transform.position.z + inst.camPerspectiveOffset : 0.3f;
 
                 #endregion
 
