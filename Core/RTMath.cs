@@ -331,6 +331,33 @@ namespace BetterLegacy.Core
             return result;
         }
 
+        public static void Operation(ref double num, double value, MathOperation operation)
+        {
+            switch (operation)
+            {
+                case MathOperation.Addition: {
+                        num += value;
+                        break;
+                    }
+                case MathOperation.Subtract: {
+                        num -= value;
+                        break;
+                    }
+                case MathOperation.Multiply: {
+                        num *= value;
+                        break;
+                    }
+                case MathOperation.Divide: {
+                        num /= value;
+                        break;
+                    }
+                case MathOperation.Modulo: {
+                        num %= value;
+                        break;
+                    }
+            }
+        }
+
         public static Vector3 Move(Vector3 a, Vector2 b) => new Vector3(a.x + b.x, a.y + b.y, a.z);
         public static Vector3 Move(Vector3 a, Vector3 b) => new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
         public static Vector3 Scale(Vector3 a, Vector2 b) => new Vector3(a.x * b.x, a.y * b.y, a.z);

@@ -508,6 +508,18 @@ namespace BetterLegacy
         Particles = 11,
     }
 
+    /// <summary>
+    /// Represents a math symbol such as "+" or "-".
+    /// </summary>
+    public enum MathOperation
+    {
+        Addition,
+        Subtract,
+        Multiply,
+        Divide,
+        Modulo,
+    }
+
     #endregion
 
     #region Arcade / Game
