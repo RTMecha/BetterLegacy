@@ -160,7 +160,32 @@ namespace BetterLegacy.Companion.Entity
 
             parts.Add(ImagePart.Default.ID("EAR_TOP_LEFT").ParentID("EAR_BOTTOM_LEFT").Name("Ear Top Left").ImagePath(RTFile.GetAsset("Example Parts/example ear top.png"))
             .Rect(RectValues.Default)
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(-90f)));
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(-90f))
+            .OnClick((part, pointerEventData) =>
+            {
+                var animation = new RTAnimation("Ear Left Flick");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.1f, -30f, Ease.SineOut),
+                        new FloatKeyframe(0.7f, 0f, Ease.SineInOut),
+                    }, x => part.parent.rotation = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.05f, -50f, Ease.Linear),
+                        new FloatKeyframe(0.3f, 30f, Ease.SineOut),
+                        new FloatKeyframe(0.9f, 0f, Ease.SineInOut),
+                    }, x => part.imageRotation = x),
+                };
+                animation.onComplete = () =>
+                {
+                    CompanionManager.inst.animationController.Remove(animation.id);
+                };
+                CompanionManager.inst.animationController.Play(animation);
+            }));
 
             parts.Add(ImagePart.Default.ID("EAR_BOTTOM_RIGHT").ParentID("EARS").Name("Ear Bottom Right").ImagePath(RTFile.GetAsset("Example Parts/example ear bottom.png"))
             .Rect(RectValues.Default.AnchoredPosition(-25f, 35f).Rotation(30f))
@@ -168,7 +193,32 @@ namespace BetterLegacy.Companion.Entity
 
             parts.Add(ImagePart.Default.ID("EAR_TOP_RIGHT").ParentID("EAR_BOTTOM_RIGHT").Name("Ear Top Right").ImagePath(RTFile.GetAsset("Example Parts/example ear top.png"))
             .Rect(RectValues.Default)
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(90f)));
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(90f))
+            .OnClick((part, pointerEventData) =>
+            {
+                var animation = new RTAnimation("Ear Right Flick");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.1f, 30f, Ease.SineOut),
+                        new FloatKeyframe(0.7f, 0f, Ease.SineInOut),
+                    }, x => part.parent.rotation = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.05f, 50f, Ease.Linear),
+                        new FloatKeyframe(0.3f, -30f, Ease.SineOut),
+                        new FloatKeyframe(0.9f, 0f, Ease.SineInOut),
+                    }, x => part.imageRotation = x),
+                };
+                animation.onComplete = () =>
+                {
+                    CompanionManager.inst.animationController.Remove(animation.id);
+                };
+                CompanionManager.inst.animationController.Play(animation);
+            }));
 
             #endregion
 
@@ -184,6 +234,10 @@ namespace BetterLegacy.Companion.Entity
                 float faceXPos = facePosition.x * CompanionManager.FACE_X_MULTIPLIER;
                 part.rotation = -faceXPos;
                 ((ImagePart)part).imageRotation = -faceXPos;
+            })
+            .OnClick((part, pointerEventData) =>
+            {
+                reference?.brain?.Interact(ExampleInteractions.TOUCHIE);
             }));
 
             #region Eyes
@@ -1257,7 +1311,8 @@ namespace BetterLegacy.Companion.Entity
             BasePart handsBase = GetPart("HANDS_BASE");
             BasePart head = GetPart("HEAD");
 
-            danceLoopAnimation = new RTAnimation("Dance Loop") { loop = true, };
+            danceLoopAnimation = new RTAnimation("Dance Loop");
+            danceLoopAnimation.loop = true;
             danceLoopAnimation.animationHandlers = new List<AnimationHandlerBase>
             {
                 new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -1308,11 +1363,6 @@ namespace BetterLegacy.Companion.Entity
                 }, x => handsBase.rotation = x),
             };
             danceLoopAnimation.speed = UnityEngine.Random.Range(0.5f, 2f);
-            danceLoopAnimation.onComplete = () =>
-            {
-                CompanionManager.inst.animationController.Remove(danceLoopAnimation.id);
-                danceLoopAnimation = null;
-            };
             CompanionManager.inst.animationController.Play(danceLoopAnimation);
             reference.brain.dancing = true;
         }
@@ -1384,6 +1434,8 @@ namespace BetterLegacy.Companion.Entity
 
         #region Misc
 
+        // TODO:
+        // you can respond to Example's question about what a level is, which will add to his memory.
         void SelectObject(Image image)
         {
             var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
