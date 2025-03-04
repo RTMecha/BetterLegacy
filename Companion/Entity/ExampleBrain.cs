@@ -1,4 +1,6 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -82,8 +84,45 @@ namespace BetterLegacy.Companion.Entity
 
             switch (context)
             {
+                case ExampleInteractions.PET: {
+                        SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
+
+                        break;
+                    }
                 case ExampleInteractions.HOLD_HAND: {
                         SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
+                        break;
+                    }
+                case ExampleInteractions.TOUCHIE: {
+                        SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
+
+                        reference.chatBubble.Say("Please don't touch me there.");
+
+                        var browLeft = reference.model.GetPart("BROW_LEFT");
+                        var browRight = reference.model.GetPart("BROW_RIGHT");
+
+                        var animation = new RTAnimation("Angry");
+                        animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
+                                new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                            }, x => browLeft.rotation = x, interpolateOnComplete: true),
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
+                                new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                            }, x => browRight.rotation = x, interpolateOnComplete: true),
+                        };
+                        animation.onComplete = () =>
+                        {
+                            CompanionManager.inst.animationController.Remove(animation.id);
+                        };
+                        CompanionManager.inst.animationController.Play(animation);
+
+                        AchievementManager.inst.UnlockAchievement("example_touch");
+
                         break;
                     }
             }
@@ -112,16 +151,7 @@ namespace BetterLegacy.Companion.Entity
         public override void Build()
         {
             dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
-            var path = RTFile.ApplicationDirectory + "profile/example_memory.json";
-            if (RTFile.TryReadFromFile(path, out string file))
-            {
-                var jn = JSON.Parse(file);
-                Read(jn);
-            }
-            else
-            {
-                RTFile.WriteToFile(path, ToJSON().ToString());
-            }
+            LoadMemory();
         }
 
         public override void Tick()
@@ -175,6 +205,22 @@ namespace BetterLegacy.Companion.Entity
                 jn["attributes"][i] = attributes[i].ToJSON();
 
             return jn;
+        }
+
+        public string Path => RTFile.ApplicationDirectory + "profile/example_memory.json";
+        public void SetAttribute(string id, double value, MathOperation operation)
+        {
+            double num = GetAttribute(id).Value;
+            RTMath.Operation(ref num, value, operation);
+            GetAttribute(id).Value = num;
+            SaveMemory();
+        }
+
+        public void SaveMemory() => RTFile.WriteToFile(Path, ToJSON().ToString());
+        public void LoadMemory()
+        {
+            if (RTFile.TryReadFromFile(Path, out string file))
+                Read(JSON.Parse(file));
         }
     }
 }
