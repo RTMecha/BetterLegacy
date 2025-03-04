@@ -28,7 +28,24 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
+            options.Clear();
+            options.Add(new Option("Chat", () =>
+            {
+                var active = reference.discussion.chatterBase.gameObject.activeSelf;
+                if (!active)
+                    reference.chatBubble.Say("What do you want to talk about?");
 
+                reference.discussion.chatterBase.gameObject.SetActive(!active);
+            }));
+            options.Add(new Option("Tutorials", () =>
+            {
+                // tutorials module goes here
+                reference.chatBubble.Say("I can't do that yet, sorry.");
+            }));
+            options.Add(new Option("Cya later", () =>
+            {
+
+            }));
         }
 
         public override void Build()
@@ -65,24 +82,6 @@ namespace BetterLegacy.Companion.Entity
 
             try
             {
-                SetupOptionButton("Chat", () =>
-                {
-                    var active = reference.discussion.chatterBase.gameObject.activeSelf;
-                    if (!active)
-                        reference.chatBubble.Say("What do you want to talk about?");
-
-                    reference.discussion.chatterBase.gameObject.SetActive(!active);
-                });
-                SetupOptionButton("Tutorials", () =>
-                {
-                    // tutorials module goes here
-                    reference.chatBubble.Say("I can't do that yet, sorry.");
-                });
-                SetupOptionButton("Cya later", () =>
-                {
-                    // begone
-                });
-
                 for (int i = 0; i < this.options.Count; i++)
                 {
                     var option = this.options[i];
