@@ -186,6 +186,11 @@ namespace BetterLegacy.Core.Managers
         public static int BoostCount { get; set; }
 
         /// <summary>
+        /// What should happen when an in-game level starts.
+        /// </summary>
+        public static Action<Level> OnLevelStart { get; set; }
+
+        /// <summary>
         /// What should happen when an in-game level ends.
         /// </summary>
         public static Action OnLevelEnd { get; set; }
@@ -245,7 +250,7 @@ namespace BetterLegacy.Core.Managers
             PreviousLevel = CurrentLevel;
             CurrentLevel = level;
 
-            if (level.metadata != null && level.metadata.isHubLevel)
+            if (level.metadata && level.metadata.isHubLevel)
                 Hub = level;
 
             #region Init
@@ -424,6 +429,9 @@ namespace BetterLegacy.Core.Managers
             ResetTransition();
             CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
             AchievementManager.inst.CheckLevelBeginAchievements();
+
+            OnLevelStart?.Invoke(level);
+            OnLevelStart = null;
 
             #endregion
         }
