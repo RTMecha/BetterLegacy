@@ -36,6 +36,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<SceneName> SpawnScene { get; set; }
 
+        /// <summary>
+        /// If logs about Example should be made.
+        /// </summary>
+        public Setting<bool> LogsEnabled { get; set; }
+
         #endregion
 
         #region Visibility
@@ -76,6 +81,12 @@ namespace BetterLegacy.Configs
 
         public Setting<bool> CanDance { get; set; }
 
+        public Setting<bool> CanNotice { get; set; }
+
+        public Setting<int> LoadedLevelNoticeChance { get; set; }
+
+        public Setting<int> NewObjectNoticeChance { get; set; }
+
         #endregion
 
         #endregion
@@ -90,6 +101,7 @@ namespace BetterLegacy.Configs
             ShouldSpawn = Bind(this, "General", "Should Spawn", true, "If Example should spawn.");
             CanSpeak = Bind(this, "General", "Speaks", true, "If Example can talk.");
             SpawnScene = BindEnum(this, "General", "Spawn Scene", SceneName.Editor, "Where Example should spawn.");
+            LogsEnabled = Bind(this, "General", "Logs Enabled", false, "If logs about Example should be made.");
 
             IsTransparent = Bind(this, "Visibility", "Is Transparent", false, "If Example becomes transparent.");
             TransparencyOpacity = Bind(this, "Visibility", "Transparency Opacity", 0.5f, "The opacity of Example if visibility is turned off.");
@@ -100,6 +112,9 @@ namespace BetterLegacy.Configs
             EnabledInMenus = Bind(this, "Visibility", "In Menus", false, "If Example is enabled in menus.");
 
             CanDance = Bind(this, "Behavior", "Can Dance", true, "If Example can dance.");
+            CanNotice = Bind(this, "Behavior", "Can Notice", true, "If Example can notice your actions.");
+            LoadedLevelNoticeChance = Bind(this, "Behavior", "Loaded Level Notice Chance", 100, "The percent chance Example says something about you loading a level.", 0, 100);
+            NewObjectNoticeChance = Bind(this, "Behavior", "New Object Notice Chance", 20, "The percent chance Example says something about you making a new object.", 0, 100);
 
             Save();
         }

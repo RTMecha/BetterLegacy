@@ -4,6 +4,7 @@ using UnityEngine;
 
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Configs;
 
 namespace BetterLegacy.Companion
 {
@@ -36,10 +37,39 @@ namespace BetterLegacy.Companion
 
         #endregion
 
-        public static void Log(string msg) => Debug.Log($"{className}{msg}");
-        public static void LogWarning(string msg) => Debug.LogWarning($"{className}{msg}");
-        public static void LogError(string msg) => Debug.LogError($"{className}{msg}");
+        /// <summary>
+        /// Logs a message if Example logs are enabled.
+        /// </summary>
+        /// <param name="msg">Message.</param>
+        public static void Log(string msg)
+        {
+            if (ExampleConfig.Instance.LogsEnabled.Value)
+                Debug.Log($"{className}{msg}");
+        }
 
+        /// <summary>
+        /// Logs a warning message if Example logs are enabled.
+        /// </summary>
+        /// <param name="msg">Message.</param>
+        public static void LogWarning(string msg)
+        {
+            if (ExampleConfig.Instance.LogsEnabled.Value)
+                Debug.LogWarning($"{className}{msg}");
+        }
+
+        /// <summary>
+        /// Logs an error message if Example logs are enabled.
+        /// </summary>
+        /// <param name="msg">Message.</param>
+        public static void LogError(string msg)
+        {
+            if (ExampleConfig.Instance.LogsEnabled.Value)
+                Debug.LogError($"{className}{msg}");
+        }
+
+        /// <summary>
+        /// Local animation controller for Example.
+        /// </summary>
         public AnimationController animationController;
 
         /// <summary>
