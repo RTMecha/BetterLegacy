@@ -72,6 +72,12 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Behavior
+
+        public Setting<bool> CanDance { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -92,6 +98,8 @@ namespace BetterLegacy.Configs
             EnabledInGame = Bind(this, "Visibility", "In Game", false, "If Example is enabled in game. Includes Editor Preview.");
             EnabledInEditor = Bind(this, "Visibility", "In Editor", true, "If Example is enabled in editor.");
             EnabledInMenus = Bind(this, "Visibility", "In Menus", false, "If Example is enabled in menus.");
+
+            CanDance = Bind(this, "Behavior", "Can Dance", true, "If Example can dance.");
 
             Save();
         }
