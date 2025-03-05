@@ -36,11 +36,11 @@ namespace BetterLegacy.Companion.Entity
             options.Clear();
             options.Add(new Option("Chat", () =>
             {
-                var active = reference.discussion.chatterBase.gameObject.activeSelf;
+                var active = reference.discussion.Active;
                 if (!active)
                     reference.chatBubble.Say("What do you want to talk about?");
 
-                reference.discussion.chatterBase.gameObject.SetActive(!active);
+                reference.discussion.Toggle();
             }));
             options.Add(new Option("Tutorials", () =>
             {
