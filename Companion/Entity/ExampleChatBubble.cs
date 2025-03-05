@@ -53,7 +53,7 @@ namespace BetterLegacy.Companion.Entity
         /// <param name="textLength">Length of the text.</param>
         /// <param name="stayTime">Time the chat bubble should stay for.</param>
         /// <param name="time">Speed of the chat bubble animation.</param>
-        public void Say(string dialogue, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f)
+        public void Say(string dialogue, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f, Action onComplete = null)
         {
             if (!reference || !reference.brain)
             {
@@ -153,8 +153,11 @@ namespace BetterLegacy.Companion.Entity
             currentChatAnimation.onComplete = () =>
             {
                 CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
+                currentChatAnimation = null;
                 if (reference && reference.brain)
                     reference.brain.talking = false;
+
+                onComplete?.Invoke();
             };
 
             CompanionManager.inst.animationController.Play(currentChatAnimation);
@@ -238,6 +241,11 @@ namespace BetterLegacy.Companion.Entity
 
         #region Dialogue
 
+        /// <summary>
+        /// Path to Example's dialogue file.
+        /// </summary>
+        public virtual string DialoguePath => RTFile.GetAsset($"Example Parts/dialogue{FileFormat.JSON.Dot()}");
+
         public string lastDialogue;
 
         public Dictionary<string, DialogueGroup> dialogueDictionary = new Dictionary<string, DialogueGroup>();
@@ -301,7 +309,7 @@ namespace BetterLegacy.Companion.Entity
         void LoadDialogue()
         {
             dialogueDictionary.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/dialogue.json"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(DialoguePath));
 
             for (int i = 0; i < jn["dialogue_groups"].Count; i++)
             {
@@ -336,8 +344,7 @@ namespace BetterLegacy.Companion.Entity
                     dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunc, action);
                 }
 
-                if (!dialogueDictionary.ContainsKey(dialogueGroup["name"]))
-                    dialogueDictionary.Add(dialogueGroup["name"], new DialogueGroup(dialogueGroup["name"], dialogues));
+                dialogueDictionary[dialogueGroup["name"]] = new DialogueGroup(dialogueGroup["name"], dialogues);
             }
         }
 
