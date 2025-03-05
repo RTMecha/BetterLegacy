@@ -7,8 +7,6 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using SimpleJSON;
@@ -21,6 +19,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using BetterLegacy.Companion.Data;
 
 namespace BetterLegacy.Companion
 {
