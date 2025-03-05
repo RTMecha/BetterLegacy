@@ -1176,11 +1176,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (Example.Current && Example.Current.brain && Example.Current.brain.GetAttribute("SEEN_MORE_BINS").Value == 0.0)
-            {
-                Example.Current.brain.SetAttribute("SEEN_MORE_BINS", 1.0, MathOperation.Set);
-                Example.Current.chatBubble?.Say("Ooh, you found a way to change the bin count! That's awesome!");
-            }
+            if (Example.Current && Example.Current.brain)
+                Example.Current.brain.Notice(ExampleBrain.NOTICE_MORE_BINS);
 
             RenderTimelineObjectsPositions();
             RenderBins();
@@ -1218,11 +1215,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (Example.Current && Example.Current.brain && Example.Current.brain.GetAttribute("SEEN_MORE_BINS").Value == 0.0)
-            {
-                Example.Current.brain.SetAttribute("SEEN_MORE_BINS", 1.0, MathOperation.Set);
-                Example.Current.chatBubble?.Say("Ooh, you found a way to change the bin count! That's awesome!");
-            }
+            if (Example.Current && Example.Current.brain)
+                Example.Current.brain.Notice(ExampleBrain.NOTICE_MORE_BINS);
 
             RenderTimelineObjectsPositions();
             RenderBins();
@@ -1265,11 +1259,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (Example.Current && Example.Current.brain && Example.Current.brain.GetAttribute("SEEN_MORE_BINS").Value == 0.0)
-            {
-                Example.Current.brain.SetAttribute("SEEN_MORE_BINS", 1.0, MathOperation.Set);
-                Example.Current.chatBubble?.Say("Ooh, you found a way to change the bin count! That's awesome!");
-            }
+            if (Example.Current && Example.Current.brain)
+                Example.Current.brain.Notice(ExampleBrain.NOTICE_MORE_BINS);
 
             RenderTimelineObjectsPositions();
             RenderBins();

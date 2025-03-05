@@ -34,7 +34,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-            AddAttribute("HAPPINESS", 0, 0, 0);
+            AddAttribute("HAPPINESS", 0, -100, 100);
         }
 
         #region Main Values
@@ -65,6 +65,8 @@ namespace BetterLegacy.Companion.Entity
                 return Input.mousePosition;
             }
         }
+
+        #region Neuron Activation 0_0
 
         public Action<string> onInteract;
 
@@ -162,6 +164,30 @@ namespace BetterLegacy.Companion.Entity
                     }
             }
         }
+
+        /// <summary>
+        /// Example notices something.
+        /// </summary>
+        /// <param name="context">Context of what was noticed.</param>
+        public virtual void Notice(string context)
+        {
+            switch (context)
+            {
+                case NOTICE_MORE_BINS: {
+                        if (GetAttribute("SEEN_MORE_BINS").Value == 1.0)
+                            break;
+
+                        SetAttribute("SEEN_MORE_BINS", 1.0, MathOperation.Set);
+                        reference.chatBubble?.Say("Ooh, you found a way to change the bin count! That's awesome!");
+
+                        break;
+                    }
+            }
+        }
+
+        public const string NOTICE_MORE_BINS = "More Bins";
+
+        #endregion
 
         float dialogueRepeatRate;
 
