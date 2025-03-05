@@ -42,11 +42,16 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
+            #region Register Attributes
+
             attributes.Clear();
             AddAttribute("POKING_EYES", 0.0, 0.0, 1.0);
             AddAttribute("ALLOW_BLINKING", 1.0, 0.0, 1.0);
             AddAttribute("PUPILS_CAN_CHANGE", 1.0, 0.0, 1.0);
             AddAttribute("FACE_CAN_LOOK", 1.0, 0.0, 1.0);
+            AddAttribute("PUPILS_CAN_LOOK", 1.0, 0.0, 1.0);
+
+            #endregion
 
             parts.Clear();
             parts.Add(ParentPart.Default.ID("BASE").Name("Base")
@@ -262,7 +267,7 @@ namespace BetterLegacy.Companion.Entity
             .ImageRect(RectValues.Default.SizeDelta(47f, 22f))
             .OnTick(part =>
             {
-                if (!part || !part.transform)
+                if (!part || !part.transform || GetAttribute("PUPILS_CAN_LOOK").Value == 0.0)
                     return;
 
                 float t = reference.timer.time % CompanionManager.PUPILS_LOOK_RATE;
@@ -401,7 +406,7 @@ namespace BetterLegacy.Companion.Entity
 
                 try
                 {
-                    SelectObject(part.image);
+                    reference.interactions.SelectObject(part.image);
                 }
                 catch (Exception ex)
                 {
@@ -464,7 +469,7 @@ namespace BetterLegacy.Companion.Entity
 
                 try
                 {
-                    SelectObject(part.image);
+                    reference.interactions.SelectObject(part.image);
                 }
                 catch (Exception ex)
                 {
@@ -1660,6 +1665,44 @@ namespace BetterLegacy.Companion.Entity
 
                 return animation;
             }));
+            poses.Add(new ExamplePose(Poses.LOOK_AT, (model, parameters) =>
+            {
+                var face = model.GetPart("FACE");
+                var pupils = model.GetPart("PUPILS");
+
+                ExceptionHelper.NullReference(face, "Example Face");
+                ExceptionHelper.NullReference(face.transform, "Example Face Transform");
+                ExceptionHelper.NullReference(pupils, "Example Pupils");
+                ExceptionHelper.NullReference(pupils.transform, "Example Pupils Transform");
+
+                var animation = new RTAnimation("Look At");
+
+                if (parameters is LookAtPoseParameters lookAtParameters)
+                {
+                    var animationHandlers = new List<AnimationHandlerBase>();
+                    if (lookAtParameters.disableFaceAuto)
+                    {
+                        GetAttribute("FACE_CAN_LOOK").Value = 0.0;
+                        animationHandlers.Add(new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                        {
+                            new Vector2Keyframe(0f, face.transform.localPosition, Ease.Linear),
+                            new Vector2Keyframe(parameters.transitionTime, lookAtParameters.faceLookAt, Ease.SineOut),
+                        }, vector2 => { if (face.transform) face.transform.localPosition = vector2; }, interpolateOnComplete: true));
+                    }
+                    if (lookAtParameters.disablePupilsAuto)
+                    {
+                        GetAttribute("PUPILS_CAN_LOOK").Value = 0.0;
+                        animationHandlers.Add(new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                        {
+                            new Vector2Keyframe(0f, pupils.transform.localPosition, Ease.Linear),
+                            new Vector2Keyframe(parameters.transitionTime, lookAtParameters.pupilsLookAt, Ease.SineOut),
+                        }, vector2 => { if (pupils.transform) pupils.transform.localPosition = vector2; }, interpolateOnComplete: true));
+                    }
+                    animation.animationHandlers = animationHandlers;
+                }
+
+                return animation;
+            }));
         }
 
         /// <summary>
@@ -1680,7 +1723,7 @@ namespace BetterLegacy.Companion.Entity
         public virtual void SetPose(string pose, PoseParameters parameters = null, Action<RTAnimation> onCompleteAnim = null)
         {
             if (!parameters)
-                parameters = PoseParameters.Default;
+                parameters = new PoseParameters();
 
             for (int i = 0; i < poses.Count; i++)
             {
@@ -1739,6 +1782,10 @@ namespace BetterLegacy.Companion.Entity
             /// Example resets after being dragged.
             /// </summary>
             public const string END_DRAG = "End Drag";
+            /// <summary>
+            /// Example looks at something.
+            /// </summary>
+            public const string LOOK_AT = "LOOK_AT";
 
             // todo:
             /*
@@ -1856,27 +1903,6 @@ namespace BetterLegacy.Companion.Entity
         RTAnimation startDragAnimation;
         RTAnimation endDragAnimation;
         RTAnimation danceLoopAnimation;
-
-        #endregion
-
-        #region Misc
-
-        // TODO:
-        // you can respond to Example's question about what a level is, which will add to his memory.
-        void SelectObject(Image image)
-        {
-            var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
-            if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("mask").AsRT())))
-                foreach (var levelItem in RTEditor.inst.LevelPanels)
-                {
-                    if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
-                    {
-                        Debug.LogFormat($"{CompanionManager.className}Picked level: {levelItem.FolderPath}");
-                        reference?.chatBubble?.Say($"What's \"{levelItem.Name}\"?");
-                        break; // only select one level
-                    }
-                }
-        }
 
         #endregion
     }

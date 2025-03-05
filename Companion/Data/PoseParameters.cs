@@ -2,6 +2,7 @@
 using System;
 
 using BetterLegacy.Companion.Entity;
+using UnityEngine;
 
 namespace BetterLegacy.Companion.Data
 {
@@ -17,11 +18,6 @@ namespace BetterLegacy.Companion.Data
             this.transitionTime = transitionTime;
             this.speed = speed;
         }
-
-        /// <summary>
-        /// The default parameters.
-        /// </summary>
-        public static PoseParameters Default => new PoseParameters();
 
         /// <summary>
         /// Transition time for the animation.
@@ -45,5 +41,25 @@ namespace BetterLegacy.Companion.Data
         }
 
         public bool toggle;
+    }
+
+    public class LookAtPoseParameters : PoseParameters
+    {
+        public LookAtPoseParameters() : base() { }
+
+        public LookAtPoseParameters(float transitionTime, float speed) : base(transitionTime, speed) { }
+
+        public LookAtPoseParameters(float transitionTime, float speed, bool disableFaceAuto, Vector2 faceLookAt, bool disablePupilsAuto, Vector2 pupilsLookAt) : base(transitionTime, speed)
+        {
+            this.disableFaceAuto = disableFaceAuto;
+            this.faceLookAt = faceLookAt;
+            this.disablePupilsAuto = disablePupilsAuto;
+            this.pupilsLookAt = pupilsLookAt;
+        }
+
+        public bool disableFaceAuto = false;
+        public Vector2 faceLookAt;
+        public bool disablePupilsAuto = true;
+        public Vector2 pupilsLookAt;
     }
 }
