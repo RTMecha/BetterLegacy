@@ -9,17 +9,24 @@ using BetterLegacy.Editor.Managers;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
+using BetterLegacy.Companion.Data;
+
 namespace BetterLegacy.Companion.Entity
 {
+    /// <summary>
+    /// Represents Example's chat bubble. This is how he talks.
+    /// </summary>
     public class ExampleChatBubble : ExampleModule
     {
+        #region Default Instance
+
+        /// <summary>
+        /// The default chat bubble.
+        /// </summary>
         public static ExampleChatBubble Default
         {
             get
@@ -35,8 +42,17 @@ namespace BetterLegacy.Companion.Entity
 
         }
 
-        public void Test() => Say("test dialogue!");
+        #endregion
 
+        #region Chatting
+
+        /// <summary>
+        /// Makes Example say something.
+        /// </summary>
+        /// <param name="dialogue">Dialogue for Example to say.</param>
+        /// <param name="textLength">Length of the text.</param>
+        /// <param name="stayTime">Time the chat bubble should stay for.</param>
+        /// <param name="time">Speed of the chat bubble animation.</param>
         public void Say(string dialogue, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f)
         {
             if (!reference || !reference.brain)
@@ -144,6 +160,12 @@ namespace BetterLegacy.Companion.Entity
             CompanionManager.inst.animationController.Play(currentChatAnimation);
         }
 
+        RTAnimation currentChatAnimation;
+
+        #endregion
+
+        #region Core
+
         public override void Build()
         {
             var dialogueBase = Creator.NewUIObject("Dialogue Base", reference.model.baseCanvas.transform);
@@ -212,7 +234,7 @@ namespace BetterLegacy.Companion.Entity
             attributes.Clear();
         }
 
-        public RTAnimation currentChatAnimation;
+        #endregion
 
         #region Dialogue
 

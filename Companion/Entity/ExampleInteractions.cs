@@ -1,14 +1,17 @@
 ﻿using BetterLegacy.Editor.Managers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterLegacy.Companion.Entity
 {
+    /// <summary>
+    /// Represents Example's interactions with the game.
+    /// </summary>
     public class ExampleInteractions : ExampleModule
     {
+        #region Default Instance
+
+        /// <summary>
+        /// The default interactions.
+        /// </summary>
         public static ExampleInteractions Default
         {
             get
@@ -23,6 +26,10 @@ namespace BetterLegacy.Companion.Entity
         {
 
         }
+
+        #endregion
+
+        #region Interactions
 
         /// <summary>
         /// When Example's head is clicked.
@@ -44,6 +51,10 @@ namespace BetterLegacy.Companion.Entity
         /// When you interupt Example while he's dancing. Bruh.
         /// </summary>
         public const string INTERRUPT = "Interrupt";
+
+        #endregion
+
+        #region Core
 
         public override void Build()
         {
@@ -69,5 +80,7 @@ namespace BetterLegacy.Companion.Entity
         {
             attributes.Clear();
         }
+
+        #endregion
     }
 }

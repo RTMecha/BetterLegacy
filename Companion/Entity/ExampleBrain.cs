@@ -1,15 +1,12 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace BetterLegacy.Companion.Entity
@@ -21,6 +18,11 @@ namespace BetterLegacy.Companion.Entity
     {
         public ExampleBrain() { }
 
+        #region Default Instance
+
+        /// <summary>
+        /// The default brain.
+        /// </summary>
         public static ExampleBrain Default
         {
             get
@@ -37,16 +39,9 @@ namespace BetterLegacy.Companion.Entity
             AddAttribute("HAPPINESS", 0, -100, 100);
         }
 
-        #region Main Values
-
-        public bool canDance = true;
-        public bool dancing;
-        public bool talking;
-
-        float timeSinceLastInteractedOffset = 0f;
-        public float timeSinceLastInteracted = 0f;
-
         #endregion
+
+        #region Main Values
 
         /// <summary>
         /// The current position Example should be looking at.
@@ -65,6 +60,30 @@ namespace BetterLegacy.Companion.Entity
                 return Input.mousePosition;
             }
         }
+
+        /// <summary>
+        /// If Example can dance.
+        /// </summary>
+        public bool canDance = true;
+
+        /// <summary>
+        /// If Example is currently dancing.
+        /// </summary>
+        public bool dancing;
+
+        /// <summary>
+        /// If Example is talking.
+        /// </summary>
+        public bool talking;
+
+        float timeSinceLastInteractedOffset = 0f;
+
+        /// <summary>
+        /// Time since the user last interacted with Example. The more this increases the more likely he is to be bored.
+        /// </summary>
+        public float timeSinceLastInteracted = 0f;
+
+        #endregion
 
         #region Neuron Activation 0_0
 
@@ -189,6 +208,8 @@ namespace BetterLegacy.Companion.Entity
 
         #endregion
 
+        #region Thoughts
+
         float dialogueRepeatRate;
 
         public void RepeatDialogues()
@@ -196,7 +217,7 @@ namespace BetterLegacy.Companion.Entity
             if (reference.brain.talking)
                 return;
 
-            float t = reference.time % dialogueRepeatRate;
+            float t = reference.timer.time % dialogueRepeatRate;
             if (t <= dialogueRepeatRate - 0.1f || reference.chatBubble.saidDialogue)
             {
                 reference.chatBubble.saidDialogue = false;
@@ -209,6 +230,10 @@ namespace BetterLegacy.Companion.Entity
             dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
         }
 
+        #endregion
+
+        #region Core
+
         public override void Build()
         {
             dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
@@ -219,30 +244,21 @@ namespace BetterLegacy.Companion.Entity
         {
             timeSinceLastInteracted = Time.time - timeSinceLastInteractedOffset;
 
+            if (reference.leaving) // stop Example from doing anything while he is leaving.
+                return;
+
             // does Example want to dance to the music?
-            if (reference.brain.canDance && !reference.Dragging && !reference.brain.talking &&
+            if (reference.brain.canDance && !reference.Dragging && !reference.brain.talking && ExampleConfig.Instance.CanDance.Value &&
                 CompanionManager.MusicPlaying && !reference.brain.dancing && RandomHelper.PercentChanceSingle(0.02f * ((timeSinceLastInteracted + (float)GetAttribute("HAPPINESS").Value) / 100f)))
                                                                                                                     // increases desire to dance the longer you leave him alone
                 StartDancing();
 
             // should he stop dancing?
-            else if (!CompanionManager.MusicPlaying && reference.brain.dancing)
+            else if ((!CompanionManager.MusicPlaying || !ExampleConfig.Instance.CanDance.Value) && reference.brain.dancing)
                 StopDancing();
 
             if (!dancing)
                 RepeatDialogues();
-        }
-
-        public void StartDancing()
-        {
-            dancing = true;
-            reference?.model?.startDancing?.Invoke();
-        }
-
-        public void StopDancing()
-        {
-            dancing = false;
-            reference?.model?.stopDancing?.Invoke();
         }
 
         public override void Clear()
@@ -250,6 +266,36 @@ namespace BetterLegacy.Companion.Entity
             attributes.Clear();
         }
 
+        #endregion
+
+        #region Actions
+
+        /// <summary>
+        /// Example starts dancing.
+        /// </summary>
+        public void StartDancing()
+        {
+            dancing = true;
+            reference?.model?.startDancing?.Invoke();
+        }
+
+        /// <summary>
+        /// Example stops dancing.
+        /// </summary>
+        public void StopDancing()
+        {
+            dancing = false;
+            reference?.model?.stopDancing?.Invoke();
+        }
+
+        #endregion
+
+        #region Memory
+
+        /// <summary>
+        /// Parses memories from JSON and remembers it.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
         public void Read(JSONNode jn)
         {
             for (int i = 0; i < jn["attributes"].Count; i++)
@@ -257,13 +303,19 @@ namespace BetterLegacy.Companion.Entity
                 var jnAttribute = jn["attributes"][i];
                 var value = jnAttribute["value"].AsDouble;
 
-                // add the attribute in case it wasn't initially there
-                var attribute = AddAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble);
-                // read the value
-                attribute.Value = value;
+                //// add the attribute in case it wasn't initially there
+                //var attribute = AddAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble);
+                //// read the value
+                //attribute.Value = value;
+
+                GetAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble).Value = value;
             }
         }
 
+        /// <summary>
+        /// Converts Example's memories to JSON.
+        /// </summary>
+        /// <returns>Returns a JSON object representing Example's memories.</returns>
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
@@ -274,7 +326,17 @@ namespace BetterLegacy.Companion.Entity
             return jn;
         }
 
+        /// <summary>
+        /// Path to Example's memory file.
+        /// </summary>
         public string Path => RTFile.ApplicationDirectory + "profile/example_memory.json";
+
+        /// <summary>
+        /// Updates an attribute and saves the memory.
+        /// </summary>
+        /// <param name="id">ID of the attribute.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="operation">Operation to use.</param>
         public void SetAttribute(string id, double value, MathOperation operation)
         {
             double num = GetAttribute(id).Value;
@@ -283,11 +345,20 @@ namespace BetterLegacy.Companion.Entity
             SaveMemory();
         }
 
+        /// <summary>
+        /// Stores Example's memories.
+        /// </summary>
         public void SaveMemory() => RTFile.WriteToFile(Path, ToJSON().ToString());
+
+        /// <summary>
+        /// Remembers Example's memories.
+        /// </summary>
         public void LoadMemory()
         {
             if (RTFile.TryReadFromFile(Path, out string file))
                 Read(JSON.Parse(file));
         }
+
+        #endregion
     }
 }

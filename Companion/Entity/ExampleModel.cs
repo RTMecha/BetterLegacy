@@ -1,12 +1,8 @@
 ﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using Mono.CSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -26,6 +22,8 @@ namespace BetterLegacy.Companion.Entity
     public class ExampleModel : ExampleModule
     {
         public ExampleModel() { }
+
+        #region Default Instance
 
         /// <summary>
         /// The default Example model.
@@ -57,7 +55,7 @@ namespace BetterLegacy.Companion.Entity
                 if (!part || !part.transform)
                     return;
 
-                part.transform.localPosition = position + new Vector2(0f, (Ease.SineInOut(reference.time * 0.5f % 2f) - 0.5f) * 2f);
+                part.transform.localPosition = position + new Vector2(0f, (Ease.SineInOut(reference.timer.time * 0.5f % 2f) - 0.5f) * 2f);
                 part.transform.localScale = scale;
                 part.rotation = rotation;
             }));
@@ -80,17 +78,16 @@ namespace BetterLegacy.Companion.Entity
             {
                 // onClick function
 
-                if (pointerEventData.button != PointerEventData.InputButton.Right || !reference || !reference.options)
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ExampleOptions.optionsActive = !ExampleOptions.optionsActive;
-                reference.options.optionsBase.gameObject.SetActive(ExampleOptions.optionsActive);
+                reference?.options?.Toggle();
             })
             .OnDown((part, pointerEventData) =>
             {
                 // onDown function
 
-                if (!reference || !reference.canDrag)
+                if (!reference || !reference.canDrag || reference.leaving)
                     return;
 
                 // start dragging
@@ -121,7 +118,7 @@ namespace BetterLegacy.Companion.Entity
             {
                 // onUp function
 
-                if (!reference || !reference.dragging)
+                if (!reference || !reference.dragging || reference.leaving)
                     return;
 
                 // end dragging
@@ -245,7 +242,8 @@ namespace BetterLegacy.Companion.Entity
             })
             .OnClick((part, pointerEventData) =>
             {
-                reference?.brain?.Interact(ExampleInteractions.TOUCHIE);
+                if (!reference.leaving)
+                    reference?.brain?.Interact(ExampleInteractions.TOUCHIE);
             }));
 
             #region Eyes
@@ -262,16 +260,16 @@ namespace BetterLegacy.Companion.Entity
                 if (!part || !part.transform)
                     return;
 
-                float t = reference.time % CompanionManager.PUPILS_LOOK_RATE;
+                float t = reference.timer.time % CompanionManager.PUPILS_LOOK_RATE;
 
                 // Here we add a tiny amount of movement to the pupils to make Example feel a lot more alive.
                 if (t > CompanionManager.PUPILS_LOOK_RATE - 0.3f && GetAttribute("PUPILS_CAN_CHANGE").Value == 1.0)
-                    reference.pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
+                    pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
 
                 GetAttribute("PUPILS_CAN_CHANGE").Value = (t <= CompanionManager.PUPILS_LOOK_RATE - 0.3f) ? 0.0 : 1.0;
 
                 var pupils = part.transform;
-                pupils.AsRT().anchoredPosition = RTMath.Lerp(Vector2.zero, reference.brain.LookingAt - new Vector2(pupils.position.x, pupils.position.y), 0.004f) + reference.pupilsOffset;
+                pupils.AsRT().anchoredPosition = RTMath.Lerp(Vector2.zero, reference.brain.LookingAt - new Vector2(pupils.position.x, pupils.position.y), 0.004f) + pupilsOffset;
             })
             .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
             .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
@@ -283,7 +281,7 @@ namespace BetterLegacy.Companion.Entity
                 if (!part || !part.gameObject)
                     return;
 
-                float t = reference.time % CompanionManager.BLINK_RATE;
+                float t = reference.timer.time % CompanionManager.BLINK_RATE;
 
                 if (!reference.Dragging && GetAttribute("ALLOW_BLINKING").Value == 1.0 && GetAttribute("DANCING").Value == 0.0 && GetAttribute("POKING_EYES").Value == 0.0)
                 {
@@ -375,6 +373,9 @@ namespace BetterLegacy.Companion.Entity
             })
             .OnDown((part, pointerEventData) =>
             {
+                if (reference.leaving)
+                    return;
+
                 reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
                 if (!reference || !reference.canDragLeftHand || !part || !part.transform)
                     return;
@@ -388,7 +389,7 @@ namespace BetterLegacy.Companion.Entity
             })
             .OnUp((part, pointerEventData) =>
             {
-                if (!reference || !reference.canDragLeftHand || !part || !part.transform)
+                if (!reference || !reference.canDragLeftHand || !part || !part.transform || reference.leaving)
                     return;
 
                 reference.draggingLeftHand = false;
@@ -435,6 +436,9 @@ namespace BetterLegacy.Companion.Entity
             })
             .OnDown((part, pointerEventData) =>
             {
+                if (reference.leaving)
+                    return;
+
                 reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
                 if (!reference || !reference.canDragRightHand || !part || !part.transform)
                     return;
@@ -448,7 +452,7 @@ namespace BetterLegacy.Companion.Entity
             })
             .OnUp((part, pointerEventData) =>
             {
-                if (!reference.canDragRightHand)
+                if (!reference || !reference.canDragRightHand || !part || !part.transform || reference.leaving)
                     return;
 
                 reference.draggingRightHand = false;
@@ -504,6 +508,10 @@ namespace BetterLegacy.Companion.Entity
                 StopDanceAnimation();
             };
         }
+
+        #endregion
+
+        #region Core
 
         /// <summary>
         /// Builds Example's model.
@@ -630,18 +638,33 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
+        #endregion
+
         #region Active State
 
+        /// <summary>
+        /// If the canvas is active.
+        /// </summary>
         public bool Visible => baseCanvas && baseCanvas.activeSelf;
 
+        /// <summary>
+        /// Active state of the model.
+        /// </summary>
         public bool Active { get; set; } = true;
 
+        /// <summary>
+        /// Sets the active state and updates the canvas.
+        /// </summary>
+        /// <param name="active">Active state to set.</param>
         public void SetActive(bool active)
         {
             Active = active;
             UpdateActive();
         }
 
+        /// <summary>
+        /// Updates the canvas' active state.
+        /// </summary>
         public void UpdateActive()
         {
             if (!baseCanvas)
@@ -656,17 +679,49 @@ namespace BetterLegacy.Companion.Entity
             else baseCanvas.SetActive(Active);
         }
 
+        /// <summary>
+        /// Activates the screen blocker.
+        /// </summary>
+        public void BlockScreen() => blocker.SetActive(true);
+
+        /// <summary>
+        /// Deactivates the screen blocker.
+        /// </summary>
+        public void UnblockScreen() => blocker.SetActive(false);
+
         #endregion
 
         #region Transforms
 
+        /// <summary>
+        /// Position of the model.
+        /// </summary>
         public Vector2 position = new Vector2(0f, -1200f);
+
+        /// <summary>
+        /// Total scale of the model.
+        /// </summary>
         public Vector2 scale = Vector2.one;
+
+        /// <summary>
+        /// Rotation of the model.
+        /// </summary>
         public float rotation;
 
+        /// <summary>
+        /// Position of the model's face.
+        /// </summary>
         public Vector2 facePosition;
 
+        /// <summary>
+        /// Amount the mouth should be open.
+        /// </summary>
         public float mouthOpenAmount = 0.5f;
+
+        /// <summary>
+        /// Offset of the pupils when looking around.
+        /// </summary>
+        public Vector2 pupilsOffset;
 
         #endregion
 
@@ -730,45 +785,149 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public string basePartID = "BASE";
 
+        /// <summary>
+        /// Canvas that renders the model.
+        /// </summary>
         public Canvas canvas;
+
+        /// <summary>
+        /// Base object that the model is parented to.
+        /// </summary>
         public GameObject baseCanvas;
+
+        /// <summary>
+        /// Canvas group for setting transparency.
+        /// </summary>
         public CanvasGroup canvasGroup;
+
+        /// <summary>
+        /// Blocks the mouse from interacting with the game.
+        /// </summary>
         public GameObject blocker;
 
+        /// <summary>
+        /// Model's base parent.
+        /// </summary>
         public Transform baseParent;
 
+        /// <summary>
+        /// Represents a part of the model.
+        /// </summary>
         public abstract class BasePart : Exists
         {
             public BasePart(PartType partType) => this.partType = partType;
 
+            /// <summary>
+            /// GameObject reference.
+            /// </summary>
             public GameObject gameObject;
+            
+            /// <summary>
+            /// Transform reference.
+            /// </summary>
             public Transform transform;
 
+            /// <summary>
+            /// Identification of the part.
+            /// </summary>
             public string id;
+
+            /// <summary>
+            /// What to parent the part to.
+            /// </summary>
             public string parentID;
+
+            /// <summary>
+            /// The sibling order of the part.
+            /// </summary>
             public int siblingIndex = -1;
+
+            /// <summary>
+            /// The parent reference.
+            /// </summary>
             public BasePart parent;
             public BasePart child;
+
+            /// <summary>
+            /// The children of the part.
+            /// </summary>
+            public List<BasePart> children;
+
+            /// <summary>
+            /// Name of the part.
+            /// </summary>
             public string name;
+
             readonly PartType partType;
+            /// <summary>
+            /// What type of part this is.
+            /// </summary>
             public PartType Type => partType;
 
+            /// <summary>
+            /// Part type.
+            /// </summary>
             public enum PartType
             {
+                /// <summary>
+                /// Represents a <see cref="ParentPart"/>.
+                /// </summary>
                 Parent,
+                /// <summary>
+                /// Represents an <see cref="ImagePart"/>.
+                /// </summary>
                 Image,
             }
 
+            /// <summary>
+            /// CSharp code compiled to run per-tick.
+            /// </summary>
             public string onTickCS;
+
+            /// <summary>
+            /// Function to run per-tick.
+            /// </summary>
             public Action<BasePart> onTick;
 
+            /// <summary>
+            /// RectTransform values of the part.
+            /// </summary>
             public RectValues rect = RectValues.Default;
 
+            /// <summary>
+            /// Full rotation of the part.
+            /// </summary>
             public float rotation;
 
-            public void SetPosition(Vector2 pos) => transform.localPosition = pos;
-            public void SetScale(Vector2 sca) => transform.localScale = sca;
-            public void SetRotation(float rot) => transform.localRotation = Quaternion.Euler(0f, 0f, rot);
+            /// <summary>
+            /// Sets the parts' position.
+            /// </summary>
+            /// <param name="pos">Position to set.</param>
+            public void SetPosition(Vector2 pos)
+            {
+                if (transform)
+                    transform.localPosition = pos;
+            }
+
+            /// <summary>
+            /// Sets the parts' scale.
+            /// </summary>
+            /// <param name="sca">Scale to set.</param>
+            public void SetScale(Vector2 sca)
+            {
+                if (transform)
+                    transform.localScale = sca;
+            }
+            
+            /// <summary>
+            /// Sets the parts' rotation.
+            /// </summary>
+            /// <param name="rot"></param>
+            public void SetRotation(float rot)
+            {
+                if (transform)
+                    transform.localRotation = Quaternion.Euler(0f, 0f, rot);
+            }
 
             /// <summary>
             /// Builds the Example part.
@@ -781,26 +940,46 @@ namespace BetterLegacy.Companion.Entity
             public virtual void Tick()
             {
                 onTick?.Invoke(this);
-                if (transform)
-                    transform.localRotation = Quaternion.Euler(0f, 0f, rotation + rect.rotation);
+                SetRotation(rotation + rect.rotation);
             }
 
+            /// <summary>
+            /// Adds a function to run per-tick.
+            /// </summary>
+            /// <param name="action">Function to add.</param>
             public void AddTickFunction(Action<BasePart> action) => onTick += action;
 
+            /// <summary>
+            /// Sets a function to the per-tick function.
+            /// </summary>
+            /// <param name="action">Function to set.</param>
             public void SetTickFunction(Action<BasePart> action) => onTick = action;
 
+            /// <summary>
+            /// Adds a CSharp string function to run per-tick.
+            /// </summary>
+            /// <param name="code">CSharp code to add.</param>
             public void AddTickFunction(string code)
             {
                 if (!string.IsNullOrEmpty(code))
                     onTick += part => RTCode.Evaluator.Compile(GetVariables(code));
             }
 
+            /// <summary>
+            /// Sets a CSharp string function to the per-tick function.
+            /// </summary>
+            /// <param name="code">CSharp code to set.</param>
             public void SetTickFunction(string code)
             {
                 if (!string.IsNullOrEmpty(code))
                     onTick = part => RTCode.Evaluator.Compile(GetVariables(code));
             }
 
+            /// <summary>
+            /// Gets the parts' variables.
+            /// </summary>
+            /// <param name="input">Input to replace.</param>
+            /// <returns>returns a string representing the part values.</returns>
             public string GetVariables(string input) => input
                 .Replace("PART_ID", id)
                 .Replace("PART_POS_X", transform.position.x.ToString())
@@ -808,12 +987,24 @@ namespace BetterLegacy.Companion.Entity
                 .Replace("PART_LOCAL_POS_X", transform.localPosition.x.ToString())
                 .Replace("PART_LOCAL_POS_Y", transform.localPosition.y.ToString());
 
+            /// <summary>
+            /// Parses a part from JSON.
+            /// </summary>
+            /// <param name="jn">JSON to parse.</param>
             public abstract void Parse(JSONNode jn);
+
+            /// <summary>
+            /// Converts the part to JSON.
+            /// </summary>
+            /// <returns>Returns a JSON object representing the part.</returns>
             public abstract JSONNode ToJSON();
 
             public override string ToString() => id;
         }
 
+        /// <summary>
+        /// Represents a parent part of the model.
+        /// </summary>
         public class ParentPart : BasePart
         {
             public ParentPart() : base(PartType.Parent) { }
@@ -908,23 +1099,61 @@ namespace BetterLegacy.Companion.Entity
             public override string ToString() => id;
         }
 
+        /// <summary>
+        /// Represents a image part of the model.
+        /// </summary>
         public class ImagePart : BasePart
         {
             public ImagePart() : base(PartType.Image) { }
 
+            /// <summary>
+            /// Image of the part.
+            /// </summary>
             public Image image;
+
+            /// <summary>
+            /// RectTransform values of the image.
+            /// </summary>
             public RectValues imageRect = RectValues.Default;
 
+            /// <summary>
+            /// Full rotation of the image.
+            /// </summary>
             public float imageRotation;
 
+            /// <summary>
+            /// Path to the sprite of the image.
+            /// </summary>
             public string imagePath;
 
+            /// <summary>
+            /// Function to run when the part is clicked.
+            /// </summary>
             public Action<ImagePart, PointerEventData> onClick;
+
+            /// <summary>
+            /// Function to run when the part is pressed down.
+            /// </summary>
             public Action<ImagePart, PointerEventData> onDown;
+
+            /// <summary>
+            /// Function to run when the part is pressed up.
+            /// </summary>
             public Action<ImagePart, PointerEventData> onUp;
 
+            /// <summary>
+            /// CSharp string to compile when the part is clicked.
+            /// </summary>
             public string onClickCS;
+
+            /// <summary>
+            /// CSharp string to compile when the part is pressed down.
+            /// </summary>
             public string onDownCS;
+
+            /// <summary>
+            /// CSharp string to compile when the part is pressed up.
+            /// </summary>
             public string onUpCS;
 
             #region Init
@@ -1089,7 +1318,62 @@ namespace BetterLegacy.Companion.Entity
 
         #region Animations
 
-        public void PlayStartDragAnimation()
+        /// <summary>
+        /// Sets the current pose of the model.
+        /// </summary>
+        /// <param name="pose">Pose to set.</param>
+        public virtual void Pose(string pose, Action onComplete = null)
+        {
+            switch (pose)
+            {
+                case LEAVE: {
+                        var animation = new RTAnimation("Cya");
+                        animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            // Base
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, position.x, Ease.Linear),
+                                new FloatKeyframe(0.5f, position.x, Ease.Linear),
+                                new FloatKeyframe(1.5f, position.x + -400f, Ease.SineOut),
+                            }, x => position.x = x, interpolateOnComplete: true),
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, position.y, Ease.Linear),
+                                new FloatKeyframe(0.5f, position.y - 10f, Ease.Linear),
+                                new FloatKeyframe(0.8f, position.y + 80f, Ease.SineOut),
+                                new FloatKeyframe(1.5f, position.y + -1200f, Ease.CircIn),
+                            }, x => position.y = x, interpolateOnComplete: true),
+                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                            {
+                                new Vector2Keyframe(0f, scale, Ease.Linear),
+                                new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
+                                new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
+                                new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
+                                new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
+                            }, vector2 => scale = vector2, interpolateOnComplete: true),
+
+                            // Face
+                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                            {
+                                new Vector2Keyframe(0f, facePosition, Ease.Linear),
+                                new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
+                                new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
+                            }, vector2 => facePosition = vector2, interpolateOnComplete: true),
+                        };
+                        animation.onComplete = onComplete;
+                        CompanionManager.inst.animationController.Play(animation);
+                        break;
+                    }
+            }
+        }
+
+        public const string LEAVE = "Leave";
+
+        /// <summary>
+        /// Plays the start drag animation.
+        /// </summary>
+        public virtual void PlayStartDragAnimation()
         {
             if (startDragAnimation)
             {
@@ -1180,7 +1464,10 @@ namespace BetterLegacy.Companion.Entity
             CompanionManager.inst.animationController.Play(startDragAnimation);
         }
 
-        public void PlayEndDragAnimation()
+        /// <summary>
+        /// Plays the end drag animation.
+        /// </summary>
+        public virtual void PlayEndDragAnimation()
         {
             if (!reference)
             {
@@ -1298,7 +1585,10 @@ namespace BetterLegacy.Companion.Entity
             reference.dragging = false;
         }
 
-        public void PlayDanceAnimation()
+        /// <summary>
+        /// Starts the dance animation loop.
+        /// </summary>
+        public virtual void PlayDanceAnimation()
         {
             if (!reference || !reference.brain)
             {
@@ -1384,7 +1674,10 @@ namespace BetterLegacy.Companion.Entity
             reference.brain.dancing = true;
         }
 
-        public void StopDanceAnimation()
+        /// <summary>
+        /// Stops the dance animation loop.
+        /// </summary>
+        public virtual void StopDanceAnimation()
         {
             if (!danceLoopAnimation)
                 return;
@@ -1394,7 +1687,11 @@ namespace BetterLegacy.Companion.Entity
             ResetPositions(0.3f);
         }
 
-        public void ResetPositions(float speed)
+        /// <summary>
+        /// Resets the model's pose.
+        /// </summary>
+        /// <param name="speed">Speed to reset at.</param>
+        public virtual void ResetPositions(float speed)
         {
             BasePart handLeft = GetPart("HAND_LEFT");
             BasePart handRight = GetPart("HAND_RIGHT");
@@ -1444,9 +1741,9 @@ namespace BetterLegacy.Companion.Entity
             CompanionManager.inst.animationController.Play(animation);
         }
 
-        public RTAnimation startDragAnimation;
-        public RTAnimation endDragAnimation;
-        public RTAnimation danceLoopAnimation;
+        RTAnimation startDragAnimation;
+        RTAnimation endDragAnimation;
+        RTAnimation danceLoopAnimation;
 
         #endregion
 

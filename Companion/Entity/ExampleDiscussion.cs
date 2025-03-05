@@ -5,19 +5,26 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using SimpleJSON;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
+using BetterLegacy.Companion.Data;
+
 namespace BetterLegacy.Companion.Entity
 {
+    /// <summary>
+    /// Represents Example's discussion. The user can use this to talk to Example.
+    /// </summary>
     public class ExampleDiscussion : ExampleModule
     {
+        #region Default Instance
+
+        /// <summary>
+        /// The default discussion.
+        /// </summary>
         public static ExampleDiscussion Default
         {
             get
@@ -32,6 +39,10 @@ namespace BetterLegacy.Companion.Entity
         {
 
         }
+
+        #endregion
+
+        #region Core
 
         public override void Build()
         {
@@ -190,6 +201,21 @@ namespace BetterLegacy.Companion.Entity
             yield break;
         }
 
+        public override void Tick()
+        {
+            if (autocomplete && chatter)
+                autocomplete.SetActive(!string.IsNullOrEmpty(chatter.text));
+        }
+
+        public override void Clear()
+        {
+            attributes.Clear();
+        }
+
+        #endregion
+
+        #region Commands
+
         public void SearchCommandAutocomplete(string searchTerm)
         {
             CoreHelper.Log($"Typing: {searchTerm}");
@@ -210,19 +236,6 @@ namespace BetterLegacy.Companion.Entity
                 num++;
             }
         }
-
-        public override void Tick()
-        {
-            if (autocomplete && chatter)
-                autocomplete.SetActive(!string.IsNullOrEmpty(chatter.text));
-        }
-
-        public override void Clear()
-        {
-            attributes.Clear();
-        }
-
-        #region Commands
 
         public void HandleChatting()
         {

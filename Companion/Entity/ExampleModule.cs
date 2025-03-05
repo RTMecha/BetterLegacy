@@ -1,31 +1,54 @@
 ﻿using BetterLegacy.Core.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using BetterLegacy.Companion.Data;
 
 namespace BetterLegacy.Companion.Entity
 {
+    /// <summary>
+    /// Represents a module used to create Example.
+    /// </summary>
     public abstract class ExampleModule : Exists
     {
-        public abstract void InitDefault();
+        #region Reference
 
+        /// <summary>
+        /// Sets the Example reference.
+        /// </summary>
+        /// <param name="reference">Reference to set.</param>
         public void SetReference(Example reference) => this.reference = reference;
+
+        /// <summary>
+        /// Example reference.
+        /// </summary>
         public Example reference;
+
+        #endregion
+
+        #region Core
+
+        /// <summary>
+        /// Sets the default values pre-build.
+        /// </summary>
+        public abstract void InitDefault();
 
         /// <summary>
         /// Builds the module.
         /// </summary>
         public abstract void Build();
+
         /// <summary>
         /// Runs the module per-tick.
         /// </summary>
         public abstract void Tick();
+
         /// <summary>
         /// Clears the module.
         /// </summary>
         public abstract void Clear();
+
+        #endregion
 
         #region Attributes
 

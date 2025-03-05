@@ -6,9 +6,6 @@ using BetterLegacy.Core.Helpers;
 using LSFunctions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace BetterLegacy.Companion.Entity
@@ -36,8 +33,6 @@ namespace BetterLegacy.Companion.Entity
             this.discussion.SetReference(this);
             this.interactions.SetReference(this);
         }
-
-        string internalID;
 
         #region Modules
 
@@ -70,29 +65,78 @@ namespace BetterLegacy.Companion.Entity
 
         #region Values
 
-        public float time;
-        float timeOffset;
+        string internalID;
+
+        /// <summary>
+        /// Example's timer.
+        /// </summary>
+        public RTTimer timer;
 
         #region Dragging
 
+        /// <summary>
+        /// If Example can be dragged around.
+        /// </summary>
         public bool canDrag = true;
+
+        /// <summary>
+        /// If Example's left hand can be dragged around.
+        /// </summary>
         public bool canDragLeftHand = true;
+
+        /// <summary>
+        /// If Example's right hand can be dragged around.
+        /// </summary>
         public bool canDragRightHand = true;
 
+        /// <summary>
+        /// If Example is being dragged around at all.
+        /// </summary>
         public bool Dragging => dragging || draggingLeftHand || draggingRightHand;
 
+        /// <summary>
+        /// If Example is being dragged around.
+        /// </summary>
         public bool dragging;
+
+        /// <summary>
+        /// If Example's left hand is being dragged around.
+        /// </summary>
         public bool draggingLeftHand;
+
+        /// <summary>
+        /// If Example's right hand is being dragged around.
+        /// </summary>
         public bool draggingRightHand;
 
-        public float dragDelay = 0.3f;
+        /// <summary>
+        /// Base drag delay.
+        /// </summary>
+        public float dragDelay = 0.7f;
 
+        /// <summary>
+        /// Calculated drag delay.
+        /// </summary>
         public float DragDelay { get; set; }
 
+        /// <summary>
+        /// Start drag position reference.
+        /// </summary>
         public Vector2 startDragPos;
+
+        /// <summary>
+        /// Start mouse position reference.
+        /// </summary>
         public Vector2 startMousePos;
+
+        /// <summary>
+        /// Where Example is being dragged to.
+        /// </summary>
         public Vector2 dragPos;
 
+        /// <summary>
+        /// Calculated drag offset target.
+        /// </summary>
         public Vector2 DragTarget
         {
             get
@@ -108,9 +152,9 @@ namespace BetterLegacy.Companion.Entity
 
         #endregion
 
-        public Vector2 pupilsOffset;
-
         #endregion
+
+        #region Init / Core
 
         /// <summary>
         /// The current Example.
@@ -163,7 +207,7 @@ namespace BetterLegacy.Companion.Entity
                 CoreHelper.LogError($"Custom code parsing failed. Exception: {ex}");
             }
 
-            timeOffset = Time.time;
+            timer.UpdateTimeOffset();
             brain.Build();
             model.Build();
             chatBubble.Build();
@@ -179,8 +223,8 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void Tick()
         {
-            time = Time.time - timeOffset;
-            DragDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(dragDelay, 0.001f, 1f), Time.deltaTime * 60f);
+            timer.Update();
+            DragDelay = 1f - Mathf.Pow(dragDelay, Time.deltaTime * 60f);
 
             brain?.Tick();
             model?.Tick();
@@ -196,6 +240,34 @@ namespace BetterLegacy.Companion.Entity
         /// Tick count since start.
         /// </summary>
         public ulong tickCount;
+
+        /// <summary>
+        /// Kills Example.
+        /// </summary>
+        public void Kill()
+        {
+            brain?.Clear();
+            brain = null;
+            model?.Clear();
+            model = null;
+            chatBubble?.Clear();
+            chatBubble = null;
+            options?.Clear();
+            options = null;
+            discussion?.Clear();
+            discussion = null;
+            interactions?.Clear();
+            interactions = null;
+
+            if (Current && Current.internalID == internalID)
+                Current = null;
+        }
+
+        #endregion
+
+        #region Enter / Exit
+
+        public bool leaving;
 
         // TODO: random entrance and exit animations?
         /// <summary>
@@ -247,72 +319,19 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void Exit()
         {
+            leaving = true;
+
             chatBubble?.Say("Okay, I'll get out of your way.");
 
             model.GetAttribute("FACE_CAN_LOOK").Value = 0.0;
 
-            var animation = new RTAnimation("Cya");
-            animation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                // Base
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, model.position.x, Ease.Linear),
-                    new FloatKeyframe(0.5f, model.position.x, Ease.Linear),
-                    new FloatKeyframe(1.5f, model.position.x + -400f, Ease.SineOut),
-                }, x => { if (model) model.position.x = x; }, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, model.position.y, Ease.Linear),
-                    new FloatKeyframe(0.5f, model.position.y - 10f, Ease.Linear),
-                    new FloatKeyframe(0.8f, model.position.y + 80f, Ease.SineOut),
-                    new FloatKeyframe(1.5f, model.position.y + -1200f, Ease.CircIn),
-                }, x => { if (model) model.position.y = x; }, interpolateOnComplete: true),
-                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                {
-                    new Vector2Keyframe(0f, model.scale, Ease.Linear),
-                    new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
-                    new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
-                    new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
-                    new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
-                }, vector2 => { if (model) model.scale = vector2; }, interpolateOnComplete: true),
-
-                // Face
-                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                {
-                    new Vector2Keyframe(0f, model.facePosition, Ease.Linear),
-                    new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
-                    new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
-                }, vector2 => { if (model) model.facePosition = vector2; }, interpolateOnComplete: true),
-            };
-            animation.onComplete = () =>
+            model.Pose(ExampleModel.LEAVE, () =>
             {
                 CompanionManager.inst.animationController.animations.Clear();
                 Kill();
-            };
-            CompanionManager.inst.animationController.Play(animation);
+            });
         }
 
-        /// <summary>
-        /// Kills Example.
-        /// </summary>
-        public void Kill()
-        {
-            brain?.Clear();
-            brain = null;
-            model?.Clear();
-            model = null;
-            chatBubble?.Clear();
-            chatBubble = null;
-            options?.Clear();
-            options = null;
-            discussion?.Clear();
-            discussion = null;
-            interactions?.Clear();
-            interactions = null;
-
-            if (Current && Current.internalID == internalID)
-                Current = null;
-        }
+        #endregion
     }
 }
