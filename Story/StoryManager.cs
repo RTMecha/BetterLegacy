@@ -14,6 +14,7 @@ using BetterLegacy.Core.Data.Player;
 using System;
 using BetterLegacy.Menus;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Story
 {
@@ -620,11 +621,16 @@ namespace BetterLegacy.Story
                     },
                 },
                 music = audio,
+                isResourcesBeatmap = true,
             };
 
             if (!string.IsNullOrEmpty(videoClipPath))
                 storyLevel.videoClip = Resources.Load<UnityEngine.Video.VideoClip>($"beatmaps/{videoClipPath}");
 
+            LevelManager.OnLevelStart = level =>
+            {
+                Example.Current?.brain?.Notice(ExampleBrain.Notices.GAME_FILE_EASTER_EGG);
+            };
             LevelManager.Play(storyLevel, () =>
             {
                 LevelManager.OnLevelEnd = null;
