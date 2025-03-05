@@ -244,8 +244,11 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Kills Example.
         /// </summary>
-        public void Kill()
+        public virtual void Kill()
         {
+            if (Current && Current.internalID == internalID)
+                Current = null;
+
             brain?.Clear();
             brain = null;
             model?.Clear();
@@ -258,9 +261,6 @@ namespace BetterLegacy.Companion.Entity
             discussion = null;
             interactions?.Clear();
             interactions = null;
-
-            if (Current && Current.internalID == internalID)
-                Current = null;
         }
 
         #endregion
