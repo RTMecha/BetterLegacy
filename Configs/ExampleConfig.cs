@@ -83,6 +83,8 @@ namespace BetterLegacy.Configs
 
         public Setting<bool> CanNotice { get; set; }
 
+        public Setting<bool> CanGoToWarningPopup { get; set; }
+
         public Setting<int> LoadedLevelNoticeChance { get; set; }
 
         public Setting<int> NewObjectNoticeChance { get; set; }
@@ -112,6 +114,7 @@ namespace BetterLegacy.Configs
             EnabledInMenus = Bind(this, "Visibility", "In Menus", false, "If Example is enabled in menus.");
 
             CanDance = Bind(this, "Behavior", "Can Dance", true, "If Example can dance.");
+            CanGoToWarningPopup = Bind(this, "Behavior", "Can Go To Warning Popup", true, "If Example moves to the Warning Popup when it opens.");
             CanNotice = Bind(this, "Behavior", "Can Notice", true, "If Example can notice your actions.");
             LoadedLevelNoticeChance = Bind(this, "Behavior", "Loaded Level Notice Chance", 100, "The percent chance Example says something about you loading a level.", 0, 100);
             NewObjectNoticeChance = Bind(this, "Behavior", "New Object Notice Chance", 20, "The percent chance Example says something about you making a new object.", 0, 100);

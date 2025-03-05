@@ -177,9 +177,15 @@ namespace BetterLegacy.Companion.Entity
                     }
                 case Notices.WARNING_POPUP: {
 
+                        if (!ExampleConfig.Instance.CanGoToWarningPopup.Value)
+                            break;
+
                         ExceptionHelper.NullReference(RTEditor.inst, "Editor");
 
                         var warningPopup = RTEditor.inst.WarningPopup.GameObject.transform.GetChild(0);
+
+                        if (Vector2.Distance(reference.model.position, warningPopup.localPosition + new Vector3(140f, 200f)) <= 20f)
+                            break;
 
                         var animation = new RTAnimation("MOVEMENT");
                         animation.animationHandlers = new List<AnimationHandlerBase>
@@ -220,14 +226,36 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
+        /// <summary>
+        /// Library of things that Example can notice.<br></br>
+        /// This is not an automatic process, you have to run <see cref="Notice(string)"/> and include one of the notices as the context parameter.
+        /// </summary>
         public static class Notices
         {
+            /// <summary>
+            /// Triggers when the bin count is modified.
+            /// </summary>
             public const string MORE_BINS = "More Bins";
-            public const string LOADED_LEVEL = "Loaded Level";
-            public const string NEW_OBJECT = "New Object";
-            public const string WARNING_POPUP = "Warning Popup";
-            public const string GAME_FILE_EASTER_EGG = "Game File Easter Egg";
 
+            /// <summary>
+            /// Triggers when a level is loaded.
+            /// </summary>
+            public const string LOADED_LEVEL = "Loaded Level";
+
+            /// <summary>
+            /// Triggers when a new object is created.
+            /// </summary>
+            public const string NEW_OBJECT = "New Object";
+
+            /// <summary>
+            /// Triggers when the Warning Popup opens.
+            /// </summary>
+            public const string WARNING_POPUP = "Warning Popup";
+
+            /// <summary>
+            /// Triggers when the game file easter egg is discovered.
+            /// </summary>
+            public const string GAME_FILE_EASTER_EGG = "Game File Easter Egg";
         }
 
         #endregion

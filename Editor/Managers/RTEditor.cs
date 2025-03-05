@@ -5063,8 +5063,7 @@ namespace BetterLegacy.Editor.Managers
                 ExampleManager.inst.BrowsRaise();
             }
 
-            if (Example.Current && Example.Current.model && Vector2.Distance(Example.Current.model.position, warningPopup.localPosition + new Vector3(140f, 200f)) > 20f)
-                Example.Current.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
         }
 
         /// <summary>
