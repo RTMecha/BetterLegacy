@@ -34,6 +34,21 @@ namespace BetterLegacy.Companion.Entity
             this.interactions.SetReference(this);
         }
 
+        // TODO:
+        /*
+            - Rework dialogue system (maybe pass a "DialogueParameters" class? this'll act as the context for what should be said)
+            - Rework commands system (include a random "idea" command link)
+            - Add more poses and expressions
+            - Add more parts
+            - Expand on interaction module (more editor interactions)
+            - Add more things for Example to remember
+            - More random occurances that can be enabled / disabled
+            - Ensure Example has a lot of settings that can control his behavior if people want him to be a specific way.
+            - Figure out custom models / companions. Probably have it all in one package?
+            - Random enter & leave sequences
+            - Implement tutorials module. This utilizes the model's screen blocker and has its own UI, similar to what was concepted.
+         */
+
         #region Modules
 
         /// <summary>
