@@ -36,6 +36,10 @@ namespace BetterLegacy.Companion
 
         #endregion
 
+        public static void Log(string msg) => Debug.Log($"{className}{msg}");
+        public static void LogWarning(string msg) => Debug.LogWarning($"{className}{msg}");
+        public static void LogError(string msg) => Debug.LogError($"{className}{msg}");
+
         public AnimationController animationController;
 
         /// <summary>
