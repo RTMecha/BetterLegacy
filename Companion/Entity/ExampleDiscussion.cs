@@ -37,7 +37,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-
+            LoadCommands();
         }
 
         #endregion
@@ -46,7 +46,6 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Build()
         {
-            LoadCommands();
             CoreHelper.StartCoroutine(IBuild());
         }
 
@@ -216,6 +215,15 @@ namespace BetterLegacy.Companion.Entity
 
         #region Commands
 
+        /// <summary>
+        /// Path to Example's commands file.
+        /// </summary>
+        public virtual string CommandsPath => RTFile.GetAsset($"Example Parts/commands{FileFormat.JSON.Dot()}");
+
+        /// <summary>
+        /// Searches for a command.
+        /// </summary>
+        /// <param name="searchTerm">Search term.</param>
         public void SearchCommandAutocomplete(string searchTerm)
         {
             CoreHelper.Log($"Typing: {searchTerm}");
@@ -237,7 +245,7 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
-        public void HandleChatting()
+        void HandleChatting()
         {
             if (chatter == null)
                 return;
@@ -253,7 +261,7 @@ namespace BetterLegacy.Companion.Entity
         void LoadCommands()
         {
             commands.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/commands.json"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(CommandsPath));
 
             for (int i = 0; i < jn["commands"].Count; i++)
                 commands.Add(ExampleCommand.Parse(jn["commands"][i]));
