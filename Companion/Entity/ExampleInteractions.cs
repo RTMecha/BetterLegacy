@@ -1,4 +1,7 @@
-﻿using BetterLegacy.Editor.Managers;
+﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Managers;
+using UnityEngine.UI;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -51,6 +54,27 @@ namespace BetterLegacy.Companion.Entity
         /// When you interupt Example while he's dancing. Bruh.
         /// </summary>
         public const string INTERRUPT = "Interrupt";
+
+        // TODO:
+        // you can respond to Example's question about what a level is, which will add to his memory.
+        /// <summary>
+        /// Selects an object based on the image position.
+        /// </summary>
+        /// <param name="image">Image to check for objects under.</param>
+        public void SelectObject(Image image)
+        {
+            var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
+            if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("mask").AsRT())))
+                foreach (var levelItem in RTEditor.inst.LevelPanels)
+                {
+                    if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
+                    {
+                        CompanionManager.Log($"Picked level: {levelItem.FolderPath}");
+                        reference?.chatBubble?.Say($"What's \"{levelItem.Name}\"?");
+                        break; // only select one level
+                    }
+                }
+        }
 
         #endregion
 
