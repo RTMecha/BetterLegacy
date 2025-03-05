@@ -4,6 +4,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -147,9 +148,15 @@ namespace BetterLegacy.Companion.Entity
         /// <param name="context">Context of what was noticed.</param>
         public virtual void Notice(string context)
         {
+            if (!ExampleConfig.Instance.CanNotice.Value)
+                return;
+
+            if (!reference || !reference.model || !reference.model.Visible) // Example can't notice anything if he's not visible!
+                return;
+
             switch (context)
             {
-                case NOTICE_MORE_BINS: {
+                case Notices.MORE_BINS: {
                         if (GetAttribute("SEEN_MORE_BINS").Value == 1.0)
                             break;
 
@@ -158,10 +165,70 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+                case Notices.LOADED_LEVEL: {
+                        if (RandomHelper.PercentChance(ExampleConfig.Instance.LoadedLevelNoticeChance.Value))
+                            reference?.chatBubble?.SayDialogue(RTEditor.inst.fromNewLevel ? "LoadedNewLevel" : "LoadedLevel");
+                        break;
+                    }
+                case Notices.NEW_OBJECT: {
+                        if (RandomHelper.PercentChance(ExampleConfig.Instance.NewObjectNoticeChance.Value))
+                            reference?.chatBubble?.SayDialogue("CreateObject");
+                        break;
+                    }
+                case Notices.WARNING_POPUP: {
+
+                        ExceptionHelper.NullReference(RTEditor.inst, "Editor");
+
+                        var warningPopup = RTEditor.inst.WarningPopup.GameObject.transform.GetChild(0);
+
+                        var animation = new RTAnimation("MOVEMENT");
+                        animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, Example.Current.model.position.x, Ease.Linear),
+                                new FloatKeyframe(0.4f, warningPopup.localPosition.x + 120f, Ease.SineOut),
+                                new FloatKeyframe(0.6f, warningPopup.localPosition.x + 140f, Ease.SineInOut),
+                            }, x => { if (Example.Current && Example.Current.model) Example.Current.model.position.x = x; }, interpolateOnComplete: true),
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, Example.Current.model.position.y, Ease.Linear),
+                                new FloatKeyframe(0.5f, warningPopup.localPosition.y + 200f, Ease.SineInOut),
+                            }, x => { if (Example.Current && Example.Current.model) Example.Current.model.position.y = x; }, interpolateOnComplete: true),
+                        };
+                        animation.onComplete = () =>
+                        {
+                            CompanionManager.inst.animationController.Remove(animation.id);
+                        };
+                        CompanionManager.inst.animationController.Play(animation);
+                        Example.Current.model.SetPose(ExampleModel.Poses.WORRY);
+
+                        break;
+                    }
+                case Notices.GAME_FILE_EASTER_EGG: {
+                        if (GetAttribute("SEEN_GAME_FILE_EASTER_EGG").Value == 1.0)
+                            break;
+
+                        SetAttribute("SEEN_GAME_FILE_EASTER_EGG", 1.0, MathOperation.Set);
+                        reference?.chatBubble?.Say("Woah, you found a secret!", onComplete: () =>
+                        {
+                            reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", 2f, 6f);
+                        });
+
+                        break;
+                    }
             }
         }
 
-        public const string NOTICE_MORE_BINS = "More Bins";
+        public static class Notices
+        {
+            public const string MORE_BINS = "More Bins";
+            public const string LOADED_LEVEL = "Loaded Level";
+            public const string NEW_OBJECT = "New Object";
+            public const string WARNING_POPUP = "Warning Popup";
+            public const string GAME_FILE_EASTER_EGG = "Game File Easter Egg";
+
+        }
 
         #endregion
 

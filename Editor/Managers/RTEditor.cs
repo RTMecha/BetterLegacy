@@ -4651,6 +4651,8 @@ namespace BetterLegacy.Editor.Managers
             if (ExampleManager.inst && ExampleManager.inst.Visible)
                 ExampleManager.inst.SayDialogue(fromNewLevel ? "LoadedNewLevel" : "LoadedLevel");
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.LOADED_LEVEL);
+
             EditorManager.inst.loading = false;
             fromNewLevel = false;
 
@@ -5062,29 +5064,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (Example.Current && Example.Current.model && Vector2.Distance(Example.Current.model.position, warningPopup.localPosition + new Vector3(140f, 200f)) > 20f)
-            {
-                var animation = new RTAnimation("MOVEMENT");
-                animation.animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, Example.Current.model.position.x, Ease.Linear),
-                        new FloatKeyframe(0.4f, warningPopup.localPosition.x + 120f, Ease.SineOut),
-                        new FloatKeyframe(0.6f, warningPopup.localPosition.x + 140f, Ease.SineInOut),
-                    }, x => { if (Example.Current && Example.Current.model) Example.Current.model.position.x = x; }, interpolateOnComplete: true),
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, Example.Current.model.position.y, Ease.Linear),
-                        new FloatKeyframe(0.5f, warningPopup.localPosition.y + 200f, Ease.SineInOut),
-                    }, x => { if (Example.Current && Example.Current.model) Example.Current.model.position.y = x; }, interpolateOnComplete: true),
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
-                Example.Current.model.SetPose(ExampleModel.Poses.WORRY);
-            }
+                Example.Current.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
         }
 
         /// <summary>

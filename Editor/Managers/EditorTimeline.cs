@@ -1176,8 +1176,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (Example.Current && Example.Current.brain)
-                Example.Current.brain.Notice(ExampleBrain.NOTICE_MORE_BINS);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.MORE_BINS);
 
             RenderTimelineObjectsPositions();
             RenderBins();
@@ -1215,8 +1214,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (Example.Current && Example.Current.brain)
-                Example.Current.brain.Notice(ExampleBrain.NOTICE_MORE_BINS);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.MORE_BINS);
 
             RenderTimelineObjectsPositions();
             RenderBins();
@@ -1259,8 +1257,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Set bin count to {BinCount}!", 1.5f, EditorManager.NotificationType.Success);
             AchievementManager.inst.UnlockAchievement("more_bins");
 
-            if (Example.Current && Example.Current.brain)
-                Example.Current.brain.Notice(ExampleBrain.NOTICE_MORE_BINS);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.MORE_BINS);
 
             RenderTimelineObjectsPositions();
             RenderBins();

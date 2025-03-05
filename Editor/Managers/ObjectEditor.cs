@@ -30,6 +30,7 @@ using TMPro;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -3107,6 +3108,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (ExampleManager.inst && ExampleManager.inst.Visible && RandomHelper.PercentChance(20))
                 ExampleManager.inst.SayDialogue("CreateObject");
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT);
 
             return timelineObject;
         }
