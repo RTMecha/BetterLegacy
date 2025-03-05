@@ -41,6 +41,11 @@ namespace BetterLegacy.Story
         public VideoClip videoClip;
 
         /// <summary>
+        /// If the level is from the game files.
+        /// </summary>
+        public bool isResourcesBeatmap;
+
+        /// <summary>
         /// Loads a story level from an <see cref="AssetBundle"/>.
         /// </summary>
         /// <param name="path">Path to an <see cref="AssetBundle"/>.</param>
