@@ -325,7 +325,7 @@ namespace BetterLegacy.Companion.Entity
 
             model.GetAttribute("FACE_CAN_LOOK").Value = 0.0;
 
-            model.Pose(ExampleModel.LEAVE, () =>
+            model.SetPose(ExampleModel.Poses.LEAVE, onCompleteAnim: animation =>
             {
                 CompanionManager.inst.animationController.animations.Clear();
                 Kill();

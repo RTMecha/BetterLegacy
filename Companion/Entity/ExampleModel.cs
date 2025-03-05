@@ -13,6 +13,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Companion.Data;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -112,7 +113,7 @@ namespace BetterLegacy.Companion.Entity
                     reference.brain.StopDancing();
                 }
 
-                PlayStartDragAnimation();
+                SetPose(Poses.START_DRAG);
             })
             .OnUp((part, pointerEventData) =>
             {
@@ -123,7 +124,11 @@ namespace BetterLegacy.Companion.Entity
 
                 // end dragging
 
-                PlayEndDragAnimation();
+                facePosition = Vector3.zero;
+
+                reference.dragging = false;
+
+                SetPose(Poses.END_DRAG);
             }));
 
             parts.Add(ParentPart.Default.ID("FACE").ParentID("HEAD").Name("Face")
@@ -507,6 +512,8 @@ namespace BetterLegacy.Companion.Entity
                 Debug.Log($"{CompanionManager.className}Example has stopped dancing!");
                 StopDanceAnimation();
             };
+
+            RegisterPoses();
         }
 
         #endregion
@@ -1318,272 +1325,431 @@ namespace BetterLegacy.Companion.Entity
 
         #region Animations
 
+        #region Poses
+
+        /// <summary>
+        /// Registers the default poses.
+        /// </summary>
+        public virtual void RegisterPoses()
+        {
+            poses.Add(new ExamplePose(Poses.IDLE, (model, parameters) =>
+            {
+                BasePart handLeft = GetPart("HAND_LEFT");
+                BasePart handRight = GetPart("HAND_RIGHT");
+
+                BasePart handsBase = GetPart("HANDS_BASE");
+
+                var animation = new RTAnimation("RESET");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, rotation, Ease.Linear),
+                        new FloatKeyframe(parameters.transitionTime, 0f, Ease.SineInOut),
+                    }, x => rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                    {
+                        new Vector3Keyframe(0f, scale, Ease.Linear),
+                        new Vector3Keyframe(parameters.transitionTime, Vector3.one, Ease.SineInOut),
+                    }, x => scale = x, interpolateOnComplete: true),
+
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handsBase.rotation, Ease.Linear),
+                        new FloatKeyframe(parameters.transitionTime, 0f, Ease.SineInOut),
+                        new FloatKeyframe(parameters.transitionTime + 0.01f, 0f, Ease.Linear),
+                    }, x => handsBase.rotation = x, interpolateOnComplete: true),
+
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handLeft.rotation, Ease.Linear),
+                        new FloatKeyframe(parameters.transitionTime, 0f, Ease.SineInOut),
+                    }, x => handLeft.rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handRight.rotation, Ease.Linear),
+                        new FloatKeyframe(parameters.transitionTime, 0f, Ease.SineInOut),
+                    }, x => handRight.rotation = x, interpolateOnComplete: true),
+                };
+                animation.events = new List<Core.Animation.AnimationEvent>
+                {
+                    new Core.Animation.AnimationEvent(parameters.transitionTime, () =>
+                    {
+                        GetAttribute("FACE_CAN_LOOK").Value = 1.0;
+                        GetAttribute("ALLOW_BLINKING").Value = 1.0;
+                    }),
+                };
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.LEAVE, (model, parameters) => new RTAnimation("Cya")
+            {
+                animationHandlers = new List<AnimationHandlerBase>
+                {
+                    // Base
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, model.position.x, Ease.Linear),
+                        new FloatKeyframe(0.5f, model.position.x, Ease.Linear),
+                        new FloatKeyframe(1.5f, model.position.x + -400f, Ease.SineOut),
+                    }, x => model.position.x = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, model.position.y, Ease.Linear),
+                        new FloatKeyframe(0.5f, model.position.y - 10f, Ease.Linear),
+                        new FloatKeyframe(0.8f, model.position.y + 80f, Ease.SineOut),
+                        new FloatKeyframe(1.5f, model.position.y + -1200f, Ease.CircIn),
+                    }, x => model.position.y = x, interpolateOnComplete: true),
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, model.scale, Ease.Linear),
+                        new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
+                        new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
+                        new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
+                        new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
+                    }, vector2 => model.scale = vector2, interpolateOnComplete: true),
+
+                    // Face
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, model.facePosition, Ease.Linear),
+                        new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
+                        new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
+                    }, vector2 => model.facePosition = vector2, interpolateOnComplete: true),
+                },
+            }));
+            poses.Add(new ExamplePose(Poses.WORRY, (model, parameters) =>
+            {
+                var browLeft = GetPart("BROW_LEFT");
+                var browRight = GetPart("BROW_RIGHT");
+
+                if (!browLeft || !browRight)
+                    throw new NullReferenceException("Brow Left or Right are null");
+
+                var animation = new RTAnimation("Worry");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                    }, x => browLeft.rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                    }, x => browRight.rotation = x, interpolateOnComplete: true),
+                };
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.ANGRY, (model, parameters) =>
+            {
+                var browLeft = GetPart("BROW_LEFT");
+                var browRight = GetPart("BROW_RIGHT");
+
+                if (!browLeft || !browRight)
+                    throw new NullReferenceException("Brow Left or Right are null");
+
+                var animation = new RTAnimation("Angry");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                    }, x => browLeft.rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                    }, x => browRight.rotation = x, interpolateOnComplete: true),
+                };
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.START_DRAG, (model, parameters) =>
+            {
+                GetAttribute("FACE_CAN_LOOK").Value = 0.0;
+
+                Transform lips = GetPart("LIPS").transform;
+                Transform handLeft = GetPart("HAND_LEFT").transform.GetChild(0);
+                Transform handRight = GetPart("HAND_RIGHT").transform.GetChild(0);
+
+                BasePart browLeft = GetPart("BROW_LEFT");
+                BasePart browRight = GetPart("BROW_RIGHT");
+
+                BasePart handsBase = GetPart("HANDS_BASE");
+                BasePart head = GetPart("HEAD");
+
+                ExceptionHelper.NullReference(lips, "Example Lips");
+                ExceptionHelper.NullReference(handLeft, "Example Hand Left");
+                ExceptionHelper.NullReference(handRight, "Example Hand Right");
+                ExceptionHelper.NullReference(browLeft, "Example Brow Left");
+                ExceptionHelper.NullReference(browRight, "Example Brow Right");
+                ExceptionHelper.NullReference(handsBase, "Example Hands Base");
+                ExceptionHelper.NullReference(head, "Example Head");
+
+                var animation = new RTAnimation("Drag Example");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, head.transform.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.2f, 10f, Ease.SineOut),
+                    }, head.transform.SetLocalPositionY, interpolateOnComplete: true),
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
+                        new Vector2Keyframe(0.3f, new Vector2(1.05f, 0.95f), Ease.SineOut),
+                    }, x => scale = x, interpolateOnComplete: true),
+
+				    // Hands
+				    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handLeft.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.05f, handLeft.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, -30f, Ease.SineOut),
+                    }, handLeft.SetLocalPositionY, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handRight.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.05f, handRight.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, -30f, Ease.SineOut),
+                    }, handRight.SetLocalPositionY, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handsBase.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0f, Ease.SineOut),
+                        new FloatKeyframe(0.31f, 0f, Ease.Linear),
+                    }, x => handsBase.rotation = x, interpolateOnComplete: true),
+
+				    // Brows
+				    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                    }, x => browLeft.rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
+                        new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                    }, x => browRight.rotation = x, interpolateOnComplete: true),
+
+                    // Mouth
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, mouthOpenAmount, Ease.Linear),
+                        new FloatKeyframe(0.2f, 0.7f, Ease.SineOut),
+                    }, x => mouthOpenAmount = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
+                        new FloatKeyframe(0.2f, 0.5f, Ease.SineOut),
+                    }, lips.SetLocalScaleY, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.2f, 2f, Ease.SineOut),
+                    }, lips.SetLocalPositionY, interpolateOnComplete: true),
+                };
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.END_DRAG, (model, parameters) =>
+            {
+                GetAttribute("FACE_CAN_LOOK").Value = 1.0;
+
+                Transform lips = GetPart("LIPS").transform;
+                Transform handLeft = GetPart("HAND_LEFT").transform;
+                Transform handRight = GetPart("HAND_RIGHT").transform;
+
+                BasePart browLeft = GetPart("BROW_LEFT");
+                BasePart browRight = GetPart("BROW_RIGHT");
+
+                BasePart handsBase = GetPart("HANDS_BASE");
+                BasePart head = GetPart("HEAD");
+
+                ExceptionHelper.NullReference(lips, "Example Lips");
+                ExceptionHelper.NullReference(handLeft, "Example Hand Left");
+                ExceptionHelper.NullReference(handRight, "Example Hand Right");
+                ExceptionHelper.NullReference(browLeft, "Example Brow Left");
+                ExceptionHelper.NullReference(browRight, "Example Brow Right");
+                ExceptionHelper.NullReference(handsBase, "Example Hands Base");
+                ExceptionHelper.NullReference(head, "Example Head");
+
+                var animation = new RTAnimation("End Drag Example");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    // Base
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, scale, Ease.Linear),
+                        new Vector2Keyframe(1.5f, Vector2.one, Ease.ElasticOut),
+                    }, x => scale = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, rotation, Ease.Linear),
+                        new FloatKeyframe(1f, 0f, Ease.BackOut),
+                    }, x => rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, head.transform.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.5f, 0f, Ease.BounceOut),
+                    }, head.transform.SetLocalPositionY, interpolateOnComplete: true),
+
+                    // Mouth
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, mouthOpenAmount, Ease.Linear),
+                        new FloatKeyframe(0.2f, 0.5f, Ease.SineIn),
+                    }, x => mouthOpenAmount = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
+                        new FloatKeyframe(0.2f, 1f, Ease.SineIn),
+                    }, lips.SetLocalScaleY, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.2f, 0f, Ease.SineIn),
+                    }, lips.SetLocalPositionY, interpolateOnComplete: true),
+
+				    // Brows
+				    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
+                        new FloatKeyframe(0.5f, 0f, Ease.SineOut),
+                    }, x => browLeft.rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
+                        new FloatKeyframe(0.5f, 0f, Ease.SineOut),
+                    }, x => browRight.rotation = x, interpolateOnComplete: true),
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, facePosition, Ease.Linear),
+                        new Vector2Keyframe(0.5f, Vector2.zero, Ease.SineOut),
+                    }, x => facePosition = x, interpolateOnComplete: true),
+
+                    // Hands
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.1f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
+                    }, handLeft.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handRight.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.1f, handRight.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
+                    }, handRight.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(0.1f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
+                    }, handLeft.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, handRight.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(0.1f, handRight.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
+                    }, handRight.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                };
+
+                return animation;
+            }));
+        }
+
+        /// <summary>
+        /// Overrides an existing pose.
+        /// </summary>
+        /// <param name="id">ID of the pose to override.</param>
+        /// <param name="pose">Pose to ovrride.</param>
+        public void OverridePose(string id, ExamplePose pose)
+        {
+            var poseIndex = poses.FindIndex(x => x.name == id);
+            poses[poseIndex] = pose;
+        }
+
         /// <summary>
         /// Sets the current pose of the model.
         /// </summary>
         /// <param name="pose">Pose to set.</param>
-        public virtual void Pose(string pose, Action onComplete = null)
+        public virtual void SetPose(string pose, PoseParameters parameters = null, Action<RTAnimation> onCompleteAnim = null)
         {
-            switch (pose)
-            {
-                case LEAVE: {
-                        var animation = new RTAnimation("Cya");
-                        animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            // Base
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, position.x, Ease.Linear),
-                                new FloatKeyframe(0.5f, position.x, Ease.Linear),
-                                new FloatKeyframe(1.5f, position.x + -400f, Ease.SineOut),
-                            }, x => position.x = x, interpolateOnComplete: true),
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, position.y, Ease.Linear),
-                                new FloatKeyframe(0.5f, position.y - 10f, Ease.Linear),
-                                new FloatKeyframe(0.8f, position.y + 80f, Ease.SineOut),
-                                new FloatKeyframe(1.5f, position.y + -1200f, Ease.CircIn),
-                            }, x => position.y = x, interpolateOnComplete: true),
-                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                            {
-                                new Vector2Keyframe(0f, scale, Ease.Linear),
-                                new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
-                                new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
-                                new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
-                                new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
-                            }, vector2 => scale = vector2, interpolateOnComplete: true),
+            if (!parameters)
+                parameters = PoseParameters.Default;
 
-                            // Face
-                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                            {
-                                new Vector2Keyframe(0f, facePosition, Ease.Linear),
-                                new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
-                                new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
-                            }, vector2 => facePosition = vector2, interpolateOnComplete: true),
-                        };
-                        animation.onComplete = onComplete;
-                        CompanionManager.inst.animationController.Play(animation);
-                        break;
-                    }
+            for (int i = 0; i < poses.Count; i++)
+            {
+                var customPose = poses[i];
+                if (pose != customPose.name)
+                    continue;
+
+                var animation = customPose.get?.Invoke(this, parameters);
+                if (!animation)
+                    throw new NullReferenceException($"No animation was registered.");
+
+                animation.speed = parameters.speed;
+                animation.onComplete = () =>
+                {
+                    onCompleteAnim?.Invoke(animation);
+                    if (onCompleteAnim == null)
+                        CompanionManager.inst.animationController.Remove(animation.id);
+                };
+                CompanionManager.inst.animationController.Play(animation);
+
+                break;
             }
-        }
-
-        public const string LEAVE = "Leave";
-
-        /// <summary>
-        /// Plays the start drag animation.
-        /// </summary>
-        public virtual void PlayStartDragAnimation()
-        {
-            if (startDragAnimation)
-            {
-                CompanionManager.inst.animationController.Remove(startDragAnimation.id);
-                startDragAnimation = null;
-            }
-
-            GetAttribute("FACE_CAN_LOOK").Value = 0.0;
-
-            Transform lips = GetPart("LIPS").transform;
-            Transform handLeft = GetPart("HAND_LEFT").transform.GetChild(0);
-            Transform handRight = GetPart("HAND_RIGHT").transform.GetChild(0);
-
-            BasePart browLeft = GetPart("BROW_LEFT");
-            BasePart browRight = GetPart("BROW_RIGHT");
-
-            BasePart handsBase = GetPart("HANDS_BASE");
-            BasePart head = GetPart("HEAD");
-
-            startDragAnimation = new RTAnimation("Drag Example");
-            startDragAnimation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, head.transform.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.2f, 10f, Ease.SineOut),
-                }, head.transform.SetLocalPositionY, interpolateOnComplete: true),
-                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                {
-                    new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
-                    new Vector2Keyframe(0.3f, new Vector2(1.05f, 0.95f), Ease.SineOut),
-                }, x => scale = x, interpolateOnComplete: true),
-
-				// Hands
-				new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handLeft.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.05f, handLeft.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.3f, -30f, Ease.SineOut),
-                }, handLeft.SetLocalPositionY, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handRight.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.05f, handRight.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.3f, -30f, Ease.SineOut),
-                }, handRight.SetLocalPositionY, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handsBase.rotation, Ease.Linear),
-                    new FloatKeyframe(0.3f, 0f, Ease.SineOut),
-                    new FloatKeyframe(0.31f, 0f, Ease.Linear),
-                }, x => handsBase.rotation = x, interpolateOnComplete: true),
-
-				// Brows
-				new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
-                    new FloatKeyframe(0.3f, -15f, Ease.SineOut),
-                }, x => browLeft.rotation = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
-                    new FloatKeyframe(0.3f, 15f, Ease.SineOut),
-                }, x => browRight.rotation = x, interpolateOnComplete: true),
-
-                // Mouth
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, mouthOpenAmount, Ease.Linear),
-                    new FloatKeyframe(0.2f, 0.7f, Ease.SineOut),
-                }, x => mouthOpenAmount = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
-                    new FloatKeyframe(0.2f, 0.5f, Ease.SineOut),
-                }, lips.SetLocalScaleY, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.2f, 2f, Ease.SineOut),
-                }, lips.SetLocalPositionY, interpolateOnComplete: true),
-            };
-            startDragAnimation.onComplete = () =>
-            {
-                CompanionManager.inst.animationController.Remove(startDragAnimation.id);
-                startDragAnimation = null;
-            };
-            CompanionManager.inst.animationController.Play(startDragAnimation);
         }
 
         /// <summary>
-        /// Plays the end drag animation.
+        /// List of that can be used.
         /// </summary>
-        public virtual void PlayEndDragAnimation()
+        public List<ExamplePose> poses = new List<ExamplePose>();
+
+        /// <summary>
+        /// Library of default poses.
+        /// </summary>
+        public static class Poses
         {
-            if (!reference)
-            {
-                CoreHelper.Log($"Example is dead wtf");
-                return;
-            }
+            /// <summary>
+            /// Example resets his pose.
+            /// </summary>
+            public const string IDLE = "Idle";
+            /// <summary>
+            /// Example leaves the scene.
+            /// </summary>
+            public const string LEAVE = "Leave";
+            /// <summary>
+            /// Example expresses concern.
+            /// </summary>
+            public const string WORRY = "Worry";
+            /// <summary>
+            /// Example expresses anger.
+            /// </summary>
+            public const string ANGRY = "Angry";
+            /// <summary>
+            /// Example is happy about being dragged.
+            /// </summary>
+            public const string START_DRAG = "Start Drag";
+            /// <summary>
+            /// Example resets after being dragged.
+            /// </summary>
+            public const string END_DRAG = "End Drag";
 
-            if (endDragAnimation)
-            {
-                CompanionManager.inst.animationController.Remove(endDragAnimation.id);
-                endDragAnimation = null;
-            }
-
-            GetAttribute("FACE_CAN_LOOK").Value = 1.0;
-
-            Transform lips = GetPart("LIPS").transform;
-            Transform handLeft = GetPart("HAND_LEFT").transform;
-            Transform handRight = GetPart("HAND_RIGHT").transform;
-
-            BasePart browLeft = GetPart("BROW_LEFT");
-            BasePart browRight = GetPart("BROW_RIGHT");
-
-            BasePart handsBase = GetPart("HANDS_BASE");
-            BasePart head = GetPart("HEAD");
-
-            endDragAnimation = new RTAnimation("End Drag Example");
-            endDragAnimation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                // Base
-                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                {
-                    new Vector2Keyframe(0f, scale, Ease.Linear),
-                    new Vector2Keyframe(1.5f, Vector2.one, Ease.ElasticOut),
-                }, x => scale = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, rotation, Ease.Linear),
-                    new FloatKeyframe(1f, 0f, Ease.BackOut),
-                }, x => rotation = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, head.transform.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.5f, 0f, Ease.BounceOut),
-                }, head.transform.SetLocalPositionY, interpolateOnComplete: true),
-
-                // Mouth
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, mouthOpenAmount, Ease.Linear),
-                    new FloatKeyframe(0.2f, 0.5f, Ease.SineIn),
-                }, x => mouthOpenAmount = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
-                    new FloatKeyframe(0.2f, 1f, Ease.SineIn),
-                }, lips.SetLocalScaleY, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.2f, 0f, Ease.SineIn),
-                }, lips.SetLocalPositionY, interpolateOnComplete: true),
-
-				// Brows
-				new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
-                    new FloatKeyframe(0.5f, 0f, Ease.SineOut),
-                }, x => browLeft.rotation = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
-                    new FloatKeyframe(0.5f, 0f, Ease.SineOut),
-                }, x => browRight.rotation = x, interpolateOnComplete: true),
-                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                {
-                    new Vector2Keyframe(0f, facePosition, Ease.Linear),
-                    new Vector2Keyframe(0.5f, Vector2.zero, Ease.SineOut),
-                }, x => facePosition = x, interpolateOnComplete: true),
-
-                // Hands
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.1f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
-                }, handLeft.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handRight.GetChild(0).localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.1f, handRight.GetChild(0).localPosition.y, Ease.Linear),
-                    new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
-                }, handRight.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
-                    new FloatKeyframe(0.1f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
-                    new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
-                }, handLeft.SetLocalRotationEulerZ, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handRight.localRotation.eulerAngles.z, Ease.Linear),
-                    new FloatKeyframe(0.1f, handRight.localRotation.eulerAngles.z, Ease.Linear),
-                    new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
-                }, handRight.SetLocalRotationEulerZ, interpolateOnComplete: true),
-            };
-            endDragAnimation.onComplete = () =>
-            {
-                CompanionManager.inst.animationController.Remove(endDragAnimation.id);
-                endDragAnimation = null;
-            };
-            CompanionManager.inst.animationController.Play(endDragAnimation);
-
-            facePosition = Vector3.zero;
-
-            reference.dragging = false;
+            // todo:
+            /*
+                - sad
+                - happy
+                - surprise
+                - sleeping
+             */
         }
+
+        #endregion
 
         /// <summary>
         /// Starts the dance animation loop.
@@ -1684,61 +1850,7 @@ namespace BetterLegacy.Companion.Entity
 
             CompanionManager.inst.animationController.Remove(danceLoopAnimation.id);
             danceLoopAnimation = null;
-            ResetPositions(0.3f);
-        }
-
-        /// <summary>
-        /// Resets the model's pose.
-        /// </summary>
-        /// <param name="speed">Speed to reset at.</param>
-        public virtual void ResetPositions(float speed)
-        {
-            BasePart handLeft = GetPart("HAND_LEFT");
-            BasePart handRight = GetPart("HAND_RIGHT");
-
-            BasePart handsBase = GetPart("HANDS_BASE");
-
-            var animation = new RTAnimation("RESET");
-            animation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, rotation, Ease.Linear),
-                    new FloatKeyframe(speed, 0f, Ease.SineInOut),
-                }, x => rotation = x, interpolateOnComplete: true),
-                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
-                {
-                    new Vector3Keyframe(0f, scale, Ease.Linear),
-                    new Vector3Keyframe(speed, Vector3.one, Ease.SineInOut),
-                }, x => scale = x, interpolateOnComplete: true),
-
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handsBase.rotation, Ease.Linear),
-                    new FloatKeyframe(speed, 0f, Ease.SineInOut),
-                    new FloatKeyframe(speed + 0.01f, 0f, Ease.Linear),
-                }, x => handsBase.rotation = x, interpolateOnComplete: true),
-
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handLeft.rotation, Ease.Linear),
-                    new FloatKeyframe(speed, 0f, Ease.SineInOut),
-                }, x => handLeft.rotation = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, handRight.rotation, Ease.Linear),
-                    new FloatKeyframe(speed, 0f, Ease.SineInOut),
-                }, x => handRight.rotation = x, interpolateOnComplete: true),
-            };
-
-            animation.onComplete = () =>
-            {
-                CompanionManager.inst.animationController.animations.Remove(animation);
-                GetAttribute("FACE_CAN_LOOK").Value = 1.0;
-                GetAttribute("ALLOW_BLINKING").Value = 1.0;
-            };
-
-            CompanionManager.inst.animationController.Play(animation);
+            SetPose(Poses.IDLE);
         }
 
         RTAnimation startDragAnimation;

@@ -117,35 +117,14 @@ namespace BetterLegacy.Companion.Entity
                     }
                 case ExampleInteractions.HOLD_HAND: {
                         SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
+                        reference?.model?.SetPose(ExampleModel.Poses.WORRY);
                         break;
                     }
                 case ExampleInteractions.TOUCHIE: {
                         SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
 
-                        reference.chatBubble.Say("Please don't touch me there.");
-
-                        var browLeft = reference.model.GetPart("BROW_LEFT");
-                        var browRight = reference.model.GetPart("BROW_RIGHT");
-
-                        var animation = new RTAnimation("Angry");
-                        animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
-                                new FloatKeyframe(0.3f, 15f, Ease.SineOut),
-                            }, x => browLeft.rotation = x, interpolateOnComplete: true),
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
-                                new FloatKeyframe(0.3f, -15f, Ease.SineOut),
-                            }, x => browRight.rotation = x, interpolateOnComplete: true),
-                        };
-                        animation.onComplete = () =>
-                        {
-                            CompanionManager.inst.animationController.Remove(animation.id);
-                        };
-                        CompanionManager.inst.animationController.Play(animation);
+                        reference?.chatBubble?.Say("Please don't touch me there.");
+                        reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
 
                         AchievementManager.inst.UnlockAchievement("example_touch");
 
@@ -154,30 +133,8 @@ namespace BetterLegacy.Companion.Entity
                 case ExampleInteractions.INTERRUPT: {
                         SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
 
-                        reference.chatBubble.Say("Hey!");
-
-                        var browLeft = reference.model.GetPart("BROW_LEFT");
-                        var browRight = reference.model.GetPart("BROW_RIGHT");
-
-                        var animation = new RTAnimation("Angry");
-                        animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
-                                new FloatKeyframe(0.3f, 15f, Ease.SineOut),
-                            }, x => browLeft.rotation = x, interpolateOnComplete: true),
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
-                                new FloatKeyframe(0.3f, -15f, Ease.SineOut),
-                            }, x => browRight.rotation = x, interpolateOnComplete: true),
-                        };
-                        animation.onComplete = () =>
-                        {
-                            CompanionManager.inst.animationController.Remove(animation.id);
-                        };
-                        CompanionManager.inst.animationController.Play(animation);
+                        reference?.chatBubble?.Say("Hey!");
+                        reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
 
                         break;
                     }
@@ -301,13 +258,7 @@ namespace BetterLegacy.Companion.Entity
             for (int i = 0; i < jn["attributes"].Count; i++)
             {
                 var jnAttribute = jn["attributes"][i];
-                var value = jnAttribute["value"].AsDouble;
-
-                //// add the attribute in case it wasn't initially there
-                //var attribute = AddAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble);
-                //// read the value
-                //attribute.Value = value;
-
+                var value = jnAttribute["val"].AsDouble;
                 GetAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble).Value = value;
             }
         }
@@ -348,7 +299,17 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Stores Example's memories.
         /// </summary>
-        public void SaveMemory() => RTFile.WriteToFile(Path, ToJSON().ToString());
+        public void SaveMemory()
+        {
+            try
+            {
+                RTFile.WriteToFile(Path, ToJSON().ToString());
+            }
+            catch (Exception ex)
+            {
+                CompanionManager.LogError($"Example failed to remember something. Exception: {ex}");
+            }
+        }
 
         /// <summary>
         /// Remembers Example's memories.
@@ -356,7 +317,14 @@ namespace BetterLegacy.Companion.Entity
         public void LoadMemory()
         {
             if (RTFile.TryReadFromFile(Path, out string file))
+            {
                 Read(JSON.Parse(file));
+                CompanionManager.Log($"Loaded memory");
+            }
+            else
+            {
+                CompanionManager.LogError($"Example failed to remember something.");
+            }
         }
 
         #endregion
