@@ -221,6 +221,11 @@ namespace BetterLegacy.Companion.Entity
         public virtual string CommandsPath => RTFile.GetAsset($"Example Parts/commands{FileFormat.JSON.Dot()}");
 
         /// <summary>
+        /// List of commands with responses.
+        /// </summary>
+        public List<ExampleCommand> commands = new List<ExampleCommand>();
+
+        /// <summary>
         /// Searches for a command.
         /// </summary>
         /// <param name="searchTerm">Search term.</param>
@@ -267,16 +272,48 @@ namespace BetterLegacy.Companion.Entity
                 commands.Add(ExampleCommand.Parse(jn["commands"][i]));
         }
 
-        public List<ExampleCommand> commands = new List<ExampleCommand>();
+        #endregion
 
-        public GameObject commandAutocompletePrefab;
+        #region UI
 
-        public GameObject autocomplete;
-        public InputField chatter;
-        public RectTransform chatterBase;
-        public RectTransform autocompleteContent;
+        /// <summary>
+        /// If the commands window is visible.
+        /// </summary>
+        public bool Active => chatterBase && chatterBase.gameObject.activeSelf;
 
-        public bool chatting = false;
+        /// <summary>
+        /// Shows the commands window.
+        /// </summary>
+        public void Show()
+        {
+            if (chatterBase)
+                chatterBase.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// Hides the commands window.
+        /// </summary>
+        public void Hide()
+        {
+            if (chatterBase)
+                chatterBase.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Toggles the commands window.
+        /// </summary>
+        public void Toggle()
+        {
+            if (chatterBase)
+                chatterBase.gameObject.SetActive(!chatterBase.gameObject.activeSelf);
+        }
+
+        GameObject commandAutocompletePrefab;
+
+        GameObject autocomplete;
+        InputField chatter;
+        RectTransform chatterBase;
+        RectTransform autocompleteContent;
 
         #endregion
     }
