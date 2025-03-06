@@ -345,7 +345,7 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/pa_example_m{FileFormat.LSP.Dot()}";
+                var path = Example.GetFile($"pa_example_m{FileFormat.LSP.Dot()}");
                 if (RTFile.FileExists(path))
                     LegacyPlugin.ExamplePrefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
             }

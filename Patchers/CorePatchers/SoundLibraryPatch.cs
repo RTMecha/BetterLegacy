@@ -62,18 +62,18 @@ namespace BetterLegacy.Patchers
                     __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
 
             var ogg = FileFormat.OGG.Dot();
-            AddSound(RTFile.GetAsset(RTFile.CombinePaths(Example.EXAMPLE_FOLDER, "example speak.ogg")), "example_speak");
-            AddSound($"{SFXPath}anna speak{ogg}", "anna_speak");
-            AddSound($"{SFXPath}hal speak{ogg}", "hal_speak");
-            AddSound($"{SFXPath}para speak{ogg}", "para_speak");
-            AddSound($"{SFXPath}t speak{ogg}", "t_speak");
-            AddSound($"{SFXPath}menuflip{ogg}", "menuflip");
-            AddSound($"{SFXPath}Record Scratch{ogg}", "record_scratch");
-            AddSound($"{SFXPath}hit2{ogg}", "HurtPlayer2");
-            AddSound($"{SFXPath}hit3{ogg}", "HurtPlayer3");
-            AddSound($"{SFXPath}HealPlayer{ogg}", "HealPlayer");
-            AddSound($"{SFXPath}shoot{ogg}", "shoot");
-            AddSound($"{SFXPath}pop{ogg}", "pop");
+            AddSound(Example.GetFile($"example speak{ogg}"), DefaultSounds.example_speak);
+            AddSound($"{SFXPath}anna speak{ogg}", DefaultSounds.anna_speak);
+            AddSound($"{SFXPath}hal speak{ogg}", DefaultSounds.hal_speak);
+            AddSound($"{SFXPath}para speak{ogg}", DefaultSounds.para_speak);
+            AddSound($"{SFXPath}t speak{ogg}", DefaultSounds.t_speak);
+            AddSound($"{SFXPath}menuflip{ogg}", DefaultSounds.menuflip);
+            AddSound($"{SFXPath}Record Scratch{ogg}", DefaultSounds.record_scratch);
+            AddSound($"{SFXPath}hit2{ogg}", DefaultSounds.HurtPlayer2);
+            AddSound($"{SFXPath}hit3{ogg}", DefaultSounds.HurtPlayer3);
+            AddSound($"{SFXPath}HealPlayer{ogg}", DefaultSounds.HealPlayer);
+            AddSound($"{SFXPath}shoot{ogg}", DefaultSounds.shoot);
+            AddSound($"{SFXPath}pop{ogg}", DefaultSounds.pop);
 
             foreach (var musicGroup in __instance.musicGroups)
             {
@@ -98,8 +98,9 @@ namespace BetterLegacy.Patchers
             }));
         }
 
-        static void AddSound(string path, string id)
+        static void AddSound(string path, DefaultSounds defaultSound)
         {
+            var id = defaultSound.ToString();
             CoreHelper.Log($"Adding sound: {id} {path}");
             if (RTFile.FileExists(path))
                 CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
