@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Companion.Entity;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -176,6 +177,8 @@ namespace BetterLegacy.Core.Helpers
                 EditorManager.inst.ClearPopups();
                 MultiObjectEditor.inst.Dialog.Open();
             }
+
+            Example.Current?.brain?.Interact(ExampleInteractions.SELECT_OBJECTS_COMMAND);
 
             return true;
         }
