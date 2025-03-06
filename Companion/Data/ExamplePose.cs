@@ -32,5 +32,4 @@ namespace BetterLegacy.Companion.Data
         /// <returns>Returns a new animation.</returns>
         public delegate RTAnimation GetAnimation(ExampleModel model, PoseParameters parameters);
     }
-
 }
