@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Companion.Entity;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using HarmonyLib;
 using System.Linq;
@@ -61,7 +62,7 @@ namespace BetterLegacy.Patchers
                     __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
 
             var ogg = FileFormat.OGG.Dot();
-            AddSound(Companion.ExampleManager.SpeakPath, "example_speak");
+            AddSound(RTFile.GetAsset(RTFile.CombinePaths(Example.EXAMPLE_FOLDER, "example speak.ogg")), "example_speak");
             AddSound($"{SFXPath}anna speak{ogg}", "anna_speak");
             AddSound($"{SFXPath}hal speak{ogg}", "hal_speak");
             AddSound($"{SFXPath}para speak{ogg}", "para_speak");

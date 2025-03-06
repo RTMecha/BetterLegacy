@@ -88,6 +88,9 @@ namespace BetterLegacy.Companion.Entity
 
         #region Neuron Activation 0_0
 
+        /// <summary>
+        /// Runs when Example is interacted with.
+        /// </summary>
         public Action<string> onInteract;
 
         /// <summary>
@@ -223,6 +226,13 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+                case Notices.SCENE_LOADED: {
+                        break;
+                    }
+                case Notices.EXAMPLE_REFERENCE: {
+                        reference?.chatBubble?.Say("Hey, it's me!");
+                        break;
+                    }
             }
         }
 
@@ -256,6 +266,31 @@ namespace BetterLegacy.Companion.Entity
             /// Triggers when the game file easter egg is discovered.
             /// </summary>
             public const string GAME_FILE_EASTER_EGG = "Game File Easter Egg";
+
+            /// <summary>
+            /// Triggers when a scene is loaded.
+            /// </summary>
+            public const string SCENE_LOADED = "Scene Loaded";
+
+            /// <summary>
+            /// Triggers when a reference to Example is found.
+            /// </summary>
+            public const string EXAMPLE_REFERENCE = "Example Reference";
+
+            /// <summary>
+            /// Triggers when <see cref="GameManager"/> is loaded.
+            /// </summary>
+            public const string GAME_START = "Game Start";
+
+            /// <summary>
+            /// Triggers when <see cref="EditorManager"/> is loaded.
+            /// </summary>
+            public const string EDITOR_START = "Editor Start";
+
+            /// <summary>
+            /// Triggers when the editor preview is toggled.
+            /// </summary>
+            public const string EDITOR_PREVIEW_TOGGLE = "Editor Preview Toggle";
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -154,7 +155,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             var saying = levelRank.sayings[Random.Range(0, levelRank.sayings.Length)];
 
-            if (Companion.ExampleManager.inst && Companion.ExampleManager.inst.Visible)
+            if (Example.Current && Example.Current.model && Example.Current.model.Visible)
             {
                 var matches = Regex.Matches(saying, @"{{QuickElement=(.*?)}}");
                 foreach (var obj in matches)
@@ -163,7 +164,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     saying = saying.Replace(match.Groups[0].ToString(), "");
                 }
 
-                Companion.ExampleManager.inst.Say(saying);
+                Example.Current.chatBubble?.Say(saying);
             }
             else
             {

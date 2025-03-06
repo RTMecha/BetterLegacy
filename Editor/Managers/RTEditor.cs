@@ -3823,9 +3823,14 @@ namespace BetterLegacy.Editor.Managers
                 () => ModCompatibility.Inspect(GameManager.inst));
 
             GenerateDebugButton(
+                "Inspect CompanionManager",
+                "CompanionManager handles everything to do with Example, your little companion.",
+                () => ModCompatibility.Inspect(CompanionManager.inst));
+            
+            GenerateDebugButton(
                 "Inspect Example",
-                "ExampleManager handles everything to do with Example, your little companion.",
-                () => ModCompatibility.Inspect(ExampleManager.inst));
+                "Example...",
+                () => ModCompatibility.Inspect(Example.Current));
 
             GenerateDebugButton(
                 "Inspect Object Editor UI",
@@ -4648,9 +4653,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.UpdatePlayButton();
             }
 
-            if (ExampleManager.inst && ExampleManager.inst.Visible)
-                ExampleManager.inst.SayDialogue(fromNewLevel ? "LoadedNewLevel" : "LoadedLevel");
-
             Example.Current?.brain?.Notice(ExampleBrain.Notices.LOADED_LEVEL);
 
             EditorManager.inst.loading = false;
@@ -5047,21 +5049,6 @@ namespace BetterLegacy.Editor.Managers
         {
             WarningPopup.Open();
             RefreshWarningPopup(warning, onConfirm, onCancel, confirm, cancel, onClose);
-
-            var warningPopup = WarningPopup.GameObject.transform.GetChild(0);
-            if (ExampleManager.inst && ExampleManager.inst.Visible && Vector2.Distance(ExampleManager.inst.TotalPosition, warningPopup.localPosition + new Vector3(140f, 200f)) > 20f)
-            {
-                ExampleManager.inst.Move(
-                    new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0.4f, warningPopup.localPosition.x + 120f, Ease.SineOut),
-                        new FloatKeyframe(0.6f, warningPopup.localPosition.x + 140f, Ease.SineInOut),
-                    }, new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0.5f, warningPopup.localPosition.y + 200f, Ease.SineInOut),
-                    });
-                ExampleManager.inst.BrowsRaise();
-            }
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
         }

@@ -26,7 +26,7 @@ namespace BetterLegacy.Companion.Data
 
     public class ExampleDialogue
     {
-        public ExampleDialogue(string text, DialogueFunction dialogueFunction, Action action = null)
+        public ExampleDialogue(string text, Func<bool> dialogueFunction, Action action = null)
         {
             this.text = text;
             this.dialogueFunction = dialogueFunction;
@@ -38,7 +38,7 @@ namespace BetterLegacy.Companion.Data
         public void Action() => action?.Invoke();
 
         public string text;
-        public DialogueFunction dialogueFunction;
+        public Func<bool> dialogueFunction;
         public bool canSay = true;
 
         Action action;

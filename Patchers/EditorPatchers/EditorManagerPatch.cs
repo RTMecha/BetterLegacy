@@ -109,10 +109,8 @@ namespace BetterLegacy.Patchers
             InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
 
-            if (ExampleManager.inst)
-                ExampleManager.inst.SetActive(true); // if Example was disabled
             if (Example.Current && Example.Current.model)
-                Example.Current.model.SetActive(true);
+                Example.Current.model.SetActive(true); // if Example was disabled
 
             #region Editor Theme Setup
 
@@ -251,8 +249,7 @@ namespace BetterLegacy.Patchers
             __instance.hasLoadedLevel = false;
             __instance.loading = false;
 
-            ExampleManager.onEditorAwake?.Invoke(__instance);
-
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_START);
             Example.Current?.chatBubble?.SayDialogue("SpawnText");
 
             // spawn Example on load
@@ -723,9 +720,8 @@ namespace BetterLegacy.Patchers
                 Instance.UpdatePlayButton();
             RTGameManager.inst.ResetCheckpoint();
 
-            ExampleManager.onEditorToggle?.Invoke(Instance.isEditing);
-            if (ExampleManager.inst)
-                ExampleManager.inst.UpdateActive();
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_PREVIEW_TOGGLE);
+            Example.Current?.model?.UpdateActive();
         }
 
         [HarmonyPatch(nameof(EditorManager.CloseOpenBeatmapPopup))]

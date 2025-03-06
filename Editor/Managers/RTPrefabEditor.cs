@@ -24,6 +24,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using BasePrefab = DataManager.GameData.Prefab;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -1420,8 +1421,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
 
-            if (prefab.Name.Contains("Example") && ExampleManager.inst && ExampleManager.inst.Visible)
-                ExampleManager.inst.Say("Hey, it's me!");
+            if (prefab.Name.Contains("Example"))
+                Example.Current?.brain?.Notice(ExampleBrain.Notices.EXAMPLE_REFERENCE);
         }
 
         public bool expanding;

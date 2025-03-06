@@ -179,8 +179,6 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="showLoading">If the progress screen should display.</param>
         public static IEnumerator ILoadScene(string level, bool showLoading = true)
         {
-            ExampleManager.onSceneLoad?.Invoke(level);
-            
             PreviousScene = CurrentScene;
             CurrentScene = level;
 
@@ -271,6 +269,8 @@ namespace BetterLegacy.Core.Helpers
                 CoreHelper.Log($"Spawn Example to Scene: {ExampleConfig.Instance.SpawnScene.Value.ToName()} = {level} {ExampleConfig.Instance.SpawnScene.Value.ToName() == level}");
                 if (!Example.Current && ExampleConfig.Instance.SpawnScene.Value.ToName() == level)
                     Example.Init();
+
+                Example.Current?.brain?.Notice(ExampleBrain.Notices.SCENE_LOADED);
             }
             catch (Exception ex)
             {

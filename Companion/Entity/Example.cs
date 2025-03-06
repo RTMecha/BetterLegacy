@@ -80,6 +80,12 @@ namespace BetterLegacy.Companion.Entity
 
         #region Values
 
+        /// <summary>
+        /// The folder containing all of Example's assets and files.
+        /// </summary>
+        public const string EXAMPLE_FOLDER = "Example Parts";
+        //public const string EXAMPLE_FOLDER = "Example Companion";
+
         string internalID;
 
         /// <summary>

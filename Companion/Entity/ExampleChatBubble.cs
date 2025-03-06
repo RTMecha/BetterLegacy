@@ -194,7 +194,7 @@ namespace BetterLegacy.Companion.Entity
 
             SetScale(Vector2.zero);
 
-            dialogueFunctions = new DialogueFunction[]
+            dialogueFunctions = new Func<bool>[]
             {
                 SayAnyways, // 0
                 HasLoadedLevel, // 1
@@ -323,7 +323,7 @@ namespace BetterLegacy.Companion.Entity
                     if (dialogue["func_index"] != null)
                         dialogueFunction = dialogue["func_index"].AsInt;
 
-                    DialogueFunction dialogueFunc =
+                    Func<bool> dialogueFunc =
                         dialogue["func"] != null ?
                         () =>
                         {
@@ -387,7 +387,7 @@ namespace BetterLegacy.Companion.Entity
 
         public bool UserIsMoNsTeR() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "monster";
 
-        public DialogueFunction[] dialogueFunctions;
+        public Func<bool>[] dialogueFunctions;
 
         #endregion
 

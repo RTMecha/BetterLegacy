@@ -3106,9 +3106,6 @@ namespace BetterLegacy.Editor.Managers
             if (select)
                 EditorTimeline.inst.SetCurrentObject(timelineObject);
 
-            if (ExampleManager.inst && ExampleManager.inst.Visible && RandomHelper.PercentChance(20))
-                ExampleManager.inst.SayDialogue("CreateObject");
-
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT);
 
             return timelineObject;

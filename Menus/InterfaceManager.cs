@@ -383,10 +383,9 @@ namespace BetterLegacy.Menus
         {
             Clear(false, false);
             CoreHelper.InStory = true;
-            if (Companion.ExampleManager.inst)
-                Companion.ExampleManager.inst.SetActive(true); // if Example was disabled
+
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
-                Companion.Entity.Example.Current.model.SetActive(true);
+                Companion.Entity.Example.Current.model.SetActive(true); // if Example was disabled
 
             var storyStarted = StoryManager.inst.LoadBool("StoryModeStarted", false);
             var chapter = StoryMode.Instance.chapters[chapterIndex];
@@ -436,10 +435,9 @@ namespace BetterLegacy.Menus
         {
             Clear(false, false);
             CoreHelper.InStory = false;
-            if (Companion.ExampleManager.inst)
-                Companion.ExampleManager.inst.SetActive(true); // if Example was disabled
+
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
-                Companion.Entity.Example.Current.model.SetActive(true);
+                Companion.Entity.Example.Current.model.SetActive(true); // if Example was disabled
 
             Parse(RTFile.GetAsset($"Interfaces/main_menu{FileFormat.LSI.Dot()}"));
 

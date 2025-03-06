@@ -21,6 +21,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Patchers
 {
@@ -55,7 +56,7 @@ namespace BetterLegacy.Patchers
 
             RTEventManager.inst.delayTracker = camBase.AddComponent<EventDelayTracker>();
 
-            ExampleManager.onGameAwake?.Invoke(__instance);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.GAME_START);
 
             Camera.main.transparencySortMode = TransparencySortMode.CustomAxis;
         }
