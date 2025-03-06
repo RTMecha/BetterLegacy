@@ -1333,6 +1333,11 @@ namespace BetterLegacy.Companion.Entity
         #region Poses
 
         /// <summary>
+        /// List of that can be used.
+        /// </summary>
+        public List<ExamplePose> poses = new List<ExamplePose>();
+
+        /// <summary>
         /// Registers the default poses.
         /// </summary>
         public virtual void RegisterPoses()
@@ -1710,9 +1715,9 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         /// <param name="id">ID of the pose to override.</param>
         /// <param name="pose">Pose to ovrride.</param>
-        public void OverridePose(string id, ExamplePose pose)
+        public void OverridePose(string key, ExamplePose pose)
         {
-            var poseIndex = poses.FindIndex(x => x.name == id);
+            var poseIndex = poses.FindIndex(x => x.key == key);
             poses[poseIndex] = pose;
         }
 
@@ -1720,18 +1725,18 @@ namespace BetterLegacy.Companion.Entity
         /// Sets the current pose of the model.
         /// </summary>
         /// <param name="pose">Pose to set.</param>
-        public virtual void SetPose(string pose, PoseParameters parameters = null, Action<RTAnimation> onCompleteAnim = null)
+        public virtual void SetPose(string key, PoseParameters parameters = null, Action<RTAnimation> onCompleteAnim = null)
         {
             if (!parameters)
                 parameters = new PoseParameters();
 
             for (int i = 0; i < poses.Count; i++)
             {
-                var customPose = poses[i];
-                if (pose != customPose.name)
+                var pose = poses[i];
+                if (key != pose.key)
                     continue;
 
-                var animation = customPose.get?.Invoke(this, parameters);
+                var animation = pose.get?.Invoke(this, parameters);
                 if (!animation)
                     throw new NullReferenceException($"No animation was registered.");
 
@@ -1747,11 +1752,6 @@ namespace BetterLegacy.Companion.Entity
                 break;
             }
         }
-
-        /// <summary>
-        /// List of that can be used.
-        /// </summary>
-        public List<ExamplePose> poses = new List<ExamplePose>();
 
         /// <summary>
         /// Library of default poses.

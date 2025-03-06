@@ -8,16 +8,16 @@ namespace BetterLegacy.Companion.Data
     /// </summary>
     public class ExamplePose
     {
-        public ExamplePose(string name, GetAnimation get)
+        public ExamplePose(string key, GetAnimation get)
         {
-            this.name = name;
+            this.key = key;
             this.get = get;
         }
 
         /// <summary>
-        /// Registered name of the pose.
+        /// Registered key of the pose.
         /// </summary>
-        public string name;
+        public string key;
 
         /// <summary>
         /// Gets the animation.
@@ -28,6 +28,7 @@ namespace BetterLegacy.Companion.Data
         /// Delegate for generating a new animation.
         /// </summary>
         /// <param name="model">Passed model.</param>
+        /// <param name="parameters">Passed parameters.</param>
         /// <returns>Returns a new animation.</returns>
         public delegate RTAnimation GetAnimation(ExampleModel model, PoseParameters parameters);
     }
