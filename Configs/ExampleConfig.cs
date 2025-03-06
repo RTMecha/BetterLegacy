@@ -41,6 +41,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> LogsEnabled { get; set; }
 
+        /// <summary>
+        /// If logs about Example's startup should be made.
+        /// </summary>
+        public Setting<bool> LogStartup { get; set; }
+
         #endregion
 
         #region Visibility
@@ -104,6 +109,7 @@ namespace BetterLegacy.Configs
             CanSpeak = Bind(this, "General", "Speaks", true, "If Example can talk.");
             SpawnScene = BindEnum(this, "General", "Spawn Scene", SceneName.Editor, "Where Example should spawn.");
             LogsEnabled = Bind(this, "General", "Logs Enabled", false, "If logs about Example should be made.");
+            LogStartup = Bind(this, "General", "Log Startup", false, "If logs about Example's startup should be made.");
 
             IsTransparent = Bind(this, "Visibility", "Is Transparent", false, "If Example becomes transparent.");
             TransparencyOpacity = Bind(this, "Visibility", "Transparency Opacity", 0.5f, "The opacity of Example if visibility is turned off.");
