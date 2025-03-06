@@ -15,7 +15,7 @@ namespace BetterLegacy.Companion.Entity
     /// </summary>
     public class Example : Exists
     {
-        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleDiscussion discussion, ExampleInteractions interactions)
+        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, ExampleInteractions interactions)
         {
             internalID = LSText.randomNumString(8);
 
@@ -23,14 +23,14 @@ namespace BetterLegacy.Companion.Entity
             this.model = model;
             this.chatBubble = chatBubble;
             this.options = options;
-            this.discussion = discussion;
+            this.commands = commands;
             this.interactions = interactions;
 
             this.brain.SetReference(this);
             this.model.SetReference(this);
             this.chatBubble.SetReference(this);
             this.options.SetReference(this);
-            this.discussion.SetReference(this);
+            this.commands.SetReference(this);
             this.interactions.SetReference(this);
         }
 
@@ -70,7 +70,7 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Example's chat window.
         /// </summary>
-        public ExampleDiscussion discussion;
+        public ExampleCommands commands;
         /// <summary>
         /// How Example interacts with the rest of the mod.
         /// </summary>
@@ -192,7 +192,7 @@ namespace BetterLegacy.Companion.Entity
                 return;
             }
 
-            Init(ExampleBrain.Default, ExampleModel.Default, ExampleChatBubble.Default, ExampleOptions.Default, ExampleDiscussion.Default, ExampleInteractions.Default);
+            Init(ExampleBrain.Default, ExampleModel.Default, ExampleChatBubble.Default, ExampleOptions.Default, ExampleCommands.Default, ExampleInteractions.Default);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         /// <param name="brain">Brain to set.</param>
         /// <param name="model">Model to set.</param>
-        public static void Init(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleDiscussion discussion, ExampleInteractions interactions)
+        public static void Init(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands discussion, ExampleInteractions interactions)
         {
             Current?.Kill();
             Current = new Example(brain, model, chatBubble, options, discussion, interactions);
@@ -227,7 +227,7 @@ namespace BetterLegacy.Companion.Entity
             model.Build();
             chatBubble.Build();
             options.Build();
-            discussion.Build();
+            commands.Build();
             interactions.Build();
 
             Enter();
@@ -245,7 +245,7 @@ namespace BetterLegacy.Companion.Entity
             model?.Tick();
             chatBubble?.Tick();
             options?.Tick();
-            discussion?.Tick();
+            commands?.Tick();
             interactions?.Tick();
 
             tickCount++;
@@ -272,8 +272,8 @@ namespace BetterLegacy.Companion.Entity
             chatBubble = null;
             options?.Clear();
             options = null;
-            discussion?.Clear();
-            discussion = null;
+            commands?.Clear();
+            commands = null;
             interactions?.Clear();
             interactions = null;
         }

@@ -16,20 +16,20 @@ using BetterLegacy.Companion.Data;
 namespace BetterLegacy.Companion.Entity
 {
     /// <summary>
-    /// Represents Example's discussion. The user can use this to talk to Example.
+    /// Represents Example's commands. The user can use this to talk to Example.
     /// </summary>
-    public class ExampleDiscussion : ExampleModule
+    public class ExampleCommands : ExampleModule
     {
         #region Default Instance
 
         /// <summary>
         /// The default discussion.
         /// </summary>
-        public static ExampleDiscussion Default
+        public static ExampleCommands Default
         {
             get
             {
-                var discussion = new ExampleDiscussion();
+                var discussion = new ExampleCommands();
                 discussion.InitDefault();
                 return discussion;
             }
