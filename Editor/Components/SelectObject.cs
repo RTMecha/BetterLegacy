@@ -109,6 +109,11 @@ namespace BetterLegacy.Editor.Components
                 this.renderer = renderer;
         }
 
+        void OnDisable()
+        {
+            hovered = false; // set hovered off so when the object re-enables it won't think it's still hovered.
+        }
+
         /// <summary>
         /// Assigns a BeatmapObjects' RTObject references.
         /// </summary>
