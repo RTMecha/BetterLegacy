@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
@@ -36,17 +37,15 @@ namespace BetterLegacy.Companion.Entity
 
         // TODO:
         /*
-            - Rework dialogue system (maybe pass a "DialogueParameters" class? this'll act as the context for what should be said)
-            - Rework commands system (include a random "idea" command link)
             - Add more poses and expressions
             - Add more parts
             - Expand on interaction module (more editor interactions)
             - Add more things for Example to remember
-            - More random occurances that can be enabled / disabled
-            - Ensure Example has a lot of settings that can control his behavior if people want him to be a specific way.
+            - More random occurances that can be enabled / disabled (sleeping due to boredom, etc)
+            - Ensure Example has a lot of settings that can control his behavior if people want him to be a specific way. I don't want him to come off as annoying.
             - Figure out custom models / companions. Probably have it all in one package?
             - Random enter & leave sequences
-            - Implement tutorials module. This utilizes the model's screen blocker and has its own UI, similar to what was concepted.
+            - Implement tutorials module. This utilizes the model's screen blocker and has its own UI, similar to what was concepted by MoNsTeR.
          */
 
         #region Modules
@@ -83,8 +82,14 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// The folder containing all of Example's assets and files.
         /// </summary>
-        public const string EXAMPLE_FOLDER = "Example Parts";
-        //public const string EXAMPLE_FOLDER = "Example Companion";
+        public const string EXAMPLE_FOLDER = "Example Companion";
+
+        /// <summary>
+        /// Gets a file in Example's folder.
+        /// </summary>
+        /// <param name="file">File to get.</param>
+        /// <returns>Returns the full path to the file.</returns>
+        public static string GetFile(string file) => RTFile.GetAsset(RTFile.CombinePaths(EXAMPLE_FOLDER, file));
 
         string internalID;
 
@@ -228,14 +233,23 @@ namespace BetterLegacy.Companion.Entity
                 CoreHelper.LogError($"Custom code parsing failed. Exception: {ex}");
             }
 
+            LogStartup("Beginning timer...");
+            var sw = CoreHelper.StartNewStopwatch();
             timer.UpdateTimeOffset();
+            LogStartup("Building the brain...");
             brain.Build();
+            LogStartup("Building the model...");
             model.Build();
+            LogStartup("Building the chat bubble...");
             chatBubble.Build();
+            LogStartup("Building the chat options...");
             options.Build();
+            LogStartup("Building the chat commands...");
             commands.Build();
+            LogStartup("Building the chat interactions...");
             interactions.Build();
 
+            LogStartup($"Done! Took {sw.Elapsed} to build. Now Example should enter the scene");
             Enter();
         }
 
@@ -284,6 +298,12 @@ namespace BetterLegacy.Companion.Entity
             interactions = null;
         }
 
+        void LogStartup(string message)
+        {
+            if (ExampleConfig.Instance.LogStartup.Value)
+                CompanionManager.Log($"STARTUP -> {message}");
+        }
+
         #endregion
 
         #region Enter / Exit
@@ -297,9 +317,9 @@ namespace BetterLegacy.Companion.Entity
         public virtual void Enter()
         {
             if (CoreHelper.InEditor)
-                chatBubble?.SayDialogue("SpawnText");
+                chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.SPAWN);
             else
-                chatBubble?.SayDialogue("Greeting");
+                chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.GREETING);
 
             var arm = model.GetPart("HAND_LEFT");
 

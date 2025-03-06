@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Core.Optimization;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -39,131 +40,8 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-
+            RegisterDialogues();
         }
-
-        #endregion
-
-        #region Chatting
-
-        /// <summary>
-        /// Makes Example say something.
-        /// </summary>
-        /// <param name="dialogue">Dialogue for Example to say.</param>
-        /// <param name="textLength">Length of the text.</param>
-        /// <param name="stayTime">Time the chat bubble should stay for.</param>
-        /// <param name="time">Speed of the chat bubble animation.</param>
-        public void Say(string dialogue, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f, Action onComplete = null)
-        {
-            if (!reference || !reference.brain)
-            {
-                Debug.Log($"Uh oh... looks like either Example is dead or he's brain dead.........");
-                return;
-            }
-
-            reference.brain.talking = true;
-
-            dialogue = dialogue.Replace("{{Username}}", CoreConfig.Instance.DisplayName.Value);
-
-            RTString.RegexMatches(dialogue, new Regex(@"{{Config_(.*?)_(.*?)}}"), match =>
-            {
-                var configName = match.Groups[1].ToString();
-                var config = LegacyPlugin.configs.Find(x => x.Name == configName);
-                var setting = config.Settings.Find(x => x.Key == match.Groups[2].ToString());
-
-                dialogue = dialogue.Replace(match.Groups[0].ToString(), setting.BoxedValue.ToString());
-            });
-
-            if (currentChatAnimation)
-                CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
-
-            if (!ExampleConfig.Instance.CanSpeak.Value)
-            {
-                dialogueBase.transform.localScale = new Vector3(0f, 0f, 1f);
-                return;
-            }
-
-            CoreHelper.Log($"Example says: {dialogue}");
-
-            currentChatAnimation = new RTAnimation($"DIALOGUE: {dialogue}");
-
-            var ogMouth = reference.model.mouthOpenAmount;
-
-            var keyframes = new List<IKeyframe<float>>();
-            keyframes.Add(new FloatKeyframe(0f, 0.5f, Ease.Linear));
-
-            float mouthTime = 0.1f;
-            var totalLength = textLength * time * 10;
-            for (int i = 0; i < (int)totalLength / 2; i++)
-            {
-                keyframes.Add(new FloatKeyframe(mouthTime * time, ogMouth * 1.85f, Ease.SineOut));
-                mouthTime += 0.1f;
-                keyframes.Add(new FloatKeyframe(mouthTime * time, 0.5f, Ease.SineIn));
-                mouthTime += 0.1f;
-            }
-
-            int prevLetterNum = 0;
-
-            currentChatAnimation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 90f, Ease.Linear),
-                    new FloatKeyframe(1.5f * time, 0f, Ease.ElasticOut),
-                }, dialogueBase.SetLocalRotationEulerZ, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 1f, Ease.Linear),
-                    new FloatKeyframe(textLength * time, dialogue.Length, Ease.SineOut),
-                }, x =>
-                {
-                    if (prevLetterNum != (int)x)
-                    {
-                        prevLetterNum = (int)x;
-                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.2f, 0.3f), UnityEngine.Random.Range(0.97f, 1.03f));
-                    }
-
-                    try
-                    {
-                        dialogueText.text = dialogue.Substring(0, (int)x + 1);
-                    }
-                    catch
-                    {
-                        dialogueText.text = dialogue.Substring(0, (int)x);
-                    }
-                }, interpolateOnComplete: true),
-                new AnimationHandler<float>(keyframes, x =>
-                {
-                    if (reference && reference.model)
-                        reference.model.mouthOpenAmount = Mathf.Clamp(0f, x, 1.5f);
-                }, interpolateOnComplete: true),
-
-                // Scale dialogue
-                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                {
-                    new Vector2Keyframe(0f, Vector2.zero, Ease.Linear),
-                    new Vector2Keyframe(0.2f * time, new Vector2(1.1f, 1.1f), Ease.SineOut),
-                    new Vector2Keyframe(0.8f * time, Vector2.one, Ease.SineInOut),
-                    new Vector2Keyframe(stayTime * time, Vector2.one, Ease.Linear),
-                    new Vector2Keyframe((stayTime + 0.3f) * time, Vector2.zero, Ease.BackIn),
-                    new Vector2Keyframe((stayTime + 0.6f) * time, Vector2.zero, Ease.Linear),
-                }, SetScale, interpolateOnComplete: true),
-            };
-
-            currentChatAnimation.onComplete = () =>
-            {
-                CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
-                currentChatAnimation = null;
-                if (reference && reference.brain)
-                    reference.brain.talking = false;
-
-                onComplete?.Invoke();
-            };
-
-            CompanionManager.inst.animationController.Play(currentChatAnimation);
-        }
-
-        RTAnimation currentChatAnimation;
 
         #endregion
 
@@ -193,30 +71,6 @@ namespace BetterLegacy.Companion.Entity
             this.dialogueText = text;
 
             SetScale(Vector2.zero);
-
-            dialogueFunctions = new Func<bool>[]
-            {
-                SayAnyways, // 0
-                HasLoadedLevel, // 1
-                CanSay, // 2
-                ApplicationNotFocused, // 3
-                HasNotLoadedLevel, // 4
-                LeftHandBeingDragged, // 5
-                RightHandBeingDragged, // 6
-                BeingDragged, // 7
-                UserIsSleepyz, // 8
-                UserIsMecha, // 9
-                UserIsDiggy, // 10
-                UserIsCubeCube, // 11
-                UserIsTori, // 12
-                UserIsPlayer, // 13
-                TimeLongerThan10Hours, // 14
-                ObjectsAliveCountHigherThan900, // 15
-                LevelCountIsZero, // 16
-                UserIsMoNsTeR, // 17
-            };
-
-            LoadDialogue();
         }
 
         public override void Tick()
@@ -242,158 +96,343 @@ namespace BetterLegacy.Companion.Entity
         #region Dialogue
 
         /// <summary>
-        /// Path to Example's dialogue file.
+        /// The groups of dialogues Example can say.
         /// </summary>
-        public virtual string DialoguePath => RTFile.GetAsset($"Example Parts/dialogue{FileFormat.JSON.Dot()}");
+        public List<ExampleDialogueGroup> dialogues = new List<ExampleDialogueGroup>();
 
-        public string lastDialogue;
-
-        public Dictionary<string, DialogueGroup> dialogueDictionary = new Dictionary<string, DialogueGroup>();
-
-        public bool saidDialogue = false;
-        public bool canSay = false;
-
-        public void Sleep()
+        /// <summary>
+        /// Registers dialogues.
+        /// </summary>
+        public virtual void RegisterDialogues()
         {
-            var eyes = reference.model.GetPart("EYES");
-            var allowBlinkingAttribute = reference.model.GetAttribute("ALLOW_BLINKING");
-            var originalValue = allowBlinkingAttribute.Value;
-            allowBlinkingAttribute.Value = 0.0;
-            var animation = new RTAnimation("Sleepy");
-            animation.animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 1f, Ease.Linear),
-                        new FloatKeyframe(0.5f, 0.3f, Ease.SineInOut),
-                        new FloatKeyframe(0.55f, 0f, Ease.SineIn),
-                        new FloatKeyframe(0.6f, 0.3f, Ease.SineOut),
-                        new FloatKeyframe(0.65f, 0f, Ease.SineIn),
-                        new FloatKeyframe(0.7f, 0.3f, Ease.SineOut),
-                        new FloatKeyframe(1f, 1f, Ease.SineInOut),
-                        new FloatKeyframe(1.1f, 1f, Ease.Linear),
-                    }, x => eyes.transform.localScale = new Vector3(1f, x, 1f)),
-                };
-
-            animation.onComplete = () =>
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.SPAWN, new ExampleDialogue[]
             {
-                allowBlinkingAttribute.Value = originalValue;
-                CompanionManager.inst.animationController.Remove(animation.id);
+                new ExampleDialogue((companion, parameters) => "What would you like me to do?"),
+                new ExampleDialogue((companion, parameters) => "Make something awesome! Or not, if you're not a creator."),
+                new ExampleDialogue((companion, parameters) => "Tori has entered the editor and I'm scared. I'm joking, keep building to your hearts desire!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_TORI)),
+                new ExampleDialogue((companion, parameters) => "DIGGYYYYYYY BROOOOOOOOOOOOO",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
+                new ExampleDialogue((companion, parameters) => "A *BS*USB? Helloooo?!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
+                new ExampleDialogue((companion, parameters) => "Sleepy time",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_SLEEPYZ)),
+                new ExampleDialogue((companion, parameters) => "i forgor",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_SLEEPYZ)),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.GREETING, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Hi!!!!!!!"),
+                new ExampleDialogue((companion, parameters) => "Hello!!"),
+                new ExampleDialogue((companion, parameters) => $"Hey {CoreConfig.Instance.DisplayName.Value}!"),
+                new ExampleDialogue((companion, parameters) => $"Hiya {CoreConfig.Instance.DisplayName.Value}!!"),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.LOADED_NEW_LEVEL, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Yay, a new level!"),
+                new ExampleDialogue((companion, parameters) => "Ooh, it's a new level!?"),
+                new ExampleDialogue((companion, parameters) => "What's this level gonna be?"),
+                new ExampleDialogue((companion, parameters) => "Hello new level!!"),
+                new ExampleDialogue((companion, parameters) => "I'm excited to see what this level is going to be!"),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.LOADED_LEVEL, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Level has loaded! Have fun building."),
+                new ExampleDialogue((companion, parameters) => "Have fun!"),
+                new ExampleDialogue((companion, parameters) => "Level has loaded! I hope you enjoy the building process."),
+                new ExampleDialogue((companion, parameters) => "I hope you enjoy the building process!"),
+                new ExampleDialogue((companion, parameters) => "What are you building today?"),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.CREATE_OBJECT, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Ooh, a new object! What will this become?"),
+                new ExampleDialogue((companion, parameters) => "What's that gonna be?"),
+                new ExampleDialogue((companion, parameters) => "Hello new object!"),
+                new ExampleDialogue((companion, parameters) => "What will this object be for?"),
+                new ExampleDialogue((companion, parameters) => "Hey, it's a new object!"),
+                new ExampleDialogue((companion, parameters) => $"What are you gonna use this for, {CoreConfig.Instance.DisplayName.Value}?"),
+                new ExampleDialogue((companion, parameters) => "Look at that new object, isn't it cute?"),
+                new ExampleDialogue((companion, parameters) => "oh god not another object",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_TORI)),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.OCCASIONAL, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Seems like you have no levels... maybe you should make one?",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.NO_EDITOR_LEVELS)),
+                new ExampleDialogue((companion, parameters) => "Maybe you should make something...?",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.NO_EDITOR_LEVELS)),
+                new ExampleDialogue((companion, parameters) => "Uh oh... I hope your computer isn't crashing...",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
+                new ExampleDialogue((companion, parameters) => "Hmmm...",
+                    () => reference.brain.timeSinceLastInteracted > 600f),
+                new ExampleDialogue((companion, parameters) => "What's up?"),
+                new ExampleDialogue((companion, parameters) => "You got this!"),
+                new ExampleDialogue((companion, parameters) => "How are you doing so far?"),
+                new ExampleDialogue((companion, parameters) => "How are you doing so far? I hope you're doing okay."),
+                new ExampleDialogue((companion, parameters) => "How are you going so far?"),
+                new ExampleDialogue((companion, parameters) => "How are you going so far? I hope you're doing okay."),
+                new ExampleDialogue((companion, parameters) => $"Hey, {CoreConfig.Instance.DisplayName.Value}"),
+                new ExampleDialogue((companion, parameters) => "Hey! You should probably have a break...",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.TIME_LONGER_THAN_10_HOURS)),
+                new ExampleDialogue((companion, parameters) => "Hey! You should touch grass.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.TIME_LONGER_THAN_10_HOURS)),
+                new ExampleDialogue((companion, parameters) => "Jeez.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.TIME_LONGER_THAN_10_HOURS)),
+                new ExampleDialogue((companion, parameters) => "*Caw caw*",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_TORI)),
+                new ExampleDialogue((companion, parameters) => "CrowBirb moment",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_TORI)),
+                new ExampleDialogue((companion, parameters) => "A four dimensional tesseract.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_CUBECUBE)),
+                new ExampleDialogue((companion, parameters) => "The snail is coming.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_CUBECUBE)),
+                new ExampleDialogue((companion, parameters) => "Snufusnargan",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
+                new ExampleDialogue((companion, parameters) => "What the heck, its MoNsTeR?",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_MONSTER)),
+                new ExampleDialogue((companion, parameters) => "Hey Mecha! Keep going, you got this!!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_RTMECHA)),
+                new ExampleDialogue((companion, parameters) => "Please don't break anything...",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_SLEEPYZ)),
+                new ExampleDialogue((companion, parameters) => "In parkour ci-",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_APPY)),
+                new ExampleDialogue((companion, parameters) => "We do a bit of trolling",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_APPY)),
+                new ExampleDialogue((companion, parameters) => "Hey, you might want to set a username. Set it via pressing the ConfigManager toggle key ({CoreConfig.Instance.OpenConfigKey.Value}), going to the User section of the Core tab and then changing the name there.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DEFAULT)),
+                new ExampleDialogue((companion, parameters) => $"Where's your username? Set it via pressing the ConfigManager toggle key ({CoreConfig.Instance.OpenConfigKey.Value}), going to the User section of the Core tab and then changing the name there.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DEFAULT)),
+                new ExampleDialogue((companion, parameters) => "Maybe you should open a level?",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.HAS_NOT_LOADED_LEVEL)),
+                new ExampleDialogue((companion, parameters) => "I wonder what these levels are like...",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.HAS_NOT_LOADED_LEVEL)),
+                new ExampleDialogue((companion, parameters) => "What are you waiting for?",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.HAS_NOT_LOADED_LEVEL)),
+                new ExampleDialogue((companion, parameters) => "Hello...?",
+                    () => !reference.interactions.Check(ExampleInteractions.Checks.APPLICATION_FOCUSED)),
+                new ExampleDialogue((companion, parameters) => "Are you there?",
+                    () => !reference.interactions.Check(ExampleInteractions.Checks.APPLICATION_FOCUSED)),
+                new ExampleDialogue((companion, parameters) => "Uhhh...",
+                    () => !reference.interactions.Check(ExampleInteractions.Checks.APPLICATION_FOCUSED)),
+                new ExampleDialogue((companion, parameters) => "Where'd you go?",
+                    () => !reference.interactions.Check(ExampleInteractions.Checks.APPLICATION_FOCUSED)),
+                new ExampleDialogue((companion, parameters) => "Welp.", () =>
+                    {
+                        var attribute = reference.brain.GetAttribute("SEEN_WELP_DIALOGUE");
+                        if (attribute.Value == 0.0)
+                        {
+                            reference.brain.SetAttribute("SEEN_WELP_DIALOGUE", 1.0, MathOperation.Set);
+                            return true;
+                        }
+                        return false;
+                    }),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.RANDOM_IDEA, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Make a bomb!"),
+                new ExampleDialogue((companion, parameters) => "Make a bullet!"),
+                new ExampleDialogue((companion, parameters) => "Make a beam!"),
+                new ExampleDialogue((companion, parameters) => "Make a pulse!"),
+                new ExampleDialogue((companion, parameters) => "Make a character!"),
+            }));
+        }
+
+        /// <summary>
+        /// Overrides an existing dialogue.
+        /// </summary>
+        /// <param name="key">Key of the dialogue group to override.</param>
+        /// <param name="dialogueGroup">Dialogue group to override.</param>
+        public void OverrideDialogue(string key, ExampleDialogueGroup dialogueGroup)
+        {
+            if (dialogues.TryFindIndex(x => x.key == key, out int index))
+                dialogues[index] = dialogueGroup;
+        }
+
+        /// <summary>
+        /// Finds a dialogue and makes Example say it.
+        /// </summary>
+        /// <param name="key">Key of the dialogue group.</param>
+        /// <param name="parameters">Dialogue parameters to pass.</param>
+        public void SayDialogue(string key, DialogueParameters parameters = null)
+        {
+            var dialogueGroup = dialogues.Find(x => x.key == key);
+            if (!dialogueGroup)
+                return;
+
+            var dialogue = dialogueGroup.GetDialogue();
+            if (dialogue)
+                Say(dialogue, parameters);
+        }
+
+        /// <summary>
+        /// Makes Example say something.
+        /// </summary>
+        /// <param name="dialogue">Dialogue for Example to say.</param>
+        /// <param name="parameters">Dialogue parameters.</param>
+        public void Say(ExampleDialogue dialogue, DialogueParameters parameters = null)
+        {
+            if (!parameters)
+                parameters = new DialogueParameters(UnityEngine.Random.Range(0, dialogue.dialogueCount));
+
+            var text = dialogue?.get?.Invoke(Example.Current, parameters);
+
+            if (!reference || !reference.brain)
+            {
+                Debug.Log($"Uh oh... looks like either Example is dead or he's brain dead.........");
+                return;
+            }
+
+            reference.brain.talking = true;
+
+            text = text.Replace("{{Username}}", CoreConfig.Instance.DisplayName.Value);
+
+            RTString.RegexMatches(text, new Regex(@"{{Config_(.*?)_(.*?)}}"), match =>
+            {
+                var configName = match.Groups[1].ToString();
+                var config = LegacyPlugin.configs.Find(x => x.Name == configName);
+                var setting = config.Settings.Find(x => x.Key == match.Groups[2].ToString());
+
+                text = text.Replace(match.Groups[0].ToString(), setting.BoxedValue.ToString());
+            });
+
+            if (currentChatAnimation)
+                CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
+
+            if (!ExampleConfig.Instance.CanSpeak.Value)
+            {
+                dialogueBase.transform.localScale = new Vector3(0f, 0f, 1f);
+                return;
+            }
+
+            CoreHelper.Log($"Example says: {text}");
+
+            currentChatAnimation = new RTAnimation($"DIALOGUE: {text}");
+
+            var ogMouth = reference.model.mouthOpenAmount;
+
+            var keyframes = new List<IKeyframe<float>>();
+            keyframes.Add(new FloatKeyframe(0f, 0.5f, Ease.Linear));
+
+            float mouthTime = 0.1f;
+            var totalLength = parameters.textLength * parameters.time * 10;
+            for (int i = 0; i < (int)totalLength / 2; i++)
+            {
+                keyframes.Add(new FloatKeyframe(mouthTime * parameters.time, ogMouth * 1.85f, Ease.SineOut));
+                mouthTime += 0.1f;
+                keyframes.Add(new FloatKeyframe(mouthTime * parameters.time, 0.5f, Ease.SineIn));
+                mouthTime += 0.1f;
+            }
+
+            int prevLetterNum = 0;
+
+            currentChatAnimation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 90f, Ease.Linear),
+                    new FloatKeyframe(1.5f * parameters.time, 0f, Ease.ElasticOut),
+                }, dialogueBase.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 1f, Ease.Linear),
+                    new FloatKeyframe(parameters.textLength * parameters.time, text.Length, Ease.SineOut),
+                }, x =>
+                {
+                    if (prevLetterNum != (int)x)
+                    {
+                        prevLetterNum = (int)x;
+                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.2f, 0.3f), UnityEngine.Random.Range(0.97f, 1.03f));
+                    }
+
+                    try
+                    {
+                        dialogueText.text = text.Substring(0, (int)x + 1);
+                    }
+                    catch
+                    {
+                        dialogueText.text = text.Substring(0, (int)x);
+                    }
+                }, interpolateOnComplete: true),
+                new AnimationHandler<float>(keyframes, x =>
+                {
+                    if (reference && reference.model)
+                        reference.model.mouthOpenAmount = Mathf.Clamp(0f, x, 1.5f);
+                }, interpolateOnComplete: true),
+
+                // Scale dialogue
+                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                {
+                    new Vector2Keyframe(0f, Vector2.zero, Ease.Linear),
+                    new Vector2Keyframe(0.2f * parameters.time, new Vector2(1.1f, 1.1f), Ease.SineOut),
+                    new Vector2Keyframe(0.8f * parameters.time, Vector2.one, Ease.SineInOut),
+                    new Vector2Keyframe(parameters.stayTime * parameters.time, Vector2.one, Ease.Linear),
+                    new Vector2Keyframe((parameters.stayTime + 0.3f) * parameters.time, Vector2.zero, Ease.BackIn),
+                    new Vector2Keyframe((parameters.stayTime + 0.6f) * parameters.time, Vector2.zero, Ease.Linear),
+                }, SetScale, interpolateOnComplete: true),
             };
 
-            CompanionManager.inst.animationController.Play(animation);
-        }
-
-        public void SayDialogue(string dialogueName)
-        {
-            if (!dialogueDictionary.TryGetValue(dialogueName, out DialogueGroup dialogueGroup))
-                return;
-
-            var dialogues = dialogueGroup.dialogues;
-            var random = UnityEngine.Random.Range(0, dialogues.Length);
-
-            while (!dialogues[random].CanSay)
+            currentChatAnimation.onComplete = () =>
             {
-                if (reference.brain.dancing)
-                    break;
-                random = UnityEngine.Random.Range(0, dialogues.Length);
-            }
+                CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
+                currentChatAnimation = null;
+                if (reference && reference.brain)
+                    reference.brain.talking = false;
 
-            if (reference.brain.dancing)
-                return;
+                parameters.onComplete?.Invoke();
+            };
 
-            Say(dialogues[random].text);
-            dialogues[random].Action();
+            CompanionManager.inst.animationController.Play(currentChatAnimation);
+
         }
 
-        void LoadDialogue()
+        /// <summary>
+        /// Library of default dialogues.
+        /// </summary>
+        public static class Dialogues
         {
-            dialogueDictionary.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile(DialoguePath));
+            /// <summary>
+            /// When Example spawns.
+            /// </summary>
+            public const string SPAWN = "Spawn";
 
-            for (int i = 0; i < jn["dialogue_groups"].Count; i++)
-            {
-                var dialogueGroup = jn["dialogue_groups"][i];
+            /// <summary>
+            /// Say hi!
+            /// </summary>
+            public const string GREETING = "Greeting";
 
-                var dialogues = new ExampleDialogue[dialogueGroup["dialogue"].Count];
-                for (int j = 0; j < dialogueGroup["dialogue"].Count; j++)
-                {
-                    var dialogue = dialogueGroup["dialogue"][j];
-                    int dialogueFunction = 0;
-                    if (dialogue["func_index"] != null)
-                        dialogueFunction = dialogue["func_index"].AsInt;
+            /// <summary>
+            /// Loaded a new editor level.
+            /// </summary>
+            public const string LOADED_NEW_LEVEL = "Loaded New Level";
 
-                    Func<bool> dialogueFunc =
-                        dialogue["func"] != null ?
-                        () =>
-                        {
-                            try
-                            {
-                                var evaluation = RTCode.EvaluateWithReturn(dialogue["func"]);
-                                return evaluation is bool boolean && boolean;
-                            }
-                            catch
-                            {
-                                return false;
-                            }
-                        }
-                    : dialogueFunctions[dialogueFunction];
+            /// <summary>
+            /// Loaded an editor level.
+            /// </summary>
+            public const string LOADED_LEVEL = "Loaded Level";
 
-                    Action action = dialogue["action"] != null ? RTCode.ConvertToAction(dialogue["action"]) : null;
+            /// <summary>
+            /// Created an object.
+            /// </summary>
+            public const string CREATE_OBJECT = "Create Object";
 
-                    dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunc, action);
-                }
+            /// <summary>
+            /// Something Example says every now and then.
+            /// </summary>
+            public const string OCCASIONAL = "Occasional";
 
-                dialogueDictionary[dialogueGroup["name"]] = new DialogueGroup(dialogueGroup["name"], dialogues);
-            }
+            /// <summary>
+            /// Example gives a random idea.
+            /// </summary>
+            public const string RANDOM_IDEA = "Random Idea";
         }
 
-        public bool CanSay() => canSay;
-
-        public bool ApplicationNotFocused() => !Application.isFocused;
-
-        public bool HasNotLoadedLevel() => EditorManager.inst && !EditorManager.inst.hasLoadedLevel && RTEditor.inst.LevelPanels.Count > 0;
-
-        public bool HasLoadedLevel() => EditorManager.inst && EditorManager.inst.hasLoadedLevel;
-
-        public bool LeftHandBeingDragged() => reference.draggingLeftHand;
-
-        public bool RightHandBeingDragged() => reference.draggingRightHand;
-
-        public bool BeingDragged() => reference.dragging;
-
-        public bool UserIsSleepyz() => CoreConfig.Instance.DisplayName.Value.ToLower() == "sleepyz" || CoreConfig.Instance.DisplayName.Value.ToLower() == "sleepyzgamer";
-
-        public bool UserIsMecha() => CoreConfig.Instance.DisplayName.Value == "RTMecha";
-
-        public bool UserIsDiggy() =>
-            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "diggy" ||
-            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "diggydog" ||
-            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "diggydog176";
-
-        public bool UserIsCubeCube() =>
-            CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "cubecube";
-
-        public bool UserIsTori() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "karasutori";
-        public bool UserIsPlayer() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "player";
-
-        public bool TimeLongerThan10Hours() => Time.time > 36000f;
-
-        public bool SayAnyways() => true;
-
-        public bool ObjectsAliveCountHigherThan900() => GameData.IsValid && GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count > 900;
-
-        public bool LevelCountIsZero() => CoreHelper.InEditor && RTEditor.inst.LevelPanels.Count <= 0;
-
-        public bool UserIsMoNsTeR() => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "monster";
-
-        public Func<bool>[] dialogueFunctions;
+        RTAnimation currentChatAnimation;
 
         #endregion
 
         #region UI
 
-        public void SetScale(Vector2 scale)
+        void SetScale(Vector2 scale)
         {
             if (dialogueBase)
                 dialogueBase.transform.localScale = new Vector3(scale.x, scale.y, 1f);

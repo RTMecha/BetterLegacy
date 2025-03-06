@@ -1,6 +1,11 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Companion.Data;
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace BetterLegacy.Companion.Entity
@@ -27,7 +32,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-
+            RegisterChecks();
         }
 
         #endregion
@@ -54,6 +59,10 @@ namespace BetterLegacy.Companion.Entity
         /// When you interupt Example while he's dancing. Bruh.
         /// </summary>
         public const string INTERRUPT = "Interrupt";
+        /// <summary>
+        /// When you run the select all objects command.
+        /// </summary>
+        public const string SELECT_OBJECTS_COMMAND = "Select Objects Command";
 
         // TODO:
         // you can respond to Example's question about what a level is, which will add to his memory.
@@ -103,6 +112,99 @@ namespace BetterLegacy.Companion.Entity
         public override void Clear()
         {
             attributes.Clear();
+        }
+
+        #endregion
+
+        #region Checks
+
+        /// <summary>
+        /// List of checks.
+        /// </summary>
+        public List<ExampleCheck> checks = new List<ExampleCheck>();
+
+        /// <summary>
+        /// Registers checks.
+        /// </summary>
+        public virtual void RegisterChecks()
+        {
+            checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
+            checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && RTEditor.inst.LevelPanels.Count > 0));
+            checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel));
+            checks.Add(new ExampleCheck(Checks.BEING_DRAGGED, () => reference && reference.dragging));
+            checks.Add(new ExampleCheck(Checks.USER_IS_SLEEPYZ, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.ToLower(), "sleepyz", "sleepyzgamer")));
+            checks.Add(new ExampleCheck(Checks.USER_IS_RTMECHA, () => CoreConfig.Instance.DisplayName.Value == "RTMecha"));
+            checks.Add(new ExampleCheck(Checks.USER_IS_DIGGY, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.ToLower(), "diggy", "diggydog", "diggydog176")));
+            checks.Add(new ExampleCheck(Checks.USER_IS_CUBECUBE, () => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "cubecube"));
+            checks.Add(new ExampleCheck(Checks.USER_IS_TORI, () => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "karasutori"));
+            checks.Add(new ExampleCheck(Checks.USER_IS_MONSTER, () => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "monster"));
+            checks.Add(new ExampleCheck(Checks.USER_IS_APPY, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower(), "appy", "appysketch", "applebutter")));
+            checks.Add(new ExampleCheck(Checks.USER_IS_APPY, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower(), "appy", "appysketch", "applebutter")));
+            checks.Add(new ExampleCheck(Checks.USER_IS_DEFAULT, () => CoreConfig.Instance.DisplayName.Value == CoreConfig.Instance.DisplayName.Default));
+            checks.Add(new ExampleCheck(Checks.TIME_LONGER_THAN_10_HOURS, () => Time.time > 36000f));
+            checks.Add(new ExampleCheck(Checks.OBJECTS_ALIVE_COUNT_HIGH, () => Updater.levelProcessor.engine.objectSpawner.activateList.Count > 900));
+            checks.Add(new ExampleCheck(Checks.NO_EDITOR_LEVELS, () => CoreHelper.InEditor && RTEditor.inst.LevelPanels.Count <= 0));
+        }
+
+        /// <summary>
+        /// Overrides an existing check.
+        /// </summary>
+        /// <param name="key">Key of the check to override.</param>
+        /// <param name="check">Check to override.</param>
+        public void OverrideCheck(string key, ExampleCheck check)
+        {
+            if (checks.TryFindIndex(x => x.key == key, out int index))
+                checks[index] = check;
+        }
+
+        /// <summary>
+        /// Gets a check and checks if its active.
+        /// </summary>
+        /// <param name="key">Key of the check.</param>
+        /// <returns>Returns true if the check is found and active, otherwise returns false.</returns>
+        public bool Check(string key) => GetCheck(key).Check();
+
+        /// <summary>
+        /// Gets a check.
+        /// </summary>
+        /// <param name="key">Key of the check.</param>
+        /// <returns>If a check is found, return the check, otherwise return the default check.</returns>
+        public ExampleCheck GetCheck(string key) => checks.Find(x => x.key == key) ?? ExampleCheck.Default;
+
+        /// <summary>
+        /// Library of default checks.
+        /// </summary>
+        public static class Checks
+        {
+            public const string APPLICATION_FOCUSED = "Application Not Focused";
+
+            public const string HAS_NOT_LOADED_LEVEL = "Has Not Loaded Level";
+
+            public const string HAS_LOADED_LEVEL = "Has Loaded Level";
+
+            public const string BEING_DRAGGED = "Being Dragged";
+
+            public const string USER_IS_SLEEPYZ = "User Is Sleepyz";
+
+            public const string USER_IS_RTMECHA = "User Is RTMecha";
+
+            public const string USER_IS_DIGGY = "User Is Diggy";
+
+            public const string USER_IS_CUBECUBE = "User Is CubeCube";
+
+            public const string USER_IS_TORI = "User Is Tori";
+
+            public const string USER_IS_MONSTER = "User Is Monster";
+
+            public const string USER_IS_APPY = "User Is Appy";
+
+            public const string USER_IS_DEFAULT = "User Is Default";
+
+            public const string TIME_LONGER_THAN_10_HOURS = "Time Longer Than 10 Hours";
+
+            public const string OBJECTS_ALIVE_COUNT_HIGH = "Objects Alive Count High";
+
+            public const string NO_EDITOR_LEVELS = "No Editor Levels";
         }
 
         #endregion

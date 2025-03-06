@@ -250,7 +250,7 @@ namespace BetterLegacy.Patchers
             __instance.loading = false;
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_START);
-            Example.Current?.chatBubble?.SayDialogue("SpawnText");
+            Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.SPAWN);
 
             // spawn Example on load
             if (ModCompatibility.ShouldLoadExample)

@@ -142,6 +142,11 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+                case ExampleInteractions.SELECT_OBJECTS_COMMAND: {
+                        reference?.chatBubble?.Say("Selected all objects!");
+
+                        break;
+                    }
             }
         }
 
@@ -170,12 +175,12 @@ namespace BetterLegacy.Companion.Entity
                     }
                 case Notices.LOADED_LEVEL: {
                         if (RandomHelper.PercentChance(ExampleConfig.Instance.LoadedLevelNoticeChance.Value))
-                            reference?.chatBubble?.SayDialogue(RTEditor.inst.fromNewLevel ? "LoadedNewLevel" : "LoadedLevel");
+                            reference?.chatBubble?.SayDialogue(RTEditor.inst.fromNewLevel ? ExampleChatBubble.Dialogues.LOADED_NEW_LEVEL : ExampleChatBubble.Dialogues.LOADED_LEVEL);
                         break;
                     }
                 case Notices.NEW_OBJECT: {
                         if (RandomHelper.PercentChance(ExampleConfig.Instance.NewObjectNoticeChance.Value))
-                            reference?.chatBubble?.SayDialogue("CreateObject");
+                            reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.CREATE_OBJECT);
                         break;
                     }
                 case Notices.WARNING_POPUP: {
@@ -219,9 +224,12 @@ namespace BetterLegacy.Companion.Entity
                             break;
 
                         SetAttribute("SEEN_GAME_FILE_EASTER_EGG", 1.0, MathOperation.Set);
-                        reference?.chatBubble?.Say("Woah, you found a secret!", onComplete: () =>
+                        reference?.chatBubble?.Say("Woah, you found a secret!", new Data.DialogueParameters()
                         {
-                            reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", 2f, 6f);
+                            onComplete = () =>
+                            {
+                                reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", new Data.DialogueParameters(2f, 6f, 0.7f));
+                            }
                         });
 
                         break;
@@ -299,21 +307,23 @@ namespace BetterLegacy.Companion.Entity
 
         float dialogueRepeatRate;
 
-        public void RepeatDialogues()
+        bool saidDialogue;
+
+        void RepeatDialogues()
         {
             if (reference.brain.talking)
                 return;
 
             float t = reference.timer.time % dialogueRepeatRate;
-            if (t <= dialogueRepeatRate - 0.1f || reference.chatBubble.saidDialogue)
+            if (t <= dialogueRepeatRate - 0.1f || saidDialogue)
             {
-                reference.chatBubble.saidDialogue = false;
+                saidDialogue = false;
                 return;
             }
 
-            reference.chatBubble.saidDialogue = true;
+            saidDialogue = true;
 
-            reference.chatBubble.SayDialogue("OccasionalDialogue");
+            reference.chatBubble.SayDialogue(ExampleChatBubble.Dialogues.OCCASIONAL);
             dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
         }
 

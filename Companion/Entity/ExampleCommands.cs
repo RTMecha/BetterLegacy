@@ -37,7 +37,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-            LoadCommands();
+            RegisterCommands();
         }
 
         #endregion
@@ -216,14 +216,74 @@ namespace BetterLegacy.Companion.Entity
         #region Commands
 
         /// <summary>
-        /// Path to Example's commands file.
-        /// </summary>
-        public virtual string CommandsPath => RTFile.GetAsset($"Example Parts/commands{FileFormat.JSON.Dot()}");
-
-        /// <summary>
         /// List of commands with responses.
         /// </summary>
         public List<ExampleCommand> commands = new List<ExampleCommand>();
+
+        /// <summary>
+        /// Registers commands.
+        /// </summary>
+        public virtual void RegisterCommands()
+        {
+            RegisterChat("Greet Example", ExampleChatBubble.Dialogues.GREETING,
+                new List<ExampleCommand.Phrase>
+                {
+                    new ExampleCommand.Phrase("hello example"),
+                    new ExampleCommand.Phrase("hello buddy"),
+                    new ExampleCommand.Phrase("hello friend"),
+                    new ExampleCommand.Phrase("hello"),
+                    new ExampleCommand.Phrase("hey example"),
+                    new ExampleCommand.Phrase("hey buddy"),
+                    new ExampleCommand.Phrase("hey friend"),
+                    new ExampleCommand.Phrase("hey"),
+                    new ExampleCommand.Phrase("hi example"),
+                    new ExampleCommand.Phrase("hi buddy"),
+                    new ExampleCommand.Phrase("hi friend"),
+                    new ExampleCommand.Phrase("hi"),
+                });
+
+            commands.Add(new ExampleCommand("evaluate (1 + 1)", "Evaluates a math expression", true,
+                response =>
+                {
+                    try
+                    {
+                        reference.chatBubble.Say(RTMath.Parse(response).ToString());
+                    }
+                    catch
+                    {
+                        reference.chatBubble.Say("Couldn't calculate that, sorry...");
+                    }
+                }, true,
+                new List<ExampleCommand.Phrase>
+                {
+                    new ExampleCommand.Phrase("evaluate \\((.*?)\\)", true),
+                }));
+
+            commands.Add(new ExampleCommand("Select all objects", "Selects every Beatmap Object and Prefab Object in the current level.", true,
+                response => EditorHelper.SelectAllObjects()));
+            commands.Add(new ExampleCommand("Select all objects on current layer", "Selects every Beatmap Object and Prefab Object in the current level's currently viewed editor layer.", true,
+                response => EditorHelper.SelectAllObjectsOnCurrentLayer()));
+            commands.Add(new ExampleCommand("Mirror Selection", "Horizontally mirrors selected objects.", true,
+                response => EditorHelper.MirrorSelectedObjects()));
+            commands.Add(new ExampleCommand("Flip Selection", "Vertically flips selected objects.", true,
+                response => EditorHelper.MirrorSelectedObjects()));
+            commands.Add(new ExampleCommand("Refresh selected objects animations", "Updates just the animation of all selected objects.", true,
+                response => EditorHelper.RefreshKeyframesFromSelection()));
+            commands.Add(new ExampleCommand("Give a random idea", "Example outputs a random idea.", true,
+                response => reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.RANDOM_IDEA)));
+        }
+
+        /// <summary>
+        /// Registers a command that acts as a chat message to Example.
+        /// </summary>
+        /// <param name="key">Key of the message.</param>
+        /// <param name="dialogue">Dialogue key to respond with.</param>
+        /// <param name="phrases">Phrases to match.</param>
+        public void RegisterChat(string key, string dialogue, List<ExampleCommand.Phrase> phrases)
+        {
+            commands.Add(new ExampleCommand(key, key, false,
+                response => reference?.chatBubble?.SayDialogue(dialogue), phrases));
+        }
 
         /// <summary>
         /// Searches for a command.
@@ -261,15 +321,6 @@ namespace BetterLegacy.Companion.Entity
                 commands[i].CheckResponse(chatter.text);
 
             AchievementManager.inst.UnlockAchievement("example_chat");
-        }
-
-        void LoadCommands()
-        {
-            commands.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile(CommandsPath));
-
-            for (int i = 0; i < jn["commands"].Count; i++)
-                commands.Add(ExampleCommand.Parse(jn["commands"][i]));
         }
 
         #endregion
