@@ -53,453 +53,8 @@ namespace BetterLegacy.Companion.Entity
 
             #endregion
 
-            parts.Clear();
-            parts.Add(ParentPart.Default.ID("BASE").Name("Base")
-            .OnTick(part =>
-            {
-                // render the models' position
-                if (!part || !part.transform)
-                    return;
-
-                part.transform.localPosition = position + new Vector2(0f, (Ease.SineInOut(reference.timer.time * 0.5f % 2f) - 0.5f) * 2f);
-                part.transform.localScale = scale;
-                part.rotation = rotation;
-            }));
-
-            parts.Add(ImagePart.Default.ID("HEAD").ParentID("BASE").Name("Head").ImagePath(Example.GetFile("example head.png"))
-            .OnTick(part =>
-            {
-                // tick function
-
-                if (!reference || !reference.dragging)
-                    return;
-
-                rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
-
-                reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
-
-                position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
-            })
-            .OnClick((part, pointerEventData) =>
-            {
-                // onClick function
-
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                reference?.options?.Toggle();
-            })
-            .OnDown((part, pointerEventData) =>
-            {
-                // onDown function
-
-                if (!reference || !reference.canDrag || reference.leaving)
-                    return;
-
-                // start dragging
-
-                if (pointerEventData.button != PointerEventData.InputButton.Left || !reference.canDrag)
-                    return;
-
-                reference?.brain?.Interact(ExampleInteractions.PET);
-
-                CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
-
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                reference.startDragPos = new Vector2(position.x, position.y);
-                reference.dragPos = new Vector3(position.x, position.y);
-                reference.dragging = true;
-
-                SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.6f, 0.7f), UnityEngine.Random.Range(1.1f, 1.3f));
-
-                if (reference.brain.dancing)
-                {
-                    reference.brain.Interact(ExampleInteractions.INTERRUPT);
-                    reference.brain.StopDancing();
-                }
-
-                SetPose(Poses.START_DRAG);
-            })
-            .OnUp((part, pointerEventData) =>
-            {
-                // onUp function
-
-                if (!reference || !reference.dragging || reference.leaving)
-                    return;
-
-                // end dragging
-
-                facePosition = Vector3.zero;
-
-                reference.dragging = false;
-
-                SetPose(Poses.END_DRAG);
-            }));
-
-            parts.Add(ParentPart.Default.ID("FACE").ParentID("HEAD").Name("Face")
-            .OnTick(part =>
-            {
-                // tick function
-
-                if (!part || !part.transform)
-                    return;
-
-                if (GetAttribute("FACE_CAN_LOOK").Value == 1.0)
-                {
-                    var lerp = RTMath.Lerp(Vector2.zero, reference.brain.LookingAt - new Vector2(part.transform.position.x, part.transform.position.y), CompanionManager.FACE_LOOK_MULTIPLIER);
-                    part.transform.localPosition = new Vector3(lerp.x, lerp.y, 0f);
-                    facePosition = part.transform.localPosition;
-                }
-                else
-                    part.transform.localPosition = facePosition;
-
-                if (reference.dragging)
-                    facePosition = new Vector2(
-                        Mathf.Clamp(-((reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay), -14f, 14f),
-                        Mathf.Clamp(-((reference.DragTarget.y - reference.dragPos.y) * reference.DragDelay), -14f, 14f));
-            }));
-
-            #region Ears
-
-            parts.Add(ParentPart.Default.ID("EARS").ParentID("HEAD").SiblingIndex(0).Name("Ears")
-            .OnTick(part =>
-            {
-                // tick function
-
-                part.rotation = facePosition.x * 0.8f;
-            }));
-
-            parts.Add(ImagePart.Default.ID("EAR_BOTTOM_LEFT").ParentID("EARS").Name("Ear Bottom Left").ImagePath(Example.GetFile("example ear bottom.png"))
-            .Rect(RectValues.Default.AnchoredPosition(25f, 35f).Rotation(-30f))
-            .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
-
-            parts.Add(ImagePart.Default.ID("EAR_TOP_LEFT").ParentID("EAR_BOTTOM_LEFT").Name("Ear Top Left").ImagePath(Example.GetFile("example ear top.png"))
-            .Rect(RectValues.Default)
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(-90f))
-            .OnClick((part, pointerEventData) =>
-            {
-                var animation = new RTAnimation("Ear Left Flick");
-                animation.animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.1f, -30f, Ease.SineOut),
-                        new FloatKeyframe(0.7f, 0f, Ease.SineInOut),
-                    }, x => part.parent.rotation = x),
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.05f, -50f, Ease.Linear),
-                        new FloatKeyframe(0.3f, 30f, Ease.SineOut),
-                        new FloatKeyframe(0.9f, 0f, Ease.SineInOut),
-                    }, x => part.imageRotation = x),
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
-            }));
-
-            parts.Add(ImagePart.Default.ID("EAR_BOTTOM_RIGHT").ParentID("EARS").Name("Ear Bottom Right").ImagePath(Example.GetFile("example ear bottom.png"))
-            .Rect(RectValues.Default.AnchoredPosition(-25f, 35f).Rotation(30f))
-            .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
-
-            parts.Add(ImagePart.Default.ID("EAR_TOP_RIGHT").ParentID("EAR_BOTTOM_RIGHT").Name("Ear Top Right").ImagePath(Example.GetFile("example ear top.png"))
-            .Rect(RectValues.Default)
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(90f))
-            .OnClick((part, pointerEventData) =>
-            {
-                var animation = new RTAnimation("Ear Right Flick");
-                animation.animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.1f, 30f, Ease.SineOut),
-                        new FloatKeyframe(0.7f, 0f, Ease.SineInOut),
-                    }, x => part.parent.rotation = x),
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.05f, 50f, Ease.Linear),
-                        new FloatKeyframe(0.3f, -30f, Ease.SineOut),
-                        new FloatKeyframe(0.9f, 0f, Ease.SineInOut),
-                    }, x => part.imageRotation = x),
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
-            }));
-
-            #endregion
-
-            parts.Add(ImagePart.Default.ID("TAIL").ParentID("HEAD").SiblingIndex(0).Name("Tail").ImagePath(Example.GetFile("example tail.png"))
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, -58f).SizeDelta(28f, 42f))
-            .OnTick(part =>
-            {
-                // tick function
-
-                if (!part || !part.transform)
-                    return;
-
-                float faceXPos = facePosition.x * CompanionManager.FACE_X_MULTIPLIER;
-                part.rotation = -faceXPos;
-                ((ImagePart)part).imageRotation = -faceXPos;
-            })
-            .OnClick((part, pointerEventData) =>
-            {
-                if (!reference.leaving)
-                    reference?.brain?.Interact(ExampleInteractions.TOUCHIE);
-            }));
-
-            #region Eyes
-
-            parts.Add(ImagePart.Default.ID("EYES").ParentID("FACE").Name("Eyes").ImagePath(Example.GetFile("example eyes.png"))
-            .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
-            .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
-            .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
-
-            parts.Add(ImagePart.Default.ID("PUPILS").ParentID("EYES").Name("Pupils").ImagePath(Example.GetFile("example pupils.png"))
-            .ImageRect(RectValues.Default.SizeDelta(47f, 22f))
-            .OnTick(part =>
-            {
-                if (!part || !part.transform || GetAttribute("PUPILS_CAN_LOOK").Value == 0.0)
-                    return;
-
-                float t = reference.timer.time % CompanionManager.PUPILS_LOOK_RATE;
-
-                // Here we add a tiny amount of movement to the pupils to make Example feel a lot more alive.
-                if (t > CompanionManager.PUPILS_LOOK_RATE - 0.3f && GetAttribute("PUPILS_CAN_CHANGE").Value == 1.0)
-                    pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
-
-                GetAttribute("PUPILS_CAN_CHANGE").Value = (t <= CompanionManager.PUPILS_LOOK_RATE - 0.3f) ? 0.0 : 1.0;
-
-                var pupils = part.transform;
-                pupils.AsRT().anchoredPosition = RTMath.Lerp(Vector2.zero, reference.brain.LookingAt - new Vector2(pupils.position.x, pupils.position.y), 0.004f) + pupilsOffset;
-            })
-            .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
-            .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
-
-            parts.Add(ImagePart.Default.ID("BLINK").ParentID("EYES").Name("Blink").ImagePath(Example.GetFile("example blink.png"))
-            .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
-            .OnTick(part =>
-            {
-                if (!part || !part.gameObject)
-                    return;
-
-                float t = reference.timer.time % CompanionManager.BLINK_RATE;
-
-                if (!reference.Dragging && GetAttribute("ALLOW_BLINKING").Value == 1.0 && GetAttribute("DANCING").Value == 0.0 && GetAttribute("POKING_EYES").Value == 0.0)
-                {
-                    var blinkingAttribute = GetAttribute("IS_BLINKING");
-                    var canUnblinkAttribute = GetAttribute("CAN_UNBLINK");
-                    if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
-                        blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
-
-                    var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
-                    canUnblinkAttribute.Value = active ? 0.0 : 1.0;
-                    part.gameObject.SetActive(active);
-                }
-                else
-                    part.gameObject.SetActive(true);
-            }));
-
-            parts.Add(ParentPart.Default.ID("BROWS").ParentID("FACE").Name("Brows")
-            .Rect(RectValues.Default.AnchoredPosition(0f, 30f)));
-
-            parts.Add(ImagePart.Default.ID("BROW_LEFT").ParentID("BROWS").Name("Brow Left").ImagePath(Example.GetFile("example brow.png"))
-            .Rect(RectValues.Default.AnchoredPosition(22f, 0f))
-            .ImageRect(RectValues.Default.AnchoredPosition(18f, 0f).Pivot(1.7f, 0.5f).SizeDelta(20f, 6f)));
-
-            parts.Add(ImagePart.Default.ID("BROW_RIGHT").ParentID("BROWS").Name("Brow Right").ImagePath(Example.GetFile("example brow.png"))
-            .Rect(RectValues.Default.AnchoredPosition(-22f, 0f))
-            .ImageRect(RectValues.Default.AnchoredPosition(-18f, 0f).Pivot(-0.7f, 0.5f).SizeDelta(20f, 6f)));
-
-            #endregion
-
-            #region Snout
-
-            parts.Add(ImagePart.Default.ID("SNOUT").ParentID("FACE").Name("Snout").ImagePath(Example.GetFile("example snout.png"))
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, -31f).SizeDelta(60f, 31f)));
-
-            parts.Add(ParentPart.Default.ID("MOUTH_BASE").ParentID("SNOUT").Name("Mouth Base")
-            .Rect(RectValues.Default.AnchoredPosition(0f, -30f))
-            .OnTick(part =>
-            {
-                // tick function
-
-                if (part && part.transform)
-                    part.transform.localPosition = new Vector3(facePosition.x, (facePosition.y * 0.5f) + -30f, 0f);
-            }));
-
-            parts.Add(ImagePart.Default.ID("MOUTH_UPPER").ParentID("MOUTH_BASE").Name("Mouth Upper").ImagePath(Example.GetFile("example mouth.png"))
-            .Rect(RectValues.Default.Scale(1f, 0.15f).Rotation(180f))
-            .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f)));
-
-            parts.Add(ImagePart.Default.ID("MOUTH_LOWER").ParentID("MOUTH_BASE").Name("Mouth Lower").ImagePath(Example.GetFile("example mouth.png"))
-            .Rect(RectValues.Default.Scale(1f, 0f))
-            .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f))
-            .OnTick(part =>
-            {
-                if (!part || !part.transform)
-                    return;
-
-                part.transform.SetLocalScaleY(Mathf.Clamp(mouthOpenAmount, 0f, 1f));
-            }));
-
-            parts.Add(ImagePart.Default.ID("LIPS").ParentID("MOUTH_BASE").Name("Lips").ImagePath(Example.GetFile("example lips.png"))
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, 3f).Pivot(0.5f, 1f).SizeDelta(32f, 8f)));
-
-            parts.Add(ImagePart.Default.ID("NOSE").ParentID("SNOUT").Name("Nose").ImagePath(Example.GetFile("example nose.png"))
-            .Rect(RectValues.Default.AnchoredPosition(0f, -20f))
-            .ImageRect(RectValues.Default.SizeDelta(22f, 8f))
-            .OnTick(part =>
-            {
-                // tick function
-
-                if (!part || !part.transform)
-                    return;
-
-                part.transform.localPosition = new Vector3(facePosition.x, (facePosition.y * 0.5f) + -20f, 0f);
-            }));
-
-            #endregion
-
-            #region Hands
-
-            parts.Add(ParentPart.Default.ID("HANDS_BASE").ParentID("BASE").Name("Hands Base"));
-
-            parts.Add(ImagePart.Default.ID("HAND_LEFT").ParentID("HANDS_BASE").Name("Hand Left").ImagePath(Example.GetFile("example hand.png"))
-            .Rect(RectValues.Default.AnchoredPosition(40f, 0f))
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
-            .OnTick(part =>
-            {
-                if (reference && part && part.transform && reference.draggingLeftHand)
-                    part.transform.localPosition += ((Vector3)reference.DragTarget - part.transform.localPosition) * reference.DragDelay;
-            })
-            .OnDown((part, pointerEventData) =>
-            {
-                if (reference.leaving)
-                    return;
-
-                reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
-                if (!reference || !reference.canDragLeftHand || !part || !part.transform)
-                    return;
-
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                reference.startDragPos = new Vector2(part.transform.localPosition.x, part.transform.localPosition.y);
-                reference.draggingLeftHand = true;
-
-                if (reference.brain.dancing)
-                    reference.brain.StopDancing();
-            })
-            .OnUp((part, pointerEventData) =>
-            {
-                if (!reference || !reference.canDragLeftHand || !part || !part.transform || reference.leaving)
-                    return;
-
-                reference.draggingLeftHand = false;
-
-                try
-                {
-                    reference.interactions.SelectObject(part.image);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-
-                var animation = new RTAnimation("Example Hand Reset")
-                {
-                    animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                        {
-                            new Vector2Keyframe(0f, part.transform.AsRT().anchoredPosition, Ease.Linear),
-                            new Vector2Keyframe(0.3f, new Vector2(40f, 0f), Ease.SineOut),
-                            new Vector2Keyframe(0.32f, new Vector2(40f, 0f), Ease.Linear),
-                        }, x =>
-                        {
-                            if (part && part.transform)
-                                part.transform.AsRT().anchoredPosition = x;
-                        }, interpolateOnComplete: true),
-                    },
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
-            }));
-
-            parts.Add(ImagePart.Default.ID("HAND_RIGHT").ParentID("HANDS_BASE").Name("Hand Right").ImagePath(Example.GetFile("example hand.png"))
-            .Rect(RectValues.Default.AnchoredPosition(-40f, 0f))
-            .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
-            .OnTick(part =>
-            {
-                if (reference && part && part.transform && reference.draggingRightHand)
-                    part.transform.localPosition += ((Vector3)reference.DragTarget - part.transform.localPosition) * reference.DragDelay;
-            })
-            .OnDown((part, pointerEventData) =>
-            {
-                if (reference.leaving)
-                    return;
-
-                reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
-                if (!reference || !reference.canDragRightHand || !part || !part.transform)
-                    return;
-
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                reference.startDragPos = new Vector2(part.transform.localPosition.x, part.transform.localPosition.y);
-                reference.draggingRightHand = true;
-
-                if (reference.brain.dancing)
-                    reference.brain.StopDancing();
-            })
-            .OnUp((part, pointerEventData) =>
-            {
-                if (!reference || !reference.canDragRightHand || !part || !part.transform || reference.leaving)
-                    return;
-
-                reference.draggingRightHand = false;
-
-                try
-                {
-                    reference.interactions.SelectObject(part.image);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-
-                var animation = new RTAnimation("Example Hand Reset")
-                {
-                    animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                        {
-                            new Vector2Keyframe(0f, part.transform.AsRT().anchoredPosition, Ease.Linear),
-                            new Vector2Keyframe(0.3f, new Vector2(-40f, 0f), Ease.SineOut),
-                            new Vector2Keyframe(0.32f, new Vector2(-40f, 0f), Ease.Linear),
-                        }, x =>
-                        {
-                            if (part && part.transform)
-                                part.transform.AsRT().anchoredPosition = x;
-                        }, interpolateOnComplete: true),
-                    },
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
-            }));
-
-            #endregion
+            RegisterParts();
+            RegisterPoses();
 
             startDancing = () =>
             {
@@ -517,8 +72,6 @@ namespace BetterLegacy.Companion.Entity
                 Debug.Log($"{CompanionManager.className}Example has stopped dancing!");
                 StopDanceAnimation();
             };
-
-            RegisterPoses();
         }
 
         #endregion
@@ -631,18 +184,6 @@ namespace BetterLegacy.Companion.Entity
             parts.Clear();
             attributes.Clear();
 
-            if (startDragAnimation)
-            {
-                CompanionManager.inst.animationController.Remove(startDragAnimation.id);
-                startDragAnimation = null;
-            }
-
-            if (endDragAnimation)
-            {
-                CompanionManager.inst.animationController.Remove(endDragAnimation.id);
-                endDragAnimation = null;
-            }
-
             if (danceLoopAnimation)
             {
                 CompanionManager.inst.animationController.Remove(danceLoopAnimation.id);
@@ -743,22 +284,27 @@ namespace BetterLegacy.Companion.Entity
         /// Function to run before building.
         /// </summary>
         public static Action<ExampleModel> preBuild;
+
         /// <summary>
         /// Function to run after building.
         /// </summary>
         public static Action<ExampleModel> postBuild;
+
         /// <summary>
         /// Function to run before per-tick.
         /// </summary>
         public static Action<ExampleModel> onPreTick;
+
         /// <summary>
         /// Function to run after per-tick.
         /// </summary>
         public static Action<ExampleModel> onPostTick;
+
         /// <summary>
         /// Function to run when Example starts dancing.
         /// </summary>
         public Action startDancing;
+
         /// <summary>
         /// Function to run when Example is interrupted from dancing.
         /// </summary>
@@ -772,6 +318,385 @@ namespace BetterLegacy.Companion.Entity
         /// List of the model's parts.
         /// </summary>
         public List<BasePart> parts = new List<BasePart>();
+
+        /// <summary>
+        /// Registers the model's parts.
+        /// </summary>
+        public virtual void RegisterParts()
+        {
+            parts.Clear();
+            parts.Add(ParentPart.Default.ID(Parts.BASE).Name("Base")
+            .OnTick(part =>
+            {
+                // render the models' transforms
+                part?.SetPosition(position + new Vector2(0f, (Ease.SineInOut(reference.timer.time * 0.5f % 2f) - 0.5f) * 2f));
+                part?.SetScale(scale);
+                part?.SetRotation(rotation);
+            }));
+
+            parts.Add(ImagePart.Default.ID(Parts.HEAD).ParentID(Parts.BASE).Name("Head").ImagePath(Example.GetFile("example head.png"))
+            .OnTick(part =>
+            {
+                // tick function
+
+                if (!reference || !reference.dragging)
+                    return;
+
+                rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
+
+                reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
+
+                position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
+            })
+            .OnClick((part, pointerEventData) =>
+            {
+                // onClick function
+
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                reference?.options?.Toggle();
+            })
+            .OnDown((part, pointerEventData) =>
+            {
+                // onDown function
+
+                if (pointerEventData.button != PointerEventData.InputButton.Left || !reference || !reference.canDrag || reference.leaving)
+                    return;
+
+                // start dragging
+
+                reference?.brain?.Interact(ExampleInteractions.PET);
+
+                CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
+
+                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startDragPos = new Vector2(position.x, position.y);
+                reference.dragPos = new Vector3(position.x, position.y);
+                reference.dragging = true;
+
+                SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.6f, 0.7f), UnityEngine.Random.Range(1.1f, 1.3f));
+
+                SetPose(Poses.START_DRAG);
+
+                if (reference.brain.CurrentAction)
+                {
+                    reference.brain.Interact(ExampleInteractions.INTERRUPT);
+                    reference.brain.StopCurrentAction();
+                }
+            })
+            .OnUp((part, pointerEventData) =>
+            {
+                // onUp function
+
+                if (!reference || !reference.dragging || reference.leaving)
+                    return;
+
+                // end dragging
+
+                facePosition = Vector3.zero;
+
+                reference.dragging = false;
+
+                SetPose(Poses.END_DRAG);
+            }));
+
+            parts.Add(ParentPart.Default.ID(Parts.FACE).ParentID(Parts.HEAD).Name("Face")
+            .OnTick(part =>
+            {
+                // tick function
+
+                if (!part || !part.transform)
+                    return;
+
+                if (GetAttribute("FACE_CAN_LOOK").Value == 1.0)
+                {
+                    var lerp = RTMath.Lerp(Vector2.zero, reference.brain.LookingAt - new Vector2(part.transform.position.x, part.transform.position.y), CompanionManager.FACE_LOOK_MULTIPLIER);
+                    part?.SetPosition(new Vector3(lerp.x, lerp.y, 0f));
+                    facePosition = part.position;
+                }
+                else
+                    part?.SetPosition(facePosition);
+
+                if (reference.dragging)
+                    facePosition = new Vector2(
+                        Mathf.Clamp(-((reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay), -14f, 14f),
+                        Mathf.Clamp(-((reference.DragTarget.y - reference.dragPos.y) * reference.DragDelay), -14f, 14f));
+            }));
+
+            #region Ears
+
+            parts.Add(ParentPart.Default.ID(Parts.EARS).ParentID(Parts.HEAD).SiblingIndex(0).Name("Ears")
+            .OnTick(part =>
+            {
+                part.rotation = facePosition.x * 0.8f;
+            }));
+
+            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_LEFT).ParentID(Parts.EARS).Name("Ear Bottom Left").ImagePath(Example.GetFile("example ear bottom.png"))
+            .Rect(RectValues.Default.AnchoredPosition(25f, 35f).Rotation(-30f))
+            .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
+
+            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_LEFT).ParentID(Parts.EAR_BOTTOM_LEFT).Name("Ear Top Left").ImagePath(Example.GetFile("example ear top.png"))
+            .Rect(RectValues.Default)
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(-90f))
+            .OnClick((part, pointerEventData) =>
+            {
+                SetPose(Poses.EAR_LEFT_FLICK);
+            }));
+
+            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_RIGHT).ParentID(Parts.EARS).Name("Ear Bottom Right").ImagePath(Example.GetFile("example ear bottom.png"))
+            .Rect(RectValues.Default.AnchoredPosition(-25f, 35f).Rotation(30f))
+            .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
+
+            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_RIGHT).ParentID(Parts.EAR_BOTTOM_RIGHT).Name("Ear Top Right").ImagePath(Example.GetFile("example ear top.png"))
+            .Rect(RectValues.Default)
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(90f))
+            .OnClick((part, pointerEventData) =>
+            {
+                SetPose(Poses.EAR_RIGHT_FLICK);
+            }));
+
+            #endregion
+
+            parts.Add(ImagePart.Default.ID(Parts.TAIL).ParentID(Parts.HEAD).SiblingIndex(0).Name("Tail").ImagePath(Example.GetFile("example tail.png"))
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, -58f).SizeDelta(28f, 42f))
+            .OnTick(part =>
+            {
+                float faceXPos = facePosition.x * CompanionManager.FACE_X_MULTIPLIER;
+                part.rotation = -faceXPos;
+                ((ImagePart)part).imageRotation = -faceXPos;
+            })
+            .OnClick((part, pointerEventData) =>
+            {
+                if (!reference.leaving)
+                    reference?.brain?.Interact(ExampleInteractions.TOUCHIE);
+            }));
+
+            #region Eyes
+
+            parts.Add(ImagePart.Default.ID(Parts.EYES).ParentID(Parts.FACE).Name("Eyes").ImagePath(Example.GetFile("example eyes.png"))
+            .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
+            .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
+            .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
+
+            parts.Add(ImagePart.Default.ID(Parts.PUPILS).ParentID(Parts.EYES).Name("Pupils").ImagePath(Example.GetFile("example pupils.png"))
+            .ImageRect(RectValues.Default.SizeDelta(47f, 22f))
+            .OnTick(part =>
+            {
+                if (!part || !part.transform || GetAttribute("PUPILS_CAN_LOOK").Value == 0.0)
+                    return;
+
+                float t = reference.timer.time % CompanionManager.PUPILS_LOOK_RATE;
+
+                // Here we add a tiny amount of movement to the pupils to make Example feel a lot more alive.
+                if (t > CompanionManager.PUPILS_LOOK_RATE - 0.3f && GetAttribute("PUPILS_CAN_CHANGE").Value == 1.0)
+                    pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
+
+                GetAttribute("PUPILS_CAN_CHANGE").Value = (t <= CompanionManager.PUPILS_LOOK_RATE - 0.3f) ? 0.0 : 1.0;
+
+                part.SetPosition(RTMath.Lerp(Vector2.zero, reference.brain.LookingAt - new Vector2(part.transform.position.x, part.transform.position.y), 0.004f) + pupilsOffset);
+            })
+            .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
+            .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
+
+            parts.Add(ImagePart.Default.ID(Parts.BLINK).ParentID(Parts.EYES).Name("Blink").ImagePath(Example.GetFile("example blink.png"))
+            .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
+            .OnTick(part =>
+            {
+                if (!part || !part.gameObject)
+                    return;
+
+                float t = reference.timer.time % CompanionManager.BLINK_RATE;
+
+                if (!reference.Dragging && GetAttribute("ALLOW_BLINKING").Value == 1.0 && GetAttribute("DANCING").Value == 0.0 && GetAttribute("POKING_EYES").Value == 0.0)
+                {
+                    var blinkingAttribute = GetAttribute("IS_BLINKING");
+                    var canUnblinkAttribute = GetAttribute("CAN_UNBLINK");
+                    if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
+                        blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
+
+                    var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
+                    canUnblinkAttribute.Value = active ? 0.0 : 1.0;
+                    part.gameObject.SetActive(active);
+                }
+                else
+                    part.gameObject.SetActive(true);
+            }));
+
+            parts.Add(ParentPart.Default.ID(Parts.BROWS).ParentID(Parts.FACE).Name("Brows")
+            .Rect(RectValues.Default.AnchoredPosition(0f, 30f)));
+
+            parts.Add(ImagePart.Default.ID(Parts.BROW_LEFT).ParentID(Parts.BROWS).Name("Brow Left").ImagePath(Example.GetFile("example brow.png"))
+            .Rect(RectValues.Default.AnchoredPosition(22f, 0f))
+            .ImageRect(RectValues.Default.AnchoredPosition(18f, 0f).Pivot(1.7f, 0.5f).SizeDelta(20f, 6f)));
+
+            parts.Add(ImagePart.Default.ID(Parts.BROW_RIGHT).ParentID(Parts.BROWS).Name("Brow Right").ImagePath(Example.GetFile("example brow.png"))
+            .Rect(RectValues.Default.AnchoredPosition(-22f, 0f))
+            .ImageRect(RectValues.Default.AnchoredPosition(-18f, 0f).Pivot(-0.7f, 0.5f).SizeDelta(20f, 6f)));
+
+            #endregion
+
+            #region Snout
+
+            parts.Add(ImagePart.Default.ID(Parts.SNOUT).ParentID(Parts.FACE).Name("Snout").ImagePath(Example.GetFile("example snout.png"))
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, -31f).SizeDelta(60f, 31f)));
+
+            parts.Add(ParentPart.Default.ID(Parts.MOUTH_BASE).ParentID(Parts.SNOUT).Name("Mouth Base")
+            .Rect(RectValues.Default.AnchoredPosition(0f, -30f))
+            .OnTick(part =>
+            {
+                part?.SetPosition(new Vector2(facePosition.x, facePosition.y * 0.5f));
+            }));
+
+            parts.Add(ImagePart.Default.ID(Parts.MOUTH_UPPER).ParentID(Parts.MOUTH_BASE).Name("Mouth Upper").ImagePath(Example.GetFile("example mouth.png"))
+            .Rect(RectValues.Default.Rotation(180f)).Scale(new Vector2(1f, 0.15f))
+            .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f)));
+
+            parts.Add(ImagePart.Default.ID(Parts.MOUTH_LOWER).ParentID(Parts.MOUTH_BASE).Name("Mouth Lower").ImagePath(Example.GetFile("example mouth.png"))
+            .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f))
+            .OnTick(part =>
+            {
+                part?.SetScale(new Vector2(part.scale.x, Mathf.Clamp(mouthOpenAmount, 0f, 1f)));
+            }));
+
+            parts.Add(ImagePart.Default.ID(Parts.LIPS).ParentID(Parts.MOUTH_BASE).Name("Lips").ImagePath(Example.GetFile("example lips.png"))
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, 3f).Pivot(0.5f, 1f).SizeDelta(32f, 8f)));
+
+            parts.Add(ImagePart.Default.ID(Parts.NOSE).ParentID(Parts.SNOUT).Name("Nose").ImagePath(Example.GetFile("example nose.png"))
+            .Rect(RectValues.Default.AnchoredPosition(0f, -20f))
+            .ImageRect(RectValues.Default.SizeDelta(22f, 8f))
+            .OnTick(part =>
+            {
+                part?.SetPosition(new Vector2(facePosition.x, facePosition.y * 0.5f));
+            }));
+
+            #endregion
+
+            #region Hands
+
+            parts.Add(ParentPart.Default.ID(Parts.HANDS_BASE).ParentID("BASE").Name("Hands Base"));
+
+            parts.Add(ImagePart.Default.ID(Parts.HAND_LEFT).ParentID(Parts.HANDS_BASE).Name("Hand Left").ImagePath(Example.GetFile("example hand.png"))
+            .Position(new Vector2(40f, 0f))
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
+            .OnTick(part =>
+            {
+                if (reference && part && reference.draggingLeftHand)
+                    part?.SetPosition(part.position + ((reference.DragTarget - part.position) * reference.DragDelay));
+            })
+            .OnDown((part, pointerEventData) =>
+            {
+                if (reference.leaving)
+                    return;
+
+                reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
+                if (!reference || !reference.canDragLeftHand || !part)
+                    return;
+
+                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startDragPos = new Vector2(part.position.x, part.position.y);
+                reference.draggingLeftHand = true;
+
+                if (reference.brain.CurrentAction)
+                    reference.brain.StopCurrentAction();
+            })
+            .OnUp((part, pointerEventData) =>
+            {
+                if (!reference || !reference.canDragLeftHand || !part || reference.leaving)
+                    return;
+
+                reference.draggingLeftHand = false;
+
+                try
+                {
+                    reference.interactions.SelectObject(part.image);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+
+                var animation = new RTAnimation("Example Hand Reset")
+                {
+                    animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                        {
+                            new Vector2Keyframe(0f, part.position, Ease.Linear),
+                            new Vector2Keyframe(0.3f, new Vector2(40f, 0f), Ease.SineOut),
+                            new Vector2Keyframe(0.32f, new Vector2(40f, 0f), Ease.Linear),
+                        }, part.SetPosition, interpolateOnComplete: true),
+                    },
+                };
+                animation.onComplete = () =>
+                {
+                    CompanionManager.inst.animationController.Remove(animation.id);
+                };
+                CompanionManager.inst.animationController.Play(animation);
+            }));
+
+            parts.Add(ImagePart.Default.ID(Parts.HAND_RIGHT).ParentID(Parts.HANDS_BASE).Name("Hand Right").ImagePath(Example.GetFile("example hand.png"))
+            .Position(new Vector2(-40f, 0f))
+            .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
+            .OnTick(part =>
+            {
+                if (reference && part && reference.draggingRightHand)
+                    part.SetPosition(part.position + ((reference.DragTarget - part.position) * reference.DragDelay));
+            })
+            .OnDown((part, pointerEventData) =>
+            {
+                if (reference.leaving)
+                    return;
+
+                reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
+                if (!reference || !reference.canDragRightHand || !part)
+                    return;
+
+                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startDragPos = new Vector2(part.position.x, part.position.y);
+                reference.draggingRightHand = true;
+
+                if (reference.brain.CurrentAction)
+                    reference.brain.StopCurrentAction();
+            })
+            .OnUp((part, pointerEventData) =>
+            {
+                if (!reference || !reference.canDragRightHand || !part || reference.leaving)
+                    return;
+
+                reference.draggingRightHand = false;
+
+                try
+                {
+                    reference.interactions.SelectObject(part.image);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+
+                var animation = new RTAnimation("Example Hand Reset")
+                {
+                    animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                        {
+                            new Vector2Keyframe(0f, part.position, Ease.Linear),
+                            new Vector2Keyframe(0.3f, new Vector2(-40f, 0f), Ease.SineOut),
+                            new Vector2Keyframe(0.32f, new Vector2(-40f, 0f), Ease.Linear),
+                        }, part.SetPosition, interpolateOnComplete: true),
+                    },
+                };
+                animation.onComplete = () =>
+                {
+                    CompanionManager.inst.animationController.Remove(animation.id);
+                };
+                CompanionManager.inst.animationController.Play(animation);
+            }));
+
+            #endregion
+
+        }
 
         /// <summary>
         /// Gets a part by its ID.
@@ -907,6 +832,16 @@ namespace BetterLegacy.Companion.Entity
             public RectValues rect = RectValues.Default;
 
             /// <summary>
+            /// Local position of the part.
+            /// </summary>
+            public Vector2 position;
+
+            /// <summary>
+            /// Local scale of the part.
+            /// </summary>
+            public Vector2 scale = Vector2.one;
+
+            /// <summary>
             /// Full rotation of the part.
             /// </summary>
             public float rotation;
@@ -915,31 +850,19 @@ namespace BetterLegacy.Companion.Entity
             /// Sets the parts' position.
             /// </summary>
             /// <param name="pos">Position to set.</param>
-            public void SetPosition(Vector2 pos)
-            {
-                if (transform)
-                    transform.localPosition = pos;
-            }
+            public void SetPosition(Vector2 pos) => position = pos;
 
             /// <summary>
             /// Sets the parts' scale.
             /// </summary>
             /// <param name="sca">Scale to set.</param>
-            public void SetScale(Vector2 sca)
-            {
-                if (transform)
-                    transform.localScale = sca;
-            }
-            
+            public void SetScale(Vector2 sca) => scale = sca;
+
             /// <summary>
             /// Sets the parts' rotation.
             /// </summary>
             /// <param name="rot"></param>
-            public void SetRotation(float rot)
-            {
-                if (transform)
-                    transform.localRotation = Quaternion.Euler(0f, 0f, rot);
-            }
+            public void SetRotation(float rot) => rotation = rot;
 
             /// <summary>
             /// Builds the Example part.
@@ -952,7 +875,12 @@ namespace BetterLegacy.Companion.Entity
             public virtual void Tick()
             {
                 onTick?.Invoke(this);
-                SetRotation(rotation + rect.rotation);
+                if (!transform)
+                    return;
+
+                transform.localPosition = position + rect.anchoredPosition;
+                transform.localScale = scale * rect.scale;
+                transform.localRotation = Quaternion.Euler(0f, 0f, rotation + rect.rotation);
             }
 
             /// <summary>
@@ -1052,6 +980,24 @@ namespace BetterLegacy.Companion.Entity
             public ParentPart Rect(RectValues rect)
             {
                 this.rect = rect;
+                return this;
+            }
+
+            public ParentPart Position(Vector2 pos)
+            {
+                SetPosition(pos);
+                return this;
+            }
+            
+            public ParentPart Scale(Vector2 sca)
+            {
+                SetScale(sca);
+                return this;
+            }
+            
+            public ParentPart Rotation(float rot)
+            {
+                SetRotation(rot);
                 return this;
             }
 
@@ -1214,6 +1160,24 @@ namespace BetterLegacy.Companion.Entity
                 return this;
             }
 
+            public ImagePart Position(Vector2 pos)
+            {
+                SetPosition(pos);
+                return this;
+            }
+
+            public ImagePart Scale(Vector2 sca)
+            {
+                SetScale(sca);
+                return this;
+            }
+
+            public ImagePart Rotation(float rot)
+            {
+                SetRotation(rot);
+                return this;
+            }
+
             public ImagePart OnTick(string onTick)
             {
                 onTickCS = onTick;
@@ -1326,6 +1290,132 @@ namespace BetterLegacy.Companion.Entity
             public override string ToString() => id;
         }
 
+        /// <summary>
+        /// Library of default parts.
+        /// </summary>
+        public static class Parts
+        {
+            /// <summary>
+            /// Example's base parent.
+            /// </summary>
+            public const string BASE = "BASE";
+
+            /// <summary>
+            /// Example's head.
+            /// </summary>
+            public const string HEAD = "HEAD";
+
+            /// <summary>
+            /// Example's face parent.
+            /// </summary>
+            public const string FACE = "FACE";
+
+            /// <summary>
+            /// Example's ears parent.
+            /// </summary>
+            public const string EARS = "EARS";
+
+            /// <summary>
+            /// Example's left ear bottom part.
+            /// </summary>
+            public const string EAR_BOTTOM_LEFT = "EAR_BOTTOM_LEFT";
+
+            /// <summary>
+            /// Example's left ear top part.
+            /// </summary>
+            public const string EAR_TOP_LEFT = "EAR_TOP_LEFT";
+
+            /// <summary>
+            /// Example's right ear bottom part.
+            /// </summary>
+            public const string EAR_BOTTOM_RIGHT = "EAR_BOTTOM_RIGHT";
+
+            /// <summary>
+            /// Example's right ear top part.
+            /// </summary>
+            public const string EAR_TOP_RIGHT = "EAR_TOP_RIGHT";
+
+            /// <summary>
+            /// Example's tail.
+            /// </summary>
+            public const string TAIL = "TAIL";
+
+            /// <summary>
+            /// Example's eyes.
+            /// </summary>
+            public const string EYES = "EYES";
+
+            /// <summary>
+            /// Example's pupils.
+            /// </summary>
+            public const string PUPILS = "PUPILS";
+
+            /// <summary>
+            /// Example's blinking part.
+            /// </summary>
+            public const string BLINK = "BLINK";
+
+            /// <summary>
+            /// Example's brows parent.
+            /// </summary>
+            public const string BROWS = "BROWS";
+
+            /// <summary>
+            /// Example's left brow.
+            /// </summary>
+            public const string BROW_LEFT = "BROW_LEFT";
+
+            /// <summary>
+            /// Example's right brow.
+            /// </summary>
+            public const string BROW_RIGHT = "BROW_RIGHT";
+
+            /// <summary>
+            /// Example's snout.
+            /// </summary>
+            public const string SNOUT = "SNOUT";
+
+            /// <summary>
+            /// Example's mouth parent.
+            /// </summary>
+            public const string MOUTH_BASE = "MOUTH_BASE";
+
+            /// <summary>
+            /// Example's upper mouth part.
+            /// </summary>
+            public const string MOUTH_UPPER = "MOUTH_UPPER";
+
+            /// <summary>
+            /// Example's lower mouth part.
+            /// </summary>
+            public const string MOUTH_LOWER = "MOUTH_LOWER";
+
+            /// <summary>
+            /// Example's lips.
+            /// </summary>
+            public const string LIPS = "LIPS";
+
+            /// <summary>
+            /// Example's nose.
+            /// </summary>
+            public const string NOSE = "NOSE";
+
+            /// <summary>
+            /// Example's hands parent.
+            /// </summary>
+            public const string HANDS_BASE = "HANDS_BASE";
+
+            /// <summary>
+            /// Example's left hand.
+            /// </summary>
+            public const string HAND_LEFT = "HAND_LEFT";
+
+            /// <summary>
+            /// Example's right hand.
+            /// </summary>
+            public const string HAND_RIGHT = "HAND_RIGHT";
+        }
+
         #endregion
 
         #region Animations
@@ -1338,16 +1428,15 @@ namespace BetterLegacy.Companion.Entity
         public List<ExamplePose> poses = new List<ExamplePose>();
 
         /// <summary>
-        /// Registers the default poses.
+        /// Registers the model's poses.
         /// </summary>
         public virtual void RegisterPoses()
         {
             poses.Add(new ExamplePose(Poses.IDLE, (model, parameters) =>
             {
-                BasePart handLeft = GetPart("HAND_LEFT");
-                BasePart handRight = GetPart("HAND_RIGHT");
-
-                BasePart handsBase = GetPart("HANDS_BASE");
+                var handsBase = model.GetPart(Parts.HANDS_BASE);
+                var handLeft = model.GetPart(Parts.HAND_LEFT);
+                var handRight = model.GetPart(Parts.HAND_RIGHT);
 
                 var animation = new RTAnimation("RESET");
                 animation.animationHandlers = new List<AnimationHandlerBase>
@@ -1369,7 +1458,6 @@ namespace BetterLegacy.Companion.Entity
                         new FloatKeyframe(parameters.transitionTime, 0f, Ease.SineInOut),
                         new FloatKeyframe(parameters.transitionTime + 0.01f, 0f, Ease.Linear),
                     }, x => handsBase.rotation = x, interpolateOnComplete: true),
-
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, handLeft.rotation, Ease.Linear),
@@ -1385,9 +1473,41 @@ namespace BetterLegacy.Companion.Entity
                 {
                     new Core.Animation.AnimationEvent(parameters.transitionTime, () =>
                     {
-                        GetAttribute("FACE_CAN_LOOK").Value = 1.0;
-                        GetAttribute("ALLOW_BLINKING").Value = 1.0;
+                        model.GetAttribute("FACE_CAN_LOOK").Value = 1.0;
+                        model.GetAttribute("ALLOW_BLINKING").Value = 1.0;
                     }),
+                };
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.ENTER, (model, parameters) =>
+            {
+                var arm = model.GetPart(Parts.HAND_LEFT);
+
+                var animation = new RTAnimation("Hiii");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.5f, 800f, Ease.SineOut),
+                        new FloatKeyframe(0.8f, 750f, Ease.SineInOut),
+                    }, x => model.position.x = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, -1200f, Ease.Linear),
+                        new FloatKeyframe(0.3f, -380f, Ease.SineOut),
+                        new FloatKeyframe(0.6f, -410f, Ease.SineInOut),
+                    }, x => model.position.y = x, interpolateOnComplete: true),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.5f, 150f, Ease.SineOut),
+                        new FloatKeyframe(0.8f, 130f, Ease.SineInOut),
+                        new FloatKeyframe(1.2f, 150f, Ease.SineInOut),
+                        new FloatKeyframe(1.7f, 130f, Ease.SineInOut),
+                        new FloatKeyframe(2f, 0f, Ease.SineInOut),
+                    }, x => arm.rotation = x, interpolateOnComplete: true),
                 };
 
                 return animation;
@@ -1430,8 +1550,8 @@ namespace BetterLegacy.Companion.Entity
             }));
             poses.Add(new ExamplePose(Poses.WORRY, (model, parameters) =>
             {
-                var browLeft = GetPart("BROW_LEFT");
-                var browRight = GetPart("BROW_RIGHT");
+                var browLeft = model.GetPart(Parts.BROW_LEFT);
+                var browRight = model.GetPart(Parts.BROW_RIGHT);
 
                 if (!browLeft || !browRight)
                     throw new NullReferenceException("Brow Left or Right are null");
@@ -1455,8 +1575,8 @@ namespace BetterLegacy.Companion.Entity
             }));
             poses.Add(new ExamplePose(Poses.ANGRY, (model, parameters) =>
             {
-                var browLeft = GetPart("BROW_LEFT");
-                var browRight = GetPart("BROW_RIGHT");
+                var browLeft = model.GetPart(Parts.BROW_LEFT);
+                var browRight = model.GetPart(Parts.BROW_RIGHT);
 
                 if (!browLeft || !browRight)
                     throw new NullReferenceException("Brow Left or Right are null");
@@ -1482,15 +1602,16 @@ namespace BetterLegacy.Companion.Entity
             {
                 GetAttribute("FACE_CAN_LOOK").Value = 0.0;
 
-                Transform lips = GetPart("LIPS").transform;
-                Transform handLeft = GetPart("HAND_LEFT").transform.GetChild(0);
-                Transform handRight = GetPart("HAND_RIGHT").transform.GetChild(0);
+                var head = model.GetPart(Parts.HEAD);
 
-                BasePart browLeft = GetPart("BROW_LEFT");
-                BasePart browRight = GetPart("BROW_RIGHT");
+                var browLeft = model.GetPart(Parts.BROW_LEFT);
+                var browRight = model.GetPart(Parts.BROW_RIGHT);
 
-                BasePart handsBase = GetPart("HANDS_BASE");
-                BasePart head = GetPart("HEAD");
+                var lips = model.GetPart(Parts.LIPS);
+
+                var handsBase = model.GetPart(Parts.HANDS_BASE);
+                var handLeft = model.GetPart(Parts.HAND_LEFT).transform.GetChild(0);
+                var handRight = model.GetPart(Parts.HAND_RIGHT).transform.GetChild(0);
 
                 ExceptionHelper.NullReference(lips, "Example Lips");
                 ExceptionHelper.NullReference(handLeft, "Example Hand Left");
@@ -1505,9 +1626,9 @@ namespace BetterLegacy.Companion.Entity
                 {
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, head.transform.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0f, head.position.y, Ease.Linear),
                         new FloatKeyframe(0.2f, 10f, Ease.SineOut),
-                    }, head.transform.SetLocalPositionY, interpolateOnComplete: true),
+                    }, x => head.position.y = x, interpolateOnComplete: true),
                     new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                     {
                         new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
@@ -1554,14 +1675,14 @@ namespace BetterLegacy.Companion.Entity
                     }, x => mouthOpenAmount = x, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
+                        new FloatKeyframe(0f, lips.scale.y, Ease.Linear),
                         new FloatKeyframe(0.2f, 0.5f, Ease.SineOut),
-                    }, lips.SetLocalScaleY, interpolateOnComplete: true),
+                    }, x => lips.scale.y = x, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0f, lips.position.y, Ease.Linear),
                         new FloatKeyframe(0.2f, 2f, Ease.SineOut),
-                    }, lips.SetLocalPositionY, interpolateOnComplete: true),
+                    }, x => lips.position.y = x, interpolateOnComplete: true),
                 };
                 return animation;
             }));
@@ -1569,15 +1690,16 @@ namespace BetterLegacy.Companion.Entity
             {
                 GetAttribute("FACE_CAN_LOOK").Value = 1.0;
 
-                Transform lips = GetPart("LIPS").transform;
-                Transform handLeft = GetPart("HAND_LEFT").transform;
-                Transform handRight = GetPart("HAND_RIGHT").transform;
+                var head = model.GetPart(Parts.HEAD);
 
-                BasePart browLeft = GetPart("BROW_LEFT");
-                BasePart browRight = GetPart("BROW_RIGHT");
+                var browLeft = model.GetPart(Parts.BROW_LEFT);
+                var browRight = model.GetPart(Parts.BROW_RIGHT);
 
-                BasePart handsBase = GetPart("HANDS_BASE");
-                BasePart head = GetPart("HEAD");
+                var lips = model.GetPart(Parts.LIPS);
+
+                var handsBase = model.GetPart(Parts.HANDS_BASE);
+                var handLeft = model.GetPart(Parts.HAND_LEFT);
+                var handRight = model.GetPart(Parts.HAND_RIGHT);
 
                 ExceptionHelper.NullReference(lips, "Example Lips");
                 ExceptionHelper.NullReference(handLeft, "Example Hand Left");
@@ -1603,9 +1725,9 @@ namespace BetterLegacy.Companion.Entity
                     }, x => rotation = x, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, head.transform.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0f, head.position.y, Ease.Linear),
                         new FloatKeyframe(0.5f, 0f, Ease.BounceOut),
-                    }, head.transform.SetLocalPositionY, interpolateOnComplete: true),
+                    }, x => head.position.y = x, interpolateOnComplete: true),
 
                     // Mouth
                     new AnimationHandler<float>(new List<IKeyframe<float>>
@@ -1615,14 +1737,14 @@ namespace BetterLegacy.Companion.Entity
                     }, x => mouthOpenAmount = x, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
+                        new FloatKeyframe(0f, lips.scale.y, Ease.Linear),
                         new FloatKeyframe(0.2f, 1f, Ease.SineIn),
-                    }, lips.SetLocalScaleY, interpolateOnComplete: true),
+                    }, x => lips.scale.y = x, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0f, lips.position.y, Ease.Linear),
                         new FloatKeyframe(0.2f, 0f, Ease.SineIn),
-                    }, lips.SetLocalPositionY, interpolateOnComplete: true),
+                    }, x => lips.position.y = x, interpolateOnComplete: true),
 
 				    // Brows
 				    new AnimationHandler<float>(new List<IKeyframe<float>>
@@ -1644,41 +1766,36 @@ namespace BetterLegacy.Companion.Entity
                     // Hands
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
-                        new FloatKeyframe(0.1f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0f, handLeft.transform.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.1f, handLeft.transform.GetChild(0).localPosition.y, Ease.Linear),
                         new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
-                    }, handLeft.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
+                    }, handLeft.transform.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, handRight.GetChild(0).localPosition.y, Ease.Linear),
-                        new FloatKeyframe(0.1f, handRight.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0f, handRight.transform.GetChild(0).localPosition.y, Ease.Linear),
+                        new FloatKeyframe(0.1f, handRight.transform.GetChild(0).localPosition.y, Ease.Linear),
                         new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
-                    }, handRight.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
+                    }, handRight.transform.GetChild(0).SetLocalPositionY, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
-                        new FloatKeyframe(0.1f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(0f, handLeft.rotation, Ease.Linear),
+                        new FloatKeyframe(0.1f, handLeft.rotation, Ease.Linear),
                         new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
-                    }, handLeft.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                    }, handLeft.SetRotation, interpolateOnComplete: true),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new FloatKeyframe(0f, handRight.localRotation.eulerAngles.z, Ease.Linear),
-                        new FloatKeyframe(0.1f, handRight.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(0f, handRight.rotation, Ease.Linear),
+                        new FloatKeyframe(0.1f, handRight.rotation, Ease.Linear),
                         new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
-                    }, handRight.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                    }, handRight.SetRotation, interpolateOnComplete: true),
                 };
 
                 return animation;
             }));
             poses.Add(new ExamplePose(Poses.LOOK_AT, (model, parameters) =>
             {
-                var face = model.GetPart("FACE");
-                var pupils = model.GetPart("PUPILS");
-
-                ExceptionHelper.NullReference(face, "Example Face");
-                ExceptionHelper.NullReference(face.transform, "Example Face Transform");
-                ExceptionHelper.NullReference(pupils, "Example Pupils");
-                ExceptionHelper.NullReference(pupils.transform, "Example Pupils Transform");
+                var face = model.GetPart(Parts.FACE);
+                var pupils = model.GetPart(Parts.PUPILS);
 
                 var animation = new RTAnimation("Look At");
 
@@ -1687,24 +1804,76 @@ namespace BetterLegacy.Companion.Entity
                     var animationHandlers = new List<AnimationHandlerBase>();
                     if (lookAtParameters.disableFaceAuto)
                     {
-                        GetAttribute("FACE_CAN_LOOK").Value = 0.0;
+                        model.GetAttribute("FACE_CAN_LOOK").Value = 0.0;
                         animationHandlers.Add(new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
-                            new Vector2Keyframe(0f, face.transform.localPosition, Ease.Linear),
+                            new Vector2Keyframe(0f, face.position, Ease.Linear),
                             new Vector2Keyframe(parameters.transitionTime, lookAtParameters.faceLookAt, Ease.SineOut),
-                        }, vector2 => { if (face.transform) face.transform.localPosition = vector2; }, interpolateOnComplete: true));
+                        }, face.SetPosition, interpolateOnComplete: true));
                     }
                     if (lookAtParameters.disablePupilsAuto)
                     {
-                        GetAttribute("PUPILS_CAN_LOOK").Value = 0.0;
+                        model.GetAttribute("PUPILS_CAN_LOOK").Value = 0.0;
                         animationHandlers.Add(new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
-                            new Vector2Keyframe(0f, pupils.transform.localPosition, Ease.Linear),
+                            new Vector2Keyframe(0f, pupils.position, Ease.Linear),
                             new Vector2Keyframe(parameters.transitionTime, lookAtParameters.pupilsLookAt, Ease.SineOut),
-                        }, vector2 => { if (pupils.transform) pupils.transform.localPosition = vector2; }, interpolateOnComplete: true));
+                        }, pupils.SetPosition, interpolateOnComplete: true));
                     }
                     animation.animationHandlers = animationHandlers;
                 }
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.EAR_LEFT_FLICK, (model, parameters) =>
+            {
+                var part = model.GetPart(Parts.EAR_TOP_LEFT) as ImagePart;
+
+                ExceptionHelper.NullReference(part, "Example Ear Left Image Part");
+
+                var animation = new RTAnimation("Ear Left Flick");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.1f, -30f, Ease.SineOut),
+                        new FloatKeyframe(0.7f, 0f, Ease.SineInOut),
+                    }, x => part.parent.rotation = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.05f, -50f, Ease.Linear),
+                        new FloatKeyframe(0.3f, 30f, Ease.SineOut),
+                        new FloatKeyframe(0.9f, 0f, Ease.SineInOut),
+                    }, x => part.imageRotation = x),
+                };
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.EAR_RIGHT_FLICK, (model, parameters) =>
+            {
+                var part = model.GetPart(Parts.EAR_TOP_RIGHT) as ImagePart;
+
+                ExceptionHelper.NullReference(part, "Example Ear Right Image Part");
+
+                var animation = new RTAnimation("Ear Right Flick");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.1f, -30f, Ease.SineOut),
+                        new FloatKeyframe(0.7f, 0f, Ease.SineInOut),
+                    }, x => part.parent.rotation = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.05f, -50f, Ease.Linear),
+                        new FloatKeyframe(0.3f, 30f, Ease.SineOut),
+                        new FloatKeyframe(0.9f, 0f, Ease.SineInOut),
+                    }, x => part.imageRotation = x),
+                };
 
                 return animation;
             }));
@@ -1764,30 +1933,51 @@ namespace BetterLegacy.Companion.Entity
             /// Example resets his pose.
             /// </summary>
             public const string IDLE = "Idle";
+
+            /// <summary>
+            /// Example enters the scene.
+            /// </summary>
+            public const string ENTER = "Enter";
+
             /// <summary>
             /// Example leaves the scene.
             /// </summary>
             public const string LEAVE = "Leave";
+
             /// <summary>
             /// Example expresses concern.
             /// </summary>
             public const string WORRY = "Worry";
+
             /// <summary>
             /// Example expresses anger.
             /// </summary>
             public const string ANGRY = "Angry";
+
             /// <summary>
             /// Example is happy about being dragged.
             /// </summary>
             public const string START_DRAG = "Start Drag";
+
             /// <summary>
             /// Example resets after being dragged.
             /// </summary>
             public const string END_DRAG = "End Drag";
+
             /// <summary>
             /// Example looks at something.
             /// </summary>
             public const string LOOK_AT = "LOOK_AT";
+
+            /// <summary>
+            /// Example's left ear flicks.
+            /// </summary>
+            public const string EAR_LEFT_FLICK = "Ear Left Flick";
+
+            /// <summary>
+            /// Example's right ear flicks.
+            /// </summary>
+            public const string EAR_RIGHT_FLICK = "Ear Right Flick";
 
             // todo:
             /*
@@ -1823,15 +2013,8 @@ namespace BetterLegacy.Companion.Entity
             GetAttribute("FACE_CAN_LOOK").Value = 0.0;
             GetAttribute("ALLOW_BLINKING").Value = 0.0;
 
-            Transform lips = GetPart("LIPS").transform;
-            Transform handLeft = GetPart("HAND_LEFT").transform;
-            Transform handRight = GetPart("HAND_RIGHT").transform;
-
-            BasePart browLeft = GetPart("BROW_LEFT");
-            BasePart browRight = GetPart("BROW_RIGHT");
-
-            BasePart handsBase = GetPart("HANDS_BASE");
-            BasePart head = GetPart("HEAD");
+            var handsBase = GetPart(Parts.HANDS_BASE);
+            var head = GetPart(Parts.HEAD);
 
             danceLoopAnimation = new RTAnimation("Dance Loop");
             danceLoopAnimation.loop = true;
@@ -1852,7 +2035,7 @@ namespace BetterLegacy.Companion.Entity
                     new FloatKeyframe(0.8f, 0f, Ease.SineIn),
                     new FloatKeyframe(1.2f, 2f, Ease.SineOut),
                     new FloatKeyframe(1.6f, 0f, Ease.SineIn),
-                }, head.transform.SetLocalPositionX),
+                }, x => head.position.x = x),
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f,   0f, Ease.Linear),
@@ -1860,7 +2043,7 @@ namespace BetterLegacy.Companion.Entity
                     new FloatKeyframe(0.8f, 0f, Ease.SineIn),
                     new FloatKeyframe(1.2f, 1f, Ease.SineOut),
                     new FloatKeyframe(1.6f, 0f, Ease.SineIn),
-                }, head.transform.SetLocalPositionY),
+                }, x => head.position.y = x),
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, -3f, Ease.Linear),
@@ -1886,7 +2069,8 @@ namespace BetterLegacy.Companion.Entity
             };
             danceLoopAnimation.speed = UnityEngine.Random.Range(0.5f, 2f);
             CompanionManager.inst.animationController.Play(danceLoopAnimation);
-            reference.brain.dancing = true;
+
+            SetPose(Poses.WORRY);
         }
 
         /// <summary>
@@ -1902,8 +2086,6 @@ namespace BetterLegacy.Companion.Entity
             SetPose(Poses.IDLE);
         }
 
-        RTAnimation startDragAnimation;
-        RTAnimation endDragAnimation;
         RTAnimation danceLoopAnimation;
 
         #endregion
