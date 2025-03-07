@@ -231,6 +231,44 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => "Make a pulse!"),
                 new ExampleDialogue((companion, parameters) => "Make a character!"),
             }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.END_LEVEL_SCREEN, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) =>
+                {
+                    if (parameters is LevelDialogueParameters levelParameters)
+                    {
+                        switch (levelParameters.rank)
+                        {
+                            case Rank.Null: {
+                                    return $"That level was awesome!";
+                                }
+                            case Rank.SS: {
+                                    return $"Woah!!! Great job, {CoreConfig.Instance.DisplayName.Value}!!";
+                                }
+                            case Rank.S: {
+                                    return $"Woah!! Great job, {CoreConfig.Instance.DisplayName.Value}!";
+                                }
+                            case Rank.A: {
+                                    return $"Good job, {CoreConfig.Instance.DisplayName.Value}!";
+                                }
+                            case Rank.B: {
+                                    return $"Good job, {CoreConfig.Instance.DisplayName.Value}.";
+                                }
+                            case Rank.C: {
+                                    return $"You can do better, {CoreConfig.Instance.DisplayName.Value}!";
+                                }
+                            case Rank.D: {
+                                    return $"You can do better, {CoreConfig.Instance.DisplayName.Value}.";
+                                }
+                            case Rank.F: {
+                                    return $"Aww... I know you can do better!";
+                                }
+                        }
+                    }
+
+                    return "I have nothing to say.";
+                }),
+            }));
         }
 
         /// <summary>
@@ -420,6 +458,11 @@ namespace BetterLegacy.Companion.Entity
             /// Example gives a random idea.
             /// </summary>
             public const string RANDOM_IDEA = "Random Idea";
+
+            /// <summary>
+            /// Example comments on your end level result.
+            /// </summary>
+            public const string END_LEVEL_SCREEN = "End Level Screen";
         }
 
         RTAnimation currentChatAnimation;

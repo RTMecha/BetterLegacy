@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,5 +60,29 @@ namespace BetterLegacy.Companion.Data
         public bool allowOverride = true;
 
         public override string ToString() => $"Dialogue Parameters: [textLength = {textLength}, stayTime = {stayTime}, time = {time}]";
+    }
+
+    /// <summary>
+    /// Dialogue parameters passed from a level.
+    /// </summary>
+    public class LevelDialogueParameters : DialogueParameters
+    {
+        public LevelDialogueParameters(Level level, Rank rank) : base()
+        {
+            this.level = level;
+            this.rank = rank;
+        }
+
+        public LevelDialogueParameters(Level level, Rank rank, float textLength, float stayTime, float time, int dialogueOption = -1, Action onComplete = null) : base(textLength, stayTime, time, dialogueOption, onComplete)
+        {
+            this.rank = rank;
+        }
+
+        public Level level;
+
+        /// <summary>
+        /// Level rank the user got.
+        /// </summary>
+        public Rank rank;
     }
 }

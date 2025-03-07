@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -153,22 +154,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 line++;
             }
 
-            var saying = levelRank.sayings[Random.Range(0, levelRank.sayings.Length)];
-
             if (Example.Current && Example.Current.model && Example.Current.model.Visible)
-            {
-                var matches = Regex.Matches(saying, @"{{QuickElement=(.*?)}}");
-                foreach (var obj in matches)
-                {
-                    var match = (Match)obj;
-                    saying = saying.Replace(match.Groups[0].ToString(), "");
-                }
-
-                Example.Current.chatBubble?.Say(saying);
-            }
+                Example.Current.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.END_LEVEL_SCREEN, new LevelDialogueParameters(LevelManager.CurrentLevel, levelRank.GetEnum()));
             else
             {
-                var sayings = LSText.WordWrap(saying, 32);
+                var sayings = LSText.WordWrap(levelRank.sayings[Random.Range(0, levelRank.sayings.Length)], 32);
                 layouts.Add("sayings", new MenuVerticalLayout
                 {
                     name = "sayings",
