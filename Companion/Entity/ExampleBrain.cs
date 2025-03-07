@@ -134,7 +134,7 @@ namespace BetterLegacy.Companion.Entity
                         break;
                     }
                 case ExampleInteractions.INTERRUPT: {
-                        SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
+                        SetAttribute("HAPPINESS", 2.0, MathOperation.Subtract);
 
                         reference?.chatBubble?.Say("Hey!");
                         reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
@@ -346,6 +346,12 @@ namespace BetterLegacy.Companion.Entity
             for (int i = 0; i < actions.Count; i++)
             {
                 var action = actions[i];
+
+                if (!action.setAsCurrent)
+                {
+                    action.Run();
+                    continue;
+                }
 
                 if (!CurrentAction && action.Run())
                     CurrentAction = action;

@@ -37,6 +37,11 @@ namespace BetterLegacy.Companion.Data
         {
             this.stopFunc = stopFunc;
         }
+        
+        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func, Action stopFunc, bool setAsCurrent) : this(key, canDo, interruptCheck, interruptible, func, stopFunc)
+        {
+            this.setAsCurrent = setAsCurrent;
+        }
 
         public string uniqueID;
 
@@ -74,6 +79,11 @@ namespace BetterLegacy.Companion.Data
         /// If the action is running.
         /// </summary>
         public bool running;
+
+        /// <summary>
+        /// If the action should be set as the current.
+        /// </summary>
+        public bool setAsCurrent = true;
 
         /// <summary>
         /// Checks if the action can run the function and runs it if it can.
