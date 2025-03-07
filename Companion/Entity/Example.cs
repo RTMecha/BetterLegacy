@@ -320,39 +320,7 @@ namespace BetterLegacy.Companion.Entity
                 chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.SPAWN);
             else
                 chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.GREETING);
-
-            var arm = model.GetPart("HAND_LEFT");
-
-            var animation = new RTAnimation("Hiii");
-            animation.animationHandlers = new List<AnimationHandlerBase>
-            {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.5f, 800f, Ease.SineOut),
-                    new FloatKeyframe(0.8f, 750f, Ease.SineInOut),
-                }, x => model.position.x = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, -1200f, Ease.Linear),
-                    new FloatKeyframe(0.3f, -380f, Ease.SineOut),
-                    new FloatKeyframe(0.6f, -410f, Ease.SineInOut),
-                }, x => model.position.y = x, interpolateOnComplete: true),
-                new AnimationHandler<float>(new List<IKeyframe<float>>
-                {
-                    new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(0.5f, 150f, Ease.SineOut),
-                    new FloatKeyframe(0.8f, 130f, Ease.SineInOut),
-                    new FloatKeyframe(1.2f, 150f, Ease.SineInOut),
-                    new FloatKeyframe(1.7f, 130f, Ease.SineInOut),
-                    new FloatKeyframe(2f, 0f, Ease.SineInOut),
-                }, x => arm.rotation = x, interpolateOnComplete: true),
-            };
-            animation.onComplete = () =>
-            {
-                CompanionManager.inst.animationController.Remove(animation.id);
-            };
-            CompanionManager.inst.animationController.Play(animation);
+            model?.SetPose(ExampleModel.Poses.ENTER);
         }
 
         /// <summary>
