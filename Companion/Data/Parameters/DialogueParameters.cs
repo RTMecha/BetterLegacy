@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Player;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,14 +76,34 @@ namespace BetterLegacy.Companion.Data
 
         public LevelDialogueParameters(Level level, Rank rank, float textLength, float stayTime, float time, int dialogueOption = -1, Action onComplete = null) : base(textLength, stayTime, time, dialogueOption, onComplete)
         {
+            this.level = level;
             this.rank = rank;
         }
 
+        /// <summary>
+        /// Level reference.
+        /// </summary>
         public Level level;
 
         /// <summary>
         /// Level rank the user got.
         /// </summary>
         public Rank rank;
+    }
+
+    /// <summary>
+    /// Dialogue parameters passed from a player.
+    /// </summary>
+    public class PlayerDialogueParameters : DialogueParameters
+    {
+        public PlayerDialogueParameters(CustomPlayer player) : base()
+        {
+            this.player = player;
+        }
+
+        /// <summary>
+        /// Player reference.
+        /// </summary>
+        public CustomPlayer player;
     }
 }
