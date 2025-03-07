@@ -1,4 +1,6 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Entity;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
@@ -2683,6 +2685,7 @@ namespace BetterLegacy.Core.Components.Player
             //anim.SetTrigger("kill");
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_DEATH, new PlayerNoticeParameters(CustomPlayer));
             yield return new WaitForSecondsRealtime(0.2f);
             InputDataManager.inst.StopControllerRumble(playerIndex);
             yield break;
@@ -2756,6 +2759,8 @@ namespace BetterLegacy.Core.Components.Player
             isBoosting = false;
             isTakingHit = true;
             CanTakeDamage = false;
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_HIT, new PlayerNoticeParameters(CustomPlayer));
 
             SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.HurtPlayer);
         }

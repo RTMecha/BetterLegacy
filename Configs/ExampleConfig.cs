@@ -98,6 +98,9 @@ namespace BetterLegacy.Configs
 
         public Setting<int> AutosaveNoticeChance { get; set; }
 
+        public Setting<int> PlayerHitNoticeChance { get; set; }
+        public Setting<int> PlayerDeathNoticeChance { get; set; }
+
         #endregion
 
         #endregion
@@ -130,6 +133,8 @@ namespace BetterLegacy.Configs
             NewObjectNoticeChance = Bind(this, "Behavior", "New Object Notice Chance", 20, "The percent chance Example says something about you making a new object.", 0, 100);
             SavedEditorLevelNoticeChance = Bind(this, "Behavior", "Saved Editor Level Notice Chance", 60, "The percent chance Example says something about you saving the current editor level.", 0, 100);
             AutosaveNoticeChance = Bind(this, "Behavior", "Autosave Notice Chance", 40, "The percent chance Example says something about autosave happening.", 0, 100);
+            PlayerHitNoticeChance = Bind(this, "Behavior", "Player Hit Notice Chance", 15, "The percent chance Example notices a player getting hit.", 0, 100);
+            PlayerDeathNoticeChance = Bind(this, "Behavior", "Player Death Notice Chance", 50, "The percent chance Example notices a player dying.", 0, 100);
 
             Save();
         }

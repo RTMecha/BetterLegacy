@@ -153,7 +153,8 @@ namespace BetterLegacy.Companion.Entity
         /// Example notices something.
         /// </summary>
         /// <param name="context">Context of what was noticed.</param>
-        public virtual void Notice(string context)
+        /// <param name="parameters">Parameters to provide more context.</param>
+        public virtual void Notice(string context, NoticeParameters parameters = null)
         {
             if (!ExampleConfig.Instance.CanNotice.Value)
                 return;
@@ -264,6 +265,23 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+                case Notices.PLAYER_HIT: {
+                        if (RandomHelper.PercentChance(ExampleConfig.Instance.PlayerHitNoticeChance.Value) && parameters is PlayerNoticeParameters playerParameters && playerParameters.player)
+                        {
+                            reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.PLAYER_HIT, new PlayerDialogueParameters(playerParameters.player));
+                            StopCurrentAction();
+                        }
+
+                        break;
+                    }
+                case Notices.PLAYER_DEATH: {
+                        if (RandomHelper.PercentChance(ExampleConfig.Instance.PlayerDeathNoticeChance.Value) && parameters is PlayerNoticeParameters playerParameters && playerParameters.player)
+                            reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.PLAYER_DEATH, new PlayerDialogueParameters(playerParameters.player));
+
+                        StopCurrentAction();
+
+                        break;
+                    }
             }
         }
 
@@ -332,6 +350,16 @@ namespace BetterLegacy.Companion.Entity
             /// Triggers when the editor autosave runs.
             /// </summary>
             public const string EDITOR_AUTOSAVED = "Editor Autosaved";
+
+            /// <summary>
+            /// Triggers when a player was hit.
+            /// </summary>
+            public const string PLAYER_HIT = "Player Hit";
+
+            /// <summary>
+            /// Triggers when a player died.
+            /// </summary>
+            public const string PLAYER_DEATH = "Player Death";
         }
 
         #endregion

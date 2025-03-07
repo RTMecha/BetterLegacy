@@ -290,6 +290,23 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => "I hope the file didn't break...", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_SLEEPYZ)),
                 new ExampleDialogue((companion, parameters) => "That's a lot of objects to save...!", () => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
             }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.PLAYER_HIT, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Ouch."),
+                new ExampleDialogue((companion, parameters) => "Oh no.."),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.PLAYER_DEATH, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "lol you died", () => RandomHelper.PercentChance(1)),
+                new ExampleDialogue((companion, parameters) => "death hd", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
+                new ExampleDialogue((companion, parameters) =>
+                {
+                    if (parameters is PlayerDialogueParameters playerParameters && playerParameters.player)
+                        return $"Nooo player {playerParameters.player.index + 1}!!!";
+
+                    return "I have nothing to say.";
+                }),
+            }));
         }
 
         /// <summary>
@@ -494,6 +511,16 @@ namespace BetterLegacy.Companion.Entity
             /// Example says something about the autosave.
             /// </summary>
             public const string EDITOR_AUTOSAVED = "Editor Autosaved";
+
+            /// <summary>
+            /// Example says something about a player getting hit.
+            /// </summary>
+            public const string PLAYER_HIT = "Player Hit";
+
+            /// <summary>
+            /// Example says something about a player dying.
+            /// </summary>
+            public const string PLAYER_DEATH = "Player Death";
         }
 
         RTAnimation currentChatAnimation;
