@@ -1,10 +1,12 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Companion.Data;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
+
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -37,7 +39,9 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-            AddAttribute("HAPPINESS", 0, -100, 100);
+            AddAttribute("HAPPINESS", 0, -1000.0, 1000.0);
+
+            RegisterActions();
         }
 
         #endregion
@@ -66,11 +70,6 @@ namespace BetterLegacy.Companion.Entity
         /// If Example can dance.
         /// </summary>
         public bool canDance = true;
-
-        /// <summary>
-        /// If Example is currently dancing.
-        /// </summary>
-        public bool dancing;
 
         /// <summary>
         /// If Example is talking.
@@ -344,17 +343,17 @@ namespace BetterLegacy.Companion.Entity
             if (reference.leaving) // stop Example from doing anything while he is leaving.
                 return;
 
-            // does Example want to dance to the music?
-            if (reference.brain.canDance && !reference.Dragging && !reference.brain.talking && ExampleConfig.Instance.CanDance.Value &&
-                CompanionManager.MusicPlaying && !reference.brain.dancing && RandomHelper.PercentChanceSingle(0.02f * ((timeSinceLastInteracted + (float)GetAttribute("HAPPINESS").Value) / 100f)))
-                                                                                                                    // increases desire to dance the longer you leave him alone
-                StartDancing();
+            for (int i = 0; i < actions.Count; i++)
+            {
+                var action = actions[i];
 
-            // should he stop dancing?
-            else if ((!CompanionManager.MusicPlaying || !ExampleConfig.Instance.CanDance.Value) && reference.brain.dancing)
-                StopDancing();
+                if (!CurrentAction && action.Run())
+                    CurrentAction = action;
+                else if (CurrentAction && action.Interrupt() && action.uniqueID == CurrentAction.uniqueID)
+                    CurrentAction = null;
+            }
 
-            if (!dancing)
+            if (!CurrentAction)
                 RepeatDialogues();
         }
 
@@ -368,21 +367,85 @@ namespace BetterLegacy.Companion.Entity
         #region Actions
 
         /// <summary>
-        /// Example starts dancing.
+        /// The current action that is being run.
         /// </summary>
-        public void StartDancing()
+        public ExampleAction CurrentAction { get; set; }
+
+        /// <summary>
+        /// List of actions Example can do.
+        /// </summary>
+        public List<ExampleAction> actions = new List<ExampleAction>();
+
+        /// <summary>
+        /// Registers actions.
+        /// </summary>
+        public virtual void RegisterActions()
         {
-            dancing = true;
-            reference?.model?.startDancing?.Invoke();
+            actions.Add(new ExampleAction(Actions.DANCING,
+                () =>
+                {
+                    return reference.brain.canDance && !reference.Dragging && !reference.brain.talking && ExampleConfig.Instance.CanDance.Value &&
+                        CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.02f * ((timeSinceLastInteracted + (float)GetAttribute("HAPPINESS").Value) / 100f));
+                                                                                                    // increases desire to dance the longer you leave him alone and the happier he is
+                }, // does Example want to dance?
+                () =>
+                {
+                    return !CompanionManager.MusicPlaying || !ExampleConfig.Instance.CanDance.Value;
+                }, // should Example stop dancing?
+                true, // can Example be interrupted from dancing?
+                () =>
+                {
+                    reference?.model?.startDancing?.Invoke();
+                    SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
+                }, // start dancing
+                () =>
+                {
+                    reference?.model?.stopDancing?.Invoke();
+                    SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
+                } // stop dancing
+                ));
         }
 
         /// <summary>
-        /// Example stops dancing.
+        /// Overrides an existing action.
         /// </summary>
-        public void StopDancing()
+        /// <param name="key">Key of the action to override.</param>
+        /// <param name="action">Action to override.</param>
+        public void OverrideAction(string key, ExampleAction action)
         {
-            dancing = false;
-            reference?.model?.stopDancing?.Invoke();
+            if (actions.TryFindIndex(x => x.key == key, out int index))
+                actions[index] = action;
+        }
+
+        /// <summary>
+        /// Gets an action.
+        /// </summary>
+        /// <param name="key">Key of the action.</param>
+        /// <returns>Returns the found action.</returns>
+        public ExampleAction GetAction(string key) => actions.Find(x => x.key == key);
+
+        /// <summary>
+        /// Stops the current action.
+        /// </summary>
+        public void StopCurrentAction()
+        {
+            CurrentAction?.Stop();
+            CurrentAction = null;
+        }
+
+        /// <summary>
+        /// Library of default actions.
+        /// </summary>
+        public static class Actions
+        {
+            /// <summary>
+            /// Example is dancing!
+            /// </summary>
+            public const string DANCING = "Dancing";
+
+            // todo: implement these
+
+            public const string SLEEPING = "Sleeping";
         }
 
         #endregion
