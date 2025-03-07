@@ -269,6 +269,27 @@ namespace BetterLegacy.Companion.Entity
                     return "I have nothing to say.";
                 }),
             }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.EDITOR_SAVED_LEVEL, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Your level was saved!"),
+                new ExampleDialogue((companion, parameters) => "Your level has been saved!"),
+                new ExampleDialogue((companion, parameters) => "The level was saved!"),
+                new ExampleDialogue((companion, parameters) => "The level has been saved!"),
+                new ExampleDialogue((companion, parameters) => "The current level was saved!"),
+                new ExampleDialogue((companion, parameters) => "The current level has been saved!"),
+                new ExampleDialogue((companion, parameters) => "oh thank goodness it saved....", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_TORI)),
+                new ExampleDialogue((companion, parameters) => "I hope the file didn't break...", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_SLEEPYZ)),
+                new ExampleDialogue((companion, parameters) => "That's a lot of objects to save...!", () => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.EDITOR_AUTOSAVED, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "I saved this level for you."),
+                new ExampleDialogue((companion, parameters) => "I saved this level for you!"),
+                new ExampleDialogue((companion, parameters) => "I saved this level for you just in case your game crashes...", () => reference.interactions.Check(ExampleInteractions.Checks.TIME_LONGER_THAN_10_HOURS)),
+                new ExampleDialogue((companion, parameters) => "oh thank goodness it saved....", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_TORI)),
+                new ExampleDialogue((companion, parameters) => "I hope the file didn't break...", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_SLEEPYZ)),
+                new ExampleDialogue((companion, parameters) => "That's a lot of objects to save...!", () => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
+            }));
         }
 
         /// <summary>
@@ -463,6 +484,16 @@ namespace BetterLegacy.Companion.Entity
             /// Example comments on your end level result.
             /// </summary>
             public const string END_LEVEL_SCREEN = "End Level Screen";
+
+            /// <summary>
+            /// Example says something about the editor saving.
+            /// </summary>
+            public const string EDITOR_SAVED_LEVEL = "Editor Saved Level";
+
+            /// <summary>
+            /// Example says something about the autosave.
+            /// </summary>
+            public const string EDITOR_AUTOSAVED = "Editor Autosaved";
         }
 
         RTAnimation currentChatAnimation;

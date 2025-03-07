@@ -94,6 +94,10 @@ namespace BetterLegacy.Configs
 
         public Setting<int> NewObjectNoticeChance { get; set; }
 
+        public Setting<int> SavedEditorLevelNoticeChance { get; set; }
+
+        public Setting<int> AutosaveNoticeChance { get; set; }
+
         #endregion
 
         #endregion
@@ -124,6 +128,8 @@ namespace BetterLegacy.Configs
             CanNotice = Bind(this, "Behavior", "Can Notice", true, "If Example can notice your actions.");
             LoadedLevelNoticeChance = Bind(this, "Behavior", "Loaded Level Notice Chance", 100, "The percent chance Example says something about you loading a level.", 0, 100);
             NewObjectNoticeChance = Bind(this, "Behavior", "New Object Notice Chance", 20, "The percent chance Example says something about you making a new object.", 0, 100);
+            SavedEditorLevelNoticeChance = Bind(this, "Behavior", "Saved Editor Level Notice Chance", 60, "The percent chance Example says something about you saving the current editor level.", 0, 100);
+            AutosaveNoticeChance = Bind(this, "Behavior", "Autosave Notice Chance", 40, "The percent chance Example says something about autosave happening.", 0, 100);
 
             Save();
         }

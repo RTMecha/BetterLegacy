@@ -4735,6 +4735,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_AUTOSAVED);
+
             autosaving = false;
         }
 

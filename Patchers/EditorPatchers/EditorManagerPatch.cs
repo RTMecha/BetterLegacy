@@ -780,6 +780,9 @@ namespace BetterLegacy.Patchers
                 Instance.DisplayNotification("Saved Beatmap!", 2f, EditorManager.NotificationType.Success);
                 Instance.savingBeatmap = false;
             }
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_SAVED_LEVEL);
+
             yield break;
         }
 

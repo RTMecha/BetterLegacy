@@ -191,7 +191,7 @@ namespace BetterLegacy.Companion.Entity
 
                         var warningPopup = RTEditor.inst.WarningPopup.GameObject.transform.GetChild(0);
 
-                        if (Vector2.Distance(reference.model.position, warningPopup.localPosition + new Vector3(140f, 200f)) <= 20f)
+                        if (Vector2.Distance(reference.model.position, warningPopup.localPosition + new Vector3(140f, 200f)) <= 100f)
                             break;
 
                         var animation = new RTAnimation("MOVEMENT");
@@ -238,6 +238,30 @@ namespace BetterLegacy.Companion.Entity
                     }
                 case Notices.EXAMPLE_REFERENCE: {
                         reference?.chatBubble?.Say("Hey, it's me!");
+                        break;
+                    }
+                case Notices.GAME_START: {
+
+                        break;
+                    }
+                case Notices.EDITOR_START: {
+
+                        break;
+                    }
+                case Notices.EDITOR_PREVIEW_TOGGLE: {
+
+                        break;
+                    }
+                case Notices.EDITOR_SAVED_LEVEL: {
+                        if (RandomHelper.PercentChance(ExampleConfig.Instance.SavedEditorLevelNoticeChance.Value))
+                            reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.EDITOR_SAVED_LEVEL);
+
+                        break;
+                    }
+                case Notices.EDITOR_AUTOSAVED: {
+                        if (RandomHelper.PercentChance(ExampleConfig.Instance.AutosaveNoticeChance.Value))
+                            reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.EDITOR_AUTOSAVED);
+
                         break;
                     }
             }
@@ -298,6 +322,16 @@ namespace BetterLegacy.Companion.Entity
             /// Triggers when the editor preview is toggled.
             /// </summary>
             public const string EDITOR_PREVIEW_TOGGLE = "Editor Preview Toggle";
+
+            /// <summary>
+            /// Triggers when the current editor level is saved.
+            /// </summary>
+            public const string EDITOR_SAVED_LEVEL = "Editor Saved Level";
+
+            /// <summary>
+            /// Triggers when the editor autosave runs.
+            /// </summary>
+            public const string EDITOR_AUTOSAVED = "Editor Autosaved";
         }
 
         #endregion
