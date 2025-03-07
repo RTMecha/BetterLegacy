@@ -2,19 +2,15 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Editor.Managers;
-using SimpleJSON;
-using System;
+
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Companion.Data;
-using BetterLegacy.Core.Optimization;
 
 namespace BetterLegacy.Companion.Entity
 {
