@@ -37,6 +37,8 @@ namespace BetterLegacy.Companion
 
         #endregion
 
+        #region Logging
+
         /// <summary>
         /// Logs a message if Example logs are enabled.
         /// </summary>
@@ -67,6 +69,10 @@ namespace BetterLegacy.Companion
                 Debug.LogError($"{className}{msg}");
         }
 
+        #endregion
+
+        #region Global
+
         /// <summary>
         /// Local animation controller for Example.
         /// </summary>
@@ -92,5 +98,7 @@ namespace BetterLegacy.Companion
         /// How often the eyes should blink.
         /// </summary>
         public const float BLINK_RATE = 5f;
+
+        #endregion
     }
 }
