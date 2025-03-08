@@ -12,6 +12,7 @@ using UnityEngine.UI;
 
 using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Data.Parameters;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -188,6 +189,16 @@ namespace BetterLegacy.Companion.Entity
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.OCCASIONAL, new ExampleDialogue[]
             {
+                new ExampleDialogue((companion, parameters) =>
+                {
+                    var index = Random.Range(0, ProjectPlanner.inst.todos.Count);
+                    while (ProjectPlanner.inst.todos[index].Checked)
+                        index = Random.Range(0, ProjectPlanner.inst.todos.Count);
+
+                    var todo = ProjectPlanner.inst.todos[index];
+
+                    return $"Have you done the \"{todo.Text}\" yet?";
+                }, () => ProjectPlanner.inst && ProjectPlanner.inst.todos.Has(x => !x.Checked)),
                 new ExampleDialogue((companion, parameters) => "Seems like you have no levels... maybe you should make one?",
                     () => reference.interactions.Check(ExampleInteractions.Checks.NO_EDITOR_LEVELS)),
                 new ExampleDialogue((companion, parameters) => "Maybe you should make something...?",
