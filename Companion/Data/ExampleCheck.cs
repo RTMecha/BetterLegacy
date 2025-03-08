@@ -34,7 +34,18 @@ namespace BetterLegacy.Companion.Data
         /// Checks if the function is true.
         /// </summary>
         /// <returns>Returns the result of the check function.</returns>
-        public bool Check() => check?.Invoke() ?? false;
+        public bool Check()
+        {
+            try
+            {
+                return check?.Invoke() ?? false;
+            }
+            catch (Exception ex)
+            {
+                CompanionManager.LogError($"{nameof(ExampleCheck)} [{key}] encountered an exception while checking: {ex}");
+                return false;
+            }
+        }
 
         static ExampleCheck defaultCheck;
         /// <summary>
