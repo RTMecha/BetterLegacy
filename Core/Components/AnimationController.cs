@@ -16,7 +16,17 @@ namespace BetterLegacy.Core.Components
 
         public float speed = 1f;
 
+        public bool autoRun = true;
+
         void Update()
+        {
+            if (!autoRun)
+                return;
+
+            UpdateAnimations();
+        }
+
+        public void UpdateAnimations()
         {
             for (int i = 0; i < animations.Count; i++)
             {
