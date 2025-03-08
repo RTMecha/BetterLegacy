@@ -14,6 +14,7 @@ using BetterLegacy.Editor.Managers;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -366,7 +367,7 @@ namespace BetterLegacy.Companion.Entity
 
                 // start dragging
 
-                reference?.brain?.Interact(ExampleInteractions.PET);
+                reference?.interactions?.Interact(ExampleInteractions.Interactions.PET);
 
                 CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
 
@@ -381,7 +382,7 @@ namespace BetterLegacy.Companion.Entity
 
                 if (reference.brain.CurrentAction)
                 {
-                    reference.brain.Interact(ExampleInteractions.INTERRUPT);
+                    reference.interactions?.Interact(ExampleInteractions.Interactions.INTERRUPT);
                     reference.brain.StopCurrentAction();
                 }
             })
@@ -469,7 +470,7 @@ namespace BetterLegacy.Companion.Entity
             .OnClick((part, pointerEventData) =>
             {
                 if (!reference.leaving)
-                    reference?.brain?.Interact(ExampleInteractions.TOUCHIE);
+                    reference?.interactions?.Interact(ExampleInteractions.Interactions.TOUCHIE);
             }));
 
             #region Eyes
@@ -589,7 +590,7 @@ namespace BetterLegacy.Companion.Entity
                 if (reference.leaving)
                     return;
 
-                reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
+                reference?.interactions?.Interact(ExampleInteractions.Interactions.HOLD_HAND);
                 if (!reference || !reference.canDragLeftHand || !part)
                     return;
 
@@ -648,7 +649,7 @@ namespace BetterLegacy.Companion.Entity
                 if (reference.leaving)
                     return;
 
-                reference?.brain?.Interact(ExampleInteractions.HOLD_HAND);
+                reference?.interactions?.Interact(ExampleInteractions.Interactions.HOLD_HAND);
                 if (!reference || !reference.canDragRightHand || !part)
                     return;
 

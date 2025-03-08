@@ -1,9 +1,12 @@
 ﻿using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +14,7 @@ using UnityEngine.UI;
 namespace BetterLegacy.Companion.Entity
 {
     /// <summary>
-    /// Represents Example's interactions with the game.
+    /// Represents Example's interactions with the game and how the user can interact with him.
     /// </summary>
     public class ExampleInteractions : ExampleModule
     {
@@ -40,29 +43,121 @@ namespace BetterLegacy.Companion.Entity
         #region Interactions
 
         /// <summary>
-        /// When Example's head is clicked.
+        /// Runs when Example is interacted with.
         /// </summary>
-        public const string PET = "Pet";
+        public Action<string> onInteract;
+
         /// <summary>
-        /// When you chat with Example.
+        /// The default interaction context.
         /// </summary>
-        public const string CHAT = "Chat";
+        public void Interact() => Interact(string.Empty);
+
         /// <summary>
-        /// When you hold one of Example's hands.
+        /// Engages Example's brain, making him react.
         /// </summary>
-        public const string HOLD_HAND = "Hold Hand";
+        /// <param name="context">Context of the interaction.</param>
+        public virtual void Interact(string context, InteractParameters parameters = null)
+        {
+            reference?.brain?.interactedTimer.UpdateTimeOffset();
+            onInteract?.Invoke(context);
+
+            switch (context)
+            {
+                case Interactions.PET: {
+                        reference?.brain?.SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
+
+                        break;
+                    }
+                case Interactions.CHAT: {
+                        reference?.brain?.SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
+
+                        if (parameters is ChatInteractParameters chatParameters)
+                        {
+                            reference?.chatBubble?.SayDialogue(chatParameters.dialogue);
+
+                            switch (chatParameters.dialogue)
+                            {
+                                case ExampleChatBubble.Dialogues.LOVE: {
+                                        reference?.brain?.SetAttribute("HAPPINESS", 5.0, MathOperation.Addition);
+
+                                        break;
+                                    }
+                                case ExampleChatBubble.Dialogues.HATE: {
+                                        reference?.brain?.SetAttribute("HAPPINESS", 5.0, MathOperation.Subtract);
+
+                                        break;
+                                    }
+                            }
+                        }
+
+                        break;
+                    }
+                case Interactions.HOLD_HAND: {
+                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
+                        reference?.model?.SetPose(ExampleModel.Poses.WORRY);
+                        break;
+                    }
+                case Interactions.TOUCHIE: {
+                        reference?.brain?.SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
+
+                        reference?.chatBubble?.Say("Please don't touch me there.");
+                        reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
+
+                        AchievementManager.inst.UnlockAchievement("example_touch");
+
+                        break;
+                    }
+                case Interactions.INTERRUPT: {
+                        reference?.brain?.SetAttribute("HAPPINESS", 2.0, MathOperation.Subtract);
+
+                        reference?.chatBubble?.Say("Hey!");
+                        reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
+
+                        break;
+                    }
+                case Interactions.SELECT_OBJECTS_COMMAND: {
+                        reference?.chatBubble?.Say("Selected all objects!");
+
+                        break;
+                    }
+            }
+        }
+
         /// <summary>
-        /// When you touch Example's tail. Why would you do that.
+        /// Library of default interactions.
         /// </summary>
-        public const string TOUCHIE = "Touchie";
-        /// <summary>
-        /// When you interupt Example while he's dancing. Bruh.
-        /// </summary>
-        public const string INTERRUPT = "Interrupt";
-        /// <summary>
-        /// When you run the select all objects command.
-        /// </summary>
-        public const string SELECT_OBJECTS_COMMAND = "Select Objects Command";
+        public static class Interactions
+        {
+            /// <summary>
+            /// When Example's head is clicked.
+            /// </summary>
+            public const string PET = "Pet";
+
+            /// <summary>
+            /// When you chat with Example.
+            /// </summary>
+            public const string CHAT = "Chat";
+
+            /// <summary>
+            /// When you hold one of Example's hands.
+            /// </summary>
+            public const string HOLD_HAND = "Hold Hand";
+
+            /// <summary>
+            /// When you touch Example's tail. Why would you do that.
+            /// </summary>
+            public const string TOUCHIE = "Touchie";
+
+            /// <summary>
+            /// When you interupt Example while he's dancing. Bruh.
+            /// </summary>
+            public const string INTERRUPT = "Interrupt";
+
+            /// <summary>
+            /// When you run the select all objects command.
+            /// </summary>
+            public const string SELECT_OBJECTS_COMMAND = "Select Objects Command";
+        }
 
         // TODO:
         // you can respond to Example's question about what a level is, which will add to his memory.
@@ -141,8 +236,10 @@ namespace BetterLegacy.Companion.Entity
             checks.Add(new ExampleCheck(Checks.USER_IS_APPY, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower(), "appy", "appysketch", "applebutter")));
             checks.Add(new ExampleCheck(Checks.USER_IS_DEFAULT, () => CoreConfig.Instance.DisplayName.Value == CoreConfig.Instance.DisplayName.Default));
             checks.Add(new ExampleCheck(Checks.TIME_LONGER_THAN_10_HOURS, () => Time.time > 36000f));
-            checks.Add(new ExampleCheck(Checks.OBJECTS_ALIVE_COUNT_HIGH, () => Updater.levelProcessor.engine.objectSpawner.activateList.Count > 900));
+            checks.Add(new ExampleCheck(Checks.OBJECTS_ALIVE_COUNT_HIGH, () => Updater.levelProcessor && Updater.levelProcessor.engine && Updater.levelProcessor.engine.objectSpawner != null && Updater.levelProcessor.engine.objectSpawner.activateList.Count > 900));
             checks.Add(new ExampleCheck(Checks.NO_EDITOR_LEVELS, () => CoreHelper.InEditor && RTEditor.inst.LevelPanels.Count <= 0));
+            checks.Add(new ExampleCheck(Checks.IS_HAPPY, () => reference && reference.brain && reference.brain.GetAttribute("HAPPINESS").Value > 100.0));
+            checks.Add(new ExampleCheck(Checks.IS_SAD, () => reference && reference.brain && reference.brain.GetAttribute("HAPPINESS").Value < 100.0));
         }
 
         /// <summary>
@@ -153,7 +250,7 @@ namespace BetterLegacy.Companion.Entity
         public void OverrideCheck(string key, ExampleCheck check)
         {
             if (checks.TryFindIndex(x => x.key == key, out int index))
-                checks[index] = check;
+                checks[index].check = check.check;
         }
 
         /// <summary>
@@ -204,6 +301,10 @@ namespace BetterLegacy.Companion.Entity
             public const string OBJECTS_ALIVE_COUNT_HIGH = "Objects Alive Count High";
 
             public const string NO_EDITOR_LEVELS = "No Editor Levels";
+
+            public const string IS_HAPPY = "Is Happy";
+
+            public const string IS_SAD = "Is Sad";
         }
 
         #endregion

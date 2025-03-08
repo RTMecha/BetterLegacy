@@ -1,8 +1,10 @@
 ﻿using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
@@ -76,78 +78,14 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public bool talking;
 
-        float timeSinceLastInteractedOffset = 0f;
-
         /// <summary>
         /// Time since the user last interacted with Example. The more this increases the more likely he is to be bored.
         /// </summary>
-        public float timeSinceLastInteracted = 0f;
+        public RTTimer interactedTimer;
 
         #endregion
 
         #region Neuron Activation 0_0
-
-        /// <summary>
-        /// Runs when Example is interacted with.
-        /// </summary>
-        public Action<string> onInteract;
-
-        /// <summary>
-        /// The default interaction context.
-        /// </summary>
-        public void Interact() => Interact(string.Empty);
-
-        /// <summary>
-        /// Engages Example's brain, making him react.
-        /// </summary>
-        /// <param name="context">Context of the interaction.</param>
-        public virtual void Interact(string context)
-        {
-            timeSinceLastInteractedOffset = Time.time;
-            onInteract?.Invoke(context);
-
-            switch (context)
-            {
-                case ExampleInteractions.PET: {
-                        SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
-
-                        break;
-                    }
-                case ExampleInteractions.CHAT: {
-                        SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
-
-                        break;
-                    }
-                case ExampleInteractions.HOLD_HAND: {
-                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
-                        reference?.model?.SetPose(ExampleModel.Poses.WORRY);
-                        break;
-                    }
-                case ExampleInteractions.TOUCHIE: {
-                        SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
-
-                        reference?.chatBubble?.Say("Please don't touch me there.");
-                        reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
-
-                        AchievementManager.inst.UnlockAchievement("example_touch");
-
-                        break;
-                    }
-                case ExampleInteractions.INTERRUPT: {
-                        SetAttribute("HAPPINESS", 2.0, MathOperation.Subtract);
-
-                        reference?.chatBubble?.Say("Hey!");
-                        reference?.model?.SetPose(ExampleModel.Poses.ANGRY);
-
-                        break;
-                    }
-                case ExampleInteractions.SELECT_OBJECTS_COMMAND: {
-                        reference?.chatBubble?.Say("Selected all objects!");
-
-                        break;
-                    }
-            }
-        }
 
         /// <summary>
         /// Example notices something.
@@ -224,11 +162,11 @@ namespace BetterLegacy.Companion.Entity
                             break;
 
                         SetAttribute("SEEN_GAME_FILE_EASTER_EGG", 1.0, MathOperation.Set);
-                        reference?.chatBubble?.Say("Woah, you found a secret!", new Data.DialogueParameters()
+                        reference?.chatBubble?.Say("Woah, you found a secret!", new DialogueParameters()
                         {
                             onComplete = () =>
                             {
-                                reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", new Data.DialogueParameters(2f, 6f, 0.7f));
+                                reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", new DialogueParameters(2f, 6f, 0.7f));
                             }
                         });
 
@@ -268,6 +206,7 @@ namespace BetterLegacy.Companion.Entity
                 case Notices.PLAYER_HIT: {
                         if (RandomHelper.PercentChance(ExampleConfig.Instance.PlayerHitNoticeChance.Value) && parameters is PlayerNoticeParameters playerParameters && playerParameters.player)
                         {
+                            SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
                             reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.PLAYER_HIT, new PlayerDialogueParameters(playerParameters.player));
                             StopCurrentAction();
                         }
@@ -276,7 +215,10 @@ namespace BetterLegacy.Companion.Entity
                     }
                 case Notices.PLAYER_DEATH: {
                         if (RandomHelper.PercentChance(ExampleConfig.Instance.PlayerDeathNoticeChance.Value) && parameters is PlayerNoticeParameters playerParameters && playerParameters.player)
+                        {
+                            SetAttribute("HAPPINESS", 5.0, MathOperation.Subtract);
                             reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.PLAYER_DEATH, new PlayerDialogueParameters(playerParameters.player));
+                        }
 
                         StopCurrentAction();
 
@@ -394,13 +336,14 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Build()
         {
+            interactedTimer.UpdateTimeOffset();
             dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
             LoadMemory();
         }
 
         public override void Tick()
         {
-            timeSinceLastInteracted = Time.time - timeSinceLastInteractedOffset;
+            interactedTimer.Update();
 
             if (reference.leaving) // stop Example from doing anything while he is leaving.
                 return;
@@ -453,7 +396,7 @@ namespace BetterLegacy.Companion.Entity
                 () =>
                 {
                     return reference.brain.canDance && !reference.Dragging && !reference.brain.talking && ExampleConfig.Instance.CanDance.Value &&
-                        CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.02f * ((timeSinceLastInteracted + (float)GetAttribute("HAPPINESS").Value) / 100f));
+                        CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.02f * ((interactedTimer.time + (float)GetAttribute("HAPPINESS").Value) / 100f));
                                                                                                     // increases desire to dance the longer you leave him alone and the happier he is
                 }, // does Example want to dance?
                 () =>
