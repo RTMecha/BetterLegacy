@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -123,21 +124,55 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => $"Hey {CoreConfig.Instance.DisplayName.Value}!"),
                 new ExampleDialogue((companion, parameters) => $"Hiya {CoreConfig.Instance.DisplayName.Value}!!"),
             }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.LOVE, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "Awww..."),
+                new ExampleDialogue((companion, parameters) => "Thank you!"),
+                new ExampleDialogue((companion, parameters) => $"Thank you, {CoreConfig.Instance.DisplayName.Value}!!!"),
+                new ExampleDialogue((companion, parameters) => $"Thank you, {CoreConfig.Instance.DisplayName.Value}!!! That means a lot to me...",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.HATE, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "..."),
+                new ExampleDialogue((companion, parameters) => "man"),
+            }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.LOADED_NEW_LEVEL, new ExampleDialogue[]
             {
-                new ExampleDialogue((companion, parameters) => "Yay, a new level!"),
                 new ExampleDialogue((companion, parameters) => "Ooh, it's a new level!?"),
                 new ExampleDialogue((companion, parameters) => "What's this level gonna be?"),
-                new ExampleDialogue((companion, parameters) => "Hello new level!!"),
-                new ExampleDialogue((companion, parameters) => "I'm excited to see what this level is going to be!"),
+
+                // happy
+                new ExampleDialogue((companion, parameters) => "Yay, a new level!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "Hello new level!!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "I'm excited to see what this level is going to be!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+
+                // sad
+                new ExampleDialogue((companion, parameters) => "Oh, it's a new level.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
+                new ExampleDialogue((companion, parameters) => "Oh, it's a new level...",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.LOADED_LEVEL, new ExampleDialogue[]
             {
-                new ExampleDialogue((companion, parameters) => "Level has loaded! Have fun building."),
-                new ExampleDialogue((companion, parameters) => "Have fun!"),
-                new ExampleDialogue((companion, parameters) => "Level has loaded! I hope you enjoy the building process."),
-                new ExampleDialogue((companion, parameters) => "I hope you enjoy the building process!"),
                 new ExampleDialogue((companion, parameters) => "What are you building today?"),
+
+                // happy
+                new ExampleDialogue((companion, parameters) => "Level has loaded! Have fun building.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "Have fun!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "Level has loaded! I hope you enjoy the building process.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "I hope you enjoy the building process!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+
+                // sad
+                new ExampleDialogue((companion, parameters) => "Oh, it's a level.",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.CREATE_OBJECT, new ExampleDialogue[]
             {
@@ -160,9 +195,10 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => "Uh oh... I hope your computer isn't crashing...",
                     () => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
                 new ExampleDialogue((companion, parameters) => "Hmmm...",
-                    () => reference.brain.timeSinceLastInteracted > 600f),
+                    () => reference.brain.interactedTimer.time > 600f),
                 new ExampleDialogue((companion, parameters) => "What's up?"),
-                new ExampleDialogue((companion, parameters) => "You got this!"),
+                new ExampleDialogue((companion, parameters) => "You got this!",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
                 new ExampleDialogue((companion, parameters) => "How are you doing so far?"),
                 new ExampleDialogue((companion, parameters) => "How are you doing so far? I hope you're doing okay."),
                 new ExampleDialogue((companion, parameters) => "How are you going so far?"),
@@ -194,6 +230,8 @@ namespace BetterLegacy.Companion.Entity
                     () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_APPY)),
                 new ExampleDialogue((companion, parameters) => "We do a bit of trolling",
                     () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_APPY)),
+                new ExampleDialogue((companion, parameters) => "a",
+                    () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_APPY)),
                 new ExampleDialogue((companion, parameters) => "Hey, you might want to set a username. Set it via pressing the ConfigManager toggle key ({CoreConfig.Instance.OpenConfigKey.Value}), going to the User section of the Core tab and then changing the name there.",
                     () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DEFAULT)),
                 new ExampleDialogue((companion, parameters) => $"Where's your username? Set it via pressing the ConfigManager toggle key ({CoreConfig.Instance.OpenConfigKey.Value}), going to the User section of the Core tab and then changing the name there.",
@@ -214,6 +252,9 @@ namespace BetterLegacy.Companion.Entity
                     () => !reference.interactions.Check(ExampleInteractions.Checks.APPLICATION_FOCUSED)),
                 new ExampleDialogue((companion, parameters) => "Welp.", () =>
                     {
+                        if (reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY))
+                            return false;
+
                         var attribute = reference.brain.GetAttribute("SEEN_WELP_DIALOGUE");
                         if (attribute.Value == 0.0)
                         {
@@ -297,7 +338,7 @@ namespace BetterLegacy.Companion.Entity
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.PLAYER_DEATH, new ExampleDialogue[]
             {
-                new ExampleDialogue((companion, parameters) => "lol you died", () => RandomHelper.PercentChance(1)),
+                new ExampleDialogue((companion, parameters) => "lol you died", () => RandomHelper.PercentChance(1) && reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
                 new ExampleDialogue((companion, parameters) => "death hd", () => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
                 new ExampleDialogue((companion, parameters) =>
                 {
@@ -471,6 +512,16 @@ namespace BetterLegacy.Companion.Entity
             /// Say hi!
             /// </summary>
             public const string GREETING = "Greeting";
+
+            /// <summary>
+            /// Do you like Example?
+            /// </summary>
+            public const string LOVE = "Love";
+
+            /// <summary>
+            /// Do you dislike Example?
+            /// </summary>
+            public const string HATE = "Hate";
 
             /// <summary>
             /// Loaded a new editor level.

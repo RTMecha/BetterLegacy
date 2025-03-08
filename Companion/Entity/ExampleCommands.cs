@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
 
 namespace BetterLegacy.Companion.Entity
 {
@@ -241,6 +242,22 @@ namespace BetterLegacy.Companion.Entity
                     new ExampleCommand.Phrase("hi friend"),
                     new ExampleCommand.Phrase("hi"),
                 });
+            RegisterChat("Love Example", ExampleChatBubble.Dialogues.LOVE,
+                new List<ExampleCommand.Phrase>
+                {
+                    new ExampleCommand.Phrase("i love example"),
+                    new ExampleCommand.Phrase("i love you"),
+                    new ExampleCommand.Phrase("i like example"),
+                    new ExampleCommand.Phrase("i like you"),
+                });
+            RegisterChat("Hate Example", ExampleChatBubble.Dialogues.HATE,
+                new List<ExampleCommand.Phrase>
+                {
+                    new ExampleCommand.Phrase("i hate example"),
+                    new ExampleCommand.Phrase("i hate you"),
+                    new ExampleCommand.Phrase("i dislike example"),
+                    new ExampleCommand.Phrase("i dislike you"),
+                });
 
             commands.Add(new ExampleCommand("evaluate (1 + 1)", "Evaluates a math expression", true,
                 response =>
@@ -282,7 +299,7 @@ namespace BetterLegacy.Companion.Entity
         public void RegisterChat(string key, string dialogue, List<ExampleCommand.Phrase> phrases)
         {
             commands.Add(new ExampleCommand(key, key, false,
-                response => reference?.chatBubble?.SayDialogue(dialogue), phrases));
+                response => reference.interactions.Interact(ExampleInteractions.Interactions.CHAT, new ChatInteractParameters(dialogue, response)), phrases));
         }
 
         /// <summary>
@@ -315,7 +332,7 @@ namespace BetterLegacy.Companion.Entity
             if (chatter == null)
                 return;
 
-            reference?.brain?.Interact(ExampleInteractions.CHAT);
+            reference?.interactions?.Interact(ExampleInteractions.Interactions.CHAT);
 
             for (int i = 0; i < commands.Count; i++)
                 commands[i].CheckResponse(chatter.text);
