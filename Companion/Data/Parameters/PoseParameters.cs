@@ -4,7 +4,7 @@ using System;
 using BetterLegacy.Companion.Entity;
 using UnityEngine;
 
-namespace BetterLegacy.Companion.Data
+namespace BetterLegacy.Companion.Data.Parameters
 {
     /// <summary>
     /// Pose parameters passed to <see cref="ExampleModel.SetPose(string, PoseParameters, Action{Core.Animation.RTAnimation})"/>.

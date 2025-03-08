@@ -1,7 +1,7 @@
 ﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 
-namespace BetterLegacy.Companion.Data
+namespace BetterLegacy.Companion.Data.Parameters
 {
     /// <summary>
     /// Notice parameters passed to Example's brain.

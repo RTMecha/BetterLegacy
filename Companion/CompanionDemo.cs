@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using System;
 using System.Collections.Generic;

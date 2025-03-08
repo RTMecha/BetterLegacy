@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BetterLegacy.Companion.Data
+namespace BetterLegacy.Companion.Data.Parameters
 {
     /// <summary>
     /// Dialogue parameters passed to Example's chat bubble.

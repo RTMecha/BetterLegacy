@@ -178,7 +178,7 @@ namespace BetterLegacy.Core.Helpers
                 MultiObjectEditor.inst.Dialog.Open();
             }
 
-            Example.Current?.brain?.Interact(ExampleInteractions.SELECT_OBJECTS_COMMAND);
+            Example.Current?.interactions?.Interact(ExampleInteractions.Interactions.SELECT_OBJECTS_COMMAND);
 
             return true;
         }

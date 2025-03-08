@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Companion.Entity;
+﻿using BetterLegacy.Companion.Data.Parameters;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core.Animation;
 
 namespace BetterLegacy.Companion.Data
