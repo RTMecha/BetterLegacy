@@ -5019,7 +5019,6 @@ namespace BetterLegacy.Editor.Managers
 
             folderCreatorSubmit.onClick.ClearAll();
             folderCreatorSubmit.onClick.AddListener(() => onSubmit?.Invoke());
-
         }
 
         #endregion
