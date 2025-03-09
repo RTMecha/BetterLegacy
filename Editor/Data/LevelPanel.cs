@@ -148,7 +148,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             GameObject = gameObject;
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
@@ -158,10 +158,16 @@ namespace BetterLegacy.Editor.Data
             Hover.animatePos = false;
             Hover.animateSca = true;
 
-            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+            var folderButtonStorage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
             LevelTitle = folderButtonStorage.text;
             LevelTitle.enabled = true;
             folderButtonStorage.button.onClick.ClearAll();
+
+            if (folderButtonStorage.image)
+                folderButtonStorage.image.sprite = RTFile.FileExists(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) ?
+                    SpriteHelper.LoadSprite(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) :
+                    EditorSprites.OpenSprite;
+
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(folderButtonStorage.text);
 
