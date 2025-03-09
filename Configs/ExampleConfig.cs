@@ -86,6 +86,10 @@ namespace BetterLegacy.Configs
 
         public Setting<bool> CanDance { get; set; }
 
+        public Setting<bool> CanRemindTODO { get; set; }
+
+        public Setting<int> RemindRarity { get; set; }
+
         public Setting<bool> CanNotice { get; set; }
 
         public Setting<bool> CanGoToWarningPopup { get; set; }
@@ -127,6 +131,8 @@ namespace BetterLegacy.Configs
             EnabledInMenus = Bind(this, "Visibility", "In Menus", false, "If Example is enabled in menus.");
 
             CanDance = Bind(this, "Behavior", "Can Dance", true, "If Example can dance.");
+            CanRemindTODO = Bind(this, "Behavior", "Can Remind TODO", true, "If Example can remind you about a random item on your TOOD list.");
+            RemindRarity = Bind(this, "Behavior", "Remind Rarity", 50, "The chance of Example selecting the TODO reminder dialogue when he's choosing one.");
             CanGoToWarningPopup = Bind(this, "Behavior", "Can Go To Warning Popup", true, "If Example moves to the Warning Popup when it opens.");
             CanNotice = Bind(this, "Behavior", "Can Notice", true, "If Example can notice your actions.");
             LoadedLevelNoticeChance = Bind(this, "Behavior", "Loaded Level Notice Chance", 100, "The percent chance Example says something about you loading a level.", 0, 100);

@@ -198,7 +198,7 @@ namespace BetterLegacy.Companion.Entity
                     var todo = ProjectPlanner.inst.todos[index];
 
                     return $"Have you done the \"{todo.Text}\" yet?";
-                }, () => ProjectPlanner.inst && ProjectPlanner.inst.todos.Has(x => !x.Checked)),
+                }, () => ExampleConfig.Instance.CanRemindTODO.Value && RandomHelper.PercentChance(ExampleConfig.Instance.RemindRarity.Value) && ProjectPlanner.inst && ProjectPlanner.inst.todos.Has(x => !x.Checked)),
                 new ExampleDialogue((companion, parameters) => "Seems like you have no levels... maybe you should make one?",
                     () => reference.interactions.Check(ExampleInteractions.Checks.NO_EDITOR_LEVELS)),
                 new ExampleDialogue((companion, parameters) => "Maybe you should make something...?",
