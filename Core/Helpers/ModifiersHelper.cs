@@ -1452,13 +1452,13 @@ namespace BetterLegacy.Core.Helpers
                     case "loadLevel": {
                             if (CoreHelper.IsEditing)
                             {
-                                if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                                     break;
 
                                 RTEditor.inst.ShowWarningPopup($"You are about to enter the level {modifier.value}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
                                 {
                                     string str = RTFile.BasePath;
-                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
                                     {
                                         GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                         {
@@ -1503,7 +1503,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (RTEditor.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
                             {
-                                if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                                     break;
 
                                 var path = System.IO.Path.GetFileName(editorWrapper.FolderPath);
@@ -1511,7 +1511,7 @@ namespace BetterLegacy.Core.Helpers
                                 RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
                                 {
                                     string str = RTFile.BasePath;
-                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
                                     {
                                         GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                         {
@@ -1541,13 +1541,13 @@ namespace BetterLegacy.Core.Helpers
 
                             if (CoreHelper.IsEditing && RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, EditorManager.inst.currentLoadedLevel, modifier.value, Level.LEVEL_LSB)))
                             {
-                                if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                                     break;
 
                                 RTEditor.inst.ShowWarningPopup($"You are about to enter the level {RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, modifier.value)}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
                                 {
                                     string str = RTFile.BasePath;
-                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
                                     {
                                         GameData.Current.SaveData(RTFile.CombinePaths(str, "level-modifier-backup.lsb"), () =>
                                         {
@@ -5430,10 +5430,10 @@ namespace BetterLegacy.Core.Helpers
                     #region Misc
 
                     case "quitToMenu": {
-                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
+                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                             {
                                 string str = RTFile.BasePath;
-                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                if (EditorConfig.Instance.ModifiersSavesBackup.Value)
                                 {
                                     GameData.Current.SaveData(RTFile.CombinePaths(str, $"level-modifier-backup{FileFormat.LSB.Dot()}"), () =>
                                     {
@@ -5450,10 +5450,10 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "quitToArcade": {
-                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
+                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                             {
                                 string str = RTFile.BasePath;
-                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                if (EditorConfig.Instance.ModifiersSavesBackup.Value)
                                 {
                                     GameData.Current.SaveData(RTFile.CombinePaths(str, $"level-modifier-backup{FileFormat.LSB.Dot()}"), () =>
                                     {
