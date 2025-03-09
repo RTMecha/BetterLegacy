@@ -359,7 +359,6 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of <typeparamref name="T"/>. Must be serializable.</typeparam>
         /// <param name="path">The file to write to.</param>
         /// <param name="obj">The object to serialize and write.</param>
-        /// 
         /// <returns>Returns true if the object was successfully serialized and the file was properly written to.</returns>
         public static bool WriteToFile<T>(string path, T obj)
         {
@@ -393,7 +392,8 @@ namespace BetterLegacy.Core
         {
             if (!FileExists(path))
             {
-                CoreHelper.Log($"Could not load JSON file [{path}]");
+                if (log)
+                    CoreHelper.Log($"Could not load JSON file [{path}]");
                 return null;
             }
 
