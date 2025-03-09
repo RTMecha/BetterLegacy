@@ -2,6 +2,7 @@
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using InControl;
+using UnityEngine;
 
 namespace BetterLegacy.Configs
 {
@@ -19,6 +20,10 @@ namespace BetterLegacy.Configs
             SetConfigs();
             SetupSettingChanged();
         }
+
+        public override string TabName => "Players";
+        public override Color TabColor => new Color(1f, 0.4956f, 0.5192f, 1f);
+        public override string TabDesc => "The Players settings.";
 
         #region Settings
 
@@ -121,44 +126,44 @@ namespace BetterLegacy.Configs
 
             #region General
 
-            TailUpdateMode = BindEnum(this, "General", "Tail Update Mode", RTPlayer.TailUpdateMode.FixedUpdate, "Changes the way the tail updates movement. FixedUpdate is recommended if the game gets laggy, but otherwise Update / LateUpdate is good for a smooth tail.");
-            QueueBoost = Bind(this, "General", "Queue Boost", true, "If boosting should be queued when you press it during boost cooldown.");
+            TailUpdateMode = BindEnum(this, GENERAL, "Tail Update Mode", RTPlayer.TailUpdateMode.FixedUpdate, "Changes the way the tail updates movement. FixedUpdate is recommended if the game gets laggy, but otherwise Update / LateUpdate is good for a smooth tail.");
+            QueueBoost = Bind(this, GENERAL, "Queue Boost", true, "If boosting should be queued when you press it during boost cooldown.");
 
-            ZenEditorIncludesSolid = Bind(this, "General", "Editor Zen Mode includes Solid", false, "Makes Player ignore solid objects in editor.");
+            ZenEditorIncludesSolid = Bind(this, GENERAL, "Editor Zen Mode includes Solid", false, "Makes Player ignore solid objects in editor.");
 
-            AllowPlayersToTakeBulletDamage = Bind(this, "General", "Shots hurt other players", false, "Disable this if you don't want players to kill each other.");
+            AllowPlayersToTakeBulletDamage = Bind(this, GENERAL, "Shots hurt other players", false, "Disable this if you don't want players to kill each other.");
 
-            PlayerNameTags = Bind(this, "General", "Multiplayer NameTags", true, "If enabled and there's more than one person playing, nametags will show which player is which.");
+            PlayerNameTags = Bind(this, GENERAL, "Multiplayer NameTags", true, "If enabled and there's more than one person playing, nametags will show which player is which.");
 
             #endregion
 
             #region Loading
 
-            AssetsGlobal = Bind(this, "Loading", "Assets Global Source", false, "Assets will use BepInEx/plugins/Assets as the folder instead of the local level folder.");
+            AssetsGlobal = Bind(this, LOADING, "Assets Global Source", false, "Assets will use BepInEx/plugins/Assets as the folder instead of the local level folder.");
             LoadFromGlobalPlayersInArcade = Bind(this, "Loading", "Always use global source", false, "Makes the player models always load from beatmaps/players for entering an arcade level. If disabled, players will be loaded from the local players.lspl file.");
 
-            PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 1 Model", "0", "The player uses this specific model ID."));
-            PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 2 Model", "0", "The player uses this specific model ID."));
-            PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 3 Model", "0", "The player uses this specific model ID."));
-            PlayerManager.PlayerIndexes.Add(Bind(this, "Loading", "Player 4 Model", "0", "The player uses this specific model ID."));
+            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 1 Model", "0", "The player uses this specific model ID."));
+            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 2 Model", "0", "The player uses this specific model ID."));
+            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 3 Model", "0", "The player uses this specific model ID."));
+            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 4 Model", "0", "The player uses this specific model ID."));
 
             #endregion
 
             #region Sounds
 
-            PlaySoundB = Bind(this, "Sounds", "Play Boost Sound", true, "Plays a little sound when you boost.");
-            PlaySoundR = Bind(this, "Sounds", "Play Boost Recover Sound", true, "Plays a little sound when you can boost again.");
-            PlaySoundRBoostTail = Bind(this, "Sounds", "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
-            PlayerShootSound = Bind(this, "Sounds", "Play Shoot Sound", true, "Plays a little sound when you shoot.");
-            PlaySpawnSound = Bind(this, "Sounds", "Play Spawn Sound", false, "Plays the spawn sound when players spawn / respawn.");
+            PlaySoundB = Bind(this, SOUNDS, "Play Boost Sound", true, "Plays a little sound when you boost.");
+            PlaySoundR = Bind(this, SOUNDS, "Play Boost Recover Sound", true, "Plays a little sound when you can boost again.");
+            PlaySoundRBoostTail = Bind(this, SOUNDS, "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
+            PlayerShootSound = Bind(this, SOUNDS, "Play Shoot Sound", true, "Plays a little sound when you shoot.");
+            PlaySpawnSound = Bind(this, SOUNDS, "Play Spawn Sound", false, "Plays the spawn sound when players spawn / respawn.");
 
             #endregion
 
             #region Controls
 
-            AllowControllerIfSinglePlayer = Bind(this, "Controls", "Allow Controller If Single Player", true, "If controller should be usable on singleplayer.");
-            PlayerShootControl = BindEnum(this, "Controls", "Shoot Control", InputControlType.Action3, "Controller button to press to shoot. Requires restart if changed.");
-            PlayerShootKey = BindEnum(this, "Controls", "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
+            AllowControllerIfSinglePlayer = Bind(this, CONTROLS, "Allow Controller If Single Player", true, "If controller should be usable on singleplayer.");
+            PlayerShootControl = BindEnum(this, CONTROLS, "Shoot Control", InputControlType.Action3, "Controller button to press to shoot. Requires restart if changed.");
+            PlayerShootKey = BindEnum(this, CONTROLS, "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
 
             #endregion
 
@@ -193,6 +198,15 @@ namespace BetterLegacy.Configs
             RTPlayer.PlayShootSound = PlayerShootSound.Value;
             RTPlayer.AllowPlayersToTakeBulletDamage = AllowPlayersToTakeBulletDamage.Value;
         }
+
+        #endregion
+
+        #region Sections
+
+        public const string GENERAL = "General";
+        public const string LOADING = "Loading";
+        public const string SOUNDS = "Sounds";
+        public const string CONTROLS = "Controls";
 
         #endregion
     }

@@ -21,18 +21,36 @@ namespace BetterLegacy.Configs
         /// Settings within the config.
         /// </summary>
         public List<BaseSetting> Settings { get; set; } = new List<BaseSetting>();
+
         /// <summary>
         /// Writeable JSON for the config.
         /// </summary>
         public JSONNode JSON { get; set; }
+
         /// <summary>
         /// Name of the config.
         /// </summary>
         public string Name { get; set; }
+
         /// <summary>
         /// Full path to the config.
         /// </summary>
         public string FullPath => RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", RTFile.FormatLegacyFileName(Name).Replace("config", "") + FileFormat.LSC.Dot());
+
+        /// <summary>
+        /// Name of the tab in the config manager UI.
+        /// </summary>
+        public abstract string TabName { get; }
+
+        /// <summary>
+        /// Color of the tab in the config manager UI.
+        /// </summary>
+        public abstract Color TabColor { get; }
+
+        /// <summary>
+        /// Description of the tab in the config manager UI.
+        /// </summary>
+        public abstract string TabDesc { get; }
 
         /// <summary>
         /// Function to run when a setting is changed.

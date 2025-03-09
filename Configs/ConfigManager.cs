@@ -22,8 +22,6 @@ namespace BetterLegacy.Configs
 
         #region Fields
 
-        public List<BaseConfig> configs = new List<BaseConfig>();
-
         public bool watchingKeybind;
         public Action<KeyCode> onSelectKey;
 
@@ -37,6 +35,8 @@ namespace BetterLegacy.Configs
         public Text descriptionText;
 
         public GameObject numberFieldStorage;
+
+        public RectTransform tabs;
 
         #endregion
 
@@ -108,78 +108,15 @@ namespace BetterLegacy.Configs
             EditorThemeManager.ApplyGraphic(closeXImage, ThemeGroup.Close_X);
 
             var tabs = Creator.NewUIObject("Tabs", configBase.transform);
-            new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 42f)).AssignToRectTransform(tabs.transform.AsRT());
+            this.tabs = tabs.transform.AsRT();
+            new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 42f)).AssignToRectTransform(this.tabs);
 
             var tabsImage = tabs.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(tabsImage, ThemeGroup.Background_3, true);
 
             var tabsHorizontalLayout = tabs.AddComponent<HorizontalLayoutGroup>();
 
-            var tabTitles = new string[]
-            {
-                "Core", // 1
-                "Arcade", // 2
-                "Editor", // 3
-                "Events", // 4
-                "Players", // 5
-                "Modifiers", // 6
-                "Menus", // 7
-                "Companion", // 8
-            };
-
-            var tabColors = new Color[]
-            {
-                new Color(0.18f, 0.4151f, 1f, 1f), // 1
-                new Color(1f, 0.143f, 0.22f, 1f), // 2
-                new Color(0.5694f, 0.3f, 1f, 1f), // 3
-                new Color(0.1509f, 0.7096f, 1f, 1f), // 4
-                new Color(1f, 0.4956f, 0.5192f, 1f), // 5
-                new Color(1f, 0.4972f, 0f, 1f), // 6
-                new Color(0.86f, 0.86f, 0.86f, 1f), // 7
-                new Color(0.1158f, 0.3352f, 1f, 1f), // 8
-            };
-
-            for (int i = 0; i < tabTitles.Length; i++)
-            {
-                var index = i;
-
-                var tab = Creator.NewUIObject($"Tab {i}", tabs.transform);
-
-                var tabBase = Creator.NewUIObject("Image", tab.transform);
-                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(tabBase.transform.AsRT());
-                var tabBaseImage = tabBase.AddComponent<Image>();
-
-                tabBaseImage.color = tabColors[i];
-
-                var tabTitle = Creator.NewUIObject("Title", tabBase.transform);
-                RectValues.FullAnchored.AssignToRectTransform(tabTitle.transform.AsRT());
-                var tabTitleText = tabTitle.AddComponent<Text>();
-                tabTitleText.alignment = TextAnchor.MiddleCenter;
-                tabTitleText.font = Font.GetDefault();
-                tabTitleText.fontSize = 18;
-                tabTitleText.text = tabTitles[Mathf.Clamp(i, 0, tabTitles.Length - 1)];
-
-                tabTitle.AddComponent<ContrastColors>().Init(tabTitleText, tabBaseImage);
-
-                var tabButton = tabBase.AddComponent<Button>();
-                tabButton.image = tabBaseImage;
-                tabButton.onClick.AddListener(() => SetTab(index));
-
-                EditorThemeManager.ApplyGraphic(tabBaseImage, ThemeGroup.Null, true);
-
-                tab.AddComponent<HoverConfig>().Init(i switch
-                {
-                    0 => "The main systems of PA Legacy.",
-                    1 => "The Arcade menus and levels.",
-                    2 => "The PA level editor.",
-                    3 => "The effects of PA.",
-                    4 => "The Players settings.",
-                    5 => "The modifiers that objects in a level can have.",
-                    6 => "The interfaces of PA.",
-                    7 => "The Example Companion.",
-                    _ => ""
-                });
-            }
+            UpdateTabs();
 
             var subTabs = Creator.NewUIObject("Tabs", configBase.transform);
             new RectValues(Vector2.zero, new Vector2(0f, 0.948f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(132f, 0f)).AssignToRectTransform(subTabs.transform.AsRT());
@@ -365,18 +302,47 @@ namespace BetterLegacy.Configs
             EditorThemeManager.ApplyGraphic(descriptionBaseImage, ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Right);
             EditorThemeManager.ApplyLightText(descriptionText);
 
-            configs.Add(CoreConfig.Instance);
-            configs.Add(ArcadeConfig.Instance);
-            configs.Add(EditorConfig.Instance);
-            configs.Add(EventsConfig.Instance);
-            configs.Add(PlayerConfig.Instance);
-            configs.Add(ModifiersConfig.Instance);
-            configs.Add(MenuConfig.Instance);
-            configs.Add(ExampleConfig.Instance);
-
             Hide();
 
             configBase.AddComponent<ConfigManagerUI>();
+        }
+
+        public void UpdateTabs()
+        {
+            LSHelpers.DeleteChildren(tabs);
+
+            for (int i = 0; i < LegacyPlugin.configs.Count; i++)
+            {
+                var index = i;
+                var config = LegacyPlugin.configs[i];
+
+                var tab = Creator.NewUIObject($"Tab {i}", tabs);
+
+                var tabBase = Creator.NewUIObject("Image", tab.transform);
+                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(tabBase.transform.AsRT());
+                var tabBaseImage = tabBase.AddComponent<Image>();
+
+                tabBaseImage.color = config.TabColor;
+
+                var tabTitle = Creator.NewUIObject("Title", tabBase.transform);
+                RectValues.FullAnchored.AssignToRectTransform(tabTitle.transform.AsRT());
+                var tabTitleText = tabTitle.AddComponent<Text>();
+                tabTitleText.alignment = TextAnchor.MiddleCenter;
+                tabTitleText.font = Font.GetDefault();
+                tabTitleText.fontSize = 18;
+                tabTitleText.text = config.TabName;
+
+                tabTitle.AddComponent<ContrastColors>().Init(tabTitleText, tabBaseImage);
+
+                var tabButton = tabBase.AddComponent<Button>();
+                tabButton.image = tabBaseImage;
+                tabButton.onClick.AddListener(() => SetTab(index));
+
+                EditorThemeManager.ApplyGraphic(tabBaseImage, ThemeGroup.Null, true);
+
+                tab.AddComponent<HoverConfig>().Init(config.TabDesc);
+            }
+
         }
 
         void Update()
@@ -430,7 +396,7 @@ namespace BetterLegacy.Configs
             lastTab = currentTab;
             currentTab = tabIndex;
             LSHelpers.DeleteChildren(subTabs);
-            var config = configs[Mathf.Clamp(tabIndex, 0, configs.Count - 1)];
+            var config = LegacyPlugin.configs[Mathf.Clamp(tabIndex, 0, LegacyPlugin.configs.Count - 1)];
 
             subTabSections.Clear();
 
@@ -479,7 +445,7 @@ namespace BetterLegacy.Configs
 
         public void RefreshSettings()
         {
-            var config = configs[Mathf.Clamp(currentTab, 0, configs.Count - 1)];
+            var config = LegacyPlugin.configs[Mathf.Clamp(currentTab, 0, LegacyPlugin.configs.Count - 1)];
 
             currentSubTab = Mathf.Clamp(currentSubTab, 0, subTabSections.Count - 1);
 

@@ -111,17 +111,9 @@ namespace BetterLegacy
             {
                 CoreHelper.Log("Loading configs...");
 
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
+                RTFile.CreateDirectory(RTFile.ApplicationDirectory + "profile");
 
-                configs.Add(new CoreConfig());
-                configs.Add(new EditorConfig());
-                configs.Add(new ArcadeConfig());
-                configs.Add(new MenuConfig());
-                configs.Add(new EventsConfig());
-                configs.Add(new ModifiersConfig());
-                configs.Add(new PlayerConfig());
-                configs.Add(new ExampleConfig());
+                InitConfigs();
             }
             catch (Exception ex)
             {
@@ -235,7 +227,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to load auth. {ex}");
-            }
+            } // auth
             
             try
             {
@@ -250,7 +242,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to load splash text. {ex}");
-            }
+            } // Splash text
 
             try
             {
@@ -261,7 +253,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to set timer. {ex}");
-            }
+            } // Timer
 
             try
             {
@@ -270,7 +262,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to create FPS Counter. {ex}");
-            }
+            } // FPS Counter
 
             try
             {
@@ -359,6 +351,17 @@ namespace BetterLegacy
 
             if (Input.GetKeyDown(CoreConfig.Instance.DebugInfoToggleKey.Value))
                 CoreConfig.Instance.DebugInfo.Value = !CoreConfig.Instance.DebugInfo.Value; // Enables / disables the debug info via the custom keybind.
+        }
+
+        void InitConfigs()
+        {
+            configs.Add(new CoreConfig());
+            configs.Add(new ArcadeConfig());
+            configs.Add(new EditorConfig());
+            configs.Add(new EventsConfig());
+            configs.Add(new PlayerConfig());
+            configs.Add(new MenuConfig());
+            configs.Add(new ExampleConfig());
         }
 
         #region Profile

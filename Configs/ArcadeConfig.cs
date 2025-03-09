@@ -23,6 +23,10 @@ namespace BetterLegacy.Configs
             SetupSettingChanged();
         }
 
+        public override string TabName => "Arcade";
+        public override Color TabColor => new Color(1f, 0.143f, 0.22f, 1f);
+        public override string TabDesc => "The Arcade menus and levels.";
+
         #region Settings
 
         #region Level
@@ -163,42 +167,42 @@ namespace BetterLegacy.Configs
 
             #region Level
 
-            CurrentLevelMode = Bind(this, "Level", "Level Mode", 0, "If a modes.lsms exists in the arcade level folder that you're loading, it will list other level modes (think easy mode, cutscene mode, hard mode, etc). The value in this config is for choosing which mode gets loaded. 0 is the default level.lsb or level.vgd.");
+            CurrentLevelMode = Bind(this, LEVEL, "Level Mode", 0, "If a modes.lsms exists in the arcade level folder that you're loading, it will list other level modes (think easy mode, cutscene mode, hard mode, etc). The value in this config is for choosing which mode gets loaded. 0 is the default level.lsb or level.vgd.");
             OpenOnlineLevelAfterDownload = Bind(this, "Level", "Open After Download", true, "If the Play Level Menu should open once the level has finished downloading.");
-            LocalLevelsPath = Bind(this, "Level", "Arcade Path in Beatmaps", "arcade", "The location of your local arcade folder.");
-            LoadSteamLevels = Bind(this, "Level", "Load Steam Levels After Local Loaded", true, "If subscribed Steam levels should load after the local levels have loaded.");
-            QueuePlaysLevel = Bind(this, "Level", "Play First Queued", false, "If enabled, the game will immediately load into the first queued level, otherwise it will open it in the Play Level Menu.");
-            ShuffleQueueAmount = Bind(this, "Level", "Shuffle Queue Amount", 5, "How many levels should be added to the Queue.", 1, 50);
-            LoadYieldMode = BindEnum(this, "Level", "Load Yield Mode", YieldType.FixedUpdate, "The yield instruction used for spacing out levels being loaded in the Arcade. Some options will load faster but freeze the game, while others load slower but allow you to see them loading in the menus.");
+            LocalLevelsPath = Bind(this, LEVEL, "Arcade Path in Beatmaps", "arcade", "The location of your local arcade folder.");
+            LoadSteamLevels = Bind(this, LEVEL, "Load Steam Levels After Local Loaded", true, "If subscribed Steam levels should load after the local levels have loaded.");
+            QueuePlaysLevel = Bind(this, LEVEL, "Play First Queued", false, "If enabled, the game will immediately load into the first queued level, otherwise it will open it in the Play Level Menu.");
+            ShuffleQueueAmount = Bind(this, LEVEL, "Shuffle Queue Amount", 5, "How many levels should be added to the Queue.", 1, 50);
+            LoadYieldMode = BindEnum(this, LEVEL, "Load Yield Mode", YieldType.FixedUpdate, "The yield instruction used for spacing out levels being loaded in the Arcade. Some options will load faster but freeze the game, while others load slower but allow you to see them loading in the menus.");
 
             #endregion
 
             #region UI
 
-            LoadingBackRoundness = Bind(this, "UI", "Loading Back Roundness", 2, "The roundness of the loading screens' back.", 0, 5);
-            LoadingIconRoundness = Bind(this, "UI", "Loading Icon Roundness", 1, "The roundness of the loading screens' icon.", 0, 5);
-            LoadingBarRoundness = Bind(this, "UI", "Loading Bar Roundness", 1, "The roundness of the loading screens' loading bar.", 0, 5);
+            LoadingBackRoundness = Bind(this, UI, "Loading Back Roundness", 2, "The roundness of the loading screens' back.", 0, 5);
+            LoadingIconRoundness = Bind(this, UI, "Loading Icon Roundness", 1, "The roundness of the loading screens' icon.", 0, 5);
+            LoadingBarRoundness = Bind(this, UI, "Loading Bar Roundness", 1, "The roundness of the loading screens' loading bar.", 0, 5);
 
-            OnlyShowShineOnSelected = Bind(this, "UI", "Only Show Shine on Selected", true, "If the SS rank shine should only show on the current selected level with an SS rank or on all levels with an SS rank.");
-            ShineSpeed = Bind(this, "UI", "SS Rank Shine Speed", 0.7f, "How fast the shine goes by.", 0.1f, 3f);
-            ShineMaxDelay = Bind(this, "UI", "SS Rank Shine Max Delay", 0.6f, "The max time the shine delays.", 0.1f, 3f);
-            ShineMinDelay = Bind(this, "UI", "SS Rank Shine Min Delay", 0.2f, "The min time the shine delays.", 0.1f, 3f);
-            ShineColor = Bind(this, "UI", "SS Rank Shine Color", new Color(1f, 0.933f, 0.345f, 1f), "The color of the shine.");
+            OnlyShowShineOnSelected = Bind(this, UI, "Only Show Shine on Selected", true, "If the SS rank shine should only show on the current selected level with an SS rank or on all levels with an SS rank.");
+            ShineSpeed = Bind(this, UI, "SS Rank Shine Speed", 0.7f, "How fast the shine goes by.", 0.1f, 3f);
+            ShineMaxDelay = Bind(this, UI, "SS Rank Shine Max Delay", 0.6f, "The max time the shine delays.", 0.1f, 3f);
+            ShineMinDelay = Bind(this, UI, "SS Rank Shine Min Delay", 0.2f, "The min time the shine delays.", 0.1f, 3f);
+            ShineColor = Bind(this, UI, "SS Rank Shine Color", new Color(1f, 0.933f, 0.345f, 1f), "The color of the shine.");
 
             #endregion
 
             #region Sorting
 
-            LocalLevelOrderby = BindEnum(this, "Sorting", "Local Orderby", LevelSort.Cover, "How the level list is ordered.");
-            LocalLevelAscend = Bind(this, "Sorting", "Local Ascend", true, "If the level order should be up or down.");
+            LocalLevelOrderby = BindEnum(this, SORTING, "Local Orderby", LevelSort.Cover, "How the level list is ordered.");
+            LocalLevelAscend = Bind(this, SORTING, "Local Ascend", true, "If the level order should be up or down.");
 
-            SteamLevelOrderby = BindEnum(this, "Sorting", "Steam Orderby", LevelSort.Cover, "How the Steam level list is ordered.");
-            SteamLevelAscend = Bind(this, "Sorting", "Steam Ascend", true, "If the Steam level order should be up or down.");
+            SteamLevelOrderby = BindEnum(this, SORTING, "Steam Orderby", LevelSort.Cover, "How the Steam level list is ordered.");
+            SteamLevelAscend = Bind(this, SORTING, "Steam Ascend", true, "If the Steam level order should be up or down.");
 
-            SteamWorkshopOrderby = BindEnum(this, "Sorting", "Steam Workshop Orderby", QuerySort.None, "How the Steam Workshop search should be sorted.");
-            SteamWorkshopFriendsOnly = Bind(this, "Sorting", "Steam Workshop Friends Only", false, "If items from friends should only appear.");
-            SteamWorkshopFollowingOnly = Bind(this, "Sorting", "Steam Workshop Following Only", false, "If items from followed users should only appear.");
-            SteamWorkshopFavoritedOnly = Bind(this, "Sorting", "Steam Workshop Favorited Only", false, "If favorited items should only appear.");
+            SteamWorkshopOrderby = BindEnum(this, SORTING, "Steam Workshop Orderby", QuerySort.None, "How the Steam Workshop search should be sorted.");
+            SteamWorkshopFriendsOnly = Bind(this, SORTING, "Steam Workshop Friends Only", false, "If items from friends should only appear.");
+            SteamWorkshopFollowingOnly = Bind(this, SORTING, "Steam Workshop Following Only", false, "If items from followed users should only appear.");
+            SteamWorkshopFavoritedOnly = Bind(this, SORTING, "Steam Workshop Favorited Only", false, "If favorited items should only appear.");
 
             #endregion
 
@@ -256,6 +260,14 @@ namespace BetterLegacy.Configs
         void CurrentLevelModeChanged() => LevelManager.CurrentLevelMode = CurrentLevelMode.Value;
 
         void LocalLevelsPathChanged() => LevelManager.Path = LocalLevelsPath.Value;
+
+        #endregion
+
+        #region Sections
+
+        public const string LEVEL = "Level";
+        public const string UI = "UI";
+        public const string SORTING = "Sorting";
 
         #endregion
     }

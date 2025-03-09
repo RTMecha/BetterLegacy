@@ -1,4 +1,6 @@
-﻿namespace BetterLegacy.Configs
+﻿using UnityEngine;
+
+namespace BetterLegacy.Configs
 {
     public class TestConfig : BaseConfig
     {
@@ -11,6 +13,10 @@
 
             SetupSettingChanged();
         }
+
+        public override string TabName => "Null";
+        public override Color TabColor => Color.black;
+        public override string TabDesc => "test";
 
         #region Settings
 

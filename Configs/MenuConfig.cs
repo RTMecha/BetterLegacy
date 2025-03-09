@@ -21,6 +21,10 @@ namespace BetterLegacy.Configs
             SetupSettingChanged();
         }
 
+        public override string TabName => "Menus";
+        public override Color TabColor => new Color(0.86f, 0.86f, 0.86f, 1f);
+        public override string TabDesc => "The interfaces of PA.";
+
         #region Settings
 
         #region General
@@ -109,22 +113,30 @@ namespace BetterLegacy.Configs
         {
             Load();
 
-            ReloadMainMenu = BindEnum(this, "General", "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
-            LoadPageEditor = BindEnum(this, "General", "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
-            SelectFirstButton = BindEnum(this, "General", "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
-            Theme = Bind(this, "General", "Theme", 0, "The theme of the interface.");
-            InterfaceThemeID = Bind(this, "General", "Interface Theme ID", "-1", "The theme of the new interface.");
-            RoundedUI = Bind(this, "General", "Rounded", false, "If most elements in the interface should have a rounded corner.");
-            ShowChangelog = Bind(this, "General", "Show Changelog", true, "If the changelog screen should show on game startup.");
-            ShowFX = Bind(this, "General", "Show Effects", true, "If menu effects should be enabled.");
-            RegularSpeedMultiplier = Bind(this, "General", "Regular Speed Multiplier", 1f, "How fast the interface should load normally.");
-            SpeedUpSpeedMultiplier = Bind(this, "General", "Speed Up Multiplier", 4f, "How fast the interface should load while a submit button is being held.");
+            #region General
 
-            PlayCustomMusic = Bind(this, "Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
-            MusicLoadMode = BindEnum(this, "Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
-            MusicIndex = Bind(this, "Music", "File Index", -1, "If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.");
-            MusicGlobalPath = Bind(this, "Music", "Global Path", "C:/", "Set this path to whatever path you want if you're using Global Load Directory.");
-            PlayInputSelectMusic = Bind(this, "Music", "Play Input Select Music", true, "If the Input Select theme music should play.");
+            ReloadMainMenu = BindEnum(this, GENERAL, "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
+            LoadPageEditor = BindEnum(this, GENERAL, "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
+            SelectFirstButton = BindEnum(this, GENERAL, "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
+            Theme = Bind(this, GENERAL, "Theme", 0, "The theme of the interface.");
+            InterfaceThemeID = Bind(this, GENERAL, "Interface Theme ID", "-1", "The theme of the new interface.");
+            RoundedUI = Bind(this, GENERAL, "Rounded", false, "If most elements in the interface should have a rounded corner.");
+            ShowChangelog = Bind(this, GENERAL, "Show Changelog", true, "If the changelog screen should show on game startup.");
+            ShowFX = Bind(this, GENERAL, "Show Effects", true, "If menu effects should be enabled.");
+            RegularSpeedMultiplier = Bind(this, GENERAL, "Regular Speed Multiplier", 1f, "How fast the interface should load normally.");
+            SpeedUpSpeedMultiplier = Bind(this, GENERAL, "Speed Up Multiplier", 4f, "How fast the interface should load while a submit button is being held.");
+
+            #endregion
+
+            #region Music
+
+            PlayCustomMusic = Bind(this, MUSIC, "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
+            MusicLoadMode = BindEnum(this, MUSIC, "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
+            MusicIndex = Bind(this, MUSIC, "File Index", -1, "If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.");
+            MusicGlobalPath = Bind(this, MUSIC, "Global Path", "C:/", "Set this path to whatever path you want if you're using Global Load Directory.");
+            PlayInputSelectMusic = Bind(this, MUSIC, "Play Input Select Music", true, "If the Input Select theme music should play.");
+
+            #endregion
 
             Save();
         }
@@ -177,6 +189,13 @@ namespace BetterLegacy.Configs
             else if (PlayInputSelectMusic.Value)
                 SoundManager.inst.PlayMusic(DefaultMusic.loading);
         }
+
+        #endregion
+
+        #region Sections
+
+        public const string GENERAL = "General";
+        public const string MUSIC = "Music";
 
         #endregion
     }

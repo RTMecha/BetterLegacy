@@ -23,6 +23,10 @@ namespace BetterLegacy.Configs
             SetupSettingChanged();
         }
 
+        public override string TabName => "Core";
+        public override Color TabColor => new Color(0.18f, 0.4151f, 1f, 1f);
+        public override string TabDesc => "The main systems of PA Legacy.";
+
         #region Settings
 
         #region Default Settings
@@ -414,89 +418,89 @@ namespace BetterLegacy.Configs
 
             #region Settings
 
-            OpenConfigKey = BindEnum(this, "Settings", "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
-            FullscreenKey = BindEnum(this, "Settings", "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
-            Fullscreen = Bind(this, "Settings", "Fullscreen", false, "If game window should cover the entire screen or not.");
-            Resolution = BindEnum(this, "Settings", "Resolution", Resolutions.p720, "The size of the game window in pixels.");
-            VSync = Bind(this, "Settings", "VSync", true, "If FPS matches your monitors refresh rate.");
-            FPSLimit = Bind(this, "Settings", "FPS Limit", -1, "The amount the FPS is limited to. If the number is -1, it is unlimited.");
-            MasterVol = Bind(this, "Settings", "Volume Master", 8, "Total volume.", 0, 9);
-            MusicVol = Bind(this, "Settings", "Volume Music", 9, "Music volume.", 0, 9);
-            SFXVol = Bind(this, "Settings", "Volume SFX", 9, "SFX volume.", 0, 9);
-            Language = BindEnum(this, "Settings", "Language", BetterLegacy.Language.English, "The language the game is in.");
-            ControllerRumble = Bind(this, "Settings", "Controller Vibrate", true, "If the controllers should vibrate.");
-            LoadingDisplayType = BindEnum(this, "Settings", "Loading Display Type", BetterLegacy.LoadingDisplayType.EqualsBar, "Customizes the type of loading bar that is used.");
+            OpenConfigKey = BindEnum(this, SETTINGS, "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
+            FullscreenKey = BindEnum(this, SETTINGS, "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
+            Fullscreen = Bind(this, SETTINGS, "Fullscreen", false, "If game window should cover the entire screen or not.");
+            Resolution = BindEnum(this, SETTINGS, "Resolution", Resolutions.p720, "The size of the game window in pixels.");
+            VSync = Bind(this, SETTINGS, "VSync", true, "If FPS matches your monitors refresh rate.");
+            FPSLimit = Bind(this, SETTINGS, "FPS Limit", -1, "The amount the FPS is limited to. If the number is -1, it is unlimited.");
+            MasterVol = Bind(this, SETTINGS, "Volume Master", 8, "Total volume.", 0, 9);
+            MusicVol = Bind(this, SETTINGS, "Volume Music", 9, "Music volume.", 0, 9);
+            SFXVol = Bind(this, SETTINGS, "Volume SFX", 9, "SFX volume.", 0, 9);
+            Language = BindEnum(this, SETTINGS, "Language", BetterLegacy.Language.English, "The language the game is in.");
+            ControllerRumble = Bind(this, SETTINGS, "Controller Vibrate", true, "If the controllers should vibrate.");
+            LoadingDisplayType = BindEnum(this, SETTINGS, "Loading Display Type", BetterLegacy.LoadingDisplayType.EqualsBar, "Customizes the type of loading bar that is used.");
 
             #endregion
 
             #region Game
 
-            PhysicsUpdateMatchFramerate = Bind(this, "Game", "Physics Update Match Framerate", false, "Forces all physics related things to match your FPS.");
-            AllowControlsInputField = Bind(this, "Game", "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
-            AntiAliasing = Bind(this, "Game", "Anti-Aliasing", true, "If anti-aliasing is on or not.");
-            RunInBackground = Bind(this, "Game", "Run In Background", true, "If you want the game to continue playing when minimized.");
+            PhysicsUpdateMatchFramerate = Bind(this, GAME, "Physics Update Match Framerate", false, "Forces all physics related things to match your FPS.");
+            AllowControlsInputField = Bind(this, GAME, "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
+            AntiAliasing = Bind(this, GAME, "Anti-Aliasing", true, "If anti-aliasing is on or not.");
+            RunInBackground = Bind(this, GAME, "Run In Background", true, "If you want the game to continue playing when minimized.");
             AllowCustomTextFormatting = Bind(this, "Game", "Allow Custom Text Formatting", false, "If text objects should display custom formatting such as levelRank. Currently very unoptimized, so it's off by default.");
-            IncreasedClipPlanes = Bind(this, "Game", "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
-            EvaluateCode = Bind(this, "Game", "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
-            PlayPauseCountdown = Bind(this, "Game", "Play Pause Countdown", true, "If resuming the game starts a countdown. With this off, the game immediately unpauses.");
+            IncreasedClipPlanes = Bind(this, GAME, "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
+            EvaluateCode = Bind(this, GAME, "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
+            PlayPauseCountdown = Bind(this, GAME, "Play Pause Countdown", true, "If resuming the game starts a countdown. With this off, the game immediately unpauses.");
 
             #endregion
 
             #region User
 
-            DisplayName = Bind(this, "User", "Display Name", "Player", "Sets the username to show in levels and menus.");
+            DisplayName = Bind(this, USER, "Display Name", "Player", "Sets the username to show in levels and menus.");
 
             #endregion
 
             #region File
 
-            ScreenshotsPath = Bind(this, "File", "Screenshot Path", "screenshots", "The path to save screenshots to.");
-            ScreenshotKey = BindEnum(this, "File", "Screenshot Key", KeyCode.F2, "The key to press to take a screenshot.");
-            OpenPAFolder = BindEnum(this, "File", "Open Project Arrhythmia Folder", KeyCode.F4, "Opens the folder containing the Project Arrhythmia application and all files related to it.");
-            OpenPAPersistentFolder = BindEnum(this, "File", "Open LocalLow Folder", KeyCode.F5, "Opens the data folder all instances of PA share containing the log files and global editor data.");
-            StoryFile = Bind(this, "File", "Story File", "story.json", "Where the story mode JSON file is located. Only change this if you know what you're doing.");
+            ScreenshotsPath = Bind(this, FILE, "Screenshot Path", "screenshots", "The path to save screenshots to.");
+            ScreenshotKey = BindEnum(this, FILE, "Screenshot Key", KeyCode.F2, "The key to press to take a screenshot.");
+            OpenPAFolder = BindEnum(this, FILE, "Open Project Arrhythmia Folder", KeyCode.F4, "Opens the folder containing the Project Arrhythmia application and all files related to it.");
+            OpenPAPersistentFolder = BindEnum(this, FILE, "Open LocalLow Folder", KeyCode.F5, "Opens the data folder all instances of PA share containing the log files and global editor data.");
+            StoryFile = Bind(this, FILE, "Story File", "story.json", "Where the story mode JSON file is located. Only change this if you know what you're doing.");
 
             #endregion
 
             #region Level
 
-            Seed = Bind(this, "Level", "Seed", "", "The current seed randomization in a level uses. Leave empty to randomize the seed each time you play a level.");
-            LDM = Bind(this, "Level", "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
-            ShowBackgroundObjects = Bind(this, "Level", "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
-            EnableVideoBackground = Bind(this, "Level", "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
-            UseNewUpdateMethod = Bind(this, "Level", "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
-            ReplayLevel = Bind(this, "Level", "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
-            PrioritizeVG = Bind(this, "Level", "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
-            ParseOptimizations = Bind(this, "Level", "Parse Optimizations", false, "When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.");
-            PlayCheckpointSound = Bind(this, "Level", "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
-            PlayCheckpointAnimation = Bind(this, "Level", "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
+            Seed = Bind(this, LEVEL, "Seed", "", "The current seed randomization in a level uses. Leave empty to randomize the seed each time you play a level.");
+            LDM = Bind(this, LEVEL, "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
+            ShowBackgroundObjects = Bind(this, LEVEL, "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
+            EnableVideoBackground = Bind(this, LEVEL, "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
+            UseNewUpdateMethod = Bind(this, LEVEL, "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
+            ReplayLevel = Bind(this, LEVEL, "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
+            PrioritizeVG = Bind(this, LEVEL, "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
+            ParseOptimizations = Bind(this, LEVEL, "Parse Optimizations", false, "When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.");
+            PlayCheckpointSound = Bind(this, LEVEL, "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
+            PlayCheckpointAnimation = Bind(this, LEVEL, "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
 
             #endregion
 
             #region Discord
 
-            DiscordShowLevel = Bind(this, "Discord", "Show Level Status", true, "If level name is shown in your Discord status.");
-            DiscordRichPresenceID = Bind(this, "Discord", "Status ID (READ DESC)", "1176264603374735420", "Only change if you already have your own custom Discord status setup.");
+            DiscordShowLevel = Bind(this, DISCORD, "Show Level Status", true, "If level name is shown in your Discord status.");
+            DiscordRichPresenceID = Bind(this, DISCORD, "Status ID (READ DESC)", "1176264603374735420", "Only change if you already have your own custom Discord status setup.");
 
             #endregion
 
             #region Cursor
 
-            CursorVisibleTime = Bind(this, "Cursor", "Cursor Visible Time", 1f, "How long the cursor should be visible when temporarily shown.", 0f, 60f);
-            GameCursorCanShow = Bind(this, "Cursor", "Game Cursor Can Show", false, "If the cursor in the game / editor preview can show when the user moves their mouse.");
-            EditorCursorAlwaysVisible = Bind(this, "Cursor", "Editor Cursor Always Visible", true, "If the cursor in the editor should always be visible and not hide after a few seconds.");
+            CursorVisibleTime = Bind(this, CURSOR, "Cursor Visible Time", 1f, "How long the cursor should be visible when temporarily shown.", 0f, 60f);
+            GameCursorCanShow = Bind(this, CURSOR, "Game Cursor Can Show", false, "If the cursor in the game / editor preview can show when the user moves their mouse.");
+            EditorCursorAlwaysVisible = Bind(this, CURSOR, "Editor Cursor Always Visible", true, "If the cursor in the editor should always be visible and not hide after a few seconds.");
 
             #endregion
 
             #region Debugging
 
-            DebugsOn = Bind(this, "Debugging", "Enabled", true, "If disabled, turns all Unity debug logs off. Might boost performance.");
-            DebugInfo = Bind(this, "Debugging", "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
-            DebugInfoStartup = Bind(this, "Debugging", "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
-            DebugInfoToggleKey = BindEnum(this, "Debugging", "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
-            DebugShowOnlyFPS = Bind(this, "Debugging", "Show Only FPS", true, "If the Debug Info menu should only display FPS.");
-            DebugPosition = Bind(this, "Debugging", "Debug Info Position", new Vector2(10f, 1080f), "The position the Debug Info menu is at.");
-            NotifyREPL = Bind(this, "Debugging", "Notify REPL", false, "If in editor, code ran will have their results be notified.");
+            DebugsOn = Bind(this, DEBUGGING, "Enabled", true, "If disabled, turns all Unity debug logs off. Might boost performance.");
+            DebugInfo = Bind(this, DEBUGGING, "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
+            DebugInfoStartup = Bind(this, DEBUGGING, "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
+            DebugInfoToggleKey = BindEnum(this, DEBUGGING, "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
+            DebugShowOnlyFPS = Bind(this, DEBUGGING, "Show Only FPS", true, "If the Debug Info menu should only display FPS.");
+            DebugPosition = Bind(this, DEBUGGING, "Debug Info Position", new Vector2(10f, 1080f), "The position the Debug Info menu is at.");
+            NotifyREPL = Bind(this, DEBUGGING, "Notify REPL", false, "If in editor, code ran will have their results be notified.");
 
             #endregion
 
@@ -617,6 +621,17 @@ namespace BetterLegacy.Configs
 
         #endregion
 
-    }
+        #region Sections
 
+        public const string SETTINGS = "Settings";
+        public const string GAME = "Game";
+        public const string USER = "User";
+        public const string FILE = "File";
+        public const string LEVEL = "Level";
+        public const string DISCORD = "Discord";
+        public const string CURSOR = "Cursor";
+        public const string DEBUGGING = "Debugging";
+
+        #endregion
+    }
 }

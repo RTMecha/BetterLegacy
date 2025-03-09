@@ -45,6 +45,10 @@ namespace BetterLegacy.Configs
             SetupSettingChanged();
         }
 
+        public override string TabName => "Editor";
+        public override Color TabColor => new Color(0.5694f, 0.3f, 1f, 1f);
+        public override string TabDesc => "The PA editor.";
+
         #region Settings
 
         #region General
@@ -1288,6 +1292,20 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Modifiers
+
+        /// <summary>
+        /// Any modifiers with the "loadLevel" function will load the level whilst in the editor. This is only to prevent the loss of progress.
+        /// </summary>
+        public Setting<bool> ModifiersCanLoadLevels { get; set; }
+
+        /// <summary>
+        /// The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.
+        /// </summary>
+        public Setting<bool> ModifiersSavesBackup { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -1299,67 +1317,67 @@ namespace BetterLegacy.Configs
 
             #region General
 
-            Debug = Bind(this, "General", "Debug", false, "If enabled, specific debugging functions for the editor will be enabled.");
-            EditorZenMode = Bind(this, "General", "Editor Zen Mode", false, "If on, the player will not take damage in Preview Mode.");
-            ResetHealthInEditor = Bind(this, "General", "Reset Health In Editor View", true, "If on, the player's health will reset when the creator exits Preview Mode.");
-            BPMSnapsKeyframes = Bind(this, "General", "BPM Snaps Keyframes", false, "Makes object's keyframes snap if Snap BPM is enabled.");
-            BPMSnapDivisions = Bind(this, "General", "BPM Snap Divisions", 4f, "How many times the snap is divided into. Can be good for songs that don't do 4 divisions.");
-            DraggingPlaysSound = Bind(this, "General", "Dragging Plays Sound", true, "If dragging an object plays a sound.");
-            DraggingPlaysSoundOnlyWithBPM = Bind(this, "General", "Dragging Plays Sound Only With BPM", true, "If dragging an object plays a sound ONLY when BPM Snap is active.");
-            ShowCollapsePrefabWarning = Bind(this, "General", "Show Collapse Prefab Warning", true, "If a warning should popup when the user is trying to apply a prefab. Can be good for accidental Apply Prefab button clicks.");
-            UpdateHomingKeyframesDrag = Bind(this, "General", "Update Homing Keyframes on Drag", true, "If all homing keyframes should retarget when the audio position is changed via the timeline cursor.");
-            RoundToNearest = Bind(this, "General", "Round To Nearest", true, "If numbers should be rounded up to 3 decimal points (for example, 0.43321245 into 0.433).");
-            ScrollOnEasing = Bind(this, "General", "Scroll on Easing Changes Value", true, "If Scolling on an easing dropdown changes the easing.");
-            PrefabExampleTemplate = Bind(this, "General", "Prefab Example Template", true, "Example Template prefab will always be generated into the internal prefabs for you to use.");
-            PasteOffset = Bind(this, "General", "Paste Offset", false, "When enabled objects that are pasted will be pasted at an offset based on the distance between the audio time and the copied object. Otherwise, the objects will be pasted at the earliest objects start time.");
-            BringToSelection = Bind(this, "General", "Bring To Selection", false, "When an object is selected (whether it be a regular object, a marker, etc), it will move the layer and audio time to that object.");
-            SelectPasted = Bind(this, "General", "Select Pasted Keyframes", false, "Select a pasted keyframe.");
-            CreateObjectsatCameraCenter = Bind(this, "General", "Create Objects at Camera Center", true, "When an object is created, its position will be set to that of the camera's.");
-            SpawnPrefabsAtCameraCenter = Bind(this, "General", "Spawn Prefabs at Camera Center", true, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
-            CreateObjectsScaleParentDefault = Bind(this, "General", "Create Objects Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
-            CreateObjectModifierOrderDefault = Bind(this, "General", "Create Object Modifier Order Default", false, "The default value for new objects' Order Matters toggle.");
-            AllowEditorKeybindsWithEditorCam = Bind(this, "General", "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
-            RotationEventKeyframeResets = Bind(this, "General", "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
-            RememberLastKeyframeType = Bind(this, "General", "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");
+            Debug = Bind(this, GENERAL, "Debug", false, "If enabled, specific debugging functions for the editor will be enabled.");
+            EditorZenMode = Bind(this, GENERAL, "Editor Zen Mode", false, "If on, the player will not take damage in Preview Mode.");
+            ResetHealthInEditor = Bind(this, GENERAL, "Reset Health In Editor View", true, "If on, the player's health will reset when the creator exits Preview Mode.");
+            BPMSnapsKeyframes = Bind(this, GENERAL, "BPM Snaps Keyframes", false, "Makes object's keyframes snap if Snap BPM is enabled.");
+            BPMSnapDivisions = Bind(this, GENERAL, "BPM Snap Divisions", 4f, "How many times the snap is divided into. Can be good for songs that don't do 4 divisions.");
+            DraggingPlaysSound = Bind(this, GENERAL, "Dragging Plays Sound", true, "If dragging an object plays a sound.");
+            DraggingPlaysSoundOnlyWithBPM = Bind(this, GENERAL, "Dragging Plays Sound Only With BPM", true, "If dragging an object plays a sound ONLY when BPM Snap is active.");
+            ShowCollapsePrefabWarning = Bind(this, GENERAL, "Show Collapse Prefab Warning", true, "If a warning should popup when the user is trying to apply a prefab. Can be good for accidental Apply Prefab button clicks.");
+            UpdateHomingKeyframesDrag = Bind(this, GENERAL, "Update Homing Keyframes on Drag", true, "If all homing keyframes should retarget when the audio position is changed via the timeline cursor.");
+            RoundToNearest = Bind(this, GENERAL, "Round To Nearest", true, "If numbers should be rounded up to 3 decimal points (for example, 0.43321245 into 0.433).");
+            ScrollOnEasing = Bind(this, GENERAL, "Scroll on Easing Changes Value", true, "If Scolling on an easing dropdown changes the easing.");
+            PrefabExampleTemplate = Bind(this, GENERAL, "Prefab Example Template", true, "Example Template prefab will always be generated into the internal prefabs for you to use.");
+            PasteOffset = Bind(this, GENERAL, "Paste Offset", false, "When enabled objects that are pasted will be pasted at an offset based on the distance between the audio time and the copied object. Otherwise, the objects will be pasted at the earliest objects start time.");
+            BringToSelection = Bind(this, GENERAL, "Bring To Selection", false, "When an object is selected (whether it be a regular object, a marker, etc), it will move the layer and audio time to that object.");
+            SelectPasted = Bind(this, GENERAL, "Select Pasted Keyframes", false, "Select a pasted keyframe.");
+            CreateObjectsatCameraCenter = Bind(this, GENERAL, "Create Objects at Camera Center", true, "When an object is created, its position will be set to that of the camera's.");
+            SpawnPrefabsAtCameraCenter = Bind(this, GENERAL, "Spawn Prefabs at Camera Center", true, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
+            CreateObjectsScaleParentDefault = Bind(this, GENERAL, "Create Objects Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
+            CreateObjectModifierOrderDefault = Bind(this, GENERAL, "Create Object Modifier Order Default", false, "The default value for new objects' Order Matters toggle.");
+            AllowEditorKeybindsWithEditorCam = Bind(this, GENERAL, "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
+            RotationEventKeyframeResets = Bind(this, GENERAL, "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
+            RememberLastKeyframeType = Bind(this, GENERAL, "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");
 
             #endregion
 
             #region Timeline
 
-            ClampedTimelineDrag = Bind(this, "Timeline", "Clamped Timeline Drag", true, "If dragging objects around in the timeline prevents their start times from going outside the range of the song. Turning this off can be good for having objects spawn at the start of the level.");
-            DraggingMainCursorPausesLevel = Bind(this, "Timeline", "Dragging Main Cursor Pauses Level", true, "If dragging the cursor pauses the level.");
-            DraggingMainCursorFix = Bind(this, "Timeline", "Dragging Main Cursor Fix", true, "If the main cursor should act like the object cursor.");
-            UseMouseAsZoomPoint = Bind(this, "Timeline", "Use Mouse As Zooming Point", false, "If zooming in should use your mouse as a point instead of the timeline cursor. Applies to both main and object timelines..");
-            TimelineCursorColor = Bind(this, "Timeline", "Timeline Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the main timeline cursor.");
-            KeyframeCursorColor = Bind(this, "Timeline", "Keyframe Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the object timeline cursor.");
-            ObjectSelectionColor = Bind(this, "Timeline", "Object Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected objects.");
-            MainZoomBounds = Bind(this, "Timeline", "Main Zoom Bounds", new Vector2(16f, 512f), "The limits of the main timeline zoom.");
-            KeyframeZoomBounds = Bind(this, "Timeline", "Keyframe Zoom Bounds", new Vector2(1f, 512f), "The limits of the keyframe timeline zoom.");
-            MainZoomAmount = Bind(this, "Timeline", "Main Zoom Amount", 0.05f, "Sets the zoom in & out amount for the main timeline.");
-            KeyframeZoomAmount = Bind(this, "Timeline", "Keyframe Zoom Amount", 0.05f, "Sets the zoom in & out amount for the keyframe timeline.");
-            BinControlKey = BindEnum(this, "Timeline", "Bin Control Key", KeyCode.Tab, "The key to be held when you want to enable bin controls.");
-            BinControlActiveBehavior = BindEnum(this, "Timeline", "Bin Control Active Behavior", BinSliderControlActive.KeyToggled, "How the visibility of the Bin Slider should be treated.");
-            BinControlScrollAmount = Bind(this, "Timeline", "Bin Control Scroll Amount", 0.02f, "How much the bins should scroll.");
-            BinControlsPlaysSounds = Bind(this, "Timeline", "Bin Controls Plays Sounds", true, "If using the bin controls can play sounds.");
-            TimelineObjectRetainsBinOnDrag = Bind(this, "Timeline", "Timeline Object Retains Bin On Drag", true, "If timeline object should retain their bin value when dragged. Having this on can prevent objects from collapsing when bins are removed.");
-            MoveToChangedBin = Bind(this, "Timeline", "Move To Changed Bin", true, "If the timeline should move to the bottom of the bin count when a bin is added / removed.");
-            KeyframeEndLengthOffset = Bind(this, "Timeline", "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
-            TimelineCollapseLength = Bind(this, "Timeline", "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
-            TimelineObjectPrefabTypeIcon = Bind(this, "Timeline", "Timeline Object Prefab Type Icon", true, "Shows the object's prefab type's icon.");
-            EventLabelsRenderLeft = Bind(this, "Timeline", "Event Labels Render Left", false, "If the Event Layer labels should render on the left side or not.");
-            EventKeyframesRenderBinColor = Bind(this, "Timeline", "Event Keyframes Use Bin Color", true, "If the Event Keyframes should use the bin color when not selected or not.");
-            ObjectKeyframesRenderBinColor = Bind(this, "Timeline", "Object Keyframes Use Bin Color", true, "If the Object Keyframes should use the bin color when not selected or not.");
-            WaveformGenerate = Bind(this, "Timeline", "Waveform Generate", true, "Allows the timeline waveform to generate. (Waveform might not show on some devices and will increase level load times)");
-            WaveformSaves = Bind(this, "Timeline", "Waveform Saves", true, "Turn off if you don't want the timeline waveform to save.");
-            WaveformRerender = Bind(this, "Timeline", "Waveform Re-render", false, "If the timeline waveform should update when a value is changed.");
-            WaveformMode = BindEnum(this, "Timeline", "Waveform Mode", WaveformType.Split, "The mode of the timeline waveform.");
-            WaveformBGColor = Bind(this, "Timeline", "Waveform BG Color", Color.clear, "Color of the background for the waveform.");
-            WaveformTopColor = Bind(this, "Timeline", "Waveform Top Color", LSColors.red300, "If waveform mode is Legacy, this will be the top color. Otherwise, it will be the regular color.");
-            WaveformBottomColor = Bind(this, "Timeline", "Waveform Bottom Color", LSColors.blue300, "If waveform is Legacy, this will be the bottom color. Otherwise, it will be unused.");
-            WaveformTextureFormat = BindEnum(this, "Timeline", "Waveform Texture Format", TextureFormat.ARGB32, "What format the waveform's texture should render under.");
-            TimelineGridEnabled = Bind(this, "Timeline", "Timeline Grid Enabled", true, "If the timeline grid renders.");
-            TimelineGridColor = Bind(this, "Timeline", "Timeline Grid Color", new Color(0.2157f, 0.2157f, 0.2196f, 1f), "The color of the timeline grid.");
-            TimelineGridThickness = Bind(this, "Timeline", "Timeline Grid Thickness", 2f, "The size of each line of the timeline grid.");
+            ClampedTimelineDrag = Bind(this, TIMELINE, "Clamped Timeline Drag", true, "If dragging objects around in the timeline prevents their start times from going outside the range of the song. Turning this off can be good for having objects spawn at the start of the level.");
+            DraggingMainCursorPausesLevel = Bind(this, TIMELINE, "Dragging Main Cursor Pauses Level", true, "If dragging the cursor pauses the level.");
+            DraggingMainCursorFix = Bind(this, TIMELINE, "Dragging Main Cursor Fix", true, "If the main cursor should act like the object cursor.");
+            UseMouseAsZoomPoint = Bind(this, TIMELINE, "Use Mouse As Zooming Point", false, "If zooming in should use your mouse as a point instead of the timeline cursor. Applies to both main and object timelines..");
+            TimelineCursorColor = Bind(this, TIMELINE, "Timeline Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the main timeline cursor.");
+            KeyframeCursorColor = Bind(this, TIMELINE, "Keyframe Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the object timeline cursor.");
+            ObjectSelectionColor = Bind(this, TIMELINE, "Object Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected objects.");
+            MainZoomBounds = Bind(this, TIMELINE, "Main Zoom Bounds", new Vector2(16f, 512f), "The limits of the main timeline zoom.");
+            KeyframeZoomBounds = Bind(this, TIMELINE, "Keyframe Zoom Bounds", new Vector2(1f, 512f), "The limits of the keyframe timeline zoom.");
+            MainZoomAmount = Bind(this, TIMELINE, "Main Zoom Amount", 0.05f, "Sets the zoom in & out amount for the main timeline.");
+            KeyframeZoomAmount = Bind(this, TIMELINE, "Keyframe Zoom Amount", 0.05f, "Sets the zoom in & out amount for the keyframe timeline.");
+            BinControlKey = BindEnum(this, TIMELINE, "Bin Control Key", KeyCode.Tab, "The key to be held when you want to enable bin controls.");
+            BinControlActiveBehavior = BindEnum(this, TIMELINE, "Bin Control Active Behavior", BinSliderControlActive.KeyToggled, "How the visibility of the Bin Slider should be treated.");
+            BinControlScrollAmount = Bind(this, TIMELINE, "Bin Control Scroll Amount", 0.02f, "How much the bins should scroll.");
+            BinControlsPlaysSounds = Bind(this, TIMELINE, "Bin Controls Plays Sounds", true, "If using the bin controls can play sounds.");
+            TimelineObjectRetainsBinOnDrag = Bind(this, TIMELINE, "Timeline Object Retains Bin On Drag", true, "If timeline object should retain their bin value when dragged. Having this on can prevent objects from collapsing when bins are removed.");
+            MoveToChangedBin = Bind(this, TIMELINE, "Move To Changed Bin", true, "If the timeline should move to the bottom of the bin count when a bin is added / removed.");
+            KeyframeEndLengthOffset = Bind(this, TIMELINE, "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
+            TimelineCollapseLength = Bind(this, TIMELINE, "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
+            TimelineObjectPrefabTypeIcon = Bind(this, TIMELINE, "Timeline Object Prefab Type Icon", true, "Shows the object's prefab type's icon.");
+            EventLabelsRenderLeft = Bind(this, TIMELINE, "Event Labels Render Left", false, "If the Event Layer labels should render on the left side or not.");
+            EventKeyframesRenderBinColor = Bind(this, TIMELINE, "Event Keyframes Use Bin Color", true, "If the Event Keyframes should use the bin color when not selected or not.");
+            ObjectKeyframesRenderBinColor = Bind(this, TIMELINE, "Object Keyframes Use Bin Color", true, "If the Object Keyframes should use the bin color when not selected or not.");
+            WaveformGenerate = Bind(this, TIMELINE, "Waveform Generate", true, "Allows the timeline waveform to generate. (Waveform might not show on some devices and will increase level load times)");
+            WaveformSaves = Bind(this, TIMELINE, "Waveform Saves", true, "Turn off if you don't want the timeline waveform to save.");
+            WaveformRerender = Bind(this, TIMELINE, "Waveform Re-render", false, "If the timeline waveform should update when a value is changed.");
+            WaveformMode = BindEnum(this, TIMELINE, "Waveform Mode", WaveformType.Split, "The mode of the timeline waveform.");
+            WaveformBGColor = Bind(this, TIMELINE, "Waveform BG Color", Color.clear, "Color of the background for the waveform.");
+            WaveformTopColor = Bind(this, TIMELINE, "Waveform Top Color", LSColors.red300, "If waveform mode is Legacy, this will be the top color. Otherwise, it will be the regular color.");
+            WaveformBottomColor = Bind(this, TIMELINE, "Waveform Bottom Color", LSColors.blue300, "If waveform is Legacy, this will be the bottom color. Otherwise, it will be unused.");
+            WaveformTextureFormat = BindEnum(this, TIMELINE, "Waveform Texture Format", TextureFormat.ARGB32, "What format the waveform's texture should render under.");
+            TimelineGridEnabled = Bind(this, TIMELINE, "Timeline Grid Enabled", true, "If the timeline grid renders.");
+            TimelineGridColor = Bind(this, TIMELINE, "Timeline Grid Color", new Color(0.2157f, 0.2157f, 0.2196f, 1f), "The color of the timeline grid.");
+            TimelineGridThickness = Bind(this, TIMELINE, "Timeline Grid Thickness", 2f, "The size of each line of the timeline grid.");
 
             #endregion
 
@@ -1397,1119 +1415,1119 @@ namespace BetterLegacy.Configs
 
             #region Editor GUI
 
-            DragUI = Bind(this, "Editor GUI", "Drag UI", true, "Specific UI popups can be dragged around (such as the parent selector, etc).");
-            EditorTheme = BindEnum(this, "Editor GUI", "Editor Theme", BetterLegacy.EditorTheme.Legacy, "The current theme the editor uses.");
-            EditorFont = BindEnum(this, "Editor GUI", "Editor Font", BetterLegacy.EditorFont.Inconsolata_Variable, "The current font the editor uses.");
-            RoundedUI = Bind(this, "Editor GUI", "Rounded UI", false, "If all elements that can be rounded should be so.");
-            EditorComplexity = BindEnum(this, "Editor GUI", "Editor Complexity", Complexity.Advanced, "What features show in the editor.");
-            ShowExperimental = Bind(this, "Editor GUI", "Show Experimental Features", false, "If experimental features should display. These features are not gauranteed to always work and have a chance to be changed in future updates.");
-            UserPreference = BindEnum(this, "Editor GUI", "User Preference", UserPreferenceType.None, "Change this to whatever config preset you want to use. THIS WILL CHANGE A LOT OF SETTINGS, SO USE WITH CAUTION.");
-            HoverUIPlaySound = Bind(this, "Editor GUI", "Hover UI Play Sound", false, "Plays a sound when the hover UI element is hovered over.");
-            ImportPrefabsDirectly = Bind(this, "Editor GUI", "Import Prefabs Directly", false, "When clicking on an External Prefab, instead of importing it directly it'll bring up a Prefab External View Dialog if this config is off.");
-            ThemesPerPage = Bind(this, "Editor GUI", "Themes Per Page", 10, "How many themes are shown per page in the Beatmap Themes popup.");
-            ThemesEventKeyframePerPage = Bind(this, "Editor GUI", "Themes (Event Keyframe) Per Page", 30, "How many themes are shown per page in the theme event keyframe.");
-            ShowHelpOnStartup = Bind(this, "Editor GUI", "Show Help on Startup", true, "If the help info box should appear on startup.");
-            MouseTooltipDisplay = Bind(this, "Editor GUI", "Mouse Tooltip Display", true, "If the mouse tooltip should display.");
-            MouseTooltipRequiresHelp = Bind(this, "Editor GUI", "Mouse Tooltip Requires Help", false, "If the mouse tooltip should only display when the help info box is active.");
-            MouseTooltipHoverTime = Bind(this, "Editor GUI", "Mouse Tooltip Hover Time", 0.45f, "How long you have to hover your cursor over an element to show the mouse tooltip.", 0f, 20f);
-            HideMouseTooltipOnExit = Bind(this, "Editor GUI", "Hide Mouse Tooltip on Exit", true, "If the mouse tooltip should hide when the mouse exits the element.");
-            MouseTooltipDisplayTime = Bind(this, "Editor GUI", "Mouse Tooltip Display Time", 1f, "The multiplied length of time mouse tooltips stay on screen for.", 0f, 20f);
-            NotificationDisplayTime = Bind(this, "Editor GUI", "Notification Display Time", 1f, "The multiplied length of time notifications stay on screen for.", 0f, 10f);
-            NotificationWidth = Bind(this, "Editor GUI", "Notification Width", 221f, "Width of the notifications.");
-            NotificationSize = Bind(this, "Editor GUI", "Notification Size", 1f, "Total size of the notifications.");
-            NotificationDirection = BindEnum(this, "Editor GUI", "Notification Direction", VerticalDirection.Down, "Direction the notifications popup from.");
-            NotificationsDisplay = Bind(this, "Editor GUI", "Notifications Display", true, "If the notifications should display. Does not include the help box.");
-            AdjustPositionInputs = Bind(this, "Editor GUI", "Adjust Position Inputs", true, "If position keyframe input fields should be adjusted so they're in a proper row rather than having Z Axis below X Axis without a label. Drawback with doing this is it makes the fields smaller than normal.");
-            ShowDropdownOnHover = Bind(this, "Editor GUI", "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
-            HideVisualElementsWhenObjectIsEmpty = Bind(this, "Editor GUI", "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
-            RenderDepthRange = Bind(this, "Editor GUI", "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
-            OpenNewLevelCreatorIfNoLevels = Bind(this, "Editor GUI", "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
+            DragUI = Bind(this, EDITOR_GUI, "Drag UI", true, "Specific UI popups can be dragged around (such as the parent selector, etc).");
+            EditorTheme = BindEnum(this, EDITOR_GUI, "Editor Theme", BetterLegacy.EditorTheme.Legacy, "The current theme the editor uses.");
+            EditorFont = BindEnum(this, EDITOR_GUI, "Editor Font", BetterLegacy.EditorFont.Inconsolata_Variable, "The current font the editor uses.");
+            RoundedUI = Bind(this, EDITOR_GUI, "Rounded UI", false, "If all elements that can be rounded should be so.");
+            EditorComplexity = BindEnum(this, EDITOR_GUI, "Editor Complexity", Complexity.Advanced, "What features show in the editor.");
+            ShowExperimental = Bind(this, EDITOR_GUI, "Show Experimental Features", false, "If experimental features should display. These features are not gauranteed to always work and have a chance to be changed in future updates.");
+            UserPreference = BindEnum(this, EDITOR_GUI, "User Preference", UserPreferenceType.None, "Change this to whatever config preset you want to use. THIS WILL CHANGE A LOT OF SETTINGS, SO USE WITH CAUTION.");
+            HoverUIPlaySound = Bind(this, EDITOR_GUI, "Hover UI Play Sound", false, "Plays a sound when the hover UI element is hovered over.");
+            ImportPrefabsDirectly = Bind(this, EDITOR_GUI, "Import Prefabs Directly", false, "When clicking on an External Prefab, instead of importing it directly it'll bring up a Prefab External View Dialog if this config is off.");
+            ThemesPerPage = Bind(this, EDITOR_GUI, "Themes Per Page", 10, "How many themes are shown per page in the Beatmap Themes popup.");
+            ThemesEventKeyframePerPage = Bind(this, EDITOR_GUI, "Themes (Event Keyframe) Per Page", 30, "How many themes are shown per page in the theme event keyframe.");
+            ShowHelpOnStartup = Bind(this, EDITOR_GUI, "Show Help on Startup", true, "If the help info box should appear on startup.");
+            MouseTooltipDisplay = Bind(this, EDITOR_GUI, "Mouse Tooltip Display", true, "If the mouse tooltip should display.");
+            MouseTooltipRequiresHelp = Bind(this, EDITOR_GUI, "Mouse Tooltip Requires Help", false, "If the mouse tooltip should only display when the help info box is active.");
+            MouseTooltipHoverTime = Bind(this, EDITOR_GUI, "Mouse Tooltip Hover Time", 0.45f, "How long you have to hover your cursor over an element to show the mouse tooltip.", 0f, 20f);
+            HideMouseTooltipOnExit = Bind(this, EDITOR_GUI, "Hide Mouse Tooltip on Exit", true, "If the mouse tooltip should hide when the mouse exits the element.");
+            MouseTooltipDisplayTime = Bind(this, EDITOR_GUI, "Mouse Tooltip Display Time", 1f, "The multiplied length of time mouse tooltips stay on screen for.", 0f, 20f);
+            NotificationDisplayTime = Bind(this, EDITOR_GUI, "Notification Display Time", 1f, "The multiplied length of time notifications stay on screen for.", 0f, 10f);
+            NotificationWidth = Bind(this, EDITOR_GUI, "Notification Width", 221f, "Width of the notifications.");
+            NotificationSize = Bind(this, EDITOR_GUI, "Notification Size", 1f, "Total size of the notifications.");
+            NotificationDirection = BindEnum(this, EDITOR_GUI, "Notification Direction", VerticalDirection.Down, "Direction the notifications popup from.");
+            NotificationsDisplay = Bind(this, EDITOR_GUI, "Notifications Display", true, "If the notifications should display. Does not include the help box.");
+            AdjustPositionInputs = Bind(this, EDITOR_GUI, "Adjust Position Inputs", true, "If position keyframe input fields should be adjusted so they're in a proper row rather than having Z Axis below X Axis without a label. Drawback with doing this is it makes the fields smaller than normal.");
+            ShowDropdownOnHover = Bind(this, EDITOR_GUI, "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
+            HideVisualElementsWhenObjectIsEmpty = Bind(this, EDITOR_GUI, "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
+            RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
+            OpenNewLevelCreatorIfNoLevels = Bind(this, EDITOR_GUI, "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
 
-            OpenLevelPosition = Bind(this, "Editor GUI", "Open Level Position", Vector2.zero, "The position of the Open Level popup.");
-            OpenLevelScale = Bind(this, "Editor GUI", "Open Level Scale", new Vector2(600f, 400f), "The size of the Open Level popup.");
-            OpenLevelEditorPathPos = Bind(this, "Editor GUI", "Open Level Editor Path Pos", new Vector2(275f, 16f), "The position of the editor path input field.");
-            OpenLevelEditorPathLength = Bind(this, "Editor GUI", "Open Level Editor Path Length", 104f, "The length of the editor path input field.");
-            OpenLevelListRefreshPosition = Bind(this, "Editor GUI", "Open Level List Refresh Position", new Vector2(330f, 432f), "The position of the refresh button.");
-            OpenLevelTogglePosition = Bind(this, "Editor GUI", "Open Level Toggle Position", new Vector2(600f, 16f), "The position of the descending toggle.");
-            OpenLevelDropdownPosition = Bind(this, "Editor GUI", "Open Level Dropdown Position", new Vector2(501f, 416f), "The position of the sort dropdown.");
-            OpenLevelCellSize = Bind(this, "Editor GUI", "Open Level Cell Size", new Vector2(584f, 32f), "Size of each cell.");
-            OpenLevelCellConstraintType = BindEnum(this, "Editor GUI", "Open Level Cell Constraint Type", GridLayoutGroup.Constraint.FixedColumnCount, "How the cells are layed out.");
-            OpenLevelCellConstraintCount = Bind(this, "Editor GUI", "Open Level Cell Constraint Count", 1, "How many rows / columns there are, depending on Constraint Type.");
-            OpenLevelCellSpacing = Bind(this, "Editor GUI", "Open Level Cell Spacing", new Vector2(0f, 8f), "The space between each cell.");
-            OpenLevelTextHorizontalWrap = BindEnum(this, "Editor GUI", "Open Level Text Horizontal Wrap", HorizontalWrapMode.Wrap, "Horizontal Wrap Mode of the folder button text.");
-            OpenLevelTextVerticalWrap = BindEnum(this, "Editor GUI", "Open Level Text Vertical Wrap", VerticalWrapMode.Truncate, "Vertical Wrap Mode of the folder button text.");
-            OpenLevelTextFontSize = Bind(this, "Editor GUI", "Open Level Text Font Size", 20, "Font size of the folder button text.", 1, 40);
+            OpenLevelPosition = Bind(this, EDITOR_GUI, "Open Level Position", Vector2.zero, "The position of the Open Level popup.");
+            OpenLevelScale = Bind(this, EDITOR_GUI, "Open Level Scale", new Vector2(600f, 400f), "The size of the Open Level popup.");
+            OpenLevelEditorPathPos = Bind(this, EDITOR_GUI, "Open Level Editor Path Pos", new Vector2(275f, 16f), "The position of the editor path input field.");
+            OpenLevelEditorPathLength = Bind(this, EDITOR_GUI, "Open Level Editor Path Length", 104f, "The length of the editor path input field.");
+            OpenLevelListRefreshPosition = Bind(this, EDITOR_GUI, "Open Level List Refresh Position", new Vector2(330f, 432f), "The position of the refresh button.");
+            OpenLevelTogglePosition = Bind(this, EDITOR_GUI, "Open Level Toggle Position", new Vector2(600f, 16f), "The position of the descending toggle.");
+            OpenLevelDropdownPosition = Bind(this, EDITOR_GUI, "Open Level Dropdown Position", new Vector2(501f, 416f), "The position of the sort dropdown.");
+            OpenLevelCellSize = Bind(this, EDITOR_GUI, "Open Level Cell Size", new Vector2(584f, 32f), "Size of each cell.");
+            OpenLevelCellConstraintType = BindEnum(this, EDITOR_GUI, "Open Level Cell Constraint Type", GridLayoutGroup.Constraint.FixedColumnCount, "How the cells are layed out.");
+            OpenLevelCellConstraintCount = Bind(this, EDITOR_GUI, "Open Level Cell Constraint Count", 1, "How many rows / columns there are, depending on Constraint Type.");
+            OpenLevelCellSpacing = Bind(this, EDITOR_GUI, "Open Level Cell Spacing", new Vector2(0f, 8f), "The space between each cell.");
+            OpenLevelTextHorizontalWrap = BindEnum(this, EDITOR_GUI, "Open Level Text Horizontal Wrap", HorizontalWrapMode.Wrap, "Horizontal Wrap Mode of the folder button text.");
+            OpenLevelTextVerticalWrap = BindEnum(this, EDITOR_GUI, "Open Level Text Vertical Wrap", VerticalWrapMode.Truncate, "Vertical Wrap Mode of the folder button text.");
+            OpenLevelTextFontSize = Bind(this, EDITOR_GUI, "Open Level Text Font Size", 20, "Font size of the folder button text.", 1, 40);
 
-            OpenLevelFolderNameMax = Bind(this, "Editor GUI", "Open Level Folder Name Max", 14, "Limited length of the folder name.", 1, 40);
-            OpenLevelSongNameMax = Bind(this, "Editor GUI", "Open Level Song Name Max", 22, "Limited length of the song name.", 1, 40);
-            OpenLevelArtistNameMax = Bind(this, "Editor GUI", "Open Level Artist Name Max", 16, "Limited length of the artist name.", 1, 40);
-            OpenLevelCreatorNameMax = Bind(this, "Editor GUI", "Open Level Creator Name Max", 16, "Limited length of the creator name.", 1, 40);
-            OpenLevelDescriptionMax = Bind(this, "Editor GUI", "Open Level Description Max", 16, "Limited length of the description.", 1, 40);
-            OpenLevelDateMax = Bind(this, "Editor GUI", "Open Level Date Max", 16, "Limited length of the date.", 1, 40);
-            OpenLevelTextFormatting = Bind(this, "Editor GUI", "Open Level Text Formatting", ".  /{0} : {1} by {2}",
+            OpenLevelFolderNameMax = Bind(this, EDITOR_GUI, "Open Level Folder Name Max", 14, "Limited length of the folder name.", 1, 40);
+            OpenLevelSongNameMax = Bind(this, EDITOR_GUI, "Open Level Song Name Max", 22, "Limited length of the song name.", 1, 40);
+            OpenLevelArtistNameMax = Bind(this, EDITOR_GUI, "Open Level Artist Name Max", 16, "Limited length of the artist name.", 1, 40);
+            OpenLevelCreatorNameMax = Bind(this, EDITOR_GUI, "Open Level Creator Name Max", 16, "Limited length of the creator name.", 1, 40);
+            OpenLevelDescriptionMax = Bind(this, EDITOR_GUI, "Open Level Description Max", 16, "Limited length of the description.", 1, 40);
+            OpenLevelDateMax = Bind(this, EDITOR_GUI, "Open Level Date Max", 16, "Limited length of the date.", 1, 40);
+            OpenLevelTextFormatting = Bind(this, EDITOR_GUI, "Open Level Text Formatting", ".  /{0} : {1} by {2}",
                     "The way the text is formatted for each level. {0} is folder, {1} is song, {2} is artist, {3} is creator, {4} is difficulty, {5} is description and {6} is last edited.");
 
-            OpenLevelButtonHoverSize = Bind(this, "Editor GUI", "Open Level Button Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            OpenLevelCoverPosition = Bind(this, "Editor GUI", "Open Level Cover Position", new Vector2(-276f, 0f), "Position of the level cover.");
-            OpenLevelCoverScale = Bind(this, "Editor GUI", "Open Level Cover Scale", new Vector2(26f, 26f), "Size of the level cover.");
+            OpenLevelButtonHoverSize = Bind(this, EDITOR_GUI, "Open Level Button Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            OpenLevelCoverPosition = Bind(this, EDITOR_GUI, "Open Level Cover Position", new Vector2(-276f, 0f), "Position of the level cover.");
+            OpenLevelCoverScale = Bind(this, EDITOR_GUI, "Open Level Cover Scale", new Vector2(26f, 26f), "Size of the level cover.");
 
-            ChangesRefreshLevelList = Bind(this, "Editor GUI", "Changes Refresh Level List", false, "If the level list reloads whenever a change is made.");
-            OpenLevelShowDeleteButton = Bind(this, "Editor GUI", "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");
+            ChangesRefreshLevelList = Bind(this, EDITOR_GUI, "Changes Refresh Level List", false, "If the level list reloads whenever a change is made.");
+            OpenLevelShowDeleteButton = Bind(this, EDITOR_GUI, "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");
 
-            TimelineObjectHoverSize = Bind(this, "Editor GUI", "Timeline Object Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            KeyframeHoverSize = Bind(this, "Editor GUI", "Keyframe Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            TimelineBarButtonsHoverSize = Bind(this, "Editor GUI", "Timeline Bar Buttons Hover Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            PrefabButtonHoverSize = Bind(this, "Editor GUI", "Prefab Button Hover Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            TimelineObjectHoverSize = Bind(this, EDITOR_GUI, "Timeline Object Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            KeyframeHoverSize = Bind(this, EDITOR_GUI, "Keyframe Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            TimelineBarButtonsHoverSize = Bind(this, EDITOR_GUI, "Timeline Bar Buttons Hover Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            PrefabButtonHoverSize = Bind(this, EDITOR_GUI, "Prefab Button Hover Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
 
-            PrefabInternalPopupPos = Bind(this, "Editor GUI", "Prefab Internal Popup Pos", new Vector2(-80f, -16f), "Position of the internal prefabs popup.");
-            PrefabInternalPopupSize = Bind(this, "Editor GUI", "Prefab Internal Popup Size", new Vector2(500f, -32f), "Scale of the internal prefabs popup.");
-            PrefabInternalHorizontalScroll = Bind(this, "Editor GUI", "Prefab Internal Horizontal Scroll", false, "If you can scroll left / right or not.");
-            PrefabInternalCellSize = Bind(this, "Editor GUI", "Prefab Internal Cell Size", new Vector2(483f, 32f), "Size of each Prefab Item.");
-            PrefabInternalConstraintMode = BindEnum(this, "Editor GUI", "Prefab Internal Constraint Mode", GridLayoutGroup.Constraint.FixedColumnCount, "Which direction the prefab list goes.");
-            PrefabInternalConstraint = Bind(this, "Editor GUI", "Prefab Internal Constraint", 1, "How many columns the prefabs are divided into.");
-            PrefabInternalSpacing = Bind(this, "Editor GUI", "Prefab Internal Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
-            PrefabInternalStartAxis = BindEnum(this, "Editor GUI", "Prefab Internal Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
-            PrefabInternalDeleteButtonPos = Bind(this, "Editor GUI", "Prefab Internal Delete Button Pos", new Vector2(467f, -16f), "Position of the Delete Button.");
-            PrefabInternalDeleteButtonSca = Bind(this, "Editor GUI", "Prefab Internal Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
-            PrefabInternalNameHorizontalWrap = BindEnum(this, "Editor GUI", "Prefab Internal Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalNameVerticalWrap = BindEnum(this, "Editor GUI", "Prefab Internal Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalNameFontSize = Bind(this, "Editor GUI", "Prefab Internal Name Font Size", 20, "Size of the text font.", 1, 40);
-            PrefabInternalTypeHorizontalWrap = BindEnum(this, "Editor GUI", "Prefab Internal Type Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalTypeVerticalWrap = BindEnum(this, "Editor GUI", "Prefab Internal Type Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalTypeFontSize = Bind(this, "Editor GUI", "Prefab Internal Type Font Size", 20, "Size of the text font.", 1, 40);
+            PrefabInternalPopupPos = Bind(this, EDITOR_GUI, "Prefab Internal Popup Pos", new Vector2(-80f, -16f), "Position of the internal prefabs popup.");
+            PrefabInternalPopupSize = Bind(this, EDITOR_GUI, "Prefab Internal Popup Size", new Vector2(500f, -32f), "Scale of the internal prefabs popup.");
+            PrefabInternalHorizontalScroll = Bind(this, EDITOR_GUI, "Prefab Internal Horizontal Scroll", false, "If you can scroll left / right or not.");
+            PrefabInternalCellSize = Bind(this, EDITOR_GUI, "Prefab Internal Cell Size", new Vector2(483f, 32f), "Size of each Prefab Item.");
+            PrefabInternalConstraintMode = BindEnum(this, EDITOR_GUI, "Prefab Internal Constraint Mode", GridLayoutGroup.Constraint.FixedColumnCount, "Which direction the prefab list goes.");
+            PrefabInternalConstraint = Bind(this, EDITOR_GUI, "Prefab Internal Constraint", 1, "How many columns the prefabs are divided into.");
+            PrefabInternalSpacing = Bind(this, EDITOR_GUI, "Prefab Internal Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
+            PrefabInternalStartAxis = BindEnum(this, EDITOR_GUI, "Prefab Internal Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
+            PrefabInternalDeleteButtonPos = Bind(this, EDITOR_GUI, "Prefab Internal Delete Button Pos", new Vector2(467f, -16f), "Position of the Delete Button.");
+            PrefabInternalDeleteButtonSca = Bind(this, EDITOR_GUI, "Prefab Internal Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
+            PrefabInternalNameHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabInternalNameVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabInternalNameFontSize = Bind(this, EDITOR_GUI, "Prefab Internal Name Font Size", 20, "Size of the text font.", 1, 40);
+            PrefabInternalTypeHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Type Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabInternalTypeVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Type Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabInternalTypeFontSize = Bind(this, EDITOR_GUI, "Prefab Internal Type Font Size", 20, "Size of the text font.", 1, 40);
 
-            PrefabExternalPopupPos = Bind(this, "Editor GUI", "Prefab External Popup Pos", new Vector2(60f, -16f), "Position of the external prefabs popup.");
-            PrefabExternalPopupSize = Bind(this, "Editor GUI", "Prefab External Popup Size", new Vector2(500f, -32f), "Scale of the external prefabs popup.");
-            PrefabExternalPrefabPathPos = Bind(this, "Editor GUI", "Prefab External Prefab Path Pos", new Vector2(325f, 16f), "Position of the prefab path input field.");
-            PrefabExternalPrefabPathLength = Bind(this, "Editor GUI", "Prefab External Prefab Path Length", 150f, "Length of the prefab path input field.");
-            PrefabExternalPrefabRefreshPos = Bind(this, "Editor GUI", "Prefab External Prefab Refresh Pos", new Vector2(310f, 450f), "Position of the prefab refresh button.");
-            PrefabExternalHorizontalScroll = Bind(this, "Editor GUI", "Prefab External Horizontal Scroll", false, "If you can scroll left / right or not.");
-            PrefabExternalCellSize = Bind(this, "Editor GUI", "Prefab External Cell Size", new Vector2(483f, 32f), "Size of each Prefab Item.");
-            PrefabExternalConstraintMode = BindEnum(this, "Editor GUI", "Prefab External Constraint Mode", GridLayoutGroup.Constraint.FixedColumnCount, "Which direction the prefab list goes.");
-            PrefabExternalConstraint = Bind(this, "Editor GUI", "Prefab External Constraint", 1, "How many columns the prefabs are divided into.");
-            PrefabExternalSpacing = Bind(this, "Editor GUI", "Prefab External Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
-            PrefabExternalStartAxis = BindEnum(this, "Editor GUI", "Prefab External Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
-            PrefabExternalDeleteButtonPos = Bind(this, "Editor GUI", "Prefab External Delete Button Pos", new Vector2(567f, -16f), "Position of the Delete Button.");
-            PrefabExternalDeleteButtonSca = Bind(this, "Editor GUI", "Prefab External Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
-            PrefabExternalNameHorizontalWrap = BindEnum(this, "Editor GUI", "Prefab External Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalNameVerticalWrap = BindEnum(this, "Editor GUI", "Prefab External Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalNameFontSize = Bind(this, "Editor GUI", "Prefab External Name Font Size", 20, "Size of the text font.", 1, 40);
-            PrefabExternalTypeHorizontalWrap = BindEnum(this, "Editor GUI", "Prefab External Type Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalTypeVerticalWrap = BindEnum(this, "Editor GUI", "Prefab External Type Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalTypeFontSize = Bind(this, "Editor GUI", "Prefab External Type Font Size", 20, "Size of the text font.", 1, 40);
+            PrefabExternalPopupPos = Bind(this, EDITOR_GUI, "Prefab External Popup Pos", new Vector2(60f, -16f), "Position of the external prefabs popup.");
+            PrefabExternalPopupSize = Bind(this, EDITOR_GUI, "Prefab External Popup Size", new Vector2(500f, -32f), "Scale of the external prefabs popup.");
+            PrefabExternalPrefabPathPos = Bind(this, EDITOR_GUI, "Prefab External Prefab Path Pos", new Vector2(325f, 16f), "Position of the prefab path input field.");
+            PrefabExternalPrefabPathLength = Bind(this, EDITOR_GUI, "Prefab External Prefab Path Length", 150f, "Length of the prefab path input field.");
+            PrefabExternalPrefabRefreshPos = Bind(this, EDITOR_GUI, "Prefab External Prefab Refresh Pos", new Vector2(310f, 450f), "Position of the prefab refresh button.");
+            PrefabExternalHorizontalScroll = Bind(this, EDITOR_GUI, "Prefab External Horizontal Scroll", false, "If you can scroll left / right or not.");
+            PrefabExternalCellSize = Bind(this, EDITOR_GUI, "Prefab External Cell Size", new Vector2(483f, 32f), "Size of each Prefab Item.");
+            PrefabExternalConstraintMode = BindEnum(this, EDITOR_GUI, "Prefab External Constraint Mode", GridLayoutGroup.Constraint.FixedColumnCount, "Which direction the prefab list goes.");
+            PrefabExternalConstraint = Bind(this, EDITOR_GUI, "Prefab External Constraint", 1, "How many columns the prefabs are divided into.");
+            PrefabExternalSpacing = Bind(this, EDITOR_GUI, "Prefab External Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
+            PrefabExternalStartAxis = BindEnum(this, EDITOR_GUI, "Prefab External Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
+            PrefabExternalDeleteButtonPos = Bind(this, EDITOR_GUI, "Prefab External Delete Button Pos", new Vector2(567f, -16f), "Position of the Delete Button.");
+            PrefabExternalDeleteButtonSca = Bind(this, EDITOR_GUI, "Prefab External Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
+            PrefabExternalNameHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabExternalNameVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabExternalNameFontSize = Bind(this, EDITOR_GUI, "Prefab External Name Font Size", 20, "Size of the text font.", 1, 40);
+            PrefabExternalTypeHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Type Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabExternalTypeVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Type Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
+            PrefabExternalTypeFontSize = Bind(this, EDITOR_GUI, "Prefab External Type Font Size", 20, "Size of the text font.", 1, 40);
 
             #endregion
 
             #region Markers
 
-            ShowMarkers = Bind(this, "Markers", "Show Markers", true, "If markers should show in the editor timeline.");
-            ShowMarkersInObjectEditor = Bind(this, "Markers", "Show Markers in Object Editor", false, "If markers should display in the object editor.");
-            MarkerDefaultColor = Bind(this, "Markers", "Marker Default Color", 0, "The default color assigned to a new marker.");
-            MarkerDragButton = BindEnum(this, "Markers", "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
-            MarkerShowContextMenu = Bind(this, "Markers", "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
-            MarkerLineColor = Bind(this, "Markers", "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
-            MarkerLineWidth = Bind(this, "Markers", "Marker Line Width", 2f, "The width of the marker lines.");
-            MarkerTextWidth = Bind(this, "Markers", "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
-            MarkerLineDotted = Bind(this, "Markers", "Marker Line Dotted", false, "If the markers' line should be dotted.");
-            ObjectMarkerLineColor = Bind(this, "Markers", "Object Marker Line Color", new Color(1f, 1f, 1f, 0.5f), "The color of the marker lines.");
-            ObjectMarkerLineWidth = Bind(this, "Markers", "Object Marker Line Width", 4f, "The width of the marker lines.");
-            ObjectMarkerTextWidth = Bind(this, "Markers", "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
-            ObjectMarkerLineDotted = Bind(this, "Markers", "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
+            ShowMarkers = Bind(this, MARKERS, "Show Markers", true, "If markers should show in the editor timeline.");
+            ShowMarkersInObjectEditor = Bind(this, MARKERS, "Show Markers in Object Editor", false, "If markers should display in the object editor.");
+            MarkerDefaultColor = Bind(this, MARKERS, "Marker Default Color", 0, "The default color assigned to a new marker.");
+            MarkerDragButton = BindEnum(this, MARKERS, "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
+            MarkerShowContextMenu = Bind(this, MARKERS, "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
+            MarkerLineColor = Bind(this, MARKERS, "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
+            MarkerLineWidth = Bind(this, MARKERS, "Marker Line Width", 2f, "The width of the marker lines.");
+            MarkerTextWidth = Bind(this, MARKERS, "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
+            MarkerLineDotted = Bind(this, MARKERS, "Marker Line Dotted", false, "If the markers' line should be dotted.");
+            ObjectMarkerLineColor = Bind(this, MARKERS, "Object Marker Line Color", new Color(1f, 1f, 1f, 0.5f), "The color of the marker lines.");
+            ObjectMarkerLineWidth = Bind(this, MARKERS, "Object Marker Line Width", 4f, "The width of the marker lines.");
+            ObjectMarkerTextWidth = Bind(this, MARKERS, "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
+            ObjectMarkerLineDotted = Bind(this, MARKERS, "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
 
             #endregion
 
             #region Fields
 
-            ScrollwheelLargeAmountKey = BindEnum(this, "Fields", "Scrollwheel Large Amount Key", KeyCode.LeftControl, "If this key is being held while you are scrolling over a number field, the number will change by a large amount. If the key is set to None, you will not need to hold a key.");
-            ScrollwheelSmallAmountKey = BindEnum(this, "Fields", "Scrollwheel Small Amount Key", KeyCode.LeftAlt, "If this key is being held while you are scrolling over a number field, the number will change by a small amount. If the key is set to None, you will not need to hold a key.");
-            ScrollwheelRegularAmountKey = BindEnum(this, "Fields", "Scrollwheel Regular Amount Key", KeyCode.None, "If this key is being held while you are scrolling over a number field, the number will change by the regular amount. If the key is set to None, you will not need to hold a key.");
-            ScrollwheelVector2LargeAmountKey = BindEnum(this, "Fields", "Scrollwheel Vector2 Large Amount Key", KeyCode.LeftControl, "If this key is being held while you are scrolling over a number field, the number will change by a large amount. If the key is set to None, you will not need to hold a key.");
-            ScrollwheelVector2SmallAmountKey = BindEnum(this, "Fields", "Scrollwheel Vector2 Small Amount Key", KeyCode.LeftAlt, "If this key is being held while you are scrolling over a number field, the number will change by a small amount. If the key is set to None, you will not need to hold a key.");
-            ScrollwheelVector2RegularAmountKey = BindEnum(this, "Fields", "Scrollwheel Vector2 Regular Amount Key", KeyCode.None, "If this key is being held while you are scrolling over a number field, the number will change by the regular amount. If the key is set to None, you will not need to hold a key.");
+            ScrollwheelLargeAmountKey = BindEnum(this, FIELDS, "Scrollwheel Large Amount Key", KeyCode.LeftControl, "If this key is being held while you are scrolling over a number field, the number will change by a large amount. If the key is set to None, you will not need to hold a key.");
+            ScrollwheelSmallAmountKey = BindEnum(this, FIELDS, "Scrollwheel Small Amount Key", KeyCode.LeftAlt, "If this key is being held while you are scrolling over a number field, the number will change by a small amount. If the key is set to None, you will not need to hold a key.");
+            ScrollwheelRegularAmountKey = BindEnum(this, FIELDS, "Scrollwheel Regular Amount Key", KeyCode.None, "If this key is being held while you are scrolling over a number field, the number will change by the regular amount. If the key is set to None, you will not need to hold a key.");
+            ScrollwheelVector2LargeAmountKey = BindEnum(this, FIELDS, "Scrollwheel Vector2 Large Amount Key", KeyCode.LeftControl, "If this key is being held while you are scrolling over a number field, the number will change by a large amount. If the key is set to None, you will not need to hold a key.");
+            ScrollwheelVector2SmallAmountKey = BindEnum(this, FIELDS, "Scrollwheel Vector2 Small Amount Key", KeyCode.LeftAlt, "If this key is being held while you are scrolling over a number field, the number will change by a small amount. If the key is set to None, you will not need to hold a key.");
+            ScrollwheelVector2RegularAmountKey = BindEnum(this, FIELDS, "Scrollwheel Vector2 Regular Amount Key", KeyCode.None, "If this key is being held while you are scrolling over a number field, the number will change by the regular amount. If the key is set to None, you will not need to hold a key.");
 
-            ObjectPositionScroll = Bind(this, "Fields", "Object Position Scroll", 0.1f, "The amount that is added when the Object Keyframe Editor position fields are scrolled on.");
-            ObjectPositionScrollMultiply = Bind(this, "Fields", "Object Position Scroll Multiply", 10f, "The amount that is added (multiply) when the Object Keyframe Editor position fields are scrolled on.");
-            ObjectScaleScroll = Bind(this, "Fields", "Object Scale Scroll", 0.1f, "The amount that is added when the Object Keyframe Editor scale fields are scrolled on.");
-            ObjectScaleScrollMultiply = Bind(this, "Fields", "Object Scale Scroll Multiply", 10f, "The amount that is added (multiply) when the Object Keyframe Editor scale fields are scrolled on.");
-            ObjectRotationScroll = Bind(this, "Fields", "Object Rotation Scroll", 15f, "The amount that is added when the Object Keyframe Editor rotation fields are scrolled on.");
-            ObjectRotationScrollMultiply = Bind(this, "Fields", "Object Rotation Scroll Multiply", 3f, "The amount that is added (multiply) when the Object Keyframe Editor rotation fields are scrolled on.");
+            ObjectPositionScroll = Bind(this, FIELDS, "Object Position Scroll", 0.1f, "The amount that is added when the Object Keyframe Editor position fields are scrolled on.");
+            ObjectPositionScrollMultiply = Bind(this, FIELDS, "Object Position Scroll Multiply", 10f, "The amount that is added (multiply) when the Object Keyframe Editor position fields are scrolled on.");
+            ObjectScaleScroll = Bind(this, FIELDS, "Object Scale Scroll", 0.1f, "The amount that is added when the Object Keyframe Editor scale fields are scrolled on.");
+            ObjectScaleScrollMultiply = Bind(this, FIELDS, "Object Scale Scroll Multiply", 10f, "The amount that is added (multiply) when the Object Keyframe Editor scale fields are scrolled on.");
+            ObjectRotationScroll = Bind(this, FIELDS, "Object Rotation Scroll", 15f, "The amount that is added when the Object Keyframe Editor rotation fields are scrolled on.");
+            ObjectRotationScrollMultiply = Bind(this, FIELDS, "Object Rotation Scroll Multiply", 3f, "The amount that is added (multiply) when the Object Keyframe Editor rotation fields are scrolled on.");
 
-            ShowModifiedColors = Bind(this, "Fields", "Show Modified Colors", true, "Keyframe colors show any modifications done (such as hue, saturation and value).");
-            ThemeTemplateName = Bind(this, "Fields", "Theme Template Name", "New Theme", "Name of the template theme.");
-            ThemeTemplateGUI = Bind(this, "Fields", "Theme Template GUI", LSColors.white, "GUI Color of the template theme.");
-            ThemeTemplateTail = Bind(this, "Fields", "Theme Template Tail", LSColors.white, "Tail Color of the template theme.");
-            ThemeTemplateBG = Bind(this, "Fields", "Theme Template BG", LSColors.gray900, "BG Color of the template theme.");
-            ThemeTemplatePlayer1 = Bind(this, "Fields", "Theme Template Player 1", LSColors.HexToColor(BeatmapTheme.PLAYER_1_COLOR), "Player 1 Color of the template theme.");
-            ThemeTemplatePlayer2 = Bind(this, "Fields", "Theme Template Player 2", LSColors.HexToColor(BeatmapTheme.PLAYER_2_COLOR), "Player 2 Color of the template theme.");
-            ThemeTemplatePlayer3 = Bind(this, "Fields", "Theme Template Player 3", LSColors.HexToColor(BeatmapTheme.PLAYER_3_COLOR), "Player 3 Color of the template theme.");
-            ThemeTemplatePlayer4 = Bind(this, "Fields", "Theme Template Player 4", LSColors.HexToColor(BeatmapTheme.PLAYER_4_COLOR), "Player 4 Color of the template theme.");
-            ThemeTemplateOBJ1 = Bind(this, "Fields", "Theme Template OBJ 1", LSColors.gray100, "OBJ 1 Color of the template theme.");
-            ThemeTemplateOBJ2 = Bind(this, "Fields", "Theme Template OBJ 2", LSColors.gray200, "OBJ 2 Color of the template theme.");
-            ThemeTemplateOBJ3 = Bind(this, "Fields", "Theme Template OBJ 3", LSColors.gray300, "OBJ 3 Color of the template theme.");
-            ThemeTemplateOBJ4 = Bind(this, "Fields", "Theme Template OBJ 4", LSColors.gray400, "OBJ 4 Color of the template theme.");
-            ThemeTemplateOBJ5 = Bind(this, "Fields", "Theme Template OBJ 5", LSColors.gray500, "OBJ 5 Color of the template theme.");
-            ThemeTemplateOBJ6 = Bind(this, "Fields", "Theme Template OBJ 6", LSColors.gray600, "OBJ 6 Color of the template theme.");
-            ThemeTemplateOBJ7 = Bind(this, "Fields", "Theme Template OBJ 7", LSColors.gray700, "OBJ 7 Color of the template theme.");
-            ThemeTemplateOBJ8 = Bind(this, "Fields", "Theme Template OBJ 8", LSColors.gray800, "OBJ 8 Color of the template theme.");
-            ThemeTemplateOBJ9 = Bind(this, "Fields", "Theme Template OBJ 9", LSColors.gray900, "OBJ 9 Color of the template theme.");
-            ThemeTemplateOBJ10 = Bind(this, "Fields", "Theme Template OBJ 10", LSColors.gray100, "OBJ 10 Color of the template theme.");
-            ThemeTemplateOBJ11 = Bind(this, "Fields", "Theme Template OBJ 11", LSColors.gray200, "OBJ 11 Color of the template theme.");
-            ThemeTemplateOBJ12 = Bind(this, "Fields", "Theme Template OBJ 12", LSColors.gray300, "OBJ 12 Color of the template theme.");
-            ThemeTemplateOBJ13 = Bind(this, "Fields", "Theme Template OBJ 13", LSColors.gray400, "OBJ 13 Color of the template theme.");
-            ThemeTemplateOBJ14 = Bind(this, "Fields", "Theme Template OBJ 14", LSColors.gray500, "OBJ 14 Color of the template theme.");
-            ThemeTemplateOBJ15 = Bind(this, "Fields", "Theme Template OBJ 15", LSColors.gray600, "OBJ 15 Color of the template theme.");
-            ThemeTemplateOBJ16 = Bind(this, "Fields", "Theme Template OBJ 16", LSColors.gray700, "OBJ 16 Color of the template theme.");
-            ThemeTemplateOBJ17 = Bind(this, "Fields", "Theme Template OBJ 17", LSColors.gray800, "OBJ 17 Color of the template theme.");
-            ThemeTemplateOBJ18 = Bind(this, "Fields", "Theme Template OBJ 18", LSColors.gray900, "OBJ 18 Color of the template theme.");
-            ThemeTemplateBG1 = Bind(this, "Fields", "Theme Template BG 1", LSColors.pink100, "BG 1 Color of the template theme.");
-            ThemeTemplateBG2 = Bind(this, "Fields", "Theme Template BG 2", LSColors.pink200, "BG 2 Color of the template theme.");
-            ThemeTemplateBG3 = Bind(this, "Fields", "Theme Template BG 3", LSColors.pink300, "BG 3 Color of the template theme.");
-            ThemeTemplateBG4 = Bind(this, "Fields", "Theme Template BG 4", LSColors.pink400, "BG 4 Color of the template theme.");
-            ThemeTemplateBG5 = Bind(this, "Fields", "Theme Template BG 5", LSColors.pink500, "BG 5 Color of the template theme.");
-            ThemeTemplateBG6 = Bind(this, "Fields", "Theme Template BG 6", LSColors.pink600, "BG 6 Color of the template theme.");
-            ThemeTemplateBG7 = Bind(this, "Fields", "Theme Template BG 7", LSColors.pink700, "BG 7 Color of the template theme.");
-            ThemeTemplateBG8 = Bind(this, "Fields", "Theme Template BG 8", LSColors.pink800, "BG 8 Color of the template theme.");
-            ThemeTemplateBG9 = Bind(this, "Fields", "Theme Template BG 9", LSColors.pink900, "BG 9 Color of the template theme.");
-            ThemeTemplateFX1 = Bind(this, "Fields", "Theme Template FX 1", LSColors.gray100, "FX 1 Color of the template theme.");
-            ThemeTemplateFX2 = Bind(this, "Fields", "Theme Template FX 2", LSColors.gray200, "FX 2 Color of the template theme.");
-            ThemeTemplateFX3 = Bind(this, "Fields", "Theme Template FX 3", LSColors.gray300, "FX 3 Color of the template theme.");
-            ThemeTemplateFX4 = Bind(this, "Fields", "Theme Template FX 4", LSColors.gray400, "FX 4 Color of the template theme.");
-            ThemeTemplateFX5 = Bind(this, "Fields", "Theme Template FX 5", LSColors.gray500, "FX 5 Color of the template theme.");
-            ThemeTemplateFX6 = Bind(this, "Fields", "Theme Template FX 6", LSColors.gray600, "FX 6 Color of the template theme.");
-            ThemeTemplateFX7 = Bind(this, "Fields", "Theme Template FX 7", LSColors.gray700, "FX 7 Color of the template theme.");
-            ThemeTemplateFX8 = Bind(this, "Fields", "Theme Template FX 8", LSColors.gray800, "FX 8 Color of the template theme.");
-            ThemeTemplateFX9 = Bind(this, "Fields", "Theme Template FX 9", LSColors.gray900, "FX 9 Color of the template theme.");
-            ThemeTemplateFX10 = Bind(this, "Fields", "Theme Template FX 10", LSColors.gray100, "FX 10 Color of the template theme.");
-            ThemeTemplateFX11 = Bind(this, "Fields", "Theme Template FX 11", LSColors.gray200, "FX 11 Color of the template theme.");
-            ThemeTemplateFX12 = Bind(this, "Fields", "Theme Template FX 12", LSColors.gray300, "FX 12 Color of the template theme.");
-            ThemeTemplateFX13 = Bind(this, "Fields", "Theme Template FX 13", LSColors.gray400, "FX 13 Color of the template theme.");
-            ThemeTemplateFX14 = Bind(this, "Fields", "Theme Template FX 14", LSColors.gray500, "FX 14 Color of the template theme.");
-            ThemeTemplateFX15 = Bind(this, "Fields", "Theme Template FX 15", LSColors.gray600, "FX 15 Color of the template theme.");
-            ThemeTemplateFX16 = Bind(this, "Fields", "Theme Template FX 16", LSColors.gray700, "FX 16 Color of the template theme.");
-            ThemeTemplateFX17 = Bind(this, "Fields", "Theme Template FX 17", LSColors.gray800, "FX 17 Color of the template theme.");
-            ThemeTemplateFX18 = Bind(this, "Fields", "Theme Template FX 18", LSColors.gray900, "FX 18 Color of the template theme.");
+            ShowModifiedColors = Bind(this, FIELDS, "Show Modified Colors", true, "Keyframe colors show any modifications done (such as hue, saturation and value).");
+            ThemeTemplateName = Bind(this, FIELDS, "Theme Template Name", "New Theme", "Name of the template theme.");
+            ThemeTemplateGUI = Bind(this, FIELDS, "Theme Template GUI", LSColors.white, "GUI Color of the template theme.");
+            ThemeTemplateTail = Bind(this, FIELDS, "Theme Template Tail", LSColors.white, "Tail Color of the template theme.");
+            ThemeTemplateBG = Bind(this, FIELDS, "Theme Template BG", LSColors.gray900, "BG Color of the template theme.");
+            ThemeTemplatePlayer1 = Bind(this, FIELDS, "Theme Template Player 1", LSColors.HexToColor(BeatmapTheme.PLAYER_1_COLOR), "Player 1 Color of the template theme.");
+            ThemeTemplatePlayer2 = Bind(this, FIELDS, "Theme Template Player 2", LSColors.HexToColor(BeatmapTheme.PLAYER_2_COLOR), "Player 2 Color of the template theme.");
+            ThemeTemplatePlayer3 = Bind(this, FIELDS, "Theme Template Player 3", LSColors.HexToColor(BeatmapTheme.PLAYER_3_COLOR), "Player 3 Color of the template theme.");
+            ThemeTemplatePlayer4 = Bind(this, FIELDS, "Theme Template Player 4", LSColors.HexToColor(BeatmapTheme.PLAYER_4_COLOR), "Player 4 Color of the template theme.");
+            ThemeTemplateOBJ1 = Bind(this, FIELDS, "Theme Template OBJ 1", LSColors.gray100, "OBJ 1 Color of the template theme.");
+            ThemeTemplateOBJ2 = Bind(this, FIELDS, "Theme Template OBJ 2", LSColors.gray200, "OBJ 2 Color of the template theme.");
+            ThemeTemplateOBJ3 = Bind(this, FIELDS, "Theme Template OBJ 3", LSColors.gray300, "OBJ 3 Color of the template theme.");
+            ThemeTemplateOBJ4 = Bind(this, FIELDS, "Theme Template OBJ 4", LSColors.gray400, "OBJ 4 Color of the template theme.");
+            ThemeTemplateOBJ5 = Bind(this, FIELDS, "Theme Template OBJ 5", LSColors.gray500, "OBJ 5 Color of the template theme.");
+            ThemeTemplateOBJ6 = Bind(this, FIELDS, "Theme Template OBJ 6", LSColors.gray600, "OBJ 6 Color of the template theme.");
+            ThemeTemplateOBJ7 = Bind(this, FIELDS, "Theme Template OBJ 7", LSColors.gray700, "OBJ 7 Color of the template theme.");
+            ThemeTemplateOBJ8 = Bind(this, FIELDS, "Theme Template OBJ 8", LSColors.gray800, "OBJ 8 Color of the template theme.");
+            ThemeTemplateOBJ9 = Bind(this, FIELDS, "Theme Template OBJ 9", LSColors.gray900, "OBJ 9 Color of the template theme.");
+            ThemeTemplateOBJ10 = Bind(this, FIELDS, "Theme Template OBJ 10", LSColors.gray100, "OBJ 10 Color of the template theme.");
+            ThemeTemplateOBJ11 = Bind(this, FIELDS, "Theme Template OBJ 11", LSColors.gray200, "OBJ 11 Color of the template theme.");
+            ThemeTemplateOBJ12 = Bind(this, FIELDS, "Theme Template OBJ 12", LSColors.gray300, "OBJ 12 Color of the template theme.");
+            ThemeTemplateOBJ13 = Bind(this, FIELDS, "Theme Template OBJ 13", LSColors.gray400, "OBJ 13 Color of the template theme.");
+            ThemeTemplateOBJ14 = Bind(this, FIELDS, "Theme Template OBJ 14", LSColors.gray500, "OBJ 14 Color of the template theme.");
+            ThemeTemplateOBJ15 = Bind(this, FIELDS, "Theme Template OBJ 15", LSColors.gray600, "OBJ 15 Color of the template theme.");
+            ThemeTemplateOBJ16 = Bind(this, FIELDS, "Theme Template OBJ 16", LSColors.gray700, "OBJ 16 Color of the template theme.");
+            ThemeTemplateOBJ17 = Bind(this, FIELDS, "Theme Template OBJ 17", LSColors.gray800, "OBJ 17 Color of the template theme.");
+            ThemeTemplateOBJ18 = Bind(this, FIELDS, "Theme Template OBJ 18", LSColors.gray900, "OBJ 18 Color of the template theme.");
+            ThemeTemplateBG1 = Bind(this, FIELDS, "Theme Template BG 1", LSColors.pink100, "BG 1 Color of the template theme.");
+            ThemeTemplateBG2 = Bind(this, FIELDS, "Theme Template BG 2", LSColors.pink200, "BG 2 Color of the template theme.");
+            ThemeTemplateBG3 = Bind(this, FIELDS, "Theme Template BG 3", LSColors.pink300, "BG 3 Color of the template theme.");
+            ThemeTemplateBG4 = Bind(this, FIELDS, "Theme Template BG 4", LSColors.pink400, "BG 4 Color of the template theme.");
+            ThemeTemplateBG5 = Bind(this, FIELDS, "Theme Template BG 5", LSColors.pink500, "BG 5 Color of the template theme.");
+            ThemeTemplateBG6 = Bind(this, FIELDS, "Theme Template BG 6", LSColors.pink600, "BG 6 Color of the template theme.");
+            ThemeTemplateBG7 = Bind(this, FIELDS, "Theme Template BG 7", LSColors.pink700, "BG 7 Color of the template theme.");
+            ThemeTemplateBG8 = Bind(this, FIELDS, "Theme Template BG 8", LSColors.pink800, "BG 8 Color of the template theme.");
+            ThemeTemplateBG9 = Bind(this, FIELDS, "Theme Template BG 9", LSColors.pink900, "BG 9 Color of the template theme.");
+            ThemeTemplateFX1 = Bind(this, FIELDS, "Theme Template FX 1", LSColors.gray100, "FX 1 Color of the template theme.");
+            ThemeTemplateFX2 = Bind(this, FIELDS, "Theme Template FX 2", LSColors.gray200, "FX 2 Color of the template theme.");
+            ThemeTemplateFX3 = Bind(this, FIELDS, "Theme Template FX 3", LSColors.gray300, "FX 3 Color of the template theme.");
+            ThemeTemplateFX4 = Bind(this, FIELDS, "Theme Template FX 4", LSColors.gray400, "FX 4 Color of the template theme.");
+            ThemeTemplateFX5 = Bind(this, FIELDS, "Theme Template FX 5", LSColors.gray500, "FX 5 Color of the template theme.");
+            ThemeTemplateFX6 = Bind(this, FIELDS, "Theme Template FX 6", LSColors.gray600, "FX 6 Color of the template theme.");
+            ThemeTemplateFX7 = Bind(this, FIELDS, "Theme Template FX 7", LSColors.gray700, "FX 7 Color of the template theme.");
+            ThemeTemplateFX8 = Bind(this, FIELDS, "Theme Template FX 8", LSColors.gray800, "FX 8 Color of the template theme.");
+            ThemeTemplateFX9 = Bind(this, FIELDS, "Theme Template FX 9", LSColors.gray900, "FX 9 Color of the template theme.");
+            ThemeTemplateFX10 = Bind(this, FIELDS, "Theme Template FX 10", LSColors.gray100, "FX 10 Color of the template theme.");
+            ThemeTemplateFX11 = Bind(this, FIELDS, "Theme Template FX 11", LSColors.gray200, "FX 11 Color of the template theme.");
+            ThemeTemplateFX12 = Bind(this, FIELDS, "Theme Template FX 12", LSColors.gray300, "FX 12 Color of the template theme.");
+            ThemeTemplateFX13 = Bind(this, FIELDS, "Theme Template FX 13", LSColors.gray400, "FX 13 Color of the template theme.");
+            ThemeTemplateFX14 = Bind(this, FIELDS, "Theme Template FX 14", LSColors.gray500, "FX 14 Color of the template theme.");
+            ThemeTemplateFX15 = Bind(this, FIELDS, "Theme Template FX 15", LSColors.gray600, "FX 15 Color of the template theme.");
+            ThemeTemplateFX16 = Bind(this, FIELDS, "Theme Template FX 16", LSColors.gray700, "FX 16 Color of the template theme.");
+            ThemeTemplateFX17 = Bind(this, FIELDS, "Theme Template FX 17", LSColors.gray800, "FX 17 Color of the template theme.");
+            ThemeTemplateFX18 = Bind(this, FIELDS, "Theme Template FX 18", LSColors.gray900, "FX 18 Color of the template theme.");
 
             #endregion
 
             #region Animations
 
-            PlayEditorAnimations = Bind(this, "Animations", "Play Editor Animations", false, "If popups should be animated.");
+            PlayEditorAnimations = Bind(this, ANIMATIONS, "Play Editor Animations", false, "If popups should be animated.");
 
             #region Open File Popup
 
-            OpenFilePopupActive = Bind(this, "Animations", "Open File Popup Active", true, "If the popup animation should play.");
+            OpenFilePopupActive = Bind(this, ANIMATIONS, "Open File Popup Active", true, "If the popup animation should play.");
 
-            OpenFilePopupPosActive = Bind(this, "Animations", "Open File Popup Animate Position", false, "If position should be animated.");
-            OpenFilePopupPosOpen = Bind(this, "Animations", "Open File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            OpenFilePopupPosClose = Bind(this, "Animations", "Open File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            OpenFilePopupPosOpenDuration = Bind(this, "Animations", "Open File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            OpenFilePopupPosCloseDuration = Bind(this, "Animations", "Open File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            OpenFilePopupPosXOpenEase = BindEnum(this, "Animations", "Open File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupPosXCloseEase = BindEnum(this, "Animations", "Open File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupPosYOpenEase = BindEnum(this, "Animations", "Open File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupPosYCloseEase = BindEnum(this, "Animations", "Open File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupPosActive = Bind(this, ANIMATIONS, "Open File Popup Animate Position", false, "If position should be animated.");
+            OpenFilePopupPosOpen = Bind(this, ANIMATIONS, "Open File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            OpenFilePopupPosClose = Bind(this, ANIMATIONS, "Open File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            OpenFilePopupPosOpenDuration = Bind(this, ANIMATIONS, "Open File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            OpenFilePopupPosCloseDuration = Bind(this, ANIMATIONS, "Open File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            OpenFilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            OpenFilePopupScaActive = Bind(this, "Animations", "Open File Popup Animate Scale", true, "If scale should be animated.");
-            OpenFilePopupScaOpen = Bind(this, "Animations", "Open File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            OpenFilePopupScaClose = Bind(this, "Animations", "Open File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            OpenFilePopupScaOpenDuration = Bind(this, "Animations", "Open File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            OpenFilePopupScaCloseDuration = Bind(this, "Animations", "Open File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            OpenFilePopupScaXOpenEase = BindEnum(this, "Animations", "Open File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            OpenFilePopupScaXCloseEase = BindEnum(this, "Animations", "Open File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            OpenFilePopupScaYOpenEase = BindEnum(this, "Animations", "Open File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            OpenFilePopupScaYCloseEase = BindEnum(this, "Animations", "Open File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            OpenFilePopupScaActive = Bind(this, ANIMATIONS, "Open File Popup Animate Scale", true, "If scale should be animated.");
+            OpenFilePopupScaOpen = Bind(this, ANIMATIONS, "Open File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            OpenFilePopupScaClose = Bind(this, ANIMATIONS, "Open File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            OpenFilePopupScaOpenDuration = Bind(this, ANIMATIONS, "Open File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            OpenFilePopupScaCloseDuration = Bind(this, ANIMATIONS, "Open File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            OpenFilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            OpenFilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            OpenFilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            OpenFilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            OpenFilePopupRotActive = Bind(this, "Animations", "Open File Popup Animate Rotation", false, "If rotation should be animated.");
-            OpenFilePopupRotOpen = Bind(this, "Animations", "Open File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            OpenFilePopupRotClose = Bind(this, "Animations", "Open File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            OpenFilePopupRotOpenDuration = Bind(this, "Animations", "Open File Popup Open Rotation Duration", 0f, "The duration of opening.");
-            OpenFilePopupRotCloseDuration = Bind(this, "Animations", "Open File Popup Close Rotation Duration", 0f, "The duration of closing.");
-            OpenFilePopupRotOpenEase = BindEnum(this, "Animations", "Open File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupRotCloseEase = BindEnum(this, "Animations", "Open File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupRotActive = Bind(this, ANIMATIONS, "Open File Popup Animate Rotation", false, "If rotation should be animated.");
+            OpenFilePopupRotOpen = Bind(this, ANIMATIONS, "Open File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            OpenFilePopupRotClose = Bind(this, ANIMATIONS, "Open File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            OpenFilePopupRotOpenDuration = Bind(this, ANIMATIONS, "Open File Popup Open Rotation Duration", 0f, "The duration of opening.");
+            OpenFilePopupRotCloseDuration = Bind(this, ANIMATIONS, "Open File Popup Close Rotation Duration", 0f, "The duration of closing.");
+            OpenFilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region New File Popup
 
-            NewFilePopupActive = Bind(this, "Animations", "New File Popup Active", true, "If the popup animation should play.");
+            NewFilePopupActive = Bind(this, ANIMATIONS, "New File Popup Active", true, "If the popup animation should play.");
 
-            NewFilePopupPosActive = Bind(this, "Animations", "New File Popup Animate Position", false, "If position should be animated.");
-            NewFilePopupPosOpen = Bind(this, "Animations", "New File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            NewFilePopupPosClose = Bind(this, "Animations", "New File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            NewFilePopupPosOpenDuration = Bind(this, "Animations", "New File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            NewFilePopupPosCloseDuration = Bind(this, "Animations", "New File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            NewFilePopupPosXOpenEase = BindEnum(this, "Animations", "New File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupPosXCloseEase = BindEnum(this, "Animations", "New File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupPosYOpenEase = BindEnum(this, "Animations", "New File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupPosYCloseEase = BindEnum(this, "Animations", "New File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupPosActive = Bind(this, ANIMATIONS, "New File Popup Animate Position", false, "If position should be animated.");
+            NewFilePopupPosOpen = Bind(this, ANIMATIONS, "New File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            NewFilePopupPosClose = Bind(this, ANIMATIONS, "New File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            NewFilePopupPosOpenDuration = Bind(this, ANIMATIONS, "New File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            NewFilePopupPosCloseDuration = Bind(this, ANIMATIONS, "New File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            NewFilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            NewFilePopupScaActive = Bind(this, "Animations", "New File Popup Animate Scale", true, "If scale should be animated.");
-            NewFilePopupScaOpen = Bind(this, "Animations", "New File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            NewFilePopupScaClose = Bind(this, "Animations", "New File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            NewFilePopupScaOpenDuration = Bind(this, "Animations", "New File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            NewFilePopupScaCloseDuration = Bind(this, "Animations", "New File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            NewFilePopupScaXOpenEase = BindEnum(this, "Animations", "New File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            NewFilePopupScaXCloseEase = BindEnum(this, "Animations", "New File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            NewFilePopupScaYOpenEase = BindEnum(this, "Animations", "New File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            NewFilePopupScaYCloseEase = BindEnum(this, "Animations", "New File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            NewFilePopupScaActive = Bind(this, ANIMATIONS, "New File Popup Animate Scale", true, "If scale should be animated.");
+            NewFilePopupScaOpen = Bind(this, ANIMATIONS, "New File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            NewFilePopupScaClose = Bind(this, ANIMATIONS, "New File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            NewFilePopupScaOpenDuration = Bind(this, ANIMATIONS, "New File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            NewFilePopupScaCloseDuration = Bind(this, ANIMATIONS, "New File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            NewFilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            NewFilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            NewFilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            NewFilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            NewFilePopupRotActive = Bind(this, "Animations", "New File Popup Animate Rotation", false, "If rotation should be animated.");
-            NewFilePopupRotOpen = Bind(this, "Animations", "New File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            NewFilePopupRotClose = Bind(this, "Animations", "New File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            NewFilePopupRotOpenDuration = Bind(this, "Animations", "New File Popup Open Rotation Duration", 0f, "The duration of opening.");
-            NewFilePopupRotCloseDuration = Bind(this, "Animations", "New File Popup Close Rotation Duration", 0f, "The duration of closing.");
-            NewFilePopupRotOpenEase = BindEnum(this, "Animations", "New File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupRotCloseEase = BindEnum(this, "Animations", "New File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupRotActive = Bind(this, ANIMATIONS, "New File Popup Animate Rotation", false, "If rotation should be animated.");
+            NewFilePopupRotOpen = Bind(this, ANIMATIONS, "New File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            NewFilePopupRotClose = Bind(this, ANIMATIONS, "New File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            NewFilePopupRotOpenDuration = Bind(this, ANIMATIONS, "New File Popup Open Rotation Duration", 0f, "The duration of opening.");
+            NewFilePopupRotCloseDuration = Bind(this, ANIMATIONS, "New File Popup Close Rotation Duration", 0f, "The duration of closing.");
+            NewFilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Save As Popup
 
-            SaveAsPopupActive = Bind(this, "Animations", "Save As Popup Active", true, "If the popup animation should play.");
+            SaveAsPopupActive = Bind(this, ANIMATIONS, "Save As Popup Active", true, "If the popup animation should play.");
 
-            SaveAsPopupPosActive = Bind(this, "Animations", "Save As Popup Animate Position", false, "If position should be animated.");
-            SaveAsPopupPosOpen = Bind(this, "Animations", "Save As Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            SaveAsPopupPosClose = Bind(this, "Animations", "Save As Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            SaveAsPopupPosOpenDuration = Bind(this, "Animations", "Save As Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            SaveAsPopupPosCloseDuration = Bind(this, "Animations", "Save As Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            SaveAsPopupPosXOpenEase = BindEnum(this, "Animations", "Save As Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupPosXCloseEase = BindEnum(this, "Animations", "Save As Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupPosYOpenEase = BindEnum(this, "Animations", "Save As Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupPosYCloseEase = BindEnum(this, "Animations", "Save As Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupPosActive = Bind(this, ANIMATIONS, "Save As Popup Animate Position", false, "If position should be animated.");
+            SaveAsPopupPosOpen = Bind(this, ANIMATIONS, "Save As Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SaveAsPopupPosClose = Bind(this, ANIMATIONS, "Save As Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SaveAsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Save As Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            SaveAsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Save As Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            SaveAsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            SaveAsPopupScaActive = Bind(this, "Animations", "Save As Popup Animate Scale", true, "If scale should be animated.");
-            SaveAsPopupScaOpen = Bind(this, "Animations", "Save As Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            SaveAsPopupScaClose = Bind(this, "Animations", "Save As Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            SaveAsPopupScaOpenDuration = Bind(this, "Animations", "Save As Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            SaveAsPopupScaCloseDuration = Bind(this, "Animations", "Save As Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            SaveAsPopupScaXOpenEase = BindEnum(this, "Animations", "Save As Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            SaveAsPopupScaXCloseEase = BindEnum(this, "Animations", "Save As Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            SaveAsPopupScaYOpenEase = BindEnum(this, "Animations", "Save As Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            SaveAsPopupScaYCloseEase = BindEnum(this, "Animations", "Save As Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            SaveAsPopupScaActive = Bind(this, ANIMATIONS, "Save As Popup Animate Scale", true, "If scale should be animated.");
+            SaveAsPopupScaOpen = Bind(this, ANIMATIONS, "Save As Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SaveAsPopupScaClose = Bind(this, ANIMATIONS, "Save As Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SaveAsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Save As Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            SaveAsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Save As Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            SaveAsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            SaveAsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            SaveAsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            SaveAsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            SaveAsPopupRotActive = Bind(this, "Animations", "Save As Popup Animate Rotation", false, "If rotation should be animated.");
-            SaveAsPopupRotOpen = Bind(this, "Animations", "Save As Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            SaveAsPopupRotClose = Bind(this, "Animations", "Save As Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            SaveAsPopupRotOpenDuration = Bind(this, "Animations", "Save As Popup Open Rotation Duration", 0f, "The duration of opening.");
-            SaveAsPopupRotCloseDuration = Bind(this, "Animations", "Save As Popup Close Rotation Duration", 0f, "The duration of closing.");
-            SaveAsPopupRotOpenEase = BindEnum(this, "Animations", "Save As Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupRotCloseEase = BindEnum(this, "Animations", "Save As Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupRotActive = Bind(this, ANIMATIONS, "Save As Popup Animate Rotation", false, "If rotation should be animated.");
+            SaveAsPopupRotOpen = Bind(this, ANIMATIONS, "Save As Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SaveAsPopupRotClose = Bind(this, ANIMATIONS, "Save As Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SaveAsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Save As Popup Open Rotation Duration", 0f, "The duration of opening.");
+            SaveAsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Save As Popup Close Rotation Duration", 0f, "The duration of closing.");
+            SaveAsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Quick Actions Popup
 
-            QuickActionsPopupActive = Bind(this, "Animations", "Quick Actions Popup Active", true, "If the popup animation should play.");
+            QuickActionsPopupActive = Bind(this, ANIMATIONS, "Quick Actions Popup Active", true, "If the popup animation should play.");
 
-            QuickActionsPopupPosActive = Bind(this, "Animations", "Quick Actions Popup Animate Position", false, "If position should be animated.");
-            QuickActionsPopupPosOpen = Bind(this, "Animations", "Quick Actions Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            QuickActionsPopupPosClose = Bind(this, "Animations", "Quick Actions Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            QuickActionsPopupPosOpenDuration = Bind(this, "Animations", "Quick Actions Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            QuickActionsPopupPosCloseDuration = Bind(this, "Animations", "Quick Actions Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            QuickActionsPopupPosXOpenEase = BindEnum(this, "Animations", "Quick Actions Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupPosXCloseEase = BindEnum(this, "Animations", "Quick Actions Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupPosYOpenEase = BindEnum(this, "Animations", "Quick Actions Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupPosYCloseEase = BindEnum(this, "Animations", "Quick Actions Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupPosActive = Bind(this, ANIMATIONS, "Quick Actions Popup Animate Position", false, "If position should be animated.");
+            QuickActionsPopupPosOpen = Bind(this, ANIMATIONS, "Quick Actions Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            QuickActionsPopupPosClose = Bind(this, ANIMATIONS, "Quick Actions Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            QuickActionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            QuickActionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            QuickActionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            QuickActionsPopupScaActive = Bind(this, "Animations", "Quick Actions Popup Animate Scale", true, "If scale should be animated.");
-            QuickActionsPopupScaOpen = Bind(this, "Animations", "Quick Actions Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            QuickActionsPopupScaClose = Bind(this, "Animations", "Quick Actions Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            QuickActionsPopupScaOpenDuration = Bind(this, "Animations", "Quick Actions Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            QuickActionsPopupScaCloseDuration = Bind(this, "Animations", "Quick Actions Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            QuickActionsPopupScaXOpenEase = BindEnum(this, "Animations", "Quick Actions Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            QuickActionsPopupScaXCloseEase = BindEnum(this, "Animations", "Quick Actions Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            QuickActionsPopupScaYOpenEase = BindEnum(this, "Animations", "Quick Actions Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            QuickActionsPopupScaYCloseEase = BindEnum(this, "Animations", "Quick Actions Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            QuickActionsPopupScaActive = Bind(this, ANIMATIONS, "Quick Actions Popup Animate Scale", true, "If scale should be animated.");
+            QuickActionsPopupScaOpen = Bind(this, ANIMATIONS, "Quick Actions Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            QuickActionsPopupScaClose = Bind(this, ANIMATIONS, "Quick Actions Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            QuickActionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            QuickActionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            QuickActionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            QuickActionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            QuickActionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            QuickActionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            QuickActionsPopupRotActive = Bind(this, "Animations", "Quick Actions Popup Animate Rotation", false, "If rotation should be animated.");
-            QuickActionsPopupRotOpen = Bind(this, "Animations", "Quick Actions Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            QuickActionsPopupRotClose = Bind(this, "Animations", "Quick Actions Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            QuickActionsPopupRotOpenDuration = Bind(this, "Animations", "Quick Actions Popup Open Rotation Duration", 0f, "The duration of opening.");
-            QuickActionsPopupRotCloseDuration = Bind(this, "Animations", "Quick Actions Popup Close Rotation Duration", 0f, "The duration of closing.");
-            QuickActionsPopupRotOpenEase = BindEnum(this, "Animations", "Quick Actions Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupRotCloseEase = BindEnum(this, "Animations", "Quick Actions Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupRotActive = Bind(this, ANIMATIONS, "Quick Actions Popup Animate Rotation", false, "If rotation should be animated.");
+            QuickActionsPopupRotOpen = Bind(this, ANIMATIONS, "Quick Actions Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            QuickActionsPopupRotClose = Bind(this, ANIMATIONS, "Quick Actions Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            QuickActionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Open Rotation Duration", 0f, "The duration of opening.");
+            QuickActionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Close Rotation Duration", 0f, "The duration of closing.");
+            QuickActionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Parent Selector
 
-            ParentSelectorPopupActive = Bind(this, "Animations", "Parent Selector Popup Active", true, "If the popup animation should play.");
+            ParentSelectorPopupActive = Bind(this, ANIMATIONS, "Parent Selector Popup Active", true, "If the popup animation should play.");
 
-            ParentSelectorPopupPosActive = Bind(this, "Animations", "Parent Selector Popup Animate Position", false, "If position should be animated.");
-            ParentSelectorPopupPosOpen = Bind(this, "Animations", "Parent Selector Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ParentSelectorPopupPosClose = Bind(this, "Animations", "Parent Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ParentSelectorPopupPosOpenDuration = Bind(this, "Animations", "Parent Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            ParentSelectorPopupPosCloseDuration = Bind(this, "Animations", "Parent Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ParentSelectorPopupPosXOpenEase = BindEnum(this, "Animations", "Parent Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupPosXCloseEase = BindEnum(this, "Animations", "Parent Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupPosYOpenEase = BindEnum(this, "Animations", "Parent Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupPosYCloseEase = BindEnum(this, "Animations", "Parent Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupPosActive = Bind(this, ANIMATIONS, "Parent Selector Popup Animate Position", false, "If position should be animated.");
+            ParentSelectorPopupPosOpen = Bind(this, ANIMATIONS, "Parent Selector Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ParentSelectorPopupPosClose = Bind(this, ANIMATIONS, "Parent Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ParentSelectorPopupPosOpenDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            ParentSelectorPopupPosCloseDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            ParentSelectorPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            ParentSelectorPopupScaActive = Bind(this, "Animations", "Parent Selector Popup Animate Scale", true, "If scale should be animated.");
-            ParentSelectorPopupScaOpen = Bind(this, "Animations", "Parent Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ParentSelectorPopupScaClose = Bind(this, "Animations", "Parent Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ParentSelectorPopupScaOpenDuration = Bind(this, "Animations", "Parent Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            ParentSelectorPopupScaCloseDuration = Bind(this, "Animations", "Parent Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ParentSelectorPopupScaXOpenEase = BindEnum(this, "Animations", "Parent Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ParentSelectorPopupScaXCloseEase = BindEnum(this, "Animations", "Parent Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ParentSelectorPopupScaYOpenEase = BindEnum(this, "Animations", "Parent Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ParentSelectorPopupScaYCloseEase = BindEnum(this, "Animations", "Parent Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ParentSelectorPopupScaActive = Bind(this, ANIMATIONS, "Parent Selector Popup Animate Scale", true, "If scale should be animated.");
+            ParentSelectorPopupScaOpen = Bind(this, ANIMATIONS, "Parent Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ParentSelectorPopupScaClose = Bind(this, ANIMATIONS, "Parent Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ParentSelectorPopupScaOpenDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ParentSelectorPopupScaCloseDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ParentSelectorPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ParentSelectorPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ParentSelectorPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ParentSelectorPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ParentSelectorPopupRotActive = Bind(this, "Animations", "Parent Selector Popup Animate Rotation", false, "If rotation should be animated.");
-            ParentSelectorPopupRotOpen = Bind(this, "Animations", "Parent Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ParentSelectorPopupRotClose = Bind(this, "Animations", "Parent Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ParentSelectorPopupRotOpenDuration = Bind(this, "Animations", "Parent Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
-            ParentSelectorPopupRotCloseDuration = Bind(this, "Animations", "Parent Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ParentSelectorPopupRotOpenEase = BindEnum(this, "Animations", "Parent Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupRotCloseEase = BindEnum(this, "Animations", "Parent Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupRotActive = Bind(this, ANIMATIONS, "Parent Selector Popup Animate Rotation", false, "If rotation should be animated.");
+            ParentSelectorPopupRotOpen = Bind(this, ANIMATIONS, "Parent Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ParentSelectorPopupRotClose = Bind(this, ANIMATIONS, "Parent Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ParentSelectorPopupRotOpenDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ParentSelectorPopupRotCloseDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ParentSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Prefab Popup
 
-            PrefabPopupActive = Bind(this, "Animations", "Prefab Popup Active", true, "If the popup animation should play.");
+            PrefabPopupActive = Bind(this, ANIMATIONS, "Prefab Popup Active", true, "If the popup animation should play.");
 
-            PrefabPopupPosActive = Bind(this, "Animations", "Prefab Popup Animate Position", false, "If position should be animated.");
-            PrefabPopupPosOpen = Bind(this, "Animations", "Prefab Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            PrefabPopupPosClose = Bind(this, "Animations", "Prefab Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            PrefabPopupPosOpenDuration = Bind(this, "Animations", "Prefab Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            PrefabPopupPosCloseDuration = Bind(this, "Animations", "Prefab Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            PrefabPopupPosXOpenEase = BindEnum(this, "Animations", "Prefab Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupPosXCloseEase = BindEnum(this, "Animations", "Prefab Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupPosYOpenEase = BindEnum(this, "Animations", "Prefab Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupPosYCloseEase = BindEnum(this, "Animations", "Prefab Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupPosActive = Bind(this, ANIMATIONS, "Prefab Popup Animate Position", false, "If position should be animated.");
+            PrefabPopupPosOpen = Bind(this, ANIMATIONS, "Prefab Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PrefabPopupPosClose = Bind(this, ANIMATIONS, "Prefab Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PrefabPopupPosOpenDuration = Bind(this, ANIMATIONS, "Prefab Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            PrefabPopupPosCloseDuration = Bind(this, ANIMATIONS, "Prefab Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            PrefabPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            PrefabPopupScaActive = Bind(this, "Animations", "Prefab Popup Animate Scale", true, "If scale should be animated.");
-            PrefabPopupScaOpen = Bind(this, "Animations", "Prefab Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            PrefabPopupScaClose = Bind(this, "Animations", "Prefab Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            PrefabPopupScaOpenDuration = Bind(this, "Animations", "Prefab Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            PrefabPopupScaCloseDuration = Bind(this, "Animations", "Prefab Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            PrefabPopupScaXOpenEase = BindEnum(this, "Animations", "Prefab Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabPopupScaXCloseEase = BindEnum(this, "Animations", "Prefab Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            PrefabPopupScaYOpenEase = BindEnum(this, "Animations", "Prefab Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabPopupScaYCloseEase = BindEnum(this, "Animations", "Prefab Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            PrefabPopupScaActive = Bind(this, ANIMATIONS, "Prefab Popup Animate Scale", true, "If scale should be animated.");
+            PrefabPopupScaOpen = Bind(this, ANIMATIONS, "Prefab Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PrefabPopupScaClose = Bind(this, ANIMATIONS, "Prefab Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PrefabPopupScaOpenDuration = Bind(this, ANIMATIONS, "Prefab Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            PrefabPopupScaCloseDuration = Bind(this, ANIMATIONS, "Prefab Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            PrefabPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            PrefabPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            PrefabPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            PrefabPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            PrefabPopupRotActive = Bind(this, "Animations", "Prefab Popup Animate Rotation", false, "If rotation should be animated.");
-            PrefabPopupRotOpen = Bind(this, "Animations", "Prefab Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            PrefabPopupRotClose = Bind(this, "Animations", "Prefab Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            PrefabPopupRotOpenDuration = Bind(this, "Animations", "Prefab Popup Open Rotation Duration", 0f, "The duration of opening.");
-            PrefabPopupRotCloseDuration = Bind(this, "Animations", "Prefab Popup Close Rotation Duration", 0f, "The duration of closing.");
-            PrefabPopupRotOpenEase = BindEnum(this, "Animations", "Prefab Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupRotCloseEase = BindEnum(this, "Animations", "Prefab Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupRotActive = Bind(this, ANIMATIONS, "Prefab Popup Animate Rotation", false, "If rotation should be animated.");
+            PrefabPopupRotOpen = Bind(this, ANIMATIONS, "Prefab Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PrefabPopupRotClose = Bind(this, ANIMATIONS, "Prefab Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PrefabPopupRotOpenDuration = Bind(this, ANIMATIONS, "Prefab Popup Open Rotation Duration", 0f, "The duration of opening.");
+            PrefabPopupRotCloseDuration = Bind(this, ANIMATIONS, "Prefab Popup Close Rotation Duration", 0f, "The duration of closing.");
+            PrefabPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Object Options Popup
 
-            ObjectOptionsPopupActive = Bind(this, "Animations", "Object Options Popup Active", true, "If the popup animation should play.");
+            ObjectOptionsPopupActive = Bind(this, ANIMATIONS, "Object Options Popup Active", true, "If the popup animation should play.");
 
-            ObjectOptionsPopupPosActive = Bind(this, "Animations", "Object Options Popup Animate Position", true, "If position should be animated.");
-            ObjectOptionsPopupPosOpen = Bind(this, "Animations", "Object Options Popup Open Position", new Vector2(-35f, 22f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectOptionsPopupPosClose = Bind(this, "Animations", "Object Options Popup Close Position", new Vector2(-35f, 57f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectOptionsPopupPosOpenDuration = Bind(this, "Animations", "Object Options Popup Open Position Duration", new Vector2(0f, 0.6f), "The duration of opening.");
-            ObjectOptionsPopupPosCloseDuration = Bind(this, "Animations", "Object Options Popup Close Position Duration", new Vector2(0f, 0.1f), "The duration of closing.");
-            ObjectOptionsPopupPosXOpenEase = BindEnum(this, "Animations", "Object Options Popup Open Position X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupPosXCloseEase = BindEnum(this, "Animations", "Object Options Popup Close Position X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectOptionsPopupPosYOpenEase = BindEnum(this, "Animations", "Object Options Popup Open Position Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupPosYCloseEase = BindEnum(this, "Animations", "Object Options Popup Close Position Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectOptionsPopupPosActive = Bind(this, ANIMATIONS, "Object Options Popup Animate Position", true, "If position should be animated.");
+            ObjectOptionsPopupPosOpen = Bind(this, ANIMATIONS, "Object Options Popup Open Position", new Vector2(-35f, 22f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectOptionsPopupPosClose = Bind(this, ANIMATIONS, "Object Options Popup Close Position", new Vector2(-35f, 57f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectOptionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Object Options Popup Open Position Duration", new Vector2(0f, 0.6f), "The duration of opening.");
+            ObjectOptionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Object Options Popup Close Position Duration", new Vector2(0f, 0.1f), "The duration of closing.");
+            ObjectOptionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Position X Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Position X Ease", Easings.InCirc, "The easing of opening.");
+            ObjectOptionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Position Y Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Position Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ObjectOptionsPopupScaActive = Bind(this, "Animations", "Object Options Popup Animate Scale", true, "If scale should be animated.");
-            ObjectOptionsPopupScaOpen = Bind(this, "Animations", "Object Options Popup Open Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectOptionsPopupScaClose = Bind(this, "Animations", "Object Options Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectOptionsPopupScaOpenDuration = Bind(this, "Animations", "Object Options Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            ObjectOptionsPopupScaCloseDuration = Bind(this, "Animations", "Object Options Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ObjectOptionsPopupScaXOpenEase = BindEnum(this, "Animations", "Object Options Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupScaXCloseEase = BindEnum(this, "Animations", "Object Options Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectOptionsPopupScaYOpenEase = BindEnum(this, "Animations", "Object Options Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupScaYCloseEase = BindEnum(this, "Animations", "Object Options Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectOptionsPopupScaActive = Bind(this, ANIMATIONS, "Object Options Popup Animate Scale", true, "If scale should be animated.");
+            ObjectOptionsPopupScaOpen = Bind(this, ANIMATIONS, "Object Options Popup Open Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectOptionsPopupScaClose = Bind(this, ANIMATIONS, "Object Options Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectOptionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Object Options Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ObjectOptionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Object Options Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ObjectOptionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ObjectOptionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ObjectOptionsPopupRotActive = Bind(this, "Animations", "Object Options Popup Animate Rotation", false, "If rotation should be animated.");
-            ObjectOptionsPopupRotOpen = Bind(this, "Animations", "Object Options Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectOptionsPopupRotClose = Bind(this, "Animations", "Object Options Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectOptionsPopupRotOpenDuration = Bind(this, "Animations", "Object Options Popup Open Rotation Duration", 0f, "The duration of opening.");
-            ObjectOptionsPopupRotCloseDuration = Bind(this, "Animations", "Object Options Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ObjectOptionsPopupRotOpenEase = BindEnum(this, "Animations", "Object Options Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ObjectOptionsPopupRotCloseEase = BindEnum(this, "Animations", "Object Options Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectOptionsPopupRotActive = Bind(this, ANIMATIONS, "Object Options Popup Animate Rotation", false, "If rotation should be animated.");
+            ObjectOptionsPopupRotOpen = Bind(this, ANIMATIONS, "Object Options Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectOptionsPopupRotClose = Bind(this, ANIMATIONS, "Object Options Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectOptionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Object Options Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ObjectOptionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Object Options Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ObjectOptionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectOptionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region BG Options Popup
 
-            BGOptionsPopupActive = Bind(this, "Animations", "BG Options Popup Active", true, "If the popup animation should play.");
+            BGOptionsPopupActive = Bind(this, ANIMATIONS, "BG Options Popup Active", true, "If the popup animation should play.");
 
-            BGOptionsPopupPosActive = Bind(this, "Animations", "BG Options Popup Animate Position", true, "If position should be animated.");
-            BGOptionsPopupPosOpen = Bind(this, "Animations", "BG Options Popup Open Position", new Vector2(0f, 57f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            BGOptionsPopupPosClose = Bind(this, "Animations", "BG Options Popup Close Position", new Vector2(0f, 22f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            BGOptionsPopupPosOpenDuration = Bind(this, "Animations", "BG Options Popup Open Position Duration", new Vector2(0f, 0.6f), "The duration of opening.");
-            BGOptionsPopupPosCloseDuration = Bind(this, "Animations", "BG Options Popup Close Position Duration", new Vector2(0f, 0.1f), "The duration of closing.");
-            BGOptionsPopupPosXOpenEase = BindEnum(this, "Animations", "BG Options Popup Open Position X Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupPosXCloseEase = BindEnum(this, "Animations", "BG Options Popup Close Position X Ease", Easings.InCirc, "The easing of opening.");
-            BGOptionsPopupPosYOpenEase = BindEnum(this, "Animations", "BG Options Popup Open Position Y Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupPosYCloseEase = BindEnum(this, "Animations", "BG Options Popup Close Position Y Ease", Easings.InCirc, "The easing of opening.");
+            BGOptionsPopupPosActive = Bind(this, ANIMATIONS, "BG Options Popup Animate Position", true, "If position should be animated.");
+            BGOptionsPopupPosOpen = Bind(this, ANIMATIONS, "BG Options Popup Open Position", new Vector2(0f, 57f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            BGOptionsPopupPosClose = Bind(this, ANIMATIONS, "BG Options Popup Close Position", new Vector2(0f, 22f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            BGOptionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "BG Options Popup Open Position Duration", new Vector2(0f, 0.6f), "The duration of opening.");
+            BGOptionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "BG Options Popup Close Position Duration", new Vector2(0f, 0.1f), "The duration of closing.");
+            BGOptionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Position X Ease", Easings.OutElastic, "The easing of opening.");
+            BGOptionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Position X Ease", Easings.InCirc, "The easing of opening.");
+            BGOptionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Position Y Ease", Easings.OutElastic, "The easing of opening.");
+            BGOptionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Position Y Ease", Easings.InCirc, "The easing of opening.");
 
-            BGOptionsPopupScaActive = Bind(this, "Animations", "BG Options Popup Animate Scale", true, "If scale should be animated.");
-            BGOptionsPopupScaOpen = Bind(this, "Animations", "BG Options Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            BGOptionsPopupScaClose = Bind(this, "Animations", "BG Options Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            BGOptionsPopupScaOpenDuration = Bind(this, "Animations", "BG Options Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            BGOptionsPopupScaCloseDuration = Bind(this, "Animations", "BG Options Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            BGOptionsPopupScaXOpenEase = BindEnum(this, "Animations", "BG Options Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupScaXCloseEase = BindEnum(this, "Animations", "BG Options Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            BGOptionsPopupScaYOpenEase = BindEnum(this, "Animations", "BG Options Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupScaYCloseEase = BindEnum(this, "Animations", "BG Options Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            BGOptionsPopupScaActive = Bind(this, ANIMATIONS, "BG Options Popup Animate Scale", true, "If scale should be animated.");
+            BGOptionsPopupScaOpen = Bind(this, ANIMATIONS, "BG Options Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            BGOptionsPopupScaClose = Bind(this, ANIMATIONS, "BG Options Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            BGOptionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "BG Options Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            BGOptionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "BG Options Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            BGOptionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            BGOptionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            BGOptionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            BGOptionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            BGOptionsPopupRotActive = Bind(this, "Animations", "BG Options Popup Animate Rotation", false, "If rotation should be animated.");
-            BGOptionsPopupRotOpen = Bind(this, "Animations", "BG Options Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            BGOptionsPopupRotClose = Bind(this, "Animations", "BG Options Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            BGOptionsPopupRotOpenDuration = Bind(this, "Animations", "BG Options Popup Open Rotation Duration", 0f, "The duration of opening.");
-            BGOptionsPopupRotCloseDuration = Bind(this, "Animations", "BG Options Popup Close Rotation Duration", 0f, "The duration of closing.");
-            BGOptionsPopupRotOpenEase = BindEnum(this, "Animations", "BG Options Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            BGOptionsPopupRotCloseEase = BindEnum(this, "Animations", "BG Options Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            BGOptionsPopupRotActive = Bind(this, ANIMATIONS, "BG Options Popup Animate Rotation", false, "If rotation should be animated.");
+            BGOptionsPopupRotOpen = Bind(this, ANIMATIONS, "BG Options Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            BGOptionsPopupRotClose = Bind(this, ANIMATIONS, "BG Options Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            BGOptionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "BG Options Popup Open Rotation Duration", 0f, "The duration of opening.");
+            BGOptionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "BG Options Popup Close Rotation Duration", 0f, "The duration of closing.");
+            BGOptionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            BGOptionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Browser Popup
 
-            BrowserPopupActive = Bind(this, "Animations", "Browser Popup Active", true, "If the popup animation should play.");
+            BrowserPopupActive = Bind(this, ANIMATIONS, "Browser Popup Active", true, "If the popup animation should play.");
 
-            BrowserPopupPosActive = Bind(this, "Animations", "Browser Popup Animate Position", false, "If position should be animated.");
-            BrowserPopupPosOpen = Bind(this, "Animations", "Browser Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            BrowserPopupPosClose = Bind(this, "Animations", "Browser Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            BrowserPopupPosOpenDuration = Bind(this, "Animations", "Browser Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            BrowserPopupPosCloseDuration = Bind(this, "Animations", "Browser Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            BrowserPopupPosXOpenEase = BindEnum(this, "Animations", "Browser Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupPosXCloseEase = BindEnum(this, "Animations", "Browser Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupPosYOpenEase = BindEnum(this, "Animations", "Browser Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupPosYCloseEase = BindEnum(this, "Animations", "Browser Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupPosActive = Bind(this, ANIMATIONS, "Browser Popup Animate Position", false, "If position should be animated.");
+            BrowserPopupPosOpen = Bind(this, ANIMATIONS, "Browser Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            BrowserPopupPosClose = Bind(this, ANIMATIONS, "Browser Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            BrowserPopupPosOpenDuration = Bind(this, ANIMATIONS, "Browser Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            BrowserPopupPosCloseDuration = Bind(this, ANIMATIONS, "Browser Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            BrowserPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            BrowserPopupScaActive = Bind(this, "Animations", "Browser Popup Animate Scale", true, "If scale should be animated.");
-            BrowserPopupScaOpen = Bind(this, "Animations", "Browser Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            BrowserPopupScaClose = Bind(this, "Animations", "Browser Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            BrowserPopupScaOpenDuration = Bind(this, "Animations", "Browser Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            BrowserPopupScaCloseDuration = Bind(this, "Animations", "Browser Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            BrowserPopupScaXOpenEase = BindEnum(this, "Animations", "Browser Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            BrowserPopupScaXCloseEase = BindEnum(this, "Animations", "Browser Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            BrowserPopupScaYOpenEase = BindEnum(this, "Animations", "Browser Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            BrowserPopupScaYCloseEase = BindEnum(this, "Animations", "Browser Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            BrowserPopupScaActive = Bind(this, ANIMATIONS, "Browser Popup Animate Scale", true, "If scale should be animated.");
+            BrowserPopupScaOpen = Bind(this, ANIMATIONS, "Browser Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            BrowserPopupScaClose = Bind(this, ANIMATIONS, "Browser Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            BrowserPopupScaOpenDuration = Bind(this, ANIMATIONS, "Browser Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            BrowserPopupScaCloseDuration = Bind(this, ANIMATIONS, "Browser Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            BrowserPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            BrowserPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            BrowserPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            BrowserPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            BrowserPopupRotActive = Bind(this, "Animations", "Browser Popup Animate Rotation", false, "If rotation should be animated.");
-            BrowserPopupRotOpen = Bind(this, "Animations", "Browser Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            BrowserPopupRotClose = Bind(this, "Animations", "Browser Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            BrowserPopupRotOpenDuration = Bind(this, "Animations", "Browser Popup Open Rotation Duration", 0f, "The duration of opening.");
-            BrowserPopupRotCloseDuration = Bind(this, "Animations", "Browser Popup Close Rotation Duration", 0f, "The duration of closing.");
-            BrowserPopupRotOpenEase = BindEnum(this, "Animations", "Browser Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupRotCloseEase = BindEnum(this, "Animations", "Browser Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupRotActive = Bind(this, ANIMATIONS, "Browser Popup Animate Rotation", false, "If rotation should be animated.");
+            BrowserPopupRotOpen = Bind(this, ANIMATIONS, "Browser Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            BrowserPopupRotClose = Bind(this, ANIMATIONS, "Browser Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            BrowserPopupRotOpenDuration = Bind(this, ANIMATIONS, "Browser Popup Open Rotation Duration", 0f, "The duration of opening.");
+            BrowserPopupRotCloseDuration = Bind(this, ANIMATIONS, "Browser Popup Close Rotation Duration", 0f, "The duration of closing.");
+            BrowserPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Object Search Popup
 
-            ObjectSearchPopupActive = Bind(this, "Animations", "Object Search Popup Active", true, "If the popup animation should play.");
+            ObjectSearchPopupActive = Bind(this, ANIMATIONS, "Object Search Popup Active", true, "If the popup animation should play.");
 
-            ObjectSearchPopupPosActive = Bind(this, "Animations", "Object Search Popup Animate Position", false, "If position should be animated.");
-            ObjectSearchPopupPosOpen = Bind(this, "Animations", "Object Search Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectSearchPopupPosClose = Bind(this, "Animations", "Object Search Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectSearchPopupPosOpenDuration = Bind(this, "Animations", "Object Search Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            ObjectSearchPopupPosCloseDuration = Bind(this, "Animations", "Object Search Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ObjectSearchPopupPosXOpenEase = BindEnum(this, "Animations", "Object Search Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupPosXCloseEase = BindEnum(this, "Animations", "Object Search Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupPosYOpenEase = BindEnum(this, "Animations", "Object Search Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupPosYCloseEase = BindEnum(this, "Animations", "Object Search Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupPosActive = Bind(this, ANIMATIONS, "Object Search Popup Animate Position", false, "If position should be animated.");
+            ObjectSearchPopupPosOpen = Bind(this, ANIMATIONS, "Object Search Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectSearchPopupPosClose = Bind(this, ANIMATIONS, "Object Search Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectSearchPopupPosOpenDuration = Bind(this, ANIMATIONS, "Object Search Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            ObjectSearchPopupPosCloseDuration = Bind(this, ANIMATIONS, "Object Search Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            ObjectSearchPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            ObjectSearchPopupScaActive = Bind(this, "Animations", "Object Search Popup Animate Scale", true, "If scale should be animated.");
-            ObjectSearchPopupScaOpen = Bind(this, "Animations", "Object Search Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectSearchPopupScaClose = Bind(this, "Animations", "Object Search Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectSearchPopupScaOpenDuration = Bind(this, "Animations", "Object Search Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            ObjectSearchPopupScaCloseDuration = Bind(this, "Animations", "Object Search Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ObjectSearchPopupScaXOpenEase = BindEnum(this, "Animations", "Object Search Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectSearchPopupScaXCloseEase = BindEnum(this, "Animations", "Object Search Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectSearchPopupScaYOpenEase = BindEnum(this, "Animations", "Object Search Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectSearchPopupScaYCloseEase = BindEnum(this, "Animations", "Object Search Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectSearchPopupScaActive = Bind(this, ANIMATIONS, "Object Search Popup Animate Scale", true, "If scale should be animated.");
+            ObjectSearchPopupScaOpen = Bind(this, ANIMATIONS, "Object Search Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectSearchPopupScaClose = Bind(this, ANIMATIONS, "Object Search Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectSearchPopupScaOpenDuration = Bind(this, ANIMATIONS, "Object Search Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ObjectSearchPopupScaCloseDuration = Bind(this, ANIMATIONS, "Object Search Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ObjectSearchPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectSearchPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ObjectSearchPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectSearchPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ObjectSearchPopupRotActive = Bind(this, "Animations", "Object Search Popup Animate Rotation", false, "If rotation should be animated.");
-            ObjectSearchPopupRotOpen = Bind(this, "Animations", "Object Search Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectSearchPopupRotClose = Bind(this, "Animations", "Object Search Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectSearchPopupRotOpenDuration = Bind(this, "Animations", "Object Search Popup Open Rotation Duration", 0f, "The duration of opening.");
-            ObjectSearchPopupRotCloseDuration = Bind(this, "Animations", "Object Search Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ObjectSearchPopupRotOpenEase = BindEnum(this, "Animations", "Object Search Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupRotCloseEase = BindEnum(this, "Animations", "Object Search Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupRotActive = Bind(this, ANIMATIONS, "Object Search Popup Animate Rotation", false, "If rotation should be animated.");
+            ObjectSearchPopupRotOpen = Bind(this, ANIMATIONS, "Object Search Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectSearchPopupRotClose = Bind(this, ANIMATIONS, "Object Search Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectSearchPopupRotOpenDuration = Bind(this, ANIMATIONS, "Object Search Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ObjectSearchPopupRotCloseDuration = Bind(this, ANIMATIONS, "Object Search Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ObjectSearchPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Object Template Popup
 
-            ObjectTemplatePopupActive = Bind(this, "Animations", "Object Template Popup Active", true, "If the popup animation should play.");
+            ObjectTemplatePopupActive = Bind(this, ANIMATIONS, "Object Template Popup Active", true, "If the popup animation should play.");
 
-            ObjectTemplatePopupPosActive = Bind(this, "Animations", "Object Template Popup Animate Position", false, "If position should be animated.");
-            ObjectTemplatePopupPosOpen = Bind(this, "Animations", "Object Template Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectTemplatePopupPosClose = Bind(this, "Animations", "Object Template Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectTemplatePopupPosOpenDuration = Bind(this, "Animations", "Object Template Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            ObjectTemplatePopupPosCloseDuration = Bind(this, "Animations", "Object Template Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ObjectTemplatePopupPosXOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupPosXCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupPosYOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupPosYCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosActive = Bind(this, ANIMATIONS, "Object Template Popup Animate Position", false, "If position should be animated.");
+            ObjectTemplatePopupPosOpen = Bind(this, ANIMATIONS, "Object Template Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectTemplatePopupPosClose = Bind(this, ANIMATIONS, "Object Template Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectTemplatePopupPosOpenDuration = Bind(this, ANIMATIONS, "Object Template Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            ObjectTemplatePopupPosCloseDuration = Bind(this, ANIMATIONS, "Object Template Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            ObjectTemplatePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            ObjectTemplatePopupScaActive = Bind(this, "Animations", "Object Template Popup Animate Scale", true, "If scale should be animated.");
-            ObjectTemplatePopupScaOpen = Bind(this, "Animations", "Object Template Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectTemplatePopupScaClose = Bind(this, "Animations", "Object Template Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectTemplatePopupScaOpenDuration = Bind(this, "Animations", "Object Template Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            ObjectTemplatePopupScaCloseDuration = Bind(this, "Animations", "Object Template Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ObjectTemplatePopupScaXOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectTemplatePopupScaXCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectTemplatePopupScaYOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectTemplatePopupScaYCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectTemplatePopupScaActive = Bind(this, ANIMATIONS, "Object Template Popup Animate Scale", true, "If scale should be animated.");
+            ObjectTemplatePopupScaOpen = Bind(this, ANIMATIONS, "Object Template Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectTemplatePopupScaClose = Bind(this, ANIMATIONS, "Object Template Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectTemplatePopupScaOpenDuration = Bind(this, ANIMATIONS, "Object Template Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ObjectTemplatePopupScaCloseDuration = Bind(this, ANIMATIONS, "Object Template Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ObjectTemplatePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectTemplatePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ObjectTemplatePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ObjectTemplatePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ObjectTemplatePopupRotActive = Bind(this, "Animations", "Object Template Popup Animate Rotation", false, "If rotation should be animated.");
-            ObjectTemplatePopupRotOpen = Bind(this, "Animations", "Object Template Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ObjectTemplatePopupRotClose = Bind(this, "Animations", "Object Template Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ObjectTemplatePopupRotOpenDuration = Bind(this, "Animations", "Object Template Popup Open Rotation Duration", 0f, "The duration of opening.");
-            ObjectTemplatePopupRotCloseDuration = Bind(this, "Animations", "Object Template Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ObjectTemplatePopupRotOpenEase = BindEnum(this, "Animations", "Object Template Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupRotCloseEase = BindEnum(this, "Animations", "Object Template Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
-
-            #endregion
-
-            #region Warning Popup
-
-            WarningPopupActive = Bind(this, "Animations", "Warning Popup Active", true, "If the popup animation should play.");
-
-            WarningPopupPosActive = Bind(this, "Animations", "Warning Popup Animate Position", false, "If position should be animated.");
-            WarningPopupPosOpen = Bind(this, "Animations", "Warning Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            WarningPopupPosClose = Bind(this, "Animations", "Warning Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            WarningPopupPosOpenDuration = Bind(this, "Animations", "Warning Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            WarningPopupPosCloseDuration = Bind(this, "Animations", "Warning Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            WarningPopupPosXOpenEase = BindEnum(this, "Animations", "Warning Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupPosXCloseEase = BindEnum(this, "Animations", "Warning Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupPosYOpenEase = BindEnum(this, "Animations", "Warning Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupPosYCloseEase = BindEnum(this, "Animations", "Warning Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
-
-            WarningPopupScaActive = Bind(this, "Animations", "Warning Popup Animate Scale", true, "If scale should be animated.");
-            WarningPopupScaOpen = Bind(this, "Animations", "Warning Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            WarningPopupScaClose = Bind(this, "Animations", "Warning Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            WarningPopupScaOpenDuration = Bind(this, "Animations", "Warning Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            WarningPopupScaCloseDuration = Bind(this, "Animations", "Warning Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            WarningPopupScaXOpenEase = BindEnum(this, "Animations", "Warning Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            WarningPopupScaXCloseEase = BindEnum(this, "Animations", "Warning Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            WarningPopupScaYOpenEase = BindEnum(this, "Animations", "Warning Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            WarningPopupScaYCloseEase = BindEnum(this, "Animations", "Warning Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
-
-            WarningPopupRotActive = Bind(this, "Animations", "Warning Popup Animate Rotation", false, "If rotation should be animated.");
-            WarningPopupRotOpen = Bind(this, "Animations", "Warning Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            WarningPopupRotClose = Bind(this, "Animations", "Warning Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            WarningPopupRotOpenDuration = Bind(this, "Animations", "Warning Popup Open Rotation Duration", 0f, "The duration of opening.");
-            WarningPopupRotCloseDuration = Bind(this, "Animations", "Warning Popup Close Rotation Duration", 0f, "The duration of closing.");
-            WarningPopupRotOpenEase = BindEnum(this, "Animations", "Warning Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupRotCloseEase = BindEnum(this, "Animations", "Warning Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupRotActive = Bind(this, ANIMATIONS, "Object Template Popup Animate Rotation", false, "If rotation should be animated.");
+            ObjectTemplatePopupRotOpen = Bind(this, ANIMATIONS, "Object Template Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ObjectTemplatePopupRotClose = Bind(this, ANIMATIONS, "Object Template Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ObjectTemplatePopupRotOpenDuration = Bind(this, ANIMATIONS, "Object Template Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ObjectTemplatePopupRotCloseDuration = Bind(this, ANIMATIONS, "Object Template Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ObjectTemplatePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Warning Popup
 
-            FilePopupActive = Bind(this, "Animations", "File Popup Active", true, "If the popup animation should play.");
+            WarningPopupActive = Bind(this, ANIMATIONS, "Warning Popup Active", true, "If the popup animation should play.");
 
-            FilePopupPosActive = Bind(this, "Animations", "File Popup Animate Position", false, "If position should be animated.");
-            FilePopupPosOpen = Bind(this, "Animations", "File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FilePopupPosClose = Bind(this, "Animations", "File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FilePopupPosOpenDuration = Bind(this, "Animations", "File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            FilePopupPosCloseDuration = Bind(this, "Animations", "File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            FilePopupPosXOpenEase = BindEnum(this, "Animations", "File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            FilePopupPosXCloseEase = BindEnum(this, "Animations", "File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            FilePopupPosYOpenEase = BindEnum(this, "Animations", "File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            FilePopupPosYCloseEase = BindEnum(this, "Animations", "File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupPosActive = Bind(this, ANIMATIONS, "Warning Popup Animate Position", false, "If position should be animated.");
+            WarningPopupPosOpen = Bind(this, ANIMATIONS, "Warning Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            WarningPopupPosClose = Bind(this, ANIMATIONS, "Warning Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            WarningPopupPosOpenDuration = Bind(this, ANIMATIONS, "Warning Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            WarningPopupPosCloseDuration = Bind(this, ANIMATIONS, "Warning Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            WarningPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            FilePopupScaActive = Bind(this, "Animations", "File Popup Animate Scale", true, "If scale should be animated.");
-            FilePopupScaOpen = Bind(this, "Animations", "File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FilePopupScaClose = Bind(this, "Animations", "File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FilePopupScaOpenDuration = Bind(this, "Animations", "File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            FilePopupScaCloseDuration = Bind(this, "Animations", "File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            FilePopupScaXOpenEase = BindEnum(this, "Animations", "File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            FilePopupScaXCloseEase = BindEnum(this, "Animations", "File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            FilePopupScaYOpenEase = BindEnum(this, "Animations", "File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            FilePopupScaYCloseEase = BindEnum(this, "Animations", "File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            WarningPopupScaActive = Bind(this, ANIMATIONS, "Warning Popup Animate Scale", true, "If scale should be animated.");
+            WarningPopupScaOpen = Bind(this, ANIMATIONS, "Warning Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            WarningPopupScaClose = Bind(this, ANIMATIONS, "Warning Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            WarningPopupScaOpenDuration = Bind(this, ANIMATIONS, "Warning Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            WarningPopupScaCloseDuration = Bind(this, ANIMATIONS, "Warning Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            WarningPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            WarningPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            WarningPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            WarningPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            FilePopupRotActive = Bind(this, "Animations", "File Popup Animate Rotation", false, "If rotation should be animated.");
-            FilePopupRotOpen = Bind(this, "Animations", "File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FilePopupRotClose = Bind(this, "Animations", "File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FilePopupRotOpenDuration = Bind(this, "Animations", "File Popup Open Rotation Duration", 0f, "The duration of opening.");
-            FilePopupRotCloseDuration = Bind(this, "Animations", "File Popup Close Rotation Duration", 0f, "The duration of closing.");
-            FilePopupRotOpenEase = BindEnum(this, "Animations", "File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            FilePopupRotCloseEase = BindEnum(this, "Animations", "File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupRotActive = Bind(this, ANIMATIONS, "Warning Popup Animate Rotation", false, "If rotation should be animated.");
+            WarningPopupRotOpen = Bind(this, ANIMATIONS, "Warning Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            WarningPopupRotClose = Bind(this, ANIMATIONS, "Warning Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            WarningPopupRotOpenDuration = Bind(this, ANIMATIONS, "Warning Popup Open Rotation Duration", 0f, "The duration of opening.");
+            WarningPopupRotCloseDuration = Bind(this, ANIMATIONS, "Warning Popup Close Rotation Duration", 0f, "The duration of closing.");
+            WarningPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Warning Popup
+
+            FilePopupActive = Bind(this, ANIMATIONS, "File Popup Active", true, "If the popup animation should play.");
+
+            FilePopupPosActive = Bind(this, ANIMATIONS, "File Popup Animate Position", false, "If position should be animated.");
+            FilePopupPosOpen = Bind(this, ANIMATIONS, "File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FilePopupPosClose = Bind(this, ANIMATIONS, "File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FilePopupPosOpenDuration = Bind(this, ANIMATIONS, "File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            FilePopupPosCloseDuration = Bind(this, ANIMATIONS, "File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            FilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+
+            FilePopupScaActive = Bind(this, ANIMATIONS, "File Popup Animate Scale", true, "If scale should be animated.");
+            FilePopupScaOpen = Bind(this, ANIMATIONS, "File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FilePopupScaClose = Bind(this, ANIMATIONS, "File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FilePopupScaOpenDuration = Bind(this, ANIMATIONS, "File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            FilePopupScaCloseDuration = Bind(this, ANIMATIONS, "File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            FilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            FilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            FilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            FilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+
+            FilePopupRotActive = Bind(this, ANIMATIONS, "File Popup Animate Rotation", false, "If rotation should be animated.");
+            FilePopupRotOpen = Bind(this, ANIMATIONS, "File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FilePopupRotClose = Bind(this, ANIMATIONS, "File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FilePopupRotOpenDuration = Bind(this, ANIMATIONS, "File Popup Open Rotation Duration", 0f, "The duration of opening.");
+            FilePopupRotCloseDuration = Bind(this, ANIMATIONS, "File Popup Close Rotation Duration", 0f, "The duration of closing.");
+            FilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            FilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Text Editor
 
-            TextEditorActive = Bind(this, "Animations", "Text Editor Active", true, "If the popup animation should play.");
+            TextEditorActive = Bind(this, ANIMATIONS, "Text Editor Active", true, "If the popup animation should play.");
 
-            TextEditorPosActive = Bind(this, "Animations", "Text Editor Animate Position", false, "If position should be animated.");
-            TextEditorPosOpen = Bind(this, "Animations", "Text Editor Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            TextEditorPosClose = Bind(this, "Animations", "Text Editor Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            TextEditorPosOpenDuration = Bind(this, "Animations", "Text Editor Open Position Duration", Vector2.zero, "The duration of opening.");
-            TextEditorPosCloseDuration = Bind(this, "Animations", "Text Editor Close Position Duration", Vector2.zero, "The duration of closing.");
-            TextEditorPosXOpenEase = BindEnum(this, "Animations", "Text Editor Open Position X Ease", Easings.Linear, "The easing of opening.");
-            TextEditorPosXCloseEase = BindEnum(this, "Animations", "Text Editor Close Position X Ease", Easings.Linear, "The easing of opening.");
-            TextEditorPosYOpenEase = BindEnum(this, "Animations", "Text Editor Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            TextEditorPosYCloseEase = BindEnum(this, "Animations", "Text Editor Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosActive = Bind(this, ANIMATIONS, "Text Editor Animate Position", false, "If position should be animated.");
+            TextEditorPosOpen = Bind(this, ANIMATIONS, "Text Editor Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            TextEditorPosClose = Bind(this, ANIMATIONS, "Text Editor Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            TextEditorPosOpenDuration = Bind(this, ANIMATIONS, "Text Editor Open Position Duration", Vector2.zero, "The duration of opening.");
+            TextEditorPosCloseDuration = Bind(this, ANIMATIONS, "Text Editor Close Position Duration", Vector2.zero, "The duration of closing.");
+            TextEditorPosXOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Position X Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosXCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Position X Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosYOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosYCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            TextEditorScaActive = Bind(this, "Animations", "Text Editor Animate Scale", true, "If scale should be animated.");
-            TextEditorScaOpen = Bind(this, "Animations", "Text Editor Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            TextEditorScaClose = Bind(this, "Animations", "Text Editor Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            TextEditorScaOpenDuration = Bind(this, "Animations", "Text Editor Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            TextEditorScaCloseDuration = Bind(this, "Animations", "Text Editor Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            TextEditorScaXOpenEase = BindEnum(this, "Animations", "Text Editor Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            TextEditorScaXCloseEase = BindEnum(this, "Animations", "Text Editor Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            TextEditorScaYOpenEase = BindEnum(this, "Animations", "Text Editor Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            TextEditorScaYCloseEase = BindEnum(this, "Animations", "Text Editor Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            TextEditorScaActive = Bind(this, ANIMATIONS, "Text Editor Animate Scale", true, "If scale should be animated.");
+            TextEditorScaOpen = Bind(this, ANIMATIONS, "Text Editor Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            TextEditorScaClose = Bind(this, ANIMATIONS, "Text Editor Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            TextEditorScaOpenDuration = Bind(this, ANIMATIONS, "Text Editor Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            TextEditorScaCloseDuration = Bind(this, ANIMATIONS, "Text Editor Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            TextEditorScaXOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            TextEditorScaXCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            TextEditorScaYOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            TextEditorScaYCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            TextEditorRotActive = Bind(this, "Animations", "Text Editor Animate Rotation", false, "If rotation should be animated.");
-            TextEditorRotOpen = Bind(this, "Animations", "Text Editor Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            TextEditorRotClose = Bind(this, "Animations", "Text Editor Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            TextEditorRotOpenDuration = Bind(this, "Animations", "Text Editor Open Rotation Duration", 0f, "The duration of opening.");
-            TextEditorRotCloseDuration = Bind(this, "Animations", "Text Editor Close Rotation Duration", 0f, "The duration of closing.");
-            TextEditorRotOpenEase = BindEnum(this, "Animations", "Text Editor Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            TextEditorRotCloseEase = BindEnum(this, "Animations", "Text Editor Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            TextEditorRotActive = Bind(this, ANIMATIONS, "Text Editor Animate Rotation", false, "If rotation should be animated.");
+            TextEditorRotOpen = Bind(this, ANIMATIONS, "Text Editor Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            TextEditorRotClose = Bind(this, ANIMATIONS, "Text Editor Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            TextEditorRotOpenDuration = Bind(this, ANIMATIONS, "Text Editor Open Rotation Duration", 0f, "The duration of opening.");
+            TextEditorRotCloseDuration = Bind(this, ANIMATIONS, "Text Editor Close Rotation Duration", 0f, "The duration of closing.");
+            TextEditorRotOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            TextEditorRotCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Documentation Popup
 
-            DocumentationPopupActive = Bind(this, "Animations", "Documentation Popup Active", true, "If the popup animation should play.");
+            DocumentationPopupActive = Bind(this, ANIMATIONS, "Documentation Popup Active", true, "If the popup animation should play.");
 
-            DocumentationPopupPosActive = Bind(this, "Animations", "Documentation Popup Animate Position", false, "If position should be animated.");
-            DocumentationPopupPosOpen = Bind(this, "Animations", "Documentation Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DocumentationPopupPosClose = Bind(this, "Animations", "Documentation Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DocumentationPopupPosOpenDuration = Bind(this, "Animations", "Documentation Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            DocumentationPopupPosCloseDuration = Bind(this, "Animations", "Documentation Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            DocumentationPopupPosXOpenEase = BindEnum(this, "Animations", "Documentation Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupPosXCloseEase = BindEnum(this, "Animations", "Documentation Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupPosYOpenEase = BindEnum(this, "Animations", "Documentation Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupPosYCloseEase = BindEnum(this, "Animations", "Documentation Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupPosActive = Bind(this, ANIMATIONS, "Documentation Popup Animate Position", false, "If position should be animated.");
+            DocumentationPopupPosOpen = Bind(this, ANIMATIONS, "Documentation Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DocumentationPopupPosClose = Bind(this, ANIMATIONS, "Documentation Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DocumentationPopupPosOpenDuration = Bind(this, ANIMATIONS, "Documentation Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            DocumentationPopupPosCloseDuration = Bind(this, ANIMATIONS, "Documentation Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            DocumentationPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            DocumentationPopupScaActive = Bind(this, "Animations", "Documentation Popup Animate Scale", true, "If scale should be animated.");
-            DocumentationPopupScaOpen = Bind(this, "Animations", "Documentation Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DocumentationPopupScaClose = Bind(this, "Animations", "Documentation Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DocumentationPopupScaOpenDuration = Bind(this, "Animations", "Documentation Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            DocumentationPopupScaCloseDuration = Bind(this, "Animations", "Documentation Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            DocumentationPopupScaXOpenEase = BindEnum(this, "Animations", "Documentation Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            DocumentationPopupScaXCloseEase = BindEnum(this, "Animations", "Documentation Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            DocumentationPopupScaYOpenEase = BindEnum(this, "Animations", "Documentation Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            DocumentationPopupScaYCloseEase = BindEnum(this, "Animations", "Documentation Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            DocumentationPopupScaActive = Bind(this, ANIMATIONS, "Documentation Popup Animate Scale", true, "If scale should be animated.");
+            DocumentationPopupScaOpen = Bind(this, ANIMATIONS, "Documentation Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DocumentationPopupScaClose = Bind(this, ANIMATIONS, "Documentation Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DocumentationPopupScaOpenDuration = Bind(this, ANIMATIONS, "Documentation Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            DocumentationPopupScaCloseDuration = Bind(this, ANIMATIONS, "Documentation Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            DocumentationPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            DocumentationPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            DocumentationPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            DocumentationPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            DocumentationPopupRotActive = Bind(this, "Animations", "Documentation Popup Animate Rotation", false, "If rotation should be animated.");
-            DocumentationPopupRotOpen = Bind(this, "Animations", "Documentation Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DocumentationPopupRotClose = Bind(this, "Animations", "Documentation Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DocumentationPopupRotOpenDuration = Bind(this, "Animations", "Documentation Popup Open Rotation Duration", 0f, "The duration of opening.");
-            DocumentationPopupRotCloseDuration = Bind(this, "Animations", "Documentation Popup Close Rotation Duration", 0f, "The duration of closing.");
-            DocumentationPopupRotOpenEase = BindEnum(this, "Animations", "Documentation Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupRotCloseEase = BindEnum(this, "Animations", "Documentation Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupRotActive = Bind(this, ANIMATIONS, "Documentation Popup Animate Rotation", false, "If rotation should be animated.");
+            DocumentationPopupRotOpen = Bind(this, ANIMATIONS, "Documentation Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DocumentationPopupRotClose = Bind(this, ANIMATIONS, "Documentation Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DocumentationPopupRotOpenDuration = Bind(this, ANIMATIONS, "Documentation Popup Open Rotation Duration", 0f, "The duration of opening.");
+            DocumentationPopupRotCloseDuration = Bind(this, ANIMATIONS, "Documentation Popup Close Rotation Duration", 0f, "The duration of closing.");
+            DocumentationPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Debugger Popup
 
-            DebuggerPopupActive = Bind(this, "Animations", "Debugger Popup Active", true, "If the popup animation should play.");
+            DebuggerPopupActive = Bind(this, ANIMATIONS, "Debugger Popup Active", true, "If the popup animation should play.");
 
-            DebuggerPopupPosActive = Bind(this, "Animations", "Debugger Popup Animate Position", false, "If position should be animated.");
-            DebuggerPopupPosOpen = Bind(this, "Animations", "Debugger Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DebuggerPopupPosClose = Bind(this, "Animations", "Debugger Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DebuggerPopupPosOpenDuration = Bind(this, "Animations", "Debugger Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            DebuggerPopupPosCloseDuration = Bind(this, "Animations", "Debugger Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            DebuggerPopupPosXOpenEase = BindEnum(this, "Animations", "Debugger Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupPosXCloseEase = BindEnum(this, "Animations", "Debugger Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupPosYOpenEase = BindEnum(this, "Animations", "Debugger Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupPosYCloseEase = BindEnum(this, "Animations", "Debugger Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupPosActive = Bind(this, ANIMATIONS, "Debugger Popup Animate Position", false, "If position should be animated.");
+            DebuggerPopupPosOpen = Bind(this, ANIMATIONS, "Debugger Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DebuggerPopupPosClose = Bind(this, ANIMATIONS, "Debugger Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DebuggerPopupPosOpenDuration = Bind(this, ANIMATIONS, "Debugger Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            DebuggerPopupPosCloseDuration = Bind(this, ANIMATIONS, "Debugger Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            DebuggerPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            DebuggerPopupScaActive = Bind(this, "Animations", "Debugger Popup Animate Scale", true, "If scale should be animated.");
-            DebuggerPopupScaOpen = Bind(this, "Animations", "Debugger Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DebuggerPopupScaClose = Bind(this, "Animations", "Debugger Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DebuggerPopupScaOpenDuration = Bind(this, "Animations", "Debugger Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            DebuggerPopupScaCloseDuration = Bind(this, "Animations", "Debugger Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            DebuggerPopupScaXOpenEase = BindEnum(this, "Animations", "Debugger Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            DebuggerPopupScaXCloseEase = BindEnum(this, "Animations", "Debugger Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            DebuggerPopupScaYOpenEase = BindEnum(this, "Animations", "Debugger Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            DebuggerPopupScaYCloseEase = BindEnum(this, "Animations", "Debugger Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            DebuggerPopupScaActive = Bind(this, ANIMATIONS, "Debugger Popup Animate Scale", true, "If scale should be animated.");
+            DebuggerPopupScaOpen = Bind(this, ANIMATIONS, "Debugger Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DebuggerPopupScaClose = Bind(this, ANIMATIONS, "Debugger Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DebuggerPopupScaOpenDuration = Bind(this, ANIMATIONS, "Debugger Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            DebuggerPopupScaCloseDuration = Bind(this, ANIMATIONS, "Debugger Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            DebuggerPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            DebuggerPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            DebuggerPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            DebuggerPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            DebuggerPopupRotActive = Bind(this, "Animations", "Debugger Popup Animate Rotation", false, "If rotation should be animated.");
-            DebuggerPopupRotOpen = Bind(this, "Animations", "Debugger Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DebuggerPopupRotClose = Bind(this, "Animations", "Debugger Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DebuggerPopupRotOpenDuration = Bind(this, "Animations", "Debugger Popup Open Rotation Duration", 0f, "The duration of opening.");
-            DebuggerPopupRotCloseDuration = Bind(this, "Animations", "Debugger Popup Close Rotation Duration", 0f, "The duration of closing.");
-            DebuggerPopupRotOpenEase = BindEnum(this, "Animations", "Debugger Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupRotCloseEase = BindEnum(this, "Animations", "Debugger Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupRotActive = Bind(this, ANIMATIONS, "Debugger Popup Animate Rotation", false, "If rotation should be animated.");
+            DebuggerPopupRotOpen = Bind(this, ANIMATIONS, "Debugger Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DebuggerPopupRotClose = Bind(this, ANIMATIONS, "Debugger Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DebuggerPopupRotOpenDuration = Bind(this, ANIMATIONS, "Debugger Popup Open Rotation Duration", 0f, "The duration of opening.");
+            DebuggerPopupRotCloseDuration = Bind(this, ANIMATIONS, "Debugger Popup Close Rotation Duration", 0f, "The duration of closing.");
+            DebuggerPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Autosaves Popup
 
-            AutosavesPopupActive = Bind(this, "Animations", "Autosaves Popup Active", true, "If the popup animation should play.");
+            AutosavesPopupActive = Bind(this, ANIMATIONS, "Autosaves Popup Active", true, "If the popup animation should play.");
 
-            AutosavesPopupPosActive = Bind(this, "Animations", "Autosaves Popup Animate Position", false, "If position should be animated.");
-            AutosavesPopupPosOpen = Bind(this, "Animations", "Autosaves Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            AutosavesPopupPosClose = Bind(this, "Animations", "Autosaves Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            AutosavesPopupPosOpenDuration = Bind(this, "Animations", "Autosaves Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            AutosavesPopupPosCloseDuration = Bind(this, "Animations", "Autosaves Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            AutosavesPopupPosXOpenEase = BindEnum(this, "Animations", "Autosaves Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupPosXCloseEase = BindEnum(this, "Animations", "Autosaves Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupPosYOpenEase = BindEnum(this, "Animations", "Autosaves Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupPosYCloseEase = BindEnum(this, "Animations", "Autosaves Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupPosActive = Bind(this, ANIMATIONS, "Autosaves Popup Animate Position", false, "If position should be animated.");
+            AutosavesPopupPosOpen = Bind(this, ANIMATIONS, "Autosaves Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            AutosavesPopupPosClose = Bind(this, ANIMATIONS, "Autosaves Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            AutosavesPopupPosOpenDuration = Bind(this, ANIMATIONS, "Autosaves Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            AutosavesPopupPosCloseDuration = Bind(this, ANIMATIONS, "Autosaves Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            AutosavesPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            AutosavesPopupScaActive = Bind(this, "Animations", "Autosaves Popup Animate Scale", true, "If scale should be animated.");
-            AutosavesPopupScaOpen = Bind(this, "Animations", "Autosaves Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            AutosavesPopupScaClose = Bind(this, "Animations", "Autosaves Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            AutosavesPopupScaOpenDuration = Bind(this, "Animations", "Autosaves Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            AutosavesPopupScaCloseDuration = Bind(this, "Animations", "Autosaves Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            AutosavesPopupScaXOpenEase = BindEnum(this, "Animations", "Autosaves Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            AutosavesPopupScaXCloseEase = BindEnum(this, "Animations", "Autosaves Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            AutosavesPopupScaYOpenEase = BindEnum(this, "Animations", "Autosaves Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            AutosavesPopupScaYCloseEase = BindEnum(this, "Animations", "Autosaves Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            AutosavesPopupScaActive = Bind(this, ANIMATIONS, "Autosaves Popup Animate Scale", true, "If scale should be animated.");
+            AutosavesPopupScaOpen = Bind(this, ANIMATIONS, "Autosaves Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            AutosavesPopupScaClose = Bind(this, ANIMATIONS, "Autosaves Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            AutosavesPopupScaOpenDuration = Bind(this, ANIMATIONS, "Autosaves Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            AutosavesPopupScaCloseDuration = Bind(this, ANIMATIONS, "Autosaves Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            AutosavesPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            AutosavesPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            AutosavesPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            AutosavesPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            AutosavesPopupRotActive = Bind(this, "Animations", "Autosaves Popup Animate Rotation", false, "If rotation should be animated.");
-            AutosavesPopupRotOpen = Bind(this, "Animations", "Autosaves Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            AutosavesPopupRotClose = Bind(this, "Animations", "Autosaves Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            AutosavesPopupRotOpenDuration = Bind(this, "Animations", "Autosaves Popup Open Rotation Duration", 0f, "The duration of opening.");
-            AutosavesPopupRotCloseDuration = Bind(this, "Animations", "Autosaves Popup Close Rotation Duration", 0f, "The duration of closing.");
-            AutosavesPopupRotOpenEase = BindEnum(this, "Animations", "Autosaves Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupRotCloseEase = BindEnum(this, "Animations", "Autosaves Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupRotActive = Bind(this, ANIMATIONS, "Autosaves Popup Animate Rotation", false, "If rotation should be animated.");
+            AutosavesPopupRotOpen = Bind(this, ANIMATIONS, "Autosaves Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            AutosavesPopupRotClose = Bind(this, ANIMATIONS, "Autosaves Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            AutosavesPopupRotOpenDuration = Bind(this, ANIMATIONS, "Autosaves Popup Open Rotation Duration", 0f, "The duration of opening.");
+            AutosavesPopupRotCloseDuration = Bind(this, ANIMATIONS, "Autosaves Popup Close Rotation Duration", 0f, "The duration of closing.");
+            AutosavesPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Default Modifiers Popup
 
-            DefaultModifiersPopupActive = Bind(this, "Animations", "Default Modifiers Popup Active", true, "If the popup animation should play.");
+            DefaultModifiersPopupActive = Bind(this, ANIMATIONS, "Default Modifiers Popup Active", true, "If the popup animation should play.");
 
-            DefaultModifiersPopupPosActive = Bind(this, "Animations", "Default Modifiers Popup Animate Position", false, "If position should be animated.");
-            DefaultModifiersPopupPosOpen = Bind(this, "Animations", "Default Modifiers Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DefaultModifiersPopupPosClose = Bind(this, "Animations", "Default Modifiers Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DefaultModifiersPopupPosOpenDuration = Bind(this, "Animations", "Default Modifiers Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            DefaultModifiersPopupPosCloseDuration = Bind(this, "Animations", "Default Modifiers Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            DefaultModifiersPopupPosXOpenEase = BindEnum(this, "Animations", "Default Modifiers Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupPosXCloseEase = BindEnum(this, "Animations", "Default Modifiers Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupPosYOpenEase = BindEnum(this, "Animations", "Default Modifiers Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupPosYCloseEase = BindEnum(this, "Animations", "Default Modifiers Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosActive = Bind(this, ANIMATIONS, "Default Modifiers Popup Animate Position", false, "If position should be animated.");
+            DefaultModifiersPopupPosOpen = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DefaultModifiersPopupPosClose = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DefaultModifiersPopupPosOpenDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            DefaultModifiersPopupPosCloseDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            DefaultModifiersPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            DefaultModifiersPopupScaActive = Bind(this, "Animations", "Default Modifiers Popup Animate Scale", true, "If scale should be animated.");
-            DefaultModifiersPopupScaOpen = Bind(this, "Animations", "Default Modifiers Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DefaultModifiersPopupScaClose = Bind(this, "Animations", "Default Modifiers Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DefaultModifiersPopupScaOpenDuration = Bind(this, "Animations", "Default Modifiers Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            DefaultModifiersPopupScaCloseDuration = Bind(this, "Animations", "Default Modifiers Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            DefaultModifiersPopupScaXOpenEase = BindEnum(this, "Animations", "Default Modifiers Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            DefaultModifiersPopupScaXCloseEase = BindEnum(this, "Animations", "Default Modifiers Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            DefaultModifiersPopupScaYOpenEase = BindEnum(this, "Animations", "Default Modifiers Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            DefaultModifiersPopupScaYCloseEase = BindEnum(this, "Animations", "Default Modifiers Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            DefaultModifiersPopupScaActive = Bind(this, ANIMATIONS, "Default Modifiers Popup Animate Scale", true, "If scale should be animated.");
+            DefaultModifiersPopupScaOpen = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DefaultModifiersPopupScaClose = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DefaultModifiersPopupScaOpenDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            DefaultModifiersPopupScaCloseDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            DefaultModifiersPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            DefaultModifiersPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            DefaultModifiersPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            DefaultModifiersPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            DefaultModifiersPopupRotActive = Bind(this, "Animations", "Default Modifiers Popup Animate Rotation", false, "If rotation should be animated.");
-            DefaultModifiersPopupRotOpen = Bind(this, "Animations", "Default Modifiers Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            DefaultModifiersPopupRotClose = Bind(this, "Animations", "Default Modifiers Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            DefaultModifiersPopupRotOpenDuration = Bind(this, "Animations", "Default Modifiers Popup Open Rotation Duration", 0f, "The duration of opening.");
-            DefaultModifiersPopupRotCloseDuration = Bind(this, "Animations", "Default Modifiers Popup Close Rotation Duration", 0f, "The duration of closing.");
-            DefaultModifiersPopupRotOpenEase = BindEnum(this, "Animations", "Default Modifiers Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupRotCloseEase = BindEnum(this, "Animations", "Default Modifiers Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupRotActive = Bind(this, ANIMATIONS, "Default Modifiers Popup Animate Rotation", false, "If rotation should be animated.");
+            DefaultModifiersPopupRotOpen = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DefaultModifiersPopupRotClose = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DefaultModifiersPopupRotOpenDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Rotation Duration", 0f, "The duration of opening.");
+            DefaultModifiersPopupRotCloseDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Rotation Duration", 0f, "The duration of closing.");
+            DefaultModifiersPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Keybind List Popup
 
-            KeybindListPopupActive = Bind(this, "Animations", "Keybind List Popup Active", true, "If the popup animation should play.");
+            KeybindListPopupActive = Bind(this, ANIMATIONS, "Keybind List Popup Active", true, "If the popup animation should play.");
 
-            KeybindListPopupPosActive = Bind(this, "Animations", "Keybind List Popup Animate Position", false, "If position should be animated.");
-            KeybindListPopupPosOpen = Bind(this, "Animations", "Keybind List Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            KeybindListPopupPosClose = Bind(this, "Animations", "Keybind List Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            KeybindListPopupPosOpenDuration = Bind(this, "Animations", "Keybind List Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            KeybindListPopupPosCloseDuration = Bind(this, "Animations", "Keybind List Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            KeybindListPopupPosXOpenEase = BindEnum(this, "Animations", "Keybind List Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupPosXCloseEase = BindEnum(this, "Animations", "Keybind List Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupPosYOpenEase = BindEnum(this, "Animations", "Keybind List Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupPosYCloseEase = BindEnum(this, "Animations", "Keybind List Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupPosActive = Bind(this, ANIMATIONS, "Keybind List Popup Animate Position", false, "If position should be animated.");
+            KeybindListPopupPosOpen = Bind(this, ANIMATIONS, "Keybind List Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            KeybindListPopupPosClose = Bind(this, ANIMATIONS, "Keybind List Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            KeybindListPopupPosOpenDuration = Bind(this, ANIMATIONS, "Keybind List Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            KeybindListPopupPosCloseDuration = Bind(this, ANIMATIONS, "Keybind List Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            KeybindListPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            KeybindListPopupScaActive = Bind(this, "Animations", "Keybind List Popup Animate Scale", true, "If scale should be animated.");
-            KeybindListPopupScaOpen = Bind(this, "Animations", "Keybind List Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            KeybindListPopupScaClose = Bind(this, "Animations", "Keybind List Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            KeybindListPopupScaOpenDuration = Bind(this, "Animations", "Keybind List Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            KeybindListPopupScaCloseDuration = Bind(this, "Animations", "Keybind List Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            KeybindListPopupScaXOpenEase = BindEnum(this, "Animations", "Keybind List Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            KeybindListPopupScaXCloseEase = BindEnum(this, "Animations", "Keybind List Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            KeybindListPopupScaYOpenEase = BindEnum(this, "Animations", "Keybind List Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            KeybindListPopupScaYCloseEase = BindEnum(this, "Animations", "Keybind List Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            KeybindListPopupScaActive = Bind(this, ANIMATIONS, "Keybind List Popup Animate Scale", true, "If scale should be animated.");
+            KeybindListPopupScaOpen = Bind(this, ANIMATIONS, "Keybind List Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            KeybindListPopupScaClose = Bind(this, ANIMATIONS, "Keybind List Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            KeybindListPopupScaOpenDuration = Bind(this, ANIMATIONS, "Keybind List Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            KeybindListPopupScaCloseDuration = Bind(this, ANIMATIONS, "Keybind List Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            KeybindListPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            KeybindListPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            KeybindListPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            KeybindListPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            KeybindListPopupRotActive = Bind(this, "Animations", "Keybind List Popup Animate Rotation", false, "If rotation should be animated.");
-            KeybindListPopupRotOpen = Bind(this, "Animations", "Keybind List Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            KeybindListPopupRotClose = Bind(this, "Animations", "Keybind List Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            KeybindListPopupRotOpenDuration = Bind(this, "Animations", "Keybind List Popup Open Rotation Duration", 0f, "The duration of opening.");
-            KeybindListPopupRotCloseDuration = Bind(this, "Animations", "Keybind List Popup Close Rotation Duration", 0f, "The duration of closing.");
-            KeybindListPopupRotOpenEase = BindEnum(this, "Animations", "Keybind List Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupRotCloseEase = BindEnum(this, "Animations", "Keybind List Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupRotActive = Bind(this, ANIMATIONS, "Keybind List Popup Animate Rotation", false, "If rotation should be animated.");
+            KeybindListPopupRotOpen = Bind(this, ANIMATIONS, "Keybind List Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            KeybindListPopupRotClose = Bind(this, ANIMATIONS, "Keybind List Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            KeybindListPopupRotOpenDuration = Bind(this, ANIMATIONS, "Keybind List Popup Open Rotation Duration", 0f, "The duration of opening.");
+            KeybindListPopupRotCloseDuration = Bind(this, ANIMATIONS, "Keybind List Popup Close Rotation Duration", 0f, "The duration of closing.");
+            KeybindListPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Theme Popup
 
-            ThemePopupActive = Bind(this, "Animations", "Theme Popup Active", true, "If the popup animation should play.");
+            ThemePopupActive = Bind(this, ANIMATIONS, "Theme Popup Active", true, "If the popup animation should play.");
 
-            ThemePopupPosActive = Bind(this, "Animations", "Theme Popup Animate Position", false, "If position should be animated.");
-            ThemePopupPosOpen = Bind(this, "Animations", "Theme Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ThemePopupPosClose = Bind(this, "Animations", "Theme Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ThemePopupPosOpenDuration = Bind(this, "Animations", "Theme Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            ThemePopupPosCloseDuration = Bind(this, "Animations", "Theme Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ThemePopupPosXOpenEase = BindEnum(this, "Animations", "Theme Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupPosXCloseEase = BindEnum(this, "Animations", "Theme Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupPosYOpenEase = BindEnum(this, "Animations", "Theme Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupPosYCloseEase = BindEnum(this, "Animations", "Theme Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupPosActive = Bind(this, ANIMATIONS, "Theme Popup Animate Position", false, "If position should be animated.");
+            ThemePopupPosOpen = Bind(this, ANIMATIONS, "Theme Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ThemePopupPosClose = Bind(this, ANIMATIONS, "Theme Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ThemePopupPosOpenDuration = Bind(this, ANIMATIONS, "Theme Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            ThemePopupPosCloseDuration = Bind(this, ANIMATIONS, "Theme Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            ThemePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            ThemePopupScaActive = Bind(this, "Animations", "Theme Popup Animate Scale", true, "If scale should be animated.");
-            ThemePopupScaOpen = Bind(this, "Animations", "Theme Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ThemePopupScaClose = Bind(this, "Animations", "Theme Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ThemePopupScaOpenDuration = Bind(this, "Animations", "Theme Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            ThemePopupScaCloseDuration = Bind(this, "Animations", "Theme Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ThemePopupScaXOpenEase = BindEnum(this, "Animations", "Theme Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ThemePopupScaXCloseEase = BindEnum(this, "Animations", "Theme Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ThemePopupScaYOpenEase = BindEnum(this, "Animations", "Theme Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ThemePopupScaYCloseEase = BindEnum(this, "Animations", "Theme Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ThemePopupScaActive = Bind(this, ANIMATIONS, "Theme Popup Animate Scale", true, "If scale should be animated.");
+            ThemePopupScaOpen = Bind(this, ANIMATIONS, "Theme Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ThemePopupScaClose = Bind(this, ANIMATIONS, "Theme Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ThemePopupScaOpenDuration = Bind(this, ANIMATIONS, "Theme Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ThemePopupScaCloseDuration = Bind(this, ANIMATIONS, "Theme Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ThemePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ThemePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ThemePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ThemePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ThemePopupRotActive = Bind(this, "Animations", "Theme Popup Animate Rotation", false, "If rotation should be animated.");
-            ThemePopupRotOpen = Bind(this, "Animations", "Theme Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ThemePopupRotClose = Bind(this, "Animations", "Theme Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ThemePopupRotOpenDuration = Bind(this, "Animations", "Theme Popup Open Rotation Duration", 0f, "The duration of opening.");
-            ThemePopupRotCloseDuration = Bind(this, "Animations", "Theme Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ThemePopupRotOpenEase = BindEnum(this, "Animations", "Theme Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupRotCloseEase = BindEnum(this, "Animations", "Theme Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupRotActive = Bind(this, ANIMATIONS, "Theme Popup Animate Rotation", false, "If rotation should be animated.");
+            ThemePopupRotOpen = Bind(this, ANIMATIONS, "Theme Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ThemePopupRotClose = Bind(this, ANIMATIONS, "Theme Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ThemePopupRotOpenDuration = Bind(this, ANIMATIONS, "Theme Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ThemePopupRotCloseDuration = Bind(this, ANIMATIONS, "Theme Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ThemePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Prefab Types Popup
 
-            PrefabTypesPopupActive = Bind(this, "Animations", "Prefab Types Popup Active", true, "If the popup animation should play.");
+            PrefabTypesPopupActive = Bind(this, ANIMATIONS, "Prefab Types Popup Active", true, "If the popup animation should play.");
 
-            PrefabTypesPopupPosActive = Bind(this, "Animations", "Prefab Types Popup Animate Position", false, "If position should be animated.");
-            PrefabTypesPopupPosOpen = Bind(this, "Animations", "Prefab Types Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            PrefabTypesPopupPosClose = Bind(this, "Animations", "Prefab Types Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            PrefabTypesPopupPosOpenDuration = Bind(this, "Animations", "Prefab Types Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            PrefabTypesPopupPosCloseDuration = Bind(this, "Animations", "Prefab Types Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            PrefabTypesPopupPosXOpenEase = BindEnum(this, "Animations", "Prefab Types Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupPosXCloseEase = BindEnum(this, "Animations", "Prefab Types Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupPosYOpenEase = BindEnum(this, "Animations", "Prefab Types Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupPosYCloseEase = BindEnum(this, "Animations", "Prefab Types Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupPosActive = Bind(this, ANIMATIONS, "Prefab Types Popup Animate Position", false, "If position should be animated.");
+            PrefabTypesPopupPosOpen = Bind(this, ANIMATIONS, "Prefab Types Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PrefabTypesPopupPosClose = Bind(this, ANIMATIONS, "Prefab Types Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PrefabTypesPopupPosOpenDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            PrefabTypesPopupPosCloseDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            PrefabTypesPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            PrefabTypesPopupScaActive = Bind(this, "Animations", "Prefab Types Popup Animate Scale", true, "If scale should be animated.");
-            PrefabTypesPopupScaOpen = Bind(this, "Animations", "Prefab Types Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            PrefabTypesPopupScaClose = Bind(this, "Animations", "Prefab Types Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            PrefabTypesPopupScaOpenDuration = Bind(this, "Animations", "Prefab Types Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            PrefabTypesPopupScaCloseDuration = Bind(this, "Animations", "Prefab Types Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            PrefabTypesPopupScaXOpenEase = BindEnum(this, "Animations", "Prefab Types Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabTypesPopupScaXCloseEase = BindEnum(this, "Animations", "Prefab Types Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            PrefabTypesPopupScaYOpenEase = BindEnum(this, "Animations", "Prefab Types Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabTypesPopupScaYCloseEase = BindEnum(this, "Animations", "Prefab Types Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            PrefabTypesPopupScaActive = Bind(this, ANIMATIONS, "Prefab Types Popup Animate Scale", true, "If scale should be animated.");
+            PrefabTypesPopupScaOpen = Bind(this, ANIMATIONS, "Prefab Types Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PrefabTypesPopupScaClose = Bind(this, ANIMATIONS, "Prefab Types Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PrefabTypesPopupScaOpenDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            PrefabTypesPopupScaCloseDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            PrefabTypesPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            PrefabTypesPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            PrefabTypesPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            PrefabTypesPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            PrefabTypesPopupRotActive = Bind(this, "Animations", "Prefab Types Popup Animate Rotation", false, "If rotation should be animated.");
-            PrefabTypesPopupRotOpen = Bind(this, "Animations", "Prefab Types Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            PrefabTypesPopupRotClose = Bind(this, "Animations", "Prefab Types Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            PrefabTypesPopupRotOpenDuration = Bind(this, "Animations", "Prefab Types Popup Open Rotation Duration", 0f, "The duration of opening.");
-            PrefabTypesPopupRotCloseDuration = Bind(this, "Animations", "Prefab Types Popup Close Rotation Duration", 0f, "The duration of closing.");
-            PrefabTypesPopupRotOpenEase = BindEnum(this, "Animations", "Prefab Types Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupRotCloseEase = BindEnum(this, "Animations", "Prefab Types Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupRotActive = Bind(this, ANIMATIONS, "Prefab Types Popup Animate Rotation", false, "If rotation should be animated.");
+            PrefabTypesPopupRotOpen = Bind(this, ANIMATIONS, "Prefab Types Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PrefabTypesPopupRotClose = Bind(this, ANIMATIONS, "Prefab Types Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PrefabTypesPopupRotOpenDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Open Rotation Duration", 0f, "The duration of opening.");
+            PrefabTypesPopupRotCloseDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Close Rotation Duration", 0f, "The duration of closing.");
+            PrefabTypesPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
             
             #region Font Selector Popup
 
-            FontSelectorPopupActive = Bind(this, "Animations", "Font Selector Popup Active", true, "If the popup animation should play.");
+            FontSelectorPopupActive = Bind(this, ANIMATIONS, "Font Selector Popup Active", true, "If the popup animation should play.");
 
-            FontSelectorPopupPosActive = Bind(this, "Animations", "Font Selector Popup Animate Position", false, "If position should be animated.");
-            FontSelectorPopupPosOpen = Bind(this, "Animations", "Font Selector Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FontSelectorPopupPosClose = Bind(this, "Animations", "Font Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FontSelectorPopupPosOpenDuration = Bind(this, "Animations", "Font Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            FontSelectorPopupPosCloseDuration = Bind(this, "Animations", "Font Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            FontSelectorPopupPosXOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupPosXCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupPosYOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupPosYCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosActive = Bind(this, ANIMATIONS, "Font Selector Popup Animate Position", false, "If position should be animated.");
+            FontSelectorPopupPosOpen = Bind(this, ANIMATIONS, "Font Selector Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FontSelectorPopupPosClose = Bind(this, ANIMATIONS, "Font Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FontSelectorPopupPosOpenDuration = Bind(this, ANIMATIONS, "Font Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            FontSelectorPopupPosCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            FontSelectorPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            FontSelectorPopupScaActive = Bind(this, "Animations", "Font Selector Popup Animate Scale", true, "If scale should be animated.");
-            FontSelectorPopupScaOpen = Bind(this, "Animations", "Font Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FontSelectorPopupScaClose = Bind(this, "Animations", "Font Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FontSelectorPopupScaOpenDuration = Bind(this, "Animations", "Font Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            FontSelectorPopupScaCloseDuration = Bind(this, "Animations", "Font Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            FontSelectorPopupScaXOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            FontSelectorPopupScaXCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            FontSelectorPopupScaYOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            FontSelectorPopupScaYCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            FontSelectorPopupScaActive = Bind(this, ANIMATIONS, "Font Selector Popup Animate Scale", true, "If scale should be animated.");
+            FontSelectorPopupScaOpen = Bind(this, ANIMATIONS, "Font Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FontSelectorPopupScaClose = Bind(this, ANIMATIONS, "Font Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FontSelectorPopupScaOpenDuration = Bind(this, ANIMATIONS, "Font Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            FontSelectorPopupScaCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            FontSelectorPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            FontSelectorPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            FontSelectorPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            FontSelectorPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            FontSelectorPopupRotActive = Bind(this, "Animations", "Font Selector Popup Animate Rotation", false, "If rotation should be animated.");
-            FontSelectorPopupRotOpen = Bind(this, "Animations", "Font Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FontSelectorPopupRotClose = Bind(this, "Animations", "Font Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FontSelectorPopupRotOpenDuration = Bind(this, "Animations", "Font Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
-            FontSelectorPopupRotCloseDuration = Bind(this, "Animations", "Font Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
-            FontSelectorPopupRotOpenEase = BindEnum(this, "Animations", "Font Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupRotCloseEase = BindEnum(this, "Animations", "Font Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupRotActive = Bind(this, ANIMATIONS, "Font Selector Popup Animate Rotation", false, "If rotation should be animated.");
+            FontSelectorPopupRotOpen = Bind(this, ANIMATIONS, "Font Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FontSelectorPopupRotClose = Bind(this, ANIMATIONS, "Font Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FontSelectorPopupRotOpenDuration = Bind(this, ANIMATIONS, "Font Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
+            FontSelectorPopupRotCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
+            FontSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region File Dropdown
 
-            FileDropdownActive = Bind(this, "Animations", "File Dropdown Active", true, "If the popup animation should play.");
+            FileDropdownActive = Bind(this, ANIMATIONS, "File Dropdown Active", true, "If the popup animation should play.");
 
-            FileDropdownPosActive = Bind(this, "Animations", "File Dropdown Animate Position", false, "If position should be animated.");
-            FileDropdownPosOpen = Bind(this, "Animations", "File Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FileDropdownPosClose = Bind(this, "Animations", "File Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FileDropdownPosOpenDuration = Bind(this, "Animations", "File Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
-            FileDropdownPosCloseDuration = Bind(this, "Animations", "File Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            FileDropdownPosXOpenEase = BindEnum(this, "Animations", "File Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownPosXCloseEase = BindEnum(this, "Animations", "File Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownPosYOpenEase = BindEnum(this, "Animations", "File Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownPosYCloseEase = BindEnum(this, "Animations", "File Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownPosActive = Bind(this, ANIMATIONS, "File Dropdown Animate Position", false, "If position should be animated.");
+            FileDropdownPosOpen = Bind(this, ANIMATIONS, "File Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FileDropdownPosClose = Bind(this, ANIMATIONS, "File Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FileDropdownPosOpenDuration = Bind(this, ANIMATIONS, "File Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
+            FileDropdownPosCloseDuration = Bind(this, ANIMATIONS, "File Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
+            FileDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            FileDropdownScaActive = Bind(this, "Animations", "File Dropdown Animate Scale", true, "If scale should be animated.");
-            FileDropdownScaOpen = Bind(this, "Animations", "File Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FileDropdownScaClose = Bind(this, "Animations", "File Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FileDropdownScaOpenDuration = Bind(this, "Animations", "File Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            FileDropdownScaCloseDuration = Bind(this, "Animations", "File Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            FileDropdownScaXOpenEase = BindEnum(this, "Animations", "File Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            FileDropdownScaXCloseEase = BindEnum(this, "Animations", "File Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            FileDropdownScaYOpenEase = BindEnum(this, "Animations", "File Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            FileDropdownScaYCloseEase = BindEnum(this, "Animations", "File Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            FileDropdownScaActive = Bind(this, ANIMATIONS, "File Dropdown Animate Scale", true, "If scale should be animated.");
+            FileDropdownScaOpen = Bind(this, ANIMATIONS, "File Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FileDropdownScaClose = Bind(this, ANIMATIONS, "File Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FileDropdownScaOpenDuration = Bind(this, ANIMATIONS, "File Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            FileDropdownScaCloseDuration = Bind(this, ANIMATIONS, "File Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            FileDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            FileDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            FileDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            FileDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            FileDropdownRotActive = Bind(this, "Animations", "File Dropdown Animate Rotation", false, "If rotation should be animated.");
-            FileDropdownRotOpen = Bind(this, "Animations", "File Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            FileDropdownRotClose = Bind(this, "Animations", "File Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            FileDropdownRotOpenDuration = Bind(this, "Animations", "File Dropdown Open Rotation Duration", 0f, "The duration of opening.");
-            FileDropdownRotCloseDuration = Bind(this, "Animations", "File Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            FileDropdownRotOpenEase = BindEnum(this, "Animations", "File Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownRotCloseEase = BindEnum(this, "Animations", "File Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownRotActive = Bind(this, ANIMATIONS, "File Dropdown Animate Rotation", false, "If rotation should be animated.");
+            FileDropdownRotOpen = Bind(this, ANIMATIONS, "File Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FileDropdownRotClose = Bind(this, ANIMATIONS, "File Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FileDropdownRotOpenDuration = Bind(this, ANIMATIONS, "File Dropdown Open Rotation Duration", 0f, "The duration of opening.");
+            FileDropdownRotCloseDuration = Bind(this, ANIMATIONS, "File Dropdown Close Rotation Duration", 0f, "The duration of closing.");
+            FileDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Edit Dropdown
 
-            EditDropdownActive = Bind(this, "Animations", "Edit Dropdown Active", true, "If the popup animation should play.");
+            EditDropdownActive = Bind(this, ANIMATIONS, "Edit Dropdown Active", true, "If the popup animation should play.");
 
-            EditDropdownPosActive = Bind(this, "Animations", "Edit Dropdown Animate Position", false, "If position should be animated.");
-            EditDropdownPosOpen = Bind(this, "Animations", "Edit Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            EditDropdownPosClose = Bind(this, "Animations", "Edit Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            EditDropdownPosOpenDuration = Bind(this, "Animations", "Edit Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
-            EditDropdownPosCloseDuration = Bind(this, "Animations", "Edit Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            EditDropdownPosXOpenEase = BindEnum(this, "Animations", "Edit Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownPosXCloseEase = BindEnum(this, "Animations", "Edit Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownPosYOpenEase = BindEnum(this, "Animations", "Edit Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownPosYCloseEase = BindEnum(this, "Animations", "Edit Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownPosActive = Bind(this, ANIMATIONS, "Edit Dropdown Animate Position", false, "If position should be animated.");
+            EditDropdownPosOpen = Bind(this, ANIMATIONS, "Edit Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            EditDropdownPosClose = Bind(this, ANIMATIONS, "Edit Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            EditDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Edit Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
+            EditDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Edit Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
+            EditDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            EditDropdownScaActive = Bind(this, "Animations", "Edit Dropdown Animate Scale", true, "If scale should be animated.");
-            EditDropdownScaOpen = Bind(this, "Animations", "Edit Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            EditDropdownScaClose = Bind(this, "Animations", "Edit Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            EditDropdownScaOpenDuration = Bind(this, "Animations", "Edit Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            EditDropdownScaCloseDuration = Bind(this, "Animations", "Edit Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            EditDropdownScaXOpenEase = BindEnum(this, "Animations", "Edit Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            EditDropdownScaXCloseEase = BindEnum(this, "Animations", "Edit Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            EditDropdownScaYOpenEase = BindEnum(this, "Animations", "Edit Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            EditDropdownScaYCloseEase = BindEnum(this, "Animations", "Edit Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            EditDropdownScaActive = Bind(this, ANIMATIONS, "Edit Dropdown Animate Scale", true, "If scale should be animated.");
+            EditDropdownScaOpen = Bind(this, ANIMATIONS, "Edit Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            EditDropdownScaClose = Bind(this, ANIMATIONS, "Edit Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            EditDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Edit Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            EditDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Edit Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            EditDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            EditDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            EditDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            EditDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            EditDropdownRotActive = Bind(this, "Animations", "Edit Dropdown Animate Rotation", false, "If rotation should be animated.");
-            EditDropdownRotOpen = Bind(this, "Animations", "Edit Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            EditDropdownRotClose = Bind(this, "Animations", "Edit Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            EditDropdownRotOpenDuration = Bind(this, "Animations", "Edit Dropdown Open Rotation Duration", 0f, "The duration of opening.");
-            EditDropdownRotCloseDuration = Bind(this, "Animations", "Edit Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            EditDropdownRotOpenEase = BindEnum(this, "Animations", "Edit Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownRotCloseEase = BindEnum(this, "Animations", "Edit Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownRotActive = Bind(this, ANIMATIONS, "Edit Dropdown Animate Rotation", false, "If rotation should be animated.");
+            EditDropdownRotOpen = Bind(this, ANIMATIONS, "Edit Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            EditDropdownRotClose = Bind(this, ANIMATIONS, "Edit Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            EditDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Edit Dropdown Open Rotation Duration", 0f, "The duration of opening.");
+            EditDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Edit Dropdown Close Rotation Duration", 0f, "The duration of closing.");
+            EditDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region View Dropdown
 
-            ViewDropdownActive = Bind(this, "Animations", "View Dropdown Active", true, "If the popup animation should play.");
+            ViewDropdownActive = Bind(this, ANIMATIONS, "View Dropdown Active", true, "If the popup animation should play.");
 
-            ViewDropdownPosActive = Bind(this, "Animations", "View Dropdown Animate Position", false, "If position should be animated.");
-            ViewDropdownPosOpen = Bind(this, "Animations", "View Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ViewDropdownPosClose = Bind(this, "Animations", "View Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ViewDropdownPosOpenDuration = Bind(this, "Animations", "View Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
-            ViewDropdownPosCloseDuration = Bind(this, "Animations", "View Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            ViewDropdownPosXOpenEase = BindEnum(this, "Animations", "View Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownPosXCloseEase = BindEnum(this, "Animations", "View Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownPosYOpenEase = BindEnum(this, "Animations", "View Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownPosYCloseEase = BindEnum(this, "Animations", "View Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownPosActive = Bind(this, ANIMATIONS, "View Dropdown Animate Position", false, "If position should be animated.");
+            ViewDropdownPosOpen = Bind(this, ANIMATIONS, "View Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ViewDropdownPosClose = Bind(this, ANIMATIONS, "View Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ViewDropdownPosOpenDuration = Bind(this, ANIMATIONS, "View Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
+            ViewDropdownPosCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
+            ViewDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            ViewDropdownScaActive = Bind(this, "Animations", "View Dropdown Animate Scale", true, "If scale should be animated.");
-            ViewDropdownScaOpen = Bind(this, "Animations", "View Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ViewDropdownScaClose = Bind(this, "Animations", "View Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ViewDropdownScaOpenDuration = Bind(this, "Animations", "View Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            ViewDropdownScaCloseDuration = Bind(this, "Animations", "View Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ViewDropdownScaXOpenEase = BindEnum(this, "Animations", "View Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ViewDropdownScaXCloseEase = BindEnum(this, "Animations", "View Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ViewDropdownScaYOpenEase = BindEnum(this, "Animations", "View Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ViewDropdownScaYCloseEase = BindEnum(this, "Animations", "View Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ViewDropdownScaActive = Bind(this, ANIMATIONS, "View Dropdown Animate Scale", true, "If scale should be animated.");
+            ViewDropdownScaOpen = Bind(this, ANIMATIONS, "View Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ViewDropdownScaClose = Bind(this, ANIMATIONS, "View Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ViewDropdownScaOpenDuration = Bind(this, ANIMATIONS, "View Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ViewDropdownScaCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ViewDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            ViewDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            ViewDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            ViewDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            ViewDropdownRotActive = Bind(this, "Animations", "View Dropdown Animate Rotation", false, "If rotation should be animated.");
-            ViewDropdownRotOpen = Bind(this, "Animations", "View Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            ViewDropdownRotClose = Bind(this, "Animations", "View Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            ViewDropdownRotOpenDuration = Bind(this, "Animations", "View Dropdown Open Rotation Duration", 0f, "The duration of opening.");
-            ViewDropdownRotCloseDuration = Bind(this, "Animations", "View Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            ViewDropdownRotOpenEase = BindEnum(this, "Animations", "View Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownRotCloseEase = BindEnum(this, "Animations", "View Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownRotActive = Bind(this, ANIMATIONS, "View Dropdown Animate Rotation", false, "If rotation should be animated.");
+            ViewDropdownRotOpen = Bind(this, ANIMATIONS, "View Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ViewDropdownRotClose = Bind(this, ANIMATIONS, "View Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ViewDropdownRotOpenDuration = Bind(this, ANIMATIONS, "View Dropdown Open Rotation Duration", 0f, "The duration of opening.");
+            ViewDropdownRotCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Rotation Duration", 0f, "The duration of closing.");
+            ViewDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Steam Dropdown
 
-            SteamDropdownActive = Bind(this, "Animations", "Steam Dropdown Active", true, "If the popup animation should play.");
+            SteamDropdownActive = Bind(this, ANIMATIONS, "Steam Dropdown Active", true, "If the popup animation should play.");
 
-            SteamDropdownPosActive = Bind(this, "Animations", "Steam Dropdown Animate Position", false, "If position should be animated.");
-            SteamDropdownPosOpen = Bind(this, "Animations", "Steam Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            SteamDropdownPosClose = Bind(this, "Animations", "Steam Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            SteamDropdownPosOpenDuration = Bind(this, "Animations", "Steam Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
-            SteamDropdownPosCloseDuration = Bind(this, "Animations", "Steam Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            SteamDropdownPosXOpenEase = BindEnum(this, "Animations", "Steam Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownPosXCloseEase = BindEnum(this, "Animations", "Steam Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownPosYOpenEase = BindEnum(this, "Animations", "Steam Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownPosYCloseEase = BindEnum(this, "Animations", "Steam Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownPosActive = Bind(this, ANIMATIONS, "Steam Dropdown Animate Position", false, "If position should be animated.");
+            SteamDropdownPosOpen = Bind(this, ANIMATIONS, "Steam Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SteamDropdownPosClose = Bind(this, ANIMATIONS, "Steam Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SteamDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Steam Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
+            SteamDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Steam Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
+            SteamDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            SteamDropdownScaActive = Bind(this, "Animations", "Steam Dropdown Animate Scale", true, "If scale should be animated.");
-            SteamDropdownScaOpen = Bind(this, "Animations", "Steam Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            SteamDropdownScaClose = Bind(this, "Animations", "Steam Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            SteamDropdownScaOpenDuration = Bind(this, "Animations", "Steam Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            SteamDropdownScaCloseDuration = Bind(this, "Animations", "Steam Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            SteamDropdownScaXOpenEase = BindEnum(this, "Animations", "Steam Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            SteamDropdownScaXCloseEase = BindEnum(this, "Animations", "Steam Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            SteamDropdownScaYOpenEase = BindEnum(this, "Animations", "Steam Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            SteamDropdownScaYCloseEase = BindEnum(this, "Animations", "Steam Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            SteamDropdownScaActive = Bind(this, ANIMATIONS, "Steam Dropdown Animate Scale", true, "If scale should be animated.");
+            SteamDropdownScaOpen = Bind(this, ANIMATIONS, "Steam Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SteamDropdownScaClose = Bind(this, ANIMATIONS, "Steam Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SteamDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Steam Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            SteamDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Steam Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            SteamDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            SteamDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            SteamDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            SteamDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            SteamDropdownRotActive = Bind(this, "Animations", "Steam Dropdown Animate Rotation", false, "If rotation should be animated.");
-            SteamDropdownRotOpen = Bind(this, "Animations", "Steam Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            SteamDropdownRotClose = Bind(this, "Animations", "Steam Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            SteamDropdownRotOpenDuration = Bind(this, "Animations", "Steam Dropdown Open Rotation Duration", 0f, "The duration of opening.");
-            SteamDropdownRotCloseDuration = Bind(this, "Animations", "Steam Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            SteamDropdownRotOpenEase = BindEnum(this, "Animations", "Steam Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownRotCloseEase = BindEnum(this, "Animations", "Steam Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownRotActive = Bind(this, ANIMATIONS, "Steam Dropdown Animate Rotation", false, "If rotation should be animated.");
+            SteamDropdownRotOpen = Bind(this, ANIMATIONS, "Steam Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SteamDropdownRotClose = Bind(this, ANIMATIONS, "Steam Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SteamDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Steam Dropdown Open Rotation Duration", 0f, "The duration of opening.");
+            SteamDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Steam Dropdown Close Rotation Duration", 0f, "The duration of closing.");
+            SteamDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
             #region Help Dropdown
 
-            HelpDropdownActive = Bind(this, "Animations", "Help Dropdown Active", true, "If the popup animation should play.");
+            HelpDropdownActive = Bind(this, ANIMATIONS, "Help Dropdown Active", true, "If the popup animation should play.");
 
-            HelpDropdownPosActive = Bind(this, "Animations", "Help Dropdown Animate Position", false, "If position should be animated.");
-            HelpDropdownPosOpen = Bind(this, "Animations", "Help Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            HelpDropdownPosClose = Bind(this, "Animations", "Help Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            HelpDropdownPosOpenDuration = Bind(this, "Animations", "Help Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
-            HelpDropdownPosCloseDuration = Bind(this, "Animations", "Help Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            HelpDropdownPosXOpenEase = BindEnum(this, "Animations", "Help Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownPosXCloseEase = BindEnum(this, "Animations", "Help Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownPosYOpenEase = BindEnum(this, "Animations", "Help Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownPosYCloseEase = BindEnum(this, "Animations", "Help Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownPosActive = Bind(this, ANIMATIONS, "Help Dropdown Animate Position", false, "If position should be animated.");
+            HelpDropdownPosOpen = Bind(this, ANIMATIONS, "Help Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            HelpDropdownPosClose = Bind(this, ANIMATIONS, "Help Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            HelpDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Help Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
+            HelpDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Help Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
+            HelpDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            HelpDropdownScaActive = Bind(this, "Animations", "Help Dropdown Animate Scale", true, "If scale should be animated.");
-            HelpDropdownScaOpen = Bind(this, "Animations", "Help Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            HelpDropdownScaClose = Bind(this, "Animations", "Help Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            HelpDropdownScaOpenDuration = Bind(this, "Animations", "Help Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            HelpDropdownScaCloseDuration = Bind(this, "Animations", "Help Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            HelpDropdownScaXOpenEase = BindEnum(this, "Animations", "Help Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            HelpDropdownScaXCloseEase = BindEnum(this, "Animations", "Help Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            HelpDropdownScaYOpenEase = BindEnum(this, "Animations", "Help Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            HelpDropdownScaYCloseEase = BindEnum(this, "Animations", "Help Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            HelpDropdownScaActive = Bind(this, ANIMATIONS, "Help Dropdown Animate Scale", true, "If scale should be animated.");
+            HelpDropdownScaOpen = Bind(this, ANIMATIONS, "Help Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            HelpDropdownScaClose = Bind(this, ANIMATIONS, "Help Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            HelpDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Help Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            HelpDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Help Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            HelpDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            HelpDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            HelpDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            HelpDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            HelpDropdownRotActive = Bind(this, "Animations", "Help Dropdown Animate Rotation", false, "If rotation should be animated.");
-            HelpDropdownRotOpen = Bind(this, "Animations", "Help Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            HelpDropdownRotClose = Bind(this, "Animations", "Help Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            HelpDropdownRotOpenDuration = Bind(this, "Animations", "Help Dropdown Open Rotation Duration", 0f, "The duration of opening.");
-            HelpDropdownRotCloseDuration = Bind(this, "Animations", "Help Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            HelpDropdownRotOpenEase = BindEnum(this, "Animations", "Help Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownRotCloseEase = BindEnum(this, "Animations", "Help Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownRotActive = Bind(this, ANIMATIONS, "Help Dropdown Animate Rotation", false, "If rotation should be animated.");
+            HelpDropdownRotOpen = Bind(this, ANIMATIONS, "Help Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            HelpDropdownRotClose = Bind(this, ANIMATIONS, "Help Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            HelpDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Help Dropdown Open Rotation Duration", 0f, "The duration of opening.");
+            HelpDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Help Dropdown Close Rotation Duration", 0f, "The duration of closing.");
+            HelpDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2517,23 +2535,30 @@ namespace BetterLegacy.Configs
 
             #region Preview
 
-            OnlyObjectsOnCurrentLayerVisible = Bind(this, "Preview", "Only Objects on Current Layer Visible", false, "If enabled, all objects not on current layer will be set to transparent");
-            VisibleObjectOpacity = Bind(this, "Preview", "Visible Object Opacity", 0.2f, "Opacity of the objects not on the current layer.");
-            ShowEmpties = Bind(this, "Preview", "Show Empties", false, "If enabled, show all objects that are set to the empty object type.");
-            OnlyShowDamagable = Bind(this, "Preview", "Only Show Damagable", false, "If enabled, only objects that can damage the player will be shown.");
-            HighlightObjects = Bind(this, "Preview", "Highlight Objects", true, "If enabled and if cursor hovers over an object, it will be highlighted.");
-            ObjectHighlightAmount = Bind(this, "Preview", "Object Highlight Amount", new Color(0.1f, 0.1f, 0.1f), "If an object is hovered, it adds this amount of color to the hovered object.");
-            ObjectHighlightDoubleAmount = Bind(this, "Preview", "Object Highlight Double Amount", new Color(0.5f, 0.5f, 0.5f), "If an object is hovered and shift is held, it adds this amount of color to the hovered object.");
-            ObjectDraggerEnabled = Bind(this, "Preview", "Object Dragger Enabled", false, "If an object can be dragged around.");
-            ObjectDraggerCreatesKeyframe = Bind(this, "Preview", "Object Dragger Creates Keyframe", false, "When an object is dragged, create a keyframe.");
-            ObjectDraggerRotatorRadius = Bind(this, "Preview", "Object Dragger Rotator Radius", 22f, "The size of the Object Draggers' rotation ring.");
-            ObjectDraggerScalerOffset = Bind(this, "Preview", "Object Dragger Scaler Offset", 6f, "The distance of the Object Draggers' scale arrows.");
-            ObjectDraggerScalerScale = Bind(this, "Preview", "Object Dragger Scaler Scale", 1.6f, "The size of the Object Draggers' scale arrows.");
+            OnlyObjectsOnCurrentLayerVisible = Bind(this, PREVIEW, "Only Objects on Current Layer Visible", false, "If enabled, all objects not on current layer will be set to transparent");
+            VisibleObjectOpacity = Bind(this, PREVIEW, "Visible Object Opacity", 0.2f, "Opacity of the objects not on the current layer.");
+            ShowEmpties = Bind(this, PREVIEW, "Show Empties", false, "If enabled, show all objects that are set to the empty object type.");
+            OnlyShowDamagable = Bind(this, PREVIEW, "Only Show Damagable", false, "If enabled, only objects that can damage the player will be shown.");
+            HighlightObjects = Bind(this, PREVIEW, "Highlight Objects", true, "If enabled and if cursor hovers over an object, it will be highlighted.");
+            ObjectHighlightAmount = Bind(this, PREVIEW, "Object Highlight Amount", new Color(0.1f, 0.1f, 0.1f), "If an object is hovered, it adds this amount of color to the hovered object.");
+            ObjectHighlightDoubleAmount = Bind(this, PREVIEW, "Object Highlight Double Amount", new Color(0.5f, 0.5f, 0.5f), "If an object is hovered and shift is held, it adds this amount of color to the hovered object.");
+            ObjectDraggerEnabled = Bind(this, PREVIEW, "Object Dragger Enabled", false, "If an object can be dragged around.");
+            ObjectDraggerCreatesKeyframe = Bind(this, PREVIEW, "Object Dragger Creates Keyframe", false, "When an object is dragged, create a keyframe.");
+            ObjectDraggerRotatorRadius = Bind(this, PREVIEW, "Object Dragger Rotator Radius", 22f, "The size of the Object Draggers' rotation ring.");
+            ObjectDraggerScalerOffset = Bind(this, PREVIEW, "Object Dragger Scaler Offset", 6f, "The distance of the Object Draggers' scale arrows.");
+            ObjectDraggerScalerScale = Bind(this, PREVIEW, "Object Dragger Scaler Scale", 1.6f, "The size of the Object Draggers' scale arrows.");
 
-            PreviewGridEnabled = Bind(this, "Preview", "Grid Enabled", false, "If the preview grid should be enabled.");
-            PreviewGridSize = Bind(this, "Preview", "Grid Size", 0.5f, "The overall size of the preview grid.");
-            PreviewGridThickness = Bind(this, "Preview", "Grid Thickness", 0.1f, "The line thickness of the preview grid.", 0.01f, 2f);
-            PreviewGridColor = Bind(this, "Preview", "Grid Color", Color.white, "The color of the preview grid.");
+            PreviewGridEnabled = Bind(this, PREVIEW, "Grid Enabled", false, "If the preview grid should be enabled.");
+            PreviewGridSize = Bind(this, PREVIEW, "Grid Size", 0.5f, "The overall size of the preview grid.");
+            PreviewGridThickness = Bind(this, PREVIEW, "Grid Thickness", 0.1f, "The line thickness of the preview grid.", 0.01f, 2f);
+            PreviewGridColor = Bind(this, PREVIEW, "Grid Color", Color.white, "The color of the preview grid.");
+
+            #endregion
+
+            #region Modifiers
+
+            ModifiersCanLoadLevels = Bind(this, MODIFIERS, "Modifiers Can Load Levels", true, "Any modifiers with the \"loadLevel\" function will load the level whilst in the editor. This is only to prevent the loss of progress.");
+            ModifiersSavesBackup = Bind(this, MODIFIERS, "Modifiers Saves Backup", true, "The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.");
 
             #endregion
 
@@ -3048,6 +3073,20 @@ namespace BetterLegacy.Configs
                 CoreHelper.LogError($"{nameof(UpdateDefaultThemeValues)} had an error! \n{ex}");
             }
         }
+
+        #endregion
+
+        #region Sections
+
+        public const string GENERAL = "General";
+        public const string TIMELINE = "Timeline";
+        public const string DATA = "Data";
+        public const string EDITOR_GUI = "Editor GUI";
+        public const string MARKERS = "Markers";
+        public const string FIELDS = "Fields";
+        public const string ANIMATIONS = "Animations";
+        public const string PREVIEW = "Preview";
+        public const string MODIFIERS = "Modifiers";
 
         #endregion
     }
