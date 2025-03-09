@@ -119,6 +119,12 @@ namespace BetterLegacy.Core.Prefabs
         public Text text;
     }
 
+    public class SpriteFunctionButtonStorage : FunctionButtonStorage
+    {
+        [SerializeField]
+        public Image image;
+    }
+
     public class InputFieldStorage : MonoBehaviour
     {
         [SerializeField]

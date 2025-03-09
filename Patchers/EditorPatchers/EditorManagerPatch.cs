@@ -230,6 +230,13 @@ namespace BetterLegacy.Patchers
             levelButtonPrefabStorage.text = levelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
             __instance.folderButtonPrefab = levelButtonPrefab;
 
+            var spriteLevelButtonPrefab = __instance.spriteFolderButtonPrefab.Duplicate(__instance.transform, __instance.spriteFolderButtonPrefab.name);
+            var spriteLevelButtonPrefabStorage = spriteLevelButtonPrefab.AddComponent<SpriteFunctionButtonStorage>();
+            spriteLevelButtonPrefabStorage.button = spriteLevelButtonPrefab.GetComponent<Button>();
+            spriteLevelButtonPrefabStorage.text = spriteLevelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
+            spriteLevelButtonPrefabStorage.image = spriteLevelButtonPrefab.transform.GetChild(1).GetComponent<Image>();
+            __instance.spriteFolderButtonPrefab = spriteLevelButtonPrefab;
+
             // New Level Name input field contains text but newLevelName does not, so people might end up making an empty named level if they don't name it anything else.
             __instance.newLevelName = "New Awesome Beatmap";
 
