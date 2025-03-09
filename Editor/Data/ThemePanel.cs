@@ -6,9 +6,11 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
+using LSFunctions;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -132,8 +134,8 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, $"Folder [{Path.GetFileName(directory)}]", index + 2);
-            var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, $"Folder [{Path.GetFileName(directory)}]", index + 2);
+            var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
             var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
@@ -151,6 +153,11 @@ namespace BetterLegacy.Editor.Data
 
             EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
             EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.text, ThemeGroup.List_Button_2_Text);
+
+            if (folderButtonStorageFolder.image)
+                folderButtonStorageFolder.image.sprite = RTFile.FileExists(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) ?
+                    SpriteHelper.LoadSprite(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) :
+                    EditorSprites.OpenSprite;
 
             Render();
             SetActive(false);
@@ -206,6 +213,7 @@ namespace BetterLegacy.Editor.Data
         public void Render()
         {
             RenderName();
+            RenderTooltip();
 
             if (isFolder)
             {
@@ -374,6 +382,59 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         /// <param name="name">Name of the theme.</param>
         public void RenderName(string name) => Name.text = name;
+
+        public void RenderTooltip()
+        {
+            if (isFolder)
+            {
+                try
+                {
+                    if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"info{FileFormat.TXT.Dot()}"), out string file))
+                        TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Path.GetFileName(FilePath)}", file);
+                }
+                catch (System.Exception ex)
+                {
+                    CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(ThemePanel)}.\nGameObject: {GameObject}\nFilePath: {FilePath}\nException: {ex}");
+                }
+
+                return;
+            }
+
+            try
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("Background Color:");
+                sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.backgroundColor)}>▓</color>");
+
+                sb.AppendLine("GUI Color:");
+                sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.guiColor)}>▓</color>");
+
+                sb.AppendLine("GUI Accent Color:");
+                sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.guiAccentColor)}>▓</color>");
+
+                sb.AppendLine("Player Colors:");
+                for (int i = 0; i < Theme.playerColors.Count; i++)
+                    sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.playerColors[i])}>▓</color>");
+
+                sb.AppendLine("Beatmap Object Colors:");
+                for (int i = 0; i < Theme.objectColors.Count; i++)
+                    sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.objectColors[i])}>▓</color>");
+
+                sb.AppendLine("BG Object Colors:");
+                for (int i = 0; i < Theme.backgroundColors.Count; i++)
+                    sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.backgroundColors[i])}>▓</color>");
+
+                sb.AppendLine("Effect Colors:");
+                for (int i = 0; i < Theme.effectColors.Count; i++)
+                    sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.effectColors[i])}>▓</color>");
+
+                TooltipHelper.AddHoverTooltip(GameObject, Theme.name, sb.ToString());
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(ThemePanel)}.\nGameObject: {GameObject}\nFilePath: {FilePath}\nException: {ex}");
+            }
+        }
 
         /// <summary>
         /// Renders the theme panel colors.

@@ -375,6 +375,12 @@ namespace BetterLegacy.Editor.Data
 
             if (isFolder)
             {
+                if (RTFile.TryReadFromFile(RTFile.CombinePaths(FolderPath, "info.txt"), out string file))
+                {
+                    TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Name}", file);
+                    return;
+                }
+
                 TooltipHelper.AddHoverTooltip(GameObject, "Folder", Name);
                 return;
             }

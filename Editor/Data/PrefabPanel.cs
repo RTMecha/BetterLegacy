@@ -121,8 +121,8 @@ namespace BetterLegacy.Editor.Data
             var path = RTFile.ReplaceSlash(directory);
             var fileName = Path.GetFileName(directory);
 
-            var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
-            var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
+            var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
             var hover = gameObjectFolder.AddComponent<HoverUI>();
@@ -174,6 +174,11 @@ namespace BetterLegacy.Editor.Data
             FilePath = directory;
             Dialog = PrefabDialog.External;
             isFolder = true;
+
+            if (folderButtonStorageFolder.image)
+                folderButtonStorageFolder.image.sprite = RTFile.FileExists(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) ?
+                    SpriteHelper.LoadSprite(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) :
+                    EditorSprites.OpenSprite;
 
             Render();
         }
@@ -249,6 +254,7 @@ namespace BetterLegacy.Editor.Data
             if (isFolder)
             {
                 RenderName();
+                RenderTooltip();
                 return;
             }
 
@@ -323,7 +329,25 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Renders the prefab panel tooltip.
         /// </summary>
-        public void RenderTooltip() => RenderTooltip(Prefab, Prefab.PrefabType);
+        public void RenderTooltip()
+        {
+            if (isFolder)
+            {
+                try
+                {
+                    if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"info{FileFormat.TXT.Dot()}"), out string file))
+                        TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Path.GetFileName(FilePath)}", file);
+                }
+                catch (System.Exception ex)
+                {
+                    CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(PrefabPanel)}.\nGameObject: {GameObject}\nFilePath: {FilePath}\nException: {ex}");
+                }
+
+                return;
+            }
+
+            RenderTooltip(Prefab, Prefab.PrefabType);
+        }
 
         /// <summary>
         /// Renders the prefab panel tooltip.
@@ -334,8 +358,8 @@ namespace BetterLegacy.Editor.Data
         {
             TooltipHelper.AddHoverTooltip(GameObject,
                 "<#" + LSColors.ColorToHex(prefabType.Color) + ">" + prefab.Name + "</color>",
-                "O: " + prefab.Offset +
-                "<br>T: " + prefabType.Name +
+                "Offset: " + prefab.Offset +
+                "<br>Type: " + prefabType.Name +
                 "<br>Count: " + prefab.objects.Count +
                 "<br>Description: " + prefab.description, clear: true);
         }
