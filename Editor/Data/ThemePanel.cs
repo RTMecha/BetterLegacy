@@ -6,7 +6,9 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
+using Crosstales.FB;
 using LSFunctions;
+using SimpleJSON;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -75,6 +77,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public FolderButtonFunction FolderButton { get; set; }
 
+        /// <summary>
+        /// The icon of the theme panel.
+        /// </summary>
+        public Image IconImage { get; set; }
+
         #endregion
 
         #region Data
@@ -120,6 +127,8 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public int index;
 
+        JSONNode infoJN;
+
         #endregion
 
         #region Methods
@@ -150,14 +159,10 @@ namespace BetterLegacy.Editor.Data
             isFolder = true;
             Name = folderButtonStorageFolder.text;
             FolderButton = folderButtonFunctionFolder;
+            IconImage = folderButtonStorageFolder.image;
 
             EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
             EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.text, ThemeGroup.List_Button_2_Text);
-
-            if (folderButtonStorageFolder.image)
-                folderButtonStorageFolder.image.sprite = RTFile.FileExists(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) ?
-                    SpriteHelper.LoadSprite(RTFile.CombinePaths(directory, $"folder_icon{FileFormat.PNG.Dot()}")) :
-                    EditorSprites.OpenSprite;
 
             Render();
             SetActive(false);
@@ -212,6 +217,7 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public void Render()
         {
+            RenderIcon();
             RenderName();
             RenderTooltip();
 
@@ -248,6 +254,96 @@ namespace BetterLegacy.Editor.Data
                                     RTEditor.inst.UpdateThemePath(true);
                                     EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                                     RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                            {
+                                string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTFile.ApplicationDirectory, new string[] { "png" });
+                                if (string.IsNullOrEmpty(imageFile))
+                                    return;
+
+                                RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                                RenderIcon();
+                            }),
+                            new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                            {
+                                RTEditor.inst.BrowserPopup.Open();
+                                RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
+                                {
+                                    if (string.IsNullOrEmpty(imageFile))
+                                        return;
+
+                                    RTEditor.inst.BrowserPopup.Close();
+
+                                    RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                                    RenderIcon();
+                                });
+                            }),
+                            new ButtonFunction("Clear Icon", () =>
+                            {
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
+                                {
+                                    RTEditor.inst.HideWarningPopup();
+                                    RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                                    RenderIcon();
+                                    EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
+                                }, RTEditor.inst.HideWarningPopup);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Create Info File", () =>
+                            {
+                                var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
+                                if (RTFile.FileExists(filePath))
+                                {
+                                    EditorManager.inst.DisplayNotification($"Info file already exists!", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                RTEditor.inst.ShowNameEditor("Info Editor", "Description", "Create", () =>
+                                {
+                                    var jn = JSON.Parse("{}");
+                                    jn["desc"] = RTEditor.inst.folderCreatorName.text;
+                                    infoJN = jn;
+                                    RTFile.WriteToFile(filePath, jn.ToString());
+                                    RenderTooltip();
+                                    RTEditor.inst.HideNameEditor();
+
+                                    EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
+                                });
+                            }),
+                            new ButtonFunction("Edit Info File", () =>
+                            {
+                                var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
+
+                                if (!RTFile.FileExists(filePath))
+                                    return;
+
+                                RTEditor.inst.ShowNameEditor("Info Editor", "Description", "Done", () =>
+                                {
+                                    var jn = JSON.Parse("{}");
+                                    jn["desc"] = RTEditor.inst.folderCreatorName.text;
+                                    infoJN = jn;
+                                    RTFile.WriteToFile(filePath, jn.ToString());
+                                    RenderTooltip();
+                                    RTEditor.inst.HideNameEditor();
+                                });
+                            }),
+                            new ButtonFunction("Update Info", () =>
+                            {
+                                infoJN = null;
+                                RenderTooltip();
+                                RenderIcon();
+                            }),
+                            new ButtonFunction("Clear Info File", () =>
+                            {
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
+                                {
+                                    RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
+                                    infoJN = null;
+                                    RenderTooltip();
+                                    RTEditor.inst.HideWarningPopup();
+                                    EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
                                 }, RTEditor.inst.HideWarningPopup);
                             }));
 
@@ -373,6 +469,19 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
+        /// Renders the folder button's icon.
+        /// </summary>
+        public void RenderIcon()
+        {
+            if (!isFolder || !IconImage)
+                return;
+
+            IconImage.sprite = RTFile.FileExists(RTFile.CombinePaths(FilePath, $"folder_icon{FileFormat.PNG.Dot()}")) ?
+                SpriteHelper.LoadSprite(RTFile.CombinePaths(FilePath, $"folder_icon{FileFormat.PNG.Dot()}")) :
+                EditorSprites.OpenSprite;
+        }
+
+        /// <summary>
         /// Renders the theme panel name.
         /// </summary>
         public void RenderName() => RenderName(isFolder ? Path.GetFileName(FilePath) : Theme?.name);
@@ -389,8 +498,13 @@ namespace BetterLegacy.Editor.Data
             {
                 try
                 {
-                    if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"info{FileFormat.TXT.Dot()}"), out string file))
-                        TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Path.GetFileName(FilePath)}", file);
+                    if (infoJN == null)
+                        GetInfo();
+
+                    if (infoJN != null && !string.IsNullOrEmpty(infoJN["desc"]))
+                        TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Path.GetFileName(FilePath)}", infoJN["desc"], clear: true);
+                    else
+                        TooltipHelper.AddHoverTooltip(GameObject, "Folder", Path.GetFileName(FilePath), clear: true);
                 }
                 catch (System.Exception ex)
                 {
@@ -428,7 +542,7 @@ namespace BetterLegacy.Editor.Data
                 for (int i = 0; i < Theme.effectColors.Count; i++)
                     sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.effectColors[i])}>▓</color>");
 
-                TooltipHelper.AddHoverTooltip(GameObject, Theme.name, sb.ToString());
+                TooltipHelper.AddHoverTooltip(GameObject, Theme.name, sb.ToString(), clear: true);
             }
             catch (System.Exception ex)
             {
@@ -473,6 +587,15 @@ namespace BetterLegacy.Editor.Data
         {
             if (GameObject)
                 GameObject.SetActive(active);
+        }
+
+        /// <summary>
+        /// Gets the info file.
+        /// </summary>
+        public void GetInfo()
+        {
+            if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"folder_info{FileFormat.JSON.Dot()}"), out string file))
+                infoJN = JSON.Parse(file);
         }
 
         public override string ToString() => isFolder ? Path.GetFileName(FilePath) : Theme?.ToString();
