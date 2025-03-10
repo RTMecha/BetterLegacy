@@ -59,6 +59,8 @@ namespace BetterLegacy.Patchers
             Example.Current?.brain?.Notice(ExampleBrain.Notices.GAME_START);
 
             Camera.main.transparencySortMode = TransparencySortMode.CustomAxis;
+
+            SceneHelper.LoadedGame = true;
         }
 
         [HarmonyPatch(nameof(GameManager.Start))]

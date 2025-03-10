@@ -255,6 +255,7 @@ namespace BetterLegacy.Patchers
 
             __instance.hasLoadedLevel = false;
             __instance.loading = false;
+            SceneHelper.LoadedGame = true;
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_START);
             Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.SPAWN);

@@ -39,6 +39,11 @@ namespace BetterLegacy.Core.Helpers
         public static bool Loading { get; set; }
 
         /// <summary>
+        /// True fi the game has loaded, otherwise false.
+        /// </summary>
+        public static bool LoadedGame { get; set; }
+
+        /// <summary>
         /// Action to run when a scene is finished loading.
         /// </summary>
         public static Action<string> OnSceneLoad { get; set; }
@@ -263,6 +268,8 @@ namespace BetterLegacy.Core.Helpers
         {
             OnSceneLoad?.Invoke(level);
             OnSceneLoad = null;
+
+            LoadedGame = true;
 
             try
             {
