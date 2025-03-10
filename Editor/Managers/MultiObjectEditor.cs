@@ -986,6 +986,36 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
             }
+            
+            // New Prefab Instance
+            {
+                var labels = GenerateLabels(parent, 32f, "New Prefab Instance");
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("New Instance", () => RTEditor.inst.ShowWarningPopup("This will change the instance ID of all selected beatmap objects, assuming they all have the same ID. Are you sure you want to do this?", () =>
+                    {
+                        var selected = EditorTimeline.inst.timelineObjects.Where(x => x.Selected).ToList();
+                        if (selected.Count < 0)
+                            return;
+
+                        var first = selected[0];
+
+                        // validate that all selected timeline objects are beatmap objects and have the same prefab instance ID.
+                        if (selected.Any(x => x.isPrefabObject || x.GetData<BeatmapObject>().prefabInstanceID != first.GetData<BeatmapObject>().prefabInstanceID))
+                            return;
+
+                        var prefabInstanceID = LSText.randomString(16);
+
+                        selected.ForLoop(timelineObject =>
+                        {
+                            timelineObject.GetData<BeatmapObject>().prefabInstanceID = prefabInstanceID;
+                        });
+                        RTEditor.inst.HideWarningPopup();
+                        EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
+                    }, RTEditor.inst.HideWarningPopup)));
+
+                EditorHelper.SetComplexity(labels, Complexity.Normal);
+                EditorHelper.SetComplexity(buttons1, Complexity.Normal);
+            }
 
             // Move Prefabs
             {
