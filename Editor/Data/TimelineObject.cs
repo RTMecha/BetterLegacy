@@ -265,16 +265,6 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public bool isPrefabObject;
 
-        /// <summary>
-        /// If the objects' data is of 'EventKeyframe' type.
-        /// </summary>
-        public bool isEventKeyframe;
-
-        /// <summary>
-        /// If the timeline object is an object keyframe.
-        /// </summary>
-        public bool isObjectKeyframe;
-
         #endregion
 
         #region Dragging
