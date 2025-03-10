@@ -64,9 +64,6 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
 
-            timeOffset = Time.time;
-            timeInEditorOffset = Time.time;
-
             InitFileWatchers();
 
             CreateGlobalSettings();
@@ -497,7 +494,7 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
-            timeEditing = Time.time - timeOffset + savedTimeEditng;
+            editorInfo?.timer.Update();
 
             UpdatePicker();
             UpdateTooltip();
@@ -506,9 +503,9 @@ namespace BetterLegacy.Editor.Managers
             UpdatePreview();
             UpdateKey();
 
-            if (timeEditing > 36000f)
+            if (RTEditor.inst.editorInfo.time > 36000f)
                 AchievementManager.inst.UnlockAchievement("serious_dedication");
-            if (timeEditing > 86400f)
+            if (RTEditor.inst.editorInfo.time > 86400f)
                 AchievementManager.inst.UnlockAchievement("true_dedication");
 
             // Only want this during April Fools.
@@ -733,8 +730,6 @@ namespace BetterLegacy.Editor.Managers
         public GameObject timeDefault;
 
         public bool ienumRunning;
-
-        public float timeInEditorOffset;
 
         /// <summary>
         /// The top panel of the editor with the dropdowns.
@@ -969,59 +964,18 @@ namespace BetterLegacy.Editor.Managers
 
         #region Settings
 
-        /// <summary>
-        /// Offset to the song BPM. Good for cases where the song starts at an offset.
-        /// </summary>
-        public float bpmOffset = 0f;
-
-        /// <summary>
-        /// The total time the user has been editing a level.
-        /// </summary>
-        public float timeEditing;
-        float timeOffset;
-
-        /// <summary>
-        /// The time that was saved.
-        /// </summary>
-        public float savedTimeEditng;
-
-        /// <summary>
-        /// The amount of times the user has opened the level.
-        /// </summary>
-        public int openAmount;
+        public EditorInfo editorInfo = new EditorInfo();
 
         /// <summary>
         /// Saves the current editor settings.
         /// </summary>
         public void SaveSettings()
         {
-            var jn = JSON.Parse("{}");
+            if (!editorInfo)
+                editorInfo = new EditorInfo();
 
-            //original JSON: z
-            jn["timeline"]["zoom"] = EditorManager.inst.zoomFloat.ToString("f3");
-            //original JSON: tsc
-            jn["timeline"]["position"] = EditorManager.inst.timelineScrollRectBar.value.ToString("f2");
-            //original JSON: l
-            jn["timeline"]["layer_type"] = ((int)EditorTimeline.inst.layerType).ToString();
-            jn["timeline"]["layer"] = EditorTimeline.inst.Layer.ToString();
-            jn["timeline"]["bin_count"] = EditorTimeline.inst.BinCount.ToString();
-            jn["timeline"]["bin_position"] = EditorTimeline.inst.binSlider.value.ToString();
-
-            for (int i = 0; i < EditorTimeline.inst.pinnedEditorLayers.Count; i++)
-                jn["timeline"]["pinned_layers"][i] = EditorTimeline.inst.pinnedEditorLayers[i].ToJSON();
-
-            //original JSON: t
-            jn["editor"]["editing_time"] = timeEditing.ToString();
-            //original JSON: a
-            jn["editor"]["open_amount"] = openAmount.ToString();
-            //original JSON: sn
-            jn["misc"]["bpm_snap_active"] = SettingEditor.inst.SnapActive.ToString();
-            //original JSON: so
-            jn["misc"]["bpm_offset"] = bpmOffset.ToString();
-            //original JSON: t
-            jn["misc"]["time"] = AudioManager.inst.CurrentAudioSource.time.ToString();
-
-            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE), jn.ToString(3));
+            editorInfo.ApplyFrom();
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE), editorInfo.ToJSON().ToString(3));
         }
 
         /// <summary>
@@ -1033,96 +987,22 @@ namespace BetterLegacy.Editor.Managers
 
             if (!RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)))
             {
-                savedTimeEditng = 0f;
-                timeOffset = Time.time;
+                editorInfo = new EditorInfo();
+                editorInfo.timer.UpdateTimeOffset();
+
                 return;
             }
 
             var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)));
 
-            if (jn["timeline"] != null)
+            try
             {
-                var layer = 0;
-                var layerType = EditorTimeline.LayerType.Objects;
-
-                float zoom = 0.05f;
-                float position = 0f;
-
-                if (jn["timeline"]["z"] != null)
-                    zoom = jn["timeline"]["z"].AsFloat;
-
-                if (jn["timeline"]["tsc"] != null)
-                    position = jn["timeline"]["tsc"].AsFloat;
-
-                if (jn["timeline"]["zoom"] != null)
-                    zoom = jn["timeline"]["zoom"].AsFloat;
-
-                if (jn["timeline"]["position"] != null)
-                    position = jn["timeline"]["position"].AsFloat;
-
-                EditorTimeline.inst.SetTimeline(zoom, position);
-
-                if (jn["timeline"]["layer_type"] != null)
-                    layerType = (EditorTimeline.LayerType)jn["timeline"]["layer_type"].AsInt;
-
-                EditorTimeline.inst.layerType = layerType;
-
-                if (jn["timeline"]["l"] != null)
-                    layer = jn["timeline"]["l"].AsInt;
-
-                if (jn["timeline"]["layer"] != null)
-                    layer = jn["timeline"]["layer"].AsInt;
-
-                if (jn["timeline"]["bin_count"] != null)
-                    EditorTimeline.inst.BinCount = jn["timeline"]["bin_count"].AsInt;
-                else
-                    EditorTimeline.inst.BinCount = 14;
-
-                EditorTimeline.inst.binSlider.value = jn["timeline"]["bin_position"].AsFloat;
-
-                EditorTimeline.inst.SetLayer(layer, false);
-
-                if (jn["timeline"]["pinned_layers"] != null)
-                    for (int i = 0; i < jn["timeline"]["pinned_layers"].Count; i++)
-                        EditorTimeline.inst.pinnedEditorLayers.Add(PinnedEditorLayer.Parse(jn["timeline"]["pinned_layers"][i]));
+                editorInfo = EditorInfo.Parse(jn);
+                editorInfo.ApplyTo();
             }
-
-            if (jn["editor"] != null)
+            catch (Exception ex)
             {
-                if (jn["editor"]["t"] != null)
-                    savedTimeEditng = jn["editor"]["t"].AsFloat;
-                if (jn["editor"]["editing_time"] != null)
-                    savedTimeEditng = jn["editor"]["editing_time"].AsFloat;
-
-                if (jn["editor"]["a"] != null)
-                    openAmount = jn["editor"]["a"].AsInt + 1;
-                if (jn["editor"]["open_amount"] != null)
-                    openAmount = jn["editor"]["open_amount"].AsInt + 1;
-            }
-
-            if (jn["misc"] != null)
-            {
-                if (jn["misc"]["sn"] != null)
-                    SettingEditor.inst.SnapActive = jn["misc"]["sn"].AsBool;
-                if (jn["misc"]["bpm_snap_active"] != null)
-                    SettingEditor.inst.SnapActive = jn["misc"]["bpm_snap_active"].AsBool;
-
-                var bpmOffset = 0f;
-                if (jn["misc"]["so"] != null)
-                    bpmOffset = jn["misc"]["so"].AsFloat;
-                if (jn["misc"]["bpm_offset"] != null)
-                    bpmOffset = jn["misc"]["bpm_offset"].AsFloat;
-                this.bpmOffset = bpmOffset;
-
-                float time = -1f;
-                if (jn["misc"]["t"] != null)
-                    time = jn["misc"]["t"].AsFloat;
-                if (jn["misc"]["time"] != null)
-                    time = jn["misc"]["time"].AsFloat;
-                if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length && EditorConfig.Instance.LevelLoadsLastTime.Value)
-                    AudioManager.inst.SetMusicTime(time);
-
-                SettingEditor.inst.SnapBPM = MetaData.Current.song.BPM;
+                CoreHelper.LogException(ex);
             }
 
             EditorTimeline.inst.prevLayer = EditorTimeline.inst.Layer;
@@ -3158,11 +3038,21 @@ namespace BetterLegacy.Editor.Managers
 
                             themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                            RTEditor.inst.BrowserPopup.Close();
+                            BrowserPopup.Close();
                             UpdateThemePath(false);
                         });
                     }),
-                    new ButtonFunction("Open List in File Explorer", OpenThemeListFolder));
+                    new ButtonFunction("Open List in File Explorer", OpenThemeListFolder),
+                    new ButtonFunction("Set as Default for Level", () =>
+                    {
+                        editorInfo.themePath = themePath;
+                        EditorManager.inst.DisplayNotification($"Set current theme folder [ {themePath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                    }, "Theme Default Path"),
+                    new ButtonFunction("Remove Default", () =>
+                    {
+                        editorInfo.themePath = null;
+                        EditorManager.inst.DisplayNotification($"Removed default theme folder.", 5f, EditorManager.NotificationType.Success);
+                    }, "Theme Default Path"));
             };
 
             EditorHelper.SetComplexity(themePathGameObject, Complexity.Advanced);
@@ -3277,11 +3167,21 @@ namespace BetterLegacy.Editor.Managers
 
                             prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
-                            RTEditor.inst.BrowserPopup.Close();
+                            BrowserPopup.Close();
                             UpdatePrefabPath(false);
                         });
                     }),
-                    new ButtonFunction("Open List in File Explorer", OpenPrefabListFolder));
+                    new ButtonFunction("Open List in File Explorer", OpenPrefabListFolder),
+                    new ButtonFunction("Set as Default for Level", () =>
+                    {
+                        editorInfo.prefabPath = prefabPath;
+                        EditorManager.inst.DisplayNotification($"Set current prefab folder [ {prefabPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                    }, "Prefab Default Path"),
+                    new ButtonFunction("Remove Default", () =>
+                    {
+                        editorInfo.prefabPath = null;
+                        EditorManager.inst.DisplayNotification($"Removed default prefab folder.", 5f, EditorManager.NotificationType.Success);
+                    }, "Prefab Default Path"));
             };
 
             EditorHelper.SetComplexity(prefabPathGameObject, Complexity.Advanced);
@@ -6605,7 +6505,7 @@ namespace BetterLegacy.Editor.Managers
             RTFile.MoveDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash, level), RTFile.CombinePaths(recyclingPath, level));
         }
 
-        public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value) - inst.bpmOffset;
+        public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.editorInfo.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value) - inst.editorInfo.bpmOffset;
 
         public static float SnapToBPM(float time, float offset, float divisions, float bpm) => Mathf.RoundToInt((time + offset) / (60f / bpm / divisions)) * (60f / bpm / divisions) - offset;
 

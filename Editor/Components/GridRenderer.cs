@@ -52,7 +52,7 @@ namespace BetterLegacy.Editor.Components
         public static float multi = 154f;
         void DrawCell(int x, int y, int index, VertexHelper vh)
         {
-            float posX = (cellWidth * x) + (isTimeline ? (RTEditor.inst.bpmOffset * multi) : 0f);
+            float posX = (cellWidth * x) + (isTimeline ? (RTEditor.inst.editorInfo.bpmOffset * multi) : 0f);
             float posY = cellHeight * y;
 
             var simpleVert = UIVertex.simpleVert;

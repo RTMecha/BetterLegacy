@@ -267,9 +267,9 @@ namespace BetterLegacy.Editor.Managers
         {
             if (CoreHelper.InEditor && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
                 GameData.IsValid && GameData.Current.eventObjects != null &&
-                RTPrefabEditor.inst)
+                RTPrefabEditor.inst && Dialog && Dialog.GameObject)
             {
-                var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
+                var transform = Dialog.GameObject.transform;
 
                 if (!transform || !transform.gameObject.activeInHierarchy)
                     return;
@@ -277,9 +277,9 @@ namespace BetterLegacy.Editor.Managers
                 try
                 {
                     SetText("FPS", LegacyPlugin.FPSCounter.Text);
-                    SetText("Time in Editor", RTString.SecondsToTime(RTEditor.inst.timeEditing));
+                    SetText("Time in Editor", RTString.SecondsToTime(RTEditor.inst.editorInfo.timer.time));
                     SetText("Song Progress", $"{RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
-                    SetText("Level opened amount", RTEditor.inst.openAmount.ToString());
+                    SetText("Level opened amount", RTEditor.inst.editorInfo.bpmSnapActive.ToString());
 
                     SetText("Object Count", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
                     SetText("Total Object Count", GameData.Current.beatmapObjects.Count.ToString());
@@ -315,11 +315,11 @@ namespace BetterLegacy.Editor.Managers
         void SetBPMSlider(Slider slider, InputField input)
         {
             slider.onValueChanged.ClearAll();
-            slider.value = SettingEditor.inst.SnapBPM;
+            slider.value = RTEditor.inst.editorInfo.bpm;
             slider.onValueChanged.AddListener(_val =>
             {
                 MetaData.Current.song.BPM = _val;
-                SettingEditor.inst.SnapBPM = _val;
+                RTEditor.inst.editorInfo.bpm = _val;
                 SetBPMInputField(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
             });
@@ -328,12 +328,12 @@ namespace BetterLegacy.Editor.Managers
         void SetBPMInputField(Slider slider, InputField input)
         {
             input.onValueChanged.ClearAll();
-            input.text = SettingEditor.inst.SnapBPM.ToString();
+            input.text = RTEditor.inst.editorInfo.bpm.ToString();
             input.onValueChanged.AddListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 120f);
                 MetaData.Current.song.BPM = bpm;
-                SettingEditor.inst.SnapBPM = bpm;
+                RTEditor.inst.editorInfo.bpm = bpm;
                 SetBPMSlider(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
             });
@@ -342,10 +342,10 @@ namespace BetterLegacy.Editor.Managers
         void SetBPMOffsetSlider(Slider slider, InputField input)
         {
             slider.onValueChanged.ClearAll();
-            slider.value = RTEditor.inst.bpmOffset;
+            slider.value = RTEditor.inst.editorInfo.bpmOffset;
             slider.onValueChanged.AddListener(_val =>
             {
-                RTEditor.inst.bpmOffset = _val;
+                RTEditor.inst.editorInfo.bpmOffset = _val;
                 SetBPMOffsetInputField(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
                 RTEditor.inst.SaveSettings();
@@ -355,11 +355,11 @@ namespace BetterLegacy.Editor.Managers
         void SetBPMOffsetInputField(Slider slider, InputField input)
         {
             input.onValueChanged.ClearAll();
-            input.text = RTEditor.inst.bpmOffset.ToString();
+            input.text = RTEditor.inst.editorInfo.bpmOffset.ToString();
             input.onValueChanged.AddListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 0f);
-                RTEditor.inst.bpmOffset = bpm;
+                RTEditor.inst.editorInfo.bpmOffset = bpm;
                 SetBPMOffsetSlider(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
                 RTEditor.inst.SaveSettings();
@@ -382,8 +382,8 @@ namespace BetterLegacy.Editor.Managers
 
             var toggle = transform.Find("snap/toggle/toggle").GetComponent<Toggle>();
             toggle.onValueChanged.RemoveAllListeners();
-            toggle.isOn = SettingEditor.inst.SnapActive;
-            toggle.onValueChanged.AddListener(_val => SettingEditor.inst.SnapActive = _val);
+            toggle.isOn = RTEditor.inst.editorInfo.bpmSnapActive;
+            toggle.onValueChanged.AddListener(_val => RTEditor.inst.editorInfo.bpmSnapActive = _val);
 
             var slider = transform.Find("snap/bpm/slider").GetComponent<Slider>();
             var input = transform.Find("snap/bpm/input").GetComponent<InputField>();

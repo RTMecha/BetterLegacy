@@ -125,7 +125,7 @@ namespace BetterLegacy.Editor.Managers
             float num = Input.mousePosition.x;
             num += Mathf.Abs(EditorManager.inst.timeline.transform.AsRT().position.x);
 
-            return SettingEditor.inst.SnapActive && !Input.GetKey(KeyCode.LeftAlt) ?
+            return RTEditor.inst.editorInfo.bpmSnapActive && !Input.GetKey(KeyCode.LeftAlt) ?
                 RTEditor.SnapToBPM(num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom) :
                 num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom;
         }
@@ -899,13 +899,13 @@ namespace BetterLegacy.Editor.Managers
 
             var clipLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
-            float x = SettingEditor.inst.SnapBPM / 60f;
+            float x = RTEditor.inst.editorInfo.bpm / 60f;
 
             var closer = 40f * x;
             var close = 20f * x;
             var unrender = 6f * x;
 
-            var bpm = EditorManager.inst.Zoom > closer ? SettingEditor.inst.SnapBPM : EditorManager.inst.Zoom > close ? SettingEditor.inst.SnapBPM / 2f : SettingEditor.inst.SnapBPM / 4f;
+            var bpm = EditorManager.inst.Zoom > closer ? RTEditor.inst.editorInfo.bpm : EditorManager.inst.Zoom > close ? RTEditor.inst.editorInfo.bpm / 2f : RTEditor.inst.editorInfo.bpm / 4f;
             var snapDivisions = EditorConfig.Instance.BPMSnapDivisions.Value * 2f;
             if (timelineGridRenderer && EditorManager.inst.Zoom > unrender && EditorConfig.Instance.TimelineGridEnabled.Value)
             {

@@ -636,7 +636,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     var marker = Marker.DeepCopy(markerCopy);
-                    marker.time = SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                    marker.time = RTEditor.inst.editorInfo.bpmSnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
                     GameData.Current.beatmapData.markers.Add(marker);
                     CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
                     OrderMarkers();

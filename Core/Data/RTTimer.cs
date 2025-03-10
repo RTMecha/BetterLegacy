@@ -7,10 +7,11 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public struct RTTimer
     {
-        public RTTimer(float time = 0f, float timeOffset = 0f)
+        public RTTimer(float time = 0f, float timeOffset = 0f, float offset = 0f)
         {
             this.time = time;
             this.timeOffset = timeOffset;
+            this.offset = offset;
             UpdateTimeOffset();
         }
 
@@ -18,6 +19,11 @@ namespace BetterLegacy.Core.Data
         /// Time since start.
         /// </summary>
         public float time;
+        /// <summary>
+        /// Offsets the timer.
+        /// </summary>
+        public float offset;
+
         float timeOffset;
 
         /// <summary>
@@ -28,7 +34,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Updates the timer.
         /// </summary>
-        public void Update() => time = Time.time - timeOffset;
+        public void Update() => time = Time.time - timeOffset + offset;
 
         public override string ToString() => time.ToString();
     }

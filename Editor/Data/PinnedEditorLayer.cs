@@ -39,6 +39,20 @@ namespace BetterLegacy.Editor.Data
         public Color color;
 
         /// <summary>
+        /// Creates a copy of a pinned editor layer.
+        /// </summary>
+        /// <param name="orig">Pinned editor layer to copy.</param>
+        /// <returns>Returns a new pinned editor layer with the same values as the original.</returns>
+        public static PinnedEditorLayer DeepCopy(PinnedEditorLayer orig) => new PinnedEditorLayer
+        {
+            layer = orig.layer,
+            name = orig.name,
+            desc = orig.desc,
+            overrideColor = orig.overrideColor,
+            color = orig.color,
+        };
+
+        /// <summary>
         /// Parses a pinned editor layer from JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>

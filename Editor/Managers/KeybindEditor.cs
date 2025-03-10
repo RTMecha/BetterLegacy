@@ -1488,12 +1488,12 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ToggleBPMSnap(Keybind keybind)
         {
-            SettingEditor.inst.SnapActive = !SettingEditor.inst.SnapActive;
+            RTEditor.inst.editorInfo.bpmSnapActive = !RTEditor.inst.editorInfo.bpmSnapActive;
 
             try
             {
-                var dialog = EditorManager.inst.GetDialog("Settings Editor").Dialog;
-                dialog.Find("snap/toggle/toggle").GetComponent<Toggle>().isOn = SettingEditor.inst.SnapActive;
+                var dialog = RTSettingEditor.inst.Dialog.GameObject.transform;
+                dialog.Find("snap/toggle/toggle").GetComponent<Toggle>().isOn = RTEditor.inst.editorInfo.bpmSnapActive;
             }
             catch (Exception ex)
             {

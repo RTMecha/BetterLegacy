@@ -2128,8 +2128,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTEditor.inst.dragOffset != timeOffset && !EditorTimeline.inst.SelectedObjects.All(x => x.Locked))
             {
-                if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive || !RTEditor.DraggingPlaysSoundBPM))
-                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, SettingEditor.inst.SnapActive ? 0.6f : 0.1f, 0.7f);
+                if (RTEditor.DraggingPlaysSound && (RTEditor.inst.editorInfo.bpmSnapActive || !RTEditor.DraggingPlaysSoundBPM))
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive ? 0.6f : 0.1f, 0.7f);
 
                 RTEditor.inst.dragOffset = timeOffset;
             }
@@ -2216,7 +2216,7 @@ namespace BetterLegacy.Editor.Managers
 
                 float st = beatmapObject.StartTime;
 
-                st = SettingEditor.inst.SnapActive && snap && !Input.GetKey(KeyCode.LeftAlt) ? -(st - RTEditor.SnapToBPM(st + calc)) : calc;
+                st = RTEditor.inst.editorInfo.bpmSnapActive && snap && !Input.GetKey(KeyCode.LeftAlt) ? -(st - RTEditor.SnapToBPM(st + calc)) : calc;
 
                 beatmapObject.events[timelineObject.Type][timelineObject.Index].eventTime = st;
 
@@ -2238,8 +2238,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (changed && !selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
             {
-                if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive && snap || !RTEditor.DraggingPlaysSoundBPM))
-                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, SettingEditor.inst.SnapActive && snap ? 0.6f : 0.1f, 0.8f);
+                if (RTEditor.DraggingPlaysSound && (RTEditor.inst.editorInfo.bpmSnapActive && snap || !RTEditor.DraggingPlaysSoundBPM))
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive && snap ? 0.6f : 0.1f, 0.8f);
 
                 RTEditor.inst.dragOffset = timelineCalc + ObjEditor.inst.mouseOffsetXForDrag;
             }
@@ -2534,7 +2534,7 @@ namespace BetterLegacy.Editor.Managers
             var eventKeyframe = EventKeyframe.DeepCopy(timelineKeyframe.eventKeyframe);
 
             var time = EditorManager.inst.CurrentAudioPos;
-            if (SettingEditor.inst.SnapActive)
+            if (RTEditor.inst.editorInfo.bpmSnapActive)
                 time = RTEditor.SnapToBPM(time);
 
             if (!setTime)
@@ -3203,7 +3203,7 @@ namespace BetterLegacy.Editor.Managers
         public EventKeyframe AddEvent(BeatmapObject beatmapObject, float time, int type, EventKeyframe _keyframe, bool openDialog)
         {
             var eventKeyframe = EventKeyframe.DeepCopy(_keyframe);
-            var t = SettingEditor.inst.SnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(beatmapObject.StartTime - RTEditor.SnapToBPM(beatmapObject.StartTime + time)) : time;
+            var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(beatmapObject.StartTime - RTEditor.SnapToBPM(beatmapObject.StartTime + time)) : time;
             eventKeyframe.eventTime = t;
 
             if (eventKeyframe.relative)
