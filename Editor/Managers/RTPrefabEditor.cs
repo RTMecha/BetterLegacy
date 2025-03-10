@@ -1939,6 +1939,8 @@ namespace BetterLegacy.Editor.Managers
         GameObject prefabExternalUpAFolderButton;
         public GameObject prefabExternalAddButton;
 
+        public bool filterUsed;
+
         public IEnumerator LoadPrefabs()
         {
             if (prefabsLoading)
@@ -2268,6 +2270,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var prefab = prefabPanel.Prefab;
             var prefabType = prefab.PrefabType;
+            var isExternal = prefabPanel.Dialog == PrefabDialog.External;
 
             externalTypeText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
             externalTypeImage.color = prefabType.Color;
@@ -2283,7 +2286,7 @@ namespace BetterLegacy.Editor.Managers
                     externalTypeImage.color = prefabType.Color;
                     externalTypeText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
 
-                    if (!string.IsNullOrEmpty(prefab.filePath))
+                    if (isExternal && !string.IsNullOrEmpty(prefab.filePath))
                         RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
 
                     prefabPanel.RenderPrefabType(prefabType);
@@ -2291,11 +2294,15 @@ namespace BetterLegacy.Editor.Managers
                 });
             });
 
+            importPrefab.gameObject.SetActive(isExternal);
             importPrefab.onClick.ClearAll();
-            importPrefab.onClick.AddListener(() => ImportPrefabIntoLevel(prefab));
+            if (isExternal)
+                importPrefab.onClick.AddListener(() => ImportPrefabIntoLevel(prefab));
 
+            exportToVG.gameObject.SetActive(isExternal);
             exportToVG.onClick.ClearAll();
-            exportToVG.onClick.AddListener(() => ConvertPrefab(prefab));
+            if (isExternal)
+                exportToVG.onClick.AddListener(() => ConvertPrefab(prefab));
 
             externalDescriptionField.onValueChanged.ClearAll();
             externalDescriptionField.onEndEdit.ClearAll();
@@ -2303,6 +2310,12 @@ namespace BetterLegacy.Editor.Managers
             externalDescriptionField.onValueChanged.AddListener(_val => prefab.description = _val);
             externalDescriptionField.onEndEdit.AddListener(_val =>
             {
+                if (!isExternal)
+                {
+                    prefabPanel.RenderTooltip();
+                    return;
+                }
+
                 RTEditor.inst.DisablePrefabWatcher();
 
                 if (!string.IsNullOrEmpty(prefab.filePath))
@@ -2319,6 +2332,21 @@ namespace BetterLegacy.Editor.Managers
             externalNameField.onValueChanged.AddListener(_val => prefab.Name = _val);
             externalNameField.onEndEdit.AddListener(_val =>
             {
+                if (!isExternal)
+                {
+                    prefabPanel.RenderName();
+                    prefabPanel.RenderTooltip();
+                    EditorTimeline.inst.timelineObjects.ForLoop(timelineObject =>
+                    {
+                        if (timelineObject.isBeatmapObject || timelineObject.GetData<PrefabObject>().prefabID != prefab.ID)
+                            return;
+
+                        timelineObject.RenderText(prefab.Name);
+                    });
+
+                    return;
+                }
+
                 RTEditor.inst.DisablePrefabWatcher();
 
                 RTFile.DeleteFile(prefab.filePath);
@@ -2726,6 +2754,22 @@ namespace BetterLegacy.Editor.Managers
 
             yield return new WaitForSeconds(0.03f);
 
+            var searchFieldContextMenu = RTEditor.inst.PrefabPopups.InternalPrefabs.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
+            searchFieldContextMenu.onClick = null;
+            searchFieldContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction($"Filter: Used [{(filterUsed ? "On": "Off")}]", () =>
+                    {
+                        filterUsed = !filterUsed;
+                        PrefabEditor.inst.ReloadInternalPrefabsInPopup();
+                    })
+                    );
+            };
+
             RTEditor.inst.PrefabPopups.InternalPrefabs.ClearContent();
             CreatePrefabButton(RTEditor.inst.PrefabPopups.InternalPrefabs.Content, "New Internal Prefab", eventData =>
             {
@@ -2753,7 +2797,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < prefabs.Count; i++)
             {
                 var prefab = prefabs[i];
-                if (ContainsName(prefab, PrefabDialog.Internal))
+                if (ContainsName(prefab, PrefabDialog.Internal) && (!filterUsed || GameData.Current.prefabObjects.Any(x => x.prefabID == prefab.ID)))
                     new PrefabPanel(PrefabDialog.Internal, i).Init(prefab, updateCurrentPrefab);
             }
 

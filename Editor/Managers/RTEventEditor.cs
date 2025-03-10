@@ -2193,10 +2193,32 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var theme = dialogTmp.Find("theme-search").GetComponent<InputField>();
 
+                        var themeSearchContextMenu = theme.gameObject.GetOrAddComponent<ContextClickable>();
+                        themeSearchContextMenu.onClick = null;
+                        themeSearchContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
+                                {
+                                    RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
+                                    RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
+                                }),
+                                new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
+                                {
+                                    EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
+                                    RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
+                                })
+                                );
+                        };
+
                         theme.onValueChanged.ClearAll();
-                        theme.onValueChanged.AddListener(_val => { RTThemeEditor.inst.RenderThemeContent(dialogTmp, _val); });
+                        theme.onValueChanged.AddListener(_val => RTThemeEditor.inst.RenderThemeContent(dialogTmp, _val));
                         RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
                         EventEditor.inst.RenderThemePreview(dialogTmp);
+
                         break;
                     }
                 case 5: // Chromatic

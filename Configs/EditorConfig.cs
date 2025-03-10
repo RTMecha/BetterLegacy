@@ -146,6 +146,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> ThemeSavesIndents { get; set; }
         public Setting<bool> FileBrowserRemembersLocation { get; set; }
         public Setting<bool> PasteBackgroundObjectsOverwrites { get; set; }
+        public Setting<bool> ShowDefaultThemes { get; set; }
 
         #endregion
 
@@ -1410,6 +1411,7 @@ namespace BetterLegacy.Configs
             ThemeSavesIndents = Bind(this, "Data", "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
             FileBrowserRemembersLocation = Bind(this, "Data", "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");
             PasteBackgroundObjectsOverwrites = Bind(this, "Data", "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
+            ShowDefaultThemes = Bind(this, "Data", "Show Default Themes", true, "If the default beatmap themes should appear in the theme list.");
 
             #endregion
 
