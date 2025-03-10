@@ -16,6 +16,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using TextEditor = BetterLegacy.Editor.Managers.TextEditor;
+
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
@@ -206,14 +208,14 @@ namespace BetterLegacy.Editor.Data
                                 return;
                             }
 
-                            RTEditor.inst.ShowNameEditor("Info Editor", "Description", "Create", () =>
+                            TextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
                             {
                                 var jn = JSON.Parse("{}");
-                                jn["desc"] = RTEditor.inst.folderCreatorName.text;
+                                jn["desc"] = TextEditor.inst.Text;
                                 infoJN = jn;
                                 RTFile.WriteToFile(filePath, jn.ToString());
                                 RenderTooltip();
-                                RTEditor.inst.HideNameEditor();
+                                RTEditor.inst.TextEditorPopup.Close();
 
                                 EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
                             });
@@ -225,14 +227,14 @@ namespace BetterLegacy.Editor.Data
                             if (!RTFile.FileExists(filePath))
                                 return;
 
-                            RTEditor.inst.ShowNameEditor("Info Editor", "Description", "Done", () =>
+                            TextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
                             {
                                 var jn = JSON.Parse("{}");
-                                jn["desc"] = RTEditor.inst.folderCreatorName.text;
+                                jn["desc"] = TextEditor.inst.Text;
                                 infoJN = jn;
                                 RTFile.WriteToFile(filePath, jn.ToString());
                                 RenderTooltip();
-                                RTEditor.inst.HideNameEditor();
+                                RTEditor.inst.TextEditorPopup.Close();
                             });
                         }),
                         new ButtonFunction("Update Info", () =>
