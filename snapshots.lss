@@ -1,0 +1,388 @@
+﻿snapshot-2025.3.1 - (pre-1.7.0) > [???]
+- Completely overhauled Example. He is now a whole lot more advanced, customizable and a (hopefully) better assistant. He's grown up so much :3
+- spawnPrefab modifiers can now find a prefab via different ways: Index, ID and Name.
+- Renamed Timeline Waveform type names to better describe what they are. This is done since what was the "Modern" waveform is no longer modern due to modern PA now using the "Beta" waveform.
+- Unclamped the timeline. You can now drag the timeline to before the level starts and see any objects that spawn there. You can also move objects to before the level starts by turning the config "Config Manager > Editor > Timeline > Clamped Timeline Drag" off.
+- Reverted the fix that changed modifier groups to only check objects spawned from a prefab. I realized it's more useful to have it also search for expanded prefab objects.
+- Fixed metadata editor not closing.
+- Fixed some issues with the BG camera layer getting offset from the foreground.
+- Reverted BG camera near clip plane not changing with the zoom. This means the negative zoom frame bleeding effect is back.
+- Fixed objects highlighting and not unhighlighting when they disable and re-enable.
+- Removed the modifiers tab from the Config Manager and moved its settings to Editor > Modifiers.
+- Custom configs can kinda be registered now.
+- Themes now display info about their colors.
+- Folders in the level, theme and prefab lists now have a "folder" icon. This can be customized by adding a "folder_icon.png" file to the folder or by using the context menu to set it. You can also give the folder a short description by creating a "folder_info.json" file.
+- Added New Prefab Instance button to Multi Object Editor.
+- New Context Menu stuffs:
+> Search field filters (default themes, used themes, used prefabs)
+> Default prefab / theme paths for level
+> Apply This & Create New for the Apply Prefab button in the Object Editor.
+> Edit for internal prefabs.
+snapshot-2025.2.3 - (pre-1.7.0) > [Feb 13, 2025]
+- Added support for Shake X & Y from alpha / default branch.
+- Preparing for polygon shape and particle shape port.
+- Alpha (Arrhythmia) player model no longer can boost to be more accurate to the era the model is from.
+- Added Require Version to metadata values. This is for better level compatibility.
+snapshot-2025.2.2 - (pre-1.7.0) > [Feb 7, 2025]
+- Actually fixed Object Editor not opening. This was due to the Object Editor initialization code ending before the UI was assigned.
+snapshot-2025.2.1 - (pre-1.7.0) > [Feb 3, 2025]
+- Added animations to the Object Templates Popup.
+- Fixed Object Editor not opening.
+snapshot-2025.1.10 - (pre-1.7.0) > [Jan 26, 2025]
+- Fixed color modifiers not working with text objects.
+- Added more_bins achievement.
+- You can now drag the timeline around when you drag on timeline objects.
+- Added max bin count and default bin count buttons in the timeline context menu.
+- Fixed player tail length being offset.
+- Added Toggle Object Preview Visibility to the editor layer field context menu. This is ease of access for the "Only Objects on Current Layer Visible" setting.
+- Removed unused Editor Properties settings since that was removed a long while ago.
+- Added a Text Object context menu. Comes with a new Font Selector Popup list.
+snapshot-2025.1.9 - (pre-1.7.0) > [Jan 21, 2025]
+- Fixed editor tick throwing an error in some cases.
+snapshot-2025.1.8 - (pre-1.7.0) > [Jan 18, 2025]
+- Actually hopefully fixed Object Editor not opening in some cases?????
+- Fixed Custom Player Objects not having their visibility properly set.
+snapshot-2025.1.7 - (pre-1.7.0) > [Jan 18, 2025]
+- Interfaces now notify you of what song is currently playing.
+- Fixed Player Shapes removing their tail.
+- Implemented more story elements.
+- Fixed Object Editor not opening.
+snapshot-2025.1.6 - (pre-1.7.0) > [Jan 16, 2025]
+- Story mode chapter 1 now has a "chapter transition" level, meaning you can technically complete chapter 1 now. However, the story is not finished and needs more work.
+- Updated some story levels.
+- Reworked some editor timeline stuff.
+- You can now click and hold the mouse scrollwheel to drag the editor timeline around.
+- Added a context menu to objects' editor layer field.
+- Reworked Editor Dialog and Editor Popup open / close systems. If you encounter any issues with these changes, please let me know!
+- Fixed Level Template default preview not displaying correctly.
+- Changed the way multiple selected object keyframes of the same type are handled in the editor. You can now properly set, add and subtract a value to multiple keyframes.
+- Moved Marker settings in the config to their own sub-tab.
+- Markers in the object timeline now properly update when the start time / autokill time is changed.
+snapshot-2025.1.5 - (pre-1.7.0) > [Jan 9, 2025]
+- Fixed a really old bug with colliders scaled to 0, 0 crashing the game. (Looking at you, pseudo-3D animations)
+snapshot-2025.1.4 - (pre-1.7.0) > [Jan 9, 2025]
+- Fixed internal prefab search using the external search.
+- Fixed DevPlus players' tail being further away from the head than it should be.
+- Fixed the story mode levels not working.
+- Fixed Multi Object Editor color keyframe index scrolling setting itself to a really low negative number.
+- Fixed Multi Object Keyframe Editor ease type dropdown not having any values.
+- Fixed the BG Modifier card layout.
+- Fixed expanding prefab objects lower than the default bin collapsing all the objects bin values.
+snapshot-2025.1.3 - (pre-1.7.0) > [Jan 8, 2025]
+- Forgot to note last snapshots that the TO DO items in the Project Planner can now have their priority changed.
+- Fixed edit button showing on the input field for the Project Planner TO DO Editor.
+- Reworked setVariable modifiers to only set the variable of itself. Any levels / prefabs that use the same modifier but before this change should be unaffected. If they have, then you'll need to change the modifiers to the new setVariableOther modifiers.
+- Modifier notifier now lights up instead of changing its active state.
+- Added some more tooltips to the modifiers.
+- Reworked the checkpoint system a little.
+- Fixed a bug with restarting the level not resetting the currently active checkpoint.
+- Got Checkpoint animation now properly updates its colors to the themes' GUI color.
+- Fixed Bin Controls affecting the Events layer.
+snapshot-2025.1.2 - (pre-1.7.0) > [Jan 7, 2025]
+- Implemented Bin Controls. This means you can now scroll up and down in the main editor timeline and you can add new bins to the editor.
+- With the Bin Controls feature, Timeline Objects can now retain their bin value depending on the Config Manager > Editor > Timeline > Timeline Object Retains Bin On Drag setting.
+- You can now delete level templates.
+- Fonts in the Text Object documentation now display their actual font.
+- You can now edit the transform offsets of multiple prefabs in the Multi Object editor.
+- Fixed the bug where selecting a single object after selecting multiple prevents rendering the keyframes correctly.
+- Simplified the level combining process by adding a PA type dropdown and shortening the default path so it looks less daunting.
+- Added "Mouse Tooltip Requires Help" setting to Config Manager > Editor > Editor GUI. With it on, the mouse tooltip requires the help info box to be active in order to show. It's off by default.
+- Changed the Modifier Collapse toggle UI to look like other collapse toggles, so it's more clear as to what it does.
+- Added a bunch of mouse tooltips.
+- Changed the layout of the Setting Editor so the color editors are side-by-side.
+- Easing Dropdown in the Multi Object Keyframe Editor now has an "Apply Curves" button.
+- Shortened some of the color keyframe labels for gradient objects.
+- Cleaned up Multi Object Editor UI a little.
+- Added "pop" sound to the default sounds.
+- Cleaned up a ton of Player code.
+- Overwrite the Players' animation system. Includes a new heal animation.
+- It now should be possible to parent custom player objects to other custom player objects.
+- Custom player animations have been implemented internally.
+- Added Replay End Level Off setting to the Metadata Editor.
+- Fixed keyboard number row + not working with the editor freecam.
+- Added a reload button to the Keybinds popup. This resets your keybinds to the default list.
+- Fixed Warning Popup appearing behind some popups.
+- Changed the default image object sprite to the PA logo.
+snapshot-2025.1.1 - (pre-1.7.0) > [Jan 3, 2025]
+- First snapshot of the new year! I really hope to get this update done soon...
+- Fixed SS rank shine not working in some cases.
+- Added rank display to level buttons in the Arcade menus.
+- Changed Difficulty mode in the Pause menu to Challenge mode.
+- Player data now updates its level name.
+- Fixed the interface Dark theme not being great.
+- Hopefully fixed editor crash by clearing levels list from the arcade when loading the editor.
+- Fixed objects appearing behind others when created.
+- Reworked some Project Planner code.
+- Made levels in the editor consistent with other editor data and also use the same level system as the arcade.
+- Modifiers are now collapse-able in the editor.
+snapshot-2024.12.7 - (pre-1.7.0) > [Dec 30, 2024]
+- Scene loading screen now uses the current interface theme instead of the old interface colors.
+- Arcade level player data now saves in a non-encrypted arcade_saves.lss file. Since BetterLegacy doesn't have leaderboards (and likely never will), the encryption wasn't necessary.
+- Added Open Source link to the Help dropdown in the editor.
+- Added an Open Workshop button to the online Steam level menu.
+- loadLevelInCollection and downloadLevel modifiers.
+- LoadLevelInCollection to end level function dropdowns.
+- setMusicPlaying modifier. This sets the playing state of the current song. This feature is more for sandboxing and less to be used in actual levels due to pause menu taking priority in playing state.
+- pauseLevel modifier. Pauses the game and opens the pause menu.
+- Cursor now behaves consistently across the entire game in terms of visibility.
+- New "Cursor" sub-tab in Config Manager > Core. This has settings related to the cursors' visibility.
+snapshot-2024.12.6 - (pre-1.7.0) > [Dec 28, 2024]
+- Fixed Arcade menu local pages not working.
+- Fixed Background Objects not being destroyed / properly updated in some cases.
+- Added "Paste Background Objects Overwrites" setting to Config Manager > Editor > Data. This removes the current list of BG objects and replaces it with the copied list.
+- Made Prefab Panel code more consistent with other editor elements.
+snapshot-2024.12.5 - (pre-1.7.0) > [Dec 27, 2024]
+- Fixed the replay button being broken in the End Level screen due to it clearing the level data.
+- Restarting level from Pause menu now restarts after the countdown.
+- Added "Play Pause Countdown" setting to Config Manager > Core > Game.
+- endLevel modifier now has a customizable end level function. This includes a new "setLevelEndFunc" modifier that only changes the level end behavior without actually ending the level.
+- Increased the modifier dropdown width.
+snapshot-2024.12.4 - (pre-1.7.0) > [Dec 26, 2024]
+- Updated the chapter 1 demo. This includes some very WIP cutscenes.
+- Background Objects now update in the UpdateObject keybind action.
+- Began implementing seed-based random.
+- Changed the emoji in the main menu sound.
+- Implemented default rect values for interfaces.
+- Added the progress menu to the Arcade server downloading.
+- Reworked a lot of timeline object and timeline marker related code.
+- Ending event keyframe dragging now updates the event editor.
+- Some marker editor values now update when dragging a marker.
+- Example now considers the loading level screen a menu.
+- Added "Show Marker" setting to Config Manager > Editor > Timeline.
+- Added an intro sequence to the story mode.
+- Story save slots now show your current progress.
+- Added a "Spawn Players" toggle to the Player Editor. With this off, players will not spawn at the start of the level, allowing for cutscenes. If you want to respawn players, create a checkpoint or use the playerRespawn modifiers.
+- Unpause sequence can now be sped up if the user is speeding up the interface by pressing left mouse button / Xbox controller A button / PS controller X button / keyboard space.
+- Rewrote some theme panel code.
+- Added "setAudioTransition" action modifier. This sets the audio transition for the next loaded level.
+- Added "setIntroFade" action modifier. This is if you don't want the intro fade to play for the next loaded level.
+- Internally a custom end level function can be set, but this probably won't be implemented until 1.8.0.
+snapshot-2024.12.3 - (pre-1.7.0) > [Dec 17, 2024]
+- Cleaned up a lot file path related code. If anything goes wrong related to that, please let me know!
+- Added a notification that informs you about editor freecam and show GUI & Players being toggled.
+- Removed the "Show Levels Without Cover Notification" setting. This setting wasn't really useful.
+- Added "Copy Path" to the File Browser context menus.
+- Added "Shuffle ID" to theme context menus.
+- Made gradient objects work with editor highlighting and layer opacity.
+- Fixed textSequence Play Sound toggle not actually doing anything.
+- Example now only moves to the warning popup if he is far enough away from his spot. (Sometimes...)
+- Mostly fixed Steam Workshop level subscribing progress not working.
+- Added Steam Workshop search sorting (with some extra toggles in Config Manager > Arcade > Sorting).
+snapshot-2024.12.2 - (pre-1.7.0) > [Dec 10, 2024]
+- Fixed copyAxisGroup min and max values not allowing for decimal points.
+- Added "File Browser Remembers Location" to Config Manager > Editor > Data.
+- Actually fixed VG to LS conversion.
+- Reworked how some file format related things work.
+snapshot-2024.12.1 - (pre-1.7.0) > [Dec 8, 2024]
+- Reworked how BetterLegacy's custom animations' time is updated. This allows for a proper speed functionality with interface text.
+- Due to the above change, shake speed works as intended now.
+- Added one more secret. Hint: Japanese music.
+- Added "shoot" to default sounds. This plays when the player shoots.
+- Fixed Discord status just being "In Main Menu" when you restart Discord, now it properly sets back to what you currently have.
+- Decreased Example's dance chance from 0.7% to 0.2% per frame.
+- Some more editor elements are considered for the Editor Complexity setting.
+- Added a "Reload Level" button to the File dropdown.
+- Did some internal work on Level Collections. It'll hopefully be fully implemented in the 1.8.0 update.
+- Fixed the Play Level Menu being slow to load.
+- Started working on multi language support for stuff outside of tooltips.
+- Default Arcade Menu selection is now the "Local" tab.
+- Decreased theme default ID max length from 9 to 7 due to number inaccuracies.
+- Renamed Example config tab to Companion.
+- Added a label for the Config Manager UI page field.
+- Added a custom menu flip sound for changing Arcade menu pages.
+- Hopefully fixed VG convert case where the path was the same as the destination.
+- Added some hit / death counter modifiers.
+snapshot-2024.11.21 - (pre-1.7.0) > [Nov 27, 2024]
+- Fixed typo on Allow Controller If Single Player.
+- Added Arcade Folder and Interfaces Folder to custom menu music options.
+- Fixed level intro fade not working in some cases.
+- Added some new default sounds.
+- Changed SpawnPlayer default sound to be its own sound.
+- Reordered Default Sounds list.
+- Player healing now plays a sound.
+- Added some secrets ;)
+- Fixed checkpoints not properly playing the animation & sound when you reach one.
+- Added setting for toggling the checkpoint sound / animation in Config Manager > Core > Level > Play Checkpoint Sound and Play Checkpoint Animation.
+- Fixed players respawning instantly when restarting a level from the pause menu, sometimes causing the player to get hit.
+snapshot-2024.11.20 - (pre-1.7.0) > [Nov 24, 2024]
+- Added Allow Controler If Single Player under Config Manager > Players > Controls.
+- Added playerRespawn modifiers.
+- Optimized and increased some player functionality.
+- Fixed checkpoints not being removed from the game timeline.
+- Increased the Beatmap Theme ID default length.
+- Fixed Example commands not working in some cases.
+- Added FPS and BG Object Count to the Editor Information section.
+- Added Rank to Arcade level sorting.
+- Fixed Arcade level sorting duplicating levels and not working with local levels.
+- Arcade menu now has level sort buttons.
+- Added some more fun splash text.
+- Added mirrorPositive and mirrorNegative math functions.
+- Updated Editor Documentation to include new math functions.
+snapshot-2024.11.19 - (pre-1.7.0) > [Nov 22, 2024]
+- Fixed Prefab Group modifiers checking for both spawned and expanded objects from prefabs.
+- Fixed variableOther trigger modifiers not using the prefab instance group toggle.
+- Added some math functions.
+- Added default Order Matters toggle config.
+snapshot-2024.11.18 - (pre-1.7.0) > [Nov 22, 2024]
+- Added Story File config to Config Manager > Core > File. This is just for testing the story mode.
+- Added Limit Player settings to the Global tab of the Player Editor. Limit Player is on by default, so if you made a level that has a custom player with specific speeds, please change this once the update releases.
+- Updated Editor Documentation.
+- Added "Show Intro" to the Metadata editor. Turning this off will stop the intro from showing when you play the level in the arcade.
+- Object Modifiers editor now shows a modifier being active by enabling / disabling a little bar based on the modifiers' active state.
+- Made the Modifier editors consistent. Background Modifiers now have copy / paste functionality and context menus.
+- Modifier context menus now have "Add Above", "Add Below", "Paste Above" and "Paste Below" functions.
+- Fixed textSequence modifier.
+- Added a ton of values to textSequence modifier so it can be used with the new "Order Matters" toggle.
+- Music time triggers now have a Start Time relative setting.
+snapshot-2024.11.17 - (pre-1.7.0) > [Nov 19, 2024]
+- Added staff logs.
+- Fixed Main Menu having the wrong name.
+- Fixed checkpoint dragging not working.
+- You can now hold down the left mouse button to speed up the interface.
+- Fully implemented modifier trigger / action ordering and else if toggles for triggers.
+snapshot-2024.11.16 - (pre-1.7.0) > [Nov 17, 2024]
+- Added example_speak to default sounds.
+- You now immediately boot into the story tutorial level when you're playing a new save slot.
+- Implemented collectibles you can find in random spots across the levels.
+- Some levels now end with a PA Chat.
+- spawnPrefab modifiers now have values for setting the spawned prefabs' start time.
+- Added Inspect Timeline Object if Unity Explorer is installed.
+- Added a "doubleSided" modifier. This acts like the blur modifiers, except it changes the material of the object to be double sided, allowing it to be seen from the back.
+- Did some internal work on strings and scenes. If there's any issues with either of those two that you find, please let me know!
+snapshot-2024.11.15 - (pre-1.7.0) > [Nov 15, 2024]
+- Story saves delete buttons now properly align to existing save slots.
+- Fixed New Simulation button showing in cases it shouldn't be.
+- Added To Lower and To Upper to default text Input Field context menus.
+- Fixed BPM Offset causing objects start time to go further than it should.
+- Added Snap Offset to Multi Object Editor. This snaps selected objects relative to the earliest object in the timeline.
+- Interfaces can now change music dynamically. Additionally, the story mode now has custom music.
+- Input Select screen now has a custom song. If you don't want it to play, then you can turn it off by going to Config Manager > Menus > Music > Play Input Select Music.
+snapshot-2024.11.14 - (pre-1.7.0) > [Nov 14, 2024]
+- Hotfix for New Simulation button not showing.
+snapshot-2024.11.13 - (pre-1.7.0) > [Nov 14, 2024]
+- Made rank sayings data driven so they can be customized per user. If you copy the sayings.json file in the plugins/Assets folder to the profile folder, you can keep a custom version of the rank sayings!
+- Added more save slots (up to 9 now).
+- Getting close to the finalization stage of the story mode chapter 1 demo.
+- Interface themes are a little better to use.
+- Fixed some more issues with Video BGs, such as it not applying the Audio keyframe pitch.
+snapshot-2024.11.12 - (pre-1.7.0) > [Nov 12, 2024]
+- Added a new setting "Physics Update Match Framerate" to Config Manager > Core > Game. This setting forces physics to match your framerate, this includes player movement and collision.
+- Fixed Video BGs freezing issues.
+- Added levelExists and levelPathExists trigger modifiers.
+- Fixed some issues with audio not properly loading in some cases.
+snapshot-2024.11.11 - (pre-1.7.0) > [Nov 10, 2024]
+- Added spawnPrefabOffsetOther modifiers.
+- Fixed picker not working in some cases.
+- Fixed players being able to join outside of the input select screen.
+- Added findObject#object_group#StartTime() math function. StartTime can be replaced with other object properties such as "Depth" and "IntVariable".
+- Added findInterpolateChain#object_group math function. This will find an object and interpolate it.
+- Updated Editor Documentation.
+- Added applyAnimationMath modifiers.
+- Started working on seed-based randomization, this probably won't be in this update but will be in a future one.
+snapshot-2024.11.10 - (pre-1.7.0) > [Nov 8, 2024]
+- Updated Slime Boy Color and a few other story levels to their current versions.
+- Fixed cases where object interpolation would go higher than expected.
+- Fixed lerp and inverseLerp math functions being incorrect.
+- Fixed findAxis math function.
+- Added findOffset math function. Used similarly to findAxis.
+- Added vectorAngle and distance functions.
+- ACTUALLY hotfix for level crash.
+snapshot-2024.11.9 - (pre-1.7.0) > [Nov 7, 2024]
+- Hotfix for level crash.
+- Fixed tutorial level being replaced by the second level.
+snapshot-2024.11.8 - (pre-1.7.0) > [Nov 7, 2024]
+- Modifiers can now be organized using the modifier context menu.
+- Looking into adding an "else" toggle for trigger modifiers.
+- Trigger modifiers now have their inactive state properly triggered if when the object respawns.
+- Added player0Rot variable to math evaluators.
+- Added mousePosX and mousePosY to math evaluators.
+- Added screenWidth and screenHeight to math evaluators.
+- You can now shift the index order of objects around. What this means is objects that appear above others can now be shifted to below others.
+- Finally reworked the story mode system to be data driven. Which means if you know how you can probably make your own story mode. This also means I can finally get some work done on the story!
+- Added applyAnimation, applyAnimationFrom and applyAnimationTo action modifiers.
+snapshot-2024.11.7 - (pre-1.7.0) > [Nov 6, 2024]
+- Added objectAlive trigger modifier. This triggers whenever an object from a specific group is alive. Good for timing specific actions.
+- Fixed some cases where the Prefab Group Only toggle wasn't showing for modifiers that have object group fields.
+- Prefabs spawned from modifiers are no longer selectable in the preview area.
+- You can now view a level creator's levels by clicking the [ Creator ] button in the Play Level menu. Requires the level to have been uploaded after this the release of this snapshot, however.
+- Slowly working on a new story mode system so it'll be easier for me to work on.
+snapshot-2024.11.6 - (pre-1.7.0) > [Nov 6, 2024]
+- Fixed the inactive state of spawnPrefabOffset not occuring.
+- Modifiers now clear specific things when their parent object is deleted.
+- Fixed the editor for spawnPrefab modifiers being broken.
+- If you want a Prefab spawned from a modifier to not despawn when the main objects' lifespan is done, then you can turn Permanent on.
+- Added a way to remove any unwanted spawned modifier Prefabs from the level via Edit > Clear Modifier Prefabs.
+- And finishing off the spawnPrefab theme with this snapshot, added a few new prefab spawning related modifiers.
+snapshot-2024.11.5 - (pre-1.7.0) > [Nov 5, 2024]
+- Completely replaced the math evaluator system with a better one written by Reimnop. Some functions will need to be changed to work, such as findAxis(object_tag, ...) now being findAxis#object_tag(...). Learn more in the editor documentation.
+snapshot-2024.11.4 - (pre-1.7.0) > [Nov 5, 2024]
+- Fixed an edge case with math evaluators where multiple brackets weren't recognized. For example, "((1 + 1) * 2) * 15".
+- Added spawnPrefabOffset modifier. This will spawn a prefab at the objects' exact position / scale / rotation, regardless of if the object is an empty or not.
+snapshot-2024.11.3 - (pre-1.7.0) > [Nov 4, 2024]
+- Added a preset setting to Editor > Editor GUI > User Preference.
+- Render depth now uses the limited range if your Editor Complexity is not set to advanced.
+- 1.7.0 is still the story mode update, so currently doing some rework so I can finally finish the chapter 1 demo for the full release of the update.
+- Math evaluators now allow for variables to be turned to negative using a -.
+- Fixed some more problems with the math evaluators, behaviour should be fully consistent now.
+- Added a ton of math related modifiers.
+- Some more player modifiers can now allow empty objects.
+snapshot-2024.11.2 - (pre-1.7.0) > [Nov 2, 2024]
+- Completely reworked the way math evaluators work. They no longer need a ; at the end of each top-level function, supports proper matching of variables and deep nested functions.
+- Added forwardPitch to math evaluators.
+- blackHole modifier and copyAxis visual now allows for empty objects.
+- Hopefully fixed the cases where objects wouldn't properly delete.
+snapshot-2024.11.1 - (pre-1.7.0) > [Nov 1, 2024]
+- Fixed objects rendering on the event layer and other layers its not supposed to.
+- Added animateObjectMath modifiers.
+- Added copyEvent(type, valueIndex, time) to math evaluators.
+- Updated Editor Documentation.
+- You can now right click the Upload Acknowledgements text to show the Upload a Level documentation.
+snapshot-2024.10.5 - (pre-1.7.0) > [Oct 28, 2024]
+- Fixed the Config Manager UI rounded corners not being on the right corners.
+- Add File to Level Folder (now renamed "Add File to Level") now allows for directly importing a Prefab into your level from anywhere.
+- Fixed some issues with the audioSource modifier.
+- Added a context menu to keyframes.
+- Fixed modifiers activating when they shouldn't. in-editor or when restarting a level due to the smoothed level time.
+- Slightly optimized Follow Player keyframe.
+snapshot-2024.10.4 - (pre-1.7.0) > [Oct 17, 2024]
+- Re-ordered player updates so tail updating occurs after player position is set.
+- Fixed a bug with the last snapshot that broke levels.
+- Optimized modifiers a tiny bit further.
+snapshot-2024.10.3 - (pre-1.7.0) > [Oct 17, 2024]
+- Duplicate themes now display in the theme list, but will not be usable.
+- Added "Show Experimental Features" toggle to Config Manager > Editor > Editor GUI. This is for specific features that might change in the future, so this toggle is to let people know what is experimental and what isn't. (Homing keyframes and parent desync are currently considered experimental due to them breaking in some cases)
+- Added controlPress modifiers. These are used to detect controller inputs.
+- Updated the story files to the current version.
+snapshot-2024.10.2 - (pre-1.7.0) > [Oct 4, 2024]
+- Added playerMoveToObject modifiers. These modifiers lock the players' positon / rotation to the object. The object cannot be empty.
+- Added sampleAudio(int sample, float intensity) to math evaluators.
+- Objects with LDM on no longer run their modifiers if the LDM config is on.
+- Added a setting for showing / hiding Background Objects. If off, there will be a significant FPS boost for levels that use Background Objects, but unfortunately won't have them render.
+- Tried fixing VG to LS Converting issues.
+snapshot-2024.10.1 - (pre-1.7.0) > [Oct 3, 2024]
+- BetterLegacy now has a demo of chapter 1!
+- Added a way to view levels you've uploaded via the "View Uploaded" button in the Upload dropdown in the editor.
+- Fixed Window event keyframes previewing in the editor instead of preview mode.
+- Fixed player noclipping issue.
+- Added a config for changing Marker right click behavior.
+- Fixed player objects not properly checking invincible / zen mode properties.
+- Fixed player spawn animation breaking after the player is set active when it was inactive before
+- Optimized playerCollide modifier by using property instead of GetComponent.
+- Improved enable/disableObject modifiers code.
+- Fixed no_volume considering Audio event keyframe value instead of just the user's config.
+- Improved object updating a tiny bit more.
+- Hovering the mouse over a transparent object with highlight objects on now sets the object to opaque.
+- Added some context menus to the timeline bar elements.
+- You can now directly parent an object to the camera via the parent search context menu. Additionally, you can also view the child tree and/or parent chain of an object via the parent button context menu.
+- Added Convert to VG buttons to context menus where it's needed.
+- Added a few more buttons to different context menus relating to the file system.
+- Object origin offset now has a context menu.
+- Online levels tab now refreshes when you switch pages.
+- Added a Mode dropdown to the Color Split, Ripples and Double Vision event keyframes.
+- Fixed the player moving when the camera rotates in 3D where it shouldn't.
+- Due to the above fix, the player should now ALWAYS stay in the bounds of the camera if Out of Bounds is turned off in the player event keyframe. There were some cases where the player bugged and exited the camera (Such as in Subnautix' Stormbringer).
+- Fixed a bug with object opacity where it will default to 1 if it's higher than or equal to 0.9.
+- Fixed random error log when opening Config Manager via the "Editor Preferences" button.
+- Started working on config presets.
+- User's Display Name now defaults to the Steam username, if Display Name is still "Player".
+- Added a new "Modern" timeline waveform type. This is based on the alpha editor timeline waveform where the texture is only along the bottom.
