@@ -10,6 +10,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Popups;
+using UnityEngine.Events;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -76,22 +77,25 @@ namespace BetterLegacy.Editor.Managers
 
                 var label = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject.Duplicate(updateLayout.transform, "label").GetComponent<Text>();
                 RectValues.Default.AnchoredPosition(140f, 0f).SizeDelta(200f, 100f).AssignToRectTransform(label.rectTransform);
-                label.alignment = TextAnchor.MiddleCenter;
-                label.text = "Auto-update";
+                autoUpdateLabel = label;
+                autoUpdateLabel.alignment = TextAnchor.MiddleCenter;
+                autoUpdateLabel.text = "Auto-update";
 
                 var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(updateLayout.transform, "auto").GetComponent<Toggle>();
                 RectValues.Default.AnchoredPosition(226f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(toggle.transform.AsRT());
 
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = autoUpdate;
-                toggle.onValueChanged.AddListener(_val => autoUpdate = _val);
+                autoUpdateToggle = toggle;
+                autoUpdateToggle.onValueChanged.ClearAll();
+                autoUpdateToggle.isOn = autoUpdate;
+                autoUpdateToggle.onValueChanged.AddListener(_val => autoUpdate = _val);
 
                 var update = EditorPrefabHolder.Instance.Function2Button.Duplicate(updateLayout.transform, "update").GetComponent<FunctionButtonStorage>();
                 update.text.text = "Update";
                 RectValues.Default.AnchoredPosition(-192f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(update.transform.AsRT());
 
-                update.button.onClick.ClearAll();
-                update.button.onClick.AddListener(UpdateText);
+                updateText = update.text;
+                updateButton = update.button;
+                updateButton.onClick.NewListener(UpdateText);
 
                 EditorThemeManager.AddGraphic(textEditorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.AddGraphic(textEditorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
@@ -126,6 +130,12 @@ namespace BetterLegacy.Editor.Managers
 
         public InputField editor;
         public InputField currentInputField;
+        public Text updateText;
+        public Button updateButton;
+        public Text autoUpdateLabel;
+        public Toggle autoUpdateToggle;
+
+        public string Text => editor.text;
 
         public void UpdateText()
         {
@@ -146,6 +156,27 @@ namespace BetterLegacy.Editor.Managers
             editor.onValueChanged.ClearAll();
             editor.text = currentInputField.text;
             editor.onValueChanged.AddListener(SetText);
+
+            updateText.text = "Update";
+
+            autoUpdateLabel.gameObject.SetActive(true);
+            autoUpdateToggle.gameObject.SetActive(true);
+        }
+
+        public void SetEditor(string val, UnityAction<string> onValueChanged, string updateLabel, Action update)
+        {
+            RTEditor.inst.TextEditorPopup.Open();
+
+            currentInputField = null;
+            editor.onValueChanged.ClearAll();
+            editor.text = val;
+            editor.onValueChanged.AddListener(onValueChanged);
+
+            updateText.text = updateLabel;
+            updateButton.onClick.NewListener(update);
+
+            autoUpdateLabel.gameObject.SetActive(false);
+            autoUpdateToggle.gameObject.SetActive(false);
         }
 
         void SetText(string _val)
