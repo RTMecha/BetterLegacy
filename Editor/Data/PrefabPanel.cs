@@ -540,6 +540,12 @@ namespace BetterLegacy.Editor.Data
                                         RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
                                         PrefabEditor.inst.ReloadInternalPrefabsInPopup();
                                     }),
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Edit", () =>
+                                    {
+                                        RTPrefabEditor.inst.PrefabExternalEditor.Open();
+                                        RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
+                                    }),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
                                         RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.ID);
