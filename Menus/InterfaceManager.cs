@@ -436,108 +436,91 @@ namespace BetterLegacy.Menus
             Clear(false, false);
             CoreHelper.InStory = false;
 
-            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
-                Companion.Entity.Example.Current.model.SetActive(true); // if Example was disabled
+            Companion.Entity.Example.Current?.model?.SetActive(true); // if Example was disabled
 
             Parse(RTFile.GetAsset($"Interfaces/main_menu{FileFormat.LSI.Dot()}"));
 
             interfaces.Add(new StoryMenu());
 
-            if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen)
+            if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen || (!SceneHelper.LoadedGame && ModCompatibility.EditorOnStartupInstalled))
             {
+                CoreHelper.Log($"Going to main menu.\n" +
+                    $"ShowChangelog: {MenuConfig.Instance.ShowChangelog.Value}\n" +
+                    $"Seen: {ChangeLogMenu.Seen}\n" +
+                    $"Editor On Startup: {ModCompatibility.EditorOnStartupInstalled}");
+
                 SetCurrentInterface(MAIN_MENU_ID);
                 PlayMusic();
+
+                SceneHelper.LoadedGame = true;
                 return;
             }
 
             try
             {
-                StartCoroutine(IStartupInterface());
+                CoreHelper.Log($"Loading changelog...\nIs loading scene: {SceneHelper.Loading}");
+                if (RTFile.TryReadFromFile(RTFile.GetAsset($"changelog{FileFormat.TXT.Dot()}"), out string file))
+                {
+                    var changeLogMenu = new ChangeLogMenu();
+
+                    changeLogMenu.layouts.Add("updates", new MenuVerticalLayout
+                    {
+                        name = "updates",
+                        childControlWidth = true,
+                        childForceExpandWidth = true,
+                        spacing = 4f,
+                        rect = RectValues.FullAnchored.AnchoredPosition(0f, -32f).SizeDelta(-64f, -256f),
+                    });
+
+                    changeLogMenu.elements.Add(new MenuText
+                    {
+                        id = "1",
+                        name = "Title",
+                        text = "<size=60><b>BetterLegacy Changelog",
+                        rect = RectValues.Default.AnchoredPosition(-640f, 440f).SizeDelta(400f, 64f),
+                        icon = LegacyPlugin.PALogoSprite,
+                        iconRect = RectValues.Default.AnchoredPosition(-256f, 0f).SizeDelta(64f, 64f),
+                        hideBG = true,
+                        textColor = 6
+                    });
+
+                    var lines = RTString.GetLines(file);
+                    RTString.GetLines(file).ForLoop(changeLogMenu.AddUpdateNote);
+
+                    changeLogMenu.elements.Add(new MenuButton
+                    {
+                        id = "0",
+                        name = "Next Menu Button",
+                        text = "<b><align=center>[ NEXT ]",
+                        rect = RectValues.Default.AnchoredPosition(0f, -400f).SizeDelta(300f, 64f),
+                        func = () => SetCurrentInterface(MAIN_MENU_ID),
+                        opacity = 0.1f,
+                        selectedOpacity = 1f,
+                        color = 6,
+                        selectedColor = 6,
+                        textColor = 6,
+                        selectedTextColor = 7,
+                        length = 1f,
+                    });
+
+                    SetCurrentInterface(changeLogMenu);
+                    PlayMusic();
+
+                    ChangeLogMenu.Seen = true;
+                }
+                else
+                {
+                    CoreHelper.LogError($"Couldn't read changelog file, continuing...");
+                    SetCurrentInterface(MAIN_MENU_ID);
+                    PlayMusic();
+                }
             }
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Error: {ex}");
             }
-        }
 
-        IEnumerator IStartupInterface()
-        {
-            CoreHelper.Log($"Is loading scene: {SceneHelper.Loading}");
-
-            yield return StartCoroutine(AlephNetwork.DownloadJSONFile(ChangeLogMenu.UPDATE_NOTES_URL, x =>
-            {
-                var changeLogMenu = new ChangeLogMenu();
-
-                changeLogMenu.layouts.Add("updates", new MenuVerticalLayout
-                {
-                    name = "updates",
-                    childControlWidth = true,
-                    childForceExpandWidth = true,
-                    spacing = 4f,
-                    rect = RectValues.FullAnchored.AnchoredPosition(0f, -32f).SizeDelta(-64f, -256f),
-                });
-
-                changeLogMenu.elements.Add(new MenuText
-                {
-                    id = "1",
-                    name = "Title",
-                    text = "<size=60><b>BetterLegacy Changelog",
-                    rect = RectValues.Default.AnchoredPosition(-640f, 440f).SizeDelta(400f, 64f),
-                    icon = LegacyPlugin.PALogoSprite,
-                    iconRect = RectValues.Default.AnchoredPosition(-256f, 0f).SizeDelta(64f, 64f),
-                    hideBG = true,
-                    textColor = 6
-                });
-
-                var lines = RTString.GetLines(x);
-
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    var line = lines[i];
-
-                    var regex = new Regex(@"(.*?) > \[(.*?) ([0-9]+), ([0-9]+)]");
-                    var match = regex.Match(line);
-                    if (match.Success)
-                    {
-                        line = line.Replace(match.Groups[0].ToString(), $"<b>{match.Groups[0]}</b>");
-
-                        if (i != 0)
-                            break; // only current update should show.
-                    }
-
-                    changeLogMenu.AddUpdateNote(line);
-                }
-
-                changeLogMenu.elements.Add(new MenuButton
-                {
-                    id = "0",
-                    name = "Next Menu Button",
-                    text = "<b><align=center>[ NEXT ]",
-                    rect = RectValues.Default.AnchoredPosition(0f, -400f).SizeDelta(300f, 64f),
-                    func = () => SetCurrentInterface(MAIN_MENU_ID),
-                    opacity = 0.1f,
-                    selectedOpacity = 1f,
-                    color = 6,
-                    selectedColor = 6,
-                    textColor = 6,
-                    selectedTextColor = 7,
-                    length = 1f,
-                });
-
-                SetCurrentInterface(changeLogMenu);
-                PlayMusic();
-
-                if (CoreHelper.InEditor || SceneHelper.Loading)
-                    CloseMenus();
-
-                ChangeLogMenu.Seen = true;
-            }, onError =>
-            {
-                CoreHelper.LogError($"Couldn't reach updates file, continuing...\nError: {onError}");
-                SetCurrentInterface(MAIN_MENU_ID);
-                PlayMusic();
-            }));
-            yield break;
+            SceneHelper.LoadedGame = true;
         }
 
         #endregion
@@ -3687,35 +3670,5 @@ namespace BetterLegacy.Menus
         }
 
         #endregion
-    }
-
-    public class ChangeLogMenu : MenuBase
-    {
-        /// <summary>
-        /// The URL for the BetterLegacy update notes.
-        /// </summary>
-        public const string UPDATE_NOTES_URL = "https://raw.githubusercontent.com/RTMecha/BetterLegacy/master/updates.lss";
-
-        public ChangeLogMenu() : base()
-        {
-            musicName = InterfaceManager.RANDOM_MUSIC_NAME;
-            exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID);
-        }
-
-        public static bool Seen { get; set; }
-
-        public void AddUpdateNote(string note)
-        {
-            elements.Add(new MenuText
-            {
-                id = LSText.randomNumString(16),
-                name = "Update Note",
-                text = note,
-                parentLayout = "updates",
-                rect = RectValues.Default.SizeDelta(0f, 36f),
-                hideBG = true,
-                textColor = 6
-            });
-        }
     }
 }
