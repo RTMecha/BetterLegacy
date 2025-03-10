@@ -3310,38 +3310,18 @@ namespace BetterLegacy.Editor.Managers
             Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
             Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
 
-            //var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
-            //collapsePrefabContextMenu.onClick = null;
-            //collapsePrefabContextMenu.onClick = pointerEventData =>
-            //{
-            //    if (pointerEventData.button != PointerEventData.InputButton.Right)
-            //        return;
+            var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
+            collapsePrefabContextMenu.onClick = null;
+            collapsePrefabContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
 
-            //    EditorContextMenu.inst.ShowContextMenu(
-            //        new ButtonFunction("Apply This", () =>
-            //        {
-            //            RTPrefabEditor.inst.Collapse(beatmapObject);
-            //        }),
-            //        new ButtonFunction("Apply All", () =>
-            //        {
-            //            EditorManager.inst.DisplayNotification("not implemented", 2f, EditorManager.NotificationType.Warning);
-            //        }),
-            //        new ButtonFunction("Create New", () =>
-            //        {
-            //            var beatmapObjects = GameData.Current.beatmapObjects.FindAll(x => x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
-
-            //            var origPrefab = GameData.Current.prefabs.Find(x => x.ID == beatmapObject.prefabID);
-
-            //            if (!origPrefab)
-            //                return;
-
-            //            var prefab = Prefab.DeepCopy(origPrefab);
-
-            //            prefab.objects.Clear();
-            //            prefab.objects.AddRange(beatmapObjects.Select(x => BeatmapObject.DeepCopy(x)));
-            //        })
-            //        );
-            //};
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Apply This", () => RTPrefabEditor.inst.Collapse(beatmapObject)),
+                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(beatmapObject))
+                    );
+            };
 
             SetTimeline(EditorTimeline.inst.CurrentSelection.Zoom, EditorTimeline.inst.CurrentSelection.TimelinePosition);
 
