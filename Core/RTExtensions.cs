@@ -683,6 +683,86 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Performs a for loop to the array. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void ForLoopReverse<T>(this T[] array, Action<T, int> action)
+        {
+            var length = array.Length;
+            if (length == 0)
+                return;
+            if (length == 1) // we do this because using a for loop on an array of 1 item seems to be slower than just accessing the index of 0
+            {
+                action.Invoke(array[0], 0);
+                return;
+            }
+
+            for (int i = length - 1; i >= 0; i--)
+                action?.Invoke(array[i], i);
+        }
+
+        /// <summary>
+        /// Performs a for loop to the list. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void ForLoopReverse<T>(this List<T> list, Action<T, int> action)
+        {
+            var count = list.Count;
+            if (count == 0)
+                return;
+            if (count == 1) // we do this because using a for loop on a list of 1 item seems to be slower than just accessing the index of 0
+            {
+                action.Invoke(list[0], 0);
+                return;
+            }
+
+            for (int i = count - 1; i >= 0; i--)
+                action?.Invoke(list[i], i);
+        }
+
+        /// <summary>
+        /// Performs a for loop to the array. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void ForLoopReverse<T>(this T[] array, Action<T> action)
+        {
+            var length = array.Length;
+            if (length == 0)
+                return;
+            if (length == 1) // we do this because using a for loop on an array of 1 item seems to be slower than just accessing the index of 0
+            {
+                action.Invoke(array[0]);
+                return;
+            }
+
+            for (int i = length - 1; i >= 0; i--)
+                action?.Invoke(array[i]);
+        }
+
+        /// <summary>
+        /// Performs a for loop to the list. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void ForLoopReverse<T>(this List<T> list, Action<T> action)
+        {
+            var count = list.Count;
+            if (count == 0)
+                return;
+            if (count == 1) // we do this because using a for loop on a list of 1 item seems to be slower than just accessing the index of 0
+            {
+                action.Invoke(list[0]);
+                return;
+            }
+
+            for (int i = count - 1; i >= 0; i--)
+                action?.Invoke(list[i]);
+        }
+
+        /// <summary>
         /// Sorts a list with a custom selector and descending.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
