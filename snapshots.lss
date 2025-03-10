@@ -10,6 +10,7 @@
 - Fixed objects highlighting and not unhighlighting when they disable and re-enable.
 - Removed the modifiers tab from the Config Manager and moved its settings to Editor > Modifiers.
 - Custom configs can kinda be registered now.
+- Changelog interface now only applies from a "changelog" file as to prevent any issues with online changelog files changing.
 - Themes now display info about their colors.
 - Folders in the level, theme and prefab lists now have a "folder" icon. This can be customized by adding a "folder_icon.png" file to the folder or by using the context menu to set it. You can also give the folder a short description by creating a "folder_info.json" file.
 - Added New Prefab Instance button to Multi Object Editor.
