@@ -3877,7 +3877,13 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ParentClearButton.onClick.AddListener(() =>
             {
-                beatmapObject.Parent = "";
+                if (beatmapObject.customParent != null)
+                {
+                    beatmapObject.customParent = null;
+                    EditorManager.inst.DisplayNotification("Removed custom parent!", 1.5f, EditorManager.NotificationType.Success);
+                }
+                else
+                    beatmapObject.Parent = "";
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)

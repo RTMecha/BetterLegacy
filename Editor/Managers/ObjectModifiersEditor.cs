@@ -820,11 +820,19 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "updateObject":
                     case "setParent":
+                    case "setParentOther":
                     case "objectCollide":
                         {
                             PrefabGroupOnly(modifier, layout);
                             var str = StringGenerator(modifier, layout, "Object Group", 0);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                            if (cmd == "setParentOther")
+                            {
+                                BoolGenerator(modifier, layout, "Clear Parent", 1, false);
+                                var str2 = StringGenerator(modifier, layout, "Parent Group To", 2);
+                                EditorHelper.AddInputFieldContextMenu(str2.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             break;
                         }

@@ -5449,23 +5449,35 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setParent": {
                             if (modifier.constant)
-                                return;
+                                break;
 
                             if (modifier.GetValue(0) == string.Empty)
+                                SetParent(modifier.reference, string.Empty);
+                            else if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && beatmapObject.CanParent(modifier.reference))
+                                SetParent(modifier.reference, beatmapObject.id);
+
+                            break;
+                        }
+                    case "setParentOther": {
+                            if (modifier.constant)
+                                break;
+
+                            var reference = modifier.reference;
+
+                            if (!string.IsNullOrEmpty(modifier.GetValue(2)) && GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(2), out BeatmapObject beatmapObject))
+                                reference = beatmapObject;
+
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
+
+                            var isEmpty = modifier.GetBool(1, false);
+
+                            list.ForLoop(beatmapObject =>
                             {
-                                modifier.reference.customParent = string.Empty;
-                                Updater.UpdateObject(modifier.reference);
-                                return;
-                            }
-
-                            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject))
-                                return;
-
-                            if (!beatmapObject.CanParent(modifier.reference))
-                                return;
-
-                            modifier.reference.customParent = beatmapObject.id;
-                            Updater.UpdateObject(modifier.reference);
+                                if (isEmpty)
+                                    SetParent(beatmapObject, string.Empty);
+                                else if (reference.CanParent(beatmapObject))
+                                    SetParent(beatmapObject, reference.id);
+                            });
 
                             break;
                         }
@@ -6940,6 +6952,15 @@ namespace BetterLegacy.Core.Helpers
             2 => GameData.Current.prefabs.Find(x => x.id == reference),
             _ => null,
         };
+
+        static void SetParent(BeatmapObject child, string parent)
+        {
+            child.customParent = parent;
+            Updater.UpdateObject(child);
+
+            if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                ObjectEditor.inst.RenderParent(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+        }
 
         #endregion
     }
