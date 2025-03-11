@@ -360,7 +360,7 @@ namespace BetterLegacy.Companion.Entity
 
                 if (!CurrentAction && action.Run())
                     CurrentAction = action;
-                else if (CurrentAction && action.Interrupt() && action.uniqueID == CurrentAction.uniqueID)
+                else if (CurrentAction && action.uniqueID == CurrentAction.uniqueID && action.Interrupt())
                     CurrentAction = null;
             }
 
