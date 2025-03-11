@@ -58,7 +58,7 @@ namespace BetterLegacy.Companion.Entity
         /// <param name="context">Context of the interaction.</param>
         public virtual void Interact(string context, InteractParameters parameters = null)
         {
-            reference?.brain?.interactedTimer.UpdateTimeOffset();
+            reference?.brain?.interactedTimer.Reset();
             onInteract?.Invoke(context);
 
             switch (context)

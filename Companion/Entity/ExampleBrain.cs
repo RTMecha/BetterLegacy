@@ -336,7 +336,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Build()
         {
-            interactedTimer.UpdateTimeOffset();
+            interactedTimer.Reset();
             dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
             LoadMemory();
         }

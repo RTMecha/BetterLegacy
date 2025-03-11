@@ -235,7 +235,7 @@ namespace BetterLegacy.Companion.Entity
 
             LogStartup("Beginning timer...");
             var sw = CoreHelper.StartNewStopwatch();
-            timer.UpdateTimeOffset();
+            timer.Reset();
             LogStartup("Building the brain...");
             brain.Build();
             LogStartup("Building the model...");

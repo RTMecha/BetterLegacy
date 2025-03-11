@@ -988,7 +988,7 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)))
             {
                 editorInfo = new EditorInfo();
-                editorInfo.timer.UpdateTimeOffset();
+                editorInfo.timer.Reset();
 
                 return;
             }

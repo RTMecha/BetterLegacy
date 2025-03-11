@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data
             this.time = time;
             this.timeOffset = timeOffset;
             this.offset = offset;
-            UpdateTimeOffset();
+            Reset();
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Resets the timer.
         /// </summary>
-        public void UpdateTimeOffset() => timeOffset = Time.time;
+        public void Reset() => timeOffset = Time.time;
 
         /// <summary>
         /// Updates the timer.
