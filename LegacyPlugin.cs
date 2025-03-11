@@ -88,7 +88,6 @@ namespace BetterLegacy
             gradientShader = assetBundle.LoadAsset<Shader>("assets/gradientshader.shader"); // Load asset
             radialGradientShader = assetBundle.LoadAsset<Shader>("assets/radialshader.shader"); // Load asset
         }
-        System.Timers.Timer timer;
 
         public static Prefab ExamplePrefab { get; set; }
 
@@ -246,17 +245,6 @@ namespace BetterLegacy
 
             try
             {
-                timer = new System.Timers.Timer(1000);
-                timer.Elapsed += TimerElapsed;
-                timer.Start();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to set timer. {ex}");
-            } // Timer
-
-            try
-            {
                 FPSCounter = Creator.NewPersistentGameObject("FPS Counter").AddComponent<FPSCounter>();
             }
             catch (Exception ex)
@@ -292,16 +280,6 @@ namespace BetterLegacy
             }
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
-        }
-
-        void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (!DiscordController.inst || DiscordController.inst.presence == null)
-                return;
-
-            DiscordController.inst.presence.endTimestamp++;
-
-            DiscordRpc.UpdatePresence(DiscordController.inst.presence);
         }
 
         void Update()

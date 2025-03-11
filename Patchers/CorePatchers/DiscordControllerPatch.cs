@@ -21,7 +21,7 @@ namespace BetterLegacy.Patchers
         static void StartPostfix(DiscordController __instance)
         {
             __instance.presence.largeImageText = "Using the BetterLegacy mod";
-            __instance.presence.startTimestamp = 1;
+            __instance.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
             DiscordRpc.UpdatePresence(__instance.presence);
         }
 
