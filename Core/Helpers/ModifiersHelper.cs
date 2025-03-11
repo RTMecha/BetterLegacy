@@ -5894,7 +5894,10 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.SetValue(0, "False");
 
                             if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
+                            {
+                                modifier.Result = null;
                                 return;
+                            }
 
                             if (modifier.Result == null)
                             {
@@ -5916,7 +5919,10 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "enableObjectTreeOther": {
                             if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                            {
+                                modifier.Result = null;
                                 return;
+                            }
 
                             if (modifier.Result == null)
                             {
@@ -5973,7 +5979,10 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.SetValue(0, "False");
 
                             if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
+                            {
+                                modifier.Result = null;
                                 return;
+                            }
 
                             if (modifier.Result == null)
                             {
@@ -5995,7 +6004,10 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "disableObjectTreeOther": {
                             if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                            {
+                                modifier.Result = null;
                                 return;
+                            }
 
                             if (modifier.Result == null)
                             {
@@ -6024,6 +6036,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
                     case "reactivePosChain": {
                             modifier.reference.reactivePositionOffset = Vector3.zero;
 
