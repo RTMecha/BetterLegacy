@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public new int Type;
 
         public Dictionary<string, Sprite> SpriteAssets { get; set; } = new Dictionary<string, Sprite>();
-        public PrefabType PrefabType => DataManager.inst.PrefabTypes.TryFind(x => x is PrefabType prefabType && prefabType.id == typeID, out DataManager.PrefabType prefabType) ? (PrefabType)prefabType : PrefabType.InvalidType;
+
         public string typeID;
 
         #region Methods
@@ -216,6 +217,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return jn;
         }
+
+        /// <summary>
+        /// Gets the type group of the prefab.
+        /// </summary>
+        /// <returns>Returns the prefab type.</returns>
+        public PrefabType GetPrefabType() => RTPrefabEditor.inst && RTPrefabEditor.inst.prefabTypes.TryFind(x => x.id == typeID, out PrefabType prefabType) ? prefabType : PrefabType.InvalidType;
 
         #endregion
 

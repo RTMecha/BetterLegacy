@@ -290,21 +290,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float SpawnDuration => GetObjectLifeLength(0.0f, true);
 
         /// <summary>
-        /// Parent of the beatmap object.
-        /// </summary>
-        public BeatmapObject Parent => GameData.Current.beatmapObjects.Find(x => x.id == parent);
-
-        /// <summary>
-        /// Gets the prefab reference.
-        /// </summary>
-        public Prefab Prefab => GameData.Current.prefabs.Find(x => x.ID == prefabID);
-
-        /// <summary>
-        /// Gets the prefab object reference.
-        /// </summary>
-        public PrefabObject PrefabObject => GameData.Current.prefabObjects.Find(x => x.ID == prefabInstanceID);
-
-        /// <summary>
         /// Type of the shape.
         /// </summary>
         public ShapeType ShapeType => (ShapeType)shape;
@@ -1237,6 +1222,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabID = beatmapObject.prefabID;
             prefabInstanceID = beatmapObject.prefabInstanceID;
         }
+
+        /// <summary>
+        /// Gets the prefab reference.
+        /// </summary>
+        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.ID == prefabID);
+
+        /// <summary>
+        /// Gets the prefab object reference.
+        /// </summary>
+        public PrefabObject GetPrefabObject() => GameData.Current.prefabObjects.Find(x => x.ID == prefabInstanceID);
 
         #endregion
 

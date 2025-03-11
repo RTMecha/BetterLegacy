@@ -394,7 +394,7 @@ namespace BetterLegacy.Editor.Data
 
             if (TryGetData(out BeatmapObject beatmapObject))
             {
-                prefab = beatmapObject.Prefab;
+                prefab = beatmapObject.GetPrefab();
                 var prefabExists = prefab != null;
 
                 beatmapObject.timelineObject = this;
@@ -412,7 +412,7 @@ namespace BetterLegacy.Editor.Data
 
             if (TryGetData(out PrefabObject prefabObject))
             {
-                prefab = prefabObject.Prefab;
+                prefab = prefabObject.GetPrefab();
                 name = prefab.Name;
                 startTime = prefabObject.StartTime + prefab.Offset;
                 length = prefabObject.GetPrefabLifeLength(true);
@@ -421,7 +421,7 @@ namespace BetterLegacy.Editor.Data
             }
 
             RenderText(name);
-            RenderIcons(prefab?.PrefabType);
+            RenderIcons(prefab?.GetPrefabType());
             RenderPosLength(EditorManager.inst.Zoom, length, startTime);
             RenderVisibleState();
         }
@@ -450,7 +450,7 @@ namespace BetterLegacy.Editor.Data
                         var color = selected ?
                             ObjEditor.inst.SelectedColor :
                             !string.IsNullOrEmpty(GetData<BeatmapObject>().prefabID) ?
-                                GetData<BeatmapObject>().Prefab.PrefabType.Color :
+                                GetData<BeatmapObject>().GetPrefab().GetPrefabType().color :
                                 ObjEditor.inst.NormalColor;
 
                         if (Image.color != color)
@@ -471,7 +471,7 @@ namespace BetterLegacy.Editor.Data
                         if (!isCurrentLayer)
                             return;
 
-                        var color = selected ? ObjEditor.inst.SelectedColor : GetData<PrefabObject>().Prefab.PrefabType.Color;
+                        var color = selected ? ObjEditor.inst.SelectedColor : GetData<PrefabObject>().GetPrefab().GetPrefabType().color;
 
                         if (Image.color != color)
                             Image.color = color;
@@ -503,7 +503,7 @@ namespace BetterLegacy.Editor.Data
             float timeOffset = 0f;
 
             if (isPrefabObject)
-                timeOffset = GetData<PrefabObject>().Prefab.Offset;
+                timeOffset = GetData<PrefabObject>().GetPrefab().Offset;
 
             RenderPosLength(EditorManager.inst.Zoom, Length, Time + timeOffset);
         }

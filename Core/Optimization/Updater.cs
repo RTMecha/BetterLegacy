@@ -704,7 +704,7 @@ namespace BetterLegacy.Core.Optimization
 
                         float timeToAdd = 0f;
 
-                        var prefab = prefabObject.Prefab;
+                        var prefab = prefabObject.GetPrefab();
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
@@ -769,7 +769,7 @@ namespace BetterLegacy.Core.Optimization
 
                         float timeToAdd = 0f;
 
-                        var prefab = prefabObject.Prefab;
+                        var prefab = prefabObject.GetPrefab();
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
@@ -807,10 +807,10 @@ namespace BetterLegacy.Core.Optimization
                     {
                         foreach (var beatmapObject in GameData.Current.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
-                            if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.SpawnDuration > prefabObject.autoKillOffset)
+                            if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.GetPrefab()?.Offset + beatmapObject.SpawnDuration > prefabObject.autoKillOffset)
                             {
                                 beatmapObject.autoKillType = ObjectAutoKillType.SongTime;
-                                beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefabObject.Prefab?.Offset ?? 0f + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                                beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefabObject.GetPrefab()?.Offset ?? 0f + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                             }
 
                             if (prefabObject.autoKillType == PrefabObject.AutoKillType.Regular)
@@ -848,7 +848,7 @@ namespace BetterLegacy.Core.Optimization
 
             float timeToAdd = 0f;
 
-            var prefab = prefabObject.Prefab;
+            var prefab = prefabObject.GetPrefab();
             if (prefabObject.expandedObjects == null)
                 prefabObject.expandedObjects = new List<BeatmapObject>();
             prefabObject.expandedObjects.Clear();

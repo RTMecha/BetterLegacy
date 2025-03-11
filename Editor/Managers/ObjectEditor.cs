@@ -3949,7 +3949,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.parent != BeatmapObject.CAMERA_PARENT)
-                        Updater.UpdateObject(beatmapObject.Parent);
+                        Updater.UpdateObject(beatmapObject.GetParent());
                     else if (UpdateObjects && beatmapObject.parent == BeatmapObject.CAMERA_PARENT)
                         Updater.UpdateObject(beatmapObject);
                 });
@@ -3968,7 +3968,7 @@ namespace BetterLegacy.Editor.Managers
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.parent != BeatmapObject.CAMERA_PARENT)
-                            Updater.UpdateObject(beatmapObject.Parent);
+                            Updater.UpdateObject(beatmapObject.GetParent());
                         else if (UpdateObjects && beatmapObject.parent == BeatmapObject.CAMERA_PARENT)
                             Updater.UpdateObject(beatmapObject);
                     }
@@ -6260,7 +6260,7 @@ namespace BetterLegacy.Editor.Managers
 
                         string ptr = "";
                         if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                            ptr = "<br><#" + CoreHelper.ColorToHex((beatmapObject).Prefab.PrefabType.Color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
+                            ptr = "<br><#" + CoreHelper.ColorToHex(beatmapObject.GetPrefab().GetPrefabType().color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
                         else
                             ptr = "<br>Not from prefab";
 

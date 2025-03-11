@@ -352,7 +352,7 @@ namespace BetterLegacy.Editor.Data
             }
 
             var prefab = Prefab;
-            var prefabType = prefab.PrefabType;
+            var prefabType = prefab.GetPrefabType();
 
             RenderPrefabType(prefabType);
             RenderTooltip(prefab, prefabType);
@@ -405,13 +405,13 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Renders the prefab panel prefab type.
         /// </summary>
-        public void RenderPrefabType() => RenderPrefabType(Prefab.PrefabType);
+        public void RenderPrefabType() => RenderPrefabType(Prefab.GetPrefabType());
 
         /// <summary>
         /// Renders the prefab panel prefab type.
         /// </summary>
         /// <param name="prefabType">Type of the prefab.</param>
-        public void RenderPrefabType(PrefabType prefabType) => RenderPrefabType(prefabType.Name, prefabType.Color, prefabType.icon);
+        public void RenderPrefabType(PrefabType prefabType) => RenderPrefabType(prefabType.name, prefabType.color, prefabType.icon);
 
         /// <summary>
         /// Renders the prefab panel prefab type.
@@ -456,7 +456,7 @@ namespace BetterLegacy.Editor.Data
                 return;
             }
 
-            RenderTooltip(Prefab, Prefab.PrefabType);
+            RenderTooltip(Prefab, Prefab.GetPrefabType());
         }
 
         /// <summary>
@@ -467,9 +467,9 @@ namespace BetterLegacy.Editor.Data
         public void RenderTooltip(Prefab prefab, PrefabType prefabType)
         {
             TooltipHelper.AddHoverTooltip(GameObject,
-                "<#" + LSColors.ColorToHex(prefabType.Color) + ">" + prefab.Name + "</color>",
+                "<#" + LSColors.ColorToHex(prefabType.color) + ">" + prefab.Name + "</color>",
                 "Offset: " + prefab.Offset +
-                "<br>Type: " + prefabType.Name +
+                "<br>Type: " + prefabType.name +
                 "<br>Count: " + prefab.objects.Count +
                 "<br>Description: " + prefab.description, clear: true);
         }
@@ -582,7 +582,7 @@ namespace BetterLegacy.Editor.Data
                                 prefabToSaveTo.Type = RTPrefabEditor.inst.prefabToSaveFrom.Type;
                                 prefabToSaveTo.typeID = RTPrefabEditor.inst.prefabToSaveFrom.typeID;
 
-                                var prefabType = prefabToSaveTo.PrefabType;
+                                var prefabType = prefabToSaveTo.GetPrefabType();
 
                                 RenderName();
                                 RenderPrefabType(prefabType);

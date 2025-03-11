@@ -43,12 +43,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public float speed = 1f;
 
-        /// <summary>
-        /// Gets the prefab reference.
-        /// </summary>
-        public Prefab Prefab => GameData.Current.prefabs.Find(x => x.ID == prefabID);
-
         public List<BeatmapObject> expandedObjects = new List<BeatmapObject>();
+
         public List<BeatmapObject> ExpandedObjects => GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == ID);
 
         public enum AutoKillType
@@ -429,6 +425,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        /// <summary>
+        /// Gets the prefab reference.
+        /// </summary>
+        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.ID == prefabID);
+
         public void SetParentAdditive(int index, bool additive)
         {
             var stringBuilder = new StringBuilder(parentAdditive);
@@ -460,7 +461,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns></returns>
         public float GetPrefabLifeLength(bool collapse = false)
         {
-            var prefab = Prefab;
+            var prefab = GetPrefab();
             if (collapse && editorData.collapse || !prefab)
                 return 0.2f;
 

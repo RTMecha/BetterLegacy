@@ -956,7 +956,7 @@ namespace BetterLegacy.Editor.Managers
 
             #region Original Code
 
-            var prefab = prefabObject.Prefab;
+            var prefab = prefabObject.GetPrefab();
 
             var right = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/right");
 
@@ -1301,8 +1301,8 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
                 });
 
-                typeSelector.button.image.color = prefab.PrefabType.Color;
-                typeSelector.text.text = prefab.PrefabType.Name;
+                typeSelector.button.image.color = prefab.GetPrefabType().color;
+                typeSelector.text.text = prefab.GetPrefabType().name;
                 typeSelector.button.onClick.ClearAll();
                 typeSelector.button.onClick.AddListener(() =>
                 {
@@ -1310,8 +1310,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         prefab.Type = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                         prefab.typeID = id;
-                        typeSelector.button.image.color = prefab.PrefabType.Color;
-                        typeSelector.text.text = prefab.PrefabType.Name;
+                        typeSelector.button.image.color = prefab.GetPrefabType().color;
+                        typeSelector.text.text = prefab.GetPrefabType().name;
                         EditorTimeline.inst.RenderTimelineObjects();
                     });
                 });
@@ -1555,7 +1555,7 @@ namespace BetterLegacy.Editor.Managers
             float delay = 0f;
             float audioTime = EditorManager.inst.CurrentAudioPos;
 
-            var prefab = prefabObject.Prefab;
+            var prefab = prefabObject.GetPrefab();
 
             var objectIDs = new List<IDPair>();
             for (int j = 0; j < prefab.objects.Count; j++)
@@ -1642,6 +1642,8 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Prefab Types
+
+        public List<PrefabType> prefabTypes = new List<PrefabType>();
 
         void CreatePrefabTypesPopup()
         {
@@ -1789,10 +1791,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     NewPrefabTypeID = id;
-                    if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
+                    if (prefabTypes.TryFind(x => x.id == id, out PrefabType prefabType))
                     {
-                        externalCreatorText.name = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
-                        externalCreatorImage.color = prefabType.Color;
+                        externalCreatorText.name = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                        externalCreatorImage.color = prefabType.color;
                     }
                 });
             });
@@ -1808,10 +1810,10 @@ namespace BetterLegacy.Editor.Managers
         public void SavePrefabTypes()
         {
             var prefabTypesPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/prefabtypes");
-            foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType).Where(x => !x.isDefault))
+            foreach (var prefabType in prefabTypes.Where(x => !x.isDefault))
             {
                 var jn = prefabType.ToJSON();
-                prefabType.filePath = RTFile.CombinePaths(prefabTypesPath, RTFile.FormatLegacyFileName(prefabType.Name) + FileFormat.LSPT.Dot());
+                prefabType.filePath = RTFile.CombinePaths(prefabTypesPath, RTFile.FormatLegacyFileName(prefabType.name) + FileFormat.LSPT.Dot());
                 RTFile.WriteToFile(prefabType.filePath, jn.ToString(3));
             }
         }
@@ -1824,11 +1826,11 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator LoadPrefabTypes()
         {
             loadingPrefabTypes = true;
-            DataManager.inst.PrefabTypes.Clear();
+            prefabTypes.Clear();
 
             var defaultPrefabTypesJN = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_prefabtypes{FileFormat.LSPT.Dot()}"));
             for (int i = 0; i < defaultPrefabTypesJN["prefab_types"].Count; i++)
-                DataManager.inst.PrefabTypes.Add(PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i], true));
+                prefabTypes.Add(PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i], true));
 
             var prefabTypesPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/prefabtypes");
             RTFile.CreateDirectory(prefabTypesPath);
@@ -1839,10 +1841,10 @@ namespace BetterLegacy.Editor.Managers
                 var jn = JSON.Parse(RTFile.ReadFromFile(files[i]));
                 var prefabType = PrefabType.Parse(jn);
                 prefabType.filePath = RTFile.ReplaceSlash(files[i]);
-                DataManager.inst.PrefabTypes.Add(prefabType);
+                prefabTypes.Add(prefabType);
             }
 
-            NewPrefabTypeID = ((PrefabType)DataManager.inst.PrefabTypes[0]).id;
+            NewPrefabTypeID = prefabTypes[0].id;
 
             loadingPrefabTypes = false;
 
@@ -1888,7 +1890,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 string name = "New Type";
                 int n = 0;
-                while (DataManager.inst.PrefabTypes.Has(x => x.Name == name))
+                while (prefabTypes.Has(x => x.name == name))
                 {
                     name = $"New Type [{n}]";
                     n++;
@@ -1897,7 +1899,7 @@ namespace BetterLegacy.Editor.Managers
                 var prefabType = new PrefabType(name, LSColors.pink500);
                 prefabType.icon = LegacyPlugin.AtanPlaceholder;
 
-                DataManager.inst.PrefabTypes.Add(prefabType);
+                prefabTypes.Add(prefabType);
 
                 SavePrefabTypes();
 
@@ -1908,10 +1910,10 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(createPrefabTypeText, ThemeGroup.Add_Text);
 
             int num = 0;
-            foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
+            foreach (var prefabType in prefabTypes)
             {
                 int index = num;
-                var gameObject = prefabTypePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, prefabType.Name);
+                var gameObject = prefabTypePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, prefabType.name);
 
                 var toggle = gameObject.transform.Find("Toggle").GetComponent<Toggle>();
                 toggle.onValueChanged.ClearAll();
@@ -1922,7 +1924,7 @@ namespace BetterLegacy.Editor.Managers
                     RenderPrefabTypesPopup(prefabType.id, onSelect);
                 });
 
-                toggle.image.color = prefabType.Color;
+                toggle.image.color = prefabType.color;
 
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
@@ -1935,23 +1937,23 @@ namespace BetterLegacy.Editor.Managers
                 inputField.onEndEdit.ClearAll();
                 inputField.characterValidation = InputField.CharacterValidation.None;
                 inputField.characterLimit = 0;
-                inputField.text = prefabType.Name;
+                inputField.text = prefabType.name;
                 inputField.interactable = !prefabType.isDefault;
                 if (!prefabType.isDefault)
                 {
                     inputField.onValueChanged.AddListener(_val =>
                     {
-                        string oldName = DataManager.inst.PrefabTypes[index].Name;
+                        string oldName = prefabTypes[index].name;
 
                         string name = _val;
                         int n = 0;
-                        while (DataManager.inst.PrefabTypes.Has(x => x.Name == name))
+                        while (prefabTypes.Has(x => x.name == name))
                         {
                             name = $"{_val}[{n}]";
                             n++;
                         }
 
-                        DataManager.inst.PrefabTypes[index].Name = name;
+                        prefabTypes[index].name = name;
 
                         if (!RTFile.FileExists(prefabType.filePath))
                             return;
@@ -1972,7 +1974,7 @@ namespace BetterLegacy.Editor.Managers
                 color.onEndEdit.ClearAll();
                 color.characterValidation = InputField.CharacterValidation.None;
                 color.characterLimit = 0;
-                color.text = CoreHelper.ColorToHex(prefabType.Color);
+                color.text = CoreHelper.ColorToHex(prefabType.color);
                 color.interactable = !prefabType.isDefault;
                 if (!prefabType.isDefault)
                 {
@@ -1995,7 +1997,7 @@ namespace BetterLegacy.Editor.Managers
                         if (RTFile.FileExists(prefabType.filePath))
                             File.Delete(prefabType.filePath);
 
-                        DataManager.inst.PrefabTypes.RemoveAt(index);
+                        prefabTypes.RemoveAt(index);
 
                         RenderPrefabTypesPopup(current, onSelect);
                         SavePrefabTypes();
@@ -2388,11 +2390,11 @@ namespace BetterLegacy.Editor.Managers
         public void RenderPrefabExternalDialog(PrefabPanel prefabPanel)
         {
             var prefab = prefabPanel.Prefab;
-            var prefabType = prefab.PrefabType;
+            var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.Dialog == PrefabDialog.External;
 
-            externalTypeText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
-            externalTypeImage.color = prefabType.Color;
+            externalTypeText.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+            externalTypeImage.color = prefabType.color;
             externalType.onClick.ClearAll();
             externalType.onClick.AddListener(() =>
             {
@@ -2401,9 +2403,9 @@ namespace BetterLegacy.Editor.Managers
                     prefab.Type = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     prefab.typeID = id;
 
-                    var prefabType = prefab.PrefabType;
-                    externalTypeImage.color = prefabType.Color;
-                    externalTypeText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
+                    var prefabType = prefab.GetPrefabType();
+                    externalTypeImage.color = prefabType.color;
+                    externalTypeText.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
 
                     if (isExternal && !string.IsNullOrEmpty(prefab.filePath))
                         RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
@@ -2781,10 +2783,10 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(offsetInput.gameObject, TriggerHelper.ScrollDelta(offsetInput));
 
-            if (DataManager.inst.PrefabTypes.TryFind(x => x is PrefabType prefabType && prefabType.id == NewPrefabTypeID, out DataManager.PrefabType vanillaPrefabType) && vanillaPrefabType is PrefabType prefabType)
+            if (prefabTypes.TryFind(x => x.id == NewPrefabTypeID, out PrefabType prefabType))
             {
-                externalCreatorText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
-                externalCreatorImage.color = prefabType.Color;
+                externalCreatorText.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                externalCreatorImage.color = prefabType.color;
             }
 
             prefabCreatorTypeButton.onClick.ClearAll();
@@ -2794,10 +2796,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     NewPrefabTypeID = id;
-                    if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
+                    if (prefabTypes.TryFind(x => x.id == id, out PrefabType prefabType))
                     {
-                        externalCreatorText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
-                        externalCreatorImage.color = prefabType.Color;
+                        externalCreatorText.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                        externalCreatorImage.color = prefabType.color;
                     }
                 });
             });
@@ -2995,7 +2997,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefab">Prefab reference.</param>
         /// <param name="dialog">Prefabs' dialog.</param>
         /// <returns>Returns true if the prefab is being searched for, otherwise returns false.</returns>
-        public bool ContainsName(Prefab prefab, PrefabDialog dialog) => RTString.SearchString(dialog == PrefabDialog.External ? PrefabEditor.inst.externalSearchStr : PrefabEditor.inst.internalSearchStr, prefab.Name, prefab.PrefabType.Name);
+        public bool ContainsName(Prefab prefab, PrefabDialog dialog) => RTString.SearchString(dialog == PrefabDialog.External ? PrefabEditor.inst.externalSearchStr : PrefabEditor.inst.internalSearchStr, prefab.Name, prefab.GetPrefabType().name);
 
         /// <summary>
         /// Imports a prefab into the internal prefabs list.
