@@ -367,33 +367,15 @@ namespace BetterLegacy.Editor.Data
             RenderColors();
 
             UseButton.onClick.ClearAll();
-            UseButton.onClick.AddListener(() =>
-            {
-                if (isDuplicate)
-                {
-                    var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == Theme.id).Select(x => x.name).ToArray();
-                    var str = RTString.ArrayToString(array);
+            UseButton.onClick.AddListener(Use);
 
-                    EditorManager.inst.DisplayNotification($"Unable to use Theme [{Theme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+            ContextClickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                {
+                    Use();
                     return;
                 }
-
-                if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                {
-                    foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
-                }
-                else
-                    RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
-
-                EventManager.inst.updateEvents();
-                EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);
-            });
-
-            ContextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Use", () =>
@@ -605,6 +587,32 @@ namespace BetterLegacy.Editor.Data
         {
             if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"folder_info{FileFormat.JSON.Dot()}"), out string file))
                 infoJN = JSON.Parse(file);
+        }
+
+        /// <summary>
+        /// Uses the theme for the current selected theme keyframe.
+        /// </summary>
+        public void Use()
+        {
+            if (isDuplicate)
+            {
+                var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == Theme.id).Select(x => x.name).ToArray();
+                var str = RTString.ArrayToString(array);
+
+                EditorManager.inst.DisplayNotification($"Unable to use Theme [{Theme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
+            {
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                    timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
+            }
+            else
+                RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
+
+            EventManager.inst.updateEvents();
+            EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);
         }
 
         public override string ToString() => isFolder ? Path.GetFileName(FilePath) : Theme?.ToString();
