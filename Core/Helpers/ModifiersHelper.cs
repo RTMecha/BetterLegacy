@@ -5427,6 +5427,50 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     #endregion
+                    #region Updates
+
+                    case "updateObjects": {
+                            if (!modifier.constant)
+                                CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
+
+                            break;
+                        }
+                    case "updateObject": {
+                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
+
+                            if (!modifier.constant && list.Count > 0)
+                            {
+                                foreach (var bm in list)
+                                    Updater.UpdateObject(bm, recalculate: false);
+                                Updater.RecalculateObjectStates();
+                            }
+
+                            break;
+                        }
+                    case "setParent": {
+                            if (modifier.constant)
+                                return;
+
+                            if (modifier.GetValue(0) == string.Empty)
+                            {
+                                modifier.reference.customParent = string.Empty;
+                                Updater.UpdateObject(modifier.reference);
+                                return;
+                            }
+
+                            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject))
+                                return;
+
+                            if (!beatmapObject.CanParent(modifier.reference))
+                                return;
+
+                            modifier.reference.customParent = beatmapObject.id;
+                            Updater.UpdateObject(modifier.reference);
+
+                            break;
+                        }
+
+                    #endregion
                     #region Misc
 
                     case "quitToMenu": {
@@ -5540,24 +5584,6 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                                     levelObject.visualObject.ColliderEnabled = Parser.TryParse(modifier.value, false);
-                            }
-
-                            break;
-                        }
-                    case "updateObjects": {
-                            if (!modifier.constant)
-                                CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
-
-                            break;
-                        }
-                    case "updateObject": {
-                            var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
-
-                            if (!modifier.constant && list.Count > 0)
-                            {
-                                foreach (var bm in list)
-                                    Updater.UpdateObject(bm, recalculate: false);
-                                Updater.RecalculateObjectStates();
                             }
 
                             break;

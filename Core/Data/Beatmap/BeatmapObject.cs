@@ -49,7 +49,20 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Parent
 
-        public string parent = string.Empty;
+        public string customParent;
+        string parent = string.Empty;
+        /// <summary>
+        /// ID of the object to parent this to.
+        /// </summary>
+        public string Parent
+        {
+            get => customParent ?? parent;
+            set
+            {
+                customParent = null;
+                parent = value;
+            }
+        }
 
         public float[] parentOffsets = new float[3]
         {
@@ -84,7 +97,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Timing
 
-        public float startTime;
+        float startTime;
         public float StartTime
         {
             get => startTime;
@@ -241,7 +254,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public int integerVariable;
         public float floatVariable;
-        public string stringVariable = "";
+        public string stringVariable = string.Empty;
 
         public Vector3 reactivePositionOffset = Vector3.zero;
         public Vector3 reactiveScaleOffset = Vector3.zero;
@@ -584,7 +597,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.prefabID = jn["pre_id"];
 
             if (jn["p_id"] != null)
-                beatmapObject.parent = isCameraParented ? CAMERA_PARENT : jn["p_id"];
+                beatmapObject.Parent = isCameraParented ? CAMERA_PARENT : jn["p_id"];
 
             if (!isCameraParented && jn["p_t"] != null)
                 beatmapObject.parentType = jn["p_t"];
@@ -816,7 +829,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.prefabID = jn["pid"];
 
             if (jn["p"] != null)
-                beatmapObject.parent = jn["p"];
+                beatmapObject.Parent = jn["p"];
 
             if (jn["pt"] != null)
                 beatmapObject.parentType = jn["pt"];
@@ -853,7 +866,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["ordmod"] != null)
                 beatmapObject.orderModifiers = jn["ordmod"].AsBool;
 
-            if (jn["desync"] != null && !string.IsNullOrEmpty(beatmapObject.parent))
+            if (jn["desync"] != null && !string.IsNullOrEmpty(beatmapObject.Parent))
                 beatmapObject.desync = jn["desync"].AsBool;
 
             if (jn["empty"] != null)
@@ -1176,7 +1189,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             try
             {
-                var parent = this.parent;
+                var parent = Parent;
                 var beatmapObject = this;
                 var spawnDuration = SpawnDuration;
 
@@ -1193,7 +1206,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 while (!string.IsNullOrEmpty(parent) && beatmapObjects.Any(x => x.id == parent))
                 {
                     beatmapObject = beatmapObjects.Find(x => x.id == parent);
-                    parent = beatmapObject.parent;
+                    parent = beatmapObject.Parent;
 
                     if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().time < spawnDuration &&
                         (beatmapObject.events[1].Last().values[0] == 0f || beatmapObject.events[1].Last().values[1] == 0f ||
@@ -1702,7 +1715,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="beatmapObjects">Beatmap Object list to search for a parent.</param>
         /// <returns>Returns a <see cref="BeatmapObject"/> that this object is parented to. If no object was found, returns null.</returns>
-        public BeatmapObject GetParent(List<BeatmapObject> beatmapObjects) => beatmapObjects.Find(x => x.id == parent);
+        public BeatmapObject GetParent(List<BeatmapObject> beatmapObjects) => beatmapObjects.Find(x => x.id == Parent);
 
         /// <summary>
         /// Iterates through the object parent chain (including the object itself).
@@ -1719,14 +1732,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var list = new List<BeatmapObject>();
 
-            string parent = this.parent;
+            string parent = this.Parent;
             int index = beatmapObjects.FindIndex(x => x.id == parent);
 
             list.Add(this);
             while (index >= 0)
             {
                 list.Add(beatmapObjects[index]);
-                parent = beatmapObjects[index].parent;
+                parent = beatmapObjects[index].Parent;
                 index = beatmapObjects.FindIndex(x => x.id == parent);
             }
             return list;
@@ -1764,7 +1777,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var beatmapObjects = GameData.Current.beatmapObjects;
 
             string id = this.id;
-            if (beatmapObjects.TryFindAll(x => x.parent == id, out List<BeatmapObject> children))
+            if (beatmapObjects.TryFindAll(x => x.Parent == id, out List<BeatmapObject> children))
             {
                 for (int i = 0; i < children.Count; i++)
                     list.AddRange(children[i].GetChildTree());
@@ -1777,7 +1790,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Gets all children parented to this object.
         /// </summary>
         /// <returns>Returns a list of the objects' children.</returns>
-        public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
+        public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
 
         public void SetParent(BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true) => TrySetParent(beatmapObjectToParentTo, recalculate, renderParent);
 
@@ -1801,7 +1814,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (shouldParent)
             {
-                parent = beatmapObjectToParentTo.id;
+                Parent = beatmapObjectToParentTo.id;
                 Updater.UpdateObject(this, recalculate: recalculate);
 
                 if (renderParent)
@@ -1815,11 +1828,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Checks if another object can be parented to this object.
         /// </summary>
         /// <param name="obj">Object to check the parent compatibility of.</param>
+        /// <returns>Returns true if <paramref name="obj"/> can be parented to this.</returns>
+        public bool CanParent(BeatmapObject obj) => CanParent(obj, GameData.Current.beatmapObjects);
+
+        /// <summary>
+        /// Checks if another object can be parented to this object.
+        /// </summary>
+        /// <param name="obj">Object to check the parent compatibility of.</param>
         /// <param name="beatmapObjects">Beatmap objects to search through.</param>
         /// <returns>Returns true if <paramref name="obj"/> can be parented to this.</returns>
         public bool CanParent(BeatmapObject obj, List<BeatmapObject> beatmapObjects)
         {
-            if (string.IsNullOrEmpty(obj.parent))
+            if (string.IsNullOrEmpty(obj.Parent))
                 return true;
 
             bool canParent = true;
@@ -1827,13 +1847,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             while (!string.IsNullOrEmpty(parentID))
             {
-                if (parentID == obj.parent)
+                if (parentID == obj.Parent)
                 {
                     canParent = false;
                     break;
                 }
 
-                parentID = beatmapObjects.TryFind(x => x.parent == parentID, out BeatmapObject parentObj) ? parentObj.id : null;
+                parentID = beatmapObjects.TryFind(x => x.Parent == parentID, out BeatmapObject parentObj) ? parentObj.id : null;
             }
 
             return canParent;
@@ -1876,6 +1896,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (parentOffsets.InRange(index))
                 parentOffsets[index] = val;
         }
+
         /// <summary>
         /// Gets the parent additive value depending on the index.
         /// </summary>

@@ -113,7 +113,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 {
                     var beatmapParent = pc[pc.Count - 1];
 
-                    cameraParent = beatmapParent.parent == BeatmapObject.CAMERA_PARENT;
+                    cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
                     positionParent = beatmapParent.GetParentType(0);
                     scaleParent = beatmapParent.GetParentType(1);
@@ -232,9 +232,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             float scaleParallax = 1f;
             float rotationParallax = 1f;
 
-            if (prevStartTime != beatmapObject.startTime)
+            if (prevStartTime != beatmapObject.StartTime)
             {
-                prevStartTime = beatmapObject.startTime;
+                prevStartTime = beatmapObject.StartTime;
                 spawned = false;
             }
 

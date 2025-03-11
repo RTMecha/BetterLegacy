@@ -134,7 +134,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             GameObject parent = null;
 
-            if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjects.TryGetValue(beatmapObject.parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
                 parent = InitParentChain(beatmapObjectParent, parentObjects);
 
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
@@ -279,7 +279,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             parentObjects.Add(InitLevelParentObject(beatmapObject, gameObject));
 
             // Has parent - init parent (recursive)
-            if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjects.TryGetValue(beatmapObject.parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
             {
                 var parentObject = InitParentChain(beatmapObjectParent, parentObjects);
 
@@ -341,7 +341,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                         gameObject = gameObject,
                         transform = gameObject.transform,
                         id = beatmapObject.id,
-                        desync = !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.desync,
+                        desync = !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.desync,
                         BeatmapObject = beatmapObject
                     };
                 else
@@ -382,7 +382,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                         gameObject = gameObject,
                         transform = gameObject.transform,
                         id = beatmapObject.id,
-                        desync = !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.desync,
+                        desync = !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.desync,
                         BeatmapObject = beatmapObject
                     };
                 } // In case the CashedSequence is null, set defaults.

@@ -2332,9 +2332,9 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var bm in GameData.Current.beatmapObjects)
                     {
-                        if (bm.parent == id)
+                        if (bm.Parent == id)
                         {
-                            bm.parent = "";
+                            bm.Parent = "";
 
                             Updater.UpdateObject(bm, recalculate: false);
                         }
@@ -2682,10 +2682,10 @@ namespace BetterLegacy.Editor.Managers
                     if (!retainID)
                         beatmapObjectCopy.id = objectIDs[i].newID;
 
-                    if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
-                        beatmapObjectCopy.parent = idPair.newID;
-                    else if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != BeatmapObject.CAMERA_PARENT)
-                        beatmapObjectCopy.parent = "";
+                    if (!retainID && !string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
+                        beatmapObjectCopy.Parent = idPair.newID;
+                    else if (!retainID && !string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObjectCopy.Parent != BeatmapObject.CAMERA_PARENT)
+                        beatmapObjectCopy.Parent = "";
 
                     if (regen)
                         beatmapObjectCopy.RemovePrefabReference();
@@ -2709,7 +2709,7 @@ namespace BetterLegacy.Editor.Managers
                     if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
                         Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                    if (string.IsNullOrEmpty(beatmapObject.parent) || beatmapObjectCopy.parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) != -1) // prevent updating of parented objects since updating is recursive.
+                    if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                         unparentedPastedObjects.Add(beatmapObjectCopy);
                     pastedObjects.Add(beatmapObjectCopy);
 
@@ -3780,7 +3780,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderParent(BeatmapObject beatmapObject)
         {
-            string parent = beatmapObject.parent;
+            string parent = beatmapObject.Parent;
             
             Dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
 
@@ -3799,7 +3799,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Open Parent Popup", () => ShowParentSearch(EditorTimeline.inst.GetTimelineObject(beatmapObject))),
                     new ButtonFunction("Parent to Camera", () =>
                     {
-                        beatmapObject.parent = BeatmapObject.CAMERA_PARENT;
+                        beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
                         Updater.UpdateObject(beatmapObject);
                         RenderParent(beatmapObject);
                     })
@@ -3820,7 +3820,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var list = new List<ButtonFunction>();
 
-                if (!string.IsNullOrEmpty(beatmapObject.parent))
+                if (!string.IsNullOrEmpty(beatmapObject.Parent))
                 {
                     var parentChain = beatmapObject.GetParentChain();
                     if (parentChain.Count > 0)
@@ -3830,7 +3830,7 @@ namespace BetterLegacy.Editor.Managers
                         }));
                 }
 
-                if (GameData.Current.beatmapObjects.TryFindAll(x => x.parent == beatmapObject.id, out List<BeatmapObject> findAll))
+                if (GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == beatmapObject.id, out List<BeatmapObject> findAll))
                 {
                     var childTree = beatmapObject.GetChildTree();
                     if (childTree.Count > 0)
@@ -3877,7 +3877,7 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ParentClearButton.onClick.AddListener(() =>
             {
-                beatmapObject.parent = "";
+                beatmapObject.Parent = "";
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
@@ -3947,9 +3947,9 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.SetParentType(index, _val);
 
                     // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.parent != BeatmapObject.CAMERA_PARENT)
+                    if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.Parent != BeatmapObject.CAMERA_PARENT)
                         Updater.UpdateObject(beatmapObject.GetParent());
-                    else if (UpdateObjects && beatmapObject.parent == BeatmapObject.CAMERA_PARENT)
+                    else if (UpdateObjects && beatmapObject.Parent == BeatmapObject.CAMERA_PARENT)
                         Updater.UpdateObject(beatmapObject);
                 });
 
@@ -3966,9 +3966,9 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.SetParentOffset(index, num);
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.parent != BeatmapObject.CAMERA_PARENT)
+                        if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.Parent != BeatmapObject.CAMERA_PARENT)
                             Updater.UpdateObject(beatmapObject.GetParent());
-                        else if (UpdateObjects && beatmapObject.parent == BeatmapObject.CAMERA_PARENT)
+                        else if (UpdateObjects && beatmapObject.Parent == BeatmapObject.CAMERA_PARENT)
                             Updater.UpdateObject(beatmapObject);
                     }
                 });
@@ -6182,7 +6182,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
-                        bm.parent = "";
+                        bm.Parent = "";
                         Updater.UpdateObject(bm);
                     }
                 });
@@ -6234,8 +6234,8 @@ namespace BetterLegacy.Editor.Managers
                         var transform = levelObject.visualObject.GameObject.transform;
 
                         string parent = "";
-                        if (!string.IsNullOrEmpty(beatmapObject.parent))
-                            parent = "<br>P: " + beatmapObject.parent + " (" + beatmapObject.parentType + ")";
+                        if (!string.IsNullOrEmpty(beatmapObject.Parent))
+                            parent = "<br>P: " + beatmapObject.Parent + " (" + beatmapObject.parentType + ")";
                         else
                             parent = "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
 
@@ -6361,7 +6361,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     var bm = timelineObject.GetData<BeatmapObject>();
-                    bm.parent = "";
+                    bm.Parent = "";
                     Updater.UpdateObject(bm, recalculate: false);
                 }
 
@@ -6399,7 +6399,7 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.parent = BeatmapObject.CAMERA_PARENT;
+                        bm.Parent = BeatmapObject.CAMERA_PARENT;
                         Updater.UpdateObject(bm, recalculate: false);
                     }
 
@@ -6423,7 +6423,7 @@ namespace BetterLegacy.Editor.Managers
                 int index = GameData.Current.beatmapObjects.IndexOf(obj);
 
                 if (!RTString.SearchString(EditorManager.inst.parentSearch, obj.name + " " + index.ToString("0000")) || obj.id == timelineObject.ID ||
-                    !timelineObject.isPrefabObject && !timelineObject.GetData<BeatmapObject>().CanParent(obj, GameData.Current.beatmapObjects))
+                    !timelineObject.isPrefabObject && !timelineObject.GetData<BeatmapObject>().CanParent(obj))
                     continue;
 
                 string s = $"{obj.name} {index.ToString("0000")}";

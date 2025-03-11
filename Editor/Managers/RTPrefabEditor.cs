@@ -1571,10 +1571,10 @@ namespace BetterLegacy.Editor.Managers
 
                 beatmapObjectCopy.id = objectIDs[i].newID;
 
-                if (!string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
-                    beatmapObjectCopy.parent = idPair.newID;
-                else if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjectCopy.parent != BeatmapObject.CAMERA_PARENT && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1)
-                    beatmapObjectCopy.parent = "";
+                if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
+                    beatmapObjectCopy.Parent = idPair.newID;
+                else if (!string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObjectCopy.Parent != BeatmapObject.CAMERA_PARENT && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1)
+                    beatmapObjectCopy.Parent = "";
 
                 beatmapObjectCopy.fromPrefab = false;
                 beatmapObjectCopy.prefabID = prefab.id;
@@ -1591,7 +1591,7 @@ namespace BetterLegacy.Editor.Managers
                 if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
                     Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                if (string.IsNullOrEmpty(beatmapObjectCopy.parent) || beatmapObjectCopy.parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) != -1) // prevent updating of parented objects since updating is recursive.
+                if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                     notParented.Add(beatmapObjectCopy);
                 expandedObjects.Add(beatmapObjectCopy);
 

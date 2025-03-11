@@ -1061,7 +1061,10 @@ namespace BetterLegacy.Editor.Managers
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 if (timelineObject.isBeatmapObject)
+                {
+                    timelineObject.GetData<BeatmapObject>().customParent = null;
                     Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
+                }
                 if (timelineObject.isPrefabObject)
                     Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
             }

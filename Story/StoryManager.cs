@@ -711,7 +711,7 @@ namespace BetterLegacy.Story
                 if (!string.IsNullOrEmpty(jnObject["id"]))
                     beatmapObject.id = jnObject["id"];
                 if (!string.IsNullOrEmpty(jnObject["parent"]))
-                    beatmapObject.parent = jnObject["parent"];
+                    beatmapObject.Parent = jnObject["parent"];
                 beatmapObject.Depth = jnObject["layer"].AsInt;
                 beatmapObject.objectType = jnObject["helper"].AsBool ? BeatmapObject.ObjectType.Helper : BeatmapObject.ObjectType.Normal;
                 beatmapObject.StartTime = jnObject["startTime"].AsFloat;

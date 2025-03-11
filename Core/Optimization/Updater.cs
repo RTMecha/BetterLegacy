@@ -208,7 +208,7 @@ namespace BetterLegacy.Core.Optimization
                     for (int i = 0; i < beatmapObjects.Count; i++)
                     {
                         var bm = beatmapObjects[i];
-                        if (bm.parent == beatmapObject.id)
+                        if (bm.Parent == beatmapObject.id)
                             RecacheSequences(bm, converter, reinsert, updateParents, recursive);
                     }
                 }
@@ -225,7 +225,7 @@ namespace BetterLegacy.Core.Optimization
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var bm = beatmapObjects[i];
-                    if (bm.parent == beatmapObject.id)
+                    if (bm.Parent == beatmapObject.id)
                         RecacheSequences(bm, converter, reinsert, updateParents, recursive);
                 }
             }
@@ -382,9 +382,9 @@ namespace BetterLegacy.Core.Optimization
                     case "parent":
                         {
                             var parentChain = beatmapObject.GetParentChain();
-                            if (beatmapObject.parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].parent == BeatmapObject.CAMERA_PARENT)
+                            if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
                             {
-                                var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
+                                var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
 
                                 var childTree = beatmapObject.GetChildTree();
                                 for (int i = 0; i < childTree.Count; i++)
@@ -392,7 +392,7 @@ namespace BetterLegacy.Core.Optimization
                                     var child = childTree[i];
                                     if (TryGetObject(child, out LevelObject childLevelObject))
                                     {
-                                        childLevelObject.cameraParent = beatmapParent.parent == BeatmapObject.CAMERA_PARENT;
+                                        childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
                                         childLevelObject.positionParent = beatmapParent.GetParentType(0);
                                         childLevelObject.scaleParent = beatmapParent.GetParentType(1);
@@ -415,9 +415,9 @@ namespace BetterLegacy.Core.Optimization
                     case "parentoffset":
                         {
                             var parentChain = beatmapObject.GetParentChain();
-                            if (beatmapObject.parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].parent == BeatmapObject.CAMERA_PARENT)
+                            if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
                             {
-                                var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
+                                var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
                                 
                                 var childTree = beatmapObject.GetChildTree();
                                 for (int i = 0; i < childTree.Count; i++)
@@ -425,7 +425,7 @@ namespace BetterLegacy.Core.Optimization
                                     var child = childTree[i];
                                     if (TryGetObject(child, out LevelObject childLevelObject))
                                     {
-                                        childLevelObject.cameraParent = beatmapParent.parent == BeatmapObject.CAMERA_PARENT;
+                                        childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
                                         childLevelObject.positionParent = beatmapParent.GetParentType(0);
                                         childLevelObject.scaleParent = beatmapParent.GetParentType(1);
@@ -526,7 +526,7 @@ namespace BetterLegacy.Core.Optimization
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var bm = beatmapObjects[i];
-                    if (bm.parent == id)
+                    if (bm.Parent == id)
                         ReinitObject(bm, level, objects, converter, spawner, reinsert, recursive);
                 }
             }
@@ -613,7 +613,7 @@ namespace BetterLegacy.Core.Optimization
             for (int i = 0; i < gameData.beatmapObjects.Count; i++)
             {
                 var beatmapObject = gameData.beatmapObjects[i];
-                if (string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.prefabInstanceID == prefabObject.id)
+                if (string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.prefabInstanceID == prefabObject.id)
                     UpdateObject(beatmapObject, reinsert: false, recalculate: recalculate);
             }
 
@@ -862,19 +862,19 @@ namespace BetterLegacy.Core.Optimization
                         {
                             beatmapObjectCopy.id = objectIDs[num].newID;
 
-                            if (!string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
-                                beatmapObjectCopy.parent = idPair.newID;
-                            else if (!string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObject.parent != "CAMERA_PARENT")
-                                beatmapObjectCopy.parent = "";
+                            if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
+                                beatmapObjectCopy.Parent = idPair.newID;
+                            else if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObject.Parent != "CAMERA_PARENT")
+                                beatmapObjectCopy.Parent = "";
                         }
                         catch (System.Exception ex)
                         {
                             Debug.LogError($"{className}Failed to set object ID.\n{ex}");
                         }
 
-                        if (string.IsNullOrEmpty(beatmapObjectCopy.parent) && !string.IsNullOrEmpty(prefabObject.parent))
+                        if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) && !string.IsNullOrEmpty(prefabObject.parent))
                         {
-                            beatmapObjectCopy.parent = prefabObject.parent;
+                            beatmapObjectCopy.Parent = prefabObject.parent;
                             beatmapObjectCopy.parentType = prefabObject.parentType;
                             beatmapObjectCopy.parentOffsets = prefabObject.parentOffsets;
                             beatmapObjectCopy.parentAdditive = prefabObject.parentAdditive;
@@ -915,7 +915,7 @@ namespace BetterLegacy.Core.Optimization
                         if (levelProcessor && levelProcessor.converter != null)
                             levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                        if (string.IsNullOrEmpty(beatmapObjectCopy.parent) || beatmapObjectCopy.parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) != -1) // prevent updating of parented objects since updating is recursive.
+                        if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                             notParented.Add(beatmapObjectCopy);
 
                         num++;
@@ -1003,6 +1003,8 @@ namespace BetterLegacy.Core.Optimization
                 beatmapObject.positionOffset = Vector3.zero;
                 beatmapObject.scaleOffset = Vector3.zero;
                 beatmapObject.rotationOffset = Vector3.zero;
+
+                beatmapObject.customParent = null;
             }
 
             foreach (var backgroundObject in GameData.Current.backgroundObjects)

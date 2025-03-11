@@ -661,7 +661,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                             {
-                                beatmapObject.parent = "";
+                                beatmapObject.Parent = "";
                                 Updater.UpdateObject(beatmapObject);
                             }
 

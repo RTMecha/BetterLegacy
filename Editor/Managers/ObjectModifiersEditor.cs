@@ -819,6 +819,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case "updateObject":
+                    case "setParent":
                     case "objectCollide":
                         {
                             PrefabGroupOnly(modifier, layout);
