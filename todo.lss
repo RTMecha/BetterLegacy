@@ -45,7 +45,6 @@ Toolkit mechanics:
 
 ### Modifiers
 - prizeObject
-- setParent
 - playerAction trigger (allows for multiple different keybinds and buttons)
 - trailRendererGradient > 1.8.0
 - trailRendererColored > 1.8.0
