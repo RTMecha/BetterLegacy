@@ -1,7 +1,7 @@
 ﻿snapshot-2025.3.1 - (pre-1.7.0) > [???]
 - Completely overhauled Example. He is now a whole lot more advanced, customizable and a (hopefully) better assistant. He's grown up so much :3
 - Reworked beatmap data to not depend on base vanilla data as much. (so many nests and odd names wtf)
-- Due to the beatmap data rework, a new "setParent" modifier was added. This temporarily sets the parent of the beatmap object to another, until you update the object or reload the level.
+- Due to the beatmap data rework, new "setParent" and "setParentOther" modifiers was added. This temporarily sets the parent of the beatmap object to another, until you update the object or reload the level.
 - spawnPrefab modifiers can now find a prefab via different ways: Index, ID and Name.
 - Renamed Timeline Waveform type names to better describe what they are. This is done since what was the "Modern" waveform is no longer modern due to modern PA now using the "Beta" waveform.
 - Unclamped the timeline. You can now drag the timeline to before the level starts and see any objects that spawn there. You can also move objects to before the level starts by turning the config "Config Manager > Editor > Timeline > Clamped Timeline Drag" off.
