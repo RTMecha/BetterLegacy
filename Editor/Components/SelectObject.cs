@@ -332,7 +332,7 @@ namespace BetterLegacy.Editor.Components
             if (!setKeyframeValues)
             {
                 setKeyframeValues = true;
-                dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
+                dragKeyframeValues = new Vector2(selectedKeyframe.values[0], selectedKeyframe.values[1]);
                 dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
             }
 
@@ -354,9 +354,9 @@ namespace BetterLegacy.Editor.Components
             }
 
             if (firstDirection == Axis.Static || firstDirection == Axis.PosX || firstDirection == Axis.NegX)
-                selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
+                selectedKeyframe.values[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
             if (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY)
-                selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+                selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
             if (prefabObjectToDrag != null)
                 Updater.UpdatePrefab(prefabObjectToDrag, "Offset");
@@ -380,28 +380,28 @@ namespace BetterLegacy.Editor.Components
                 return (EventKeyframe)prefabObject.events[type];
 
             var timeOffset = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-            int nextIndex = beatmapObject.events[type].FindIndex(x => x.eventTime >= timeOffset);
+            int nextIndex = beatmapObject.events[type].FindIndex(x => x.time >= timeOffset);
             if (nextIndex < 0)
                 nextIndex = beatmapObject.events[type].Count - 1;
 
             int index;
             EventKeyframe selected;
-            if (beatmapObject.events[type].TryFindIndex(x => x.eventTime > timeOffset - 0.1f && x.eventTime < timeOffset + 0.1f, out int sameIndex))
+            if (beatmapObject.events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
             {
                 selected = (EventKeyframe)beatmapObject.events[type][sameIndex];
                 index = sameIndex;
-                AudioManager.inst.SetMusicTime(selected.eventTime + beatmapObject.StartTime);
+                AudioManager.inst.SetMusicTime(selected.time + beatmapObject.StartTime);
             }
             else if (CreateKeyframe)
             {
                 selected = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][nextIndex]);
-                selected.eventTime = timeOffset;
+                selected.time = timeOffset;
                 index = beatmapObject.events[type].Count;
                 beatmapObject.events[type].Add(selected);
             }
             else
             {
-                index = beatmapObject.events[type].FindLastIndex(x => x.eventTime < timeOffset);
+                index = beatmapObject.events[type].FindLastIndex(x => x.time < timeOffset);
                 selected = (EventKeyframe)beatmapObject.events[type][index];
             }
 
@@ -435,8 +435,8 @@ namespace BetterLegacy.Editor.Components
                 if (beatmapObject.fromPrefab && currentSelection.ID == beatmapObject.prefabInstanceID)
                 {
                     var prefabObject = currentSelection.GetData<PrefabObject>();
-                    RTGameManager.inst.objectDragger.position = new Vector3(prefabObject.events[0].eventValues[0], prefabObject.events[0].eventValues[1], -90f);
-                    RTGameManager.inst.objectDragger.rotation = Quaternion.Euler(0f, 0f, prefabObject.events[2].eventValues[0]);
+                    RTGameManager.inst.objectDragger.position = new Vector3(prefabObject.events[0].values[0], prefabObject.events[0].values[1], -90f);
+                    RTGameManager.inst.objectDragger.rotation = Quaternion.Euler(0f, 0f, prefabObject.events[2].values[0]);
                 }
             }
 
@@ -445,9 +445,9 @@ namespace BetterLegacy.Editor.Components
                 if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
                     return;
 
-                var prefabObject = GameData.Current.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
+                var prefabObject = GameData.Current.prefabObjects.Find(x => x.id == beatmapObject.prefabInstanceID);
 
-                if (prefabObject == null || prefabObject.fromModifier || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != EditorTimeline.inst.Layer))
+                if (prefabObject == null || prefabObject.fromModifier || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.Layer != EditorTimeline.inst.Layer))
                     return;
 
                 var beatmapObjects = prefabObject.ExpandedObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty)
@@ -463,7 +463,7 @@ namespace BetterLegacy.Editor.Components
                             continue;
 
                         SetHoverColor(levelObject, renderer);
-                        SetLayerColor(levelObject, renderer, prefabObject.editorData.layer);
+                        SetLayerColor(levelObject, renderer, prefabObject.editorData.Layer);
                     }
                 }
 
@@ -473,7 +473,7 @@ namespace BetterLegacy.Editor.Components
             if (beatmapObject.editorData == null || !Updater.TryGetObject(beatmapObject, out LevelObject selfLevelObject))
                 return;
 
-            SetColor(selfLevelObject, renderer, beatmapObject.editorData.layer);
+            SetColor(selfLevelObject, renderer, beatmapObject.editorData.Layer);
         }
 
         void FixedUpdate()
@@ -550,8 +550,8 @@ namespace BetterLegacy.Editor.Components
                 tooltipLanguages.Add(TooltipHelper.NewTooltip(beatmapObject.name + " [ " + beatmapObject.StartTime + " ]", "", new List<string>()));
 
             string parent = !string.IsNullOrEmpty(beatmapObject.parent) ?
-                 "<br>P: " + beatmapObject.parent + " (" + beatmapObject.GetParentType() + ")" :
-                 "<br>P: No Parent" + " (" + beatmapObject.GetParentType() + ")";
+                 "<br>P: " + beatmapObject.parent + " (" + beatmapObject.parentType + ")" :
+                 "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
 
             string text = beatmapObject.shape switch
             {
@@ -578,7 +578,7 @@ namespace BetterLegacy.Editor.Components
                 "<br>O: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
                 text +
                 "<br>D: " + beatmapObject.Depth +
-                "<br>ED: {L: " + beatmapObject.editorData.layer + ", B: " + beatmapObject.editorData.Bin + "}" +
+                "<br>ED: {L: " + beatmapObject.editorData.Layer + ", B: " + beatmapObject.editorData.Bin + "}" +
                 "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + ", Z: " + transform.position.z + "}" +
                 "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
                 "<br>ROT: " + transform.eulerAngles.z +

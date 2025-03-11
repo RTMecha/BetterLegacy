@@ -78,18 +78,18 @@ namespace BetterLegacy.Editor.Components
                 return;
 
             var pos = new Vector3(
-                EditorTimeline.inst.CurrentSelection.isPrefabObject ? EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[0].eventValues[0] : transform.position.x,
-                EditorTimeline.inst.CurrentSelection.isPrefabObject ? EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[0].eventValues[1] : transform.position.y,
+                EditorTimeline.inst.CurrentSelection.isPrefabObject ? EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[0].values[0] : transform.position.x,
+                EditorTimeline.inst.CurrentSelection.isPrefabObject ? EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[0].values[1] : transform.position.y,
                 0f);
 
             if (!setKeyframeValues)
             {
                 setKeyframeValues = true;
-                dragKeyframeValues = selectedKeyframe.eventValues[0];
+                dragKeyframeValues = selectedKeyframe.values[0];
                 dragOffset = Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(-RTMath.VectorAngle(pos, vector2), 15f) : -RTMath.VectorAngle(pos, vector2);
             }
 
-            selectedKeyframe.eventValues[0] =
+            selectedKeyframe.values[0] =
                 Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(dragKeyframeValues - dragOffset + -RTMath.VectorAngle(pos, vector2), 15f) : dragKeyframeValues - dragOffset + -RTMath.VectorAngle(pos, vector2);
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)

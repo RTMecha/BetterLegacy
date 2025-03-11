@@ -22,26 +22,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public BackgroundObject(BaseBackground bg)
-        {
-            active = bg.active;
-            color = bg.color;
-            drawFade = bg.drawFade;
-            kind = bg.kind;
-            layer = bg.layer;
-            name = bg.name;
-            pos = bg.pos;
-            reactive = bg.reactive;
-            reactiveScale = bg.reactiveScale;
-            reactiveSize = bg.reactiveSize;
-            reactiveType = bg.reactiveType;
-            rot = bg.rot;
-            scale = bg.scale;
-            text = bg.text;
-
-            shape = ShapeManager.inst.Shapes3D[0][0];
-        }
-
         public void SetShape(int shape, int shapeOption)
         {
             this.shape = Shape.DeepCopy(ShapeManager.inst.GetShape3D(shape, shapeOption));
@@ -52,11 +32,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public GameObject BaseObject => gameObjects.Count > 0 ? gameObjects[0] : null;
+        #region Values
 
-        public List<GameObject> gameObjects = new List<GameObject>();
-        public List<Transform> transforms = new List<Transform>();
-        public List<Renderer> renderers = new List<Renderer>();
+        #region Transforms
+
+        public Vector2 rotation = Vector2.zero;
+        public Shape shape;
+        public float zscale = 10f;
+        public int depth = 9;
+        public float zposition;
+
+        #endregion
+
+        #region Reactive
 
         public Vector2Int reactivePosSamples;
         public Vector2Int reactiveScaSamples;
@@ -69,13 +57,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float reactiveRotIntensity;
         public float reactiveColIntensity;
 
-        public List<string> tags = new List<string>();
+        public bool reactiveIncludesZ;
+        public float reactiveZIntensity;
+        public int reactiveZSample;
 
-        public Vector2 rotation = Vector2.zero;
-        public Shape shape;
-        public float zscale = 10f;
-        public int depth = 9;
-        public float zposition;
+        #endregion
+
+        #region Colors
 
         public float hue;
         public float saturation;
@@ -92,22 +80,38 @@ namespace BetterLegacy.Core.Data.Beatmap
             set => fadeColor = Mathf.Clamp(value, 0, 8);
         }
 
-        public bool reactiveIncludesZ;
-        public float reactiveZIntensity;
-        public int reactiveZSample;
+        #endregion
 
-        public Vector3 positionOffset;
-        public Vector3 scaleOffset;
-        public Vector3 rotationOffset;
+        #region Modifiers
+
+        public List<string> tags = new List<string>();
+
+        public List<List<Modifier<BackgroundObject>>> modifiers = new List<List<Modifier<BackgroundObject>>>();
 
         /// <summary>
         /// If the order of triggers and actions matter.
         /// </summary>
         public bool orderModifiers = false;
 
-        public List<List<Modifier<BackgroundObject>>> modifiers = new List<List<Modifier<BackgroundObject>>>();
+        public Vector3 positionOffset;
+        public Vector3 scaleOffset;
+        public Vector3 rotationOffset;
+
+        #endregion
+
+        #region References
 
         public bool Enabled { get; set; } = true;
+
+        public GameObject BaseObject => gameObjects.Count > 0 ? gameObjects[0] : null;
+
+        public List<GameObject> gameObjects = new List<GameObject>();
+        public List<Transform> transforms = new List<Transform>();
+        public List<Renderer> renderers = new List<Renderer>();
+
+        #endregion
+
+        #endregion
 
         #region Methods
 

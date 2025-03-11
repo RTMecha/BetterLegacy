@@ -1,14 +1,13 @@
 ﻿using BetterLegacy.Editor.Managers;
 using SimpleJSON;
 using UnityEngine;
-using BaseEditorData = DataManager.GameData.BeatmapObject.EditorData;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Contains info about a PA objects' layer, bin, etc.
     /// </summary>
-    public class ObjectEditorData : BaseEditorData
+    public class ObjectEditorData : Exists
     {
         public ObjectEditorData() {  }
 
@@ -20,17 +19,23 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.locked = locked;
         }
 
-        public new int Bin
+        int bin;
+        public int Bin
         {
             get => bin;
             set => bin = value;
         }
 
-        public new int Layer
+        int layer;
+        public int Layer
         {
             get => Mathf.Clamp(layer, 0, int.MaxValue);
             set => layer = Mathf.Clamp(value, 0, int.MaxValue);
         }
+
+        public bool collapse;
+
+        public bool locked;
 
         #region Methods
 

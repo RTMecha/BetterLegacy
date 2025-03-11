@@ -414,14 +414,14 @@ namespace BetterLegacy.Core.Helpers
                     {
                         timelineObject.timeOffset =
                             timelineObject.Type == timelineKeyframe.Type && timelineObject.Index == timelineKeyframe.Index ? 0f :
-                                timelineObject.Time - GameData.Current.eventObjects.allEvents[timelineKeyframe.Type][timelineKeyframe.Index].eventTime;
+                                timelineObject.Time - GameData.Current.events[timelineKeyframe.Type][timelineKeyframe.Index].time;
                     }
                 }
                 else
                     EventEditor.inst.SetCurrentEvent(timelineKeyframe.Type, timelineKeyframe.Index);
 
                 float timelineTime = EditorTimeline.inst.GetTimelineTime();
-                EventEditor.inst.mouseOffsetXForDrag = timelineKeyframe.eventKeyframe.eventTime - timelineTime;
+                EventEditor.inst.mouseOffsetXForDrag = timelineKeyframe.eventKeyframe.time - timelineTime;
                 EventEditor.inst.eventDrag = true;
             }
         });
@@ -488,8 +488,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             case 0:
                                 {
-                                    timelineKeyframe.eventKeyframe.eventValues[0] = EventManager.inst.cam.transform.position.x;
-                                    timelineKeyframe.eventKeyframe.eventValues[1] = EventManager.inst.cam.transform.position.y;
+                                    timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.position.x;
+                                    timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.transform.position.y;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                                     Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -497,8 +497,8 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             case 1:
                                 {
-                                    timelineKeyframe.eventKeyframe.eventValues[0] = EventManager.inst.cam.orthographicSize / 20f;
-                                    timelineKeyframe.eventKeyframe.eventValues[1] = EventManager.inst.cam.orthographicSize / 20f;
+                                    timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.orthographicSize / 20f;
+                                    timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.orthographicSize / 20f;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                                     Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -506,7 +506,7 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             case 2:
                                 {
-                                    timelineKeyframe.eventKeyframe.eventValues[0] = EventManager.inst.cam.transform.eulerAngles.x;
+                                    timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.eulerAngles.x;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                                     Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -541,9 +541,9 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var eventKeyframe = timelineKeyframe.eventKeyframe;
                         var defaultKeyframe = GameData.DefaultKeyframes[timelineKeyframe.Type];
-                        for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
-                            if (i < defaultKeyframe.eventValues.Length)
-                                eventKeyframe.eventValues[i] = defaultKeyframe.eventValues[i];
+                        for (int i = 0; i < eventKeyframe.values.Length; i++)
+                            if (i < defaultKeyframe.values.Length)
+                                eventKeyframe.values[i] = defaultKeyframe.values[i];
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),

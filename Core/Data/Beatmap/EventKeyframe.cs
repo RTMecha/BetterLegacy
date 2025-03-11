@@ -4,99 +4,98 @@ using SimpleJSON;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class EventKeyframe : BaseEventKeyframe
+    public class EventKeyframe : Exists
     {
-        public EventKeyframe() : base()
+        public EventKeyframe()
+        {
+            values[0] = 0f;
+            values[1] = 0f;
+            randomValues[0] = 0f;
+            randomValues[1] = 0f;
+            randomValues[2] = 0f;
+        }
+
+        public EventKeyframe(float time) 
+        {
+            this.time = time;
+        }
+
+        public EventKeyframe(float[] values, float[] randomValues, int random = 0)
         {
             id = LSText.randomNumString(8);
+            this.random = random;
+            SetEventValues(values);
+            SetEventRandomValues(randomValues);
         }
 
-        public EventKeyframe(float eventTime) : base()
+        public EventKeyframe(float time, float[] values, string curve)
         {
-            this.eventTime = eventTime;
+            this.time = time;
+            SetEventValues(values);
+            this.curve = Parser.TryParse(curve, Easing.Linear);
         }
 
-        public EventKeyframe(float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventValues, eventRandomValues, random)
+        public EventKeyframe(float time, float[] values, float[] randomValues, int random = 0)
         {
-            id = LSText.randomNumString(8);
+            this.time = time;
+            this.random = random;
+            SetEventValues(values);
+            SetEventRandomValues(randomValues);
         }
 
-        public EventKeyframe(float eventTime, float[] evenValues, string curveType)
-        {
-            this.eventTime = eventTime;
-            SetEventValues(evenValues);
-            if (DataManager.inst.AnimationListDictionaryStr.TryGetValue(curveType, out DataManager.LSAnimation anim))
-                this.curveType = anim;
-        }
-
-        public EventKeyframe(float eventTime, float value, string curveType) : this(eventTime, new float[1] { value }, curveType) { }
-        public EventKeyframe(float eventTime, Vector2 value, string curveType) : this(eventTime, new float[2] { value.x, value.y }, curveType) { }
-        public EventKeyframe(float eventTime, Vector3 value, string curveType) : this(eventTime, new float[3] { value.x, value.y, value.z }, curveType) { }
-
-        public EventKeyframe(float eventTime, float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventTime, eventValues, eventRandomValues, random)
-        {
-            id = LSText.randomNumString(8);
-        }
-
-        public EventKeyframe(BaseEventKeyframe eventKeyframe)
-        {
-            active = eventKeyframe.active;
-            curveType = eventKeyframe.curveType;
-            eventRandomValues = eventKeyframe.eventRandomValues;
-            eventTime = eventKeyframe.eventTime;
-            eventValues = eventKeyframe.eventValues;
-            random = eventKeyframe.random;
-            id = LSText.randomNumString(8);
-        }
+        public EventKeyframe(float time, float value, string curve) : this(time, new float[1] { value }, curve) { }
+        public EventKeyframe(float time, Vector2 value, string curve) : this(time, new float[2] { value.x, value.y }, curve) { }
+        public EventKeyframe(float time, Vector3 value, string curve) : this(time, new float[3] { value.x, value.y, value.z }, curve) { }
 
         public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[3]);
         public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[3]);
         public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[3]) { relative = true };
         public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
 
-        public string id;
-        public int index;
-        public int type;
+        #region Values
+
+        public string id = LSText.randomNumString(8);
+
+        public float[] values = new float[2];
+
+        public float[] randomValues = new float[3];
+
+        public int random;
+
         public bool relative;
+
         public bool locked;
+
+        #region Timing
+
+        public float time;
+
+        public Easing curve = Easing.Linear;
+
+        #endregion
+
+        #region Reference
+
+        public int type;
+        public int index;
         public TimelineKeyframe timelineKeyframe;
 
-        public void SetCurve(string ease) => curveType = DataManager.inst.AnimationList.TryFind(x => x.Name == ease, out DataManager.LSAnimation anim) ? anim : DataManager.inst.AnimationList[0];
-        public void SetCurve(int ease) => curveType = DataManager.inst.AnimationList[Mathf.Clamp(ease, 0, DataManager.inst.AnimationList.Count - 1)];
-        public new void SetEventValues(params float[] _vals)
-        {
-            if (_vals == null)
-                return;
+        #endregion
 
-            eventValues = new float[_vals.Length];
-            for (int i = 0; i < _vals.Length; i++)
-                eventValues[i] = _vals[i];
-        }
-
-        public new void SetEventRandomValues(params float[] _vals)
-        {
-            if (_vals == null)
-                return;
-
-            eventRandomValues = new float[_vals.Length];
-            for (int i = 0; i < _vals.Length; i++)
-                eventRandomValues[i] = _vals[i];
-        }
+        #endregion
 
         #region Methods
 
         public static EventKeyframe DeepCopy(EventKeyframe eventKeyframe, bool newID = true) => new EventKeyframe
         {
             id = newID ? LSText.randomNumString(8) : eventKeyframe.id,
-            active = eventKeyframe.active,
-            curveType = eventKeyframe.curveType,
-            eventRandomValues = eventKeyframe.eventRandomValues.ToList().Clone().ToArray(),
-            eventTime = eventKeyframe.eventTime,
-            eventValues = eventKeyframe.eventValues.ToList().Clone().ToArray(),
+            curve = eventKeyframe.curve,
+            time = eventKeyframe.time,
+            values = eventKeyframe.values.ToList().Clone().ToArray(),
+            randomValues = eventKeyframe.randomValues.ToList().Clone().ToArray(),
             random = eventKeyframe.random,
             relative = eventKeyframe.relative,
             locked = eventKeyframe.locked,
@@ -106,12 +105,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var eventKeyframe = new EventKeyframe();
 
-            eventKeyframe.eventTime = jn["t"].AsFloat;
+            eventKeyframe.time = jn["t"].AsFloat;
 
-            var curveType = DataManager.inst.AnimationList[0];
             if (jn["ct"] != null)
-                curveType = DataManager.inst.AnimationListDictionaryStr[jn["ct"]];
-            eventKeyframe.curveType = curveType;
+                eventKeyframe.curve = Parser.TryParse(jn["ct"], Easing.Linear);
 
             var eventValues = new List<float>();
             for (int i = 0; i < axis.Length; i++)
@@ -119,7 +116,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventValues.Add(jn[axis[i]].AsFloat);
 
             while (eventValues.Count < valueCount)
-                eventValues.Add(GameData.DefaultKeyframes[type].eventValues[eventValues.Count]);
+                eventValues.Add(GameData.DefaultKeyframes[type].values[eventValues.Count]);
 
             while (eventValues.Count > valueCount)
                 eventValues.RemoveAt(eventValues.Count - 1);
@@ -145,24 +142,24 @@ namespace BetterLegacy.Core.Data.Beatmap
         public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1)
         {
             JSONNode jn = JSON.Parse("{}");
-            jn["t"] = eventTime.ToString();
+            jn["t"] = time.ToString();
 
-            for (int i = 0; i < eventValues.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
                 if (maxValuesToSave != -1 && i >= maxValuesToSave)
                     break;
 
-                jn[axis[i]] = eventValues[i].ToString();
+                jn[axis[i]] = values[i].ToString();
             }
 
-            if (curveType.Name != "Linear")
-                jn["ct"] = curveType.Name;
+            if (curve != Easing.Linear)
+                jn["ct"] = curve.ToString();
 
             if (random != 0)
             {
                 jn["r"] = random.ToString();
-                for (int i = 0; i < eventRandomValues.Length; i++)
-                    jn[raxis[i]] = eventRandomValues[i].ToString();
+                for (int i = 0; i < randomValues.Length; i++)
+                    jn[raxis[i]] = randomValues[i].ToString();
             }
 
             if (relative != defaultRelative)
@@ -179,36 +176,58 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="eventKeyframe">The EventKeyframe instance</param>
         /// <param name="ease">The ease to set to the keyframe</param>
-        public void SetEasing(int ease)
-        {
-            if (ease >= 0 && ease < DataManager.inst.AnimationList.Count)
-                curveType = DataManager.inst.AnimationList[ease];
-        }
+        public void SetCurve(int ease) => curve = (Easing)Mathf.Clamp(ease, 0, DataManager.inst.AnimationList.Count - 1);
 
         /// <summary>
         /// Set an EventKeyframe's easing via a string. If the AnimationList contains the specified string, then the ease is set.
         /// </summary>
         /// <param name="eventKeyframe">The EventKeyframe instance</param>
         /// <param name="ease">The ease to set to the keyframe</param>
-        public void SetEasing(string ease)
+        public void SetCurve(string ease) => curve = Parser.TryParse(ease, Easing.Linear);
+
+        public void SetEventValues(params float[] vals)
         {
-            if (DataManager.inst.AnimationList.TryFind(x => x.Name == ease, out DataManager.LSAnimation anim))
-                curveType = anim;
+            if (vals == null)
+                return;
+
+            values = new float[vals.Length];
+            for (int i = 0; i < vals.Length; i++)
+                values[i] = vals[i];
+        }
+
+        public void SetEventRandomValues(params float[] vals)
+        {
+            if (vals == null)
+                return;
+
+            randomValues = new float[vals.Length];
+            for (int i = 0; i < vals.Length; i++)
+                randomValues[i] = vals[i];
+        }
+
+        public void SetValue(int index, float val)
+        {
+            if (values.InRange(index))
+                values[index] = val;
+        }
+        
+        public void SetRandomValue(int index, float val)
+        {
+            if (randomValues.InRange(index))
+                randomValues[index] = val;
         }
 
         #endregion
 
         #region Operators
 
-        public static implicit operator bool(EventKeyframe exists) => exists != null;
-
         public override string ToString()
         {
             string strs = "";
-            for (int i = 0; i < eventValues.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
-                strs += $"{eventValues[i]}";
-                if (i != eventValues.Length - 1)
+                strs += $"{values[i]}";
+                if (i != values.Length - 1)
                     strs += ", ";
             }
 
@@ -216,6 +235,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public override bool Equals(object obj) => obj is EventKeyframe && id == (obj as EventKeyframe).id;
+
+        public override int GetHashCode() => base.GetHashCode();
 
         #endregion
 

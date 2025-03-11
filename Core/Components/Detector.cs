@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using BetterLegacy.Core.Data.Beatmap;
+using System.Collections.Generic;
 
 using UnityEngine;
-
-using BeatmapObject = DataManager.GameData.BeatmapObject;
 
 namespace BetterLegacy.Core.Components
 {

@@ -557,7 +557,7 @@ namespace BetterLegacy.Story
                     },
                     effectColors = new List<Color>().Fill(18, Color.white),
                 };
-                gameData.eventObjects.allEvents[4][0].eventValues[0] = 3051;
+                gameData.events[4][0].values[0] = 3051;
             }
 
             var id = jsonPath switch
@@ -642,18 +642,18 @@ namespace BetterLegacy.Story
         {
             var gameData = new GameData();
 
-            gameData.beatmapData = new LevelBeatmapData();
-            gameData.beatmapData.checkpoints = new List<DataManager.GameData.BeatmapData.Checkpoint>();
-            gameData.beatmapData.editorData = new LevelEditorData();
-            gameData.beatmapData.levelData = new LevelData();
+            gameData.data = new LevelBeatmapData();
+            gameData.data.checkpoints = new List<DataManager.GameData.BeatmapData.Checkpoint>();
+            gameData.data.editorData = new LevelEditorData();
+            gameData.data.levelData = new LevelData();
 
-            gameData.beatmapData.markers = gameData.beatmapData.markers.OrderBy(x => x.time).ToList();
+            gameData.data.markers = gameData.data.markers.OrderBy(x => x.time).ToList();
 
             CoreHelper.Log($"Parsing checkpoints...");
             for (int i = 0; i < jn["levelData"]["checkpoints"].Count; i++)
             {
                 var jnCheckpoint = jn["levelData"]["checkpoints"][i];
-                gameData.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(
+                gameData.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(
                     jnCheckpoint["active"].AsBool,
                     jnCheckpoint["name"],
                     jnCheckpoint["time"].AsFloat,
@@ -663,7 +663,7 @@ namespace BetterLegacy.Story
             }
 
             CoreHelper.Log($"Update...");
-            gameData.beatmapData.checkpoints = gameData.beatmapData.checkpoints.OrderBy(x => x.time).ToList();
+            gameData.data.checkpoints = gameData.data.checkpoints.OrderBy(x => x.time).ToList();
 
             CoreHelper.Log($"Set...");
             foreach (var theme in DataManager.inst.BeatmapThemes)
@@ -712,18 +712,18 @@ namespace BetterLegacy.Story
                     beatmapObject.id = jnObject["id"];
                 if (!string.IsNullOrEmpty(jnObject["parent"]))
                     beatmapObject.parent = jnObject["parent"];
-                beatmapObject.depth = jnObject["layer"].AsInt;
+                beatmapObject.Depth = jnObject["layer"].AsInt;
                 beatmapObject.objectType = jnObject["helper"].AsBool ? BeatmapObject.ObjectType.Helper : BeatmapObject.ObjectType.Normal;
                 beatmapObject.StartTime = jnObject["startTime"].AsFloat;
                 beatmapObject.name = jnObject["name"];
                 beatmapObject.origin = Parser.TryParse(jnObject["origin"], Vector2.zero);
                 beatmapObject.editorData = new ObjectEditorData(jnObject["editorData"]["bin"].AsInt, jnObject["editorData"]["layer"].AsInt, false, false);
 
-                var events = new List<List<DataManager.GameData.EventKeyframe>>();
-                events.Add(new List<DataManager.GameData.EventKeyframe>());
-                events.Add(new List<DataManager.GameData.EventKeyframe>());
-                events.Add(new List<DataManager.GameData.EventKeyframe>());
-                events.Add(new List<DataManager.GameData.EventKeyframe>());
+                var events = new List<List<EventKeyframe>>();
+                events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
 
                 float eventTime = 0f;
                 var lastPos = Vector2.zero;
@@ -750,7 +750,7 @@ namespace BetterLegacy.Story
                                         break;
 
                                     var eventKeyframe = new EventKeyframe(eventTime, new float[] { jnEvent["eventParts"][k]["value0"].AsFloat, jnEvent["eventParts"][k]["value1"].AsFloat, }, new float[] { jnEvent["eventParts"][k]["valueR0"].AsFloat, jnEvent["eventParts"][k]["valueR1"].AsFloat, }, jnEvent["eventParts"][k]["random"].AsBool == true ? 1 : 0);
-                                    lastPos = new Vector2(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1]);
+                                    lastPos = new Vector2(eventKeyframe.values[0], eventKeyframe.values[1]);
                                     events[0].Add(eventKeyframe);
                                     hasPos = true;
                                     break;
@@ -761,7 +761,7 @@ namespace BetterLegacy.Story
                                         break;
 
                                     var eventKeyframe = new EventKeyframe(eventTime, new float[] { jnEvent["eventParts"][k]["value0"].AsFloat, jnEvent["eventParts"][k]["value1"].AsFloat, }, new float[] { jnEvent["eventParts"][k]["valueR0"].AsFloat, jnEvent["eventParts"][k]["valueR1"].AsFloat, }, jnEvent["eventParts"][k]["random"].AsBool == true ? 1 : 0);
-                                    lastSca = new Vector2(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1]);
+                                    lastSca = new Vector2(eventKeyframe.values[0], eventKeyframe.values[1]);
                                     events[1].Add(eventKeyframe);
                                     hasSca = true;
                                     break;
@@ -782,7 +782,7 @@ namespace BetterLegacy.Story
                                         break;
 
                                     var eventKeyframe = new EventKeyframe(eventTime, new float[] { jnEvent["eventParts"][k]["value0"].AsFloat, }, new float[] { });
-                                    lastCol = (int)eventKeyframe.eventValues[0];
+                                    lastCol = (int)eventKeyframe.values[0];
                                     events[3].Add(eventKeyframe);
                                     hasCol = true;
                                     break;
@@ -825,12 +825,12 @@ namespace BetterLegacy.Story
                 });
             }
 
-            var allEvents = new List<List<DataManager.GameData.EventKeyframe>>();
-            allEvents.Add(new List<DataManager.GameData.EventKeyframe>()); // move
-            allEvents.Add(new List<DataManager.GameData.EventKeyframe>()); // zoom
-            allEvents.Add(new List<DataManager.GameData.EventKeyframe>()); // rotate
-            allEvents.Add(new List<DataManager.GameData.EventKeyframe>()); // shake
-            allEvents.Add(new List<DataManager.GameData.EventKeyframe>()); // theme
+            var allEvents = new List<List<EventKeyframe>>();
+            allEvents.Add(new List<EventKeyframe>()); // move
+            allEvents.Add(new List<EventKeyframe>()); // zoom
+            allEvents.Add(new List<EventKeyframe>()); // rotate
+            allEvents.Add(new List<EventKeyframe>()); // shake
+            allEvents.Add(new List<EventKeyframe>()); // theme
 
             CoreHelper.Log($"Parsing event objects...");
             var eventObjects = jn["eventObjects"].Children.OrderBy(x => x["startTime"].AsFloat).ToList();
@@ -861,7 +861,7 @@ namespace BetterLegacy.Story
                                 allEvents[0].Add(eventKeyframe);
 
                                 eventKeyframe = new EventKeyframe(startTime + eventTime, new float[] { jnEvent["value0"].AsFloat, jnEvent["value1"].AsFloat, }, new float[] { });
-                                lastMove = new Vector2(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1]);
+                                lastMove = new Vector2(eventKeyframe.values[0], eventKeyframe.values[1]);
                                 allEvents[0].Add(eventKeyframe);
                                 hasMove = true;
                                 break;
@@ -872,7 +872,7 @@ namespace BetterLegacy.Story
                                 allEvents[1].Add(eventKeyframe);
 
                                 eventKeyframe = new EventKeyframe(startTime + eventTime, new float[] { jnEvent["value0"].AsFloat, }, new float[] { });
-                                lastZoom = eventKeyframe.eventValues[0];
+                                lastZoom = eventKeyframe.values[0];
                                 allEvents[1].Add(eventKeyframe);
                                 hasZoom = true;
                                 break;
@@ -883,7 +883,7 @@ namespace BetterLegacy.Story
                                 allEvents[2].Add(eventKeyframe);
 
                                 eventKeyframe = new EventKeyframe(startTime + eventTime, new float[] { jnEvent["value0"].AsFloat, }, new float[] { });
-                                lastRotate = eventKeyframe.eventValues[0];
+                                lastRotate = eventKeyframe.values[0];
                                 allEvents[2].Add(eventKeyframe);
                                 hasRotate = true;
                                 break;
@@ -926,10 +926,9 @@ namespace BetterLegacy.Story
 
             allEvents[4].Add(new EventKeyframe(0f, new float[] { 1f }, new float[] { }));
 
-            gameData.eventObjects = new DataManager.GameData.EventObjects();
-            gameData.eventObjects.allEvents = allEvents;
+            gameData.events = allEvents;
 
-            GameData.ClampEventListValues(gameData.eventObjects.allEvents);
+            GameData.ClampEventListValues(gameData.events);
 
             return gameData;
         }

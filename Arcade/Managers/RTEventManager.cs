@@ -79,10 +79,9 @@ namespace BetterLegacy.Arcade.Managers
             EventManager.inst &&
             GameManager.inst &&
             (CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded) &&
-            GameData.IsValid &&
-            GameData.Current.eventObjects != null &&
-            GameData.Current.eventObjects.allEvents != null &&
-            GameData.Current.eventObjects.allEvents.Count > 0;
+            GameData.Current &&
+            GameData.Current.events != null &&
+            GameData.Current.events.Count > 0;
 
         void EditorCameraHandler()
         {
@@ -206,7 +205,7 @@ namespace BetterLegacy.Arcade.Managers
 
         void Interpolate()
         {
-            var allEvents = GameData.Current.eventObjects.allEvents;
+            var allEvents = GameData.Current.events;
             var time = currentTime;
 
             if (shakeSequence != null && shakeSequence.keyframes != null && shakeSequence.keyframes.Length > 0 && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Catalyst)
@@ -221,9 +220,9 @@ namespace BetterLegacy.Arcade.Managers
 
             for (int i = 0; i < allEvents.Count; i++)
             {
-                var list = allEvents[i].OrderBy(x => x.eventTime).ToList();
+                var list = allEvents[i].OrderBy(x => x.time).ToList();
 
-                var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+                var nextKFIndex = list.FindIndex(x => x.time > time);
 
                 if (nextKFIndex >= 0)
                 {
@@ -231,34 +230,34 @@ namespace BetterLegacy.Arcade.Managers
                     if (prevKFIndex < 0)
                         prevKFIndex = 0;
 
-                    var nextKF = list[nextKFIndex] as EventKeyframe;
-                    var prevKF = list[prevKFIndex] as EventKeyframe;
+                    var nextKF = list[nextKFIndex];
+                    var prevKF = list[prevKFIndex];
 
                     if (events.Length <= i)
                         continue;
 
-                    for (int j = 0; j < nextKF.eventValues.Length; j++)
+                    for (int j = 0; j < nextKF.values.Length; j++)
                     {
-                        if (events[i].Length <= j || prevKF.eventValues.Length <= j || events[i][j] == null)
+                        if (events[i].Length <= j || prevKF.values.Length <= j || events[i][j] == null)
                             continue;
 
                         var total = 0f;
                         var prevtotal = 0f;
                         for (int k = 0; k < nextKFIndex; k++)
                         {
-                            if (((EventKeyframe)allEvents[i][k + 1]).relative)
-                                total += allEvents[i][k].eventValues[j];
+                            if (allEvents[i][k + 1].relative)
+                                total += allEvents[i][k].values[j];
                             else
                                 total = 0f;
 
-                            if (((EventKeyframe)allEvents[i][k]).relative)
-                                prevtotal += allEvents[i][k].eventValues[j];
+                            if (allEvents[i][k].relative)
+                                prevtotal += allEvents[i][k].values[j];
                             else
                                 prevtotal = 0f;
                         }
 
-                        var next = nextKF.relative ? total + nextKF.eventValues[j] : nextKF.eventValues[j];
-                        var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[j];
+                        var next = nextKF.relative ? total + nextKF.values[j] : nextKF.values[j];
+                        var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[j];
 
                         bool isLerper = IsLerper(i, j);
 
@@ -271,7 +270,7 @@ namespace BetterLegacy.Arcade.Managers
                         if (!isLerper)
                             next = 1f;
 
-                        var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+                        var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time)));
 
                         if (prevKFIndex == nextKFIndex)
                             x = next;
@@ -294,7 +293,7 @@ namespace BetterLegacy.Arcade.Managers
                     if (events.Length <= i)
                         continue;
 
-                    for (int j = 0; j < list[list.Count - 1].eventValues.Length; j++)
+                    for (int j = 0; j < list[list.Count - 1].values.Length; j++)
                     {
                         if (events[i].Length <= j || events[i][j] == null)
                             continue;
@@ -303,14 +302,14 @@ namespace BetterLegacy.Arcade.Managers
                         for (int k = 0; k < list.Count - 1; k++)
                         {
                             if (((EventKeyframe)allEvents[i][k + 1]).relative)
-                                total += allEvents[i][k].eventValues[j];
+                                total += allEvents[i][k].values[j];
                             else
                                 total = 0f;
                         }
 
                         bool isLerper = IsLerper(i, j);
 
-                        var x = list[list.Count - 1].eventValues[j];
+                        var x = list[list.Count - 1].values[j];
 
                         if (float.IsNaN(x))
                             x = 0f;
@@ -326,7 +325,7 @@ namespace BetterLegacy.Arcade.Managers
                             offset = 0f;
 
                         if (float.IsNaN(x) || float.IsInfinity(x))
-                            x = allEvents[i][allEvents[i].Count - 1].eventValues[j];
+                            x = allEvents[i][allEvents[i].Count - 1].values[j];
 
                         events[i][j](x + offset + total);
                     }
@@ -341,11 +340,11 @@ namespace BetterLegacy.Arcade.Managers
 
         public float Interpolate(int type, int valueIndex, float time)
         {
-            var allEvents = GameData.Current.eventObjects.allEvents;
+            var allEvents = GameData.Current.events;
 
-            var list = allEvents[type].OrderBy(x => x.eventTime).ToList();
+            var list = allEvents[type].OrderBy(x => x.time).ToList();
 
-            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+            var nextKFIndex = list.FindIndex(x => x.time > time);
 
             if (nextKFIndex < 0)
                 nextKFIndex = 0;
@@ -354,32 +353,32 @@ namespace BetterLegacy.Arcade.Managers
             if (prevKFIndex < 0)
                 prevKFIndex = 0;
 
-            var nextKF = list[nextKFIndex] as EventKeyframe;
-            var prevKF = list[prevKFIndex] as EventKeyframe;
+            var nextKF = list[nextKFIndex];
+            var prevKF = list[prevKFIndex];
 
             type = Mathf.Clamp(type, 0, events.Length);
             valueIndex = Mathf.Clamp(valueIndex, 0, events[type].Length);
 
-            if (prevKF.eventValues.Length <= valueIndex)
+            if (prevKF.values.Length <= valueIndex)
                 return 0f;
 
             var total = 0f;
             var prevtotal = 0f;
             for (int k = 0; k < nextKFIndex; k++)
             {
-                if (((EventKeyframe)allEvents[type][k + 1]).relative)
-                    total += allEvents[type][k].eventValues[valueIndex];
+                if (allEvents[type][k + 1].relative)
+                    total += allEvents[type][k].values[valueIndex];
                 else
                     total = 0f;
 
-                if (((EventKeyframe)allEvents[type][k]).relative)
-                    prevtotal += allEvents[type][k].eventValues[valueIndex];
+                if (allEvents[type][k].relative)
+                    prevtotal += allEvents[type][k].values[valueIndex];
                 else
                     prevtotal = 0f;
             }
 
-            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
-            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+            var next = nextKF.relative ? total + nextKF.values[valueIndex] : nextKF.values[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[valueIndex];
 
             bool isLerper = IsLerper(type, valueIndex);
 
@@ -395,7 +394,7 @@ namespace BetterLegacy.Arcade.Managers
             if (prevKFIndex == nextKFIndex)
                 return next;
 
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time)));
 
             if (prevKFIndex == nextKFIndex)
                 x = next;
@@ -710,7 +709,7 @@ namespace BetterLegacy.Arcade.Managers
 
         void FindColors()
         {
-            var allEvents = GameData.Current.eventObjects.allEvents;
+            var allEvents = GameData.Current.events;
             var time = currentTime;
 
             FindColor(time, allEvents, ref EventManager.inst.LastTheme, ref EventManager.inst.NewTheme, 4, 0);
@@ -722,22 +721,22 @@ namespace BetterLegacy.Arcade.Managers
             FindColor(time, allEvents, ref prevDangerColor, ref nextDangerColor, 30, 2);
         }
 
-        void FindColor(float time, List<List<DataManager.GameData.EventKeyframe>> allEvents, ref int prev, ref int next, int type, int valueIndex)
+        void FindColor(float time, List<List<EventKeyframe>> allEvents, ref int prev, ref int next, int type, int valueIndex)
         {
             if (allEvents.Count <= type || allEvents[type].Count <= 0)
                 return;
 
-            var nextKFIndex = allEvents[type].FindLastIndex(x => x.eventTime <= time) + 1;
+            var nextKFIndex = allEvents[type].FindLastIndex(x => x.time <= time) + 1;
             if (nextKFIndex < allEvents[type].Count)
             {
                 var nextKF = allEvents[type][nextKFIndex];
-                if (nextKFIndex - 1 > -1 && allEvents[type][nextKFIndex - 1].eventValues.Length > valueIndex)
-                    prev = (int)allEvents[type][nextKFIndex - 1].eventValues[valueIndex];
-                else if (allEvents[type][0].eventValues.Length > valueIndex)
-                    prev = (int)allEvents[type][0].eventValues[valueIndex];
+                if (nextKFIndex - 1 > -1 && allEvents[type][nextKFIndex - 1].values.Length > valueIndex)
+                    prev = (int)allEvents[type][nextKFIndex - 1].values[valueIndex];
+                else if (allEvents[type][0].values.Length > valueIndex)
+                    prev = (int)allEvents[type][0].values[valueIndex];
 
-                if (nextKF.eventValues.Length > valueIndex)
-                    next = (int)nextKF.eventValues[valueIndex];
+                if (nextKF.values.Length > valueIndex)
+                    next = (int)nextKF.values[valueIndex];
 
                 return;
             }
@@ -748,37 +747,37 @@ namespace BetterLegacy.Arcade.Managers
             if (a < 0)
                 a = 0;
 
-            if (allEvents[type][a].eventValues.Length > valueIndex)
-                prev = (int)allEvents[type][a].eventValues[valueIndex];
+            if (allEvents[type][a].values.Length > valueIndex)
+                prev = (int)allEvents[type][a].values[valueIndex];
 
-            if (finalKF.eventValues.Length > valueIndex)
-                next = (int)finalKF.eventValues[valueIndex];
+            if (finalKF.values.Length > valueIndex)
+                next = (int)finalKF.values[valueIndex];
         }
 
-        void FindColor(float time, List<List<DataManager.GameData.EventKeyframe>> allEvents, ref int prev1, ref int next1, ref int prev2, ref int next2, int type, int valueIndex1, int valueIndex2)
+        void FindColor(float time, List<List<EventKeyframe>> allEvents, ref int prev1, ref int next1, ref int prev2, ref int next2, int type, int valueIndex1, int valueIndex2)
         {
             if (allEvents.Count <= type || allEvents[type].Count <= 0)
                 return;
 
-            var nextKFIndex = allEvents[type].FindLastIndex(x => x.eventTime <= time) + 1;
+            var nextKFIndex = allEvents[type].FindLastIndex(x => x.time <= time) + 1;
             if (nextKFIndex < allEvents[type].Count)
             {
                 var nextKF = allEvents[type][nextKFIndex];
-                if (nextKFIndex - 1 > -1 && allEvents[type][nextKFIndex - 1].eventValues.Length > valueIndex1)
-                    prev1 = (int)allEvents[type][nextKFIndex - 1].eventValues[valueIndex1];
-                else if (allEvents[type][0].eventValues.Length > valueIndex1)
-                    prev1 = (int)allEvents[type][0].eventValues[valueIndex1];
+                if (nextKFIndex - 1 > -1 && allEvents[type][nextKFIndex - 1].values.Length > valueIndex1)
+                    prev1 = (int)allEvents[type][nextKFIndex - 1].values[valueIndex1];
+                else if (allEvents[type][0].values.Length > valueIndex1)
+                    prev1 = (int)allEvents[type][0].values[valueIndex1];
 
-                if (nextKFIndex - 1 > -1 && allEvents[type][nextKFIndex - 1].eventValues.Length > valueIndex2)
-                    prev2 = (int)allEvents[type][nextKFIndex - 1].eventValues[valueIndex2];
-                else if (allEvents[type][0].eventValues.Length > valueIndex2)
-                    prev2 = (int)allEvents[type][0].eventValues[valueIndex2];
+                if (nextKFIndex - 1 > -1 && allEvents[type][nextKFIndex - 1].values.Length > valueIndex2)
+                    prev2 = (int)allEvents[type][nextKFIndex - 1].values[valueIndex2];
+                else if (allEvents[type][0].values.Length > valueIndex2)
+                    prev2 = (int)allEvents[type][0].values[valueIndex2];
 
-                if (nextKF.eventValues.Length > valueIndex1)
-                    next1 = (int)nextKF.eventValues[valueIndex1];
+                if (nextKF.values.Length > valueIndex1)
+                    next1 = (int)nextKF.values[valueIndex1];
 
-                if (nextKF.eventValues.Length > valueIndex2)
-                    next2 = (int)nextKF.eventValues[valueIndex2];
+                if (nextKF.values.Length > valueIndex2)
+                    next2 = (int)nextKF.values[valueIndex2];
 
                 return;
             }
@@ -789,15 +788,15 @@ namespace BetterLegacy.Arcade.Managers
             if (a < 0)
                 a = 0;
 
-            if (allEvents[type][a].eventValues.Length > valueIndex1)
-                prev1 = (int)allEvents[type][a].eventValues[valueIndex1];
-            if (allEvents[type][a].eventValues.Length > valueIndex2)
-                prev2 = (int)allEvents[type][a].eventValues[valueIndex2];
+            if (allEvents[type][a].values.Length > valueIndex1)
+                prev1 = (int)allEvents[type][a].values[valueIndex1];
+            if (allEvents[type][a].values.Length > valueIndex2)
+                prev2 = (int)allEvents[type][a].values[valueIndex2];
 
-            if (finalKF.eventValues.Length > valueIndex1)
-                next1 = (int)finalKF.eventValues[valueIndex1];
-            if (finalKF.eventValues.Length > valueIndex2)
-                next2 = (int)finalKF.eventValues[valueIndex2];
+            if (finalKF.values.Length > valueIndex1)
+                next1 = (int)finalKF.values[valueIndex1];
+            if (finalKF.values.Length > valueIndex2)
+                next2 = (int)finalKF.values[valueIndex2];
         }
 
         static Color LerpColor(int prev, int next, float t, Color defaultColor)
@@ -839,9 +838,6 @@ namespace BetterLegacy.Arcade.Managers
             EventManager.inst.eventSequence = null;
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
-            for (int i = 0; i < GameData.Current.eventObjects.allEvents.Count; i++)
-                for (int j = 0; j < GameData.Current.eventObjects.allEvents[i].Count; j++)
-                    GameData.Current.eventObjects.allEvents[i][j].active = false;
         }
 
         public IEnumerator UpdateEvents()
@@ -854,9 +850,7 @@ namespace BetterLegacy.Arcade.Managers
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
             DOTween.Kill(false);
-            for (int i = 0; i < GameData.Current.eventObjects.allEvents.Count; i++)
-                for (int j = 0; j < GameData.Current.eventObjects.allEvents[i].Count; j++)
-                    GameData.Current.eventObjects.allEvents[i][j].active = false;
+
             yield break;
         }
 

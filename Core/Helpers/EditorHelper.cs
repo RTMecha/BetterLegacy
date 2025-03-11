@@ -162,7 +162,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjects()
         {
-            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             if (EditorTimeline.inst.timelineObjects.Count == 1)
@@ -185,7 +185,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjectsOnCurrentLayer()
         {
-            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             var layer = EditorTimeline.inst.Layer;
@@ -214,7 +214,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool MirrorSelectedObjects()
         {
-            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -223,8 +223,8 @@ namespace BetterLegacy.Core.Helpers
                 {
                     for (int j = 0; j < beatmapObject.events[i].Count; j++)
                     {
-                        beatmapObject.events[i][j].eventValues[0] = -beatmapObject.events[i][j].eventValues[0];
-                        beatmapObject.events[i][j].eventRandomValues[0] = -beatmapObject.events[i][j].eventRandomValues[0];
+                        beatmapObject.events[i][j].values[0] = -beatmapObject.events[i][j].values[0];
+                        beatmapObject.events[i][j].randomValues[0] = -beatmapObject.events[i][j].randomValues[0];
                     }
                 }
 
@@ -236,7 +236,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool FlipSelectedObjects()
         {
-            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -245,8 +245,8 @@ namespace BetterLegacy.Core.Helpers
                 {
                     for (int j = 0; j < beatmapObject.events[i].Count; j++)
                     {
-                        beatmapObject.events[i][j].eventValues[1] = -beatmapObject.events[i][j].eventValues[1];
-                        beatmapObject.events[i][j].eventRandomValues[1] = -beatmapObject.events[i][j].eventRandomValues[1];
+                        beatmapObject.events[i][j].values[1] = -beatmapObject.events[i][j].values[1];
+                        beatmapObject.events[i][j].randomValues[1] = -beatmapObject.events[i][j].randomValues[1];
                     }
                 }
 
@@ -258,7 +258,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool RefreshKeyframesFromSelection()
         {
-            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -269,12 +269,12 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool FixSmoothShakeKeyframes()
         {
-            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             var gameData = GameData.Current;
-            for (int i = 0; i < gameData.eventObjects.allEvents[3].Count; i++)
-                gameData.eventObjects.allEvents[3][i].eventValues[3] = 0f;
+            for (int i = 0; i < gameData.events[3].Count; i++)
+                gameData.events[3][i].values[3] = 0f;
 
             return true;
         }
@@ -302,7 +302,7 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < beatmapObject.events.Count; i++)
                 {
                     beatmapObject.events[i] = (from x in beatmapObject.events[i]
-                                               orderby x.eventTime
+                                               orderby x.time
                                                select x).ToList();
                 }
 
@@ -343,7 +343,7 @@ namespace BetterLegacy.Core.Helpers
                         beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                         {
                             var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
-                            kf.eventTime += t;
+                            kf.time += t;
                             ids.Add(kf.id);
                             return kf;
                         }));
@@ -354,7 +354,7 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < beatmapObject.events.Count; i++)
                 {
                     beatmapObject.events[i] = (from x in beatmapObject.events[i]
-                                               orderby x.eventTime
+                                               orderby x.time
                                                select x).ToList();
                 }
 
@@ -396,7 +396,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var timelineObject = selected[i];
                 var prefabObject = timelineObject.GetData<PrefabObject>();
-                var index = GameData.Current.prefabObjects.FindIndex(x => x.ID == prefabObject.ID);
+                var index = GameData.Current.prefabObjects.FindIndex(x => x.id == prefabObject.id);
                 if (index < 0)
                     continue;
 
@@ -427,7 +427,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var timelineObject = selected[i];
                 var prefabObject = timelineObject.GetData<PrefabObject>();
-                var index = GameData.Current.prefabObjects.FindIndex(x => x.ID == prefabObject.ID);
+                var index = GameData.Current.prefabObjects.FindIndex(x => x.id == prefabObject.id);
                 if (index < 0)
                     continue;
 
@@ -435,32 +435,6 @@ namespace BetterLegacy.Core.Helpers
             }
 
             EditorTimeline.inst.UpdateTransformIndex();
-        }
-
-        /// <summary>
-        /// Finds if any BeatmapObjects share an ID.
-        /// </summary>
-        /// <param name="onDuplicateFound"></param>
-        /// <returns>Returns a list of duplicate objects.</returns>
-        public static List<BeatmapObject> FindDuplicateObjectIDs(System.Action<BeatmapObject> onDuplicateFound)
-        {
-            var list = new Dictionary<string, BeatmapObject>();
-            var result = new List<BeatmapObject>();
-            var beatmapObjects = GameData.Current.beatmapObjects;
-            for (int i = 0; i < beatmapObjects.Count; i++)
-            {
-                var beatmapObject = beatmapObjects[i];
-                if (list.TryGetValue(beatmapObject.id, out BeatmapObject original))
-                {
-                    result.Add(beatmapObject);
-                    if (!result.Has(x => x.UniqueID == original.UniqueID))
-                        result.Add(original);
-
-                    onDuplicateFound?.Invoke(beatmapObject);
-                }
-                list[beatmapObject.id] = beatmapObject;
-            }
-            return result;
         }
     }
 }

@@ -216,22 +216,21 @@ namespace BetterLegacy.Editor.Managers
 
             themesLoading = true;
 
-            while (!EventEditor.inst || !EventEditor.inst.dialogRight || !GameData.IsValid)
+            while (!EventEditor.inst || !EventEditor.inst.dialogRight || !GameData.Current)
                 yield return null;
 
             DataManager.inst.CustomBeatmapThemes.Clear();
             DataManager.inst.BeatmapThemeIDToIndex.Clear();
             DataManager.inst.BeatmapThemeIndexToID.Clear();
 
-            if (GameData.IsValid)
-                GameData.Current.beatmapThemes.Clear();
+            GameData.Current.beatmapThemes.Clear();
 
             var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
             var parent = dialogTmp.Find("themes/viewport/content");
 
-            if (RTThemeEditor.inst.ThemePanels.Count > 0)
-                RTThemeEditor.inst.ThemePanels.ForEach(x => Destroy(x.GameObject));
-            RTThemeEditor.inst.ThemePanels.Clear();
+            if (ThemePanels.Count > 0)
+                ThemePanels.ForEach(x => Destroy(x.GameObject));
+            ThemePanels.Clear();
 
             if (!themeAddButton)
             {
@@ -338,7 +337,7 @@ namespace BetterLegacy.Editor.Managers
                 orig.filePath = file.Replace("\\", "/");
                 DataManager.inst.CustomBeatmapThemes.Add(orig);
 
-                if (jn["id"] != null && GameData.IsValid && GameData.Current.beatmapThemes != null && !GameData.Current.beatmapThemes.ContainsKey(jn["id"]))
+                if (jn["id"] != null && GameData.Current.beatmapThemes != null && !GameData.Current.beatmapThemes.ContainsKey(jn["id"]))
                     GameData.Current.beatmapThemes.Add(jn["id"], orig);
 
                 if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(orig.id)))
@@ -839,11 +838,11 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => x.Type == 4))
                         foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                            timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                            timelineObject.eventKeyframe.values[0] = Parser.TryParse(beatmapTheme.id, 0);
                     else if (EventEditor.inst.currentEventType == 4)
-                        GameData.Current.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                    else if (GameData.Current.eventObjects.allEvents[4].Count > 0)
-                        GameData.Current.eventObjects.allEvents[4].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                        GameData.Current.events[4][EventEditor.inst.currentEvent].values[0] = Parser.TryParse(beatmapTheme.id, 0);
+                    else if (GameData.Current.events[4].Count > 0)
+                        GameData.Current.events[4].FindLast(x => x.time < AudioManager.inst.CurrentAudioSource.time).values[0] = Parser.TryParse(beatmapTheme.id, 0);
 
                     EventManager.inst.updateEvents();
                 });
@@ -923,7 +922,7 @@ namespace BetterLegacy.Editor.Managers
                     var searchBool = (!themePanel.isDefault || EditorConfig.Instance.ShowDefaultThemes.Value) &&
                         RTString.SearchString(search, isFolder ? Path.GetFileName(themePanel.FilePath) : themePanel.Theme.name);
 
-                    if (filterUsed && !isFolder && !GameData.Current.eventObjects.allEvents[4].Any(x => x.eventValues[0] == Parser.TryParse(themePanel.Theme.id, -1)))
+                    if (filterUsed && !isFolder && !GameData.Current.events[4].Any(x => x.values[0] == Parser.TryParse(themePanel.Theme.id, -1)))
                         searchBool = false;
 
                     if (searchBool)
@@ -1185,9 +1184,9 @@ namespace BetterLegacy.Editor.Managers
 
                 if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                        timelineObject.eventKeyframe.values[0] = Parser.TryParse(beatmapTheme.id, 0);
                 else
-                    RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                    RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(beatmapTheme.id, 0);
             });
 
             var bgHex = themeContent.Find("bg/hex").GetComponent<InputField>();

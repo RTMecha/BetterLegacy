@@ -115,7 +115,7 @@ namespace BetterLegacy.Patchers
                     if (timelineObject.Index == 0 || timelineObject.Locked)
                         continue;
 
-                    GameData.Current.eventObjects.allEvents[timelineObject.Type][timelineObject.Index].eventTime =
+                    GameData.Current.events[timelineObject.Type][timelineObject.Index].time =
                         Mathf.Clamp(timelineTime + Instance.mouseOffsetXForDrag + timelineObject.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 }
 

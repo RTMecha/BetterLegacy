@@ -360,28 +360,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> OpenFilePopupPosClose { get; set; }
         public Setting<Vector2> OpenFilePopupPosOpenDuration { get; set; }
         public Setting<Vector2> OpenFilePopupPosCloseDuration { get; set; }
-        public Setting<Easings> OpenFilePopupPosXOpenEase { get; set; }
-        public Setting<Easings> OpenFilePopupPosXCloseEase { get; set; }
-        public Setting<Easings> OpenFilePopupPosYOpenEase { get; set; }
-        public Setting<Easings> OpenFilePopupPosYCloseEase { get; set; }
+        public Setting<Easing> OpenFilePopupPosXOpenEase { get; set; }
+        public Setting<Easing> OpenFilePopupPosXCloseEase { get; set; }
+        public Setting<Easing> OpenFilePopupPosYOpenEase { get; set; }
+        public Setting<Easing> OpenFilePopupPosYCloseEase { get; set; }
 
         public Setting<bool> OpenFilePopupScaActive { get; set; }
         public Setting<Vector2> OpenFilePopupScaOpen { get; set; }
         public Setting<Vector2> OpenFilePopupScaClose { get; set; }
         public Setting<Vector2> OpenFilePopupScaOpenDuration { get; set; }
         public Setting<Vector2> OpenFilePopupScaCloseDuration { get; set; }
-        public Setting<Easings> OpenFilePopupScaXOpenEase { get; set; }
-        public Setting<Easings> OpenFilePopupScaXCloseEase { get; set; }
-        public Setting<Easings> OpenFilePopupScaYOpenEase { get; set; }
-        public Setting<Easings> OpenFilePopupScaYCloseEase { get; set; }
+        public Setting<Easing> OpenFilePopupScaXOpenEase { get; set; }
+        public Setting<Easing> OpenFilePopupScaXCloseEase { get; set; }
+        public Setting<Easing> OpenFilePopupScaYOpenEase { get; set; }
+        public Setting<Easing> OpenFilePopupScaYCloseEase { get; set; }
 
         public Setting<bool> OpenFilePopupRotActive { get; set; }
         public Setting<float> OpenFilePopupRotOpen { get; set; }
         public Setting<float> OpenFilePopupRotClose { get; set; }
         public Setting<float> OpenFilePopupRotOpenDuration { get; set; }
         public Setting<float> OpenFilePopupRotCloseDuration { get; set; }
-        public Setting<Easings> OpenFilePopupRotOpenEase { get; set; }
-        public Setting<Easings> OpenFilePopupRotCloseEase { get; set; }
+        public Setting<Easing> OpenFilePopupRotOpenEase { get; set; }
+        public Setting<Easing> OpenFilePopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -394,28 +394,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> NewFilePopupPosClose { get; set; }
         public Setting<Vector2> NewFilePopupPosOpenDuration { get; set; }
         public Setting<Vector2> NewFilePopupPosCloseDuration { get; set; }
-        public Setting<Easings> NewFilePopupPosXOpenEase { get; set; }
-        public Setting<Easings> NewFilePopupPosXCloseEase { get; set; }
-        public Setting<Easings> NewFilePopupPosYOpenEase { get; set; }
-        public Setting<Easings> NewFilePopupPosYCloseEase { get; set; }
+        public Setting<Easing> NewFilePopupPosXOpenEase { get; set; }
+        public Setting<Easing> NewFilePopupPosXCloseEase { get; set; }
+        public Setting<Easing> NewFilePopupPosYOpenEase { get; set; }
+        public Setting<Easing> NewFilePopupPosYCloseEase { get; set; }
 
         public Setting<bool> NewFilePopupScaActive { get; set; }
         public Setting<Vector2> NewFilePopupScaOpen { get; set; }
         public Setting<Vector2> NewFilePopupScaClose { get; set; }
         public Setting<Vector2> NewFilePopupScaOpenDuration { get; set; }
         public Setting<Vector2> NewFilePopupScaCloseDuration { get; set; }
-        public Setting<Easings> NewFilePopupScaXOpenEase { get; set; }
-        public Setting<Easings> NewFilePopupScaXCloseEase { get; set; }
-        public Setting<Easings> NewFilePopupScaYOpenEase { get; set; }
-        public Setting<Easings> NewFilePopupScaYCloseEase { get; set; }
+        public Setting<Easing> NewFilePopupScaXOpenEase { get; set; }
+        public Setting<Easing> NewFilePopupScaXCloseEase { get; set; }
+        public Setting<Easing> NewFilePopupScaYOpenEase { get; set; }
+        public Setting<Easing> NewFilePopupScaYCloseEase { get; set; }
 
         public Setting<bool> NewFilePopupRotActive { get; set; }
         public Setting<float> NewFilePopupRotOpen { get; set; }
         public Setting<float> NewFilePopupRotClose { get; set; }
         public Setting<float> NewFilePopupRotOpenDuration { get; set; }
         public Setting<float> NewFilePopupRotCloseDuration { get; set; }
-        public Setting<Easings> NewFilePopupRotOpenEase { get; set; }
-        public Setting<Easings> NewFilePopupRotCloseEase { get; set; }
+        public Setting<Easing> NewFilePopupRotOpenEase { get; set; }
+        public Setting<Easing> NewFilePopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -428,28 +428,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> SaveAsPopupPosClose { get; set; }
         public Setting<Vector2> SaveAsPopupPosOpenDuration { get; set; }
         public Setting<Vector2> SaveAsPopupPosCloseDuration { get; set; }
-        public Setting<Easings> SaveAsPopupPosXOpenEase { get; set; }
-        public Setting<Easings> SaveAsPopupPosXCloseEase { get; set; }
-        public Setting<Easings> SaveAsPopupPosYOpenEase { get; set; }
-        public Setting<Easings> SaveAsPopupPosYCloseEase { get; set; }
+        public Setting<Easing> SaveAsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> SaveAsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> SaveAsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> SaveAsPopupPosYCloseEase { get; set; }
 
         public Setting<bool> SaveAsPopupScaActive { get; set; }
         public Setting<Vector2> SaveAsPopupScaOpen { get; set; }
         public Setting<Vector2> SaveAsPopupScaClose { get; set; }
         public Setting<Vector2> SaveAsPopupScaOpenDuration { get; set; }
         public Setting<Vector2> SaveAsPopupScaCloseDuration { get; set; }
-        public Setting<Easings> SaveAsPopupScaXOpenEase { get; set; }
-        public Setting<Easings> SaveAsPopupScaXCloseEase { get; set; }
-        public Setting<Easings> SaveAsPopupScaYOpenEase { get; set; }
-        public Setting<Easings> SaveAsPopupScaYCloseEase { get; set; }
+        public Setting<Easing> SaveAsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> SaveAsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> SaveAsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> SaveAsPopupScaYCloseEase { get; set; }
 
         public Setting<bool> SaveAsPopupRotActive { get; set; }
         public Setting<float> SaveAsPopupRotOpen { get; set; }
         public Setting<float> SaveAsPopupRotClose { get; set; }
         public Setting<float> SaveAsPopupRotOpenDuration { get; set; }
         public Setting<float> SaveAsPopupRotCloseDuration { get; set; }
-        public Setting<Easings> SaveAsPopupRotOpenEase { get; set; }
-        public Setting<Easings> SaveAsPopupRotCloseEase { get; set; }
+        public Setting<Easing> SaveAsPopupRotOpenEase { get; set; }
+        public Setting<Easing> SaveAsPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -462,28 +462,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> QuickActionsPopupPosClose { get; set; }
         public Setting<Vector2> QuickActionsPopupPosOpenDuration { get; set; }
         public Setting<Vector2> QuickActionsPopupPosCloseDuration { get; set; }
-        public Setting<Easings> QuickActionsPopupPosXOpenEase { get; set; }
-        public Setting<Easings> QuickActionsPopupPosXCloseEase { get; set; }
-        public Setting<Easings> QuickActionsPopupPosYOpenEase { get; set; }
-        public Setting<Easings> QuickActionsPopupPosYCloseEase { get; set; }
+        public Setting<Easing> QuickActionsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> QuickActionsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> QuickActionsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> QuickActionsPopupPosYCloseEase { get; set; }
 
         public Setting<bool> QuickActionsPopupScaActive { get; set; }
         public Setting<Vector2> QuickActionsPopupScaOpen { get; set; }
         public Setting<Vector2> QuickActionsPopupScaClose { get; set; }
         public Setting<Vector2> QuickActionsPopupScaOpenDuration { get; set; }
         public Setting<Vector2> QuickActionsPopupScaCloseDuration { get; set; }
-        public Setting<Easings> QuickActionsPopupScaXOpenEase { get; set; }
-        public Setting<Easings> QuickActionsPopupScaXCloseEase { get; set; }
-        public Setting<Easings> QuickActionsPopupScaYOpenEase { get; set; }
-        public Setting<Easings> QuickActionsPopupScaYCloseEase { get; set; }
+        public Setting<Easing> QuickActionsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> QuickActionsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> QuickActionsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> QuickActionsPopupScaYCloseEase { get; set; }
 
         public Setting<bool> QuickActionsPopupRotActive { get; set; }
         public Setting<float> QuickActionsPopupRotOpen { get; set; }
         public Setting<float> QuickActionsPopupRotClose { get; set; }
         public Setting<float> QuickActionsPopupRotOpenDuration { get; set; }
         public Setting<float> QuickActionsPopupRotCloseDuration { get; set; }
-        public Setting<Easings> QuickActionsPopupRotOpenEase { get; set; }
-        public Setting<Easings> QuickActionsPopupRotCloseEase { get; set; }
+        public Setting<Easing> QuickActionsPopupRotOpenEase { get; set; }
+        public Setting<Easing> QuickActionsPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -496,28 +496,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> ParentSelectorPopupPosClose { get; set; }
         public Setting<Vector2> ParentSelectorPopupPosOpenDuration { get; set; }
         public Setting<Vector2> ParentSelectorPopupPosCloseDuration { get; set; }
-        public Setting<Easings> ParentSelectorPopupPosXOpenEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupPosXCloseEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupPosYOpenEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupPosYCloseEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupPosXOpenEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupPosXCloseEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupPosYOpenEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupPosYCloseEase { get; set; }
 
         public Setting<bool> ParentSelectorPopupScaActive { get; set; }
         public Setting<Vector2> ParentSelectorPopupScaOpen { get; set; }
         public Setting<Vector2> ParentSelectorPopupScaClose { get; set; }
         public Setting<Vector2> ParentSelectorPopupScaOpenDuration { get; set; }
         public Setting<Vector2> ParentSelectorPopupScaCloseDuration { get; set; }
-        public Setting<Easings> ParentSelectorPopupScaXOpenEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupScaXCloseEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupScaYOpenEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupScaYCloseEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupScaXOpenEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupScaXCloseEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupScaYOpenEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupScaYCloseEase { get; set; }
 
         public Setting<bool> ParentSelectorPopupRotActive { get; set; }
         public Setting<float> ParentSelectorPopupRotOpen { get; set; }
         public Setting<float> ParentSelectorPopupRotClose { get; set; }
         public Setting<float> ParentSelectorPopupRotOpenDuration { get; set; }
         public Setting<float> ParentSelectorPopupRotCloseDuration { get; set; }
-        public Setting<Easings> ParentSelectorPopupRotOpenEase { get; set; }
-        public Setting<Easings> ParentSelectorPopupRotCloseEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupRotOpenEase { get; set; }
+        public Setting<Easing> ParentSelectorPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -530,28 +530,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> PrefabPopupPosClose { get; set; }
         public Setting<Vector2> PrefabPopupPosOpenDuration { get; set; }
         public Setting<Vector2> PrefabPopupPosCloseDuration { get; set; }
-        public Setting<Easings> PrefabPopupPosXOpenEase { get; set; }
-        public Setting<Easings> PrefabPopupPosXCloseEase { get; set; }
-        public Setting<Easings> PrefabPopupPosYOpenEase { get; set; }
-        public Setting<Easings> PrefabPopupPosYCloseEase { get; set; }
+        public Setting<Easing> PrefabPopupPosXOpenEase { get; set; }
+        public Setting<Easing> PrefabPopupPosXCloseEase { get; set; }
+        public Setting<Easing> PrefabPopupPosYOpenEase { get; set; }
+        public Setting<Easing> PrefabPopupPosYCloseEase { get; set; }
 
         public Setting<bool> PrefabPopupScaActive { get; set; }
         public Setting<Vector2> PrefabPopupScaOpen { get; set; }
         public Setting<Vector2> PrefabPopupScaClose { get; set; }
         public Setting<Vector2> PrefabPopupScaOpenDuration { get; set; }
         public Setting<Vector2> PrefabPopupScaCloseDuration { get; set; }
-        public Setting<Easings> PrefabPopupScaXOpenEase { get; set; }
-        public Setting<Easings> PrefabPopupScaXCloseEase { get; set; }
-        public Setting<Easings> PrefabPopupScaYOpenEase { get; set; }
-        public Setting<Easings> PrefabPopupScaYCloseEase { get; set; }
+        public Setting<Easing> PrefabPopupScaXOpenEase { get; set; }
+        public Setting<Easing> PrefabPopupScaXCloseEase { get; set; }
+        public Setting<Easing> PrefabPopupScaYOpenEase { get; set; }
+        public Setting<Easing> PrefabPopupScaYCloseEase { get; set; }
 
         public Setting<bool> PrefabPopupRotActive { get; set; }
         public Setting<float> PrefabPopupRotOpen { get; set; }
         public Setting<float> PrefabPopupRotClose { get; set; }
         public Setting<float> PrefabPopupRotOpenDuration { get; set; }
         public Setting<float> PrefabPopupRotCloseDuration { get; set; }
-        public Setting<Easings> PrefabPopupRotOpenEase { get; set; }
-        public Setting<Easings> PrefabPopupRotCloseEase { get; set; }
+        public Setting<Easing> PrefabPopupRotOpenEase { get; set; }
+        public Setting<Easing> PrefabPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -564,28 +564,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> ObjectOptionsPopupPosClose { get; set; }
         public Setting<Vector2> ObjectOptionsPopupPosOpenDuration { get; set; }
         public Setting<Vector2> ObjectOptionsPopupPosCloseDuration { get; set; }
-        public Setting<Easings> ObjectOptionsPopupPosXOpenEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupPosXCloseEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupPosYOpenEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupPosYCloseEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupPosYCloseEase { get; set; }
 
         public Setting<bool> ObjectOptionsPopupScaActive { get; set; }
         public Setting<Vector2> ObjectOptionsPopupScaOpen { get; set; }
         public Setting<Vector2> ObjectOptionsPopupScaClose { get; set; }
         public Setting<Vector2> ObjectOptionsPopupScaOpenDuration { get; set; }
         public Setting<Vector2> ObjectOptionsPopupScaCloseDuration { get; set; }
-        public Setting<Easings> ObjectOptionsPopupScaXOpenEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupScaXCloseEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupScaYOpenEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupScaYCloseEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupScaYCloseEase { get; set; }
 
         public Setting<bool> ObjectOptionsPopupRotActive { get; set; }
         public Setting<float> ObjectOptionsPopupRotOpen { get; set; }
         public Setting<float> ObjectOptionsPopupRotClose { get; set; }
         public Setting<float> ObjectOptionsPopupRotOpenDuration { get; set; }
         public Setting<float> ObjectOptionsPopupRotCloseDuration { get; set; }
-        public Setting<Easings> ObjectOptionsPopupRotOpenEase { get; set; }
-        public Setting<Easings> ObjectOptionsPopupRotCloseEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupRotOpenEase { get; set; }
+        public Setting<Easing> ObjectOptionsPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -598,28 +598,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> BGOptionsPopupPosClose { get; set; }
         public Setting<Vector2> BGOptionsPopupPosOpenDuration { get; set; }
         public Setting<Vector2> BGOptionsPopupPosCloseDuration { get; set; }
-        public Setting<Easings> BGOptionsPopupPosXOpenEase { get; set; }
-        public Setting<Easings> BGOptionsPopupPosXCloseEase { get; set; }
-        public Setting<Easings> BGOptionsPopupPosYOpenEase { get; set; }
-        public Setting<Easings> BGOptionsPopupPosYCloseEase { get; set; }
+        public Setting<Easing> BGOptionsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> BGOptionsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> BGOptionsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> BGOptionsPopupPosYCloseEase { get; set; }
 
         public Setting<bool> BGOptionsPopupScaActive { get; set; }
         public Setting<Vector2> BGOptionsPopupScaOpen { get; set; }
         public Setting<Vector2> BGOptionsPopupScaClose { get; set; }
         public Setting<Vector2> BGOptionsPopupScaOpenDuration { get; set; }
         public Setting<Vector2> BGOptionsPopupScaCloseDuration { get; set; }
-        public Setting<Easings> BGOptionsPopupScaXOpenEase { get; set; }
-        public Setting<Easings> BGOptionsPopupScaXCloseEase { get; set; }
-        public Setting<Easings> BGOptionsPopupScaYOpenEase { get; set; }
-        public Setting<Easings> BGOptionsPopupScaYCloseEase { get; set; }
+        public Setting<Easing> BGOptionsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> BGOptionsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> BGOptionsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> BGOptionsPopupScaYCloseEase { get; set; }
 
         public Setting<bool> BGOptionsPopupRotActive { get; set; }
         public Setting<float> BGOptionsPopupRotOpen { get; set; }
         public Setting<float> BGOptionsPopupRotClose { get; set; }
         public Setting<float> BGOptionsPopupRotOpenDuration { get; set; }
         public Setting<float> BGOptionsPopupRotCloseDuration { get; set; }
-        public Setting<Easings> BGOptionsPopupRotOpenEase { get; set; }
-        public Setting<Easings> BGOptionsPopupRotCloseEase { get; set; }
+        public Setting<Easing> BGOptionsPopupRotOpenEase { get; set; }
+        public Setting<Easing> BGOptionsPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -632,28 +632,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> BrowserPopupPosClose { get; set; }
         public Setting<Vector2> BrowserPopupPosOpenDuration { get; set; }
         public Setting<Vector2> BrowserPopupPosCloseDuration { get; set; }
-        public Setting<Easings> BrowserPopupPosXOpenEase { get; set; }
-        public Setting<Easings> BrowserPopupPosXCloseEase { get; set; }
-        public Setting<Easings> BrowserPopupPosYOpenEase { get; set; }
-        public Setting<Easings> BrowserPopupPosYCloseEase { get; set; }
+        public Setting<Easing> BrowserPopupPosXOpenEase { get; set; }
+        public Setting<Easing> BrowserPopupPosXCloseEase { get; set; }
+        public Setting<Easing> BrowserPopupPosYOpenEase { get; set; }
+        public Setting<Easing> BrowserPopupPosYCloseEase { get; set; }
 
         public Setting<bool> BrowserPopupScaActive { get; set; }
         public Setting<Vector2> BrowserPopupScaOpen { get; set; }
         public Setting<Vector2> BrowserPopupScaClose { get; set; }
         public Setting<Vector2> BrowserPopupScaOpenDuration { get; set; }
         public Setting<Vector2> BrowserPopupScaCloseDuration { get; set; }
-        public Setting<Easings> BrowserPopupScaXOpenEase { get; set; }
-        public Setting<Easings> BrowserPopupScaXCloseEase { get; set; }
-        public Setting<Easings> BrowserPopupScaYOpenEase { get; set; }
-        public Setting<Easings> BrowserPopupScaYCloseEase { get; set; }
+        public Setting<Easing> BrowserPopupScaXOpenEase { get; set; }
+        public Setting<Easing> BrowserPopupScaXCloseEase { get; set; }
+        public Setting<Easing> BrowserPopupScaYOpenEase { get; set; }
+        public Setting<Easing> BrowserPopupScaYCloseEase { get; set; }
 
         public Setting<bool> BrowserPopupRotActive { get; set; }
         public Setting<float> BrowserPopupRotOpen { get; set; }
         public Setting<float> BrowserPopupRotClose { get; set; }
         public Setting<float> BrowserPopupRotOpenDuration { get; set; }
         public Setting<float> BrowserPopupRotCloseDuration { get; set; }
-        public Setting<Easings> BrowserPopupRotOpenEase { get; set; }
-        public Setting<Easings> BrowserPopupRotCloseEase { get; set; }
+        public Setting<Easing> BrowserPopupRotOpenEase { get; set; }
+        public Setting<Easing> BrowserPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -666,28 +666,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> ObjectSearchPopupPosClose { get; set; }
         public Setting<Vector2> ObjectSearchPopupPosOpenDuration { get; set; }
         public Setting<Vector2> ObjectSearchPopupPosCloseDuration { get; set; }
-        public Setting<Easings> ObjectSearchPopupPosXOpenEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupPosXCloseEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupPosYOpenEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupPosYCloseEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupPosXOpenEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupPosXCloseEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupPosYOpenEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupPosYCloseEase { get; set; }
 
         public Setting<bool> ObjectSearchPopupScaActive { get; set; }
         public Setting<Vector2> ObjectSearchPopupScaOpen { get; set; }
         public Setting<Vector2> ObjectSearchPopupScaClose { get; set; }
         public Setting<Vector2> ObjectSearchPopupScaOpenDuration { get; set; }
         public Setting<Vector2> ObjectSearchPopupScaCloseDuration { get; set; }
-        public Setting<Easings> ObjectSearchPopupScaXOpenEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupScaXCloseEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupScaYOpenEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupScaYCloseEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupScaXOpenEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupScaXCloseEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupScaYOpenEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupScaYCloseEase { get; set; }
 
         public Setting<bool> ObjectSearchPopupRotActive { get; set; }
         public Setting<float> ObjectSearchPopupRotOpen { get; set; }
         public Setting<float> ObjectSearchPopupRotClose { get; set; }
         public Setting<float> ObjectSearchPopupRotOpenDuration { get; set; }
         public Setting<float> ObjectSearchPopupRotCloseDuration { get; set; }
-        public Setting<Easings> ObjectSearchPopupRotOpenEase { get; set; }
-        public Setting<Easings> ObjectSearchPopupRotCloseEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupRotOpenEase { get; set; }
+        public Setting<Easing> ObjectSearchPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -700,28 +700,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> ObjectTemplatePopupPosClose { get; set; }
         public Setting<Vector2> ObjectTemplatePopupPosOpenDuration { get; set; }
         public Setting<Vector2> ObjectTemplatePopupPosCloseDuration { get; set; }
-        public Setting<Easings> ObjectTemplatePopupPosXOpenEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupPosXCloseEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupPosYOpenEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupPosYCloseEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupPosXOpenEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupPosXCloseEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupPosYOpenEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupPosYCloseEase { get; set; }
 
         public Setting<bool> ObjectTemplatePopupScaActive { get; set; }
         public Setting<Vector2> ObjectTemplatePopupScaOpen { get; set; }
         public Setting<Vector2> ObjectTemplatePopupScaClose { get; set; }
         public Setting<Vector2> ObjectTemplatePopupScaOpenDuration { get; set; }
         public Setting<Vector2> ObjectTemplatePopupScaCloseDuration { get; set; }
-        public Setting<Easings> ObjectTemplatePopupScaXOpenEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupScaXCloseEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupScaYOpenEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupScaYCloseEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupScaXOpenEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupScaXCloseEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupScaYOpenEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupScaYCloseEase { get; set; }
 
         public Setting<bool> ObjectTemplatePopupRotActive { get; set; }
         public Setting<float> ObjectTemplatePopupRotOpen { get; set; }
         public Setting<float> ObjectTemplatePopupRotClose { get; set; }
         public Setting<float> ObjectTemplatePopupRotOpenDuration { get; set; }
         public Setting<float> ObjectTemplatePopupRotCloseDuration { get; set; }
-        public Setting<Easings> ObjectTemplatePopupRotOpenEase { get; set; }
-        public Setting<Easings> ObjectTemplatePopupRotCloseEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupRotOpenEase { get; set; }
+        public Setting<Easing> ObjectTemplatePopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -734,28 +734,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> WarningPopupPosClose { get; set; }
         public Setting<Vector2> WarningPopupPosOpenDuration { get; set; }
         public Setting<Vector2> WarningPopupPosCloseDuration { get; set; }
-        public Setting<Easings> WarningPopupPosXOpenEase { get; set; }
-        public Setting<Easings> WarningPopupPosXCloseEase { get; set; }
-        public Setting<Easings> WarningPopupPosYOpenEase { get; set; }
-        public Setting<Easings> WarningPopupPosYCloseEase { get; set; }
+        public Setting<Easing> WarningPopupPosXOpenEase { get; set; }
+        public Setting<Easing> WarningPopupPosXCloseEase { get; set; }
+        public Setting<Easing> WarningPopupPosYOpenEase { get; set; }
+        public Setting<Easing> WarningPopupPosYCloseEase { get; set; }
 
         public Setting<bool> WarningPopupScaActive { get; set; }
         public Setting<Vector2> WarningPopupScaOpen { get; set; }
         public Setting<Vector2> WarningPopupScaClose { get; set; }
         public Setting<Vector2> WarningPopupScaOpenDuration { get; set; }
         public Setting<Vector2> WarningPopupScaCloseDuration { get; set; }
-        public Setting<Easings> WarningPopupScaXOpenEase { get; set; }
-        public Setting<Easings> WarningPopupScaXCloseEase { get; set; }
-        public Setting<Easings> WarningPopupScaYOpenEase { get; set; }
-        public Setting<Easings> WarningPopupScaYCloseEase { get; set; }
+        public Setting<Easing> WarningPopupScaXOpenEase { get; set; }
+        public Setting<Easing> WarningPopupScaXCloseEase { get; set; }
+        public Setting<Easing> WarningPopupScaYOpenEase { get; set; }
+        public Setting<Easing> WarningPopupScaYCloseEase { get; set; }
 
         public Setting<bool> WarningPopupRotActive { get; set; }
         public Setting<float> WarningPopupRotOpen { get; set; }
         public Setting<float> WarningPopupRotClose { get; set; }
         public Setting<float> WarningPopupRotOpenDuration { get; set; }
         public Setting<float> WarningPopupRotCloseDuration { get; set; }
-        public Setting<Easings> WarningPopupRotOpenEase { get; set; }
-        public Setting<Easings> WarningPopupRotCloseEase { get; set; }
+        public Setting<Easing> WarningPopupRotOpenEase { get; set; }
+        public Setting<Easing> WarningPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -768,28 +768,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> FilePopupPosClose { get; set; }
         public Setting<Vector2> FilePopupPosOpenDuration { get; set; }
         public Setting<Vector2> FilePopupPosCloseDuration { get; set; }
-        public Setting<Easings> FilePopupPosXOpenEase { get; set; }
-        public Setting<Easings> FilePopupPosXCloseEase { get; set; }
-        public Setting<Easings> FilePopupPosYOpenEase { get; set; }
-        public Setting<Easings> FilePopupPosYCloseEase { get; set; }
+        public Setting<Easing> FilePopupPosXOpenEase { get; set; }
+        public Setting<Easing> FilePopupPosXCloseEase { get; set; }
+        public Setting<Easing> FilePopupPosYOpenEase { get; set; }
+        public Setting<Easing> FilePopupPosYCloseEase { get; set; }
 
         public Setting<bool> FilePopupScaActive { get; set; }
         public Setting<Vector2> FilePopupScaOpen { get; set; }
         public Setting<Vector2> FilePopupScaClose { get; set; }
         public Setting<Vector2> FilePopupScaOpenDuration { get; set; }
         public Setting<Vector2> FilePopupScaCloseDuration { get; set; }
-        public Setting<Easings> FilePopupScaXOpenEase { get; set; }
-        public Setting<Easings> FilePopupScaXCloseEase { get; set; }
-        public Setting<Easings> FilePopupScaYOpenEase { get; set; }
-        public Setting<Easings> FilePopupScaYCloseEase { get; set; }
+        public Setting<Easing> FilePopupScaXOpenEase { get; set; }
+        public Setting<Easing> FilePopupScaXCloseEase { get; set; }
+        public Setting<Easing> FilePopupScaYOpenEase { get; set; }
+        public Setting<Easing> FilePopupScaYCloseEase { get; set; }
 
         public Setting<bool> FilePopupRotActive { get; set; }
         public Setting<float> FilePopupRotOpen { get; set; }
         public Setting<float> FilePopupRotClose { get; set; }
         public Setting<float> FilePopupRotOpenDuration { get; set; }
         public Setting<float> FilePopupRotCloseDuration { get; set; }
-        public Setting<Easings> FilePopupRotOpenEase { get; set; }
-        public Setting<Easings> FilePopupRotCloseEase { get; set; }
+        public Setting<Easing> FilePopupRotOpenEase { get; set; }
+        public Setting<Easing> FilePopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -802,28 +802,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> TextEditorPosClose { get; set; }
         public Setting<Vector2> TextEditorPosOpenDuration { get; set; }
         public Setting<Vector2> TextEditorPosCloseDuration { get; set; }
-        public Setting<Easings> TextEditorPosXOpenEase { get; set; }
-        public Setting<Easings> TextEditorPosXCloseEase { get; set; }
-        public Setting<Easings> TextEditorPosYOpenEase { get; set; }
-        public Setting<Easings> TextEditorPosYCloseEase { get; set; }
+        public Setting<Easing> TextEditorPosXOpenEase { get; set; }
+        public Setting<Easing> TextEditorPosXCloseEase { get; set; }
+        public Setting<Easing> TextEditorPosYOpenEase { get; set; }
+        public Setting<Easing> TextEditorPosYCloseEase { get; set; }
 
         public Setting<bool> TextEditorScaActive { get; set; }
         public Setting<Vector2> TextEditorScaOpen { get; set; }
         public Setting<Vector2> TextEditorScaClose { get; set; }
         public Setting<Vector2> TextEditorScaOpenDuration { get; set; }
         public Setting<Vector2> TextEditorScaCloseDuration { get; set; }
-        public Setting<Easings> TextEditorScaXOpenEase { get; set; }
-        public Setting<Easings> TextEditorScaXCloseEase { get; set; }
-        public Setting<Easings> TextEditorScaYOpenEase { get; set; }
-        public Setting<Easings> TextEditorScaYCloseEase { get; set; }
+        public Setting<Easing> TextEditorScaXOpenEase { get; set; }
+        public Setting<Easing> TextEditorScaXCloseEase { get; set; }
+        public Setting<Easing> TextEditorScaYOpenEase { get; set; }
+        public Setting<Easing> TextEditorScaYCloseEase { get; set; }
 
         public Setting<bool> TextEditorRotActive { get; set; }
         public Setting<float> TextEditorRotOpen { get; set; }
         public Setting<float> TextEditorRotClose { get; set; }
         public Setting<float> TextEditorRotOpenDuration { get; set; }
         public Setting<float> TextEditorRotCloseDuration { get; set; }
-        public Setting<Easings> TextEditorRotOpenEase { get; set; }
-        public Setting<Easings> TextEditorRotCloseEase { get; set; }
+        public Setting<Easing> TextEditorRotOpenEase { get; set; }
+        public Setting<Easing> TextEditorRotCloseEase { get; set; }
 
         #endregion
 
@@ -836,28 +836,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> DocumentationPopupPosClose { get; set; }
         public Setting<Vector2> DocumentationPopupPosOpenDuration { get; set; }
         public Setting<Vector2> DocumentationPopupPosCloseDuration { get; set; }
-        public Setting<Easings> DocumentationPopupPosXOpenEase { get; set; }
-        public Setting<Easings> DocumentationPopupPosXCloseEase { get; set; }
-        public Setting<Easings> DocumentationPopupPosYOpenEase { get; set; }
-        public Setting<Easings> DocumentationPopupPosYCloseEase { get; set; }
+        public Setting<Easing> DocumentationPopupPosXOpenEase { get; set; }
+        public Setting<Easing> DocumentationPopupPosXCloseEase { get; set; }
+        public Setting<Easing> DocumentationPopupPosYOpenEase { get; set; }
+        public Setting<Easing> DocumentationPopupPosYCloseEase { get; set; }
 
         public Setting<bool> DocumentationPopupScaActive { get; set; }
         public Setting<Vector2> DocumentationPopupScaOpen { get; set; }
         public Setting<Vector2> DocumentationPopupScaClose { get; set; }
         public Setting<Vector2> DocumentationPopupScaOpenDuration { get; set; }
         public Setting<Vector2> DocumentationPopupScaCloseDuration { get; set; }
-        public Setting<Easings> DocumentationPopupScaXOpenEase { get; set; }
-        public Setting<Easings> DocumentationPopupScaXCloseEase { get; set; }
-        public Setting<Easings> DocumentationPopupScaYOpenEase { get; set; }
-        public Setting<Easings> DocumentationPopupScaYCloseEase { get; set; }
+        public Setting<Easing> DocumentationPopupScaXOpenEase { get; set; }
+        public Setting<Easing> DocumentationPopupScaXCloseEase { get; set; }
+        public Setting<Easing> DocumentationPopupScaYOpenEase { get; set; }
+        public Setting<Easing> DocumentationPopupScaYCloseEase { get; set; }
 
         public Setting<bool> DocumentationPopupRotActive { get; set; }
         public Setting<float> DocumentationPopupRotOpen { get; set; }
         public Setting<float> DocumentationPopupRotClose { get; set; }
         public Setting<float> DocumentationPopupRotOpenDuration { get; set; }
         public Setting<float> DocumentationPopupRotCloseDuration { get; set; }
-        public Setting<Easings> DocumentationPopupRotOpenEase { get; set; }
-        public Setting<Easings> DocumentationPopupRotCloseEase { get; set; }
+        public Setting<Easing> DocumentationPopupRotOpenEase { get; set; }
+        public Setting<Easing> DocumentationPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -870,28 +870,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> DebuggerPopupPosClose { get; set; }
         public Setting<Vector2> DebuggerPopupPosOpenDuration { get; set; }
         public Setting<Vector2> DebuggerPopupPosCloseDuration { get; set; }
-        public Setting<Easings> DebuggerPopupPosXOpenEase { get; set; }
-        public Setting<Easings> DebuggerPopupPosXCloseEase { get; set; }
-        public Setting<Easings> DebuggerPopupPosYOpenEase { get; set; }
-        public Setting<Easings> DebuggerPopupPosYCloseEase { get; set; }
+        public Setting<Easing> DebuggerPopupPosXOpenEase { get; set; }
+        public Setting<Easing> DebuggerPopupPosXCloseEase { get; set; }
+        public Setting<Easing> DebuggerPopupPosYOpenEase { get; set; }
+        public Setting<Easing> DebuggerPopupPosYCloseEase { get; set; }
 
         public Setting<bool> DebuggerPopupScaActive { get; set; }
         public Setting<Vector2> DebuggerPopupScaOpen { get; set; }
         public Setting<Vector2> DebuggerPopupScaClose { get; set; }
         public Setting<Vector2> DebuggerPopupScaOpenDuration { get; set; }
         public Setting<Vector2> DebuggerPopupScaCloseDuration { get; set; }
-        public Setting<Easings> DebuggerPopupScaXOpenEase { get; set; }
-        public Setting<Easings> DebuggerPopupScaXCloseEase { get; set; }
-        public Setting<Easings> DebuggerPopupScaYOpenEase { get; set; }
-        public Setting<Easings> DebuggerPopupScaYCloseEase { get; set; }
+        public Setting<Easing> DebuggerPopupScaXOpenEase { get; set; }
+        public Setting<Easing> DebuggerPopupScaXCloseEase { get; set; }
+        public Setting<Easing> DebuggerPopupScaYOpenEase { get; set; }
+        public Setting<Easing> DebuggerPopupScaYCloseEase { get; set; }
 
         public Setting<bool> DebuggerPopupRotActive { get; set; }
         public Setting<float> DebuggerPopupRotOpen { get; set; }
         public Setting<float> DebuggerPopupRotClose { get; set; }
         public Setting<float> DebuggerPopupRotOpenDuration { get; set; }
         public Setting<float> DebuggerPopupRotCloseDuration { get; set; }
-        public Setting<Easings> DebuggerPopupRotOpenEase { get; set; }
-        public Setting<Easings> DebuggerPopupRotCloseEase { get; set; }
+        public Setting<Easing> DebuggerPopupRotOpenEase { get; set; }
+        public Setting<Easing> DebuggerPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -904,28 +904,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> AutosavesPopupPosClose { get; set; }
         public Setting<Vector2> AutosavesPopupPosOpenDuration { get; set; }
         public Setting<Vector2> AutosavesPopupPosCloseDuration { get; set; }
-        public Setting<Easings> AutosavesPopupPosXOpenEase { get; set; }
-        public Setting<Easings> AutosavesPopupPosXCloseEase { get; set; }
-        public Setting<Easings> AutosavesPopupPosYOpenEase { get; set; }
-        public Setting<Easings> AutosavesPopupPosYCloseEase { get; set; }
+        public Setting<Easing> AutosavesPopupPosXOpenEase { get; set; }
+        public Setting<Easing> AutosavesPopupPosXCloseEase { get; set; }
+        public Setting<Easing> AutosavesPopupPosYOpenEase { get; set; }
+        public Setting<Easing> AutosavesPopupPosYCloseEase { get; set; }
 
         public Setting<bool> AutosavesPopupScaActive { get; set; }
         public Setting<Vector2> AutosavesPopupScaOpen { get; set; }
         public Setting<Vector2> AutosavesPopupScaClose { get; set; }
         public Setting<Vector2> AutosavesPopupScaOpenDuration { get; set; }
         public Setting<Vector2> AutosavesPopupScaCloseDuration { get; set; }
-        public Setting<Easings> AutosavesPopupScaXOpenEase { get; set; }
-        public Setting<Easings> AutosavesPopupScaXCloseEase { get; set; }
-        public Setting<Easings> AutosavesPopupScaYOpenEase { get; set; }
-        public Setting<Easings> AutosavesPopupScaYCloseEase { get; set; }
+        public Setting<Easing> AutosavesPopupScaXOpenEase { get; set; }
+        public Setting<Easing> AutosavesPopupScaXCloseEase { get; set; }
+        public Setting<Easing> AutosavesPopupScaYOpenEase { get; set; }
+        public Setting<Easing> AutosavesPopupScaYCloseEase { get; set; }
 
         public Setting<bool> AutosavesPopupRotActive { get; set; }
         public Setting<float> AutosavesPopupRotOpen { get; set; }
         public Setting<float> AutosavesPopupRotClose { get; set; }
         public Setting<float> AutosavesPopupRotOpenDuration { get; set; }
         public Setting<float> AutosavesPopupRotCloseDuration { get; set; }
-        public Setting<Easings> AutosavesPopupRotOpenEase { get; set; }
-        public Setting<Easings> AutosavesPopupRotCloseEase { get; set; }
+        public Setting<Easing> AutosavesPopupRotOpenEase { get; set; }
+        public Setting<Easing> AutosavesPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -938,28 +938,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> DefaultModifiersPopupPosClose { get; set; }
         public Setting<Vector2> DefaultModifiersPopupPosOpenDuration { get; set; }
         public Setting<Vector2> DefaultModifiersPopupPosCloseDuration { get; set; }
-        public Setting<Easings> DefaultModifiersPopupPosXOpenEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupPosXCloseEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupPosYOpenEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupPosYCloseEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupPosXOpenEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupPosXCloseEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupPosYOpenEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupPosYCloseEase { get; set; }
 
         public Setting<bool> DefaultModifiersPopupScaActive { get; set; }
         public Setting<Vector2> DefaultModifiersPopupScaOpen { get; set; }
         public Setting<Vector2> DefaultModifiersPopupScaClose { get; set; }
         public Setting<Vector2> DefaultModifiersPopupScaOpenDuration { get; set; }
         public Setting<Vector2> DefaultModifiersPopupScaCloseDuration { get; set; }
-        public Setting<Easings> DefaultModifiersPopupScaXOpenEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupScaXCloseEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupScaYOpenEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupScaYCloseEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupScaXOpenEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupScaXCloseEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupScaYOpenEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupScaYCloseEase { get; set; }
 
         public Setting<bool> DefaultModifiersPopupRotActive { get; set; }
         public Setting<float> DefaultModifiersPopupRotOpen { get; set; }
         public Setting<float> DefaultModifiersPopupRotClose { get; set; }
         public Setting<float> DefaultModifiersPopupRotOpenDuration { get; set; }
         public Setting<float> DefaultModifiersPopupRotCloseDuration { get; set; }
-        public Setting<Easings> DefaultModifiersPopupRotOpenEase { get; set; }
-        public Setting<Easings> DefaultModifiersPopupRotCloseEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupRotOpenEase { get; set; }
+        public Setting<Easing> DefaultModifiersPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -972,28 +972,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> KeybindListPopupPosClose { get; set; }
         public Setting<Vector2> KeybindListPopupPosOpenDuration { get; set; }
         public Setting<Vector2> KeybindListPopupPosCloseDuration { get; set; }
-        public Setting<Easings> KeybindListPopupPosXOpenEase { get; set; }
-        public Setting<Easings> KeybindListPopupPosXCloseEase { get; set; }
-        public Setting<Easings> KeybindListPopupPosYOpenEase { get; set; }
-        public Setting<Easings> KeybindListPopupPosYCloseEase { get; set; }
+        public Setting<Easing> KeybindListPopupPosXOpenEase { get; set; }
+        public Setting<Easing> KeybindListPopupPosXCloseEase { get; set; }
+        public Setting<Easing> KeybindListPopupPosYOpenEase { get; set; }
+        public Setting<Easing> KeybindListPopupPosYCloseEase { get; set; }
 
         public Setting<bool> KeybindListPopupScaActive { get; set; }
         public Setting<Vector2> KeybindListPopupScaOpen { get; set; }
         public Setting<Vector2> KeybindListPopupScaClose { get; set; }
         public Setting<Vector2> KeybindListPopupScaOpenDuration { get; set; }
         public Setting<Vector2> KeybindListPopupScaCloseDuration { get; set; }
-        public Setting<Easings> KeybindListPopupScaXOpenEase { get; set; }
-        public Setting<Easings> KeybindListPopupScaXCloseEase { get; set; }
-        public Setting<Easings> KeybindListPopupScaYOpenEase { get; set; }
-        public Setting<Easings> KeybindListPopupScaYCloseEase { get; set; }
+        public Setting<Easing> KeybindListPopupScaXOpenEase { get; set; }
+        public Setting<Easing> KeybindListPopupScaXCloseEase { get; set; }
+        public Setting<Easing> KeybindListPopupScaYOpenEase { get; set; }
+        public Setting<Easing> KeybindListPopupScaYCloseEase { get; set; }
 
         public Setting<bool> KeybindListPopupRotActive { get; set; }
         public Setting<float> KeybindListPopupRotOpen { get; set; }
         public Setting<float> KeybindListPopupRotClose { get; set; }
         public Setting<float> KeybindListPopupRotOpenDuration { get; set; }
         public Setting<float> KeybindListPopupRotCloseDuration { get; set; }
-        public Setting<Easings> KeybindListPopupRotOpenEase { get; set; }
-        public Setting<Easings> KeybindListPopupRotCloseEase { get; set; }
+        public Setting<Easing> KeybindListPopupRotOpenEase { get; set; }
+        public Setting<Easing> KeybindListPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -1006,28 +1006,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> ThemePopupPosClose { get; set; }
         public Setting<Vector2> ThemePopupPosOpenDuration { get; set; }
         public Setting<Vector2> ThemePopupPosCloseDuration { get; set; }
-        public Setting<Easings> ThemePopupPosXOpenEase { get; set; }
-        public Setting<Easings> ThemePopupPosXCloseEase { get; set; }
-        public Setting<Easings> ThemePopupPosYOpenEase { get; set; }
-        public Setting<Easings> ThemePopupPosYCloseEase { get; set; }
+        public Setting<Easing> ThemePopupPosXOpenEase { get; set; }
+        public Setting<Easing> ThemePopupPosXCloseEase { get; set; }
+        public Setting<Easing> ThemePopupPosYOpenEase { get; set; }
+        public Setting<Easing> ThemePopupPosYCloseEase { get; set; }
 
         public Setting<bool> ThemePopupScaActive { get; set; }
         public Setting<Vector2> ThemePopupScaOpen { get; set; }
         public Setting<Vector2> ThemePopupScaClose { get; set; }
         public Setting<Vector2> ThemePopupScaOpenDuration { get; set; }
         public Setting<Vector2> ThemePopupScaCloseDuration { get; set; }
-        public Setting<Easings> ThemePopupScaXOpenEase { get; set; }
-        public Setting<Easings> ThemePopupScaXCloseEase { get; set; }
-        public Setting<Easings> ThemePopupScaYOpenEase { get; set; }
-        public Setting<Easings> ThemePopupScaYCloseEase { get; set; }
+        public Setting<Easing> ThemePopupScaXOpenEase { get; set; }
+        public Setting<Easing> ThemePopupScaXCloseEase { get; set; }
+        public Setting<Easing> ThemePopupScaYOpenEase { get; set; }
+        public Setting<Easing> ThemePopupScaYCloseEase { get; set; }
 
         public Setting<bool> ThemePopupRotActive { get; set; }
         public Setting<float> ThemePopupRotOpen { get; set; }
         public Setting<float> ThemePopupRotClose { get; set; }
         public Setting<float> ThemePopupRotOpenDuration { get; set; }
         public Setting<float> ThemePopupRotCloseDuration { get; set; }
-        public Setting<Easings> ThemePopupRotOpenEase { get; set; }
-        public Setting<Easings> ThemePopupRotCloseEase { get; set; }
+        public Setting<Easing> ThemePopupRotOpenEase { get; set; }
+        public Setting<Easing> ThemePopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -1040,28 +1040,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> PrefabTypesPopupPosClose { get; set; }
         public Setting<Vector2> PrefabTypesPopupPosOpenDuration { get; set; }
         public Setting<Vector2> PrefabTypesPopupPosCloseDuration { get; set; }
-        public Setting<Easings> PrefabTypesPopupPosXOpenEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupPosXCloseEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupPosYOpenEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupPosYCloseEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupPosXOpenEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupPosXCloseEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupPosYOpenEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupPosYCloseEase { get; set; }
 
         public Setting<bool> PrefabTypesPopupScaActive { get; set; }
         public Setting<Vector2> PrefabTypesPopupScaOpen { get; set; }
         public Setting<Vector2> PrefabTypesPopupScaClose { get; set; }
         public Setting<Vector2> PrefabTypesPopupScaOpenDuration { get; set; }
         public Setting<Vector2> PrefabTypesPopupScaCloseDuration { get; set; }
-        public Setting<Easings> PrefabTypesPopupScaXOpenEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupScaXCloseEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupScaYOpenEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupScaYCloseEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupScaXOpenEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupScaXCloseEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupScaYOpenEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupScaYCloseEase { get; set; }
 
         public Setting<bool> PrefabTypesPopupRotActive { get; set; }
         public Setting<float> PrefabTypesPopupRotOpen { get; set; }
         public Setting<float> PrefabTypesPopupRotClose { get; set; }
         public Setting<float> PrefabTypesPopupRotOpenDuration { get; set; }
         public Setting<float> PrefabTypesPopupRotCloseDuration { get; set; }
-        public Setting<Easings> PrefabTypesPopupRotOpenEase { get; set; }
-        public Setting<Easings> PrefabTypesPopupRotCloseEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupRotOpenEase { get; set; }
+        public Setting<Easing> PrefabTypesPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -1074,28 +1074,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> FontSelectorPopupPosClose { get; set; }
         public Setting<Vector2> FontSelectorPopupPosOpenDuration { get; set; }
         public Setting<Vector2> FontSelectorPopupPosCloseDuration { get; set; }
-        public Setting<Easings> FontSelectorPopupPosXOpenEase { get; set; }
-        public Setting<Easings> FontSelectorPopupPosXCloseEase { get; set; }
-        public Setting<Easings> FontSelectorPopupPosYOpenEase { get; set; }
-        public Setting<Easings> FontSelectorPopupPosYCloseEase { get; set; }
+        public Setting<Easing> FontSelectorPopupPosXOpenEase { get; set; }
+        public Setting<Easing> FontSelectorPopupPosXCloseEase { get; set; }
+        public Setting<Easing> FontSelectorPopupPosYOpenEase { get; set; }
+        public Setting<Easing> FontSelectorPopupPosYCloseEase { get; set; }
 
         public Setting<bool> FontSelectorPopupScaActive { get; set; }
         public Setting<Vector2> FontSelectorPopupScaOpen { get; set; }
         public Setting<Vector2> FontSelectorPopupScaClose { get; set; }
         public Setting<Vector2> FontSelectorPopupScaOpenDuration { get; set; }
         public Setting<Vector2> FontSelectorPopupScaCloseDuration { get; set; }
-        public Setting<Easings> FontSelectorPopupScaXOpenEase { get; set; }
-        public Setting<Easings> FontSelectorPopupScaXCloseEase { get; set; }
-        public Setting<Easings> FontSelectorPopupScaYOpenEase { get; set; }
-        public Setting<Easings> FontSelectorPopupScaYCloseEase { get; set; }
+        public Setting<Easing> FontSelectorPopupScaXOpenEase { get; set; }
+        public Setting<Easing> FontSelectorPopupScaXCloseEase { get; set; }
+        public Setting<Easing> FontSelectorPopupScaYOpenEase { get; set; }
+        public Setting<Easing> FontSelectorPopupScaYCloseEase { get; set; }
 
         public Setting<bool> FontSelectorPopupRotActive { get; set; }
         public Setting<float> FontSelectorPopupRotOpen { get; set; }
         public Setting<float> FontSelectorPopupRotClose { get; set; }
         public Setting<float> FontSelectorPopupRotOpenDuration { get; set; }
         public Setting<float> FontSelectorPopupRotCloseDuration { get; set; }
-        public Setting<Easings> FontSelectorPopupRotOpenEase { get; set; }
-        public Setting<Easings> FontSelectorPopupRotCloseEase { get; set; }
+        public Setting<Easing> FontSelectorPopupRotOpenEase { get; set; }
+        public Setting<Easing> FontSelectorPopupRotCloseEase { get; set; }
 
         #endregion
 
@@ -1108,28 +1108,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> FileDropdownPosClose { get; set; }
         public Setting<Vector2> FileDropdownPosOpenDuration { get; set; }
         public Setting<Vector2> FileDropdownPosCloseDuration { get; set; }
-        public Setting<Easings> FileDropdownPosXOpenEase { get; set; }
-        public Setting<Easings> FileDropdownPosXCloseEase { get; set; }
-        public Setting<Easings> FileDropdownPosYOpenEase { get; set; }
-        public Setting<Easings> FileDropdownPosYCloseEase { get; set; }
+        public Setting<Easing> FileDropdownPosXOpenEase { get; set; }
+        public Setting<Easing> FileDropdownPosXCloseEase { get; set; }
+        public Setting<Easing> FileDropdownPosYOpenEase { get; set; }
+        public Setting<Easing> FileDropdownPosYCloseEase { get; set; }
 
         public Setting<bool> FileDropdownScaActive { get; set; }
         public Setting<Vector2> FileDropdownScaOpen { get; set; }
         public Setting<Vector2> FileDropdownScaClose { get; set; }
         public Setting<Vector2> FileDropdownScaOpenDuration { get; set; }
         public Setting<Vector2> FileDropdownScaCloseDuration { get; set; }
-        public Setting<Easings> FileDropdownScaXOpenEase { get; set; }
-        public Setting<Easings> FileDropdownScaXCloseEase { get; set; }
-        public Setting<Easings> FileDropdownScaYOpenEase { get; set; }
-        public Setting<Easings> FileDropdownScaYCloseEase { get; set; }
+        public Setting<Easing> FileDropdownScaXOpenEase { get; set; }
+        public Setting<Easing> FileDropdownScaXCloseEase { get; set; }
+        public Setting<Easing> FileDropdownScaYOpenEase { get; set; }
+        public Setting<Easing> FileDropdownScaYCloseEase { get; set; }
 
         public Setting<bool> FileDropdownRotActive { get; set; }
         public Setting<float> FileDropdownRotOpen { get; set; }
         public Setting<float> FileDropdownRotClose { get; set; }
         public Setting<float> FileDropdownRotOpenDuration { get; set; }
         public Setting<float> FileDropdownRotCloseDuration { get; set; }
-        public Setting<Easings> FileDropdownRotOpenEase { get; set; }
-        public Setting<Easings> FileDropdownRotCloseEase { get; set; }
+        public Setting<Easing> FileDropdownRotOpenEase { get; set; }
+        public Setting<Easing> FileDropdownRotCloseEase { get; set; }
 
         #endregion
 
@@ -1142,28 +1142,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> EditDropdownPosClose { get; set; }
         public Setting<Vector2> EditDropdownPosOpenDuration { get; set; }
         public Setting<Vector2> EditDropdownPosCloseDuration { get; set; }
-        public Setting<Easings> EditDropdownPosXOpenEase { get; set; }
-        public Setting<Easings> EditDropdownPosXCloseEase { get; set; }
-        public Setting<Easings> EditDropdownPosYOpenEase { get; set; }
-        public Setting<Easings> EditDropdownPosYCloseEase { get; set; }
+        public Setting<Easing> EditDropdownPosXOpenEase { get; set; }
+        public Setting<Easing> EditDropdownPosXCloseEase { get; set; }
+        public Setting<Easing> EditDropdownPosYOpenEase { get; set; }
+        public Setting<Easing> EditDropdownPosYCloseEase { get; set; }
 
         public Setting<bool> EditDropdownScaActive { get; set; }
         public Setting<Vector2> EditDropdownScaOpen { get; set; }
         public Setting<Vector2> EditDropdownScaClose { get; set; }
         public Setting<Vector2> EditDropdownScaOpenDuration { get; set; }
         public Setting<Vector2> EditDropdownScaCloseDuration { get; set; }
-        public Setting<Easings> EditDropdownScaXOpenEase { get; set; }
-        public Setting<Easings> EditDropdownScaXCloseEase { get; set; }
-        public Setting<Easings> EditDropdownScaYOpenEase { get; set; }
-        public Setting<Easings> EditDropdownScaYCloseEase { get; set; }
+        public Setting<Easing> EditDropdownScaXOpenEase { get; set; }
+        public Setting<Easing> EditDropdownScaXCloseEase { get; set; }
+        public Setting<Easing> EditDropdownScaYOpenEase { get; set; }
+        public Setting<Easing> EditDropdownScaYCloseEase { get; set; }
 
         public Setting<bool> EditDropdownRotActive { get; set; }
         public Setting<float> EditDropdownRotOpen { get; set; }
         public Setting<float> EditDropdownRotClose { get; set; }
         public Setting<float> EditDropdownRotOpenDuration { get; set; }
         public Setting<float> EditDropdownRotCloseDuration { get; set; }
-        public Setting<Easings> EditDropdownRotOpenEase { get; set; }
-        public Setting<Easings> EditDropdownRotCloseEase { get; set; }
+        public Setting<Easing> EditDropdownRotOpenEase { get; set; }
+        public Setting<Easing> EditDropdownRotCloseEase { get; set; }
 
         #endregion
 
@@ -1176,28 +1176,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> ViewDropdownPosClose { get; set; }
         public Setting<Vector2> ViewDropdownPosOpenDuration { get; set; }
         public Setting<Vector2> ViewDropdownPosCloseDuration { get; set; }
-        public Setting<Easings> ViewDropdownPosXOpenEase { get; set; }
-        public Setting<Easings> ViewDropdownPosXCloseEase { get; set; }
-        public Setting<Easings> ViewDropdownPosYOpenEase { get; set; }
-        public Setting<Easings> ViewDropdownPosYCloseEase { get; set; }
+        public Setting<Easing> ViewDropdownPosXOpenEase { get; set; }
+        public Setting<Easing> ViewDropdownPosXCloseEase { get; set; }
+        public Setting<Easing> ViewDropdownPosYOpenEase { get; set; }
+        public Setting<Easing> ViewDropdownPosYCloseEase { get; set; }
 
         public Setting<bool> ViewDropdownScaActive { get; set; }
         public Setting<Vector2> ViewDropdownScaOpen { get; set; }
         public Setting<Vector2> ViewDropdownScaClose { get; set; }
         public Setting<Vector2> ViewDropdownScaOpenDuration { get; set; }
         public Setting<Vector2> ViewDropdownScaCloseDuration { get; set; }
-        public Setting<Easings> ViewDropdownScaXOpenEase { get; set; }
-        public Setting<Easings> ViewDropdownScaXCloseEase { get; set; }
-        public Setting<Easings> ViewDropdownScaYOpenEase { get; set; }
-        public Setting<Easings> ViewDropdownScaYCloseEase { get; set; }
+        public Setting<Easing> ViewDropdownScaXOpenEase { get; set; }
+        public Setting<Easing> ViewDropdownScaXCloseEase { get; set; }
+        public Setting<Easing> ViewDropdownScaYOpenEase { get; set; }
+        public Setting<Easing> ViewDropdownScaYCloseEase { get; set; }
 
         public Setting<bool> ViewDropdownRotActive { get; set; }
         public Setting<float> ViewDropdownRotOpen { get; set; }
         public Setting<float> ViewDropdownRotClose { get; set; }
         public Setting<float> ViewDropdownRotOpenDuration { get; set; }
         public Setting<float> ViewDropdownRotCloseDuration { get; set; }
-        public Setting<Easings> ViewDropdownRotOpenEase { get; set; }
-        public Setting<Easings> ViewDropdownRotCloseEase { get; set; }
+        public Setting<Easing> ViewDropdownRotOpenEase { get; set; }
+        public Setting<Easing> ViewDropdownRotCloseEase { get; set; }
 
         #endregion
 
@@ -1210,28 +1210,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> SteamDropdownPosClose { get; set; }
         public Setting<Vector2> SteamDropdownPosOpenDuration { get; set; }
         public Setting<Vector2> SteamDropdownPosCloseDuration { get; set; }
-        public Setting<Easings> SteamDropdownPosXOpenEase { get; set; }
-        public Setting<Easings> SteamDropdownPosXCloseEase { get; set; }
-        public Setting<Easings> SteamDropdownPosYOpenEase { get; set; }
-        public Setting<Easings> SteamDropdownPosYCloseEase { get; set; }
+        public Setting<Easing> SteamDropdownPosXOpenEase { get; set; }
+        public Setting<Easing> SteamDropdownPosXCloseEase { get; set; }
+        public Setting<Easing> SteamDropdownPosYOpenEase { get; set; }
+        public Setting<Easing> SteamDropdownPosYCloseEase { get; set; }
 
         public Setting<bool> SteamDropdownScaActive { get; set; }
         public Setting<Vector2> SteamDropdownScaOpen { get; set; }
         public Setting<Vector2> SteamDropdownScaClose { get; set; }
         public Setting<Vector2> SteamDropdownScaOpenDuration { get; set; }
         public Setting<Vector2> SteamDropdownScaCloseDuration { get; set; }
-        public Setting<Easings> SteamDropdownScaXOpenEase { get; set; }
-        public Setting<Easings> SteamDropdownScaXCloseEase { get; set; }
-        public Setting<Easings> SteamDropdownScaYOpenEase { get; set; }
-        public Setting<Easings> SteamDropdownScaYCloseEase { get; set; }
+        public Setting<Easing> SteamDropdownScaXOpenEase { get; set; }
+        public Setting<Easing> SteamDropdownScaXCloseEase { get; set; }
+        public Setting<Easing> SteamDropdownScaYOpenEase { get; set; }
+        public Setting<Easing> SteamDropdownScaYCloseEase { get; set; }
 
         public Setting<bool> SteamDropdownRotActive { get; set; }
         public Setting<float> SteamDropdownRotOpen { get; set; }
         public Setting<float> SteamDropdownRotClose { get; set; }
         public Setting<float> SteamDropdownRotOpenDuration { get; set; }
         public Setting<float> SteamDropdownRotCloseDuration { get; set; }
-        public Setting<Easings> SteamDropdownRotOpenEase { get; set; }
-        public Setting<Easings> SteamDropdownRotCloseEase { get; set; }
+        public Setting<Easing> SteamDropdownRotOpenEase { get; set; }
+        public Setting<Easing> SteamDropdownRotCloseEase { get; set; }
 
         #endregion
 
@@ -1244,28 +1244,28 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> HelpDropdownPosClose { get; set; }
         public Setting<Vector2> HelpDropdownPosOpenDuration { get; set; }
         public Setting<Vector2> HelpDropdownPosCloseDuration { get; set; }
-        public Setting<Easings> HelpDropdownPosXOpenEase { get; set; }
-        public Setting<Easings> HelpDropdownPosXCloseEase { get; set; }
-        public Setting<Easings> HelpDropdownPosYOpenEase { get; set; }
-        public Setting<Easings> HelpDropdownPosYCloseEase { get; set; }
+        public Setting<Easing> HelpDropdownPosXOpenEase { get; set; }
+        public Setting<Easing> HelpDropdownPosXCloseEase { get; set; }
+        public Setting<Easing> HelpDropdownPosYOpenEase { get; set; }
+        public Setting<Easing> HelpDropdownPosYCloseEase { get; set; }
 
         public Setting<bool> HelpDropdownScaActive { get; set; }
         public Setting<Vector2> HelpDropdownScaOpen { get; set; }
         public Setting<Vector2> HelpDropdownScaClose { get; set; }
         public Setting<Vector2> HelpDropdownScaOpenDuration { get; set; }
         public Setting<Vector2> HelpDropdownScaCloseDuration { get; set; }
-        public Setting<Easings> HelpDropdownScaXOpenEase { get; set; }
-        public Setting<Easings> HelpDropdownScaXCloseEase { get; set; }
-        public Setting<Easings> HelpDropdownScaYOpenEase { get; set; }
-        public Setting<Easings> HelpDropdownScaYCloseEase { get; set; }
+        public Setting<Easing> HelpDropdownScaXOpenEase { get; set; }
+        public Setting<Easing> HelpDropdownScaXCloseEase { get; set; }
+        public Setting<Easing> HelpDropdownScaYOpenEase { get; set; }
+        public Setting<Easing> HelpDropdownScaYCloseEase { get; set; }
 
         public Setting<bool> HelpDropdownRotActive { get; set; }
         public Setting<float> HelpDropdownRotOpen { get; set; }
         public Setting<float> HelpDropdownRotClose { get; set; }
         public Setting<float> HelpDropdownRotOpenDuration { get; set; }
         public Setting<float> HelpDropdownRotCloseDuration { get; set; }
-        public Setting<Easings> HelpDropdownRotOpenEase { get; set; }
-        public Setting<Easings> HelpDropdownRotCloseEase { get; set; }
+        public Setting<Easing> HelpDropdownRotOpenEase { get; set; }
+        public Setting<Easing> HelpDropdownRotCloseEase { get; set; }
 
         #endregion
 
@@ -1624,28 +1624,28 @@ namespace BetterLegacy.Configs
             OpenFilePopupPosClose = Bind(this, ANIMATIONS, "Open File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             OpenFilePopupPosOpenDuration = Bind(this, ANIMATIONS, "Open File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             OpenFilePopupPosCloseDuration = Bind(this, ANIMATIONS, "Open File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            OpenFilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            OpenFilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            OpenFilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            OpenFilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             OpenFilePopupScaActive = Bind(this, ANIMATIONS, "Open File Popup Animate Scale", true, "If scale should be animated.");
             OpenFilePopupScaOpen = Bind(this, ANIMATIONS, "Open File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             OpenFilePopupScaClose = Bind(this, ANIMATIONS, "Open File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             OpenFilePopupScaOpenDuration = Bind(this, ANIMATIONS, "Open File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             OpenFilePopupScaCloseDuration = Bind(this, ANIMATIONS, "Open File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            OpenFilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            OpenFilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            OpenFilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            OpenFilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            OpenFilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            OpenFilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            OpenFilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            OpenFilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             OpenFilePopupRotActive = Bind(this, ANIMATIONS, "Open File Popup Animate Rotation", false, "If rotation should be animated.");
             OpenFilePopupRotOpen = Bind(this, ANIMATIONS, "Open File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             OpenFilePopupRotClose = Bind(this, ANIMATIONS, "Open File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             OpenFilePopupRotOpenDuration = Bind(this, ANIMATIONS, "Open File Popup Open Rotation Duration", 0f, "The duration of opening.");
             OpenFilePopupRotCloseDuration = Bind(this, ANIMATIONS, "Open File Popup Close Rotation Duration", 0f, "The duration of closing.");
-            OpenFilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            OpenFilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            OpenFilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Open File Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            OpenFilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Open File Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1658,28 +1658,28 @@ namespace BetterLegacy.Configs
             NewFilePopupPosClose = Bind(this, ANIMATIONS, "New File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             NewFilePopupPosOpenDuration = Bind(this, ANIMATIONS, "New File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             NewFilePopupPosCloseDuration = Bind(this, ANIMATIONS, "New File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            NewFilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            NewFilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            NewFilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            NewFilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             NewFilePopupScaActive = Bind(this, ANIMATIONS, "New File Popup Animate Scale", true, "If scale should be animated.");
             NewFilePopupScaOpen = Bind(this, ANIMATIONS, "New File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             NewFilePopupScaClose = Bind(this, ANIMATIONS, "New File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             NewFilePopupScaOpenDuration = Bind(this, ANIMATIONS, "New File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             NewFilePopupScaCloseDuration = Bind(this, ANIMATIONS, "New File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            NewFilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            NewFilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            NewFilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            NewFilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            NewFilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            NewFilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            NewFilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            NewFilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             NewFilePopupRotActive = Bind(this, ANIMATIONS, "New File Popup Animate Rotation", false, "If rotation should be animated.");
             NewFilePopupRotOpen = Bind(this, ANIMATIONS, "New File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             NewFilePopupRotClose = Bind(this, ANIMATIONS, "New File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             NewFilePopupRotOpenDuration = Bind(this, ANIMATIONS, "New File Popup Open Rotation Duration", 0f, "The duration of opening.");
             NewFilePopupRotCloseDuration = Bind(this, ANIMATIONS, "New File Popup Close Rotation Duration", 0f, "The duration of closing.");
-            NewFilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            NewFilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            NewFilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "New File Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            NewFilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "New File Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1692,28 +1692,28 @@ namespace BetterLegacy.Configs
             SaveAsPopupPosClose = Bind(this, ANIMATIONS, "Save As Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             SaveAsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Save As Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             SaveAsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Save As Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            SaveAsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            SaveAsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            SaveAsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            SaveAsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             SaveAsPopupScaActive = Bind(this, ANIMATIONS, "Save As Popup Animate Scale", true, "If scale should be animated.");
             SaveAsPopupScaOpen = Bind(this, ANIMATIONS, "Save As Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             SaveAsPopupScaClose = Bind(this, ANIMATIONS, "Save As Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             SaveAsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Save As Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             SaveAsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Save As Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            SaveAsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            SaveAsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            SaveAsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            SaveAsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            SaveAsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            SaveAsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            SaveAsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            SaveAsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             SaveAsPopupRotActive = Bind(this, ANIMATIONS, "Save As Popup Animate Rotation", false, "If rotation should be animated.");
             SaveAsPopupRotOpen = Bind(this, ANIMATIONS, "Save As Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             SaveAsPopupRotClose = Bind(this, ANIMATIONS, "Save As Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             SaveAsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Save As Popup Open Rotation Duration", 0f, "The duration of opening.");
             SaveAsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Save As Popup Close Rotation Duration", 0f, "The duration of closing.");
-            SaveAsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            SaveAsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            SaveAsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Save As Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            SaveAsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Save As Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1726,28 +1726,28 @@ namespace BetterLegacy.Configs
             QuickActionsPopupPosClose = Bind(this, ANIMATIONS, "Quick Actions Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             QuickActionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             QuickActionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            QuickActionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            QuickActionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            QuickActionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            QuickActionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             QuickActionsPopupScaActive = Bind(this, ANIMATIONS, "Quick Actions Popup Animate Scale", true, "If scale should be animated.");
             QuickActionsPopupScaOpen = Bind(this, ANIMATIONS, "Quick Actions Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             QuickActionsPopupScaClose = Bind(this, ANIMATIONS, "Quick Actions Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             QuickActionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             QuickActionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            QuickActionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            QuickActionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            QuickActionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            QuickActionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            QuickActionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            QuickActionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            QuickActionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            QuickActionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             QuickActionsPopupRotActive = Bind(this, ANIMATIONS, "Quick Actions Popup Animate Rotation", false, "If rotation should be animated.");
             QuickActionsPopupRotOpen = Bind(this, ANIMATIONS, "Quick Actions Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             QuickActionsPopupRotClose = Bind(this, ANIMATIONS, "Quick Actions Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             QuickActionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Open Rotation Duration", 0f, "The duration of opening.");
             QuickActionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Quick Actions Popup Close Rotation Duration", 0f, "The duration of closing.");
-            QuickActionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            QuickActionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            QuickActionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            QuickActionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Quick Actions Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1760,28 +1760,28 @@ namespace BetterLegacy.Configs
             ParentSelectorPopupPosClose = Bind(this, ANIMATIONS, "Parent Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ParentSelectorPopupPosOpenDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             ParentSelectorPopupPosCloseDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ParentSelectorPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            ParentSelectorPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            ParentSelectorPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            ParentSelectorPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             ParentSelectorPopupScaActive = Bind(this, ANIMATIONS, "Parent Selector Popup Animate Scale", true, "If scale should be animated.");
             ParentSelectorPopupScaOpen = Bind(this, ANIMATIONS, "Parent Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ParentSelectorPopupScaClose = Bind(this, ANIMATIONS, "Parent Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ParentSelectorPopupScaOpenDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             ParentSelectorPopupScaCloseDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ParentSelectorPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ParentSelectorPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ParentSelectorPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ParentSelectorPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ParentSelectorPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ParentSelectorPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ParentSelectorPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ParentSelectorPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             ParentSelectorPopupRotActive = Bind(this, ANIMATIONS, "Parent Selector Popup Animate Rotation", false, "If rotation should be animated.");
             ParentSelectorPopupRotOpen = Bind(this, ANIMATIONS, "Parent Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ParentSelectorPopupRotClose = Bind(this, ANIMATIONS, "Parent Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ParentSelectorPopupRotOpenDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
             ParentSelectorPopupRotCloseDuration = Bind(this, ANIMATIONS, "Parent Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ParentSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ParentSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ParentSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ParentSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Parent Selector Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1794,28 +1794,28 @@ namespace BetterLegacy.Configs
             PrefabPopupPosClose = Bind(this, ANIMATIONS, "Prefab Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             PrefabPopupPosOpenDuration = Bind(this, ANIMATIONS, "Prefab Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             PrefabPopupPosCloseDuration = Bind(this, ANIMATIONS, "Prefab Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            PrefabPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            PrefabPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            PrefabPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            PrefabPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             PrefabPopupScaActive = Bind(this, ANIMATIONS, "Prefab Popup Animate Scale", true, "If scale should be animated.");
             PrefabPopupScaOpen = Bind(this, ANIMATIONS, "Prefab Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             PrefabPopupScaClose = Bind(this, ANIMATIONS, "Prefab Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             PrefabPopupScaOpenDuration = Bind(this, ANIMATIONS, "Prefab Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             PrefabPopupScaCloseDuration = Bind(this, ANIMATIONS, "Prefab Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            PrefabPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            PrefabPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            PrefabPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            PrefabPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            PrefabPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            PrefabPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             PrefabPopupRotActive = Bind(this, ANIMATIONS, "Prefab Popup Animate Rotation", false, "If rotation should be animated.");
             PrefabPopupRotOpen = Bind(this, ANIMATIONS, "Prefab Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             PrefabPopupRotClose = Bind(this, ANIMATIONS, "Prefab Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             PrefabPopupRotOpenDuration = Bind(this, ANIMATIONS, "Prefab Popup Open Rotation Duration", 0f, "The duration of opening.");
             PrefabPopupRotCloseDuration = Bind(this, ANIMATIONS, "Prefab Popup Close Rotation Duration", 0f, "The duration of closing.");
-            PrefabPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            PrefabPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            PrefabPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Prefab Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            PrefabPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Prefab Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1828,28 +1828,28 @@ namespace BetterLegacy.Configs
             ObjectOptionsPopupPosClose = Bind(this, ANIMATIONS, "Object Options Popup Close Position", new Vector2(-35f, 57f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectOptionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Object Options Popup Open Position Duration", new Vector2(0f, 0.6f), "The duration of opening.");
             ObjectOptionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Object Options Popup Close Position Duration", new Vector2(0f, 0.1f), "The duration of closing.");
-            ObjectOptionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Position X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Position X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectOptionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Position Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Position Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectOptionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Position X Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Position X Ease", Easing.InCirc, "The easing of opening.");
+            ObjectOptionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Position Y Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Position Y Ease", Easing.InCirc, "The easing of opening.");
 
             ObjectOptionsPopupScaActive = Bind(this, ANIMATIONS, "Object Options Popup Animate Scale", true, "If scale should be animated.");
             ObjectOptionsPopupScaOpen = Bind(this, ANIMATIONS, "Object Options Popup Open Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ObjectOptionsPopupScaClose = Bind(this, ANIMATIONS, "Object Options Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectOptionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Object Options Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             ObjectOptionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Object Options Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ObjectOptionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectOptionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectOptionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectOptionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ObjectOptionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectOptionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             ObjectOptionsPopupRotActive = Bind(this, ANIMATIONS, "Object Options Popup Animate Rotation", false, "If rotation should be animated.");
             ObjectOptionsPopupRotOpen = Bind(this, ANIMATIONS, "Object Options Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ObjectOptionsPopupRotClose = Bind(this, ANIMATIONS, "Object Options Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectOptionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Object Options Popup Open Rotation Duration", 0f, "The duration of opening.");
             ObjectOptionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Object Options Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ObjectOptionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ObjectOptionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectOptionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Options Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ObjectOptionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Options Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1862,28 +1862,28 @@ namespace BetterLegacy.Configs
             BGOptionsPopupPosClose = Bind(this, ANIMATIONS, "BG Options Popup Close Position", new Vector2(0f, 22f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             BGOptionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "BG Options Popup Open Position Duration", new Vector2(0f, 0.6f), "The duration of opening.");
             BGOptionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "BG Options Popup Close Position Duration", new Vector2(0f, 0.1f), "The duration of closing.");
-            BGOptionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Position X Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Position X Ease", Easings.InCirc, "The easing of opening.");
-            BGOptionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Position Y Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Position Y Ease", Easings.InCirc, "The easing of opening.");
+            BGOptionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Position X Ease", Easing.OutElastic, "The easing of opening.");
+            BGOptionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Position X Ease", Easing.InCirc, "The easing of opening.");
+            BGOptionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Position Y Ease", Easing.OutElastic, "The easing of opening.");
+            BGOptionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Position Y Ease", Easing.InCirc, "The easing of opening.");
 
             BGOptionsPopupScaActive = Bind(this, ANIMATIONS, "BG Options Popup Animate Scale", true, "If scale should be animated.");
             BGOptionsPopupScaOpen = Bind(this, ANIMATIONS, "BG Options Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             BGOptionsPopupScaClose = Bind(this, ANIMATIONS, "BG Options Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             BGOptionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "BG Options Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             BGOptionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "BG Options Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            BGOptionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            BGOptionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            BGOptionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            BGOptionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            BGOptionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            BGOptionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            BGOptionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             BGOptionsPopupRotActive = Bind(this, ANIMATIONS, "BG Options Popup Animate Rotation", false, "If rotation should be animated.");
             BGOptionsPopupRotOpen = Bind(this, ANIMATIONS, "BG Options Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             BGOptionsPopupRotClose = Bind(this, ANIMATIONS, "BG Options Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             BGOptionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "BG Options Popup Open Rotation Duration", 0f, "The duration of opening.");
             BGOptionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "BG Options Popup Close Rotation Duration", 0f, "The duration of closing.");
-            BGOptionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            BGOptionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            BGOptionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "BG Options Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            BGOptionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "BG Options Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1896,28 +1896,28 @@ namespace BetterLegacy.Configs
             BrowserPopupPosClose = Bind(this, ANIMATIONS, "Browser Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             BrowserPopupPosOpenDuration = Bind(this, ANIMATIONS, "Browser Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             BrowserPopupPosCloseDuration = Bind(this, ANIMATIONS, "Browser Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            BrowserPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            BrowserPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            BrowserPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            BrowserPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             BrowserPopupScaActive = Bind(this, ANIMATIONS, "Browser Popup Animate Scale", true, "If scale should be animated.");
             BrowserPopupScaOpen = Bind(this, ANIMATIONS, "Browser Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             BrowserPopupScaClose = Bind(this, ANIMATIONS, "Browser Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             BrowserPopupScaOpenDuration = Bind(this, ANIMATIONS, "Browser Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             BrowserPopupScaCloseDuration = Bind(this, ANIMATIONS, "Browser Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            BrowserPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            BrowserPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            BrowserPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            BrowserPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            BrowserPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            BrowserPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            BrowserPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            BrowserPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             BrowserPopupRotActive = Bind(this, ANIMATIONS, "Browser Popup Animate Rotation", false, "If rotation should be animated.");
             BrowserPopupRotOpen = Bind(this, ANIMATIONS, "Browser Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             BrowserPopupRotClose = Bind(this, ANIMATIONS, "Browser Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             BrowserPopupRotOpenDuration = Bind(this, ANIMATIONS, "Browser Popup Open Rotation Duration", 0f, "The duration of opening.");
             BrowserPopupRotCloseDuration = Bind(this, ANIMATIONS, "Browser Popup Close Rotation Duration", 0f, "The duration of closing.");
-            BrowserPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            BrowserPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            BrowserPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Browser Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            BrowserPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Browser Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1930,28 +1930,28 @@ namespace BetterLegacy.Configs
             ObjectSearchPopupPosClose = Bind(this, ANIMATIONS, "Object Search Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectSearchPopupPosOpenDuration = Bind(this, ANIMATIONS, "Object Search Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             ObjectSearchPopupPosCloseDuration = Bind(this, ANIMATIONS, "Object Search Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ObjectSearchPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            ObjectSearchPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            ObjectSearchPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            ObjectSearchPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             ObjectSearchPopupScaActive = Bind(this, ANIMATIONS, "Object Search Popup Animate Scale", true, "If scale should be animated.");
             ObjectSearchPopupScaOpen = Bind(this, ANIMATIONS, "Object Search Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ObjectSearchPopupScaClose = Bind(this, ANIMATIONS, "Object Search Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectSearchPopupScaOpenDuration = Bind(this, ANIMATIONS, "Object Search Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             ObjectSearchPopupScaCloseDuration = Bind(this, ANIMATIONS, "Object Search Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ObjectSearchPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectSearchPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectSearchPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectSearchPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectSearchPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectSearchPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ObjectSearchPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectSearchPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             ObjectSearchPopupRotActive = Bind(this, ANIMATIONS, "Object Search Popup Animate Rotation", false, "If rotation should be animated.");
             ObjectSearchPopupRotOpen = Bind(this, ANIMATIONS, "Object Search Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ObjectSearchPopupRotClose = Bind(this, ANIMATIONS, "Object Search Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectSearchPopupRotOpenDuration = Bind(this, ANIMATIONS, "Object Search Popup Open Rotation Duration", 0f, "The duration of opening.");
             ObjectSearchPopupRotCloseDuration = Bind(this, ANIMATIONS, "Object Search Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ObjectSearchPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ObjectSearchPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectSearchPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Search Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ObjectSearchPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Search Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1964,28 +1964,28 @@ namespace BetterLegacy.Configs
             ObjectTemplatePopupPosClose = Bind(this, ANIMATIONS, "Object Template Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectTemplatePopupPosOpenDuration = Bind(this, ANIMATIONS, "Object Template Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             ObjectTemplatePopupPosCloseDuration = Bind(this, ANIMATIONS, "Object Template Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ObjectTemplatePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            ObjectTemplatePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             ObjectTemplatePopupScaActive = Bind(this, ANIMATIONS, "Object Template Popup Animate Scale", true, "If scale should be animated.");
             ObjectTemplatePopupScaOpen = Bind(this, ANIMATIONS, "Object Template Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ObjectTemplatePopupScaClose = Bind(this, ANIMATIONS, "Object Template Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectTemplatePopupScaOpenDuration = Bind(this, ANIMATIONS, "Object Template Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             ObjectTemplatePopupScaCloseDuration = Bind(this, ANIMATIONS, "Object Template Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ObjectTemplatePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectTemplatePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ObjectTemplatePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ObjectTemplatePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ObjectTemplatePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectTemplatePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ObjectTemplatePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ObjectTemplatePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             ObjectTemplatePopupRotActive = Bind(this, ANIMATIONS, "Object Template Popup Animate Rotation", false, "If rotation should be animated.");
             ObjectTemplatePopupRotOpen = Bind(this, ANIMATIONS, "Object Template Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ObjectTemplatePopupRotClose = Bind(this, ANIMATIONS, "Object Template Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ObjectTemplatePopupRotOpenDuration = Bind(this, ANIMATIONS, "Object Template Popup Open Rotation Duration", 0f, "The duration of opening.");
             ObjectTemplatePopupRotCloseDuration = Bind(this, ANIMATIONS, "Object Template Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ObjectTemplatePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ObjectTemplatePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ObjectTemplatePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Object Template Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ObjectTemplatePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Object Template Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -1998,28 +1998,28 @@ namespace BetterLegacy.Configs
             WarningPopupPosClose = Bind(this, ANIMATIONS, "Warning Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             WarningPopupPosOpenDuration = Bind(this, ANIMATIONS, "Warning Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             WarningPopupPosCloseDuration = Bind(this, ANIMATIONS, "Warning Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            WarningPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            WarningPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            WarningPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            WarningPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             WarningPopupScaActive = Bind(this, ANIMATIONS, "Warning Popup Animate Scale", true, "If scale should be animated.");
             WarningPopupScaOpen = Bind(this, ANIMATIONS, "Warning Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             WarningPopupScaClose = Bind(this, ANIMATIONS, "Warning Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             WarningPopupScaOpenDuration = Bind(this, ANIMATIONS, "Warning Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             WarningPopupScaCloseDuration = Bind(this, ANIMATIONS, "Warning Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            WarningPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            WarningPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            WarningPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            WarningPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            WarningPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            WarningPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            WarningPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            WarningPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             WarningPopupRotActive = Bind(this, ANIMATIONS, "Warning Popup Animate Rotation", false, "If rotation should be animated.");
             WarningPopupRotOpen = Bind(this, ANIMATIONS, "Warning Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             WarningPopupRotClose = Bind(this, ANIMATIONS, "Warning Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             WarningPopupRotOpenDuration = Bind(this, ANIMATIONS, "Warning Popup Open Rotation Duration", 0f, "The duration of opening.");
             WarningPopupRotCloseDuration = Bind(this, ANIMATIONS, "Warning Popup Close Rotation Duration", 0f, "The duration of closing.");
-            WarningPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            WarningPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            WarningPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Warning Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            WarningPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Warning Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2032,28 +2032,28 @@ namespace BetterLegacy.Configs
             FilePopupPosClose = Bind(this, ANIMATIONS, "File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FilePopupPosOpenDuration = Bind(this, ANIMATIONS, "File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             FilePopupPosCloseDuration = Bind(this, ANIMATIONS, "File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            FilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            FilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            FilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            FilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            FilePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            FilePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            FilePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             FilePopupScaActive = Bind(this, ANIMATIONS, "File Popup Animate Scale", true, "If scale should be animated.");
             FilePopupScaOpen = Bind(this, ANIMATIONS, "File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             FilePopupScaClose = Bind(this, ANIMATIONS, "File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FilePopupScaOpenDuration = Bind(this, ANIMATIONS, "File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             FilePopupScaCloseDuration = Bind(this, ANIMATIONS, "File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            FilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            FilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            FilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            FilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            FilePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            FilePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            FilePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            FilePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             FilePopupRotActive = Bind(this, ANIMATIONS, "File Popup Animate Rotation", false, "If rotation should be animated.");
             FilePopupRotOpen = Bind(this, ANIMATIONS, "File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             FilePopupRotClose = Bind(this, ANIMATIONS, "File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FilePopupRotOpenDuration = Bind(this, ANIMATIONS, "File Popup Open Rotation Duration", 0f, "The duration of opening.");
             FilePopupRotCloseDuration = Bind(this, ANIMATIONS, "File Popup Close Rotation Duration", 0f, "The duration of closing.");
-            FilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            FilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            FilePopupRotOpenEase = BindEnum(this, ANIMATIONS, "File Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            FilePopupRotCloseEase = BindEnum(this, ANIMATIONS, "File Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2066,28 +2066,28 @@ namespace BetterLegacy.Configs
             TextEditorPosClose = Bind(this, ANIMATIONS, "Text Editor Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             TextEditorPosOpenDuration = Bind(this, ANIMATIONS, "Text Editor Open Position Duration", Vector2.zero, "The duration of opening.");
             TextEditorPosCloseDuration = Bind(this, ANIMATIONS, "Text Editor Close Position Duration", Vector2.zero, "The duration of closing.");
-            TextEditorPosXOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Position X Ease", Easings.Linear, "The easing of opening.");
-            TextEditorPosXCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Position X Ease", Easings.Linear, "The easing of opening.");
-            TextEditorPosYOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            TextEditorPosYCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosXOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Position X Ease", Easing.Linear, "The easing of opening.");
+            TextEditorPosXCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Position X Ease", Easing.Linear, "The easing of opening.");
+            TextEditorPosYOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            TextEditorPosYCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             TextEditorScaActive = Bind(this, ANIMATIONS, "Text Editor Animate Scale", true, "If scale should be animated.");
             TextEditorScaOpen = Bind(this, ANIMATIONS, "Text Editor Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             TextEditorScaClose = Bind(this, ANIMATIONS, "Text Editor Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             TextEditorScaOpenDuration = Bind(this, ANIMATIONS, "Text Editor Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             TextEditorScaCloseDuration = Bind(this, ANIMATIONS, "Text Editor Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            TextEditorScaXOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            TextEditorScaXCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            TextEditorScaYOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            TextEditorScaYCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            TextEditorScaXOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            TextEditorScaXCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            TextEditorScaYOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            TextEditorScaYCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             TextEditorRotActive = Bind(this, ANIMATIONS, "Text Editor Animate Rotation", false, "If rotation should be animated.");
             TextEditorRotOpen = Bind(this, ANIMATIONS, "Text Editor Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             TextEditorRotClose = Bind(this, ANIMATIONS, "Text Editor Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             TextEditorRotOpenDuration = Bind(this, ANIMATIONS, "Text Editor Open Rotation Duration", 0f, "The duration of opening.");
             TextEditorRotCloseDuration = Bind(this, ANIMATIONS, "Text Editor Close Rotation Duration", 0f, "The duration of closing.");
-            TextEditorRotOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            TextEditorRotCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            TextEditorRotOpenEase = BindEnum(this, ANIMATIONS, "Text Editor Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            TextEditorRotCloseEase = BindEnum(this, ANIMATIONS, "Text Editor Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2100,28 +2100,28 @@ namespace BetterLegacy.Configs
             DocumentationPopupPosClose = Bind(this, ANIMATIONS, "Documentation Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DocumentationPopupPosOpenDuration = Bind(this, ANIMATIONS, "Documentation Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             DocumentationPopupPosCloseDuration = Bind(this, ANIMATIONS, "Documentation Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            DocumentationPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            DocumentationPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            DocumentationPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            DocumentationPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             DocumentationPopupScaActive = Bind(this, ANIMATIONS, "Documentation Popup Animate Scale", true, "If scale should be animated.");
             DocumentationPopupScaOpen = Bind(this, ANIMATIONS, "Documentation Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             DocumentationPopupScaClose = Bind(this, ANIMATIONS, "Documentation Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DocumentationPopupScaOpenDuration = Bind(this, ANIMATIONS, "Documentation Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             DocumentationPopupScaCloseDuration = Bind(this, ANIMATIONS, "Documentation Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            DocumentationPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            DocumentationPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            DocumentationPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            DocumentationPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            DocumentationPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            DocumentationPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            DocumentationPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            DocumentationPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             DocumentationPopupRotActive = Bind(this, ANIMATIONS, "Documentation Popup Animate Rotation", false, "If rotation should be animated.");
             DocumentationPopupRotOpen = Bind(this, ANIMATIONS, "Documentation Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             DocumentationPopupRotClose = Bind(this, ANIMATIONS, "Documentation Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DocumentationPopupRotOpenDuration = Bind(this, ANIMATIONS, "Documentation Popup Open Rotation Duration", 0f, "The duration of opening.");
             DocumentationPopupRotCloseDuration = Bind(this, ANIMATIONS, "Documentation Popup Close Rotation Duration", 0f, "The duration of closing.");
-            DocumentationPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            DocumentationPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            DocumentationPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Documentation Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            DocumentationPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Documentation Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2134,28 +2134,28 @@ namespace BetterLegacy.Configs
             DebuggerPopupPosClose = Bind(this, ANIMATIONS, "Debugger Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DebuggerPopupPosOpenDuration = Bind(this, ANIMATIONS, "Debugger Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             DebuggerPopupPosCloseDuration = Bind(this, ANIMATIONS, "Debugger Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            DebuggerPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            DebuggerPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            DebuggerPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            DebuggerPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             DebuggerPopupScaActive = Bind(this, ANIMATIONS, "Debugger Popup Animate Scale", true, "If scale should be animated.");
             DebuggerPopupScaOpen = Bind(this, ANIMATIONS, "Debugger Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             DebuggerPopupScaClose = Bind(this, ANIMATIONS, "Debugger Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DebuggerPopupScaOpenDuration = Bind(this, ANIMATIONS, "Debugger Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             DebuggerPopupScaCloseDuration = Bind(this, ANIMATIONS, "Debugger Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            DebuggerPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            DebuggerPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            DebuggerPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            DebuggerPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            DebuggerPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            DebuggerPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            DebuggerPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            DebuggerPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             DebuggerPopupRotActive = Bind(this, ANIMATIONS, "Debugger Popup Animate Rotation", false, "If rotation should be animated.");
             DebuggerPopupRotOpen = Bind(this, ANIMATIONS, "Debugger Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             DebuggerPopupRotClose = Bind(this, ANIMATIONS, "Debugger Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DebuggerPopupRotOpenDuration = Bind(this, ANIMATIONS, "Debugger Popup Open Rotation Duration", 0f, "The duration of opening.");
             DebuggerPopupRotCloseDuration = Bind(this, ANIMATIONS, "Debugger Popup Close Rotation Duration", 0f, "The duration of closing.");
-            DebuggerPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            DebuggerPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            DebuggerPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Debugger Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            DebuggerPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Debugger Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2168,28 +2168,28 @@ namespace BetterLegacy.Configs
             AutosavesPopupPosClose = Bind(this, ANIMATIONS, "Autosaves Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             AutosavesPopupPosOpenDuration = Bind(this, ANIMATIONS, "Autosaves Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             AutosavesPopupPosCloseDuration = Bind(this, ANIMATIONS, "Autosaves Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            AutosavesPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            AutosavesPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            AutosavesPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            AutosavesPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             AutosavesPopupScaActive = Bind(this, ANIMATIONS, "Autosaves Popup Animate Scale", true, "If scale should be animated.");
             AutosavesPopupScaOpen = Bind(this, ANIMATIONS, "Autosaves Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             AutosavesPopupScaClose = Bind(this, ANIMATIONS, "Autosaves Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             AutosavesPopupScaOpenDuration = Bind(this, ANIMATIONS, "Autosaves Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             AutosavesPopupScaCloseDuration = Bind(this, ANIMATIONS, "Autosaves Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            AutosavesPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            AutosavesPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            AutosavesPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            AutosavesPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            AutosavesPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            AutosavesPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            AutosavesPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            AutosavesPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             AutosavesPopupRotActive = Bind(this, ANIMATIONS, "Autosaves Popup Animate Rotation", false, "If rotation should be animated.");
             AutosavesPopupRotOpen = Bind(this, ANIMATIONS, "Autosaves Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             AutosavesPopupRotClose = Bind(this, ANIMATIONS, "Autosaves Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             AutosavesPopupRotOpenDuration = Bind(this, ANIMATIONS, "Autosaves Popup Open Rotation Duration", 0f, "The duration of opening.");
             AutosavesPopupRotCloseDuration = Bind(this, ANIMATIONS, "Autosaves Popup Close Rotation Duration", 0f, "The duration of closing.");
-            AutosavesPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            AutosavesPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            AutosavesPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            AutosavesPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Autosaves Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2202,28 +2202,28 @@ namespace BetterLegacy.Configs
             DefaultModifiersPopupPosClose = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DefaultModifiersPopupPosOpenDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             DefaultModifiersPopupPosCloseDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            DefaultModifiersPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            DefaultModifiersPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             DefaultModifiersPopupScaActive = Bind(this, ANIMATIONS, "Default Modifiers Popup Animate Scale", true, "If scale should be animated.");
             DefaultModifiersPopupScaOpen = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             DefaultModifiersPopupScaClose = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DefaultModifiersPopupScaOpenDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             DefaultModifiersPopupScaCloseDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            DefaultModifiersPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            DefaultModifiersPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            DefaultModifiersPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            DefaultModifiersPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            DefaultModifiersPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            DefaultModifiersPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            DefaultModifiersPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            DefaultModifiersPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             DefaultModifiersPopupRotActive = Bind(this, ANIMATIONS, "Default Modifiers Popup Animate Rotation", false, "If rotation should be animated.");
             DefaultModifiersPopupRotOpen = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             DefaultModifiersPopupRotClose = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             DefaultModifiersPopupRotOpenDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Open Rotation Duration", 0f, "The duration of opening.");
             DefaultModifiersPopupRotCloseDuration = Bind(this, ANIMATIONS, "Default Modifiers Popup Close Rotation Duration", 0f, "The duration of closing.");
-            DefaultModifiersPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            DefaultModifiersPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            DefaultModifiersPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            DefaultModifiersPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Default Modifiers Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2236,28 +2236,28 @@ namespace BetterLegacy.Configs
             KeybindListPopupPosClose = Bind(this, ANIMATIONS, "Keybind List Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             KeybindListPopupPosOpenDuration = Bind(this, ANIMATIONS, "Keybind List Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             KeybindListPopupPosCloseDuration = Bind(this, ANIMATIONS, "Keybind List Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            KeybindListPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            KeybindListPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            KeybindListPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            KeybindListPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             KeybindListPopupScaActive = Bind(this, ANIMATIONS, "Keybind List Popup Animate Scale", true, "If scale should be animated.");
             KeybindListPopupScaOpen = Bind(this, ANIMATIONS, "Keybind List Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             KeybindListPopupScaClose = Bind(this, ANIMATIONS, "Keybind List Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             KeybindListPopupScaOpenDuration = Bind(this, ANIMATIONS, "Keybind List Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             KeybindListPopupScaCloseDuration = Bind(this, ANIMATIONS, "Keybind List Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            KeybindListPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            KeybindListPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            KeybindListPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            KeybindListPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            KeybindListPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            KeybindListPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            KeybindListPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            KeybindListPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             KeybindListPopupRotActive = Bind(this, ANIMATIONS, "Keybind List Popup Animate Rotation", false, "If rotation should be animated.");
             KeybindListPopupRotOpen = Bind(this, ANIMATIONS, "Keybind List Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             KeybindListPopupRotClose = Bind(this, ANIMATIONS, "Keybind List Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             KeybindListPopupRotOpenDuration = Bind(this, ANIMATIONS, "Keybind List Popup Open Rotation Duration", 0f, "The duration of opening.");
             KeybindListPopupRotCloseDuration = Bind(this, ANIMATIONS, "Keybind List Popup Close Rotation Duration", 0f, "The duration of closing.");
-            KeybindListPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            KeybindListPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            KeybindListPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            KeybindListPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Keybind List Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2270,28 +2270,28 @@ namespace BetterLegacy.Configs
             ThemePopupPosClose = Bind(this, ANIMATIONS, "Theme Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ThemePopupPosOpenDuration = Bind(this, ANIMATIONS, "Theme Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             ThemePopupPosCloseDuration = Bind(this, ANIMATIONS, "Theme Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            ThemePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            ThemePopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            ThemePopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            ThemePopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             ThemePopupScaActive = Bind(this, ANIMATIONS, "Theme Popup Animate Scale", true, "If scale should be animated.");
             ThemePopupScaOpen = Bind(this, ANIMATIONS, "Theme Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ThemePopupScaClose = Bind(this, ANIMATIONS, "Theme Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ThemePopupScaOpenDuration = Bind(this, ANIMATIONS, "Theme Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             ThemePopupScaCloseDuration = Bind(this, ANIMATIONS, "Theme Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ThemePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ThemePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ThemePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ThemePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ThemePopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ThemePopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ThemePopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ThemePopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             ThemePopupRotActive = Bind(this, ANIMATIONS, "Theme Popup Animate Rotation", false, "If rotation should be animated.");
             ThemePopupRotOpen = Bind(this, ANIMATIONS, "Theme Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ThemePopupRotClose = Bind(this, ANIMATIONS, "Theme Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ThemePopupRotOpenDuration = Bind(this, ANIMATIONS, "Theme Popup Open Rotation Duration", 0f, "The duration of opening.");
             ThemePopupRotCloseDuration = Bind(this, ANIMATIONS, "Theme Popup Close Rotation Duration", 0f, "The duration of closing.");
-            ThemePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ThemePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ThemePopupRotOpenEase = BindEnum(this, ANIMATIONS, "Theme Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ThemePopupRotCloseEase = BindEnum(this, ANIMATIONS, "Theme Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2304,28 +2304,28 @@ namespace BetterLegacy.Configs
             PrefabTypesPopupPosClose = Bind(this, ANIMATIONS, "Prefab Types Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             PrefabTypesPopupPosOpenDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             PrefabTypesPopupPosCloseDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            PrefabTypesPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            PrefabTypesPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            PrefabTypesPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            PrefabTypesPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             PrefabTypesPopupScaActive = Bind(this, ANIMATIONS, "Prefab Types Popup Animate Scale", true, "If scale should be animated.");
             PrefabTypesPopupScaOpen = Bind(this, ANIMATIONS, "Prefab Types Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             PrefabTypesPopupScaClose = Bind(this, ANIMATIONS, "Prefab Types Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             PrefabTypesPopupScaOpenDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             PrefabTypesPopupScaCloseDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            PrefabTypesPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabTypesPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            PrefabTypesPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            PrefabTypesPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            PrefabTypesPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            PrefabTypesPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            PrefabTypesPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            PrefabTypesPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             PrefabTypesPopupRotActive = Bind(this, ANIMATIONS, "Prefab Types Popup Animate Rotation", false, "If rotation should be animated.");
             PrefabTypesPopupRotOpen = Bind(this, ANIMATIONS, "Prefab Types Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             PrefabTypesPopupRotClose = Bind(this, ANIMATIONS, "Prefab Types Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             PrefabTypesPopupRotOpenDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Open Rotation Duration", 0f, "The duration of opening.");
             PrefabTypesPopupRotCloseDuration = Bind(this, ANIMATIONS, "Prefab Types Popup Close Rotation Duration", 0f, "The duration of closing.");
-            PrefabTypesPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            PrefabTypesPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            PrefabTypesPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            PrefabTypesPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Prefab Types Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
             
@@ -2338,28 +2338,28 @@ namespace BetterLegacy.Configs
             FontSelectorPopupPosClose = Bind(this, ANIMATIONS, "Font Selector Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FontSelectorPopupPosOpenDuration = Bind(this, ANIMATIONS, "Font Selector Popup Open Position Duration", Vector2.zero, "The duration of opening.");
             FontSelectorPopupPosCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            FontSelectorPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            FontSelectorPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            FontSelectorPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            FontSelectorPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             FontSelectorPopupScaActive = Bind(this, ANIMATIONS, "Font Selector Popup Animate Scale", true, "If scale should be animated.");
             FontSelectorPopupScaOpen = Bind(this, ANIMATIONS, "Font Selector Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             FontSelectorPopupScaClose = Bind(this, ANIMATIONS, "Font Selector Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FontSelectorPopupScaOpenDuration = Bind(this, ANIMATIONS, "Font Selector Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             FontSelectorPopupScaCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            FontSelectorPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            FontSelectorPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            FontSelectorPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            FontSelectorPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            FontSelectorPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            FontSelectorPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            FontSelectorPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            FontSelectorPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             FontSelectorPopupRotActive = Bind(this, ANIMATIONS, "Font Selector Popup Animate Rotation", false, "If rotation should be animated.");
             FontSelectorPopupRotOpen = Bind(this, ANIMATIONS, "Font Selector Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             FontSelectorPopupRotClose = Bind(this, ANIMATIONS, "Font Selector Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FontSelectorPopupRotOpenDuration = Bind(this, ANIMATIONS, "Font Selector Popup Open Rotation Duration", 0f, "The duration of opening.");
             FontSelectorPopupRotCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
-            FontSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            FontSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            FontSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            FontSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2372,28 +2372,28 @@ namespace BetterLegacy.Configs
             FileDropdownPosClose = Bind(this, ANIMATIONS, "File Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FileDropdownPosOpenDuration = Bind(this, ANIMATIONS, "File Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
             FileDropdownPosCloseDuration = Bind(this, ANIMATIONS, "File Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            FileDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Position X Ease", Easing.Linear, "The easing of opening.");
+            FileDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Position X Ease", Easing.Linear, "The easing of opening.");
+            FileDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            FileDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             FileDropdownScaActive = Bind(this, ANIMATIONS, "File Dropdown Animate Scale", true, "If scale should be animated.");
             FileDropdownScaOpen = Bind(this, ANIMATIONS, "File Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             FileDropdownScaClose = Bind(this, ANIMATIONS, "File Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FileDropdownScaOpenDuration = Bind(this, ANIMATIONS, "File Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             FileDropdownScaCloseDuration = Bind(this, ANIMATIONS, "File Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            FileDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            FileDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            FileDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            FileDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            FileDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            FileDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            FileDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            FileDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             FileDropdownRotActive = Bind(this, ANIMATIONS, "File Dropdown Animate Rotation", false, "If rotation should be animated.");
             FileDropdownRotOpen = Bind(this, ANIMATIONS, "File Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             FileDropdownRotClose = Bind(this, ANIMATIONS, "File Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             FileDropdownRotOpenDuration = Bind(this, ANIMATIONS, "File Dropdown Open Rotation Duration", 0f, "The duration of opening.");
             FileDropdownRotCloseDuration = Bind(this, ANIMATIONS, "File Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            FileDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            FileDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            FileDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "File Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            FileDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "File Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2406,28 +2406,28 @@ namespace BetterLegacy.Configs
             EditDropdownPosClose = Bind(this, ANIMATIONS, "Edit Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             EditDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Edit Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
             EditDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Edit Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            EditDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Position X Ease", Easing.Linear, "The easing of opening.");
+            EditDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Position X Ease", Easing.Linear, "The easing of opening.");
+            EditDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            EditDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             EditDropdownScaActive = Bind(this, ANIMATIONS, "Edit Dropdown Animate Scale", true, "If scale should be animated.");
             EditDropdownScaOpen = Bind(this, ANIMATIONS, "Edit Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             EditDropdownScaClose = Bind(this, ANIMATIONS, "Edit Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             EditDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Edit Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             EditDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Edit Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            EditDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            EditDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            EditDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            EditDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            EditDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            EditDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            EditDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            EditDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             EditDropdownRotActive = Bind(this, ANIMATIONS, "Edit Dropdown Animate Rotation", false, "If rotation should be animated.");
             EditDropdownRotOpen = Bind(this, ANIMATIONS, "Edit Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             EditDropdownRotClose = Bind(this, ANIMATIONS, "Edit Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             EditDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Edit Dropdown Open Rotation Duration", 0f, "The duration of opening.");
             EditDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Edit Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            EditDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            EditDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            EditDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            EditDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Edit Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2440,28 +2440,28 @@ namespace BetterLegacy.Configs
             ViewDropdownPosClose = Bind(this, ANIMATIONS, "View Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ViewDropdownPosOpenDuration = Bind(this, ANIMATIONS, "View Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
             ViewDropdownPosCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            ViewDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Position X Ease", Easing.Linear, "The easing of opening.");
+            ViewDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Position X Ease", Easing.Linear, "The easing of opening.");
+            ViewDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            ViewDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             ViewDropdownScaActive = Bind(this, ANIMATIONS, "View Dropdown Animate Scale", true, "If scale should be animated.");
             ViewDropdownScaOpen = Bind(this, ANIMATIONS, "View Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ViewDropdownScaClose = Bind(this, ANIMATIONS, "View Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ViewDropdownScaOpenDuration = Bind(this, ANIMATIONS, "View Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             ViewDropdownScaCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            ViewDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            ViewDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            ViewDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            ViewDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            ViewDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ViewDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ViewDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ViewDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             ViewDropdownRotActive = Bind(this, ANIMATIONS, "View Dropdown Animate Rotation", false, "If rotation should be animated.");
             ViewDropdownRotOpen = Bind(this, ANIMATIONS, "View Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             ViewDropdownRotClose = Bind(this, ANIMATIONS, "View Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             ViewDropdownRotOpenDuration = Bind(this, ANIMATIONS, "View Dropdown Open Rotation Duration", 0f, "The duration of opening.");
             ViewDropdownRotCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            ViewDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            ViewDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            ViewDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ViewDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2474,28 +2474,28 @@ namespace BetterLegacy.Configs
             SteamDropdownPosClose = Bind(this, ANIMATIONS, "Steam Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             SteamDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Steam Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
             SteamDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Steam Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            SteamDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Position X Ease", Easing.Linear, "The easing of opening.");
+            SteamDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Position X Ease", Easing.Linear, "The easing of opening.");
+            SteamDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            SteamDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             SteamDropdownScaActive = Bind(this, ANIMATIONS, "Steam Dropdown Animate Scale", true, "If scale should be animated.");
             SteamDropdownScaOpen = Bind(this, ANIMATIONS, "Steam Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             SteamDropdownScaClose = Bind(this, ANIMATIONS, "Steam Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             SteamDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Steam Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             SteamDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Steam Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            SteamDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            SteamDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            SteamDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            SteamDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            SteamDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            SteamDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            SteamDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            SteamDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             SteamDropdownRotActive = Bind(this, ANIMATIONS, "Steam Dropdown Animate Rotation", false, "If rotation should be animated.");
             SteamDropdownRotOpen = Bind(this, ANIMATIONS, "Steam Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             SteamDropdownRotClose = Bind(this, ANIMATIONS, "Steam Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             SteamDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Steam Dropdown Open Rotation Duration", 0f, "The duration of opening.");
             SteamDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Steam Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            SteamDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            SteamDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            SteamDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            SteamDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Steam Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
@@ -2508,28 +2508,28 @@ namespace BetterLegacy.Configs
             HelpDropdownPosClose = Bind(this, ANIMATIONS, "Help Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             HelpDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Help Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
             HelpDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Help Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
-            HelpDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Position X Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Position X Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Position X Ease", Easing.Linear, "The easing of opening.");
+            HelpDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Position X Ease", Easing.Linear, "The easing of opening.");
+            HelpDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            HelpDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Position Y Ease", Easing.Linear, "The easing of opening.");
 
             HelpDropdownScaActive = Bind(this, ANIMATIONS, "Help Dropdown Animate Scale", true, "If scale should be animated.");
             HelpDropdownScaOpen = Bind(this, ANIMATIONS, "Help Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             HelpDropdownScaClose = Bind(this, ANIMATIONS, "Help Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
             HelpDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Help Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
             HelpDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Help Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            HelpDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            HelpDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            HelpDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            HelpDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            HelpDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            HelpDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            HelpDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            HelpDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
 
             HelpDropdownRotActive = Bind(this, ANIMATIONS, "Help Dropdown Animate Rotation", false, "If rotation should be animated.");
             HelpDropdownRotOpen = Bind(this, ANIMATIONS, "Help Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
             HelpDropdownRotClose = Bind(this, ANIMATIONS, "Help Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
             HelpDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Help Dropdown Open Rotation Duration", 0f, "The duration of opening.");
             HelpDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Help Dropdown Close Rotation Duration", 0f, "The duration of closing.");
-            HelpDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            HelpDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            HelpDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Help Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            HelpDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Help Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 

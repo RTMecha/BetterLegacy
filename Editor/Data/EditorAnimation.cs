@@ -30,10 +30,10 @@ namespace BetterLegacy.Editor.Data
         public Setting<Vector2> PosCloseConfig { get; set; }
         public Setting<Vector2> PosOpenDurationConfig { get; set; }
         public Setting<Vector2> PosCloseDurationConfig { get; set; }
-        public Setting<Easings> PosXOpenEaseConfig { get; set; }
-        public Setting<Easings> PosXCloseEaseConfig { get; set; }
-        public Setting<Easings> PosYOpenEaseConfig { get; set; }
-        public Setting<Easings> PosYCloseEaseConfig { get; set; }
+        public Setting<Easing> PosXOpenEaseConfig { get; set; }
+        public Setting<Easing> PosXCloseEaseConfig { get; set; }
+        public Setting<Easing> PosYOpenEaseConfig { get; set; }
+        public Setting<Easing> PosYCloseEaseConfig { get; set; }
 
         // Scale
         public Setting<bool> ScaActiveConfig { get; set; }
@@ -41,10 +41,10 @@ namespace BetterLegacy.Editor.Data
         public Setting<Vector2> ScaCloseConfig { get; set; }
         public Setting<Vector2> ScaOpenDurationConfig { get; set; }
         public Setting<Vector2> ScaCloseDurationConfig { get; set; }
-        public Setting<Easings> ScaXOpenEaseConfig { get; set; }
-        public Setting<Easings> ScaXCloseEaseConfig { get; set; }
-        public Setting<Easings> ScaYOpenEaseConfig { get; set; }
-        public Setting<Easings> ScaYCloseEaseConfig { get; set; }
+        public Setting<Easing> ScaXOpenEaseConfig { get; set; }
+        public Setting<Easing> ScaXCloseEaseConfig { get; set; }
+        public Setting<Easing> ScaYOpenEaseConfig { get; set; }
+        public Setting<Easing> ScaYCloseEaseConfig { get; set; }
 
         // Rotation
         public Setting<bool> RotActiveConfig { get; set; }
@@ -52,8 +52,8 @@ namespace BetterLegacy.Editor.Data
         public Setting<float> RotCloseConfig { get; set; }
         public Setting<float> RotOpenDurationConfig { get; set; }
         public Setting<float> RotCloseDurationConfig { get; set; }
-        public Setting<Easings> RotOpenEaseConfig { get; set; }
-        public Setting<Easings> RotCloseEaseConfig { get; set; }
+        public Setting<Easing> RotOpenEaseConfig { get; set; }
+        public Setting<Easing> RotCloseEaseConfig { get; set; }
 
         #endregion
 

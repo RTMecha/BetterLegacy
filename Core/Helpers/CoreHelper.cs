@@ -1086,16 +1086,16 @@ namespace BetterLegacy.Core.Helpers
             {
                 var beatmapObject = beatmapObjects[i];
                 // we add 1 to the objects' layer since people using the editor only see the non-zero version of the layer system.
-                if (!allLayers.Contains(beatmapObject.editorData.layer + 1))
-                    allLayers.Add(beatmapObject.editorData.layer + 1);
+                if (!allLayers.Contains(beatmapObject.editorData.Layer + 1))
+                    allLayers.Add(beatmapObject.editorData.Layer + 1);
             }
             
             var prefabObjects = GameData.Current.prefabObjects;
             for (int i = 0; i < prefabObjects.Count; i++)
             {
                 var prefabObject = prefabObjects[i];
-                if (!allLayers.Contains(prefabObject.editorData.layer + 1))
-                    allLayers.Add(prefabObject.editorData.layer + 1);
+                if (!allLayers.Contains(prefabObject.editorData.Layer + 1))
+                    allLayers.Add(prefabObject.editorData.Layer + 1);
             }
 
             allLayers.Sort();

@@ -6,16 +6,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using BasePrefabObject = DataManager.GameData.PrefabObject;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class PrefabObject : BasePrefabObject
+    /// <summary>
+    /// An instance of a <see cref="Prefab"/>.
+    /// </summary>
+    public class PrefabObject : Exists
     {
-        public PrefabObject() : base()
+        public PrefabObject()
         {
-            editorData = new ObjectEditorData();
-            events = new List<DataManager.GameData.EventKeyframe>
+            id = LSText.randomString(16);
+
+            editorData.Bin = 0;
+            editorData.Layer = 0;
+
+            events = new List<EventKeyframe>
             {
                 new EventKeyframe(),
                 new EventKeyframe(),
@@ -23,40 +29,33 @@ namespace BetterLegacy.Core.Data.Beatmap
             };
         }
 
-        public PrefabObject(string name, float startTime) : base(name, startTime)
+        public PrefabObject(string prefabID, float startTime)
         {
+			id = LSText.randomString(16);
+			this.prefabID = prefabID;
+			this.startTime = startTime;
+			editorData.Bin = 0;
+			editorData.Layer = 0;
             editorData = new ObjectEditorData();
-            events = new List<DataManager.GameData.EventKeyframe>
+            events = new List<EventKeyframe>
             {
                 new EventKeyframe(),
                 new EventKeyframe(),
                 new EventKeyframe()
             };
-        }
-
-        public PrefabObject(BasePrefabObject prefabObject)
-        {
-            prefabID = prefabObject.prefabID;
         }
 
         #region Values
 
-        public float speed = 1f;
+        public string id;
 
-        public List<BeatmapObject> expandedObjects = new List<BeatmapObject>();
+        public string prefabID = "";
 
-        public List<BeatmapObject> ExpandedObjects => GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == ID);
+        public List<EventKeyframe> events = new List<EventKeyframe>();
 
-        public enum AutoKillType
-        {
-            Regular,
-            StartTimeOffset,
-            SongTime
-        }
+        public ObjectEditorData editorData = new ObjectEditorData();
 
-        public AutoKillType autoKillType = AutoKillType.Regular;
-
-        public float autoKillOffset = -1f;
+        #region Parent
 
         public string parent;
 
@@ -80,11 +79,67 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool desync;
 
+        #endregion
+
+        #region Timing
+
+        /// <summary>
+        /// The max speed of a prefab object.
+        /// </summary>
+        public const float MAX_PREFAB_OBJECT_SPEED = 1000f;
+
+        float startTime;
+        public float StartTime
+        {
+            get => startTime;
+            set => startTime = value;
+        }
+
+        int repeatCount;
+        public int RepeatCount
+        {
+            get => repeatCount;
+            set => repeatCount = Mathf.Clamp(value, 0, 1000);
+        }
+
+        float repeatOffsetTime;
+        public float RepeatOffsetTime
+        {
+            get => repeatOffsetTime;
+            set => repeatOffsetTime = Mathf.Clamp(value, 0f, 60f);
+        }
+
+        public float speed = 1f;
+        public float Speed
+        {
+            get => Mathf.Clamp(speed, 0.01f, MAX_PREFAB_OBJECT_SPEED);
+            set => speed = Mathf.Clamp(value, 0.01f, MAX_PREFAB_OBJECT_SPEED);
+        }
+
+        public enum AutoKillType
+        {
+            Regular,
+            StartTimeOffset,
+            SongTime
+        }
+
+        public AutoKillType autoKillType = AutoKillType.Regular;
+
+        public float autoKillOffset = -1f;
+
+        #endregion
+
+        #region References
+
         public bool fromModifier;
+
+        public List<BeatmapObject> expandedObjects = new List<BeatmapObject>();
+
+        public List<BeatmapObject> ExpandedObjects => GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == id);
 
         public TimelineObject timelineObject;
 
-        public new ObjectEditorData editorData;
+        #endregion
 
         #endregion
 
@@ -94,14 +149,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var prefabObject = new PrefabObject
             {
-                active = orig.active,
-                ID = _newID ? LSText.randomString(16) : orig.ID,
+                id = _newID ? LSText.randomString(16) : orig.id,
                 prefabID = orig.prefabID,
                 startTime = orig.StartTime,
                 repeatCount = orig.repeatCount,
                 repeatOffsetTime = orig.repeatOffsetTime,
                 editorData = ObjectEditorData.DeepCopy(orig.editorData),
-                speed = orig.speed,
+                speed = orig.Speed,
                 autoKillOffset = orig.autoKillOffset,
                 autoKillType = orig.autoKillType,
                 parent = orig.parent,
@@ -113,12 +167,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             };
 
             if (prefabObject.events == null)
-                prefabObject.events = new List<DataManager.GameData.EventKeyframe>();
+                prefabObject.events = new List<EventKeyframe>();
             prefabObject.events.Clear();
 
             if (orig.events != null)
                 foreach (var eventKeyframe in orig.events)
-                    prefabObject.events.Add(EventKeyframe.DeepCopy((EventKeyframe)eventKeyframe, _newID));
+                    prefabObject.events.Add(EventKeyframe.DeepCopy(eventKeyframe, _newID));
 
             return prefabObject;
         }
@@ -127,7 +181,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var prefabObject = new PrefabObject();
 
-            prefabObject.ID = jn["id"];
+            prefabObject.id = jn["id"];
             prefabObject.prefabID = jn["pid"];
             prefabObject.StartTime = jn["t"] == null ? jn["st"].AsFloat : jn["t"].AsFloat;
 
@@ -141,7 +195,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[2]
+                        values = new float[2]
                         {
                             jn["e"][0]["ev"][0].AsFloat,
                             jn["e"][0]["ev"][1].AsFloat,
@@ -152,7 +206,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[2],
+                        values = new float[2],
                     });
                 }
 
@@ -160,7 +214,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[2]
+                        values = new float[2]
                         {
                             jn["e"][1]["ev"][0].AsFloat,
                             jn["e"][1]["ev"][1].AsFloat,
@@ -171,7 +225,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[2],
+                        values = new float[2],
                     });
                 }
 
@@ -179,14 +233,14 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[1] { jn["e"][2]["ev"][0].AsFloat }
+                        values = new float[1] { jn["e"][2]["ev"][0].AsFloat }
                     });
                 }
                 catch (System.Exception)
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[1]
+                        values = new float[1]
                     });
                 }
             }
@@ -203,7 +257,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static PrefabObject Parse(JSONNode jn)
         {
             var prefabObject = new PrefabObject();
-            prefabObject.ID = jn["id"] != null ? jn["id"] : LSText.randomString(16);
+            prefabObject.id = jn["id"] != null ? jn["id"] : LSText.randomString(16);
             prefabObject.prefabID = jn["pid"];
             prefabObject.StartTime = jn["st"].AsFloat;
 
@@ -217,7 +271,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 prefabObject.RepeatOffsetTime = jn["ro"].AsFloat;
 
             if (jn["sp"] != null)
-                prefabObject.speed = jn["sp"].AsFloat;
+                prefabObject.Speed = jn["sp"].AsFloat;
 
             if (jn["akt"] != null)
                 prefabObject.autoKillType = (AutoKillType)jn["akt"].AsInt;
@@ -249,7 +303,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                         jnpos["ry"].AsFloat,
                         jnpos["rz"].AsFloat
                     });
-                    kf.active = false;
                     prefabObject.events.Add(kf);
                 }
                 else
@@ -272,7 +325,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                         jnsca["ry"].AsFloat,
                         jnsca["rz"].AsFloat
                     });
-                    kf.active = false;
                     prefabObject.events.Add(kf);
                 }
                 else
@@ -294,7 +346,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                         0f,
                         jnrot["rz"].AsFloat
                     });
-                    kf.active = false;
                     prefabObject.events.Add(kf);
                 }
                 else
@@ -304,7 +355,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
             else
             {
-                prefabObject.events = new List<DataManager.GameData.EventKeyframe>()
+                prefabObject.events = new List<EventKeyframe>()
                 {
                     new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }),
                     new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }),
@@ -318,21 +369,21 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = JSON.Parse("{}");
 
-            jn["id"] = ID;
+            jn["id"] = id;
             jn["pid"] = prefabID;
 
             jn["ed"] = ((ObjectEditorData)editorData).ToJSONVG();
 
             jn["e"][0]["ct"] = "Linear";
-            jn["e"][0]["ev"][0] = events[0].eventValues[0];
-            jn["e"][0]["ev"][1] = events[0].eventValues[1];
+            jn["e"][0]["ev"][0] = events[0].values[0];
+            jn["e"][0]["ev"][1] = events[0].values[1];
 
             jn["e"][1]["ct"] = "Linear";
-            jn["e"][1]["ev"][0] = events[1].eventValues[0];
-            jn["e"][1]["ev"][1] = events[1].eventValues[1];
+            jn["e"][1]["ev"][0] = events[1].values[0];
+            jn["e"][1]["ev"][1] = events[1].values[1];
 
             jn["e"][2]["ct"] = "Linear";
-            jn["e"][2]["ev"][0] = events[2].eventValues[0];
+            jn["e"][2]["ev"][0] = events[2].values[0];
 
             jn["t"] = StartTime;
 
@@ -343,12 +394,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = JSON.Parse("{}");
 
-            jn["id"] = ID;
+            jn["id"] = id;
             jn["pid"] = prefabID;
             jn["st"] = StartTime.ToString();
 
-            if (speed != 1f)
-                jn["sp"] = speed.ToString();
+            if (Speed != 1f)
+                jn["sp"] = Speed.ToString();
 
             if (parentType != "111")
                 jn["pt"] = parentType;
@@ -389,37 +440,37 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (editorData.collapse)
                 jn["ed"]["shrink"] = editorData.collapse.ToString();
 
-            if (editorData.layer != 0)
-                jn["ed"]["layer"] = editorData.layer.ToString();
+            if (editorData.Layer != 0)
+                jn["ed"]["layer"] = editorData.Layer.ToString();
             if (editorData.Bin != 0)
                 jn["ed"]["bin"] = editorData.Bin.ToString();
 
-            jn["e"]["pos"]["x"] = events[0].eventValues[0].ToString();
-            jn["e"]["pos"]["y"] = events[0].eventValues[1].ToString();
+            jn["e"]["pos"]["x"] = events[0].values[0].ToString();
+            jn["e"]["pos"]["y"] = events[0].values[1].ToString();
             if (events[0].random != 0)
             {
                 jn["e"]["pos"]["r"] = events[0].random.ToString();
-                jn["e"]["pos"]["rx"] = events[0].eventRandomValues[0].ToString();
-                jn["e"]["pos"]["ry"] = events[0].eventRandomValues[1].ToString();
-                jn["e"]["pos"]["rz"] = events[0].eventRandomValues[2].ToString();
+                jn["e"]["pos"]["rx"] = events[0].randomValues[0].ToString();
+                jn["e"]["pos"]["ry"] = events[0].randomValues[1].ToString();
+                jn["e"]["pos"]["rz"] = events[0].randomValues[2].ToString();
             }
 
-            jn["e"]["sca"]["x"] = events[1].eventValues[0].ToString();
-            jn["e"]["sca"]["y"] = events[1].eventValues[1].ToString();
+            jn["e"]["sca"]["x"] = events[1].values[0].ToString();
+            jn["e"]["sca"]["y"] = events[1].values[1].ToString();
             if (events[1].random != 0)
             {
                 jn["e"]["sca"]["r"] = events[1].random.ToString();
-                jn["e"]["sca"]["rx"] = events[1].eventRandomValues[0].ToString();
-                jn["e"]["sca"]["ry"] = events[1].eventRandomValues[1].ToString();
-                jn["e"]["sca"]["rz"] = events[1].eventRandomValues[2].ToString();
+                jn["e"]["sca"]["rx"] = events[1].randomValues[0].ToString();
+                jn["e"]["sca"]["ry"] = events[1].randomValues[1].ToString();
+                jn["e"]["sca"]["rz"] = events[1].randomValues[2].ToString();
             }
 
-            jn["e"]["rot"]["x"] = events[2].eventValues[0].ToString();
+            jn["e"]["rot"]["x"] = events[2].values[0].ToString();
             if (events[1].random != 0)
             {
                 jn["e"]["rot"]["r"] = events[2].random.ToString();
-                jn["e"]["rot"]["rx"] = events[2].eventRandomValues[0].ToString();
-                jn["e"]["rot"]["rz"] = events[2].eventRandomValues[2].ToString();
+                jn["e"]["rot"]["rx"] = events[2].randomValues[0].ToString();
+                jn["e"]["rot"]["rz"] = events[2].randomValues[2].ToString();
             }
 
             return jn;
@@ -428,7 +479,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.ID == prefabID);
+        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
 
         public void SetParentAdditive(int index, bool additive)
         {
@@ -465,8 +516,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (collapse && editorData.collapse || !prefab)
                 return 0.2f;
 
-            float time = prefab.objects.Select(x => x.StartTime).Min(x => x);
-            return prefab.objects.Max(x => x.StartTime + (x as BeatmapObject).GetObjectLifeLength(collapse: true) - time);
+            float time = prefab.beatmapObjects.Select(x => x.StartTime).Min(x => x);
+            return prefab.beatmapObjects.Max(x => x.StartTime + (x as BeatmapObject).GetObjectLifeLength(collapse: true) - time);
         }
 
         #endregion
@@ -475,9 +526,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public static implicit operator bool(PrefabObject exists) => exists != null;
 
-        public override bool Equals(object obj) => obj is PrefabObject && ID == (obj as PrefabObject).ID;
+        public override bool Equals(object obj) => obj is PrefabObject && id == (obj as PrefabObject).id;
 
-        public override string ToString() => ID;
+        public override int GetHashCode() => base.GetHashCode();
+
+        public override string ToString() => id;
 
         #endregion
     }

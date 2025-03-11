@@ -1100,7 +1100,7 @@ namespace BetterLegacy.Core
         /// Gets the <see cref="Animation.EaseFunction"/> in the easing dictionary.
         /// </summary>
         /// <returns>Returns an <see cref="Animation.EaseFunction"/>.</returns>
-        public static Animation.EaseFunction GetFunction(this Easings easing) => Animation.Ease.GetEaseFunction(easing.ToString());
+        public static Animation.EaseFunction GetFunction(this Easing easing) => Animation.Ease.GetEaseFunction(easing.ToString());
 
         /// <summary>
         /// Gets the actual registered scene name.

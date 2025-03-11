@@ -266,7 +266,7 @@ namespace BetterLegacy.Editor.Managers
         void Update()
         {
             if (CoreHelper.InEditor && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
-                GameData.IsValid && GameData.Current.eventObjects != null &&
+                GameData.Current && GameData.Current.events != null &&
                 RTPrefabEditor.inst && Dialog && Dialog.GameObject)
             {
                 var transform = Dialog.GameObject.transform;
@@ -284,7 +284,7 @@ namespace BetterLegacy.Editor.Managers
                     SetText("Object Count", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
                     SetText("Total Object Count", GameData.Current.beatmapObjects.Count.ToString());
                     SetText("Objects Alive Count", GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString());
-                    SetText("No Autokill Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == DataManager.GameData.BeatmapObject.AutoKillType.OldStyleNoAutokill).Count.ToString());
+                    SetText("No Autokill Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == BeatmapObject.AutoKillType.OldStyleNoAutokill).Count.ToString());
                     SetText("Keyframe Offsets > Song Length Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString());
                     SetText("Text Object Count", GameData.Current.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Count.ToString());
                     SetText("Text Symbol Total Count", GameData.Current.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Sum(x => x.text.Length).ToString());
@@ -294,7 +294,7 @@ namespace BetterLegacy.Editor.Managers
                     SetText("Camera Position", $"X: {Camera.main.transform.position.x}, Y: {Camera.main.transform.position.y}");
                     SetText("Camera Zoom", Camera.main.orthographicSize.ToString());
                     SetText("Camera Rotation", Camera.main.transform.rotation.eulerAngles.z.ToString());
-                    SetText("Event Count", GameData.Current.eventObjects.allEvents.Sum(x => x.Count).ToString());
+                    SetText("Event Count", GameData.Current.events.Sum(x => x.Count).ToString());
                     SetText("Theme Count", DataManager.inst.AllThemes.Count.ToString());
 
                     SetText("Prefab External Count", RTPrefabEditor.inst.PrefabPanels.Count.ToString());
@@ -303,7 +303,7 @@ namespace BetterLegacy.Editor.Managers
 
                     SetText("Timeline Bin Count", EditorTimeline.inst.BinCount.ToString());
                     SetText("Timeline Objects in Current Layer Count", EditorTimeline.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
-                    SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
+                    SetText("Markers Count", GameData.Current.data.markers.Count.ToString());
                 }
                 catch (Exception ex)
                 {

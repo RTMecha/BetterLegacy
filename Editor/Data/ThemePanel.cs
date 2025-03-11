@@ -392,10 +392,10 @@ namespace BetterLegacy.Editor.Data
                         if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                         {
                             foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
+                                timelineObject.eventKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
                         }
                         else
-                            RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
+                            RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
 
                         EventManager.inst.updateEvents();
                         EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);
@@ -606,10 +606,10 @@ namespace BetterLegacy.Editor.Data
             if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
             {
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                    timelineObject.eventKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
+                    timelineObject.eventKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
             }
             else
-                RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(Theme.id, 0);
+                RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
 
             EventManager.inst.updateEvents();
             EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);

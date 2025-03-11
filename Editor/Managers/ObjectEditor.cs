@@ -22,9 +22,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
+
 using BetterLegacy.Core.Components;
 using TMPro;
 using BetterLegacy.Core.Animation;
@@ -690,7 +688,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             {
                                 var eventKeyframe = timelineObject.eventKeyframe;
-                                eventKeyframe.eventValues[0] = -eventKeyframe.eventValues[0];
+                                eventKeyframe.values[0] = -eventKeyframe.values[0];
                             }
 
                             var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
@@ -717,7 +715,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                                 {
                                     var eventKeyframe = timelineObject.eventKeyframe;
-                                    eventKeyframe.eventValues[1] = -eventKeyframe.eventValues[1];
+                                    eventKeyframe.values[1] = -eventKeyframe.values[1];
                                 }
 
                                 var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
@@ -1598,13 +1596,13 @@ namespace BetterLegacy.Editor.Managers
 
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                    int index = beatmapObject.events[tmpIndex].FindLastIndex(x => x.eventTime <= timeTmp);
+                    int index = beatmapObject.events[tmpIndex].FindLastIndex(x => x.time <= timeTmp);
                     var eventKeyfame = AddEvent(beatmapObject, timeTmp, tmpIndex, (EventKeyframe)beatmapObject.events[tmpIndex][index], false);
                     UpdateKeyframeOrder(beatmapObject);
 
                     RenderKeyframes(beatmapObject);
 
-                    int keyframe = beatmapObject.events[tmpIndex].FindLastIndex(x => x.eventTime == eventKeyfame.eventTime);
+                    int keyframe = beatmapObject.events[tmpIndex].FindLastIndex(x => x.time == eventKeyfame.time);
                     if (keyframe < 0)
                         keyframe = 0;
 
@@ -1900,6 +1898,7 @@ namespace BetterLegacy.Editor.Managers
         public Scrollbar timelinePosScrollbar;
         public GameObject shapeButtonPrefab;
 
+        public Prefab copy;
 
         public List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
 
@@ -1928,46 +1927,46 @@ namespace BetterLegacy.Editor.Managers
             new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Helper;
-                bm.name = nameof(ObjectType.Helper);
+                bm.objectType = BeatmapObject.ObjectType.Helper;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
             }),
             new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Decoration;
-                bm.name = nameof(ObjectType.Decoration);
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
             }),
             new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Solid;
-                bm.name = nameof(ObjectType.Solid);
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = nameof(BeatmapObject.ObjectType.Solid);
             }),
             new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Decoration;
-                bm.name = nameof(ObjectType.Helper);
-                bm.events[3][0].eventValues[1] = 0.65f;
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+                bm.events[3][0].values[1] = 0.65f;
             }),
             new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Normal;
+                bm.objectType = BeatmapObject.ObjectType.Normal;
                 bm.name = "Collision";
-                bm.events[3][0].eventValues[1] = 1f;
+                bm.events[3][0].values[1] = 1f;
             }),
             new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Solid;
+                bm.objectType = BeatmapObject.ObjectType.Solid;
                 bm.name = "Collision";
-                bm.events[3][0].eventValues[1] = 1f;
+                bm.events[3][0].values[1] = 1f;
             }),
             new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Decoration;
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
                 bm.name = "Text";
                 bm.text = "A text object that can be used for dialogue.";
                 bm.shape = 4;
@@ -1976,7 +1975,7 @@ namespace BetterLegacy.Editor.Managers
             new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = ObjectType.Decoration;
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
                 bm.name = "Text";
                 bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
                 bm.shape = 4;
@@ -2218,7 +2217,7 @@ namespace BetterLegacy.Editor.Managers
 
                 st = RTEditor.inst.editorInfo.bpmSnapActive && snap && !Input.GetKey(KeyCode.LeftAlt) ? -(st - RTEditor.SnapToBPM(st + calc)) : calc;
 
-                beatmapObject.events[timelineObject.Type][timelineObject.Index].eventTime = st;
+                beatmapObject.events[timelineObject.Type][timelineObject.Index].time = st;
 
                 ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(TimeTimelineCalc(st), 0f);
 
@@ -2275,7 +2274,7 @@ namespace BetterLegacy.Editor.Managers
                     .Select(x => x.GetData<PrefabObject>()).ToList()
                     .ForEach(x => beatmapObjectIDs
                         .AddRange(GameData.Current.beatmapObjects
-                            .Where(c => c.prefabInstanceID == x.ID)
+                            .Where(c => c.prefabInstanceID == x.id)
                         .Select(c => c.id)));
 
             gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x =>
@@ -2299,7 +2298,7 @@ namespace BetterLegacy.Editor.Managers
 
             gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
             gameData.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
-            gameData.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.ID));
+            gameData.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.id));
 
             Updater.RecalculateObjectStates();
 
@@ -2352,9 +2351,9 @@ namespace BetterLegacy.Editor.Managers
 
                 Updater.UpdatePrefab(prefabObject, false);
 
-                string id = prefabObject.ID;
+                string id = prefabObject.id;
 
-                index = GameData.Current.prefabObjects.FindIndex(x => x.ID == id);
+                index = GameData.Current.prefabObjects.FindIndex(x => x.id == id);
                 GameData.Current.prefabObjects.RemoveAt(index);
             }
 
@@ -2408,7 +2407,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(bmTimelineObject);
             Updater.UpdateObject(beatmapObject, "Keyframes");
 
-            if (beatmapObject.autoKillType == AutoKillType.LastKeyframe || beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
+            if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.LastKeyframe || beatmapObject.autoKillType == BeatmapObject.AutoKillType.LastKeyframeOffset)
                 Updater.UpdateObject(beatmapObject, "Autokill");
 
             RenderKeyframes(beatmapObject);
@@ -2459,7 +2458,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 var jn = JSON.Parse(RTFile.ReadFromFile(prefabFilePath));
-                ObjEditor.inst.beatmapObjCopy = Prefab.Parse(jn);
+                ObjectEditor.inst.copy = Prefab.Parse(jn);
                 ObjEditor.inst.hasCopiedObject = true;
             }
             catch (Exception ex)
@@ -2482,7 +2481,7 @@ namespace BetterLegacy.Editor.Managers
                 int type = timelineObject.Type;
                 int index = timelineObject.Index;
                 var eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][index]);
-                eventKeyframe.eventTime -= num;
+                eventKeyframe.time -= num;
 
                 copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
             }
@@ -2540,16 +2539,16 @@ namespace BetterLegacy.Editor.Managers
             if (!setTime)
                 return eventKeyframe;
 
-            eventKeyframe.eventTime = time - beatmapObject.StartTime + eventKeyframe.eventTime;
-            if (eventKeyframe.eventTime <= 0f)
-                eventKeyframe.eventTime = 0.001f;
+            eventKeyframe.time = time - beatmapObject.StartTime + eventKeyframe.time;
+            if (eventKeyframe.time <= 0f)
+                eventKeyframe.time = 0.001f;
 
             return eventKeyframe;
         }
 
         public void PasteObject(float _offsetTime = 0f, bool _regen = true)
         {
-            if (!ObjEditor.inst.hasCopiedObject || ObjEditor.inst.beatmapObjCopy == null || (ObjEditor.inst.beatmapObjCopy.prefabObjects.Count <= 0 && ObjEditor.inst.beatmapObjCopy.objects.Count <= 0))
+            if (!ObjEditor.inst.hasCopiedObject || !copy || (copy.prefabObjects.Count <= 0 && copy.beatmapObjects.Count <= 0))
             {
                 EditorManager.inst.DisplayNotification("No copied object yet!", 1f, EditorManager.NotificationType.Error, false);
                 return;
@@ -2558,7 +2557,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.DeselectAllObjects();
             EditorManager.inst.DisplayNotification("Pasting objects, please wait.", 1f, EditorManager.NotificationType.Success);
 
-            StartCoroutine(AddPrefabExpandedToLevel((Prefab)ObjEditor.inst.beatmapObjCopy, true, _offsetTime, false, _regen));
+            StartCoroutine(AddPrefabExpandedToLevel(copy, true, _offsetTime, false, _regen));
         }
 
         public EventKeyframe GetCopiedData(int type) => type switch
@@ -2592,9 +2591,9 @@ namespace BetterLegacy.Editor.Managers
             if (copiedData == null)
                 return;
 
-            kf.curveType = copiedData.curveType;
-            kf.eventValues = copiedData.eventValues.Copy();
-            kf.eventRandomValues = copiedData.eventRandomValues.Copy();
+            kf.curve = copiedData.curve;
+            kf.values = copiedData.values.Copy();
+            kf.randomValues = copiedData.randomValues.Copy();
             kf.random = copiedData.random;
             kf.relative = copiedData.relative;
         }
@@ -2648,15 +2647,15 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.ienumRunning = true;
             float delay = 0f;
             float audioTime = EditorManager.inst.CurrentAudioPos;
-            CoreHelper.Log($"Placing prefab with {prefab.objects.Count} objects and {prefab.prefabObjects.Count} prefabs");
+            CoreHelper.Log($"Placing prefab with {prefab.beatmapObjects.Count} objects and {prefab.prefabObjects.Count} prefabs");
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                 EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
 
-            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.objects.Count > 0)
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.beatmapObjects.Count > 0)
                 ClearKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
 
-            if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
+            if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
                 EditorManager.inst.ClearPopups();
 
             var sw = CoreHelper.StartNewStopwatch();
@@ -2667,14 +2666,14 @@ namespace BetterLegacy.Editor.Managers
             //Objects
             {
                 var objectIDs = new List<IDPair>();
-                for (int j = 0; j < prefab.objects.Count; j++)
-                    objectIDs.Add(new IDPair(prefab.objects[j].id));
+                for (int j = 0; j < prefab.beatmapObjects.Count; j++)
+                    objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
 
                 var pastedObjects = new List<BeatmapObject>();
                 var unparentedPastedObjects = new List<BeatmapObject>();
-                for (int i = 0; i < prefab.objects.Count; i++)
+                for (int i = 0; i < prefab.beatmapObjects.Count; i++)
                 {
-                    var beatmapObject = prefab.objects[i];
+                    var beatmapObject = prefab.beatmapObjects[i];
                     if (i > 0 && pasteObjectsYieldType != YieldType.None)
                         yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
@@ -2698,14 +2697,14 @@ namespace BetterLegacy.Editor.Managers
 
                     beatmapObjectCopy.fromPrefab = false;
 
-                    beatmapObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.Offset : audioTime + prefab.Offset : offset;
+                    beatmapObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.offset : audioTime + prefab.offset : offset;
                     if (offset != 0.0)
                         ++beatmapObjectCopy.editorData.Bin;
 
                     if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
                         AssetManager.SpriteAssets[beatmapObjectCopy.text] = sprite;
 
-                    beatmapObjectCopy.editorData.layer = EditorTimeline.inst.Layer;
+                    beatmapObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                     GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
                     if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
                         Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
@@ -2751,14 +2750,14 @@ namespace BetterLegacy.Editor.Managers
                         yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
                     var prefabObjectCopy = PrefabObject.DeepCopy((PrefabObject)prefabObject, false);
-                    prefabObjectCopy.ID = ids[i];
+                    prefabObjectCopy.id = ids[i];
                     prefabObjectCopy.prefabID = prefabObject.prefabID;
 
-                    prefabObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.Offset : audioTime + prefab.Offset : offset;
+                    prefabObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.offset : audioTime + prefab.offset : offset;
                     if (offset != 0.0)
                         ++prefabObjectCopy.editorData.Bin;
 
-                    prefabObjectCopy.editorData.layer = EditorTimeline.inst.Layer;
+                    prefabObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
 
                     GameData.Current.prefabObjects.Add(prefabObjectCopy);
 
@@ -2778,18 +2777,18 @@ namespace BetterLegacy.Editor.Managers
             Updater.RecalculateObjectStates();
 
             string stri = "object";
-            if (prefab.objects.Count == 1)
-                stri = prefab.objects[0].name;
-            if (prefab.objects.Count > 1)
-                stri = prefab.Name;
+            if (prefab.beatmapObjects.Count == 1)
+                stri = prefab.beatmapObjects[0].name;
+            if (prefab.beatmapObjects.Count > 1)
+                stri = prefab.name;
 
             EditorManager.inst.DisplayNotification(
-                $"Pasted Beatmap Object{(prefab.objects.Count == 1 ? "" : "s")} [ {stri} ] {(regen ? "" : $"and kept Prefab Instance ID")} in {sw.Elapsed}!",
+                $"Pasted Beatmap Object{(prefab.beatmapObjects.Count == 1 ? "" : "s")} [ {stri} ] {(regen ? "" : $"and kept Prefab Instance ID")} in {sw.Elapsed}!",
                 5f, EditorManager.NotificationType.Success);
 
             if (select)
             {
-                if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
+                if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
                     MultiObjectEditor.inst.Dialog.Open();
                 else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                     OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
@@ -2816,8 +2815,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             action?.Invoke(timelineObject);
@@ -2838,8 +2837,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -2865,8 +2864,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -2892,8 +2891,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -2920,7 +2919,7 @@ namespace BetterLegacy.Editor.Managers
                                             "Never gonna say goodbye<br>" +
                                             "Never gonna tell a lie and hurt you" : "text";
             bm.name = CoreHelper.AprilFools ? "Don't look at my text" : "text";
-            bm.objectType = ObjectType.Decoration;
+            bm.objectType = BeatmapObject.ObjectType.Decoration;
             if (CoreHelper.AprilFools)
                 bm.StartTime += 1f;
 
@@ -2928,8 +2927,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -2957,8 +2956,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -2977,16 +2976,16 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = CoreHelper.AprilFools ? "totally not deprecated object" : "helper";
-            bm.objectType = CoreHelper.AprilFools ? ObjectType.Decoration : ObjectType.Helper;
+            bm.objectType = CoreHelper.AprilFools ? BeatmapObject.ObjectType.Decoration : BeatmapObject.ObjectType.Helper;
             if (CoreHelper.AprilFools)
-                bm.events[3][0].eventValues[1] = 0.65f;
+                bm.events[3][0].values[1] = 0.65f;
 
             if (SetToCenterCam)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -3006,14 +3005,14 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = "decoration";
             if (!CoreHelper.AprilFools)
-                bm.objectType = ObjectType.Decoration;
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
 
             if (SetToCenterCam)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -3033,14 +3032,14 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = "empty";
             if (!CoreHelper.AprilFools)
-                bm.objectType = ObjectType.Empty;
+                bm.objectType = BeatmapObject.ObjectType.Empty;
 
             if (SetToCenterCam)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y + (CoreHelper.AprilFools ? 999f : 0f);
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y + (CoreHelper.AprilFools ? 999f : 0f);
             }
 
             Updater.UpdateObject(bm);
@@ -3059,14 +3058,14 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = CoreHelper.AprilFools ? "dead" : "no autokill";
-            bm.autoKillType = AutoKillType.OldStyleNoAutokill;
+            bm.autoKillType = BeatmapObject.AutoKillType.OldStyleNoAutokill;
 
             if (SetToCenterCam)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
-                bm.events[0][0].eventValues[0] = pos.x;
-                bm.events[0][0].eventValues[1] = pos.y;
+                bm.events[0][0].values[0] = pos.x;
+                bm.events[0][0].values[1] = pos.y;
             }
 
             Updater.UpdateObject(bm);
@@ -3088,7 +3087,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var beatmapObject = CreateNewBeatmapObject(AudioManager.inst.CurrentAudioSource.time);
-            beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
+            beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 5f;
             beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
@@ -3116,7 +3115,7 @@ namespace BetterLegacy.Editor.Managers
             var beatmapObject = new BeatmapObject(time);
 
             if (!CoreHelper.AprilFools)
-                beatmapObject.editorData.layer = EditorTimeline.inst.Layer;
+                beatmapObject.editorData.Layer = EditorTimeline.inst.Layer;
 
             beatmapObject.events[0].Add(EventKeyframe.DefaultPositionKeyframe);
             beatmapObject.events[1].Add(EventKeyframe.DefaultScaleKeyframe);
@@ -3188,7 +3187,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (_bringTo)
             {
-                float value = beatmapObject.events[ObjEditor.inst.currentKeyframeKind][ObjEditor.inst.currentKeyframe].eventTime + beatmapObject.StartTime;
+                float value = beatmapObject.events[ObjEditor.inst.currentKeyframeKind][ObjEditor.inst.currentKeyframe].time + beatmapObject.StartTime;
 
                 value = Mathf.Clamp(value, AllowTimeExactlyAtStart ? beatmapObject.StartTime + 0.001f : beatmapObject.StartTime, beatmapObject.StartTime + beatmapObject.GetObjectLifeLength());
 
@@ -3204,11 +3203,11 @@ namespace BetterLegacy.Editor.Managers
         {
             var eventKeyframe = EventKeyframe.DeepCopy(_keyframe);
             var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(beatmapObject.StartTime - RTEditor.SnapToBPM(beatmapObject.StartTime + time)) : time;
-            eventKeyframe.eventTime = t;
+            eventKeyframe.time = t;
 
             if (eventKeyframe.relative)
-                for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
-                    eventKeyframe.eventValues[i] = 0f;
+                for (int i = 0; i < eventKeyframe.values.Length; i++)
+                    eventKeyframe.values[i] = 0f;
 
             eventKeyframe.locked = false;
 
@@ -3293,7 +3292,7 @@ namespace BetterLegacy.Editor.Managers
 
             RenderEmpty(beatmapObject);
 
-            if (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty)
+            if (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty)
             {
                 RenderOrigin(beatmapObject);
                 RenderGradient(beatmapObject);
@@ -3348,7 +3347,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderEmpty(BeatmapObject beatmapObject)
         {
-            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty;
+            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
             var shapeTF = Dialog.ShapeTypesParent;
             var shapesLabel = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2);
             var shapeTFPActive = shapesLabel.gameObject.activeSelf;
@@ -3551,7 +3550,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ObjectTypeDropdown.value = Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1);
             Dialog.ObjectTypeDropdown.onValueChanged.AddListener(_val =>
             {
-                beatmapObject.objectType = (ObjectType)_val;
+                beatmapObject.objectType = (BeatmapObject.ObjectType)_val;
                 RenderGameObjectInspector(beatmapObject);
                 // ObjectType affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -3693,7 +3692,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.AutokillDropdown.value = (int)beatmapObject.autoKillType;
             Dialog.AutokillDropdown.onValueChanged.AddListener(_val =>
             {
-                beatmapObject.autoKillType = (AutoKillType)_val;
+                beatmapObject.autoKillType = (BeatmapObject.AutoKillType)_val;
                 // AutoKillType affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
@@ -3703,9 +3702,9 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkers(beatmapObject);
             });
 
-            if (beatmapObject.autoKillType == AutoKillType.FixedTime ||
-                beatmapObject.autoKillType == AutoKillType.SongTime ||
-                beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
+            if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.FixedTime ||
+                beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime ||
+                beatmapObject.autoKillType == BeatmapObject.AutoKillType.LastKeyframeOffset)
             {
                 Dialog.AutokillField.gameObject.SetActive(true);
 
@@ -3715,7 +3714,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
+                        if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime)
                         {
                             float startTime = beatmapObject.StartTime;
                             if (num < startTime)
@@ -3743,7 +3742,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     float num = 0f;
 
-                    if (beatmapObject.autoKillType == AutoKillType.SongTime)
+                    if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime)
                         num = AudioManager.inst.CurrentAudioSource.time;
                     else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
 
@@ -3959,7 +3958,7 @@ namespace BetterLegacy.Editor.Managers
                 lel.minWidth = RTEditor.ShowModdedUI ? 64f : 128f;
                 lel.preferredWidth = RTEditor.ShowModdedUI ? 64f : 128f;
                 parentSetting.offsetField.onValueChanged.ClearAll();
-                parentSetting.offsetField.text = beatmapObject.getParentOffset(i).ToString();
+                parentSetting.offsetField.text = beatmapObject.GetParentOffset(i).ToString();
                 parentSetting.offsetField.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -4279,7 +4278,7 @@ namespace BetterLegacy.Editor.Managers
                     if (!RTEditor.ShowModdedUI)
                     {
                         for (int i = 0; i < beatmapObject.events[3].Count; i++)
-                            beatmapObject.events[3][i].eventValues[6] = 10f;
+                            beatmapObject.events[3][i].values[6] = 10f;
                     }
 
                     // Since shape has no affect on the timeline object, we will only need to update the physical object.
@@ -4765,14 +4764,14 @@ namespace BetterLegacy.Editor.Managers
         public void RenderLayers(BeatmapObject beatmapObject)
         {
             Dialog.EditorLayerField.onValueChanged.ClearAll();
-            Dialog.EditorLayerField.text = (beatmapObject.editorData.layer + 1).ToString();
-            Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(beatmapObject.editorData.layer);
+            Dialog.EditorLayerField.text = (beatmapObject.editorData.Layer + 1).ToString();
+            Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(beatmapObject.editorData.Layer);
             Dialog.EditorLayerField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
                     num = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                    beatmapObject.editorData.layer = num;
+                    beatmapObject.editorData.Layer = num;
 
                     // Since layers have no effect on the physical object, we will only need to update the timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -4859,12 +4858,12 @@ namespace BetterLegacy.Editor.Managers
 
             inputFieldStorage.inputField.onEndEdit.ClearAll();
             inputFieldStorage.inputField.onValueChanged.ClearAll();
-            inputFieldStorage.inputField.text = isSingle ? firstKF.eventKeyframe.eventValues[valueIndex].ToString() : type == 2 ? "15" : "1";
+            inputFieldStorage.inputField.text = isSingle ? firstKF.eventKeyframe.values[valueIndex].ToString() : type == 2 ? "15" : "1";
             inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (isSingle && float.TryParse(_val, out float num))
                 {
-                    firstKF.eventKeyframe.eventValues[valueIndex] = num;
+                    firstKF.eventKeyframe.values[valueIndex] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -4878,11 +4877,11 @@ namespace BetterLegacy.Editor.Managers
 
                 var variables = new Dictionary<string, float>
                 {
-                    { "eventTime", firstKF.eventKeyframe.eventTime },
-                    { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                    { "eventTime", firstKF.eventKeyframe.time },
+                    { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
                 };
 
-                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
                     inputFieldStorage.inputField.text = calc.ToString();
             });
 
@@ -4901,7 +4900,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                         {
                             foreach (var keyframe in selected)
-                                keyframe.eventKeyframe.eventValues[valueIndex] += x;
+                                keyframe.eventKeyframe.values[valueIndex] += x;
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
@@ -4911,13 +4910,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var variables = new Dictionary<string, float>
                             {
-                                { "eventTime", firstKF.eventKeyframe.eventTime },
-                                { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                                { "eventTime", firstKF.eventKeyframe.time },
+                                { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
                             };
 
-                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
                                 foreach (var keyframe in selected)
-                                    keyframe.eventKeyframe.eventValues[valueIndex] += calc;
+                                    keyframe.eventKeyframe.values[valueIndex] += calc;
                         }
                     });
             }
@@ -4931,7 +4930,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                         {
                             foreach (var keyframe in selected)
-                                keyframe.eventKeyframe.eventValues[valueIndex] -= x;
+                                keyframe.eventKeyframe.values[valueIndex] -= x;
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
@@ -4941,13 +4940,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var variables = new Dictionary<string, float>
                             {
-                                { "eventTime", firstKF.eventKeyframe.eventTime },
-                                { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                                { "eventTime", firstKF.eventKeyframe.time },
+                                { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
                             };
 
-                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
                                 foreach (var keyframe in selected)
-                                    keyframe.eventKeyframe.eventValues[valueIndex] -= calc;
+                                    keyframe.eventKeyframe.values[valueIndex] -= calc;
                         }
                     });
             }
@@ -4961,7 +4960,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                         {
                             foreach (var keyframe in selected)
-                                keyframe.eventKeyframe.eventValues[valueIndex] = x;
+                                keyframe.eventKeyframe.values[valueIndex] = x;
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
@@ -4971,13 +4970,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var variables = new Dictionary<string, float>
                             {
-                                { "eventTime", firstKF.eventKeyframe.eventTime },
-                                { "currentValue", firstKF.eventKeyframe.eventValues[valueIndex] }
+                                { "eventTime", firstKF.eventKeyframe.time },
+                                { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
                             };
 
-                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.eventValues[valueIndex], variables, out float calc))
+                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
                                 foreach (var keyframe in selected)
-                                    keyframe.eventKeyframe.eventValues[valueIndex] = calc;
+                                    keyframe.eventKeyframe.values[valueIndex] = calc;
                         }
                     });
             }
@@ -5067,11 +5066,11 @@ namespace BetterLegacy.Editor.Managers
                 dialog.RandomAxisDropdown.onValueChanged.ClearAll();
                 if (active)
                 {
-                    dialog.RandomAxisDropdown.value = Mathf.Clamp((int)firstKF.eventKeyframe.eventRandomValues[3], 0, 3);
+                    dialog.RandomAxisDropdown.value = Mathf.Clamp((int)firstKF.eventKeyframe.randomValues[3], 0, 3);
                     dialog.RandomAxisDropdown.onValueChanged.AddListener(_val =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                            keyframe.eventRandomValues[3] = _val;
+                            keyframe.randomValues[3] = _val;
                         Updater.UpdateObject(beatmapObject, "Keyframes");
                     });
                 }
@@ -5084,15 +5083,15 @@ namespace BetterLegacy.Editor.Managers
             }
 
             float num = 0f;
-            if (firstKF.eventKeyframe.eventRandomValues.Length > 2)
-                num = firstKF.eventKeyframe.eventRandomValues[2];
+            if (firstKF.eventKeyframe.randomValues.Length > 2)
+                num = firstKF.eventKeyframe.randomValues[2];
 
             dialog.RandomIntervalField.NewValueChangedListener(num.ToString(), _val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
                     foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                        keyframe.eventRandomValues[2] = num;
+                        keyframe.randomValues[2] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5125,12 +5124,12 @@ namespace BetterLegacy.Editor.Managers
             inputFieldStorage.inputField.contentType = InputField.ContentType.Standard;
             inputFieldStorage.inputField.keyboardType = TouchScreenKeyboardType.Default;
             inputFieldStorage.inputField.onValueChanged.ClearAll();
-            inputFieldStorage.inputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.eventRandomValues[valueIndex].ToString() : type == 2 ? "15" : "1";
+            inputFieldStorage.inputField.text = selected.Count() == 1 ? firstKF.eventKeyframe.randomValues[valueIndex].ToString() : type == 2 ? "15" : "1";
             inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
-                    firstKF.eventKeyframe.eventRandomValues[valueIndex] = num;
+                    firstKF.eventKeyframe.randomValues[valueIndex] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5150,7 +5149,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.eventRandomValues[valueIndex] -= x;
+                        keyframe.eventKeyframe.randomValues[valueIndex] -= x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5170,7 +5169,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.eventRandomValues[valueIndex] += x;
+                        keyframe.eventKeyframe.randomValues[valueIndex] += x;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -5360,11 +5359,9 @@ namespace BetterLegacy.Editor.Managers
                     curvesMulti.onValueChanged.ClearAll();
                     curvesMultiApplyButton.onClick.AddListener(() =>
                     {
-                        if (!DataManager.inst.AnimationListDictionary.TryGetValue(curvesMulti.value, out DataManager.LSAnimation anim))
-                            return;
-
+                        var anim = (Easing)curvesMulti.value;
                         foreach (var keyframe in selected.Where(x => x.Index != 0).Select(x => x.eventKeyframe))
-                            keyframe.curveType = anim;
+                            keyframe.curve = anim;
 
                         ResizeKeyframeTimeline(beatmapObject);
 
@@ -5409,9 +5406,9 @@ namespace BetterLegacy.Editor.Managers
 
                                 var index = Parser.TryParse(valueIndex.text, 0);
 
-                                index = Mathf.Clamp(index, 0, keyframe.eventValues.Length - 1);
-                                if (index >= 0 && index < keyframe.eventValues.Length)
-                                    keyframe.eventValues[index] = kf.Type == 3 ? Mathf.Clamp((int)num, 0, CoreHelper.CurrentBeatmapTheme.objectColors.Count - 1) : num;
+                                index = Mathf.Clamp(index, 0, keyframe.values.Length - 1);
+                                if (index >= 0 && index < keyframe.values.Length)
+                                    keyframe.values[index] = kf.Type == 3 ? Mathf.Clamp((int)num, 0, CoreHelper.CurrentBeatmapTheme.objectColors.Count - 1) : num;
                             }
 
                             if (UpdateObjects)
@@ -5636,19 +5633,14 @@ namespace BetterLegacy.Editor.Managers
             dialog.CurvesLabel.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
             dialog.CurvesDropdown.gameObject.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
             dialog.CurvesDropdown.onValueChanged.ClearAll();
-
-            if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(firstKF.eventKeyframe.curveType, out int animIndex))
-                dialog.CurvesDropdown.value = animIndex;
-
+            dialog.CurvesDropdown.value = (int)firstKF.eventKeyframe.curve;
             dialog.CurvesDropdown.onValueChanged.AddListener(_val =>
             {
-                if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
-                    return;
-
+                var anim = (Easing)_val;
                 foreach (var keyframe in selected)
                 {
                     if (keyframe.Index != 0)
-                        keyframe.eventKeyframe.curveType = anim;
+                        keyframe.eventKeyframe.curve = anim;
                 }
 
                 // Since keyframe curve has no affect on the timeline object, we will only need to update the physical object.
@@ -5694,7 +5686,7 @@ namespace BetterLegacy.Editor.Managers
                 case 3:
                     {
                         bool showModifiedColors = EditorConfig.Instance.ShowModifiedColors.Value;
-                        var eventTime = firstKF.eventKeyframe.eventTime;
+                        var eventTime = firstKF.eventKeyframe.time;
                         int index = 0;
                         foreach (var toggle in ObjEditor.inst.colorButtons)
                         {
@@ -5705,7 +5697,7 @@ namespace BetterLegacy.Editor.Managers
                             toggle.onValueChanged.ClearAll();
                             if (RTEditor.ShowModdedUI || tmpIndex < 9)
                             {
-                                toggle.isOn = index == firstKF.eventKeyframe.eventValues[0];
+                                toggle.isOn = index == firstKF.eventKeyframe.values[0];
                                 toggle.onValueChanged.AddListener(_val => SetKeyframeColor(beatmapObject, 0, tmpIndex, ObjEditor.inst.colorButtons, selected));
                             }
 
@@ -5765,7 +5757,7 @@ namespace BetterLegacy.Editor.Managers
                         var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
 
                         opacity.onValueChanged.RemoveAllListeners();
-                        opacity.text = (-firstKF.eventKeyframe.eventValues[1] + 1).ToString();
+                        opacity.text = (-firstKF.eventKeyframe.values[1] + 1).ToString();
                         opacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
@@ -5773,9 +5765,9 @@ namespace BetterLegacy.Editor.Managers
                                 var value = Mathf.Clamp(-n + 1, 0f, 1f);
                                 foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                                 {
-                                    keyframe.eventValues[1] = value;
+                                    keyframe.values[1] = value;
                                     if (!RTEditor.ShowModdedUI)
-                                        keyframe.eventValues[6] = 10f;
+                                        keyframe.values[6] = 10f;
                                 }
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
@@ -5798,7 +5790,7 @@ namespace BetterLegacy.Editor.Managers
                             toggle.onValueChanged.ClearAll();
                             if (RTEditor.ShowModdedUI || tmpIndex < 9)
                             {
-                                toggle.isOn = index == firstKF.eventKeyframe.eventValues[5];
+                                toggle.isOn = index == firstKF.eventKeyframe.values[5];
                                 toggle.onValueChanged.AddListener(_val => SetKeyframeColor(beatmapObject, 5, tmpIndex, gradientColorButtons, selected));
                             }
 
@@ -5842,13 +5834,13 @@ namespace BetterLegacy.Editor.Managers
                         var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
 
                         gradientOpacity.onValueChanged.RemoveAllListeners();
-                        gradientOpacity.text = (-firstKF.eventKeyframe.eventValues[6] + 1).ToString();
+                        gradientOpacity.text = (-firstKF.eventKeyframe.values[6] + 1).ToString();
                         gradientOpacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
                             {
                                 foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                    keyframe.eventValues[6] = Mathf.Clamp(-n + 1, 0f, 1f);
+                                    keyframe.values[6] = Mathf.Clamp(-n + 1, 0f, 1f);
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
@@ -5865,12 +5857,12 @@ namespace BetterLegacy.Editor.Managers
                             var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
 
                             hue.onValueChanged.RemoveAllListeners();
-                            hue.text = firstKF.eventKeyframe.eventValues[2].ToString();
+                            hue.text = firstKF.eventKeyframe.values[2].ToString();
                             hue.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.eventKeyframe.eventValues[2] = n;
+                                    firstKF.eventKeyframe.values[2] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5886,12 +5878,12 @@ namespace BetterLegacy.Editor.Managers
                             var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
 
                             sat.onValueChanged.RemoveAllListeners();
-                            sat.text = firstKF.eventKeyframe.eventValues[3].ToString();
+                            sat.text = firstKF.eventKeyframe.values[3].ToString();
                             sat.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.eventKeyframe.eventValues[3] = n;
+                                    firstKF.eventKeyframe.values[3] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5905,12 +5897,12 @@ namespace BetterLegacy.Editor.Managers
                             var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
 
                             val.onValueChanged.RemoveAllListeners();
-                            val.text = firstKF.eventKeyframe.eventValues[4].ToString();
+                            val.text = firstKF.eventKeyframe.values[4].ToString();
                             val.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.eventKeyframe.eventValues[4] = n;
+                                    firstKF.eventKeyframe.values[4] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5927,12 +5919,12 @@ namespace BetterLegacy.Editor.Managers
                             var hue = kfdialog.Find("gradient_huesatval/x").GetComponent<InputField>();
 
                             hue.onValueChanged.RemoveAllListeners();
-                            hue.text = firstKF.eventKeyframe.eventValues[7].ToString();
+                            hue.text = firstKF.eventKeyframe.values[7].ToString();
                             hue.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.eventKeyframe.eventValues[7] = n;
+                                    firstKF.eventKeyframe.values[7] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5948,12 +5940,12 @@ namespace BetterLegacy.Editor.Managers
                             var sat = kfdialog.Find("gradient_huesatval/y").GetComponent<InputField>();
 
                             sat.onValueChanged.RemoveAllListeners();
-                            sat.text = firstKF.eventKeyframe.eventValues[8].ToString();
+                            sat.text = firstKF.eventKeyframe.values[8].ToString();
                             sat.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.eventKeyframe.eventValues[8] = n;
+                                    firstKF.eventKeyframe.values[8] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -5967,12 +5959,12 @@ namespace BetterLegacy.Editor.Managers
                             var val = kfdialog.Find("gradient_huesatval/z").GetComponent<InputField>();
 
                             val.onValueChanged.RemoveAllListeners();
-                            val.text = firstKF.eventKeyframe.eventValues[9].ToString();
+                            val.text = firstKF.eventKeyframe.values[9].ToString();
                             val.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float n))
                                 {
-                                    firstKF.eventKeyframe.eventValues[9] = n;
+                                    firstKF.eventKeyframe.values[9] = n;
 
                                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -6030,9 +6022,9 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var length = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
-            for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
+            for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
-                var marker = GameData.Current.beatmapData.markers[i];
+                var marker = GameData.Current.data.markers[i];
                 if (marker.time < beatmapObject.StartTime || marker.time > beatmapObject.StartTime + length)
                     continue;
 
@@ -6243,9 +6235,9 @@ namespace BetterLegacy.Editor.Managers
 
                         string parent = "";
                         if (!string.IsNullOrEmpty(beatmapObject.parent))
-                            parent = "<br>P: " + beatmapObject.parent + " (" + beatmapObject.GetParentType() + ")";
+                            parent = "<br>P: " + beatmapObject.parent + " (" + beatmapObject.parentType + ")";
                         else
-                            parent = "<br>P: No Parent" + " (" + beatmapObject.GetParentType() + ")";
+                            parent = "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
 
                         string text = "";
                         if (beatmapObject.shape != 4 || beatmapObject.shape != 6)
@@ -6271,7 +6263,7 @@ namespace BetterLegacy.Editor.Managers
                             "<br>Origin: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
                             text +
                             "<br>Depth: " + beatmapObject.Depth +
-                            "<br>ED: {L: " + beatmapObject.editorData.layer + ", B: " + beatmapObject.editorData.Bin + "}" +
+                            "<br>ED: {L: " + beatmapObject.editorData.Layer + ", B: " + beatmapObject.editorData.Bin + "}" +
                             "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
                             "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
                             "<br>ROT: " + transform.eulerAngles.z +
@@ -6622,7 +6614,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < beatmapObject.events.Count; i++)
             {
                 beatmapObject.events[i] = (from x in beatmapObject.events[i]
-                                           orderby x.eventTime
+                                           orderby x.time
                                            select x).ToList();
             }
 
@@ -6664,9 +6656,9 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var keyframe in selected.Select(x => x.eventKeyframe))
             {
-                keyframe.eventValues[index] = value;
+                keyframe.values[index] = value;
                 if (!RTEditor.ShowModdedUI)
-                    keyframe.eventValues[6] = 10f; // set behaviour to alpha's default if editor complexity is not set to advanced.
+                    keyframe.values[6] = 10f; // set behaviour to alpha's default if editor complexity is not set to advanced.
             }
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
@@ -6686,7 +6678,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetKeyframeRandomColorTarget(BeatmapObject beatmapObject, int index, int value, Toggle[] toggles)
         {
-            beatmapObject.events[3][ObjEditor.inst.currentKeyframe].eventRandomValues[index] = (float)value;
+            beatmapObject.events[3][ObjEditor.inst.currentKeyframe].randomValues[index] = (float)value;
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
             Updater.UpdateObject(beatmapObject, "Keyframes");

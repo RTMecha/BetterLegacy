@@ -1312,12 +1312,12 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text = GameData.Current.beatmapData.levelData.speedMultiplier.ToString();
+                                inputFieldStorage.inputField.text = GameData.Current.data.levelData.speedMultiplier.ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        GameData.Current.beatmapData.levelData.speedMultiplier = result;
+                                        GameData.Current.data.levelData.speedMultiplier = result;
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });
@@ -1331,10 +1331,10 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
-                                toggle.isOn = GameData.Current.beatmapData.levelData.lockBoost;
+                                toggle.isOn = GameData.Current.data.levelData.lockBoost;
                                 toggle.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.lockBoost = _val;
+                                    GameData.Current.data.levelData.lockBoost = _val;
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1344,10 +1344,10 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
                                 dropdown.onValueChanged.ClearAll();
-                                dropdown.value = GameData.Current.beatmapData.levelData.gameMode;
+                                dropdown.value = GameData.Current.data.levelData.gameMode;
                                 dropdown.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.gameMode = _val;
+                                    GameData.Current.data.levelData.gameMode = _val;
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1369,12 +1369,12 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text = GameData.Current.beatmapData.levelData.maxJumpCount.ToString();
+                                inputFieldStorage.inputField.text = GameData.Current.data.levelData.maxJumpCount.ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
-                                        GameData.Current.beatmapData.levelData.maxJumpCount = result;
+                                        GameData.Current.data.levelData.maxJumpCount = result;
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });
@@ -1388,12 +1388,12 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text = GameData.Current.beatmapData.levelData.maxJumpBoostCount.ToString();
+                                inputFieldStorage.inputField.text = GameData.Current.data.levelData.maxJumpBoostCount.ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
-                                        GameData.Current.beatmapData.levelData.maxJumpBoostCount = result;
+                                        GameData.Current.data.levelData.maxJumpBoostCount = result;
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });
@@ -1407,12 +1407,12 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text = GameData.Current.beatmapData.levelData.jumpGravity.ToString();
+                                inputFieldStorage.inputField.text = GameData.Current.data.levelData.jumpGravity.ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        GameData.Current.beatmapData.levelData.jumpGravity = result;
+                                        GameData.Current.data.levelData.jumpGravity = result;
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });
@@ -1426,12 +1426,12 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text = GameData.Current.beatmapData.levelData.jumpIntensity.ToString();
+                                inputFieldStorage.inputField.text = GameData.Current.data.levelData.jumpIntensity.ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
-                                        GameData.Current.beatmapData.levelData.jumpIntensity = result;
+                                        GameData.Current.data.levelData.jumpIntensity = result;
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });
@@ -1445,12 +1445,12 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
-                                inputFieldStorage.inputField.text = GameData.Current.beatmapData.levelData.maxHealth.ToString();
+                                inputFieldStorage.inputField.text = GameData.Current.data.levelData.maxHealth.ToString();
                                 inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
-                                        GameData.Current.beatmapData.levelData.maxHealth = Mathf.Clamp(result, 3, int.MaxValue);
+                                        GameData.Current.data.levelData.maxHealth = Mathf.Clamp(result, 3, int.MaxValue);
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });
@@ -1464,8 +1464,8 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
-                                toggle.isOn = GameData.Current.beatmapData.levelData.spawnPlayers;
-                                toggle.onValueChanged.AddListener(_val => GameData.Current.beatmapData.levelData.spawnPlayers = _val);
+                                toggle.isOn = GameData.Current.data.levelData.spawnPlayers;
+                                toggle.onValueChanged.AddListener(_val => GameData.Current.data.levelData.spawnPlayers = _val);
 
                                 break;
                             }
@@ -1473,10 +1473,10 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
-                                toggle.isOn = GameData.Current.beatmapData.levelData.allowCustomPlayerModels;
+                                toggle.isOn = GameData.Current.data.levelData.allowCustomPlayerModels;
                                 toggle.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.allowCustomPlayerModels = _val;
+                                    GameData.Current.data.levelData.allowCustomPlayerModels = _val;
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1486,10 +1486,10 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
-                                toggle.isOn = GameData.Current.beatmapData.levelData.limitPlayer;
+                                toggle.isOn = GameData.Current.data.levelData.limitPlayer;
                                 toggle.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitPlayer = _val;
+                                    GameData.Current.data.levelData.limitPlayer = _val;
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1501,18 +1501,18 @@ namespace BetterLegacy.Editor.Managers
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
-                                inputXStorage.inputField.text = GameData.Current.beatmapData.levelData.limitMoveSpeed.x.ToString();
+                                inputXStorage.inputField.text = GameData.Current.data.levelData.limitMoveSpeed.x.ToString();
                                 inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitMoveSpeed.x = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitMoveSpeed.x = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
-                                inputYStorage.inputField.text = GameData.Current.beatmapData.levelData.limitMoveSpeed.y.ToString();
+                                inputYStorage.inputField.text = GameData.Current.data.levelData.limitMoveSpeed.y.ToString();
                                 inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitMoveSpeed.y = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitMoveSpeed.y = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1530,18 +1530,18 @@ namespace BetterLegacy.Editor.Managers
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
-                                inputXStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostSpeed.x.ToString();
+                                inputXStorage.inputField.text = GameData.Current.data.levelData.limitBoostSpeed.x.ToString();
                                 inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostSpeed.x = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostSpeed.x = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
-                                inputYStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostSpeed.y.ToString();
+                                inputYStorage.inputField.text = GameData.Current.data.levelData.limitBoostSpeed.y.ToString();
                                 inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostSpeed.y = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostSpeed.y = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1559,18 +1559,18 @@ namespace BetterLegacy.Editor.Managers
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
-                                inputXStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostCooldown.x.ToString();
+                                inputXStorage.inputField.text = GameData.Current.data.levelData.limitBoostCooldown.x.ToString();
                                 inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostCooldown.x = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostCooldown.x = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
-                                inputYStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostCooldown.y.ToString();
+                                inputYStorage.inputField.text = GameData.Current.data.levelData.limitBoostCooldown.y.ToString();
                                 inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostCooldown.y = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostCooldown.y = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1588,18 +1588,18 @@ namespace BetterLegacy.Editor.Managers
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
-                                inputXStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostMinTime.x.ToString();
+                                inputXStorage.inputField.text = GameData.Current.data.levelData.limitBoostMinTime.x.ToString();
                                 inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostMinTime.x = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostMinTime.x = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
-                                inputYStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostMinTime.y.ToString();
+                                inputYStorage.inputField.text = GameData.Current.data.levelData.limitBoostMinTime.y.ToString();
                                 inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostMinTime.y = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostMinTime.y = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1617,18 +1617,18 @@ namespace BetterLegacy.Editor.Managers
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
-                                inputXStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostMaxTime.x.ToString();
+                                inputXStorage.inputField.text = GameData.Current.data.levelData.limitBoostMaxTime.x.ToString();
                                 inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostMaxTime.x = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostMaxTime.x = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
-                                inputYStorage.inputField.text = GameData.Current.beatmapData.levelData.limitBoostMaxTime.y.ToString();
+                                inputYStorage.inputField.text = GameData.Current.data.levelData.limitBoostMaxTime.y.ToString();
                                 inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitBoostMaxTime.y = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitBoostMaxTime.y = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
@@ -1646,18 +1646,18 @@ namespace BetterLegacy.Editor.Managers
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
-                                inputXStorage.inputField.text = GameData.Current.beatmapData.levelData.limitHitCooldown.x.ToString();
+                                inputXStorage.inputField.text = GameData.Current.data.levelData.limitHitCooldown.x.ToString();
                                 inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitHitCooldown.x = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitHitCooldown.x = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
-                                inputYStorage.inputField.text = GameData.Current.beatmapData.levelData.limitHitCooldown.y.ToString();
+                                inputYStorage.inputField.text = GameData.Current.data.levelData.limitHitCooldown.y.ToString();
                                 inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
-                                    GameData.Current.beatmapData.levelData.limitHitCooldown.y = Parser.TryParse(_val, 0f);
+                                    GameData.Current.data.levelData.limitHitCooldown.y = Parser.TryParse(_val, 0f);
                                     RTPlayer.SetGameDataProperties();
                                 });
 

@@ -1,12 +1,4 @@
-﻿using BetterLegacy.Editor.Components;
-using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Prefabs;
+﻿
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -15,14 +7,23 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
-using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
-using SelectionType = ObjEditor.ObjectSelection.SelectionType;
-using BetterLegacy.Editor.Data;
+
 using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
+
+using SelectionType = ObjEditor.ObjectSelection.SelectionType;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -96,7 +97,7 @@ namespace BetterLegacy.Editor.Managers
             if (Input.GetMouseButtonDown(1) && selectedKeyframe && originalValues != null && dragging)
             {
                 dragging = false;
-                selectedKeyframe.eventValues = originalValues.Copy();
+                selectedKeyframe.values = originalValues.Copy();
                 if (selectionType == SelectionType.Object)
                 {
                     Updater.UpdateObject(beatmapObject, "Keyframes");
@@ -1098,7 +1099,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var bm = timelineObject.GetData<BeatmapObject>();
 
-                bm.autoKillType = AutoKillType.SongTime;
+                bm.autoKillType = BeatmapObject.AutoKillType.SongTime;
                 bm.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
                 bm.editorData.collapse = true;
 
@@ -1166,16 +1167,16 @@ namespace BetterLegacy.Editor.Managers
 
                     type = Mathf.Clamp(type, 0, bm.events.Count - 1);
                     index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
-                    value = Mathf.Clamp(value, 0, bm.events[type][index].eventValues.Length - 1);
+                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
 
-                    var val = bm.events[type][index].eventValues[value];
+                    var val = bm.events[type][index].values[value];
 
                     if (type == 3 && val == 0)
                         val = Mathf.Clamp(val + amount, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
                     else
                         val += amount;
 
-                    bm.events[type][index].eventValues[value] = val;
+                    bm.events[type][index].values[value] = val;
 
                     Updater.UpdateObject(bm, "Keyframes");
                 }
@@ -1184,9 +1185,9 @@ namespace BetterLegacy.Editor.Managers
                     var po = timelineObject.GetData<PrefabObject>();
 
                     type = Mathf.Clamp(type, 0, po.events.Count - 1);
-                    value = Mathf.Clamp(value, 0, po.events[type].eventValues.Length - 1);
+                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
 
-                    po.events[type].eventValues[value] += amount;
+                    po.events[type].values[value] += amount;
 
                     Updater.UpdatePrefab(po, "offset");
                 }
@@ -1208,16 +1209,16 @@ namespace BetterLegacy.Editor.Managers
 
                     type = Mathf.Clamp(type, 0, bm.events.Count - 1);
                     index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
-                    value = Mathf.Clamp(value, 0, bm.events[type][index].eventValues.Length - 1);
+                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
 
-                    var val = bm.events[type][index].eventValues[value];
+                    var val = bm.events[type][index].values[value];
 
                     if (type == 3 && val == 0)
                         val = Mathf.Clamp(val - amount, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
                     else
                         val -= amount;
 
-                    bm.events[type][index].eventValues[value] = val;
+                    bm.events[type][index].values[value] = val;
 
                     Updater.UpdateObject(bm, "Keyframes");
                 }
@@ -1226,9 +1227,9 @@ namespace BetterLegacy.Editor.Managers
                     var po = timelineObject.GetData<PrefabObject>();
 
                     type = Mathf.Clamp(type, 0, po.events.Count - 1);
-                    value = Mathf.Clamp(value, 0, po.events[type].eventValues.Length - 1);
+                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
 
-                    po.events[type].eventValues[value] -= amount;
+                    po.events[type].values[value] -= amount;
 
                     Updater.UpdatePrefab(po, "offset");
                 }
@@ -1250,16 +1251,16 @@ namespace BetterLegacy.Editor.Managers
 
                     type = Mathf.Clamp(type, 0, bm.events.Count - 1);
                     index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
-                    value = Mathf.Clamp(value, 0, bm.events[type][index].eventValues.Length - 1);
+                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
 
-                    var val = bm.events[type][index].eventValues[value];
+                    var val = bm.events[type][index].values[value];
 
                     if (type == 3 && val == 0)
                         val = Mathf.Clamp(amount, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
                     else
                         val = amount;
 
-                    bm.events[type][index].eventValues[value] = val;
+                    bm.events[type][index].values[value] = val;
 
                     Updater.UpdateObject(bm, "Keyframes");
                 }
@@ -1268,9 +1269,9 @@ namespace BetterLegacy.Editor.Managers
                     var po = timelineObject.GetData<PrefabObject>();
 
                     type = Mathf.Clamp(type, 0, po.events.Count - 1);
-                    value = Mathf.Clamp(value, 0, po.events[type].eventValues.Length - 1);
+                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
 
-                    po.events[type].eventValues[value] = amount;
+                    po.events[type].values[value] = amount;
 
                     Updater.UpdatePrefab(po, "offset");
                 }
@@ -1407,7 +1408,7 @@ namespace BetterLegacy.Editor.Managers
 
                 bm.objectType++;
 
-                if ((int)bm.objectType > Enum.GetNames(typeof(ObjectType)).Length)
+                if ((int)bm.objectType > Enum.GetNames(typeof(BeatmapObject.ObjectType)).Length)
                     bm.objectType = 0;
 
                 Updater.UpdateObject(bm, recalculate: false);
@@ -1430,7 +1431,7 @@ namespace BetterLegacy.Editor.Managers
                 if (e < 0)
                     e = Enum.GetValues(bm.objectType.GetType()).Length - 1;
 
-                bm.objectType = (ObjectType)e;
+                bm.objectType = (BeatmapObject.ObjectType)e;
 
                 Updater.UpdateObject(bm, recalculate: false);
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
@@ -1440,17 +1441,17 @@ namespace BetterLegacy.Editor.Managers
 
         public static void JumpToNextMarker(Keybind keybind)
         {
-            if (!GameData.IsValid || GameData.Current.beatmapData.markers.Count <= 0)
+            if (!GameData.Current || GameData.Current.data.markers.Count <= 0)
                 return;
 
             RTMarkerEditor.inst.OrderMarkers();
 
-            var currentMarker = GameData.Current.beatmapData.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
+            var currentMarker = GameData.Current.data.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
 
             if (currentMarker + 1 < 0)
                 return;
 
-            var marker = GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.beatmapData.markers.Count - 1)];
+            var marker = GameData.Current.data.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.data.markers.Count - 1)];
 
             if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
                 RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
@@ -1458,17 +1459,17 @@ namespace BetterLegacy.Editor.Managers
 
         public static void JumpToPreviousMarker(Keybind keybind)
         {
-            if (!GameData.IsValid || GameData.Current.beatmapData.markers.Count <= 0)
+            if (!GameData.Current || GameData.Current.data.markers.Count <= 0)
                 return;
 
             RTMarkerEditor.inst.OrderMarkers();
 
-            var currentMarker = GameData.Current.beatmapData.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
+            var currentMarker = GameData.Current.data.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
 
             if (currentMarker < 0)
                 return;
 
-            var marker = GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.beatmapData.markers.Count - 1)];
+            var marker = GameData.Current.data.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.data.markers.Count - 1)];
 
             if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
                 RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
@@ -1535,7 +1536,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
-                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
             }
         }
 
@@ -1552,8 +1553,8 @@ namespace BetterLegacy.Editor.Managers
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
-                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType].Count - 1);
-                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
             }
         }
 
@@ -1570,12 +1571,11 @@ namespace BetterLegacy.Editor.Managers
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
-                var allEvents = GameData.Current.eventObjects.allEvents;
-                int count = allEvents[EventEditor.inst.currentEventType].Count;
+                int count = GameData.Current.events[EventEditor.inst.currentEventType].Count;
                 int num = EventEditor.inst.currentEvent + 1 >= count ? count - 1 : EventEditor.inst.currentEvent + 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
             }
         }
 
@@ -1595,7 +1595,7 @@ namespace BetterLegacy.Editor.Managers
                 int num = EventEditor.inst.currentEvent - 1 < 0 ? 0 : EventEditor.inst.currentEvent - 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
             }
         }
 
@@ -1640,7 +1640,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                if (prefabs.TryFind(x => x.ID == id, out Prefab prefab))
+                if (prefabs.TryFind(x => x.id == id, out Prefab prefab))
                     RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
 
                 return;
@@ -1751,8 +1751,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SpawnSelectedQuickPrefab(Keybind keybind)
         {
-            if (PrefabEditor.inst.currentPrefab != null)
-                PrefabEditor.inst.AddPrefabObjectToLevel(PrefabEditor.inst.currentPrefab);
+            if (RTPrefabEditor.inst.currentQuickPrefab)
+                RTPrefabEditor.inst.AddPrefabObjectToLevel(RTPrefabEditor.inst.currentQuickPrefab);
             else
                 EditorManager.inst.DisplayNotification("No selected quick prefab!", 1f, EditorManager.NotificationType.Error);
         }
@@ -1767,7 +1767,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ForceSnapBPM(Keybind keybind)
         {
-            var markers = GameData.Current.beatmapData.markers;
+            var markers = GameData.Current.data.markers;
             var currentMarker = MarkerEditor.inst.currentMarker;
             if (RTMarkerEditor.inst.Dialog.IsCurrent && currentMarker >= 0 && currentMarker < markers.Count)
             {
@@ -2015,7 +2015,7 @@ namespace BetterLegacy.Editor.Managers
                 selectionType = SelectionType.Prefab;
                 prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
                 selectedKeyframe = (EventKeyframe)prefabObject.events[type];
-                originalValues = selectedKeyframe.eventValues.Copy();
+                originalValues = selectedKeyframe.values.Copy();
             }
 
             setKeyframeValues = false;
@@ -2044,7 +2044,7 @@ namespace BetterLegacy.Editor.Managers
                         if (!setKeyframeValues)
                         {
                             setKeyframeValues = true;
-                            dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
+                            dragKeyframeValues = new Vector2(selectedKeyframe.values[0], selectedKeyframe.values[1]);
                             dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
                         }
 
@@ -2082,15 +2082,15 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         if (firstDirection == SelectObject.Axis.NegX || firstDirection == SelectObject.Axis.PosX)
-                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y;
+                            selectedKeyframe.values[1] = dragKeyframeValues.y;
 
                         if (firstDirection == SelectObject.Axis.NegY || firstDirection == SelectObject.Axis.PosY)
-                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x;
+                            selectedKeyframe.values[0] = dragKeyframeValues.x;
 
                         if (firstDirection == SelectObject.Axis.Static || firstDirection == SelectObject.Axis.PosX || firstDirection == SelectObject.Axis.NegX)
-                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
+                            selectedKeyframe.values[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
                         if (firstDirection == SelectObject.Axis.Static || firstDirection == SelectObject.Axis.PosY || firstDirection == SelectObject.Axis.NegY)
-                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+                            selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
                         break;
                     }
@@ -2100,7 +2100,7 @@ namespace BetterLegacy.Editor.Managers
                         if (!setKeyframeValues)
                         {
                             setKeyframeValues = true;
-                            dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
+                            dragKeyframeValues = new Vector2(selectedKeyframe.values[0], selectedKeyframe.values[1]);
                             dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
                         }
 
@@ -2110,30 +2110,30 @@ namespace BetterLegacy.Editor.Managers
                         {
                             float total = Vector2.Distance(dragOffset, finalVector);
 
-                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x + total;
-                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y + total;
+                            selectedKeyframe.values[0] = dragKeyframeValues.x + total;
+                            selectedKeyframe.values[1] = dragKeyframeValues.y + total;
                         }
                         else
                         {
-                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x - (dragOffset.x + finalVector.x);
-                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y - (dragOffset.y + finalVector.y);
+                            selectedKeyframe.values[0] = dragKeyframeValues.x - (dragOffset.x + finalVector.x);
+                            selectedKeyframe.values[1] = dragKeyframeValues.y - (dragOffset.y + finalVector.y);
                         }
 
                         break;
                     }
                 case 2:
                     {
-                        var position = selectionType == SelectionType.Prefab ? new Vector3(prefabObject.events[0].eventValues[0], prefabObject.events[0].eventValues[1], 0f) : beatmapObject.levelObject?.visualObject?.GameObject.transform.position ??
-                            new Vector3(beatmapObject.events[0].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0], beatmapObject.events[0].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[1], 0f);
+                        var position = selectionType == SelectionType.Prefab ? new Vector3(prefabObject.events[0].values[0], prefabObject.events[0].values[1], 0f) : beatmapObject.levelObject?.visualObject?.GameObject.transform.position ??
+                            new Vector3(beatmapObject.events[0].FindLast(x => x.time < AudioManager.inst.CurrentAudioSource.time).values[0], beatmapObject.events[0].FindLast(x => x.time < AudioManager.inst.CurrentAudioSource.time).values[1], 0f);
 
                         if (!setKeyframeValues)
                         {
                             setKeyframeValues = true;
-                            dragKeyframeValuesFloat = selectedKeyframe.eventValues[0];
+                            dragKeyframeValuesFloat = selectedKeyframe.values[0];
                             dragOffsetFloat = Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(-RTMath.VectorAngle(position, vector2), 15f) : -RTMath.VectorAngle(transform.position, vector2);
                         }
 
-                        selectedKeyframe.eventValues[0] =
+                        selectedKeyframe.values[0] =
                             Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2), 15f) :
                             dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2);
 
@@ -2150,28 +2150,28 @@ namespace BetterLegacy.Editor.Managers
         public void SetCurrentKeyframe(int type)
         {
             var timeOffset = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-            int nextIndex = beatmapObject.events[type].FindIndex(x => x.eventTime >= timeOffset);
+            int nextIndex = beatmapObject.events[type].FindIndex(x => x.time >= timeOffset);
             if (nextIndex < 0)
                 nextIndex = beatmapObject.events[type].Count - 1;
 
             int index;
-            if (useNearest && beatmapObject.events[type].TryFindIndex(x => x.eventTime > timeOffset - 0.1f && x.eventTime < timeOffset + 0.1f, out int sameIndex))
+            if (useNearest && beatmapObject.events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
             {
                 selectedKeyframe = (EventKeyframe)beatmapObject.events[type][sameIndex];
                 index = sameIndex;
-                AudioManager.inst.SetMusicTime(selectedKeyframe.eventTime + beatmapObject.StartTime);
+                AudioManager.inst.SetMusicTime(selectedKeyframe.time + beatmapObject.StartTime);
             }
             else if (createKeyframe)
             {
                 selectedKeyframe = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][nextIndex]);
-                selectedKeyframe.eventTime = timeOffset;
+                selectedKeyframe.time = timeOffset;
                 index = beatmapObject.events[type].Count;
                 beatmapObject.events[type].Add(selectedKeyframe);
             }
             else if (usePrevious)
             {
-                selectedKeyframe = (EventKeyframe)beatmapObject.events[type].FindLast(x => x.eventTime < timeOffset);
-                index = beatmapObject.events[type].FindLastIndex(x => x.eventTime < timeOffset);
+                selectedKeyframe = (EventKeyframe)beatmapObject.events[type].FindLast(x => x.time < timeOffset);
+                index = beatmapObject.events[type].FindLastIndex(x => x.time < timeOffset);
             }
             else
             {
@@ -2179,7 +2179,7 @@ namespace BetterLegacy.Editor.Managers
                 index = 0;
             }
 
-            originalValues = selectedKeyframe.eventValues.Copy();
+            originalValues = selectedKeyframe.values.Copy();
 
             ObjectEditor.inst.RenderKeyframes(beatmapObject);
             ObjectEditor.inst.SetCurrentKeyframe(beatmapObject, type, index, false, false);

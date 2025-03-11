@@ -35,10 +35,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
-using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using MetadataWrapper = EditorManager.MetadataWrapper;
+
 using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
@@ -1810,7 +1807,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             for (int j = 0; j < jn["events"][GameData.EventTypes[i]].Count; j++)
                             {
-                                var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].eventValues.Length));
+                                var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].values.Length));
                                 timelineObject.Type = i;
                                 timelineObject.Index = j;
                                 RTEventEditor.inst.copiedEventKeyframes.Add(timelineObject);
@@ -2239,7 +2236,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Open Checkpoint Editor", () =>
                     {
-                        if (Patchers.CheckpointEditorPatch.currentCheckpoint == null || !GameData.IsValid || CheckpointEditor.inst.currentObj < 0 || CheckpointEditor.inst.currentObj >= GameData.Current.beatmapData.checkpoints.Count)
+                        if (Patchers.CheckpointEditorPatch.currentCheckpoint == null || !GameData.Current || CheckpointEditor.inst.currentObj < 0 || CheckpointEditor.inst.currentObj >= GameData.Current.data.checkpoints.Count)
                         {
                             EditorManager.inst.DisplayNotification("Select / create a Checkpoint first!", 1.5f, EditorManager.NotificationType.Warning);
                             return;
@@ -2302,7 +2299,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Next Free Layer", () =>
                     {
                         var layer = 0;
-                        while (GameData.Current.beatmapObjects.Has(x => x.editorData != null && x.editorData.layer == layer))
+                        while (GameData.Current.beatmapObjects.Has(x => x.editorData && x.editorData.Layer == layer))
                             layer++;
                         EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
                     }),
@@ -2422,11 +2419,11 @@ namespace BetterLegacy.Editor.Managers
                     switch (pointerEventData.button)
                     {
                         case PointerEventData.InputButton.Right:
-                                if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
+                                if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent))
                                     RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
                                 break;
                         case PointerEventData.InputButton.Middle:
-                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent) && GameData.Current.eventObjects.allEvents[currentEvent].TryFindLastIndex(x => x.eventTime < EditorTimeline.inst.GetTimelineTime(), out int index))
+                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(), out int index))
                                 RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
                             break;
                     }
@@ -2691,7 +2688,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (CurrentLevel)
                     {
-                        if (GameData.IsValid)
+                        if (GameData.Current)
                             GameData.Current.SaveData(RTFile.CombinePaths(CurrentLevel.path, "reload-level-backup.lsb"));
                         StartCoroutine(LoadLevel(CurrentLevel));
                     }
@@ -2759,7 +2756,7 @@ namespace BetterLegacy.Editor.Managers
 
             var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", EditorSprites.CloseSprite, () =>
             {
-                if (!GameData.IsValid)
+                if (!GameData.Current)
                     return;
 
                 if (!EditorManager.inst.hasLoadedLevel)
@@ -2787,7 +2784,7 @@ namespace BetterLegacy.Editor.Managers
 
             var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", EditorSprites.CloseSprite, () =>
             {
-                if (!GameData.IsValid)
+                if (!GameData.Current)
                     return;
 
                 if (!EditorManager.inst.hasLoadedLevel)
@@ -4330,7 +4327,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
                 LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
 
-            if (GameData.IsValid)
+            if (GameData.Current)
             {
                 var bgs = GameData.Current.backgroundObjects;
                 for (int i = 0; i < bgs.Count; i++)
@@ -4782,18 +4779,18 @@ namespace BetterLegacy.Editor.Managers
         public GameData CreateBaseBeatmap()
         {
             var gameData = new GameData();
-            gameData.beatmapData = new LevelBeatmapData();
-            gameData.beatmapData.levelData = new LevelData()
+            gameData.data = new LevelBeatmapData();
+            gameData.data.levelData = new LevelData()
             {
                 limitPlayer = false,
             };
-            gameData.beatmapData.editorData = new LevelEditorData();
-            gameData.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
+            gameData.data.editorData = new LevelEditorData();
+            gameData.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
 
-            if (gameData.eventObjects.allEvents == null)
-                gameData.eventObjects.allEvents = new List<List<BaseEventKeyframe>>();
-            gameData.eventObjects.allEvents.Clear();
-            GameData.ClampEventListValues(gameData.eventObjects.allEvents);
+            if (gameData.events == null)
+                gameData.events = new List<List<EventKeyframe>>();
+            gameData.events.Clear();
+            GameData.ClampEventListValues(gameData.events);
 
             for (int i = 0; i < (CoreHelper.AprilFools ? 45 : 25); i++)
             {
@@ -4812,7 +4809,7 @@ namespace BetterLegacy.Editor.Managers
                 backgroundObject.reactive = UnityEngine.Random.value > 0.5f;
                 if (backgroundObject.reactive)
                 {
-                    backgroundObject.reactiveType = (BaseBackgroundObject.ReactiveType)UnityEngine.Random.Range(0, 4);
+                    backgroundObject.reactiveType = (BackgroundObject.ReactiveType)UnityEngine.Random.Range(0, 4);
                     backgroundObject.reactiveScale = UnityEngine.Random.Range(0.01f, 0.04f);
                 }
 
@@ -4832,9 +4829,9 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.events[2].Add(new EventKeyframe(12f, new float[1] { 360000f }, new float[3]));
 
             beatmapObject.name = CoreHelper.AprilFools ? "trololololo" : DEFAULT_OBJECT_NAME;
-            beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
+            beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 4f;
-            beatmapObject.editorData.layer = 0;
+            beatmapObject.editorData.Layer = 0;
             gameData.beatmapObjects.Add(beatmapObject);
 
             return gameData;
@@ -5191,7 +5188,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateTimeline()
         {
-            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.IsValid || GameData.Current.beatmapData == null)
+            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.Current || GameData.Current.data == null)
                 return;
 
             for (int i = 0; i < checkpointImages.Count; i++)
@@ -5202,7 +5199,7 @@ namespace BetterLegacy.Editor.Managers
 
             checkpointImages.Clear();
             LSHelpers.DeleteChildren(timelinePreview.Find("elements"));
-            foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
+            foreach (var checkpoint in GameData.Current.data.checkpoints)
             {
                 if (checkpoint.time <= 0.5f)
                     continue;
@@ -6484,9 +6481,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Renderer)
             {
-                var color = AudioManager.inst.CurrentAudioSource.time < beatmapObject.StartTime ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][0].eventValues[0])
-                    : AudioManager.inst.CurrentAudioSource.time > beatmapObject.StartTime + beatmapObject.GetObjectLifeLength() && beatmapObject.autoKillType != AutoKillType.OldStyleNoAutokill
-                    ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][beatmapObject.events[3].Count - 1].eventValues[0])
+                var color = AudioManager.inst.CurrentAudioSource.time < beatmapObject.StartTime ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][0].values[0])
+                    : AudioManager.inst.CurrentAudioSource.time > beatmapObject.StartTime + beatmapObject.GetObjectLifeLength() && beatmapObject.autoKillType != BeatmapObject.AutoKillType.OldStyleNoAutokill
+                    ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][beatmapObject.events[3].Count - 1].values[0])
                     : levelObject.visualObject.Renderer.material.HasProperty("_Color") ? levelObject.visualObject.Renderer.material.color : Color.white;
 
                 if (ignoreTransparency)
@@ -6553,7 +6550,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
 
-                                string fileName = $"{RTFile.FormatLegacyFileName(prefab.Name)}{FileFormat.LSP.Dot()}";
+                                string fileName = $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}";
                                 RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListSlash, fileName), jn.ToString());
 
                                 file = null;

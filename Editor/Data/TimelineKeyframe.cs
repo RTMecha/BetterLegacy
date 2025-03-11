@@ -75,8 +75,8 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public float Time
         {
-            get => eventKeyframe.eventTime;
-            set => eventKeyframe.eventTime = value;
+            get => eventKeyframe.time;
+            set => eventKeyframe.time = value;
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace BetterLegacy.Editor.Data
         {
             if (isObjectKeyframe)
             {
-                if (beatmapObject.events[Type].TryFindIndex(x => (x as EventKeyframe).id == ID, out int kfIndex))
+                if (beatmapObject.events[Type].TryFindIndex(x => x.id == ID, out int kfIndex))
                     Index = kfIndex;
 
                 RenderSprite(beatmapObject.events[Type]);
@@ -211,7 +211,7 @@ namespace BetterLegacy.Editor.Data
             }
             else
             {
-                var events = RTEventEditor.AllEvents[Type];
+                var events = GameData.Current.events[Type].Select(x => x as EventKeyframe).ToList();
                 if (events.TryFindIndex(x => (x as EventKeyframe).id == ID, out int index))
                     Index = index;
 
@@ -315,7 +315,7 @@ namespace BetterLegacy.Editor.Data
         /// Renders the keyframe sprite based on its type.
         /// </summary>
         /// <param name="events">Keyframe list reference.</param>
-        public void RenderSprite(List<DataManager.GameData.EventKeyframe> events) => Image.sprite = EditorTimeline.GetKeyframeIcon(eventKeyframe.curveType, events.Count > Index + 1 ? events[Index + 1].curveType : DataManager.inst.AnimationList[0]);
+        public void RenderSprite(List<EventKeyframe> events) => Image.sprite = EditorTimeline.GetKeyframeIcon(eventKeyframe.curve, events.Count > Index + 1 ? events[Index + 1].curve : Easing.Linear);
 
         /// <summary>
         /// Updates the timeline keyframes' icons.

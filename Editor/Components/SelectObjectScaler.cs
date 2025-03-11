@@ -110,7 +110,7 @@ namespace BetterLegacy.Editor.Components
             if (!setKeyframeValues)
             {
                 setKeyframeValues = true;
-                dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
+                dragKeyframeValues = new Vector2(selectedKeyframe.values[0], selectedKeyframe.values[1]);
                 dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
             }
 
@@ -132,19 +132,19 @@ namespace BetterLegacy.Editor.Components
                 if (axis == SelectObject.Axis.NegY && dragOffset.y - finalVector.y < 0f)
                     total = -total;
 
-                selectedKeyframe.eventValues[0] = dragKeyframeValues.x + total;
-                selectedKeyframe.eventValues[1] = dragKeyframeValues.y + total;
+                selectedKeyframe.values[0] = dragKeyframeValues.x + total;
+                selectedKeyframe.values[1] = dragKeyframeValues.y + total;
             }
             else
             {
                 if (axis == SelectObject.Axis.PosX)
-                    selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + finalVector.x;
+                    selectedKeyframe.values[0] = dragKeyframeValues.x - dragOffset.x + finalVector.x;
                 if (axis == SelectObject.Axis.NegX)
-                    selectedKeyframe.eventValues[0] = dragKeyframeValues.x + dragOffset.x - finalVector.x;
+                    selectedKeyframe.values[0] = dragKeyframeValues.x + dragOffset.x - finalVector.x;
                 if (axis == SelectObject.Axis.PosY)
-                    selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + finalVector.y;
+                    selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + finalVector.y;
                 if (axis == SelectObject.Axis.NegY)
-                    selectedKeyframe.eventValues[1] = dragKeyframeValues.y + dragOffset.y - finalVector.y;
+                    selectedKeyframe.values[1] = dragKeyframeValues.y + dragOffset.y - finalVector.y;
             }
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)

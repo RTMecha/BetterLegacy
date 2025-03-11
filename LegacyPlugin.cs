@@ -268,7 +268,7 @@ namespace BetterLegacy
             {
                 Application.quitting += () =>
                 {
-                    if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.IsValid)
+                    if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.Current)
                         GameData.Current.SaveData(RTFile.CombinePaths(RTFile.BasePath, "level-quit-backup.lsb"));
                 };
             }

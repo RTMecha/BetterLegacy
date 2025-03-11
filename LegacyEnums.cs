@@ -441,7 +441,7 @@ namespace BetterLegacy
     /// <summary>
     /// PA Easings.
     /// </summary>
-    public enum Easings
+    public enum Easing
     {
         Linear,
         Instant,

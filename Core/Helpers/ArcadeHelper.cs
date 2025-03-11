@@ -68,7 +68,7 @@ namespace BetterLegacy.Core.Helpers
         /// Replays the level during the End Level Menu.
         /// </summary>
         public static bool ReplayLevel =>
-            (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.levelData == null || !GameData.Current.beatmapData.levelData.forceReplayLevelOff) &&
+            (!GameData.Current || GameData.Current.data == null || GameData.Current.data.levelData == null || !GameData.Current.data.levelData.forceReplayLevelOff) &&
             CoreConfig.Instance.ReplayLevel.Value;
 
         #endregion

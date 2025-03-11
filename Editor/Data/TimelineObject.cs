@@ -64,7 +64,7 @@ namespace BetterLegacy.Editor.Data
         public string ID => TimelineReference switch
         {
             TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().id,
-            TimelineReferenceType.PrefabObject => GetData<PrefabObject>().ID,
+            TimelineReferenceType.PrefabObject => GetData<PrefabObject>().id,
             _ => string.Empty,
         };
 
@@ -144,16 +144,16 @@ namespace BetterLegacy.Editor.Data
         {
             get => TimelineReference switch
             {
-                TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.layer,
-                TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.layer,
+                TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.Layer,
+                TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.Layer,
                 _ => 0,
             };
             set
             {
                 if (isBeatmapObject)
-                    GetData<BeatmapObject>().editorData.layer = value;
+                    GetData<BeatmapObject>().editorData.Layer = value;
                 if (isPrefabObject)
-                    GetData<PrefabObject>().editorData.layer = value;
+                    GetData<PrefabObject>().editorData.Layer = value;
 
                 RenderVisibleState();
             }
@@ -364,7 +364,7 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
-        /// Adds to the <see cref="RTEditor.timelineObjects"/> list if the timeline object wasn't verified already.
+        /// Adds to the <see cref="EditorTimeline.timelineObjects"/> list if the timeline object wasn't verified already.
         /// </summary>
         /// <param name="forceAdd">If the timeline object should be added regardless of verification.</param>
         public void AddToList(bool forceAdd = false)
@@ -413,8 +413,8 @@ namespace BetterLegacy.Editor.Data
             if (TryGetData(out PrefabObject prefabObject))
             {
                 prefab = prefabObject.GetPrefab();
-                name = prefab.Name;
-                startTime = prefabObject.StartTime + prefab.Offset;
+                name = prefab.name;
+                startTime = prefabObject.StartTime + prefab.offset;
                 length = prefabObject.GetPrefabLifeLength(true);
                 image.type = Image.Type.Simple;
                 image.sprite = null;
@@ -434,8 +434,7 @@ namespace BetterLegacy.Editor.Data
         {
             switch (TimelineReference)
             {
-                case TimelineReferenceType.BeatmapObject:
-                    {
+                case TimelineReferenceType.BeatmapObject: {
                         if (!GameObject || !Image)
                             return;
 
@@ -458,8 +457,7 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
-                case TimelineReferenceType.PrefabObject:
-                    {
+                case TimelineReferenceType.PrefabObject: {
                         if (!GameObject || !Image)
                             return;
 
@@ -503,7 +501,7 @@ namespace BetterLegacy.Editor.Data
             float timeOffset = 0f;
 
             if (isPrefabObject)
-                timeOffset = GetData<PrefabObject>().GetPrefab().Offset;
+                timeOffset = GetData<PrefabObject>().GetPrefab().offset;
 
             RenderPosLength(EditorManager.inst.Zoom, Length, Time + timeOffset);
         }
@@ -524,16 +522,6 @@ namespace BetterLegacy.Editor.Data
             rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, EditorTimeline.inst.BinCount)));
             if (Hover)
                 Hover.size = ObjectEditor.TimelineObjectHoverSize;
-        }
-
-        /// <summary>
-        /// Renders the keyframe sprite based on its type.
-        /// </summary>
-        /// <param name="events">Keyframe list reference.</param>
-        public void RenderSprite(List<DataManager.GameData.EventKeyframe> events)
-        {
-            if (TryGetData(out EventKeyframe eventKeyframe))
-                Image.sprite = EditorTimeline.GetKeyframeIcon(eventKeyframe.curveType, events.Count > Index + 1 ? events[Index + 1].curveType : DataManager.inst.AnimationList[0]);
         }
 
         /// <summary>

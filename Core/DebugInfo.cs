@@ -13,7 +13,7 @@ namespace BetterLegacy.Core.Managers
     {
         public static void TogglePlay() => (AudioManager.inst.CurrentAudioSource.isPlaying ? (Action)AudioManager.inst.CurrentAudioSource.Pause : AudioManager.inst.CurrentAudioSource.Play).Invoke();
 
-        public static int BeatmapObjectAliveCount() => !GameData.IsValid ? 0 : GameData.Current.beatmapObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty && x.Alive).Count;
+        public static int BeatmapObjectAliveCount() => !GameData.Current ? 0 : GameData.Current.beatmapObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty && x.Alive).Count;
 
         public static void LogColor(Color color) => Debug.Log($"[<color=#{CoreHelper.ColorToHex(color)}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
         public static void LogColor(string color) => Debug.Log($"[<color={color}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
@@ -109,7 +109,7 @@ namespace BetterLegacy.Core.Managers
             if (CoreHelper.InGame && !CoreConfig.Instance.DebugShowOnlyFPS.Value)
             {
                 Info.text = $"<b>FPS:</b> {LegacyPlugin.FPSCounter.Text}<br>" +
-                            $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {(!GameData.IsValid ? 0 : GameData.Current.beatmapObjects.Count)}<br>" +
+                            $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {(!GameData.Current ? 0 : GameData.Current.beatmapObjects.Count)}<br>" +
                             $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
                             $"<b>Main Camera Zoom: {Camera.main.orthographicSize}<br>" +
                             $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +

@@ -25,7 +25,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void UpdatePrefix()
         {
-            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.IsValid || GameData.Current.backgroundObjects == null)
+            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.Current || GameData.Current.backgroundObjects == null)
                 return;
 
             var list = GameData.Current.backgroundObjects;
@@ -216,7 +216,7 @@ namespace BetterLegacy.Patchers
 
         static IEnumerator LoadBackgrounds()
         {
-            while (!GameData.IsValid || GameManager.inst.gameState != GameManager.State.Playing)
+            while (!GameData.Current || GameManager.inst.gameState != GameManager.State.Playing)
                 yield return null;
 
             Instance.audio = AudioManager.inst.CurrentAudioSource;

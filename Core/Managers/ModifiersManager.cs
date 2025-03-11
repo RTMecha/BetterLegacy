@@ -27,7 +27,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void OnLevelTick()
         {
-            if (!GameData.IsValid || !CoreHelper.Playing)
+            if (!GameData.Current || !CoreHelper.Playing)
                 return;
 
             if (Input.GetKeyDown(KeyCode.Alpha1))

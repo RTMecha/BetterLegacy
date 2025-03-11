@@ -21,10 +21,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using BasePrefab = DataManager.GameData.Prefab;
-using BasePrefabObject = DataManager.GameData.PrefabObject;
 
 namespace BetterLegacy.Patchers
 {
@@ -263,7 +259,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetKeyframeIconPrefix(ref Sprite __result, DataManager.LSAnimation __0, DataManager.LSAnimation __1)
         {
-            __result = EditorTimeline.GetKeyframeIcon(__0, __1);
+            __result = null;
             return false;
         }
 
@@ -319,7 +315,7 @@ namespace BetterLegacy.Patchers
                 a.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
 
             copy.description = "Take me wherever you go!";
-            Instance.beatmapObjCopy = copy;
+            ObjectEditor.inst.copy = copy;
             Instance.hasCopiedObject = true;
 
             if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.DirectoryExists(Application.persistentDataPath))
@@ -337,7 +333,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(ObjEditor.AddEvent))]
         [HarmonyPrefix]
-        static bool AddEventPrefix(ref int __result, float __0, int __1, BaseEventKeyframe __2) => false;
+        static bool AddEventPrefix() => false;
 
         [HarmonyPatch(nameof(ObjEditor.ToggleLockCurrentSelection))]
         [HarmonyPrefix]

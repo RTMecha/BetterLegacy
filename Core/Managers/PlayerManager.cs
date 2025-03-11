@@ -461,8 +461,8 @@ namespace BetterLegacy.Core.Managers
             ValidatePlayers();
             DestroyPlayers();
 
-            if (!GameData.IsValid || GameData.Current.beatmapData is not LevelBeatmapData beatmapData || beatmapData.levelData is not LevelData levelData || levelData.spawnPlayers)
-                SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
+            if (!GameData.Current || GameData.Current.data is not LevelBeatmapData beatmapData || beatmapData.levelData is not LevelData levelData || levelData.spawnPlayers)
+                SpawnPlayers(GameData.Current.data.checkpoints[0].pos);
         }
 
         /// <summary>
@@ -544,13 +544,13 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns the last active checkpoint position.</returns>
         public static Vector2 GetSpawnPosition()
         {
-            var nextIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
+            var nextIndex = GameData.Current.data.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
             var prevIndex = nextIndex - 1;
             if (prevIndex < 0)
                 prevIndex = 0;
 
-            return GameData.IsValid && GameData.Current.beatmapData.checkpoints.Count > prevIndex && GameData.Current.beatmapData.checkpoints[prevIndex] != null ?
-                GameData.Current.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position;
+            return GameData.Current && GameData.Current.data.checkpoints.Count > prevIndex && GameData.Current.data.checkpoints[prevIndex] != null ?
+                GameData.Current.data.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position;
         }
 
         #endregion

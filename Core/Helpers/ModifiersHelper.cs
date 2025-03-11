@@ -852,7 +852,7 @@ namespace BetterLegacy.Core.Helpers
                             var time = Updater.CurrentTime;
 
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                             if (fromType < 0 || fromType > 2)
                                 break;
@@ -873,7 +873,7 @@ namespace BetterLegacy.Core.Helpers
                             var time = Updater.CurrentTime;
 
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                             if (fromType < 0 || fromType > 2)
                                 break;
@@ -894,7 +894,7 @@ namespace BetterLegacy.Core.Helpers
                             var time = Updater.CurrentTime;
 
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                             if (fromType < 0 || fromType > 2)
                                 break;
@@ -915,7 +915,7 @@ namespace BetterLegacy.Core.Helpers
                             var time = Updater.CurrentTime;
 
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                             if (fromType < 0 || fromType > 2)
                                 break;
@@ -936,7 +936,7 @@ namespace BetterLegacy.Core.Helpers
                             var time = Updater.CurrentTime;
 
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                             if (fromType < 0 || fromType > 2)
                                 break;
@@ -2840,7 +2840,7 @@ namespace BetterLegacy.Core.Helpers
                                 var time = AudioManager.inst.CurrentAudioSource.time;
 
                                 fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-                                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].eventValues.Length);
+                                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
                                 if (!Updater.levelProcessor.converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences cachedSequence))
                                     continue;
@@ -3110,7 +3110,7 @@ namespace BetterLegacy.Core.Helpers
                                 float reactivePositionX = Updater.GetSample(sampleX, intensityX * val);
                                 float reactivePositionY = Updater.GetSample(sampleY, intensityY * val);
 
-                                levelObject.visualObject.SetOrigin(new Vector3(modifier.reference.origin.x + reactivePositionX, modifier.reference.origin.y + reactivePositionY, modifier.reference.depth * 0.1f));
+                                levelObject.visualObject.SetOrigin(new Vector3(modifier.reference.origin.x + reactivePositionX, modifier.reference.origin.y + reactivePositionY, modifier.reference.Depth * 0.1f));
                             }
                             break;
                         }
@@ -3265,7 +3265,7 @@ namespace BetterLegacy.Core.Helpers
                                 var time = AudioManager.inst.CurrentAudioSource.time;
 
                                 fromType = Mathf.Clamp(fromType, 0, modifier.reference.events.Count - 1);
-                                fromAxis = Mathf.Clamp(fromAxis, 0, modifier.reference.events[fromType][0].eventValues.Length - 1);
+                                fromAxis = Mathf.Clamp(fromAxis, 0, modifier.reference.events[fromType][0].values.Length - 1);
                                 toType = Mathf.Clamp(toType, 0, RTEventManager.inst.offsets.Count - 1);
                                 toAxis = Mathf.Clamp(toAxis, 0, RTEventManager.inst.offsets[toType].Count - 1);
 
@@ -3493,16 +3493,16 @@ namespace BetterLegacy.Core.Helpers
                                 Color color;
                                 Color secondColor;
                                 {
-                                    var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.eventTime < time);
+                                    var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
 
                                     if (prevKFIndex < 0)
                                         break;
 
                                     var prevKF = beatmapObject.events[3][prevKFIndex];
                                     var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
-                                    var easing = Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time));
-                                    int prevcolor = (int)prevKF.eventValues[0];
-                                    int nextColor = (int)nextKF.eventValues[0];
+                                    var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
+                                    int prevcolor = (int)prevKF.values[0];
+                                    int nextColor = (int)nextKF.values[0];
                                     var lerp = RTMath.Lerp(0f, 1f, easing);
                                     if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                                         lerp = 1f;
@@ -3512,27 +3512,27 @@ namespace BetterLegacy.Core.Helpers
                                         CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
                                         lerp);
 
-                                    lerp = RTMath.Lerp(prevKF.eventValues[1], nextKF.eventValues[1], easing);
+                                    lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
                                     if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                                         lerp = 0f;
 
                                     color = LSColors.fadeColor(color, -(lerp - 1f));
 
-                                    var lerpHue = RTMath.Lerp(prevKF.eventValues[2], nextKF.eventValues[2], easing);
-                                    var lerpSat = RTMath.Lerp(prevKF.eventValues[3], nextKF.eventValues[3], easing);
-                                    var lerpVal = RTMath.Lerp(prevKF.eventValues[4], nextKF.eventValues[4], easing);
+                                    var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
+                                    var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
+                                    var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
 
                                     if (float.IsNaN(lerpHue))
-                                        lerpHue = nextKF.eventValues[2];
+                                        lerpHue = nextKF.values[2];
                                     if (float.IsNaN(lerpSat))
-                                        lerpSat = nextKF.eventValues[3];
+                                        lerpSat = nextKF.values[3];
                                     if (float.IsNaN(lerpVal))
-                                        lerpVal = nextKF.eventValues[4];
+                                        lerpVal = nextKF.values[4];
 
                                     color = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
 
-                                    prevcolor = (int)prevKF.eventValues[5];
-                                    nextColor = (int)nextKF.eventValues[5];
+                                    prevcolor = (int)prevKF.values[5];
+                                    nextColor = (int)nextKF.values[5];
                                     lerp = RTMath.Lerp(0f, 1f, easing);
                                     if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                                         lerp = 1f;
@@ -3542,22 +3542,22 @@ namespace BetterLegacy.Core.Helpers
                                         CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
                                         lerp);
 
-                                    lerp = RTMath.Lerp(prevKF.eventValues[6], nextKF.eventValues[6], easing);
+                                    lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
                                     if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                                         lerp = 0f;
 
                                     secondColor = LSColors.fadeColor(secondColor, -(lerp - 1f));
 
-                                    lerpHue = RTMath.Lerp(prevKF.eventValues[7], nextKF.eventValues[7], easing);
-                                    lerpSat = RTMath.Lerp(prevKF.eventValues[8], nextKF.eventValues[8], easing);
-                                    lerpVal = RTMath.Lerp(prevKF.eventValues[9], nextKF.eventValues[9], easing);
+                                    lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
+                                    lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
+                                    lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
 
                                     if (float.IsNaN(lerpHue))
-                                        lerpHue = nextKF.eventValues[7];
+                                        lerpHue = nextKF.values[7];
                                     if (float.IsNaN(lerpSat))
-                                        lerpSat = nextKF.eventValues[8];
+                                        lerpSat = nextKF.values[8];
                                     if (float.IsNaN(lerpVal))
-                                        lerpVal = nextKF.eventValues[9];
+                                        lerpVal = nextKF.values[9];
 
                                     secondColor = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
                                 }
@@ -4480,7 +4480,7 @@ namespace BetterLegacy.Core.Helpers
                                 var time = Updater.CurrentTime;
 
                                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                                 if (toType < 0 || toType > 3)
                                     break;
@@ -4540,7 +4540,7 @@ namespace BetterLegacy.Core.Helpers
                                     var time = Updater.CurrentTime;
 
                                     fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                                     if (toType < 0 || toType > 3)
                                         break;
@@ -4711,7 +4711,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "legacyTail": {
                             if (modifier.reference &&
-                                modifier.commands.Count > 1 && GameData.IsValid)
+                                modifier.commands.Count > 1 && GameData.Current)
                             {
                                 var totalTime = Parser.TryParse(modifier.value, 200f);
 
@@ -5327,7 +5327,7 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         Updater.UpdatePrefab(prefabObjectResult, false);
 
-                                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.ID == prefabObjectResult.ID);
+                                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObjectResult.id);
 
                                         otherModifier.Result = null;
                                         continue;
@@ -5341,7 +5341,7 @@ namespace BetterLegacy.Core.Helpers
                                         var prefabObject = result[k];
 
                                         Updater.UpdatePrefab(prefabObject, false);
-                                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.ID == prefabObject.ID);
+                                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
                                     }
 
                                     result.Clear();
@@ -5862,7 +5862,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 Updater.UpdatePrefab(prefabObject, false);
 
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.ID == prefabObject.ID);
+                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
                                 modifier.Result = null;
                             }
@@ -6324,7 +6324,7 @@ namespace BetterLegacy.Core.Helpers
                             var time = Updater.CurrentTime;
 
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                             if (Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
                             {
@@ -6735,20 +6735,20 @@ namespace BetterLegacy.Core.Helpers
         static PrefabObject AddPrefabObjectToLevel(Prefab prefab, float startTime, Vector2 pos, Vector2 sca, float rot, int repeatCount, float repeatOffsetTime, float speed)
         {
             var prefabObject = new PrefabObject();
-            prefabObject.ID = LSText.randomString(16);
-            prefabObject.prefabID = prefab.ID;
+            prefabObject.id = LSText.randomString(16);
+            prefabObject.prefabID = prefab.id;
 
             prefabObject.StartTime = startTime;
 
-            prefabObject.events[0].eventValues[0] = pos.x;
-            prefabObject.events[0].eventValues[1] = pos.y;
-            prefabObject.events[1].eventValues[0] = sca.x;
-            prefabObject.events[1].eventValues[1] = sca.y;
-            prefabObject.events[2].eventValues[0] = rot;
+            prefabObject.events[0].values[0] = pos.x;
+            prefabObject.events[0].values[1] = pos.y;
+            prefabObject.events[1].values[0] = sca.x;
+            prefabObject.events[1].values[1] = sca.y;
+            prefabObject.events[2].values[0] = rot;
 
             prefabObject.RepeatCount = repeatCount;
             prefabObject.RepeatOffsetTime = repeatOffsetTime;
-            prefabObject.speed = speed;
+            prefabObject.Speed = speed;
 
             prefabObject.fromModifier = true;
 
@@ -6910,8 +6910,8 @@ namespace BetterLegacy.Core.Helpers
         static Prefab GetPrefab(int findType, string reference) => findType switch
         {
             0 => GameData.Current.prefabs.GetAt(Parser.TryParse(reference, -1)),
-            1 => GameData.Current.prefabs.Find(x => x.Name == reference),
-            2 => GameData.Current.prefabs.Find(x => x.ID == reference),
+            1 => GameData.Current.prefabs.Find(x => x.name == reference),
+            2 => GameData.Current.prefabs.Find(x => x.id == reference),
             _ => null,
         };
 

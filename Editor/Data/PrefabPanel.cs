@@ -376,7 +376,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Renders the prefab panel name.
         /// </summary>
-        public void RenderName() => RenderName(isFolder ? Path.GetFileName(FilePath) : Prefab.Name);
+        public void RenderName() => RenderName(isFolder ? Path.GetFileName(FilePath) : Prefab.name);
 
         /// <summary>
         /// Renders the prefab panel name.
@@ -467,10 +467,10 @@ namespace BetterLegacy.Editor.Data
         public void RenderTooltip(Prefab prefab, PrefabType prefabType)
         {
             TooltipHelper.AddHoverTooltip(GameObject,
-                "<#" + LSColors.ColorToHex(prefabType.color) + ">" + prefab.Name + "</color>",
-                "Offset: " + prefab.Offset +
+                "<#" + LSColors.ColorToHex(prefabType.color) + ">" + prefab.name + "</color>",
+                "Offset: " + prefab.offset +
                 "<br>Type: " + prefabType.name +
-                "<br>Count: " + prefab.objects.Count +
+                "<br>Count: " + prefab.beatmapObjects.Count +
                 "<br>Description: " + prefab.description, clear: true);
         }
 
@@ -497,7 +497,7 @@ namespace BetterLegacy.Editor.Data
                                     {
                                         var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
-                                        otherBeatmapObject.prefabID = prefab.ID;
+                                        otherBeatmapObject.prefabID = prefab.id;
                                         otherBeatmapObject.prefabInstanceID = prefabInstanceID;
                                         EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
                                     }
@@ -506,7 +506,7 @@ namespace BetterLegacy.Editor.Data
                                 {
                                     var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                                    currentBeatmapObject.prefabID = prefab.ID;
+                                    currentBeatmapObject.prefabID = prefab.id;
                                     currentBeatmapObject.prefabInstanceID = prefabInstanceID;
                                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
                                     ObjectEditor.inst.OpenDialog(currentBeatmapObject);
@@ -550,7 +550,7 @@ namespace BetterLegacy.Editor.Data
                                     }),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
-                                        RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.ID);
+                                        RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.id);
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup))
                                     );
@@ -576,10 +576,10 @@ namespace BetterLegacy.Editor.Data
 
                                 var prefabToSaveTo = Prefab;
 
-                                prefabToSaveTo.objects = RTPrefabEditor.inst.prefabToSaveFrom.objects.Clone();
+                                prefabToSaveTo.beatmapObjects = RTPrefabEditor.inst.prefabToSaveFrom.beatmapObjects.Clone();
                                 prefabToSaveTo.prefabObjects = RTPrefabEditor.inst.prefabToSaveFrom.prefabObjects.Clone();
-                                prefabToSaveTo.Offset = RTPrefabEditor.inst.prefabToSaveFrom.Offset;
-                                prefabToSaveTo.Type = RTPrefabEditor.inst.prefabToSaveFrom.Type;
+                                prefabToSaveTo.offset = RTPrefabEditor.inst.prefabToSaveFrom.offset;
+                                prefabToSaveTo.type = RTPrefabEditor.inst.prefabToSaveFrom.type;
                                 prefabToSaveTo.typeID = RTPrefabEditor.inst.prefabToSaveFrom.typeID;
 
                                 var prefabType = prefabToSaveTo.GetPrefabType();
@@ -621,14 +621,14 @@ namespace BetterLegacy.Editor.Data
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = true;
                                         RTPrefabEditor.inst.copiedPrefabPath = FilePath;
-                                        EditorManager.inst.DisplayNotification($"Cut {prefab.Name}!", 1.5f, EditorManager.NotificationType.Success);
+                                        EditorManager.inst.DisplayNotification($"Cut {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Cut prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
                                     new ButtonFunction("Copy", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = false;
                                         RTPrefabEditor.inst.copiedPrefabPath = FilePath;
-                                        EditorManager.inst.DisplayNotification($"Copied {prefab.Name}!", 1.5f, EditorManager.NotificationType.Success);
+                                        EditorManager.inst.DisplayNotification($"Copied {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
                                     new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab),
@@ -672,7 +672,7 @@ namespace BetterLegacy.Editor.Data
                 {
                     case PrefabDialog.Internal:
                         {
-                            RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.ID);
+                            RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.id);
                             break;
                         }
                     case PrefabDialog.External:

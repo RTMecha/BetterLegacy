@@ -58,7 +58,7 @@ namespace BetterLegacy.Core.Managers
 
         void Update()
         {
-            if (!CoreHelper.Playing && !CoreHelper.Reversing && !GameData.IsValid)
+            if (!CoreHelper.Playing && !CoreHelper.Reversing && !GameData.Current)
                 return;
 
             if (!AudioManager.inst.CurrentAudioSource.clip || !CoreConfig.Instance.AllowCustomTextFormatting.Value)

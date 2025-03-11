@@ -113,11 +113,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(PrefabEditor.SavePrefab))]
         [HarmonyPrefix]
-        static bool SavePrefabPrefix(BasePrefab __0)
-        {
-            RTPrefabEditor.inst.SavePrefab((Prefab)__0);
-            return false;
-        }
+        static bool SavePrefabPrefix() => false;
 
         [HarmonyPatch(nameof(PrefabEditor.DeleteExternalPrefab))]
         [HarmonyPrefix]
@@ -273,27 +269,10 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(PrefabEditor.ImportPrefabIntoLevel))]
         [HarmonyPrefix]
-        static bool ImportPrefabIntoLevelPrefix(PrefabEditor __instance, BasePrefab __0)
-        {
-            CoreHelper.Log($"Adding Prefab [{__0.Name}]");
-
-            var tmpPrefab = Prefab.DeepCopy((Prefab)__0);
-            int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.Name, "( +\\[\\d+])", string.Empty) == tmpPrefab.Name).Count;
-            if (num > 0)
-                tmpPrefab.Name = $"{tmpPrefab.Name}[{num}]";
-
-            GameData.Current.prefabs.Add(tmpPrefab);
-            __instance.ReloadInternalPrefabsInPopup();
-
-            return false;
-        }
+        static bool ImportPrefabIntoLevelPrefix() => false;
 
         [HarmonyPatch(nameof(PrefabEditor.AddPrefabObjectToLevel))]
         [HarmonyPrefix]
-        static bool AddPrefabObjectToLevelPrefix(BasePrefab __0)
-        {
-            RTPrefabEditor.inst.AddPrefabObjectToLevel(__0);
-            return false;
-        }
+        static bool AddPrefabObjectToLevelPrefix() => false;
     }
 }

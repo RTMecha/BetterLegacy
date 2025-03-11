@@ -8,7 +8,6 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using Crosstales.FB;
@@ -17,14 +16,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -498,7 +493,7 @@ namespace BetterLegacy.Editor.Managers
                                  timelineObject.InternalTimelineObjects.Clear();
                                  for (int i = 0; i < bm.events.Count; i++)
                                  {
-                                     bm.events[i] = bm.events[i].OrderBy(x => x.eventTime).ToList();
+                                     bm.events[i] = bm.events[i].OrderBy(x => x.time).ToList();
                                      var firstKF = EventKeyframe.DeepCopy((EventKeyframe)bm.events[i][0], false);
                                      bm.events[i].Clear();
                                      bm.events[i].Add(firstKF);
@@ -564,7 +559,7 @@ namespace BetterLegacy.Editor.Managers
 
                         float num = 0f;
 
-                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
+                        if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime)
                             num = AudioManager.inst.CurrentAudioSource.time;
                         else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
 
@@ -595,7 +590,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = AutoKillType.OldStyleNoAutokill;
+                            bm.autoKillType = BeatmapObject.AutoKillType.OldStyleNoAutokill;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             Updater.UpdateObject(bm, "Autokill");
@@ -606,7 +601,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = AutoKillType.LastKeyframe;
+                            bm.autoKillType = BeatmapObject.AutoKillType.LastKeyframe;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             Updater.UpdateObject(bm, "Autokill");
@@ -617,7 +612,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = AutoKillType.LastKeyframeOffset;
+                            bm.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             Updater.UpdateObject(bm, "Autokill");
@@ -628,7 +623,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = AutoKillType.FixedTime;
+                            bm.autoKillType = BeatmapObject.AutoKillType.FixedTime;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             Updater.UpdateObject(bm, "Autokill");
@@ -639,7 +634,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = AutoKillType.SongTime;
+                            bm.autoKillType = BeatmapObject.AutoKillType.SongTime;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             Updater.UpdateObject(bm, "Autokill");
@@ -1036,7 +1031,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[0].eventValues[0] -= num;
+                        prefabObject.events[0].values[0] -= num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1047,7 +1042,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[0].eventValues[0] = num;
+                        prefabObject.events[0].values[0] = num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1058,7 +1053,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[0].eventValues[0] += num;
+                        prefabObject.events[0].values[0] += num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1071,7 +1066,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[0].eventValues[1] -= num;
+                        prefabObject.events[0].values[1] -= num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1082,7 +1077,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[0].eventValues[1] = num;
+                        prefabObject.events[0].values[1] = num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1093,7 +1088,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[0].eventValues[1] += num;
+                        prefabObject.events[0].values[1] += num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1120,7 +1115,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[1].eventValues[0] -= num;
+                        prefabObject.events[1].values[0] -= num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1131,7 +1126,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[1].eventValues[0] = num;
+                        prefabObject.events[1].values[0] = num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1142,7 +1137,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[1].eventValues[0] += num;
+                        prefabObject.events[1].values[0] += num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1155,7 +1150,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[1].eventValues[1] -= num;
+                        prefabObject.events[1].values[1] -= num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1166,7 +1161,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[1].eventValues[1] = num;
+                        prefabObject.events[1].values[1] = num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1177,7 +1172,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[1].eventValues[1] += num;
+                        prefabObject.events[1].values[1] += num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1197,7 +1192,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[2].eventValues[0] -= num;
+                        prefabObject.events[2].values[0] -= num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1208,7 +1203,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[2].eventValues[0] = num;
+                        prefabObject.events[2].values[0] = num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1219,7 +1214,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.events[2].eventValues[0] += num;
+                        prefabObject.events[2].values[0] += num;
                         Updater.UpdatePrefab(prefabObject, "Offset");
                     }
                 });
@@ -1498,7 +1493,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     SyncObjectData("Parent Offsets", eventData, (timelineObject, beatmapObject) =>
                     {
-                        timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Clone();
+                        timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Copy();
                     }, false, true, "ParentOffset");
                 })); // Parent Offset
                 GenerateButton(syncLayout.transform, new ButtonFunction("PA", eventData =>
@@ -1841,8 +1836,8 @@ namespace BetterLegacy.Editor.Managers
                     var buttons1 = GenerateButtons(parent, 32f, 8f,
                         new ButtonFunction("Set", () =>
                         {
-                            DataManager.LSAnimation anim = default;
-                            bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
+                            Easing anim = (Easing)(curves.value - 1);
+                            bool setCurve = curves.value != 0;
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -1851,29 +1846,29 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     var kf = bm.events[3][i];
                                     if (setCurve)
-                                        kf.curveType = anim;
+                                        kf.curve = anim;
                                     if (currentMultiColorSelection >= 0)
-                                        kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                        kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
                                     if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
+                                        kf.values[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
                                     if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                                        kf.values[2] = Parser.TryParse(hueIF.text, 0f);
                                     if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                                        kf.values[3] = Parser.TryParse(satIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+                                        kf.values[4] = Parser.TryParse(valIF.text, 0f);
 
                                     // Gradient
                                     if (currentMultiGradientColorSelection >= 0)
-                                        kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                                        kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
                                     if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                        kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
+                                        kf.values[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
                                     if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                        kf.eventValues[7] = Parser.TryParse(hueGradientIF.text, 0f);
+                                        kf.values[7] = Parser.TryParse(hueGradientIF.text, 0f);
                                     if (!string.IsNullOrEmpty(satGradientIF.text))
-                                        kf.eventValues[8] = Parser.TryParse(satGradientIF.text, 0f);
+                                        kf.values[8] = Parser.TryParse(satGradientIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valGradientIF.text))
-                                        kf.eventValues[9] = Parser.TryParse(valGradientIF.text, 0f);
+                                        kf.values[9] = Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
                                 Updater.UpdateObject(bm, "Keyframes");
@@ -1881,8 +1876,8 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Add", () =>
                         {
-                            DataManager.LSAnimation anim = default;
-                            bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
+                            Easing anim = (Easing)(curves.value - 1);
+                            bool setCurve = curves.value != 0;
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -1891,29 +1886,29 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     var kf = bm.events[3][i];
                                     if (setCurve)
-                                        kf.curveType = anim;
+                                        kf.curve = anim;
                                     if (currentMultiColorSelection >= 0)
-                                        kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
+                                        kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
                                     if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                        kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
                                     if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.eventValues[2] += Parser.TryParse(hueIF.text, 0f);
+                                        kf.values[2] += Parser.TryParse(hueIF.text, 0f);
                                     if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.eventValues[3] += Parser.TryParse(satIF.text, 0f);
+                                        kf.values[3] += Parser.TryParse(satIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.eventValues[4] += Parser.TryParse(valIF.text, 0f);
+                                        kf.values[4] += Parser.TryParse(valIF.text, 0f);
 
                                     // Gradient
                                     if (currentMultiGradientColorSelection >= 0)
-                                        kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                        kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
                                     if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                        kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] - Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
+                                        kf.values[6] = Mathf.Clamp(kf.values[6] - Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
                                     if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                        kf.eventValues[7] += Parser.TryParse(hueGradientIF.text, 0f);
+                                        kf.values[7] += Parser.TryParse(hueGradientIF.text, 0f);
                                     if (!string.IsNullOrEmpty(satGradientIF.text))
-                                        kf.eventValues[8] += Parser.TryParse(satGradientIF.text, 0f);
+                                        kf.values[8] += Parser.TryParse(satGradientIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valGradientIF.text))
-                                        kf.eventValues[9] += Parser.TryParse(valGradientIF.text, 0f);
+                                        kf.values[9] += Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
                                 Updater.UpdateObject(bm, "Keyframes");
@@ -1921,8 +1916,8 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Sub", () =>
                         {
-                            DataManager.LSAnimation anim = default;
-                            bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
+                            Easing anim = (Easing)(curves.value - 1);
+                            bool setCurve = curves.value != 0;
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -1931,29 +1926,29 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     var kf = bm.events[3][i];
                                     if (setCurve)
-                                        kf.curveType = anim;
+                                        kf.curve = anim;
                                     if (currentMultiColorSelection >= 0)
-                                        kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
+                                        kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
                                     if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] + Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                        kf.values[1] = Mathf.Clamp(kf.values[1] + Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
                                     if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.eventValues[2] -= Parser.TryParse(hueIF.text, 0f);
+                                        kf.values[2] -= Parser.TryParse(hueIF.text, 0f);
                                     if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.eventValues[3] -= Parser.TryParse(satIF.text, 0f);
+                                        kf.values[3] -= Parser.TryParse(satIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.eventValues[4] -= Parser.TryParse(valIF.text, 0f);
+                                        kf.values[4] -= Parser.TryParse(valIF.text, 0f);
 
                                     // Gradient
                                     if (currentMultiGradientColorSelection >= 0)
-                                        kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                        kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
                                     if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                        kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] + Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
+                                        kf.values[6] = Mathf.Clamp(kf.values[6] + Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
                                     if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                        kf.eventValues[7] -= Parser.TryParse(hueGradientIF.text, 0f);
+                                        kf.values[7] -= Parser.TryParse(hueGradientIF.text, 0f);
                                     if (!string.IsNullOrEmpty(satGradientIF.text))
-                                        kf.eventValues[8] -= Parser.TryParse(satGradientIF.text, 0f);
+                                        kf.values[8] -= Parser.TryParse(satGradientIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valGradientIF.text))
-                                        kf.eventValues[9] -= Parser.TryParse(valGradientIF.text, 0f);
+                                        kf.values[9] -= Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
                                 Updater.UpdateObject(bm, "Keyframes");
@@ -2111,37 +2106,37 @@ namespace BetterLegacy.Editor.Managers
                             if (currentTime < bm.StartTime) // don't want people creating keyframes before the objects' start time.
                                 continue;
 
-                            var index = bm.events[3].FindLastIndex(x => currentTime > bm.StartTime + x.eventTime);
+                            var index = bm.events[3].FindLastIndex(x => currentTime > bm.StartTime + x.time);
 
                             if (index >= 0 && currentTime > bm.StartTime)
                             {
-                                var kf = EventKeyframe.DeepCopy((EventKeyframe)bm.events[3][index]);
-                                kf.eventTime = currentTime - bm.StartTime;
-                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
-                                    kf.curveType = anim;
+                                var kf = EventKeyframe.DeepCopy(bm.events[3][index]);
+                                kf.time = currentTime - bm.StartTime;
+                                if (curves.value != 0)
+                                    kf.curve = (Easing)(curves.value - 1);
 
                                 if (currentMultiColorSelection >= 0)
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                    kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
                                 if (!string.IsNullOrEmpty(opacityIF.text))
-                                    kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
+                                    kf.values[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
                                 if (!string.IsNullOrEmpty(hueIF.text))
-                                    kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                                    kf.values[2] = Parser.TryParse(hueIF.text, 0f);
                                 if (!string.IsNullOrEmpty(satIF.text))
-                                    kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                                    kf.values[3] = Parser.TryParse(satIF.text, 0f);
                                 if (!string.IsNullOrEmpty(valIF.text))
-                                    kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+                                    kf.values[4] = Parser.TryParse(valIF.text, 0f);
 
                                 // Gradient
                                 if (currentMultiGradientColorSelection >= 0)
-                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                                    kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
                                 if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                    kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
+                                    kf.values[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
                                 if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                    kf.eventValues[7] = Parser.TryParse(hueGradientIF.text, 0f);
+                                    kf.values[7] = Parser.TryParse(hueGradientIF.text, 0f);
                                 if (!string.IsNullOrEmpty(satGradientIF.text))
-                                    kf.eventValues[8] = Parser.TryParse(satGradientIF.text, 0f);
+                                    kf.values[8] = Parser.TryParse(satGradientIF.text, 0f);
                                 if (!string.IsNullOrEmpty(valGradientIF.text))
-                                    kf.eventValues[9] = Parser.TryParse(valGradientIF.text, 0f);
+                                    kf.values[9] = Parser.TryParse(valGradientIF.text, 0f);
 
                                 bm.events[3].Add(kf);
                             }
@@ -2214,10 +2209,10 @@ namespace BetterLegacy.Editor.Managers
 
                                 for (int j = 0; j < bm.events[i].Count; j++)
                                 {
-                                    var kf = (EventKeyframe)bm.events[i][j];
-                                    kf.curveType = copiedKeyframeData.curveType;
-                                    kf.eventValues = copiedKeyframeData.eventValues.Copy();
-                                    kf.eventRandomValues = copiedKeyframeData.eventRandomValues.Copy();
+                                    var kf = bm.events[i][j];
+                                    kf.curve = copiedKeyframeData.curve;
+                                    kf.values = copiedKeyframeData.values.Copy();
+                                    kf.randomValues = copiedKeyframeData.randomValues.Copy();
                                     kf.random = copiedKeyframeData.random;
                                     kf.relative = copiedKeyframeData.relative;
 
@@ -2240,10 +2235,10 @@ namespace BetterLegacy.Editor.Managers
                                     if (copiedKeyframeData == null)
                                         continue;
 
-                                    var kf = (EventKeyframe)bm.events[i][Mathf.Clamp(num, 0, bm.events[i].Count - 1)];
-                                    kf.curveType = copiedKeyframeData.curveType;
-                                    kf.eventValues = copiedKeyframeData.eventValues.Copy();
-                                    kf.eventRandomValues = copiedKeyframeData.eventRandomValues.Copy();
+                                    var kf = bm.events[i][Mathf.Clamp(num, 0, bm.events[i].Count - 1)];
+                                    kf.curve = copiedKeyframeData.curve;
+                                    kf.values = copiedKeyframeData.values.Copy();
+                                    kf.randomValues = copiedKeyframeData.randomValues.Copy();
                                     kf.random = copiedKeyframeData.random;
                                     kf.relative = copiedKeyframeData.relative;
 
@@ -2786,9 +2781,9 @@ namespace BetterLegacy.Editor.Managers
                     for (int i = 0; i < bm.events[type].Count; i++)
                     {
                         var kf = (EventKeyframe)bm.events[type][i];
-                        kf.curveType = copiedKeyframeData.curveType;
-                        kf.eventValues = copiedKeyframeData.eventValues.Copy();
-                        kf.eventRandomValues = copiedKeyframeData.eventRandomValues.Copy();
+                        kf.curve = copiedKeyframeData.curve;
+                        kf.values = copiedKeyframeData.values.Copy();
+                        kf.randomValues = copiedKeyframeData.randomValues.Copy();
                         kf.random = copiedKeyframeData.random;
                         kf.relative = copiedKeyframeData.relative;
 
@@ -2820,9 +2815,9 @@ namespace BetterLegacy.Editor.Managers
                         var bm = timelineObject.GetData<BeatmapObject>();
 
                         var kf = (EventKeyframe)bm.events[type][Mathf.Clamp(num, 0, bm.events[type].Count - 1)];
-                        kf.curveType = copiedKeyframeData.curveType;
-                        kf.eventValues = copiedKeyframeData.eventValues.Copy();
-                        kf.eventRandomValues = copiedKeyframeData.eventRandomValues.Copy();
+                        kf.curve = copiedKeyframeData.curve;
+                        kf.values = copiedKeyframeData.values.Copy();
+                        kf.randomValues = copiedKeyframeData.randomValues.Copy();
                         kf.random = copiedKeyframeData.random;
                         kf.relative = copiedKeyframeData.relative;
 
@@ -2939,88 +2934,88 @@ namespace BetterLegacy.Editor.Managers
         public void SetKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
-            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
-                kf.curveType = anim;
+            if (curves.value != 0)
+                kf.curve = (Easing)(curves.value - 1);
             if (currentMultiColorSelection >= 0)
-                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
-                kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
+                kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
             if (!string.IsNullOrEmpty(hue))
-                kf.eventValues[2] = Parser.TryParse(sat, 0f);
+                kf.values[2] = Parser.TryParse(sat, 0f);
             if (!string.IsNullOrEmpty(sat))
-                kf.eventValues[3] = Parser.TryParse(sat, 0f);
+                kf.values[3] = Parser.TryParse(sat, 0f);
             if (!string.IsNullOrEmpty(val))
-                kf.eventValues[4] = Parser.TryParse(val, 0f);
+                kf.values[4] = Parser.TryParse(val, 0f);
 
             // Gradient
             if (currentMultiGradientColorSelection >= 0)
-                kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacityGradient))
-                kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradient, 1f), 0f, 1f) + 1f;
+                kf.values[6] = -Mathf.Clamp(Parser.TryParse(opacityGradient, 1f), 0f, 1f) + 1f;
             if (!string.IsNullOrEmpty(hueGradient))
-                kf.eventValues[7] = Parser.TryParse(hueGradient, 0f);
+                kf.values[7] = Parser.TryParse(hueGradient, 0f);
             if (!string.IsNullOrEmpty(satGradient))
-                kf.eventValues[8] = Parser.TryParse(satGradient, 0f);
+                kf.values[8] = Parser.TryParse(satGradient, 0f);
             if (!string.IsNullOrEmpty(valGradient))
-                kf.eventValues[9] = Parser.TryParse(valGradient, 0f);
+                kf.values[9] = Parser.TryParse(valGradient, 0f);
         }
 
         public void AddKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
-            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
-                kf.curveType = anim;
+            if (curves.value != 0)
+                kf.curve = (Easing)(curves.value - 1);
             if (currentMultiColorSelection >= 0)
-                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
-                kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
+                kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
             if (!string.IsNullOrEmpty(hue))
-                kf.eventValues[2] += Parser.TryParse(hue, 0f);
+                kf.values[2] += Parser.TryParse(hue, 0f);
             if (!string.IsNullOrEmpty(sat))
-                kf.eventValues[3] += Parser.TryParse(sat, 0f);
+                kf.values[3] += Parser.TryParse(sat, 0f);
             if (!string.IsNullOrEmpty(val))
-                kf.eventValues[4] += Parser.TryParse(val, 0f);
+                kf.values[4] += Parser.TryParse(val, 0f);
 
             // Gradient
             if (currentMultiGradientColorSelection >= 0)
-                kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
             if (!string.IsNullOrEmpty(opacityGradient))
-                kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] - Parser.TryParse(opacityGradient, 1f), 0f, 1f);
+                kf.values[6] = Mathf.Clamp(kf.values[6] - Parser.TryParse(opacityGradient, 1f), 0f, 1f);
             if (!string.IsNullOrEmpty(hueGradient))
-                kf.eventValues[7] += Parser.TryParse(hueGradient, 0f);
+                kf.values[7] += Parser.TryParse(hueGradient, 0f);
             if (!string.IsNullOrEmpty(satGradient))
-                kf.eventValues[8] += Parser.TryParse(satGradient, 0f);
+                kf.values[8] += Parser.TryParse(satGradient, 0f);
             if (!string.IsNullOrEmpty(valGradient))
-                kf.eventValues[9] += Parser.TryParse(valGradient, 0f);
+                kf.values[9] += Parser.TryParse(valGradient, 0f);
         }
 
         public void SubKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
-            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
-                kf.curveType = anim;
+            if (curves.value != 0)
+                kf.curve = (Easing)(curves.value - 1);
             if (currentMultiColorSelection >= 0)
-                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
-                kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] + Parser.TryParse(opacity, 1f), 0f, 1f);
+                kf.values[1] = Mathf.Clamp(kf.values[1] + Parser.TryParse(opacity, 1f), 0f, 1f);
             if (!string.IsNullOrEmpty(hue))
-                kf.eventValues[2] -= Parser.TryParse(hue, 0f);
+                kf.values[2] -= Parser.TryParse(hue, 0f);
             if (!string.IsNullOrEmpty(sat))
-                kf.eventValues[3] -= Parser.TryParse(sat, 0f);
+                kf.values[3] -= Parser.TryParse(sat, 0f);
             if (!string.IsNullOrEmpty(val))
-                kf.eventValues[4] -= Parser.TryParse(val, 0f);
+                kf.values[4] -= Parser.TryParse(val, 0f);
 
             // Gradient
             if (currentMultiGradientColorSelection >= 0)
-                kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
             if (!string.IsNullOrEmpty(opacityGradient))
-                kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] + Parser.TryParse(opacityGradient, 1f), 0f, 1f);
+                kf.values[6] = Mathf.Clamp(kf.values[6] + Parser.TryParse(opacityGradient, 1f), 0f, 1f);
             if (!string.IsNullOrEmpty(hueGradient))
-                kf.eventValues[7] -= Parser.TryParse(hueGradient, 0f);
+                kf.values[7] -= Parser.TryParse(hueGradient, 0f);
             if (!string.IsNullOrEmpty(satGradient))
-                kf.eventValues[8] -= Parser.TryParse(satGradient, 0f);
+                kf.values[8] -= Parser.TryParse(satGradient, 0f);
             if (!string.IsNullOrEmpty(valGradient))
-                kf.eventValues[9] -= Parser.TryParse(valGradient, 0f);
+                kf.values[9] -= Parser.TryParse(valGradient, 0f);
         }
 
         public GameObject GenerateLabels(Transform parent, float sizeY, params string[] labels)

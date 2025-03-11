@@ -323,8 +323,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="a">The keyframes' own easing.</param>
         /// <param name="b">The next keyframes' easing.</param>
         /// <returns>Returns a sprite based on the animation curve.</returns>
-        public static Sprite GetKeyframeIcon(DataManager.LSAnimation a, DataManager.LSAnimation b)
-            => ObjEditor.inst.KeyframeSprites[a.Name.Contains("Out") && b.Name.Contains("In") ? 3 : a.Name.Contains("Out") ? 2 : b.Name.Contains("In") ? 1 : 0];
+        public static Sprite GetKeyframeIcon(Easing a, Easing b)
+            => ObjEditor.inst.KeyframeSprites[a.ToString().Contains("Out") && b.ToString().Contains("In") ? 3 : a.ToString().Contains("Out") ? 2 : b.ToString().Contains("In") ? 1 : 0];
 
         void UpdateTimelineObjects()
         {
@@ -414,7 +414,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
             {
                 var prefabObject = GameData.Current.prefabObjects[i];
-                if (!string.IsNullOrEmpty(prefabObject.ID))
+                if (!string.IsNullOrEmpty(prefabObject.id))
                 {
                     var timelineObject = GetTimelineObject(prefabObject);
                     timelineObject.AddToList(true);
@@ -445,7 +445,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
             {
                 var prefabObject = GameData.Current.prefabObjects[i];
-                if (!string.IsNullOrEmpty(prefabObject.ID))
+                if (!string.IsNullOrEmpty(prefabObject.id))
                 {
                     var timelineObject = GetTimelineObject(prefabObject);
                     timelineObject.AddToList(true);

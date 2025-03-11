@@ -165,14 +165,14 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool FixedUpdatePrefix()
         {
-            if (DataManager.inst && GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.checkpoints != null &&
-                GameData.Current.beatmapData.checkpoints.Count > 0 && (CoreHelper.Playing || CoreHelper.Reversing))
+            if (DataManager.inst && GameData.Current && GameData.Current.data != null && GameData.Current.data.checkpoints != null &&
+                GameData.Current.data.checkpoints.Count > 0 && (CoreHelper.Playing || CoreHelper.Reversing))
             {
                 if (!CoreHelper.Reversing)
                 {
-                    Instance.UpcomingCheckpointIndex = GameData.Current.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+                    Instance.UpcomingCheckpointIndex = GameData.Current.data.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
                     if (Instance.UpcomingCheckpointIndex > 0)
-                        Instance.UpcomingCheckpoint = GameData.Current.beatmapData.checkpoints[Instance.UpcomingCheckpointIndex];
+                        Instance.UpcomingCheckpoint = GameData.Current.data.checkpoints[Instance.UpcomingCheckpointIndex];
                 }
                 if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null)
                 {
@@ -223,7 +223,7 @@ namespace BetterLegacy.Patchers
 
             if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
             {
-                bool introActive = GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && !levelData.showIntro;
+                bool introActive = GameData.Current && GameData.Current.data != null && GameData.Current.data.levelData is LevelData levelData && !levelData.showIntro;
 
                 __instance.introTitle.gameObject.SetActive(introActive);
                 __instance.introArtist.gameObject.SetActive(introActive);
@@ -308,14 +308,14 @@ namespace BetterLegacy.Patchers
             if (RTEditor.inst)
                 RTEditor.inst.UpdateTimeline();
 
-            if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.beatmapData == null)
+            if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.data == null)
                 return false;
 
             if (RTGameManager.inst)
                 RTGameManager.inst.checkpointImages.Clear();
             var parent = Instance.timeline.transform.Find("elements");
             LSHelpers.DeleteChildren(parent);
-            foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
+            foreach (var checkpoint in GameData.Current.data.checkpoints)
             {
                 if (checkpoint.time <= 0.5f)
                     continue;

@@ -12,54 +12,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BeatmapObject : BaseBeatmapObject
+    public class BeatmapObject : Exists
     {
-        public BeatmapObject() : base()
-        {
-            editorData = new ObjectEditorData();
-        }
+        public BeatmapObject() { }
 
-        public BeatmapObject(float startTime, List<List<BaseEventKeyframe>> eventKeyframes) : this(true, startTime, string.Empty, 0, string.Empty, eventKeyframes)
-        {
-
-        }
-
-        public BeatmapObject(bool active, float startTime, string name, int shape, string text, List<List<BaseEventKeyframe>> eventKeyframes) : base(active, startTime, name, shape, text, eventKeyframes)
-        {
-            editorData = new ObjectEditorData();
-        }
-
-        public BeatmapObject(float startTime) : base(startTime)
-        {
-            id = LSText.randomString(16);
-            editorData = new ObjectEditorData();
-        }
+        public BeatmapObject(float startTime) => StartTime = startTime;
 
         #region Values
 
-        string uniqueID;
-        /// <summary>
-        /// Unique ID used to identify different Beatmap Objects.
-        /// </summary>
-        public string UniqueID
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(uniqueID))
-                    uniqueID = LSText.randomNumString(16);
-                return uniqueID;
-            }
-        }
+        public string id = LSText.randomString(16);
+
+        public string name = string.Empty;
 
         /// <summary>
         /// If true, object does not render when the user has the <see cref="Configs.CoreConfig.LDM"/> setting on.
         /// </summary>
         public bool LDM { get; set; }
+
+        /// <summary>
+        /// Used for objects spawned from a Prefab Object.
+        /// </summary>
+        public string originalID;
+
+        public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>()
+        {
+            new List<EventKeyframe>(),
+            new List<EventKeyframe>(),
+            new List<EventKeyframe>(),
+            new List<EventKeyframe>()
+        };
+
+        public ObjectEditorData editorData = new ObjectEditorData();
+
+        #region Parent
+
+        public string parent = string.Empty;
+
+        public float[] parentOffsets = new float[3]
+        {
+            0f, // Pos
+            0f, // Sca
+            0f, // Rot
+        };
+
+        public string parentType = "101";
 
         /// <summary>
         /// Multiplies from the parents' position, allowing for parallaxing.
@@ -77,18 +76,102 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string parentAdditive = "000";
 
         /// <summary>
-        /// The tags used to identify a group of objects or object properties.
+        /// If the object should stop following the parent chain after spawn.
         /// </summary>
-        public List<string> tags = new List<string>();
+        public bool desync = false;
 
+        #endregion
+
+        #region Timing
+
+        public float startTime;
+        public float StartTime
+        {
+            get => startTime;
+            set => startTime = value;
+        }
+
+        public enum AutoKillType
+        {
+            OldStyleNoAutokill,
+            LastKeyframe,
+            LastKeyframeOffset,
+            FixedTime,
+            SongTime
+        }
+
+        public AutoKillType autoKillType;
+
+        public float autoKillOffset;
+
+        #endregion
+
+        #region Physics
+
+        /// <summary>
+        /// Object spawn conditions.
+        /// </summary>
+        public ObjectType objectType;
+
+        public enum ObjectType
+        {
+            /// <summary>
+            /// Is opaque and can hit the player.
+            /// </summary>
+            Normal,
+            /// <summary>
+            /// Is forced to be transparent with no collision.
+            /// </summary>
+            Helper,
+            /// <summary>
+            /// Has no collision but is opaque like <see cref="ObjectType.Normal"/>.
+            /// </summary>
+            Decoration,
+            /// <summary>
+            /// Doesn't spawn a physical level object to be seen in-game.
+            /// </summary>
+            Empty,
+            /// <summary>
+            /// Like <see cref="ObjectType.Normal"/> except instead of getting hit the player cannot pass through the object.
+            /// </summary>
+            Solid
+        }
+
+        /// <summary>
+        /// If true and objects' opacity is less than 100%, disables collision. Acts the same as modern Project Arrhythmia.
+        /// </summary>
+        public bool opacityCollision = false;
+
+        #endregion
+
+        #region Transforms
+
+        int depth = 15;
         /// <summary>
         /// The depth the visual object is rendered on.
         /// </summary>
-        public new int Depth
+        public int Depth
         {
             get => depth;
             set => depth = value;
         }
+
+        /// <summary>
+        /// If true the object should render on the background layer (perspective), otherwise render on the foreground layer (orthographic)
+        /// </summary>
+        public bool background;
+
+        public Vector2 origin;
+
+        #endregion
+
+        #region Shape
+
+        public int shape;
+
+        public int shapeOption;
+
+        public string text = string.Empty;
 
         /// <summary>
         /// Settings for the custom polygon shape.
@@ -100,6 +183,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public GradientType gradientType;
 
+        /// <summary>
+        /// Gradient rendering type.
+        /// </summary>
         public enum GradientType
         {
             /// <summary>
@@ -125,14 +211,23 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
-        /// If true and objects' opacity is less than 100%, disables collision. Acts the same as modern Project Arrhythmia.
+        /// Type of the shape.
         /// </summary>
-        public bool opacityCollision = false;
+        public ShapeType ShapeType => (ShapeType)shape;
+
+        #endregion
+
+        #region Modifiers
 
         /// <summary>
-        /// If true the object should render on the background layer (perspective), otherwise render on the foreground layer (orthographic)
+        /// The tags used to identify a group of objects or object properties.
         /// </summary>
-        public bool background;
+        public List<string> tags = new List<string>();
+
+        /// <summary>
+        /// Modifiers the object contains.
+        /// </summary>
+        public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.
@@ -144,15 +239,41 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool orderModifiers = false;
 
-        /// <summary>
-        /// If the object should stop following the parent chain after spawn.
-        /// </summary>
-        public bool desync = false;
+        public int integerVariable;
+        public float floatVariable;
+        public string stringVariable = "";
+
+        public Vector3 reactivePositionOffset = Vector3.zero;
+        public Vector3 reactiveScaleOffset = Vector3.zero;
+        public float reactiveRotationOffset = 0f;
 
         /// <summary>
-        /// Modifiers the object contains.
+        /// Moves the objects' associated parent objects at this offset.
         /// </summary>
-        public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
+        public Vector3 positionOffset = Vector3.zero;
+
+        /// <summary>
+        /// Scales the objects' associated parent objects at this offset.
+        /// </summary>
+        public Vector3 scaleOffset = Vector3.zero;
+
+        /// <summary>
+        /// Rotates the objects' associated parent objects at this offset.
+        /// </summary>
+        public Vector3 rotationOffset = Vector3.zero;
+
+        #endregion
+
+        #region Prefab
+
+        public bool fromPrefab;
+
+        public string prefabID = string.Empty;
+        public string prefabInstanceID = string.Empty;
+
+        #endregion
+
+        #region References
 
         /// <summary>
         /// For object modifiers.
@@ -189,64 +310,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Detector detector;
 
-        public int integerVariable;
-        public float floatVariable;
-        public string stringVariable = "";
-
-        public Vector3 reactivePositionOffset = Vector3.zero;
-        public Vector3 reactiveScaleOffset = Vector3.zero;
-        public float reactiveRotationOffset = 0f;
-
-        /// <summary>
-        /// Moves the objects' associated parent objects at this offset.
-        /// </summary>
-        public Vector3 positionOffset = Vector3.zero;
-
-        /// <summary>
-        /// Scales the objects' associated parent objects at this offset.
-        /// </summary>
-        public Vector3 scaleOffset = Vector3.zero;
-
-        /// <summary>
-        /// Rotates the objects' associated parent objects at this offset.
-        /// </summary>
-        public Vector3 rotationOffset = Vector3.zero;
-
-        /// <summary>
-        /// Used for objects spawned from a Prefab Object.
-        /// </summary>
-        public string originalID;
-
-        public new ObjectEditorData editorData;
-
-        /// <summary>
-        /// Object spawn conditions.
-        /// </summary>
-        public new ObjectType objectType;
-
-        public new enum ObjectType
-        {
-            /// <summary>
-            /// Is opaque and can hit the player.
-            /// </summary>
-            Normal,
-            /// <summary>
-            /// Is forced to be transparent with no collision.
-            /// </summary>
-            Helper,
-            /// <summary>
-            /// Has no collision but is opaque like <see cref="ObjectType.Normal"/>.
-            /// </summary>
-            Decoration,
-            /// <summary>
-            /// Doesn't spawn a physical level object to be seen in-game.
-            /// </summary>
-            Empty,
-            /// <summary>
-            /// Like <see cref="ObjectType.Normal"/> except instead of getting hit the player cannot pass through the object.
-            /// </summary>
-            Solid
-        }
+        #endregion
 
         #endregion
 
@@ -282,17 +346,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Total length of the objects' sequence.
         /// </summary>
-        public float Length => events.Max(x => x.Max(x => x.eventTime));
+        public float Length => events.Max(x => x.Max(x => x.time));
 
         /// <summary>
         /// Gets the total time the object is alive for.
         /// </summary>
         public float SpawnDuration => GetObjectLifeLength(0.0f, true);
-
-        /// <summary>
-        /// Type of the shape.
-        /// </summary>
-        public ShapeType ShapeType => (ShapeType)shape;
 
         #endregion
 
@@ -312,7 +371,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                 id = newID ? LSText.randomString(16) : orig.id,
                 parent = orig.parent,
                 name = orig.name,
-                active = orig.active,
                 autoKillOffset = orig.autoKillOffset,
                 autoKillType = orig.autoKillType,
                 Depth = orig.Depth,
@@ -329,7 +387,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 text = orig.text,
                 LDM = orig.LDM,
                 parentType = orig.parentType,
-                parentOffsets = orig.parentOffsets.Clone(),
+                parentOffsets = orig.parentOffsets.Copy(),
                 parentAdditive = orig.parentAdditive,
                 parallaxSettings = orig.parallaxSettings.Copy(),
                 integerVariable = copyVariables ? orig.integerVariable : 0,
@@ -360,11 +418,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapObject = new BeatmapObject();
 
-            var events = new List<List<BaseEventKeyframe>>();
-            events.Add(new List<BaseEventKeyframe>());
-            events.Add(new List<BaseEventKeyframe>());
-            events.Add(new List<BaseEventKeyframe>());
-            events.Add(new List<BaseEventKeyframe>());
+            var events = new List<List<EventKeyframe>>();
+            events.Add(new List<EventKeyframe>());
+            events.Add(new List<EventKeyframe>());
+            events.Add(new List<EventKeyframe>());
+            events.Add(new List<EventKeyframe>());
 
             var isCameraParented = jn["p_id"] == "camera";
 
@@ -379,10 +437,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                        eventKeyframe.time = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
-                            eventKeyframe.curveType = anim;
+                        if (kfjn["ct"] != null)
+                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat,
@@ -397,7 +455,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                             kfjn["er"][2].AsFloat);
 
                         eventKeyframe.relative = false;
-                        eventKeyframe.active = false;
                         events[0].Add(eventKeyframe);
                     }
                 }
@@ -411,10 +468,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                        eventKeyframe.time = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
-                            eventKeyframe.curveType = anim;
+                        if (kfjn["ct"] != null)
+                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat,
@@ -428,7 +485,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                             kfjn["er"][2].AsFloat);
 
                         eventKeyframe.relative = false;
-                        eventKeyframe.active = false;
                         events[1].Add(eventKeyframe);
                     }
                 }
@@ -442,10 +498,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                        eventKeyframe.time = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
-                            eventKeyframe.curveType = anim;
+                        if (kfjn["ct"] != null)
+                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat);
@@ -461,7 +517,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (version >= new Version(ProjectArrhythmia.Versions.FIXED_ROTATION_SHAKE) && kfjn["ev"].Count > 1 && !kfjn["ev"][1].IsNull && kfjn["ev"][1].AsFloat == 1)
                             eventKeyframe.relative = false;
 
-                        eventKeyframe.active = false;
                         events[2].Add(eventKeyframe);
                     }
                 }
@@ -475,10 +530,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                        eventKeyframe.time = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
-                            eventKeyframe.curveType = anim;
+                        if (kfjn["ct"] != null)
+                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                         // 0 = start color slot
                         // 1 = start opacity
@@ -511,7 +566,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                             0f);
 
                         eventKeyframe.relative = false;
-                        eventKeyframe.active = false;
                         events[3].Add(eventKeyframe);
                     }
                 }
@@ -538,9 +592,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.parentType = "111";
 
             if (jn["p_o"] != null && jn["p_id"] != "camera")
-                beatmapObject.parentOffsets = jn["p_o"].AsArray.Children.Select(x => x.AsFloat).ToList();
+                for (int i = 0; i < beatmapObject.parentOffsets.Length; i++)
+                    if (jn["p_o"].Count > i && jn["p_o"][i] != null)
+                        beatmapObject.parentOffsets[i] = jn["p_o"][i].AsFloat;
             else if (jn["p_id"] == "camera")
-                beatmapObject.parentOffsets = new List<float> { 0f, 0f, 0f };
+                beatmapObject.parentOffsets = new float[3] { 0f, 0f, 0f };
 
             if (jn["ot"] != null)
             {
@@ -599,11 +655,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapObject = new BeatmapObject();
 
-            var events = new List<List<BaseEventKeyframe>>();
-            events.Add(new List<BaseEventKeyframe>());
-            events.Add(new List<BaseEventKeyframe>());
-            events.Add(new List<BaseEventKeyframe>());
-            events.Add(new List<BaseEventKeyframe>());
+            var events = new List<List<EventKeyframe>>();
+            events.Add(new List<EventKeyframe>());
+            events.Add(new List<EventKeyframe>());
+            events.Add(new List<EventKeyframe>());
+            events.Add(new List<EventKeyframe>());
             if (jn["events"] != null)
             {
                 // Position
@@ -614,10 +670,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                    eventKeyframe.time = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     try
                     {
@@ -639,7 +695,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
-                    eventKeyframe.active = false;
                     events[0].Add(eventKeyframe);
                 }
 
@@ -651,10 +706,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                    eventKeyframe.time = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat);
 
@@ -664,7 +719,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
-                    eventKeyframe.active = false;
                     events[1].Add(eventKeyframe);
                 }
 
@@ -676,10 +730,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                    eventKeyframe.time = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.SetEventValues(kfjn["x"].AsFloat);
 
@@ -689,7 +743,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.relative = string.IsNullOrEmpty(kfjn["rel"]) || kfjn["rel"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
-                    eventKeyframe.active = false;
                     events[2].Add(eventKeyframe);
                 }
 
@@ -701,10 +754,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    eventKeyframe.eventTime = kfjn["t"].AsFloat;
+                    eventKeyframe.time = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     // if gradient objects are implemented
                     // x - 0 = start color slot
@@ -748,7 +801,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
-                    eventKeyframe.active = false;
                     events[3].Add(eventKeyframe);
                 }
             }
@@ -770,7 +822,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.parentType = jn["pt"];
 
             if (jn["po"] != null)
-                beatmapObject.parentOffsets = jn["po"].AsArray.Children.Select(x => x.AsFloat).ToList();
+                for (int i = 0; i < beatmapObject.parentOffsets.Length; i++)
+                    if (jn["po"].Count > i && jn["po"][i] != null)
+                        beatmapObject.parentOffsets[i] = jn["po"][i].AsFloat;
 
             if (jn["ps"] != null)
             {
@@ -881,15 +935,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (parentType != "101")
                 jn["p_t"] = parentType;
 
-            if (parentOffsets.FindIndex(x => x != 0f) != -1)
-            {
-                int index = 0;
-                foreach (float offset in parentOffsets)
-                {
-                    jn["p_o"][index] = offset;
-                    index++;
-                }
-            }
+            if (parentOffsets.Any(x => x != 0f))
+                for (int i = 0; i < parentOffsets.Length; i++)
+                    jn["p_o"][i] = parentOffsets[i];
 
             if (!string.IsNullOrEmpty(parent))
                 jn["p_id"] = parent == CAMERA_PARENT ? "camera" : parent;
@@ -931,7 +979,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["ed"]["b"] = editorData.Bin;
 
-            jn["ed"]["l"].AsInt = Mathf.Clamp(editorData.layer, 0, 5);
+            jn["ed"]["l"].AsInt = Mathf.Clamp(editorData.Layer, 0, 5);
 
             // Events
             {
@@ -939,66 +987,66 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int j = 0; j < events[0].Count; j++)
                 {
                     var eventKeyframe = events[0][j];
-                    jn["e"][0]["k"][j]["t"] = eventKeyframe.eventTime;
-                    jn["e"][0]["k"][j]["ct"] = eventKeyframe.curveType.Name;
+                    jn["e"][0]["k"][j]["t"] = eventKeyframe.time;
+                    jn["e"][0]["k"][j]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][0]["k"][j]["ev"][0] = eventKeyframe.eventValues[0];
-                    jn["e"][0]["k"][j]["ev"][1] = eventKeyframe.eventValues[1];
+                    jn["e"][0]["k"][j]["ev"][0] = eventKeyframe.values[0];
+                    jn["e"][0]["k"][j]["ev"][1] = eventKeyframe.values[1];
 
                     jn["e"][0]["k"][j]["r"] = eventKeyframe.random;
 
-                    jn["e"][0]["k"][j]["er"][0] = eventKeyframe.eventRandomValues[0];
-                    jn["e"][0]["k"][j]["er"][1] = eventKeyframe.eventRandomValues[1];
-                    jn["e"][0]["k"][j]["er"][2] = eventKeyframe.eventRandomValues[2];
+                    jn["e"][0]["k"][j]["er"][0] = eventKeyframe.randomValues[0];
+                    jn["e"][0]["k"][j]["er"][1] = eventKeyframe.randomValues[1];
+                    jn["e"][0]["k"][j]["er"][2] = eventKeyframe.randomValues[2];
                 }
 
                 // Scale
                 for (int j = 0; j < events[1].Count; j++)
                 {
                     var eventKeyframe = events[1][j];
-                    jn["e"][1]["k"][j]["t"] = eventKeyframe.eventTime;
-                    jn["e"][1]["k"][j]["ct"] = eventKeyframe.curveType.Name;
+                    jn["e"][1]["k"][j]["t"] = eventKeyframe.time;
+                    jn["e"][1]["k"][j]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][1]["k"][j]["ev"][0] = eventKeyframe.eventValues[0];
-                    jn["e"][1]["k"][j]["ev"][1] = eventKeyframe.eventValues[1];
+                    jn["e"][1]["k"][j]["ev"][0] = eventKeyframe.values[0];
+                    jn["e"][1]["k"][j]["ev"][1] = eventKeyframe.values[1];
 
                     jn["e"][1]["k"][j]["r"] = eventKeyframe.random;
 
-                    jn["e"][1]["k"][j]["er"][0] = eventKeyframe.eventRandomValues[0];
-                    jn["e"][1]["k"][j]["er"][1] = eventKeyframe.eventRandomValues[1];
-                    jn["e"][1]["k"][j]["er"][2] = eventKeyframe.eventRandomValues[2];
+                    jn["e"][1]["k"][j]["er"][0] = eventKeyframe.randomValues[0];
+                    jn["e"][1]["k"][j]["er"][1] = eventKeyframe.randomValues[1];
+                    jn["e"][1]["k"][j]["er"][2] = eventKeyframe.randomValues[2];
                 }
 
                 // Rotation
                 for (int j = 0; j < events[2].Count; j++)
                 {
-                    var eventKeyframe = events[2][j] as EventKeyframe;
-                    jn["e"][2]["k"][j]["t"] = eventKeyframe.eventTime;
-                    jn["e"][2]["k"][j]["ct"] = eventKeyframe.curveType.Name;
+                    var eventKeyframe = events[2][j];
+                    jn["e"][2]["k"][j]["t"] = eventKeyframe.time;
+                    jn["e"][2]["k"][j]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][2]["k"][j]["ev"][0] = eventKeyframe.eventValues[0];
+                    jn["e"][2]["k"][j]["ev"][0] = eventKeyframe.values[0];
 
                     if (!eventKeyframe.relative)
                         jn["e"][2]["k"][j]["ev"][1] = 1.0f;
 
                     jn["e"][2]["k"][j]["r"] = eventKeyframe.random;
 
-                    jn["e"][2]["k"][j]["er"][0] = eventKeyframe.eventRandomValues[0];
-                    jn["e"][2]["k"][j]["er"][1] = eventKeyframe.eventRandomValues[1];
-                    jn["e"][2]["k"][j]["er"][2] = eventKeyframe.eventRandomValues[2];
+                    jn["e"][2]["k"][j]["er"][0] = eventKeyframe.randomValues[0];
+                    jn["e"][2]["k"][j]["er"][1] = eventKeyframe.randomValues[1];
+                    jn["e"][2]["k"][j]["er"][2] = eventKeyframe.randomValues[2];
                 }
 
                 // Color
                 for (int j = 0; j < events[3].Count; j++)
                 {
                     var eventKeyframe = events[3][j];
-                    jn["e"][3]["k"][j]["t"] = eventKeyframe.eventTime;
-                    jn["e"][3]["k"][j]["ct"] = eventKeyframe.curveType.Name;
+                    jn["e"][3]["k"][j]["t"] = eventKeyframe.time;
+                    jn["e"][3]["k"][j]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][3]["k"][j]["ev"][0] = Mathf.Clamp(eventKeyframe.eventValues[0], 0, 8);
-                    jn["e"][3]["k"][j]["ev"][1] = (-eventKeyframe.eventValues[1] + 1f) * 100f;
-                    if (eventKeyframe.eventValues.Length > 5)
-                        jn["e"][3]["k"][j]["ev"][2] = Mathf.Clamp(eventKeyframe.eventValues[5], 0, 8);
+                    jn["e"][3]["k"][j]["ev"][0] = Mathf.Clamp(eventKeyframe.values[0], 0, 8);
+                    jn["e"][3]["k"][j]["ev"][1] = (-eventKeyframe.values[1] + 1f) * 100f;
+                    if (eventKeyframe.values.Length > 5)
+                        jn["e"][3]["k"][j]["ev"][2] = Mathf.Clamp(eventKeyframe.values[5], 0, 8);
                 }
             }
 
@@ -1024,19 +1072,15 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["pt"] = parentType;
 
             if (parentOffsets.Any(x => x != 0f))
-            {
-                for (int i = 0; i < parentOffsets.Count; i++)
+                for (int i = 0; i < parentOffsets.Length; i++)
                     jn["po"][i] = parentOffsets[i].ToString();
-            }
 
             if (parentAdditive != "000")
                 jn["pa"] = parentAdditive;
 
             if (parallaxSettings.Any(x => x != 1f))
-            {
                 for (int i = 0; i < parallaxSettings.Length; i++)
                     jn["ps"][i] = parallaxSettings[i].ToString();
-            }
 
             if (!string.IsNullOrEmpty(parent))
                 jn["p"] = parent;
@@ -1094,7 +1138,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["ed"]["shrink"] = editorData.collapse.ToString();
 
             jn["ed"]["bin"] = editorData.Bin.ToString();
-            jn["ed"]["layer"] = editorData.layer.ToString();
+            jn["ed"]["layer"] = editorData.Layer.ToString();
 
             for (int i = 0; i < events[0].Count; i++)
                 jn["events"]["pos"][i] = ((EventKeyframe)events[0][i]).ToJSON();
@@ -1118,7 +1162,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="oldStyle">If the autokill length should be considered.</param>
         /// <param name="collapse">If the length should be collapsed.</param>
         /// <returns>Returns the lifetime of the object.</returns>
-        public new float GetObjectLifeLength(float offset = 0f, bool oldStyle = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
+        public float GetObjectLifeLength(float offset = 0f, bool oldStyle = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
         {
             AutoKillType.OldStyleNoAutokill => oldStyle ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
             AutoKillType.LastKeyframe => Length + offset,
@@ -1128,19 +1172,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             _ => 0f,
         };
 
-        /// <summary>
-        /// Sets the parent additive value depending on the index.
-        /// </summary>
-        /// <param name="_index">The index to assign to.</param>
-        /// <param name="_new">The new value to set.</param>
-        public void SetParentAdditive(int _index, bool _new)
-        {
-            var stringBuilder = new StringBuilder(parentAdditive);
-            stringBuilder[_index] = _new ? '1' : '0';
-            parentAdditive = stringBuilder.ToString();
-            CoreHelper.Log($"Set Parent Additive: {parentAdditive}");
-        }
-
         public void SetAutokillToScale(List<BeatmapObject> beatmapObjects)
         {
             try
@@ -1149,13 +1180,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var beatmapObject = this;
                 var spawnDuration = SpawnDuration;
 
-                if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < spawnDuration &&
-                    (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
-                    beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f) &&
+                if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().time < spawnDuration &&
+                    (beatmapObject.events[1].Last().values[0] == 0f || beatmapObject.events[1].Last().values[1] == 0f ||
+                    beatmapObject.events[1].Last().values[0] == 0.001f || beatmapObject.events[1].Last().values[1] == 0.001f) &&
                     beatmapObject.parentType[1] == '1')
                 {
                     autoKillType = AutoKillType.SongTime;
-                    autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().eventTime;
+                    autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().time;
                     return;
                 }
 
@@ -1164,13 +1195,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                     beatmapObject = beatmapObjects.Find(x => x.id == parent);
                     parent = beatmapObject.parent;
 
-                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < spawnDuration &&
-                        (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
-                        beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f) &&
+                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().time < spawnDuration &&
+                        (beatmapObject.events[1].Last().values[0] == 0f || beatmapObject.events[1].Last().values[1] == 0f ||
+                        beatmapObject.events[1].Last().values[0] == 0.001f || beatmapObject.events[1].Last().values[1] == 0.001f) &&
                         beatmapObject.parentType[1] == '1')
                     {
                         autoKillType = AutoKillType.SongTime;
-                        autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().eventTime;
+                        autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().time;
                         break;
                     }
                 }
@@ -1179,17 +1210,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
 
             }
-        }
-
-        public bool TryGetPrefabObject(out PrefabObject result)
-        {
-            if (GameData.Current.prefabObjects.TryFind(x => x.ID == prefabInstanceID, out PrefabObject prefabObject))
-            {
-                result = prefabObject;
-                return true;
-            }
-            result = null;
-            return false;
         }
 
         #region Prefab Reference
@@ -1210,7 +1230,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void SetPrefabReference(PrefabObject prefabObject)
         {
             prefabID = prefabObject.prefabID;
-            prefabInstanceID = prefabObject.ID;
+            prefabInstanceID = prefabObject.id;
         }
 
         /// <summary>
@@ -1226,12 +1246,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.ID == prefabID);
+        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
+
+        public bool TryGetPrefabObject(out PrefabObject result)
+        {
+            result = GetPrefabObject();
+            return result;
+        }
 
         /// <summary>
         /// Gets the prefab object reference.
         /// </summary>
-        public PrefabObject GetPrefabObject() => GameData.Current.prefabObjects.Find(x => x.ID == prefabInstanceID);
+        public PrefabObject GetPrefabObject() => GameData.Current.prefabObjects.Find(x => x.id == prefabInstanceID);
 
         #endregion
 
@@ -1248,18 +1274,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             switch (toType)
             {
-                case 0:
-                    {
+                case 0: {
                         positionOffset = value;
                         break;
                     }
-                case 1:
-                    {
+                case 1: {
                         scaleOffset = value;
                         break;
                     }
-                case 2:
-                    {
+                case 2: {
                         rotationOffset = value;
                         break;
                     }
@@ -1270,18 +1293,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             switch (toType)
             {
-                case 0:
-                    {
+                case 0: {
                         positionOffset[toAxis] = value;
                         break;
                     }
-                case 1:
-                    {
+                case 1: {
                         scaleOffset[toAxis] = value;
                         break;
                     }
-                case 2:
-                    {
+                case 2: {
                         rotationOffset[toAxis] = value;
                         break;
                     }
@@ -1292,9 +1312,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         
         public float Interpolate(int type, int valueIndex, float time)
         {
-            var list = events[type].OrderBy(x => x.eventTime).ToList();
+            var list = events[type].OrderBy(x => x.time).ToList();
 
-            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+            var nextKFIndex = list.FindIndex(x => x.time > time);
 
             if (nextKFIndex < 0)
                 nextKFIndex = list.Count - 1;
@@ -1307,9 +1327,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prevKF = list[prevKFIndex] as EventKeyframe;
 
             type = Mathf.Clamp(type, 0, list.Count);
-            valueIndex = Mathf.Clamp(valueIndex, 0, list[0].eventValues.Length);
+            valueIndex = Mathf.Clamp(valueIndex, 0, list[0].values.Length);
 
-            if (prevKF.eventValues.Length <= valueIndex)
+            if (prevKF.values.Length <= valueIndex)
                 return 0f;
 
             var total = 0f;
@@ -1317,18 +1337,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int k = 0; k < nextKFIndex; k++)
             {
                 if (((EventKeyframe)list[k + 1]).relative)
-                    total += list[k].eventValues[valueIndex];
+                    total += list[k].values[valueIndex];
                 else
                     total = 0f;
 
                 if (((EventKeyframe)list[k]).relative)
-                    prevtotal += list[k].eventValues[valueIndex];
+                    prevtotal += list[k].values[valueIndex];
                 else
                     prevtotal = 0f;
             }
 
-            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
-            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+            var next = nextKF.relative ? total + nextKF.values[valueIndex] : nextKF.values[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[valueIndex];
 
             bool isLerper = type != 3 || valueIndex != 0;
 
@@ -1344,7 +1364,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (prevKFIndex == nextKFIndex)
                 return next;
 
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time))));
 
             if (prevKFIndex == nextKFIndex)
                 x = next;
@@ -1819,13 +1839,68 @@ namespace BetterLegacy.Core.Data.Beatmap
             return canParent;
         }
 
+        /// <summary>
+        /// Gets the parent toggle value depending on the index.
+        /// </summary>
+        /// <param name="index">Index of the parent toggle to get.</param>
+        /// <returns>Returns a parent toggle value.</returns>
+        public bool GetParentType(int index) => parentType[index] == '1';
+
+        /// <summary>
+        /// Sets the parent toggle value depending on the index.
+        /// </summary>
+        /// <param name="index">Index to assign to.</param>
+        /// <param name="val">The new value to set.</param>
+        public void SetParentType(int index, bool val)
+        {
+            var stringBuilder = new StringBuilder(parentType);
+            stringBuilder[index] = (val ? '1' : '0');
+            parentType = stringBuilder.ToString();
+            CoreHelper.Log($"Set Parent Type: {parentType}");
+        }
+
+        /// <summary>
+        /// Gets the parent delay value depending on the index.
+        /// </summary>
+        /// <param name="index">Index of the parent delay to get.</param>
+        /// <returns>Returns a parent delay value.</returns>
+        public float GetParentOffset(int index) => parentOffsets.InRange(index) ? parentOffsets[index] : 0f;
+
+        /// <summary>
+        /// Sets the parent delay value depending on the index.
+        /// </summary>
+        /// <param name="index">Index to assign to.</param>
+        /// <param name="val">the new value to set.</param>
+        public void SetParentOffset(int index, float val)
+        {
+            if (parentOffsets.InRange(index))
+                parentOffsets[index] = val;
+        }
+        /// <summary>
+        /// Gets the parent additive value depending on the index.
+        /// </summary>
+        /// <param name="index">Index of the parent additive to get.</param>
+        /// <returns>Returns a parent additive value.</returns>
+        public bool GetParentAdditive(int index) => parentAdditive[index] == '1';
+
+        /// <summary>
+        /// Sets the parent additive value depending on the index.
+        /// </summary>
+        /// <param name="index">Index to assign to.</param>
+        /// <param name="val">The new value to set.</param>
+        public void SetParentAdditive(int index, bool val)
+        {
+            var stringBuilder = new StringBuilder(parentAdditive);
+            stringBuilder[index] = val ? '1' : '0';
+            parentAdditive = stringBuilder.ToString();
+            CoreHelper.Log($"Set Parent Additive: {parentAdditive}");
+        }
+
         #endregion
 
         #endregion
 
         #region Operators
-
-        public static implicit operator bool(BeatmapObject exists) => exists != null;
 
         public override bool Equals(object obj) => obj is BeatmapObject && id == (obj as BeatmapObject).id;
 

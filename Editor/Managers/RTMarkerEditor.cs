@@ -199,7 +199,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Quick references to the markers list.
         /// </summary>
-        public List<Marker> Markers => GameData.Current.beatmapData.markers;
+        public List<Marker> Markers => GameData.Current.data.markers;
 
         /// <summary>
         /// Copied marker.
@@ -254,7 +254,7 @@ namespace BetterLegacy.Editor.Managers
             if (dragging && CurrentMarker && editorOpen)
                 RenderTime(CurrentMarker.Marker);
 
-            if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
+            if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
                 return;
 
             if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
@@ -465,8 +465,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete ALL markers? (This is irreversible!)", () =>
                     {
-                        EditorManager.inst.DisplayNotification($"Deleted {GameData.Current.beatmapData.markers.Count} markers!", 2f, EditorManager.NotificationType.Success);
-                        GameData.Current.beatmapData.markers.Clear();
+                        EditorManager.inst.DisplayNotification($"Deleted {GameData.Current.data.markers.Count} markers!", 2f, EditorManager.NotificationType.Success);
+                        GameData.Current.data.markers.Clear();
                         UpdateMarkerList();
                         CreateMarkers();
                         RTEditor.inst.HideWarningPopup();
@@ -637,8 +637,8 @@ namespace BetterLegacy.Editor.Managers
 
                     var marker = Marker.DeepCopy(markerCopy);
                     marker.time = RTEditor.inst.editorInfo.bpmSnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
-                    GameData.Current.beatmapData.markers.Add(marker);
-                    CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
+                    GameData.Current.data.markers.Add(marker);
+                    CreateMarker(GameData.Current.data.markers.Count - 1);
                     OrderMarkers();
                     EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
                 }),
@@ -678,7 +678,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             int num = 0;
-            foreach (var marker in GameData.Current.beatmapData.markers)
+            foreach (var marker in GameData.Current.data.markers)
             {
                 int index = num;
                 CreateMarker(index);
@@ -693,12 +693,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderMarkers()
         {
-            if (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.markers == null)
+            if (!GameData.Current || GameData.Current.data == null || GameData.Current.data.markers == null)
                 return;
 
-            for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
+            for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
-                var marker = GameData.Current.beatmapData.markers[i];
+                var marker = GameData.Current.data.markers[i];
 
                 if (!marker.timelineMarker)
                     CreateMarker(i);
@@ -733,7 +733,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OrderMarkers()
         {
-            GameData.Current.beatmapData.markers = GameData.Current.beatmapData.markers.OrderBy(x => x.time).ToList();
+            GameData.Current.data.markers = GameData.Current.data.markers.OrderBy(x => x.time).ToList();
 
             RenderMarkers();
         }

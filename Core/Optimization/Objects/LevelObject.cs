@@ -84,7 +84,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             ID = beatmapObject.id;
             StartTime = beatmapObject.StartTime;
             KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-            depth = beatmapObject.depth;
+            depth = beatmapObject.Depth;
 
             this.parentObjects = parentObjects;
             this.visualObject = visualObject;
@@ -181,7 +181,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 gradientObject.SetColor(colorSequence.Interpolate(time - StartTime), secondaryColorSequence.Interpolate(time - StartTime));
             
             if (isImage)
-                visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.depth * 0.1f)); // fixes origin being off.
+                visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f)); // fixes origin being off.
 
             // Update Camera Parent
             if (positionParent && cameraParent)

@@ -87,10 +87,10 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string ReferenceID { get; set; }
 
-        public List<DataManager.GameData.EventKeyframe> positionKeyframes = new List<DataManager.GameData.EventKeyframe>();
-        public List<DataManager.GameData.EventKeyframe> scaleKeyframes = new List<DataManager.GameData.EventKeyframe>();
-        public List<DataManager.GameData.EventKeyframe> rotationKeyframes = new List<DataManager.GameData.EventKeyframe>();
-        public List<DataManager.GameData.EventKeyframe> colorKeyframes = new List<DataManager.GameData.EventKeyframe>();
+        public List<EventKeyframe> positionKeyframes = new List<EventKeyframe>();
+        public List<EventKeyframe> scaleKeyframes = new List<EventKeyframe>();
+        public List<EventKeyframe> rotationKeyframes = new List<EventKeyframe>();
+        public List<EventKeyframe> colorKeyframes = new List<EventKeyframe>();
 
         /// <summary>
         /// If this is on, the values of the first keyframes will be replaced with the transition values.
@@ -116,10 +116,10 @@ namespace BetterLegacy.Core.Data
 
         public float GetLength(int type) => type switch
         {
-            0 => positionKeyframes.IsEmpty() ? 0f : positionKeyframes.Max(x => x.eventTime),
-            1 => scaleKeyframes.IsEmpty() ? 0f : scaleKeyframes.Max(x => x.eventTime),
-            2 => rotationKeyframes.IsEmpty() ? 0f : rotationKeyframes.Max(x => x.eventTime),
-            3 => colorKeyframes.IsEmpty() ? 0f : colorKeyframes.Max(x => x.eventTime),
+            0 => positionKeyframes.IsEmpty() ? 0f : positionKeyframes.Max(x => x.time),
+            1 => scaleKeyframes.IsEmpty() ? 0f : scaleKeyframes.Max(x => x.time),
+            2 => rotationKeyframes.IsEmpty() ? 0f : rotationKeyframes.Max(x => x.time),
+            3 => colorKeyframes.IsEmpty() ? 0f : colorKeyframes.Max(x => x.time),
             _ => 0f,
         };
 
@@ -132,10 +132,10 @@ namespace BetterLegacy.Core.Data
             ReferenceID = orig.ReferenceID,
             StartTime = orig.StartTime,
 
-            positionKeyframes = orig.positionKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
-            scaleKeyframes = orig.scaleKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
-            rotationKeyframes = orig.rotationKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
-            colorKeyframes = orig.colorKeyframes.Select(x => EventKeyframe.DeepCopy(x as EventKeyframe) as DataManager.GameData.EventKeyframe).ToList(),
+            positionKeyframes = orig.positionKeyframes.Select(x => EventKeyframe.DeepCopy(x)).ToList(),
+            scaleKeyframes = orig.scaleKeyframes.Select(x => EventKeyframe.DeepCopy(x)).ToList(),
+            rotationKeyframes = orig.rotationKeyframes.Select(x => EventKeyframe.DeepCopy(x)).ToList(),
+            colorKeyframes = orig.colorKeyframes.Select(x => EventKeyframe.DeepCopy(x)).ToList(),
 
             animatePosition = orig.animatePosition,
             animateScale = orig.animateScale,

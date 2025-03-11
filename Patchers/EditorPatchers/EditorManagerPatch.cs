@@ -774,7 +774,7 @@ namespace BetterLegacy.Patchers
             }
 
             var gameData = GameData.Current;
-            if (gameData.beatmapData is LevelBeatmapData levelBeatmapData && levelBeatmapData.levelData is LevelData levelData)
+            if (gameData.data is LevelBeatmapData levelBeatmapData && levelBeatmapData.levelData is LevelData levelData)
                 levelData.modVersion = LegacyPlugin.ModVersion.ToString();
 
             if (EditorConfig.Instance.SaveAsync.Value)

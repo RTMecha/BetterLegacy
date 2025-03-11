@@ -123,7 +123,7 @@ namespace BetterLegacy.Arcade.Managers
         /// </summary>
         public BaseCheckpoint ActiveCheckpoint { get; set; }
 
-        List<BaseCheckpoint> Checkpoints => GameData.Current?.beatmapData?.checkpoints;
+        List<BaseCheckpoint> Checkpoints => GameData.Current?.data?.checkpoints;
 
         int nextCheckpointIndex;
 
@@ -198,7 +198,7 @@ namespace BetterLegacy.Arcade.Managers
             CoreHelper.Log($"Reset Checkpoints | Based on time: {baseOnTime}");
             int index = 0;
             if (baseOnTime)
-                index = GameData.Current.beatmapData.GetLastCheckpointIndex();
+                index = GameData.Current.data.GetLastCheckpointIndex();
 
             ActiveCheckpoint = Checkpoints[index];
             nextCheckpointIndex = index + 1;
@@ -233,7 +233,7 @@ namespace BetterLegacy.Arcade.Managers
             GameManager.inst.playingCheckpointAnimation = true;
             GameManager.inst.isReversing = true;
 
-            var checkpoint = ActiveCheckpoint ?? GameData.Current.beatmapData.GetLastCheckpoint();
+            var checkpoint = ActiveCheckpoint ?? GameData.Current.data.GetLastCheckpoint();
 
             var animation = new RTAnimation("Reverse");
             animation.animationHandlers = new List<AnimationHandlerBase>

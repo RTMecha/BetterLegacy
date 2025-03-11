@@ -338,17 +338,17 @@ namespace BetterLegacy.Core.Helpers
         {
             public static float RandomizeFloatKeyframe(string id, EventKeyframe eventKeyframe, int index = 0)
             {
-                var round = eventKeyframe.eventRandomValues.Length > 2 && eventKeyframe.eventRandomValues[2] != 0f;
+                var round = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f;
                 return eventKeyframe.random switch
                 {
                     1 => round ?
-                            RTMath.RoundToNearestNumber(SingleFromIDRange(id, CurrentSeed, eventKeyframe.eventValues[index], eventKeyframe.eventRandomValues[0]), eventKeyframe.eventRandomValues[2]) :
-                            SingleFromIDRange(id, CurrentSeed, eventKeyframe.eventValues[index], eventKeyframe.eventRandomValues[0]),
-                    2 => UnityEngine.Mathf.Round(SingleFromIDRange(id, CurrentSeed, eventKeyframe.eventValues[index], eventKeyframe.eventRandomValues[0])),
-                    3 => (SingleFromID(id, CurrentSeed) > 0.5f) ? eventKeyframe.eventValues[index] : eventKeyframe.eventRandomValues[0],
-                    4 => eventKeyframe.eventValues[index] * (round ?
-                                RTMath.RoundToNearestNumber(SingleFromIDRange(id, CurrentSeed, eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]) :
-                                SingleFromIDRange(id, CurrentSeed, eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1])),
+                            RTMath.RoundToNearestNumber(SingleFromIDRange(id, CurrentSeed, eventKeyframe.values[index], eventKeyframe.randomValues[0]), eventKeyframe.randomValues[2]) :
+                            SingleFromIDRange(id, CurrentSeed, eventKeyframe.values[index], eventKeyframe.randomValues[0]),
+                    2 => UnityEngine.Mathf.Round(SingleFromIDRange(id, CurrentSeed, eventKeyframe.values[index], eventKeyframe.randomValues[0])),
+                    3 => (SingleFromID(id, CurrentSeed) > 0.5f) ? eventKeyframe.values[index] : eventKeyframe.randomValues[0],
+                    4 => eventKeyframe.values[index] * (round ?
+                                RTMath.RoundToNearestNumber(SingleFromIDRange(id, CurrentSeed, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]) :
+                                SingleFromIDRange(id, CurrentSeed, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1])),
                     _ => 0f
                 };
             }
@@ -357,49 +357,49 @@ namespace BetterLegacy.Core.Helpers
             {
                 float x = 0f;
                 float y = 0f;
-                var round = eventKeyframe.eventRandomValues.Length > 2 && eventKeyframe.eventRandomValues[2] != 0f;
+                var round = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f;
                 switch (eventKeyframe.random)
                 {
                     case 1: // Regular
                         {
                             if (round)
                             {
-                                x = (eventKeyframe.eventValues[0] == eventKeyframe.eventRandomValues[0]) ?
-                                        eventKeyframe.eventValues[0] :
-                                        RTMath.RoundToNearestNumber(SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]), eventKeyframe.eventRandomValues[2]);
-                                y = (eventKeyframe.eventValues[1] == eventKeyframe.eventRandomValues[1]) ?
-                                        eventKeyframe.eventValues[1] :
-                                        RTMath.RoundToNearestNumber(SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]);
+                                x = (eventKeyframe.values[0] == eventKeyframe.randomValues[0]) ?
+                                        eventKeyframe.values[0] :
+                                        RTMath.RoundToNearestNumber(SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.values[0], eventKeyframe.randomValues[0]), eventKeyframe.randomValues[2]);
+                                y = (eventKeyframe.values[1] == eventKeyframe.randomValues[1]) ?
+                                        eventKeyframe.values[1] :
+                                        RTMath.RoundToNearestNumber(SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.values[1], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]);
                             }
                             else
                             {
-                                x = SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]);
-                                y = SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]);
+                                x = SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.values[0], eventKeyframe.randomValues[0]);
+                                y = SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.values[1], eventKeyframe.randomValues[1]);
                             }
                             break;
                         }
                     case 2: // Support for really old levels (for some reason)
                         {
-                            x = UnityEngine.Mathf.Round(SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.eventValues[0], eventKeyframe.eventRandomValues[0]));
-                            y = UnityEngine.Mathf.Round(SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.eventValues[1], eventKeyframe.eventRandomValues[1]));
+                            x = UnityEngine.Mathf.Round(SingleFromIDRange(CurrentSeed, id + "X", eventKeyframe.values[0], eventKeyframe.randomValues[0]));
+                            y = UnityEngine.Mathf.Round(SingleFromIDRange(CurrentSeed, id + "Y", eventKeyframe.values[1], eventKeyframe.randomValues[1]));
                             break;
                         }
                     case 3: // Toggle
                         {
                             bool toggle = SingleFromID(CurrentSeed, id) > 0.5f;
-                            x = toggle ? eventKeyframe.eventValues[0] : eventKeyframe.eventRandomValues[0];
-                            y = toggle ? eventKeyframe.eventValues[1] : eventKeyframe.eventRandomValues[1];
+                            x = toggle ? eventKeyframe.values[0] : eventKeyframe.randomValues[0];
+                            y = toggle ? eventKeyframe.values[1] : eventKeyframe.randomValues[1];
                             break;
                         }
                     case 4: // Scale
                         {
-                            float multiply = SingleFromIDRange(CurrentSeed, id, eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]);
+                            float multiply = SingleFromIDRange(CurrentSeed, id, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]);
 
                             if (round)
-                                multiply = RTMath.RoundToNearestNumber(multiply, eventKeyframe.eventRandomValues[2]);
+                                multiply = RTMath.RoundToNearestNumber(multiply, eventKeyframe.randomValues[2]);
 
-                            x = eventKeyframe.eventValues[0] * multiply;
-                            y = eventKeyframe.eventValues[1] * multiply;
+                            x = eventKeyframe.values[0] * multiply;
+                            y = eventKeyframe.values[1] * multiply;
                             break;
                         }
                 }
@@ -408,14 +408,14 @@ namespace BetterLegacy.Core.Helpers
 
             public static float RandomizeFloatKeyframe(EventKeyframe eventKeyframe, int index = 0) => eventKeyframe.random switch
             {
-                1 => eventKeyframe.eventRandomValues.Length > 2 && eventKeyframe.eventRandomValues[2] != 0f ?
-                        RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.eventValues[index], eventKeyframe.eventRandomValues[0]), eventKeyframe.eventRandomValues[2]) :
-                        UnityEngine.Random.Range(eventKeyframe.eventValues[index], eventKeyframe.eventRandomValues[0]),
-                2 => UnityEngine.Mathf.Round(UnityEngine.Random.Range(eventKeyframe.eventValues[index], eventKeyframe.eventRandomValues[0])),
-                3 => (UnityEngine.Random.value > 0.5f) ? eventKeyframe.eventValues[index] : eventKeyframe.eventRandomValues[0],
-                4 => eventKeyframe.eventValues[index] * eventKeyframe.eventRandomValues.Length > 2 && eventKeyframe.eventRandomValues[2] != 0f ?
-                            RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]) :
-                            UnityEngine.Random.Range(eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]),
+                1 => eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f ?
+                        RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.values[index], eventKeyframe.randomValues[0]), eventKeyframe.randomValues[2]) :
+                        UnityEngine.Random.Range(eventKeyframe.values[index], eventKeyframe.randomValues[0]),
+                2 => UnityEngine.Mathf.Round(UnityEngine.Random.Range(eventKeyframe.values[index], eventKeyframe.randomValues[0])),
+                3 => (UnityEngine.Random.value > 0.5f) ? eventKeyframe.values[index] : eventKeyframe.randomValues[0],
+                4 => eventKeyframe.values[index] * eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f ?
+                            RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]) :
+                            UnityEngine.Random.Range(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]),
                 _ => 0f
             };
 
@@ -427,36 +427,36 @@ namespace BetterLegacy.Core.Helpers
                 {
                     case 1: // Regular
                         {
-                            if (eventKeyframe.eventRandomValues.Length > 2 && eventKeyframe.eventRandomValues[2] != 0f)
+                            if (eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f)
                             {
-                                x = ((eventKeyframe.eventValues[xIndex] == eventKeyframe.eventRandomValues[0]) ? eventKeyframe.eventValues[xIndex] : RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.eventValues[xIndex], eventKeyframe.eventRandomValues[0]), eventKeyframe.eventRandomValues[2]));
-                                y = ((eventKeyframe.eventValues[yIndex] == eventKeyframe.eventRandomValues[1]) ? eventKeyframe.eventValues[yIndex] : RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.eventValues[yIndex], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]));
+                                x = ((eventKeyframe.values[xIndex] == eventKeyframe.randomValues[0]) ? eventKeyframe.values[xIndex] : RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.values[xIndex], eventKeyframe.randomValues[0]), eventKeyframe.randomValues[2]));
+                                y = ((eventKeyframe.values[yIndex] == eventKeyframe.randomValues[1]) ? eventKeyframe.values[yIndex] : RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.values[yIndex], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]));
                             }
                             else
                             {
-                                x = UnityEngine.Random.Range(eventKeyframe.eventValues[xIndex], eventKeyframe.eventRandomValues[0]);
-                                y = UnityEngine.Random.Range(eventKeyframe.eventValues[yIndex], eventKeyframe.eventRandomValues[1]);
+                                x = UnityEngine.Random.Range(eventKeyframe.values[xIndex], eventKeyframe.randomValues[0]);
+                                y = UnityEngine.Random.Range(eventKeyframe.values[yIndex], eventKeyframe.randomValues[1]);
                             }
                             break;
                         }
                     case 2: // Support for really old levels
                         {
-                            x = UnityEngine.Mathf.Round(UnityEngine.Random.Range(eventKeyframe.eventValues[xIndex], eventKeyframe.eventRandomValues[0]));
-                            y = UnityEngine.Mathf.Round(UnityEngine.Random.Range(eventKeyframe.eventValues[yIndex], eventKeyframe.eventRandomValues[1]));
+                            x = UnityEngine.Mathf.Round(UnityEngine.Random.Range(eventKeyframe.values[xIndex], eventKeyframe.randomValues[0]));
+                            y = UnityEngine.Mathf.Round(UnityEngine.Random.Range(eventKeyframe.values[yIndex], eventKeyframe.randomValues[1]));
                             break;
                         }
                     case 3: // Toggle
                         {
                             bool toggle = UnityEngine.Random.value > 0.5f;
-                            x = toggle ? eventKeyframe.eventValues[xIndex] : eventKeyframe.eventRandomValues[0];
-                            y = toggle ? eventKeyframe.eventValues[yIndex] : eventKeyframe.eventRandomValues[1];
+                            x = toggle ? eventKeyframe.values[xIndex] : eventKeyframe.randomValues[0];
+                            y = toggle ? eventKeyframe.values[yIndex] : eventKeyframe.randomValues[1];
                             break;
                         }
                     case 4: // Scale
                         {
-                            float multiply = eventKeyframe.eventRandomValues.Length > 2 && eventKeyframe.eventRandomValues[2] != 0f ? RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]), eventKeyframe.eventRandomValues[2]) : UnityEngine.Random.Range(eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1]);
-                            x = eventKeyframe.eventValues[xIndex] * multiply;
-                            y = eventKeyframe.eventValues[yIndex] * multiply;
+                            float multiply = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f ? RTMath.RoundToNearestNumber(UnityEngine.Random.Range(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]) : UnityEngine.Random.Range(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]);
+                            x = eventKeyframe.values[xIndex] * multiply;
+                            y = eventKeyframe.values[yIndex] * multiply;
                             break;
                         }
                 }

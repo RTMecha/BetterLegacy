@@ -1453,7 +1453,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (int.TryParse(_val, out int result))
                                 {
-                                    modifier.commands[2] = Mathf.Clamp(result, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1).ToString();
+                                    modifier.commands[2] = Mathf.Clamp(result, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].values.Length - 1).ToString();
                                     modifier.active = false;
                                 }
                             });
@@ -1467,8 +1467,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
                             EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
-                            TriggerHelper.IncreaseDecreaseButtonsInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1, vindex.transform);
-                            TriggerHelper.AddEventTriggers(vindexIF.gameObject, TriggerHelper.ScrollDeltaInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1));
+                            TriggerHelper.IncreaseDecreaseButtonsInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].values.Length - 1, vindex.transform);
+                            TriggerHelper.AddEventTriggers(vindexIF.gameObject, TriggerHelper.ScrollDeltaInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].values.Length - 1));
 
                             if (cmd == "eventOffsetMath")
                                 StringGenerator(modifier, layout, "Value", 0);

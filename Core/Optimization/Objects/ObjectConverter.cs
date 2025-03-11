@@ -13,7 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
+
 using Object = UnityEngine.Object;
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
@@ -152,7 +152,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             {
                 var rtPlayer = baseObject.GetComponent<RTPlayer>();
                 rtPlayer.Model = ObjectManager.inst.objectPrefabs[shape].options[shapeOption].GetComponent<RTPlayer>().Model;
-                rtPlayer.playerIndex = beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].eventValues.Length > 0 ? (int)beatmapObject.events[3][0].eventValues[0] : 0;
+                rtPlayer.playerIndex = beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].values.Length > 0 ? (int)beatmapObject.events[3][0].values[0] : 0;
                 if (beatmapObject.tags != null && beatmapObject.tags.Has(x => x == "DontRotate"))
                 {
                     rtPlayer.CanRotate = false;
@@ -162,7 +162,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             baseObject.transform.localScale = Vector3.one;
 
             var visualObject = baseObject.transform.GetChild(shape == 9 ? 1 : 0).gameObject;
-            visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.depth * 0.1f);
+            visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
             if (shape != 9)
                 visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
@@ -189,32 +189,32 @@ namespace BetterLegacy.Core.Optimization.Objects
             var prefabOffsetScale = Vector3.one;
             var prefabOffsetRotation = Vector3.zero;
 
-            if (beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID) && gameData.prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out PrefabObject prefabObject))
+            if (beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID) && gameData.prefabObjects.TryFind(x => x.id == beatmapObject.prefabInstanceID, out PrefabObject prefabObject))
             {
-                bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 0;
-                bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 1;
+                bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].values.Length > 0;
+                bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].values.Length > 1;
 
-                bool hasScaX = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].eventValues.Length > 0;
-                bool hasScaY = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].eventValues.Length > 1;
+                bool hasScaX = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].values.Length > 0;
+                bool hasScaY = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].values.Length > 1;
 
-                bool hasRot = prefabObject.events.Count > 2 && prefabObject.events[2] != null && prefabObject.events[2].eventValues.Length > 0;
+                bool hasRot = prefabObject.events.Count > 2 && prefabObject.events[2] != null && prefabObject.events[2].values.Length > 0;
 
                 var pos = new Vector3(
-                    hasPosX ? prefabObject.events[0].eventValues[0] : 0f,
-                    hasPosY ? prefabObject.events[0].eventValues[1] : 0f,
+                    hasPosX ? prefabObject.events[0].values[0] : 0f,
+                    hasPosY ? prefabObject.events[0].values[1] : 0f,
                     0f);
                 var sca = new Vector3(
-                    hasScaX ? prefabObject.events[1].eventValues[0] : 1f,
-                    hasScaY ? prefabObject.events[1].eventValues[1] : 1f,
+                    hasScaX ? prefabObject.events[1].values[0] : 1f,
+                    hasScaY ? prefabObject.events[1].values[1] : 1f,
                     1f);
-                var rot = Quaternion.Euler(0f, 0f, hasRot ? prefabObject.events[2].eventValues[0] : 0f);
+                var rot = Quaternion.Euler(0f, 0f, hasRot ? prefabObject.events[2].values[0] : 0f);
 
                 if (prefabObject.events[0].random != 0)
-                    pos = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe((EventKeyframe)prefabObject.events[0]);
+                    pos = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(prefabObject.events[0]);
                 if (prefabObject.events[1].random != 0)
-                    sca = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe((EventKeyframe)prefabObject.events[1]);
+                    sca = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(prefabObject.events[1]);
                 if (prefabObject.events[2].random != 0)
-                    rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe((EventKeyframe)prefabObject.events[2]));
+                    rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(prefabObject.events[2]));
 
                 prefabOffsetPosition = pos;
                 prefabOffsetScale = sca.x != 0f && sca.y != 0f ? sca : Vector3.one;
@@ -326,13 +326,13 @@ namespace BetterLegacy.Core.Optimization.Objects
                         parentAnimateScale = beatmapObject.GetParentType(1),
                         parentAnimateRotation = beatmapObject.GetParentType(2),
 
-                        parentOffsetPosition = beatmapObject.getParentOffset(0),
-                        parentOffsetScale = beatmapObject.getParentOffset(1),
-                        parentOffsetRotation = beatmapObject.getParentOffset(2),
+                        parentOffsetPosition = beatmapObject.parentOffsets[0],
+                        parentOffsetScale = beatmapObject.parentOffsets[1],
+                        parentOffsetRotation = beatmapObject.parentOffsets[2],
 
-                        parentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
-                        parentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
-                        parentAdditiveRotation = beatmapObject.parentAdditive[2] == '1',
+                        parentAdditivePosition = beatmapObject.GetParentAdditive(0),
+                        parentAdditiveScale = beatmapObject.GetParentAdditive(1),
+                        parentAdditiveRotation = beatmapObject.GetParentAdditive(2),
 
                         parentParallaxPosition = beatmapObject.parallaxSettings[0],
                         parentParallaxScale = beatmapObject.parallaxSettings[1],
@@ -367,9 +367,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                         parentAnimateScale = beatmapObject.GetParentType(1),
                         parentAnimateRotation = beatmapObject.GetParentType(2),
 
-                        parentOffsetPosition = beatmapObject.getParentOffset(0),
-                        parentOffsetScale = beatmapObject.getParentOffset(1),
-                        parentOffsetRotation = beatmapObject.getParentOffset(2),
+                        parentOffsetPosition = beatmapObject.GetParentOffset(0),
+                        parentOffsetScale = beatmapObject.GetParentOffset(1),
+                        parentOffsetRotation = beatmapObject.GetParentOffset(2),
 
                         parentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
                         parentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
@@ -455,9 +455,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
         }
 
-        public static Sequence<Vector3> GetVector3Sequence(List<BaseEventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe) => new Sequence<Vector3>(GetVector3Keyframes(eventKeyframes, defaultKeyframe));
+        public static Sequence<Vector3> GetVector3Sequence(List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe) => new Sequence<Vector3>(GetVector3Keyframes(eventKeyframes, defaultKeyframe));
 
-        public static List<IKeyframe<Vector3>> GetVector3Keyframes(List<BaseEventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe)
+        public static List<IKeyframe<Vector3>> GetVector3Keyframes(List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe)
         {
             var keyframes = new List<IKeyframe<Vector3>>(eventKeyframes.Count);
 
@@ -466,40 +466,37 @@ namespace BetterLegacy.Core.Optimization.Objects
             int num = 0;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                if (eventKeyframe is not EventKeyframe kf)
-                    continue;
-
-                var value = new Vector3(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1], eventKeyframe.eventValues.Length > 2 ? eventKeyframe.eventValues[2] : 0f);
+                var value = new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.values.Length > 2 ? eventKeyframe.values[2] : 0f);
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 5 && eventKeyframe.random != 6)
                 {
-                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(kf);
+                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(eventKeyframe);
                     value.x = random.x;
                     value.y = random.y;
                 }
 
-                currentValue = kf.relative && eventKeyframe.random != 6 ? new Vector3(currentValue.x, currentValue.y, 0f) + value : value;
+                currentValue = eventKeyframe.relative && eventKeyframe.random != 6 ? new Vector3(currentValue.x, currentValue.y, 0f) + value : value;
 
                 var isStaticHoming = eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5;
                 var isDynamicHoming = eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6;
 
                 currentKeyfame =
                     isStaticHoming ? new StaticVector3Keyframe(
-                        eventKeyframe.eventTime,
+                        eventKeyframe.time,
                         currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
                         currentKeyfame,
-                        (AxisMode)Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, 2)) :
+                        (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)) :
                     isDynamicHoming ? new DynamicVector3Keyframe(
-                        eventKeyframe.eventTime,
+                        eventKeyframe.time,
                         currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
-                        eventKeyframe.eventRandomValues[2],
-                        eventKeyframe.eventRandomValues[0],
-                        eventKeyframe.eventRandomValues[1],
-                        kf.relative,
+                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
+                        eventKeyframe.randomValues[2],
+                        eventKeyframe.randomValues[0],
+                        eventKeyframe.randomValues[1],
+                        eventKeyframe.relative,
                         currentKeyfame,
-                        (AxisMode)Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, 2)) :
-                    new Vector3Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name), currentKeyfame);
+                        (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)) :
+                    new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString()), currentKeyfame);
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
                     keyframes.Add(currentKeyfame);
@@ -513,31 +510,29 @@ namespace BetterLegacy.Core.Optimization.Objects
             return keyframes;
         }
 
-        public static Sequence<Vector2> GetVector2Sequence(List<BaseEventKeyframe> eventKeyframes, Vector2Keyframe defaultKeyframe) => new Sequence<Vector2>(GetVector2Keyframes(eventKeyframes, defaultKeyframe));
+        public static Sequence<Vector2> GetVector2Sequence(List<EventKeyframe> eventKeyframes, Vector2Keyframe defaultKeyframe) => new Sequence<Vector2>(GetVector2Keyframes(eventKeyframes, defaultKeyframe));
 
-        public static List<IKeyframe<Vector2>> GetVector2Keyframes(List<BaseEventKeyframe> eventKeyframes, Vector2Keyframe defaultKeyframe)
+        public static List<IKeyframe<Vector2>> GetVector2Keyframes(List<EventKeyframe> eventKeyframes, Vector2Keyframe defaultKeyframe)
         {
             List<IKeyframe<Vector2>> keyframes = new List<IKeyframe<Vector2>>(eventKeyframes.Count);
 
             var currentValue = Vector2.zero;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                if (eventKeyframe is not EventKeyframe kf)
-                    continue;
-
-                var value = new Vector2(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1]);
+                var value = new Vector2(eventKeyframe.values[0], eventKeyframe.values[1]);
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 6)
                 {
-                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(kf);
+                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(eventKeyframe);
                     value.x = random.x;
                     value.y = random.y;
                 }
-                currentValue = kf.relative ? currentValue + value : value;
 
-                if (keyframes.Has(x => x.Time == eventKeyframe.eventTime))
+                currentValue = eventKeyframe.relative ? currentValue + value : value;
+
+                if (keyframes.Has(x => x.Time == eventKeyframe.time))
                     continue;
 
-                keyframes.Add(new Vector2Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
+                keyframes.Add(new Vector2Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
             }
 
             // If there is no keyframe, add default
@@ -547,10 +542,10 @@ namespace BetterLegacy.Core.Optimization.Objects
             return keyframes;
         }
 
-        public static Sequence<float> GetFloatSequence(List<BaseEventKeyframe> eventKeyframes, int index, FloatKeyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null, bool color = false)
+        public static Sequence<float> GetFloatSequence(List<EventKeyframe> eventKeyframes, int index, FloatKeyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null, bool color = false)
             => new Sequence<float>(GetFloatKeyframes(eventKeyframes, index, defaultKeyframe, vector3Sequence, color));
 
-        public static List<IKeyframe<float>> GetFloatKeyframes(List<BaseEventKeyframe> eventKeyframes, int index, FloatKeyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null, bool color = false)
+        public static List<IKeyframe<float>> GetFloatKeyframes(List<EventKeyframe> eventKeyframes, int index, FloatKeyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null, bool color = false)
         {
             List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>(eventKeyframes.Count);
 
@@ -559,33 +554,30 @@ namespace BetterLegacy.Core.Optimization.Objects
             int num = 0;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                if (eventKeyframe is not EventKeyframe kf)
-                    continue;
+                var value = eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(eventKeyframe, index) : eventKeyframe.values[index];
 
-                var value = eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(kf, index) : eventKeyframe.eventValues[index];
-
-                currentValue = kf.relative && eventKeyframe.random != 6 && !color ? currentValue + value : value;
+                currentValue = eventKeyframe.relative && eventKeyframe.random != 6 && !color ? currentValue + value : value;
 
                 var isStaticHoming = (eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5) && !color;
                 var isDynamicHoming = (eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6) && !color;
 
                 currentKeyfame =
                     isStaticHoming ? new StaticFloatKeyframe(
-                        eventKeyframe.eventTime,
+                        eventKeyframe.time,
                         currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
                         currentKeyfame,
                         vector3Sequence) :
                     isDynamicHoming ? new DynamicFloatKeyframe(
-                        eventKeyframe.eventTime,
+                        eventKeyframe.time,
                         currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
-                        eventKeyframe.eventRandomValues[2],
-                        eventKeyframe.eventRandomValues[0],
-                        eventKeyframe.eventRandomValues[1],
-                        kf.relative,
+                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
+                        eventKeyframe.randomValues[2],
+                        eventKeyframe.randomValues[0],
+                        eventKeyframe.randomValues[1],
+                        eventKeyframe.relative,
                         vector3Sequence) :
-                    new FloatKeyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name), currentKeyfame);
+                    new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString()), currentKeyfame);
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
                     keyframes.Add(currentKeyfame);
@@ -599,24 +591,24 @@ namespace BetterLegacy.Core.Optimization.Objects
             return keyframes;
         }
 
-        public static Sequence<Color> GetColorSequence(List<BaseEventKeyframe> eventKeyframes, ThemeKeyframe defaultKeyframe, bool getSecondary = false) => new Sequence<Color>(GetColorKeyframes(eventKeyframes, defaultKeyframe, getSecondary));
+        public static Sequence<Color> GetColorSequence(List<EventKeyframe> eventKeyframes, ThemeKeyframe defaultKeyframe, bool getSecondary = false) => new Sequence<Color>(GetColorKeyframes(eventKeyframes, defaultKeyframe, getSecondary));
 
-        public static List<IKeyframe<Color>> GetColorKeyframes(List<BaseEventKeyframe> eventKeyframes, ThemeKeyframe defaultKeyframe, bool getSecondary = false)
+        public static List<IKeyframe<Color>> GetColorKeyframes(List<EventKeyframe> eventKeyframes, ThemeKeyframe defaultKeyframe, bool getSecondary = false)
         {
             List<IKeyframe<Color>> keyframes = new List<IKeyframe<Color>>(eventKeyframes.Count);
 
             int num = 0;
             int index = getSecondary ? 5 : 0;
 
-            foreach (BaseEventKeyframe eventKeyframe in eventKeyframes)
+            foreach (var eventKeyframe in eventKeyframes)
             {
-                if (keyframes.Has(x => x.Time == eventKeyframe.eventTime))
+                if (keyframes.Has(x => x.Time == eventKeyframe.time))
                     continue;
 
-                int value = (int)eventKeyframe.eventValues[index];
+                int value = (int)eventKeyframe.values[index];
                 value = Mathf.Clamp(value, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                keyframes.Add(new ThemeKeyframe(eventKeyframe.eventTime, value, eventKeyframe.eventValues[index + 1], eventKeyframe.eventValues[index + 2], eventKeyframe.eventValues[index + 3], eventKeyframe.eventValues[index + 4], Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
+                keyframes.Add(new ThemeKeyframe(eventKeyframe.time, value, eventKeyframe.values[index + 1], eventKeyframe.values[index + 2], eventKeyframe.values[index + 3], eventKeyframe.values[index + 4], Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
 
                 num++;
             }
