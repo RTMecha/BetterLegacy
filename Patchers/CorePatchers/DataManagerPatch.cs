@@ -354,19 +354,7 @@ namespace BetterLegacy.Patchers
                 CoreHelper.LogError($"Failed to parse Example prefab.\n{ex}");
             } // Example Prefab
 
-            try
-            {
-                for (int i = 0; i < Instance.PrefabTypes.Count; i++)
-                {
-                    var p = Instance.PrefabTypes[i];
-                    var prefabType = new PrefabType(p.Name, p.Color);
-                    Instance.PrefabTypes[i] = prefabType;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.Log(ex.ToString());
-            }
+            Instance.PrefabTypes.Clear();
         }
 
         [HarmonyPatch(nameof(DataManager.SaveData), typeof(string), typeof(DataManager.GameData))]
