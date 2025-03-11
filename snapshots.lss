@@ -17,6 +17,7 @@
 - Folders in the level, theme and prefab lists now have a "folder" icon. This can be customized by adding a "folder_icon.png" file to the folder or by using the context menu to set it. You can also give the folder a short description by creating a "folder_info.json" file.
 - Added New Prefab Instance button to Multi Object Editor.
 - Prefab objects now display a line showing where their offset is at.
+- Fixed Discord status timestamp being used incorrectly.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
