@@ -2771,7 +2771,8 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Set to Timeline Cursor", () =>
                     {
                         var distance = AudioManager.inst.CurrentAudioSource.time - EditorTimeline.inst.SelectedObjects.Min(x => x.Time) + PrefabEditor.inst.NewPrefabOffset;
-                        offsetSlider.value -= distance;
+                        PrefabEditor.inst.NewPrefabOffset -= distance;
+                        offsetInput.text = PrefabEditor.inst.NewPrefabOffset.ToString();
                     }));
             };
             var offsetSliderContextMenu = offsetSlider.gameObject.GetOrAddComponent<ContextClickable>();
