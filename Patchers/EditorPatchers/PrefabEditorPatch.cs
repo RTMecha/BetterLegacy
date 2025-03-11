@@ -73,33 +73,31 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(PrefabEditor.Start))]
         [HarmonyPrefix]
-        static bool StartPrefix()
-        {
-            return false;
-        }
+        static bool StartPrefix() => false;
 
         [HarmonyPatch(nameof(PrefabEditor.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (Instance.dialog && Instance.dialog.gameObject.activeSelf)
-            {
-                float num;
-                if (EditorTimeline.inst.SelectedObjects.Count <= 0)
-                    num = 0f;
-                else
-                    num = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+            var count = EditorTimeline.inst.SelectedObjectCount;
+            if (count <= 0)
+                return false;
 
-                if (!Instance.OffsetLine.activeSelf && EditorTimeline.inst.SelectedObjects.Count > 0)
+            var creating = Instance.dialog && Instance.dialog.gameObject.activeSelf;
+            var selected = count == 1 && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject;
+            var offset = creating ? EditorTimeline.inst.SelectedObjects.Min(x => x.Time) - Instance.NewPrefabOffset : EditorTimeline.inst.CurrentSelection.Time;
+
+            if (creating || selected)
+            {
+                if (!Instance.OffsetLine.activeSelf)
                 {
                     Instance.OffsetLine.transform.SetAsLastSibling();
                     Instance.OffsetLine.SetActive(true);
                 }
 
-                Instance.OffsetLine.transform.AsRT().anchoredPosition = new Vector2(Instance.posCalc(num - Instance.NewPrefabOffset), 0f);
+                Instance.OffsetLine.transform.AsRT().anchoredPosition = new Vector2(Instance.posCalc(offset), 0f);
             }
-
-            if (((!Instance.dialog || !Instance.dialog.gameObject.activeSelf) || EditorTimeline.inst.SelectedBeatmapObjects.Count <= 0) && Instance.OffsetLine.activeSelf)
+            else if (Instance.OffsetLine.activeSelf)
                 Instance.OffsetLine.SetActive(false);
 
             return false;

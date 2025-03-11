@@ -445,6 +445,7 @@ namespace BetterLegacy.Editor.Managers
 
                 typeSelector = typeButton;
                 type.gameObject.AddComponent<ContrastColors>().Init(typeButton.text, typeButton.button.image);
+                EditorThemeManager.AddGraphic(typeButton.button.image, ThemeGroup.Null, true);
                 try
                 {
                     EditorHelper.SetComplexity(type, Complexity.Normal);
@@ -585,7 +586,7 @@ namespace BetterLegacy.Editor.Managers
                 selection.AsRT().sizeDelta = new Vector2(749f, 300f);
                 var search = selection.Find("search-box/search").GetComponent<InputField>();
                 search.onValueChanged.ClearAll();
-                search.onValueChanged.AddListener(_val => { ReloadSelectionContent(); });
+                search.onValueChanged.AddListener(_val => ReloadSelectionContent());
 
                 EditorThemeManager.AddInputField(search, ThemeGroup.Search_Field_2);
                 var selectionGroup = selection.Find("mask/content").GetComponent<GridLayoutGroup>();
@@ -736,7 +737,7 @@ namespace BetterLegacy.Editor.Managers
 
         public bool advancedParent;
 
-        public IEnumerator UpdatePrefabObjectTimes(PrefabObject currentPrefab)
+        public void UpdateOffsets(PrefabObject currentPrefab)
         {
             var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == currentPrefab.prefabID);
             var isObjectLayer = EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects;
@@ -747,9 +748,9 @@ namespace BetterLegacy.Editor.Managers
                 if (isObjectLayer && prefabObject.editorData.layer == EditorTimeline.inst.Layer)
                     EditorTimeline.inst.GetTimelineObject(prefabObject).RenderPosLength();
 
-                Updater.UpdatePrefab(prefabObject, "Start Time");
+                Updater.UpdatePrefab(prefabObject, "Drag");
             }
-            yield break;
+            Updater.RecalculateObjectStates();
         }
 
         public void UpdateModdedVisbility()
@@ -967,11 +968,41 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float offset))
                 {
                     prefab.Offset = offset;
-                    StartCoroutine(UpdatePrefabObjectTimes(prefabObject));
+                    UpdateOffsets(prefabObject);
                 }
             });
             TriggerHelper.IncreaseDecreaseButtons(offsetTime, t: right.transform.Find("time"));
             TriggerHelper.AddEventTriggers(offsetTime.gameObject, TriggerHelper.ScrollDelta(offsetTime));
+
+            var offsetContextMenu = offsetTime.gameObject.GetOrAddComponent<ContextClickable>();
+            offsetContextMenu.onClick = null;
+            offsetContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Set to Timeline Cursor", () =>
+                    {
+                        var distance = AudioManager.inst.CurrentAudioSource.time - prefabObject.StartTime;
+
+                        prefab.Offset -= distance;
+
+                        var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefabObject.prefabID);
+                        var isObjectLayer = EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects;
+                        for (int i = 0; i < prefabObjects.Count; i++)
+                        {
+                            var prefabObj = prefabObjects[i];
+                            prefabObj.StartTime += distance;
+
+                            if (isObjectLayer && prefabObj.editorData.layer == EditorTimeline.inst.Layer)
+                                EditorTimeline.inst.GetTimelineObject(prefabObj).RenderPosLength();
+
+                            Updater.UpdatePrefab(prefabObj, "Drag");
+                        }
+                        Updater.RecalculateObjectStates();
+                    }));
+            };
 
             prefabSelectorLeft.Find("editor/layer").gameObject.SetActive(false);
             prefabSelectorLeft.Find("editor/bin").gameObject.SetActive(false);
@@ -1067,6 +1098,24 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.IncreaseDecreaseButtons(startTime, t: parent);
             TriggerHelper.AddEventTriggers(startTime.gameObject, TriggerHelper.ScrollDelta(startTime));
+
+            var startTimeContextMenu = startTime.gameObject.GetOrAddComponent<ContextClickable>();
+            startTimeContextMenu.onClick = null;
+            startTimeContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Go to Start Time", () =>
+                    {
+                        AudioManager.inst.SetMusicTime(prefabObject.StartTime);
+                    }),
+                    new ButtonFunction("Go to Spawn Time", () =>
+                    {
+                        AudioManager.inst.SetMusicTime(prefabObject.StartTime + prefab.Offset);
+                    }));
+            };
 
             var startTimeSet = parent.Find("|").GetComponent<Button>();
             startTimeSet.onClick.ClearAll();
@@ -2711,6 +2760,24 @@ namespace BetterLegacy.Editor.Managers
                 setting = false;
             });
 
+            var offsetInputContextMenu = offsetInput.gameObject.GetOrAddComponent<ContextClickable>();
+            offsetInputContextMenu.onClick = null;
+            offsetInputContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Set to Timeline Cursor", () =>
+                    {
+                        var distance = AudioManager.inst.CurrentAudioSource.time - EditorTimeline.inst.SelectedObjects.Min(x => x.Time) + PrefabEditor.inst.NewPrefabOffset;
+                        offsetSlider.value -= distance;
+                    }));
+            };
+            var offsetSliderContextMenu = offsetSlider.gameObject.GetOrAddComponent<ContextClickable>();
+            offsetSliderContextMenu.onClick = null;
+            offsetSliderContextMenu.onClick = offsetInputContextMenu.onClick;
+
             TriggerHelper.AddEventTriggers(offsetInput.gameObject, TriggerHelper.ScrollDelta(offsetInput));
 
             if (DataManager.inst.PrefabTypes.TryFind(x => x is PrefabType prefabType && prefabType.id == NewPrefabTypeID, out DataManager.PrefabType vanillaPrefabType) && vanillaPrefabType is PrefabType prefabType)
@@ -2741,7 +2808,6 @@ namespace BetterLegacy.Editor.Managers
             description.characterLimit = 0;
             description.characterValidation = InputField.CharacterValidation.None;
             description.textComponent.alignment = TextAnchor.UpperLeft;
-            NewPrefabDescription = string.IsNullOrEmpty(NewPrefabDescription) ? "What is your prefab like?" : NewPrefabDescription;
             description.text = NewPrefabDescription;
             description.onValueChanged.AddListener(_val => NewPrefabDescription = _val);
 
