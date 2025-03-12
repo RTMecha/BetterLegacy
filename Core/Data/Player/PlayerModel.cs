@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
@@ -306,7 +307,11 @@ namespace BetterLegacy.Core.Data.Player
 
             if (jn["modifiers"] != null && jn["modifiers"].Count > 0)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
-                    playerModel.modifiers.Add(Modifier<CustomPlayer>.Parse(jn["modifiers"][i]));
+                {
+                    var modifier = Modifier<CustomPlayer>.Parse(jn["modifiers"][i]);
+                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultPlayerModifiers))
+                        playerModel.modifiers.Add(modifier);
+                }
 
             if (jn["custom_objects"] != null && jn["custom_objects"].Count > 0)
                 for (int i = 0; i < jn["custom_objects"].Count; i++)

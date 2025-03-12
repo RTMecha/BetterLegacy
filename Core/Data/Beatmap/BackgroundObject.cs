@@ -380,7 +380,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int j = 0; j < jn["modifiers"][i].Count; j++)
                 {
                     var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], bg);
-                    bg.modifiers[i].Add(modifier);
+                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
+                        bg.modifiers[i].Add(modifier);
                 }
             }
 

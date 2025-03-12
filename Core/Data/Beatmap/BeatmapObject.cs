@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
@@ -228,6 +229,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public ShapeType ShapeType => (ShapeType)shape;
 
+        public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image || ShapeType == ShapeType.Player;
+
         #endregion
 
         #region Modifiers
@@ -292,6 +295,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// For object modifiers.
         /// </summary>
         public List<Component> components = new List<Component>();
+
+        /// <summary>
+        /// Rigidbody for modifiers.
+        /// </summary>
+        public Rigidbody2D rigidbody;
 
         /// <summary>
         /// ParticleSystem for modifiers.
@@ -924,7 +932,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 var modifier = Modifier<BeatmapObject>.Parse(jn["modifiers"][i], beatmapObject);
-                beatmapObject.modifiers.Add(modifier);
+                if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBeatmapObjectModifiers))
+                    beatmapObject.modifiers.Add(modifier);
             }
 
             return beatmapObject;

@@ -1,4 +1,5 @@
-﻿using SimpleJSON;
+﻿using BetterLegacy.Core.Data.Player;
+using SimpleJSON;
 using System;
 using System.Collections.Generic;
 
@@ -6,11 +7,25 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Modifier<T> : ModifierBase
     {
-        public Modifier() { }
+        public Modifier()
+        {
+            var type = typeof(T);
+            if (type == typeof(BeatmapObject))
+                referenceType = ModifierReferenceType.BeatmapObject;
+            else if (type == typeof(BackgroundObject))
+                referenceType = ModifierReferenceType.BackgroundObject;
+            else if (type == typeof(CustomPlayer))
+                referenceType = ModifierReferenceType.CustomPlayer;
+            else if (type == typeof(GameData))
+                referenceType = ModifierReferenceType.GameData;
+        }
 
         public T reference;
 
+        public ModifierReferenceType referenceType;
+
         public Action<Modifier<T>> Action { get; set; }
+
         public Predicate<Modifier<T>> Trigger { get; set; }
 
         public Action<Modifier<T>> Inactive { get; set; }
@@ -120,5 +135,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override string ToString() => Name;
 
         #endregion
+    }
+
+    public enum ModifierReferenceType
+    {
+        BeatmapObject,
+        BackgroundObject,
+        CustomPlayer,
+        GameData,
     }
 }
