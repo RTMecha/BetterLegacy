@@ -85,6 +85,7 @@ namespace BetterLegacy.Core
                 context.RegisterVariable("mousePosY", Input.mousePosition.y);
                 context.RegisterVariable("screenHeight", Screen.height);
                 context.RegisterVariable("screenWidth", Screen.width);
+                context.RegisterVariable("currentEpoch", SteamworksFacepunch.Epoch.Current);
 
                 context.RegisterFunction("clampZero", parameters => ClampZero(parameters[0], parameters[1], parameters[2]));
                 context.RegisterFunction("lerpAngle", parameters => Mathf.LerpAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
