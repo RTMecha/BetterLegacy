@@ -18,6 +18,8 @@
 - Added New Prefab Instance button to Multi Object Editor.
 - Prefab objects now display a line showing where their offset is at.
 - Fixed Discord status timestamp being used incorrectly.
+- Added currentEpoch to math parser variables.
+- Reworked the way modifier functions are assigned to fix game freeze on first modifier running.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
