@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 referenceType = ModifierReferenceType.CustomPlayer;
             else if (type == typeof(GameData))
                 referenceType = ModifierReferenceType.GameData;
+        }
+
+        public Modifier(string name) : this()
+        {
+            commands = new List<string> { name };
+            ModifiersHelper.AssignModifierActions(this);
         }
 
         public T reference;
@@ -61,6 +68,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             constant = orig.constant,
             prefabInstanceOnly = orig.prefabInstanceOnly,
             collapse = orig.collapse,
+
+            Action = orig.Action,
+            Trigger = orig.Trigger,
+            Inactive = orig.Inactive,
         };
 
         public static Modifier<T> Parse(JSONNode jn, T reference = default)
@@ -100,6 +111,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             modifier.value = string.IsNullOrEmpty(jn["value"]) ? "" : jn["value"];
 
             modifier.collapse = jn["collapse"].AsBool;
+
+            ModifiersHelper.AssignModifierActions(modifier);
 
             return modifier;
         }

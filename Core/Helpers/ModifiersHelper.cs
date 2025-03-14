@@ -134,16 +134,14 @@ namespace BetterLegacy.Core.Helpers
             {
                 switch (modifier.type)
                 {
-                    case ModifierBase.Type.Action:
-                        {
+                    case ModifierBase.Type.Action: {
                             if (modifier.Action == null || modifier.Inactive == null)
                                 AssignModifierActions(modifier);
 
                             actions.Add(modifier);
                             break;
                         }
-                    case ModifierBase.Type.Trigger:
-                        {
+                    case ModifierBase.Type.Trigger: {
                             if (modifier.Trigger == null || modifier.Inactive == null)
                                 AssignModifierActions(modifier);
 
@@ -312,17 +310,11 @@ namespace BetterLegacy.Core.Helpers
 
         #region BeatmapObject
 
-        public static Predicate<Modifier<BeatmapObject>> GetObjectTrigger(string key) => objectTriggers.Find(x => x.key == key).trigger;
-
-        public static Action<Modifier<BeatmapObject>> GetObjectAction(string key) => objectActions.Find(x => x.key == key).action;
-
-        public static List<ModifierTriggerFunction<BeatmapObject>> objectTriggers = new List<ModifierTriggerFunction<BeatmapObject>>()
+        public static Predicate<Modifier<BeatmapObject>> GetObjectTrigger(string key) => key switch
         {
-            new ModifierTriggerFunction<BeatmapObject>("disableModifier", modifier => false),
-
             #region Player
 
-            new ModifierTriggerFunction<BeatmapObject>("playerCollide", modifier =>
+            "playerCollide" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Collider)
                 {
@@ -340,28 +332,28 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerHealthEquals", modifier =>
+            },
+            "playerHealthEquals" => modifier =>
             {
                 return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health == modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerHealthLesserEquals", modifier =>
+            },
+            "playerHealthLesserEquals" => modifier =>
             {
                 return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health <= modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerHealthGreaterEquals", modifier =>
+            },
+            "playerHealthGreaterEquals" => modifier =>
             {
                 return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health >= modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerHealthLesser", modifier =>
+            },
+            "playerHealthLesser" => modifier =>
             {
                 return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health < modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerHealthGreater", modifier =>
+            },
+            "playerHealthGreater" => modifier =>
             {
                 return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health > modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerMoving", modifier =>
+            },
+            "playerMoving" => modifier =>
             {
                 for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
                 {
@@ -381,8 +373,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerBoosting", modifier =>
+            },
+            "playerBoosting" => modifier =>
             {
                 if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                 {
@@ -399,8 +391,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerAlive", modifier =>
+            },
+            "playerAlive" => modifier =>
             {
                 if (int.TryParse(modifier.value, out int hit) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                 {
@@ -413,28 +405,28 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDeathsEquals", modifier =>
+            },
+            "playerDeathsEquals" => modifier =>
             {
                 return GameManager.inst.deaths.Count == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDeathsLesserEquals", modifier =>
+            },
+            "playerDeathsLesserEquals" => modifier =>
             {
                 return GameManager.inst.deaths.Count <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDeathsGreaterEquals", modifier =>
+            },
+            "playerDeathsGreaterEquals" => modifier =>
             {
                 return GameManager.inst.deaths.Count >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDeathsLesser", modifier =>
+            },
+            "playerDeathsLesser" => modifier =>
             {
                 return GameManager.inst.deaths.Count < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDeathsGreater", modifier =>
+            },
+            "playerDeathsGreater" => modifier =>
             {
                 return GameManager.inst.deaths.Count > modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDistanceGreater", modifier =>
+            },
+            "playerDistanceGreater" => modifier =>
             {
                 float num = modifier.GetFloat(0, 0f);
                 for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
@@ -448,8 +440,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerDistanceLesser", modifier =>
+            },
+            "playerDistanceLesser" => modifier =>
             {
                 float num = modifier.GetFloat(0, 0f);
                 for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
@@ -463,28 +455,28 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerCountEquals", modifier =>
+            },
+            "playerCountEquals" => modifier =>
             {
                 return InputDataManager.inst.players.Count == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerCountLesserEquals", modifier =>
+            },
+            "playerCountLesserEquals" => modifier =>
             {
                 return InputDataManager.inst.players.Count <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerCountGreaterEquals", modifier =>
+            },
+            "playerCountGreaterEquals" => modifier =>
             {
                 return InputDataManager.inst.players.Count >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerCountLesser", modifier =>
+            },
+            "playerCountLesser" => modifier =>
             {
                 return InputDataManager.inst.players.Count < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerCountGreater", modifier =>
+            },
+            "playerCountGreater" => modifier =>
             {
                 return InputDataManager.inst.players.Count > modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("onPlayerHit", modifier =>
+            },
+            "onPlayerHit" => modifier =>
             {
                 var hasResult = modifier.HasResult();
 
@@ -496,8 +488,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("onPlayerDeath", modifier =>
+            },
+            "onPlayerDeath" => modifier =>
             {
                 var hasResult = modifier.HasResult();
 
@@ -509,57 +501,57 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerBoostEquals", modifier =>
+            },
+            "playerBoostEquals" => modifier =>
             {
                 return LevelManager.BoostCount == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerBoostLesserEquals", modifier =>
+            },
+            "playerBoostLesserEquals" => modifier =>
             {
                 return LevelManager.BoostCount <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerBoostGreaterEquals", modifier =>
+            },
+            "playerBoostGreaterEquals" => modifier =>
             {
                 return LevelManager.BoostCount >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerBoostLesser", modifier =>
+            },
+            "playerBoostLesser" => modifier =>
             {
                 return LevelManager.BoostCount < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("playerBoostGreater", modifier =>
+            },
+            "playerBoostGreater" => modifier =>
             {
                 return LevelManager.BoostCount > modifier.GetInt(0, 0);
-            }),
+            },
 
             #endregion
 
             #region Controls
-            
-            new ModifierTriggerFunction<BeatmapObject>("keyPressDown", modifier =>
+
+            "keyPressDown" => modifier =>
             {
                 return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("keyPress", modifier =>
+            },
+            "keyPress" => modifier =>
             {
                 return Input.GetKey((KeyCode)modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("keyPressUp", modifier =>
+            },
+            "keyPressUp" => modifier =>
             {
                 return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mouseButtonDown", modifier =>
+            },
+            "mouseButtonDown" => modifier =>
             {
                 return Input.GetMouseButtonDown(modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mouseButton", modifier =>
+            },
+            "mouseButton" => modifier =>
             {
                 return Input.GetMouseButton(modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mouseButtonUp", modifier =>
+            },
+            "mouseButtonUp" => modifier =>
             {
                 return Input.GetMouseButtonUp(modifier.GetInt(0, 0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mouseOver", modifier =>
+            },
+            "mouseOver" => modifier =>
             {
                 if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null && modifier.reference.levelObject.visualObject.GameObject)
                 {
@@ -576,8 +568,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mouseOverSignalModifier", modifier =>
+            },
+            "mouseOverSignalModifier" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
                 if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null && modifier.reference.levelObject.visualObject.GameObject)
@@ -604,8 +596,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("controlPressDown", modifier =>
+            },
+            "controlPressDown" => modifier =>
             {
                 var type = modifier.GetInt(0, 0);
 
@@ -620,8 +612,8 @@ namespace BetterLegacy.Core.Helpers
                 var device = player.device ?? InControl.InputManager.ActiveDevice;
 
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("controlPress", modifier =>
+            },
+            "controlPress" => modifier =>
             {
                 var type = modifier.GetInt(0, 0);
 
@@ -636,8 +628,8 @@ namespace BetterLegacy.Core.Helpers
                 var device = player.device ?? InControl.InputManager.ActiveDevice;
 
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("controlPressUp", modifier =>
+            },
+            "controlPressUp" => modifier =>
             {
                 var type = modifier.GetInt(0, 0);
 
@@ -652,13 +644,13 @@ namespace BetterLegacy.Core.Helpers
                 var device = player.device ?? InControl.InputManager.ActiveDevice;
 
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
-            }),
+            },
 
             #endregion
 
             #region Collide
-            
-            new ModifierTriggerFunction<BeatmapObject>("bulletCollide", modifier =>
+
+            "bulletCollide" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                 {
@@ -674,8 +666,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("objectCollide", modifier =>
+            },
+            "objectCollide" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                 {
@@ -684,13 +676,13 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
+            },
 
             #endregion
 
             #region JSON
-            
-            new ModifierTriggerFunction<BeatmapObject>("loadEquals", modifier =>
+
+            "loadEquals" => modifier =>
             {
                 if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json) &&
                     int.TryParse(modifier.GetValue(4), out int type) && float.TryParse(modifier.GetValue(0), out float num))
@@ -705,8 +697,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("loadLesserEquals", modifier =>
+            },
+            "loadLesserEquals" => modifier =>
             {
                 if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                 {
@@ -718,8 +710,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("loadGreaterEquals", modifier =>
+            },
+            "loadGreaterEquals" => modifier =>
             {
                 if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                 {
@@ -731,8 +723,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("loadLesser", modifier =>
+            },
+            "loadLesser" => modifier =>
             {
                 if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                 {
@@ -744,8 +736,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("loadGreater", modifier =>
+            },
+            "loadGreater" => modifier =>
             {
                 if (RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json))
                 {
@@ -757,188 +749,188 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("loadExists", modifier =>
+            },
+            "loadExists" => modifier =>
             {
                 return RTFile.TryReadFromFile(GetSaveFile(modifier.GetValue(1)), out string json) && !string.IsNullOrEmpty(JSON.Parse(json)[modifier.GetValue(2)][modifier.GetValue(3)]);
-            }),
+            },
 
             #endregion
 
             #region Variable
-            
+
             // self
-            new ModifierTriggerFunction<BeatmapObject>("variableEquals", modifier =>
+            "variableEquals" => modifier =>
             {
                 return modifier.reference && modifier.reference.integerVariable == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableLesserEquals", modifier =>
+            },
+            "variableLesserEquals" => modifier =>
             {
                 return modifier.reference && modifier.reference.integerVariable <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableGreaterEquals", modifier =>
+            },
+            "variableGreaterEquals" => modifier =>
             {
                 return modifier.reference && modifier.reference.integerVariable >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableLesser", modifier =>
+            },
+            "variableLesser" => modifier =>
             {
                 return modifier.reference && modifier.reference.integerVariable < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableGreater", modifier =>
+            },
+            "variableGreater" => modifier =>
             {
                 return modifier.reference && modifier.reference.integerVariable > modifier.GetInt(0, 0);
-            }),
+            },
 
             // other
-            new ModifierTriggerFunction<BeatmapObject>("variableOtherEquals", modifier =>
+            "variableOtherEquals" => modifier =>
             {
                 var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                 int num = modifier.GetInt(0, 0);
 
                 return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable == num);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableOtherLesserEquals", modifier =>
+            },
+            "variableOtherLesserEquals" => modifier =>
             {
                 var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                 int num = modifier.GetInt(0, 0);
 
                 return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable <= num);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableOtherGreaterEquals", modifier =>
+            },
+            "variableOtherGreaterEquals" => modifier =>
             {
                 var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                 int num = modifier.GetInt(0, 0);
 
                 return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable >= num);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableOtherLesser", modifier =>
+            },
+            "variableOtherLesser" => modifier =>
             {
                 var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                 int num = modifier.GetInt(0, 0);
 
                 return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable < num);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("variableOtherGreater", modifier =>
+            },
+            "variableOtherGreater" => modifier =>
             {
                 var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
                 int num = modifier.GetInt(0, 0);
 
                 return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable > num);
-            }),
+            },
 
             #endregion
 
             #region Audio
-            
-            new ModifierTriggerFunction<BeatmapObject>("pitchEquals", modifier =>
+
+            "pitchEquals" => modifier =>
             {
                 return AudioManager.inst.pitch == modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("pitchLesserEquals", modifier =>
+            },
+            "pitchLesserEquals" => modifier =>
             {
                 return AudioManager.inst.pitch <= modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("pitchGreaterEquals", modifier =>
+            },
+            "pitchGreaterEquals" => modifier =>
             {
                 return AudioManager.inst.pitch >= modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("pitchLesser", modifier =>
+            },
+            "pitchLesser" => modifier =>
             {
                 return AudioManager.inst.pitch < modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("pitchGreater", modifier =>
+            },
+            "pitchGreater" => modifier =>
             {
                 return AudioManager.inst.pitch > modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("musicTimeGreater", modifier =>
+            },
+            "musicTimeGreater" => modifier =>
             {
                 return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) > modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("musicTimeLesser", modifier =>
+            },
+            "musicTimeLesser" => modifier =>
             {
                 return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false) ? modifier.reference.StartTime : 0f) < modifier.GetFloat(0, 0f);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("musicPlaying", modifier =>
+            },
+            "musicPlaying" => modifier =>
             {
                 return AudioManager.inst.CurrentAudioSource.isPlaying;
-            }),
+            },
 
             #endregion
 
             #region Challenge Mode
-            
-            new ModifierTriggerFunction<BeatmapObject>("inZenMode", modifier => PlayerManager.Invincible),
-            new ModifierTriggerFunction<BeatmapObject>("inNormal", modifier => PlayerManager.IsNormal),
-            new ModifierTriggerFunction<BeatmapObject>("in1Life", modifier => PlayerManager.Is1Life),
-            new ModifierTriggerFunction<BeatmapObject>("inNoHit", modifier => PlayerManager.IsNoHit),
-            new ModifierTriggerFunction<BeatmapObject>("inPractice", modifier => PlayerManager.IsPractice),
+
+            "inZenMode" => modifier => PlayerManager.Invincible,
+            "inNormal" => modifier => PlayerManager.IsNormal,
+            "in1Life" => modifier => PlayerManager.Is1Life,
+            "inNoHit" => modifier => PlayerManager.IsNoHit,
+            "inPractice" => modifier => PlayerManager.IsPractice,
 
             #endregion
 
             #region Random
-            
-            new ModifierTriggerFunction<BeatmapObject>("randomEquals", modifier =>
+
+            "randomEquals" => modifier =>
             {
                 if (!modifier.HasResult())
                     modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0), modifier.GetInt(2, 0)) == modifier.GetInt(0, 0);
 
                 return modifier.HasResult() && modifier.GetResult<bool>();
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("randomLesser", modifier =>
+            },
+            "randomLesser" => modifier =>
             {
                 if (!modifier.HasResult())
                     modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0), modifier.GetInt(2, 0)) < modifier.GetInt(0, 0);
 
                 return modifier.HasResult() && modifier.GetResult<bool>();
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("randomGreater", modifier =>
+            },
+            "randomGreater" => modifier =>
             {
                 if (!modifier.HasResult())
                     modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0), modifier.GetInt(2, 0)) > modifier.GetInt(0, 0);
 
                 return modifier.HasResult() && modifier.GetResult<bool>();
-            }),
+            },
 
             #endregion
 
             #region Math
-            
-            new ModifierTriggerFunction<BeatmapObject>("mathEquals", modifier =>
+
+            "mathEquals" => modifier =>
             {
                 var variables = modifier.reference.GetObjectVariables();
                 return RTMath.Parse(modifier.GetValue(0), variables) == RTMath.Parse(modifier.GetValue(1), variables);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mathLesserEquals", modifier =>
+            },
+            "mathLesserEquals" => modifier =>
             {
                 var variables = modifier.reference.GetObjectVariables();
                 return RTMath.Parse(modifier.GetValue(0), variables) <= RTMath.Parse(modifier.GetValue(1), variables);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mathGreaterEquals", modifier =>
+            },
+            "mathGreaterEquals" => modifier =>
             {
                 var variables = modifier.reference.GetObjectVariables();
                 return RTMath.Parse(modifier.GetValue(0), variables) >= RTMath.Parse(modifier.GetValue(1), variables);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mathLesser", modifier =>
+            },
+            "mathLesser" => modifier =>
             {
                 var variables = modifier.reference.GetObjectVariables();
                 return RTMath.Parse(modifier.GetValue(0), variables) < RTMath.Parse(modifier.GetValue(1), variables);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("mathGreater", modifier =>
+            },
+            "mathGreater" => modifier =>
             {
                 var variables = modifier.reference.GetObjectVariables();
                 return RTMath.Parse(modifier.GetValue(0), variables) > RTMath.Parse(modifier.GetValue(1), variables);
-            }),
+            },
 
             #endregion
 
             #region Axis
 
-            new ModifierTriggerFunction<BeatmapObject>("axisEquals", modifier =>
+            "axisEquals" => modifier =>
             {
                 int fromType = modifier.GetInt(1, 0);
                 int fromAxis = modifier.GetInt(2, 0);
@@ -964,8 +956,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("axisLesserEquals", modifier =>
+            },
+            "axisLesserEquals" => modifier =>
             {
                 int fromType = modifier.GetInt(1, 0);
                 int fromAxis = modifier.GetInt(2, 0);
@@ -991,8 +983,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("axisGreaterEquals", modifier =>
+            },
+            "axisGreaterEquals" => modifier =>
             {
                 int fromType = modifier.GetInt(1, 0);
                 int fromAxis = modifier.GetInt(2, 0);
@@ -1018,8 +1010,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("axisLesser", modifier =>
+            },
+            "axisLesser" => modifier =>
             {
                 int fromType = modifier.GetInt(1, 0);
                 int fromAxis = modifier.GetInt(2, 0);
@@ -1045,8 +1037,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("axisGreater", modifier =>
+            },
+            "axisGreater" => modifier =>
             {
                 int fromType = modifier.GetInt(1, 0);
                 int fromAxis = modifier.GetInt(2, 0);
@@ -1072,99 +1064,99 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
+            },
 
             #endregion
 
             #region Level Rank
-            
+
             // self
-            new ModifierTriggerFunction<BeatmapObject>("levelRankEquals", modifier =>
+            "levelRankEquals" => modifier =>
             {
                 return GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankLesserEquals", modifier =>
+            },
+            "levelRankLesserEquals" => modifier =>
             {
                 return GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankGreaterEquals", modifier =>
+            },
+            "levelRankGreaterEquals" => modifier =>
             {
                 return GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankLesser", modifier =>
+            },
+            "levelRankLesser" => modifier =>
             {
                 return GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankGreater", modifier =>
+            },
+            "levelRankGreater" => modifier =>
             {
                 return GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0);
-            }),
+            },
 
             // other
-            new ModifierTriggerFunction<BeatmapObject>("levelRankOtherEquals", modifier =>
+            "levelRankOtherEquals" => modifier =>
             {
                 return LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) && GetLevelRank(level, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankOtherLesserEquals", modifier =>
+            },
+            "levelRankOtherLesserEquals" => modifier =>
             {
                 return LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) && GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankOtherGreaterEquals", modifier =>
+            },
+            "levelRankOtherGreaterEquals" => modifier =>
             {
                 return LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) && GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankOtherLesser", modifier =>
+            },
+            "levelRankOtherLesser" => modifier =>
             {
                 return LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) && GetLevelRank(level, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankOtherGreater", modifier =>
+            },
+            "levelRankOtherGreater" => modifier =>
             {
                 return LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(1), out Level level) && GetLevelRank(level, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0);
-            }),
+            },
 
             // current
-            new ModifierTriggerFunction<BeatmapObject>("levelRankEquals", modifier =>
+            "levelRankCurrentEquals" => modifier =>
             {
                 return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankLesserEquals", modifier =>
+            },
+            "levelRankCurrentLesserEquals" => modifier =>
             {
                 return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankGreaterEquals", modifier =>
+            },
+            "levelRankCurrentGreaterEquals" => modifier =>
             {
                 return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankLesser", modifier =>
+            },
+            "levelRankCurrentLesser" => modifier =>
             {
                 return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelRankGreater", modifier =>
+            },
+            "levelRankCurrentGreater" => modifier =>
             {
                 return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] > modifier.GetInt(0, 0);
-            }),
+            },
 
             #endregion
 
             #region Level
-            
-            new ModifierTriggerFunction<BeatmapObject>("levelUnlocked", modifier =>
+
+            "levelUnlocked" => modifier =>
             {
                 return LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(0), out Level level) && !level.Locked;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelCompleted", modifier =>
+            },
+            "levelCompleted" => modifier =>
             {
                 return CoreHelper.InEditor || LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && LevelManager.CurrentLevel.playerData.Completed;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelCompletedOther", modifier =>
+            },
+            "levelCompletedOther" => modifier =>
             {
                 return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(0), out Level level) && level.playerData != null && level.playerData.Completed;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelExists", modifier =>
+            },
+            "levelExists" => modifier =>
             {
                 return LevelManager.Levels.Has(x => x.id == modifier.GetValue(0));
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("levelPathExists", modifier =>
+            },
+            "levelPathExists" => modifier =>
             {
                 var basePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, modifier.GetValue(0));
 
@@ -1172,206 +1164,206 @@ namespace BetterLegacy.Core.Helpers
                     RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_LSB)) ||
                     RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_VGD)) ||
                     RTFile.FileExists(basePath + FileFormat.ASSET.Dot());
-            }),
+            },
 
             #endregion
 
             #region Real Time
-            
+
             // seconds
-            new ModifierTriggerFunction<BeatmapObject>("realTimeSecondEquals", modifier =>
+            "realTimeSecondEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("ss"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeSecondLesserEquals", modifier =>
+            },
+            "realTimeSecondLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("ss"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeSecondGreaterEquals", modifier =>
+            },
+            "realTimeSecondGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("ss"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeSecondLesser", modifier =>
+            },
+            "realTimeSecondLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("ss"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeSecondGreater", modifier =>
+            },
+            "realTimeSecondGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("ss"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             // minutes
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMinuteEquals", modifier =>
+            "realTimeMinuteEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("mm"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMinuteLesserEquals", modifier =>
+            },
+            "realTimeMinuteLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("mm"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMinuteGreaterEquals", modifier =>
+            },
+            "realTimeMinuteGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("mm"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMinuteLesser", modifier =>
+            },
+            "realTimeMinuteLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("mm"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMinuteGreater", modifier =>
+            },
+            "realTimeMinuteGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("mm"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             // 24 hours
-            new ModifierTriggerFunction<BeatmapObject>("realTime24HourEquals", modifier =>
+            "realTime24HourEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("HH"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime24HourLesserEquals", modifier =>
+            },
+            "realTime24HourLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("HH"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime24HourGreaterEquals", modifier =>
+            },
+            "realTime24HourGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("HH"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime24HourLesser", modifier =>
+            },
+            "realTime24HourLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("HH"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime24HourGreater", modifier =>
+            },
+            "realTime24HourGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("HH"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             // 12 hours
-            new ModifierTriggerFunction<BeatmapObject>("realTime12HourEquals", modifier =>
+            "realTime12HourEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("hh"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime12HourLesserEquals", modifier =>
+            },
+            "realTime12HourLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("hh"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime12HourGreaterEquals", modifier =>
+            },
+            "realTime12HourGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("hh"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime12HourLesser", modifier =>
+            },
+            "realTime12HourLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("hh"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTime12HourGreater", modifier =>
+            },
+            "realTime12HourGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("hh"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             // days
-            new ModifierTriggerFunction<BeatmapObject>("realTimeDayEquals", modifier =>
+            "realTimeDayEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("dd"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeDayLesserEquals", modifier =>
+            },
+            "realTimeDayLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("dd"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeDayGreaterEquals", modifier =>
+            },
+            "realTimeDayGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("dd"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeDayLesser", modifier =>
+            },
+            "realTimeDayLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("dd"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeDayGreater", modifier =>
+            },
+            "realTimeDayGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("dd"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             // months
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMonthEquals", modifier =>
+            "realTimeMonthEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("MM"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMonthLesserEquals", modifier =>
+            },
+            "realTimeMonthLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("MM"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMonthGreaterEquals", modifier =>
+            },
+            "realTimeMonthGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("MM"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMonthLesser", modifier =>
+            },
+            "realTimeMonthLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("MM"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeMonthGreater", modifier =>
+            },
+            "realTimeMonthGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("MM"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             // years
-            new ModifierTriggerFunction<BeatmapObject>("realTimeYearEquals", modifier =>
+            "realTimeYearEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) == modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeYearLesserEquals", modifier =>
+            },
+            "realTimeYearLesserEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) <= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeYearGreaterEquals", modifier =>
+            },
+            "realTimeYearGreaterEquals" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) >= modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeYearLesser", modifier =>
+            },
+            "realTimeYearLesser" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) < modifier.GetInt(0, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("realTimeYearGreater", modifier =>
+            },
+            "realTimeYearGreater" => modifier =>
             {
                 return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) > modifier.GetInt(0, 0);
-            }),
+            },
 
             #endregion
 
             #region Config
-            
+
             // main
-            new ModifierTriggerFunction<BeatmapObject>("usernameEquals", modifier =>
+            "usernameEquals" => modifier =>
             {
                 return CoreConfig.Instance.DisplayName.Value == modifier.GetValue(0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("languageEquals", modifier =>
+            },
+            "languageEquals" => modifier =>
             {
                 return CoreConfig.Instance.Language.Value == (Language)modifier.GetInt(0, 0);
-            }),
+            },
 
             // misc
-            new ModifierTriggerFunction<BeatmapObject>("configLDM", modifier =>
+            "configLDM" => modifier =>
             {
                 return CoreConfig.Instance.LDM.Value;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("configShowEffects", modifier =>
+            },
+            "configShowEffects" => modifier =>
             {
                 return EventsConfig.Instance.ShowFX.Value;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("configShowPlayerGUI", modifier =>
+            },
+            "configShowPlayerGUI" => modifier =>
             {
                 return EventsConfig.Instance.ShowGUI.Value;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("configShowIntro", modifier =>
-            {    
+            },
+            "configShowIntro" => modifier =>
+            {
                 return EventsConfig.Instance.ShowIntro.Value;
-            }),
+            },
 
             #endregion
 
             #region Misc
-            
-            new ModifierTriggerFunction<BeatmapObject>("inEditor", modifier => CoreHelper.InEditor),
-            new ModifierTriggerFunction<BeatmapObject>("requireSignal", modifier => modifier.HasResult()),
-            new ModifierTriggerFunction<BeatmapObject>("isFullscreen", modifier => Screen.fullScreen),
-            new ModifierTriggerFunction<BeatmapObject>("objectAlive", modifier =>
+
+            "inEditor" => modifier => CoreHelper.InEditor,
+            "requireSignal" => modifier => modifier.HasResult(),
+            "isFullscreen" => modifier => Screen.fullScreen,
+            "objectAlive" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                 for (int i = 0; i < list.Count; i++)
@@ -1380,8 +1372,8 @@ namespace BetterLegacy.Core.Helpers
                         return true;
                 }
                 return false;
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("objectSpawned", modifier =>
+            },
+            "objectSpawned" => modifier =>
             {
                 if (!modifier.HasResult())
                     modifier.Result = new List<string>();
@@ -1400,88 +1392,94 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 return false;
-            }),
+            },
 
             #endregion
 
             #region Dev Only
-            
-            new ModifierTriggerFunction<BeatmapObject>("storyLoadIntEqualsDEVONLY", modifier =>
+
+            "storyLoadIntEqualsDEVONLY" => modifier =>
             {
                 return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) == modifier.GetInt(2, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("storyLoadIntLesserEqualsDEVONLY", modifier =>
+            },
+            "storyLoadIntLesserEqualsDEVONLY" => modifier =>
             {
                 return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) <= modifier.GetInt(2, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("storyLoadIntGreaterEqualsDEVONLY", modifier =>
+            },
+            "storyLoadIntGreaterEqualsDEVONLY" => modifier =>
             {
                 return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) >= modifier.GetInt(2, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("storyLoadIntLesserDEVONLY", modifier =>
+            },
+            "storyLoadIntLesserDEVONLY" => modifier =>
             {
                 return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) < modifier.GetInt(2, 0);
-            }),
-            new ModifierTriggerFunction<BeatmapObject>("storyLoadIntGreaterDEVONLY", modifier =>
+            },
+            "storyLoadIntGreaterDEVONLY" => modifier =>
             {
                 return Story.StoryManager.inst.LoadInt(modifier.GetValue(0), modifier.GetInt(1, 0)) > modifier.GetInt(2, 0);
-            }),
+            },
+            "storyLoadBoolDEVONLY" => modifier =>
+            {
+                return Story.StoryManager.inst.LoadBool(modifier.GetValue(0), modifier.GetBool(1, false));
+            },
 
             #endregion
+
+            _ => modifier => false,
         };
 
-        public static List<ModifierActionFunction<BeatmapObject>> objectActions = new List<ModifierActionFunction<BeatmapObject>>()
+        public static Action<Modifier<BeatmapObject>> GetObjectAction(string key) => key switch
         {
             #region Audio
 
             // pitch
-            new ModifierActionFunction<BeatmapObject>("setPitch", modifier =>
+            "setPitch" => modifier =>
             {
                 RTEventManager.inst.pitchOffset = modifier.GetFloat(0, 0f);
-            }),
-            new ModifierActionFunction<BeatmapObject>("addPitch", modifier =>
+            },
+            "addPitch" => modifier =>
             {
                 RTEventManager.inst.pitchOffset += modifier.GetFloat(0, 0f);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setPitchMath", modifier =>
+            },
+            "setPitchMath" => modifier =>
             {
                 RTEventManager.inst.pitchOffset = RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
-            }),
-            new ModifierActionFunction<BeatmapObject>("addPitchMath", modifier =>
+            },
+            "addPitchMath" => modifier =>
             {
                 RTEventManager.inst.pitchOffset += RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
-            }),
+            },
 
             // music time
-            new ModifierActionFunction<BeatmapObject>("setMusicTime", modifier =>
+            "setMusicTime" => modifier =>
             {
                 AudioManager.inst.SetMusicTime(modifier.GetFloat(0, 0f));
-            }),
-            new ModifierActionFunction<BeatmapObject>("setMusicTimeMath", modifier =>
+            },
+            "setMusicTimeMath" => modifier =>
             {
                 AudioManager.inst.SetMusicTime(RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables()));
-            }),
-            new ModifierActionFunction<BeatmapObject>("setMusicTimeStartTime", modifier =>
+            },
+            "setMusicTimeStartTime" => modifier =>
             {
                 AudioManager.inst.SetMusicTime(modifier.reference.StartTime);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setMusicTimeAutokill", modifier =>
+            },
+            "setMusicTimeAutokill" => modifier =>
             {
                 AudioManager.inst.SetMusicTime(modifier.reference.StartTime + modifier.reference.SpawnDuration);
-            }),
+            },
 
             // play sound
-            new ModifierActionFunction<BeatmapObject>("playSound", modifier =>
+            "playSound" => modifier =>
             {
                 if (bool.TryParse(modifier.GetValue(1), out bool global) && float.TryParse(modifier.GetValue(2), out float pitch) && float.TryParse(modifier.GetValue(3), out float vol) && bool.TryParse(modifier.GetValue(4), out bool loop))
                     GetSoundPath(modifier.reference.id, modifier.GetValue(0), global, pitch, vol, loop);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playSoundOnline", modifier =>
+            },
+            "playSoundOnline" => modifier =>
             {
                 if (float.TryParse(modifier.GetValue(1), out float pitch) && float.TryParse(modifier.GetValue(2), out float vol) && bool.TryParse(modifier.GetValue(3), out bool loop) && !string.IsNullOrEmpty(modifier.GetValue(0)))
                     DownloadSoundAndPlay(modifier.reference.id, modifier.GetValue(0), pitch, vol, loop);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playDefaultSound", modifier =>
+            },
+            "playDefaultSound" => modifier =>
             {
                 if (!float.TryParse(modifier.GetValue(1), out float pitch) || !float.TryParse(modifier.GetValue(2), out float vol) || !bool.TryParse(modifier.GetValue(3), out bool loop) || !AudioManager.inst.library.soundClips.TryGetValue(modifier.GetValue(0), out AudioClip[] audioClips))
                     return;
@@ -1505,8 +1503,8 @@ namespace BetterLegacy.Core.Helpers
                     CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
                 else if (!ModifiersManager.audioSources.ContainsKey(modifier.reference.id))
                     ModifiersManager.audioSources.Add(modifier.reference.id, audioSource);
-            }),
-            new ModifierActionFunction<BeatmapObject>("audioSource", modifier =>
+            },
+            "audioSource" => modifier =>
             {
                 if (modifier.HasResult() || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null ||
                     !levelObject.visualObject.GameObject)
@@ -1554,17 +1552,17 @@ namespace BetterLegacy.Core.Helpers
                     modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
                     ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
                 }));
-            }),
-            new ModifierActionFunction<BeatmapObject>("setMusicPlaying", modifier =>
+            },
+            "setMusicPlaying" => modifier =>
             {
                 SoundManager.inst.SetPlaying(modifier.GetBool(0, false));
-            }),
+            },
 
             #endregion
 
             #region Level
-            
-            new ModifierActionFunction<BeatmapObject>("loadLevel", modifier =>
+
+            "loadLevel" => modifier =>
             {
                 if (CoreHelper.IsEditing)
                 {
@@ -1596,8 +1594,8 @@ namespace BetterLegacy.Core.Helpers
                     LevelManager.Load(levelPath);
                 else
                     SoundManager.inst.PlaySound(DefaultSounds.Block);
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadLevelID", modifier =>
+            },
+            "loadLevelID" => modifier =>
             {
                 var id = modifier.GetValue(0);
                 if (string.IsNullOrEmpty(id) || id == "0" || id == "-1")
@@ -1639,8 +1637,8 @@ namespace BetterLegacy.Core.Helpers
                 }
                 else
                     SoundManager.inst.PlaySound(DefaultSounds.Block);
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadLevelInternal", modifier =>
+            },
+            "loadLevelInternal" => modifier =>
             {
                 if (!CoreHelper.InEditor)
                 {
@@ -1672,27 +1670,27 @@ namespace BetterLegacy.Core.Helpers
                         CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, modifier.GetValue(0)))));
                     }, RTEditor.inst.HideWarningPopup);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadLevelPrevious", modifier =>
+            },
+            "loadLevelPrevious" => modifier =>
             {
                 if (CoreHelper.InEditor)
                     return;
 
                 LevelManager.Play(LevelManager.PreviousLevel);
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadLevelHub", modifier =>
+            },
+            "loadLevelHub" => modifier =>
             {
                 if (CoreHelper.InEditor)
                     return;
 
                 LevelManager.Play(LevelManager.Hub);
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadLevelInCollection", modifier =>
+            },
+            "loadLevelInCollection" => modifier =>
             {
                 if (!CoreHelper.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == modifier.GetValue(0), out Level level))
                     LevelManager.Play(level);
-            }),
-            new ModifierActionFunction<BeatmapObject>("downloadLevel", modifier =>
+            },
+            "downloadLevel" => modifier =>
             {
                 var levelInfo = new LevelInfo(modifier.GetValue(0), modifier.GetValue(0), modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), modifier.GetValue(4));
 
@@ -1701,8 +1699,8 @@ namespace BetterLegacy.Core.Helpers
                     if (modifier.GetBool(5, true))
                         LevelManager.Play(level);
                 });
-            }),
-            new ModifierActionFunction<BeatmapObject>("endLevel", modifier =>
+            },
+            "endLevel" => modifier =>
             {
                 if (CoreHelper.InEditor)
                 {
@@ -1722,16 +1720,16 @@ namespace BetterLegacy.Core.Helpers
                 ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true);
 
                 LevelManager.EndLevel();
-            }),
-            new ModifierActionFunction<BeatmapObject>("setAudioTransition", modifier =>
+            },
+            "setAudioTransition" => modifier =>
             {
                 LevelManager.songFadeTransition = modifier.GetFloat(0, 0.5f);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setIntroFade", modifier =>
+            },
+            "setIntroFade" => modifier =>
             {
                 RTGameManager.doIntroFade = modifier.GetBool(0, true);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setLevelEndFunc", modifier =>
+            },
+            "setLevelEndFunc" => modifier =>
             {
                 if (CoreHelper.InEditor)
                     return;
@@ -1746,13 +1744,13 @@ namespace BetterLegacy.Core.Helpers
                     ArcadeHelper.endLevelData = modifier.GetValue(1);
                 }
                 ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true);
-            }),
+            },
 
             #endregion
 
             #region Component
-            
-            new ModifierActionFunction<BeatmapObject>("blur", modifier =>
+
+            "blur" => modifier =>
             {
                 if (modifier.reference && modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
                     Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
@@ -1772,8 +1770,8 @@ namespace BetterLegacy.Core.Helpers
                     else
                         rend.material.SetFloat("_blurSizeXY", num);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("blurOther", modifier =>
+            },
+            "blurOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
                 if (list.Count <= 0)
@@ -1796,8 +1794,8 @@ namespace BetterLegacy.Core.Helpers
                     }
                     rend.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("blurVariable", modifier =>
+            },
+            "blurVariable" => modifier =>
             {
                 if (modifier.reference && modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
                     Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
@@ -1814,8 +1812,8 @@ namespace BetterLegacy.Core.Helpers
                     }
                     rend.material.SetFloat("_blurSizeXY", modifier.reference.integerVariable * num);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("blurVariableOther", modifier =>
+            },
+            "blurVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
                 if (list.Count <= 0)
@@ -1838,8 +1836,8 @@ namespace BetterLegacy.Core.Helpers
                     }
                     rend.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * num);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("blurColored", modifier =>
+            },
+            "blurColored" => modifier =>
             {
                 if (modifier.reference && modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
                     Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
@@ -1860,8 +1858,8 @@ namespace BetterLegacy.Core.Helpers
                     else
                         rend.material.SetFloat("_Size", num);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("blurColoredOther", modifier =>
+            },
+            "blurColoredOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                 if (list.Count <= 0)
@@ -1884,16 +1882,16 @@ namespace BetterLegacy.Core.Helpers
                     }
                     rend.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("doubleSided", modifier =>
+            },
+            "doubleSided" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.GameObject)
                 {
                     solidObject.Renderer.material = ObjectManager.inst.norm;
                     solidObject.material = solidObject.Renderer.material;
                 }
-            }), // todo: implement gradient double sided somehow
-            new ModifierActionFunction<BeatmapObject>("particleSystem", modifier =>
+            }, // todo: implement gradient double sided somehow
+            "particleSystem" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
                     return;
@@ -2005,8 +2003,8 @@ namespace BetterLegacy.Core.Helpers
                     var shape = ps.shape;
                     shape.angle = Parser.TryParse(modifier.commands[15], 90f);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("trailRenderer", modifier =>
+            },
+            "trailRenderer" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
                     return;
@@ -2052,8 +2050,8 @@ namespace BetterLegacy.Core.Helpers
                     if (int.TryParse(modifier.commands[5], out int endColor) && float.TryParse(modifier.commands[6], out float endOpacity))
                         tr.endColor = LSColors.fadeColor(beatmapTheme.GetObjColor(endColor), endOpacity);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("rigidbody", modifier =>
+            },
+            "rigidbody" => modifier =>
             {
                 var gravity = modifier.GetFloat(1, 0f);
                 var collisionMode = modifier.GetInt(2, 0);
@@ -2075,8 +2073,8 @@ namespace BetterLegacy.Core.Helpers
                 modifier.reference.rigidbody.bodyType = (RigidbodyType2D)Mathf.Clamp(bodyType, 0, 2);
 
                 modifier.reference.rigidbody.velocity += new Vector2(velocityX, velocityY);
-            }),
-            new ModifierActionFunction<BeatmapObject>("rigidbodyOther", modifier =>
+            },
+            "rigidbodyOther" => modifier =>
             {
                 var gravity = modifier.GetFloat(1, 0f);
                 var collisionMode = modifier.GetInt(2, 0);
@@ -2105,8 +2103,8 @@ namespace BetterLegacy.Core.Helpers
 
                     beatmapObject.rigidbody.velocity += new Vector2(velocityX, velocityY);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("videoPlayer", modifier =>
+            },
+            "videoPlayer" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.GameObject)
                 {
@@ -2134,15 +2132,15 @@ namespace BetterLegacy.Core.Helpers
                             videeoPlayer.Play(videeoPlayer.gameObject, filePath, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
                     }
                 }
-            }), // todo: dunno if this will ever be implemented as one video player might be enough
+            }, // todo: dunno if this will ever be implemented as one video player might be enough
 
             #endregion
 
             // todo: implement index modifiers
             #region Player
-            
+
             // hit
-            new ModifierActionFunction<BeatmapObject>("playerHit", modifier =>
+            "playerHit" => modifier =>
             {
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2153,16 +2151,16 @@ namespace BetterLegacy.Core.Helpers
 
                 if (player && player.Player)
                     player.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue));
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerHitIndex", modifier =>
+            },
+            "playerHitIndex" => modifier =>
             {
                 if (PlayerManager.Invincible || modifier.constant)
                     return;
 
                 if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer) && customPlayer.Player)
                     customPlayer.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue));
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerHitAll", modifier =>
+            },
+            "playerHitAll" => modifier =>
             {
                 if (PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2170,10 +2168,10 @@ namespace BetterLegacy.Core.Helpers
                 var damage = Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue);
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                     player.Player.Hit(damage);
-            }),
+            },
 
             // heal
-            new ModifierActionFunction<BeatmapObject>("playerHeal", modifier =>
+            "playerHeal" => modifier =>
             {
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2186,8 +2184,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (player && player.Player)
                     player.Player.Heal(heal);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerHealIndex", modifier =>
+            },
+            "playerHealIndex" => modifier =>
             {
                 if (PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2195,8 +2193,8 @@ namespace BetterLegacy.Core.Helpers
                 var health = Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue);
                 if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0), out CustomPlayer customPlayer) && customPlayer.Player)
                     customPlayer.Player.Heal(health);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerHealAll", modifier =>
+            },
+            "playerHealAll" => modifier =>
             {
                 if (PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2213,10 +2211,10 @@ namespace BetterLegacy.Core.Helpers
                     if (healed)
                         SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
                 }
-            }),
+            },
 
             // kill
-            new ModifierActionFunction<BeatmapObject>("playerKill", modifier =>
+            "playerKill" => modifier =>
             {
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2227,16 +2225,16 @@ namespace BetterLegacy.Core.Helpers
 
                 if (player && player.Player)
                     player.Player.Kill();
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerKillIndex", modifier =>
+            },
+            "playerKillIndex" => modifier =>
             {
                 if (PlayerManager.Invincible || modifier.constant)
                     return;
 
                 if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer) && customPlayer.Player)
                     customPlayer.Player.Kill();
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerKillAll", modifier =>
+            },
+            "playerKillAll" => modifier =>
             {
                 if (PlayerManager.Invincible || modifier.constant)
                     return;
@@ -2244,10 +2242,10 @@ namespace BetterLegacy.Core.Helpers
                 foreach (var player in PlayerManager.Players)
                     if (player.Player)
                         player.Player.Kill();
-            }),
+            },
 
             // respawn
-            new ModifierActionFunction<BeatmapObject>("playerRespawn", modifier =>
+            "playerRespawn" => modifier =>
             {
                 if (!modifier.reference || modifier.constant)
                     return;
@@ -2258,8 +2256,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (playerIndex >= 0)
                     PlayerManager.RespawnPlayer(playerIndex);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerRespawnIndex", modifier =>
+            },
+            "playerRespawnIndex" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -2267,15 +2265,15 @@ namespace BetterLegacy.Core.Helpers
                 var playerIndex = modifier.GetInt(0, 0);
                 if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer))
                     PlayerManager.RespawnPlayer(playerIndex);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerRespawnAll", modifier =>
+            },
+            "playerRespawnAll" => modifier =>
             {
                 if (!modifier.constant)
                     PlayerManager.RespawnPlayers();
-            }),
+            },
 
             // player move TODO: (rework these)
-            new ModifierActionFunction<BeatmapObject>("playerMove", modifier =>
+            "playerMove" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2297,8 +2295,8 @@ namespace BetterLegacy.Core.Helpers
                     tf
                         .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
                         .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveAll", modifier =>
+            },
+            "playerMoveAll" => modifier =>
             {
                 var vector = modifier.value.Split(new char[] { ',' });
 
@@ -2313,8 +2311,8 @@ namespace BetterLegacy.Core.Helpers
                             .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
                             .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveX", modifier =>
+            },
+            "playerMoveX" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2338,8 +2336,8 @@ namespace BetterLegacy.Core.Helpers
                     tf
                         .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
                         .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveXAll", modifier =>
+            },
+            "playerMoveXAll" => modifier =>
             {
                 bool relative = Parser.TryParse(modifier.commands[3], false);
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
@@ -2356,8 +2354,8 @@ namespace BetterLegacy.Core.Helpers
                             .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
                             .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveY", modifier =>
+            },
+            "playerMoveY" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2381,8 +2379,8 @@ namespace BetterLegacy.Core.Helpers
                     tf
                         .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
                         .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveYAll", modifier =>
+            },
+            "playerMoveYAll" => modifier =>
             {
                 bool relative = Parser.TryParse(modifier.commands[3], false);
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
@@ -2399,8 +2397,8 @@ namespace BetterLegacy.Core.Helpers
                             .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
                             .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerRotate", modifier =>
+            },
+            "playerRotate" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2423,8 +2421,8 @@ namespace BetterLegacy.Core.Helpers
                     player.Player.rb.transform
                         .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
                         .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerRotateAll", modifier =>
+            },
+            "playerRotateAll" => modifier =>
             {
                 bool relative = Parser.TryParse(modifier.commands[3], false);
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
@@ -2440,10 +2438,10 @@ namespace BetterLegacy.Core.Helpers
                             .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
                             .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                 }
-            }),
+            },
 
             // move to object
-            new ModifierActionFunction<BeatmapObject>("playerMoveToObject", modifier =>
+            "playerMoveToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2456,8 +2454,8 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveAllToObject", modifier =>
+            },
+            "playerMoveAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2471,8 +2469,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var y = player.Player.rb.position.y;
                 player.Player.rb.position = new Vector2(pos.x, y);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveXToObject", modifier =>
+            },
+            "playerMoveXToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2486,8 +2484,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var y = player.Player.rb.position.y;
                 player.Player.rb.position = new Vector2(pos.x, y);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveXAllToObject", modifier =>
+            },
+            "playerMoveXAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2502,8 +2500,8 @@ namespace BetterLegacy.Core.Helpers
                     var y = player.Player.rb.position.y;
                     player.Player.rb.position = new Vector2(pos.x, y);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveYToObject", modifier =>
+            },
+            "playerMoveYToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2517,8 +2515,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var x = player.Player.rb.position.x;
                 player.Player.rb.position = new Vector2(x, pos.y);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerMoveYAllToObject", modifier =>
+            },
+            "playerMoveYAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2533,8 +2531,8 @@ namespace BetterLegacy.Core.Helpers
                     var x = player.Player.rb.position.x;
                     player.Player.rb.position = new Vector2(x, pos.y);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerRotateToObject", modifier =>
+            },
+            "playerRotateToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2547,8 +2545,8 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 player.Player.rb.transform.SetLocalRotationEulerZ(levelObject.visualObject.GameObject.transform.localRotation.eulerAngles.z);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerRotateAllToObject", modifier =>
+            },
+            "playerRotateAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -2562,10 +2560,10 @@ namespace BetterLegacy.Core.Helpers
 
                     player.Player.rb.transform.SetLocalRotationEulerZ(rot);
                 }
-            }),
+            },
 
             // actions
-            new ModifierActionFunction<BeatmapObject>("playerBoost", modifier =>
+            "playerBoost" => modifier =>
             {
                 if (modifier.constant || !modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
                     return;
@@ -2576,18 +2574,18 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 player.Player.Boost();
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerBoostIndex", modifier =>
+            },
+            "playerBoostIndex" => modifier =>
             {
                 if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer) && customPlayer.Player)
                     customPlayer.Player.Boost();
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerBoostAll", modifier =>
+            },
+            "playerBoostAll" => modifier =>
             {
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                     player.Player.Boost();
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerDisableBoost", modifier =>
+            },
+            "playerDisableBoost" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                 {
@@ -2596,18 +2594,18 @@ namespace BetterLegacy.Core.Helpers
                     if (player && player.Player)
                         player.Player.CanBoost = false;
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerDisableBoostIndex", modifier =>
+            },
+            "playerDisableBoostIndex" => modifier =>
             {
                 if (modifier.reference && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer) && customPlayer.Player)
                     customPlayer.Player.CanBoost = false;
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerDisableBoostAll", modifier =>
+            },
+            "playerDisableBoostAll" => modifier =>
             {
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                     player.Player.CanBoost = false;
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerEnableBoost", modifier =>
+            },
+            "playerEnableBoost" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                 {
@@ -2616,24 +2614,24 @@ namespace BetterLegacy.Core.Helpers
                     if (player && player.Player)
                         player.Player.CanBoost = true;
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerEnableBoostIndex", modifier =>
+            },
+            "playerEnableBoostIndex" => modifier =>
             {
                 if (modifier.reference && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0), out CustomPlayer customPlayer) && customPlayer.Player)
                     customPlayer.Player.CanBoost = true;
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerEnableBoostAll", modifier =>
+            },
+            "playerEnableBoostAll" => modifier =>
             {
                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                     player.Player.CanBoost = true;
-            }),
+            },
 
             // speed
-            new ModifierActionFunction<BeatmapObject>("playerSpeed", modifier =>
+            "playerSpeed" => modifier =>
             {
                 RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f);
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerVelocityAll", modifier =>
+            },
+            "playerVelocityAll" => modifier =>
             {
                 var x = modifier.GetFloat(1, 0f);
                 var y = modifier.GetFloat(2, 0f);
@@ -2644,8 +2642,8 @@ namespace BetterLegacy.Core.Helpers
                     if (player.Player && player.Player.rb)
                         player.Player.rb.velocity = new Vector2(x, y);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerVelocityXAll", modifier =>
+            },
+            "playerVelocityXAll" => modifier =>
             {
                 var x = modifier.GetFloat(0, 0f);
 
@@ -2659,8 +2657,8 @@ namespace BetterLegacy.Core.Helpers
                     velocity.x = x;
                     player.Player.rb.velocity = velocity;
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("playerVelocityYAll", modifier =>
+            },
+            "playerVelocityYAll" => modifier =>
             {
                 var x = modifier.GetFloat(0, 0f);
 
@@ -2674,9 +2672,9 @@ namespace BetterLegacy.Core.Helpers
                     velocity.y = x;
                     player.Player.rb.velocity = velocity;
                 }
-            }),
+            },
 
-            new ModifierActionFunction<BeatmapObject>("setPlayerModel", modifier =>
+            "setPlayerModel" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -2694,26 +2692,26 @@ namespace BetterLegacy.Core.Helpers
 
                 customPlayer.Player.playerNeedsUpdating = true;
                 customPlayer.Player.UpdateModel();
-            }),
-            new ModifierActionFunction<BeatmapObject>("gameMode", modifier =>
+            },
+            "gameMode" => modifier =>
             {
                 RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
-            }),
+            },
 
             #endregion
 
             #region Mouse Cursor
-            
-            new ModifierActionFunction<BeatmapObject>("showMouse", modifier =>
+
+            "showMouse" => modifier =>
             {
                 CursorManager.inst.ShowCursor();
-            }),
-            new ModifierActionFunction<BeatmapObject>("hideMouse", modifier =>
+            },
+            "hideMouse" => modifier =>
             {
                 if (CoreHelper.InEditorPreview)
                     CursorManager.inst.HideCursor();
-            }),
-            new ModifierActionFunction<BeatmapObject>("setMousePosition", modifier =>
+            },
+            "setMousePosition" => modifier =>
             {
                 if (CoreHelper.IsEditing)
                     return;
@@ -2726,8 +2724,8 @@ namespace BetterLegacy.Core.Helpers
                 var y = modifier.GetFloat(2, 0f);
 
                 CursorManager.inst.SetCursorPosition(new Vector2(((x * screenScale) + windowCenterX), ((y * screenScale) + windowCenterY)));
-            }),
-            new ModifierActionFunction<BeatmapObject>("followMousePosition", modifier =>
+            },
+            "followMousePosition" => modifier =>
             {
                 if (modifier.value == "0")
                     modifier.value = "1";
@@ -2753,13 +2751,13 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = dragPos;
 
                 modifier.reference.positionOffset = dragPos;
-            }),
+            },
 
             #endregion
 
             #region Variable
-            
-            new ModifierActionFunction<BeatmapObject>("addVariable", modifier =>
+
+            "addVariable" => modifier =>
             {
                 if (modifier.commands.Count == 2)
                 {
@@ -2774,8 +2772,8 @@ namespace BetterLegacy.Core.Helpers
                 }
                 else
                     modifier.reference.integerVariable += modifier.GetInt(0, 0);
-            }),
-            new ModifierActionFunction<BeatmapObject>("addVariableOther", modifier =>
+            },
+            "addVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
                 if (list.Count <= 0)
@@ -2785,8 +2783,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable += num;
-            }),
-            new ModifierActionFunction<BeatmapObject>("subVariable", modifier =>
+            },
+            "subVariable" => modifier =>
             {
                 if (modifier.commands.Count == 2)
                 {
@@ -2801,8 +2799,8 @@ namespace BetterLegacy.Core.Helpers
                 }
                 else
                     modifier.reference.integerVariable -= modifier.GetInt(0, 0);
-            }),
-            new ModifierActionFunction<BeatmapObject>("subVariableOther", modifier =>
+            },
+            "subVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
                 if (list.Count <= 0)
@@ -2812,8 +2810,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable -= num;
-            }),
-            new ModifierActionFunction<BeatmapObject>("setVariable", modifier =>
+            },
+            "setVariable" => modifier =>
             {
                 if (modifier.commands.Count == 2)
                 {
@@ -2828,8 +2826,8 @@ namespace BetterLegacy.Core.Helpers
                 }
                 else
                     modifier.reference.integerVariable = modifier.GetInt(0, 0);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setVariableOther", modifier =>
+            },
+            "setVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
                 if (list.Count <= 0)
@@ -2839,8 +2837,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable = num;
-            }),
-            new ModifierActionFunction<BeatmapObject>("setVariableRandom", modifier =>
+            },
+            "setVariableRandom" => modifier =>
             {
                 if (modifier.commands.Count == 3)
                 {
@@ -2860,8 +2858,8 @@ namespace BetterLegacy.Core.Helpers
                     var max = modifier.GetInt(1, 0);
                     modifier.reference.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("setVariableRandomOther", modifier =>
+            },
+            "setVariableRandomOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
                 if (list.Count <= 0)
@@ -2872,8 +2870,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateVariableOther", modifier =>
+            },
+            "animateVariableOther" => modifier =>
             {
                 var fromType = modifier.GetInt(1, 0);
                 var fromAxis = modifier.GetInt(2, 0);
@@ -2904,7 +2902,8 @@ namespace BetterLegacy.Core.Helpers
                         // To Type Position
                         // To Axis X
                         // From Type Position
-                        case 0: {
+                        case 0:
+                            {
                                 var sequence = cachedSequence.Position3DSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
@@ -2913,7 +2912,8 @@ namespace BetterLegacy.Core.Helpers
                         // To Type Position
                         // To Axis X
                         // From Type Scale
-                        case 1: {
+                        case 1:
+                            {
                                 var sequence = cachedSequence.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
@@ -2922,7 +2922,8 @@ namespace BetterLegacy.Core.Helpers
                         // To Type Position
                         // To Axis X
                         // From Type Rotation
-                        case 2: {
+                        case 2:
+                            {
                                 var sequence = cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) * multiply;
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
@@ -2930,12 +2931,12 @@ namespace BetterLegacy.Core.Helpers
                             }
                     }
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("clampVariable", modifier =>
+            },
+            "clampVariable" => modifier =>
             {
                 modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
-            }),
-            new ModifierActionFunction<BeatmapObject>("clampVariableOther", modifier =>
+            },
+            "clampVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
@@ -2945,19 +2946,19 @@ namespace BetterLegacy.Core.Helpers
                 if (list.Count > 0)
                     foreach (var bm in list)
                         bm.integerVariable = Mathf.Clamp(bm.integerVariable, min, max);
-            }),
+            },
 
             #endregion
 
             #region Enable / Disable
-            
+
             // enable
-            new ModifierActionFunction<BeatmapObject>("enableObject", modifier =>
+            "enableObject" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
                     levelObject.top.gameObject.SetActive(true);
-            }),
-            new ModifierActionFunction<BeatmapObject>("enableObjectTree", modifier =>
+            },
+            "enableObjectTree" => modifier =>
             {
                 if (modifier.GetValue(0) == "0")
                     modifier.SetValue(0, "False");
@@ -2977,8 +2978,8 @@ namespace BetterLegacy.Core.Helpers
                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                         levelObject.top.gameObject.SetActive(true);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("enableObjectOther", modifier =>
+            },
+            "enableObjectOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
@@ -2986,8 +2987,8 @@ namespace BetterLegacy.Core.Helpers
                     foreach (var beatmapObject in list)
                         if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                             levelObject.top.gameObject.SetActive(true);
-            }),
-            new ModifierActionFunction<BeatmapObject>("enableObjectTreeOther", modifier =>
+            },
+            "enableObjectTreeOther" => modifier =>
             {
                 if (!modifier.HasResult())
                 {
@@ -3011,15 +3012,15 @@ namespace BetterLegacy.Core.Helpers
                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                         levelObject.top.gameObject.SetActive(true);
                 }
-            }),
+            },
 
             // disable
-            new ModifierActionFunction<BeatmapObject>("disableObject", modifier =>
+            "disableObject" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
                     levelObject.top.gameObject.SetActive(false);
-            }),
-            new ModifierActionFunction<BeatmapObject>("disableObjectTree", modifier =>
+            },
+            "disableObjectTree" => modifier =>
             {
                 if (modifier.GetValue(0) == "0")
                     modifier.SetValue(0, "False");
@@ -3039,8 +3040,8 @@ namespace BetterLegacy.Core.Helpers
                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                         levelObject.top.gameObject.SetActive(false);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("disableObjectOther", modifier =>
+            },
+            "disableObjectOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
@@ -3048,8 +3049,8 @@ namespace BetterLegacy.Core.Helpers
                     foreach (var beatmapObject in list)
                         if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                             levelObject.top.gameObject.SetActive(false);
-            }),
-            new ModifierActionFunction<BeatmapObject>("disableObjectTreeOther", modifier =>
+            },
+            "disableObjectTreeOther" => modifier =>
             {
                 if (!modifier.HasResult())
                 {
@@ -3073,33 +3074,33 @@ namespace BetterLegacy.Core.Helpers
                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                         levelObject.top.gameObject.SetActive(false);
                 }
-            }),
+            },
 
             #endregion
 
             #region JSON
-            
-            new ModifierActionFunction<BeatmapObject>("saveFloat", modifier =>
+
+            "saveFloat" => modifier =>
             {
                 if (CoreHelper.InEditorPreview)
                     SaveProgress(modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), modifier.GetFloat(0, 0f));
-            }),
-            new ModifierActionFunction<BeatmapObject>("saveString", modifier =>
+            },
+            "saveString" => modifier =>
             {
                 if (CoreHelper.InEditorPreview)
                     SaveProgress(modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), modifier.GetValue(0));
-            }),
-            new ModifierActionFunction<BeatmapObject>("saveText", modifier =>
+            },
+            "saveText" => modifier =>
             {
                 if (CoreHelper.InEditorPreview && modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject)
                     SaveProgress(modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), textObject.textMeshPro.text);
-            }),
-            new ModifierActionFunction<BeatmapObject>("saveVariable", modifier =>
+            },
+            "saveVariable" => modifier =>
             {
                 if (CoreHelper.InEditorPreview && modifier.reference)
                     SaveProgress(modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), modifier.reference.integerVariable);
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadVariable", modifier =>
+            },
+            "loadVariable" => modifier =>
             {
                 var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1) + FileFormat.SES.Dot());
                 if (!RTFile.FileExists(path))
@@ -3115,8 +3116,8 @@ namespace BetterLegacy.Core.Helpers
                 var fjn = jn[modifier.GetValue(2)][modifier.GetValue(3)]["float"];
                 if (!string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
                     modifier.reference.integerVariable = (int)eq;
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadVariableOther", modifier =>
+            },
+            "loadVariableOther" => modifier =>
             {
                 var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1) + FileFormat.SES.Dot());
                 if (!RTFile.FileExists(path))
@@ -3134,13 +3135,13 @@ namespace BetterLegacy.Core.Helpers
                 if (list.Count > 0 && !string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
                     foreach (var bm in list)
                         bm.integerVariable = (int)eq;
-            }),
+            },
 
             #endregion
 
             #region Reactive
-            
-            new ModifierActionFunction<BeatmapObject>("reactivePos", modifier =>
+
+            "reactivePos" => modifier =>
             {
                 var val = modifier.GetFloat(0, 0f);
                 var sampleX = modifier.GetInt(1, 0);
@@ -3155,8 +3156,8 @@ namespace BetterLegacy.Core.Helpers
 
                     levelObject.visualObject.SetOrigin(new Vector3(modifier.reference.origin.x + reactivePositionX, modifier.reference.origin.y + reactivePositionY, modifier.reference.Depth * 0.1f));
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactiveSca", modifier =>
+            },
+            "reactiveSca" => modifier =>
             {
                 var val = modifier.GetFloat(0, 0f);
                 var sampleX = modifier.GetInt(1, 0);
@@ -3171,23 +3172,23 @@ namespace BetterLegacy.Core.Helpers
 
                     levelObject.visualObject.SetScaleOffset(new Vector2(1f + reactiveScaleX, 1f + reactiveScaleY));
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactiveRot", modifier =>
+            },
+            "reactiveRot" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                     levelObject.visualObject.SetRotationOffset(Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactiveCol", modifier =>
+            },
+            "reactiveCol" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                     levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + GameManager.inst.LiveTheme.GetObjColor(modifier.GetInt(2, 0)) * Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactiveColLerp", modifier =>
+            },
+            "reactiveColLerp" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                     levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), GameManager.inst.LiveTheme.GetObjColor(modifier.GetInt(2, 0)), Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f))));
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactivePosChain", modifier =>
+            },
+            "reactivePosChain" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -3202,8 +3203,8 @@ namespace BetterLegacy.Core.Helpers
                 float reactivePositionY = Updater.GetSample(sampleY, intensityY * val);
 
                 modifier.reference.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactiveScaChain", modifier =>
+            },
+            "reactiveScaChain" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -3218,33 +3219,33 @@ namespace BetterLegacy.Core.Helpers
                 float reactiveScaleY = Updater.GetSample(sampleY, intensityY * val);
 
                 modifier.reference.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
-            }),
-            new ModifierActionFunction<BeatmapObject>("reactiveRotChain", modifier =>
+            },
+            "reactiveRotChain" => modifier =>
             {
                 if (modifier.reference)
                     modifier.reference.reactiveRotationOffset = Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f));
-            }),
+            },
 
             #endregion
 
             #region Events
-            
-            new ModifierActionFunction<BeatmapObject>("eventOffset", modifier =>
+
+            "eventOffset" => modifier =>
             {
                 if (RTEventManager.inst && RTEventManager.inst.offsets != null)
                     RTEventManager.inst.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetFloat(0, 1f));
-            }),
-            new ModifierActionFunction<BeatmapObject>("eventOffsetVariable", modifier =>
+            },
+            "eventOffsetVariable" => modifier =>
             {
                 if (RTEventManager.inst && RTEventManager.inst.offsets != null)
                     RTEventManager.inst.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.reference.integerVariable * modifier.GetFloat(0, 1f));
-            }),
-            new ModifierActionFunction<BeatmapObject>("eventOffsetMath", modifier =>
+            },
+            "eventOffsetMath" => modifier =>
             {
                 if (RTEventManager.inst && RTEventManager.inst.offsets != null)
                     RTEventManager.inst.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables()));
-            }),
-            new ModifierActionFunction<BeatmapObject>("eventOffsetAnimate", modifier =>
+            },
+            "eventOffsetAnimate" => modifier =>
             {
                 if (modifier.constant || !RTEventManager.inst || RTEventManager.inst.offsets == null)
                     return;
@@ -3274,8 +3275,8 @@ namespace BetterLegacy.Core.Helpers
                     animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
                     AnimationManager.inst.Play(animation);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("eventOffsetCopyAxis", modifier =>
+            },
+            "eventOffsetCopyAxis" => modifier =>
             {
                 if (!RTEventManager.inst || RTEventManager.inst.offsets == null)
                     return;
@@ -3309,8 +3310,8 @@ namespace BetterLegacy.Core.Helpers
                     });
                 else if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                     RTEventManager.inst.SetOffset(toType, toAxis, Mathf.Clamp((levelObject.visualObject.GameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
-            }),
-            new ModifierActionFunction<BeatmapObject>("vignetteTracksPlayer", modifier =>
+            },
+            "vignetteTracksPlayer" => modifier =>
             {
                 var players = PlayerManager.Players;
                 if (players.Count < 1)
@@ -3324,8 +3325,8 @@ namespace BetterLegacy.Core.Helpers
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
                 RTEventManager.inst.SetOffset(7, 4, cameraToViewportPoint.x);
                 RTEventManager.inst.SetOffset(7, 5, cameraToViewportPoint.y);
-            }),
-            new ModifierActionFunction<BeatmapObject>("lensTracksPlayer", modifier =>
+            },
+            "lensTracksPlayer" => modifier =>
             {
                 var players = PlayerManager.Players;
                 if (players.Count < 1)
@@ -3339,14 +3340,14 @@ namespace BetterLegacy.Core.Helpers
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
                 RTEventManager.inst.SetOffset(8, 1, cameraToViewportPoint.x - 0.5f);
                 RTEventManager.inst.SetOffset(8, 2, cameraToViewportPoint.y - 0.5f);
-            }),
+            },
 
             #endregion
 
             #region Color
-            
+
             // color
-            new ModifierActionFunction<BeatmapObject>("addColor", modifier =>
+            "addColor" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                     return;
@@ -3361,9 +3362,9 @@ namespace BetterLegacy.Core.Helpers
                 //if (levelObject.isGradient)
                 //    levelObject.gradientObject.SetColor(levelObject.gradientObject.GetPrimaryColor() + color, levelObject.gradientObject.GetSecondaryColor() + color);
                 //else
-                    levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + color);
-            }),
-            new ModifierActionFunction<BeatmapObject>("addColorOther", modifier =>
+                levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + color);
+            },
+            "addColorOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3385,10 +3386,10 @@ namespace BetterLegacy.Core.Helpers
                     //if (levelObject.isGradient)
                     //    levelObject.gradientObject.SetColor(levelObject.gradientObject.GetPrimaryColor() + color, levelObject.gradientObject.GetSecondaryColor() + color);
                     //else
-                        levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + color);
+                    levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + color);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("lerpColor", modifier =>
+            },
+            "lerpColor" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null)
                     return;
@@ -3400,8 +3401,8 @@ namespace BetterLegacy.Core.Helpers
                 var val = modifier.GetFloat(4, 0f);
 
                 levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val), multiply));
-            }),
-            new ModifierActionFunction<BeatmapObject>("lerpColorOther", modifier =>
+            },
+            "lerpColorOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3423,8 +3424,8 @@ namespace BetterLegacy.Core.Helpers
 
                     levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), color, multiply));
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("addColorPlayerDistance", modifier =>
+            },
+            "addColorPlayerDistance" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
                     return;
@@ -3441,8 +3442,8 @@ namespace BetterLegacy.Core.Helpers
                 var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.GameObject.transform.position);
 
                 levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + GameManager.inst.LiveTheme.GetObjColor(index) * -(distance * multiply - offset));
-            }),
-            new ModifierActionFunction<BeatmapObject>("lerpColorPlayerDistance", modifier =>
+            },
+            "lerpColorPlayerDistance" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
                     return;
@@ -3465,20 +3466,20 @@ namespace BetterLegacy.Core.Helpers
                 levelObject.visualObject.SetColor(Color.Lerp(levelObject.visualObject.GetPrimaryColor(),
                                 LSColors.fadeColor(CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val), opacity),
                                 -(distance * multiply - offset)));
-            }),
+            },
 
             // opacity
-            new ModifierActionFunction<BeatmapObject>("setAlpha", modifier =>
+            "setAlpha" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                     levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
-            }),
-            new ModifierActionFunction<BeatmapObject>("setOpacity", modifier =>
+            },
+            "setOpacity" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                     levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
-            }),
-            new ModifierActionFunction<BeatmapObject>("setAlphaOther", modifier =>
+            },
+            "setAlphaOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3493,8 +3494,8 @@ namespace BetterLegacy.Core.Helpers
 
                     levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), num));
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("setOpacityOther", modifier =>
+            },
+            "setOpacityOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3509,10 +3510,10 @@ namespace BetterLegacy.Core.Helpers
 
                     levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), num));
                 }
-            }),
+            },
 
             // copy
-            new ModifierActionFunction<BeatmapObject>("copyColor", modifier =>
+            "copyColor" => modifier =>
             {
                 if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject))
                     return;
@@ -3522,8 +3523,8 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 CopyColor(levelObject, otherLevelObject, modifier.GetBool(1, true), modifier.GetBool(2, true));
-            }),
-            new ModifierActionFunction<BeatmapObject>("copyColorOther", modifier =>
+            },
+            "copyColorOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
@@ -3540,8 +3541,8 @@ namespace BetterLegacy.Core.Helpers
 
                     CopyColor(otherLevelObject, levelObject, applyColor1, applyColor2);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("applyColorGroup", modifier =>
+            },
+            "applyColorGroup" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
@@ -3654,10 +3655,10 @@ namespace BetterLegacy.Core.Helpers
                         otherLevelObject.gradientObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
                     }
                 }
-            }),
+            },
 
             // hex code
-            new ModifierActionFunction<BeatmapObject>("setColorHex", modifier =>
+            "setColorHex" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                     return;
@@ -3674,8 +3675,8 @@ namespace BetterLegacy.Core.Helpers
                         string.IsNullOrEmpty(modifier.GetValue(0)) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), colors.startColor.a),
                         string.IsNullOrEmpty(modifier.GetValue(1)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(1)), colors.endColor.a));
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("setColorHexOther", modifier =>
+            },
+            "setColorHexOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3700,15 +3701,15 @@ namespace BetterLegacy.Core.Helpers
                             string.IsNullOrEmpty(modifier.GetValue(2)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(2)), colors.endColor.a));
                     }
                 }
-            }),
+            },
 
             #endregion
-            
+
             // todo: figure out how to get actorFrameTexture to work
             // todo: add polygon modifier stuff
             #region Shape
-            
-            new ModifierActionFunction<BeatmapObject>("actorFrameTexture", modifier =>
+
+            "actorFrameTexture" => modifier =>
             {
                 if (modifier.reference.ShapeType != ShapeType.Image || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not ImageObject imageObject)
                     return;
@@ -3718,10 +3719,10 @@ namespace BetterLegacy.Core.Helpers
                 var frame = SpriteHelper.CaptureFrame(camera, modifier.GetInt(1, 512), modifier.GetInt(2, 512), modifier.GetFloat(3, 0f), modifier.GetFloat(4, 0f));
 
                 ((SpriteRenderer)imageObject.Renderer).sprite = frame;
-            }),
+            },
 
             // image
-            new ModifierActionFunction<BeatmapObject>("setImage", modifier =>
+            "setImage" => modifier =>
             {
                 if (modifier.constant || modifier.reference.ShapeType != ShapeType.Image || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not ImageObject imageObject)
                     return;
@@ -3735,8 +3736,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
-            }),
-            new ModifierActionFunction<BeatmapObject>("setImageOther", modifier =>
+            },
+            "setImageOther" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -3763,10 +3764,10 @@ namespace BetterLegacy.Core.Helpers
 
                     CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
                 }
-            }),
+            },
 
             // text (pain)
-            new ModifierActionFunction<BeatmapObject>("setText", modifier =>
+            "setText" => modifier =>
             {
                 if (modifier.reference.ShapeType != ShapeType.Text ||
                 !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
@@ -3777,8 +3778,8 @@ namespace BetterLegacy.Core.Helpers
                     textObject.SetText(modifier.GetValue(0));
                 else
                     textObject.text = modifier.GetValue(0);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setTextOther", modifier =>
+            },
+            "setTextOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3795,8 +3796,8 @@ namespace BetterLegacy.Core.Helpers
                     else
                         textObject.text = modifier.GetValue(0);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("addText", modifier =>
+            },
+            "addText" => modifier =>
             {
                 if (modifier.reference.ShapeType != ShapeType.Text ||
                 !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
@@ -3807,8 +3808,8 @@ namespace BetterLegacy.Core.Helpers
                     textObject.SetText(textObject.textMeshPro.text + modifier.GetValue(0));
                 else
                     textObject.text += modifier.GetValue(0);
-            }),
-            new ModifierActionFunction<BeatmapObject>("addTextOther", modifier =>
+            },
+            "addTextOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3825,8 +3826,8 @@ namespace BetterLegacy.Core.Helpers
                     else
                         textObject.text += modifier.GetValue(0);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("removeText", modifier =>
+            },
+            "removeText" => modifier =>
             {
                 if (modifier.reference.ShapeType != ShapeType.Text ||
                 !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
@@ -3840,8 +3841,8 @@ namespace BetterLegacy.Core.Helpers
                     textObject.SetText(text);
                 else
                     textObject.text = text;
-            }),
-            new ModifierActionFunction<BeatmapObject>("removeTextOther", modifier =>
+            },
+            "removeTextOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3863,8 +3864,8 @@ namespace BetterLegacy.Core.Helpers
                     else
                         textObject.text = text;
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("removeTextAt", modifier =>
+            },
+            "removeTextAt" => modifier =>
             {
                 if (modifier.reference.ShapeType != ShapeType.Text ||
                 !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
@@ -3879,8 +3880,8 @@ namespace BetterLegacy.Core.Helpers
                     textObject.SetText(text);
                 else
                     textObject.text = text;
-            }),
-            new ModifierActionFunction<BeatmapObject>("removeTextOther", modifier =>
+            },
+            "removeTextOtherAt" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
@@ -3902,8 +3903,8 @@ namespace BetterLegacy.Core.Helpers
                     else
                         textObject.text = text;
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("formatText", modifier =>
+            },
+            "formatText" => modifier =>
             {
                 if (CoreConfig.Instance.AllowCustomTextFormatting.Value ||
                 modifier.reference.ShapeType != ShapeType.Text ||
@@ -3912,8 +3913,8 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 textObject.SetText(RTString.FormatText(modifier.reference, textObject.text));
-            }),
-            new ModifierActionFunction<BeatmapObject>("textSequence", modifier =>
+            },
+            "textSequence" => modifier =>
             {
                 if (modifier.reference.ShapeType != ShapeType.Text || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not TextObject textObject)
                     return;
@@ -3998,10 +3999,10 @@ namespace BetterLegacy.Core.Helpers
                     else
                         GetSoundPath(modifier.reference.id, modifier.GetValue(4), modifier.GetBool(5, false), pitch, volume, false);
                 }
-            }),
+            },
 
             // modify shape
-            new ModifierActionFunction<BeatmapObject>("backgroundShape", modifier =>
+            "backgroundShape" => modifier =>
             {
                 if (modifier.HasResult() || modifier.reference.IsSpecialShape || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
                     return;
@@ -4013,8 +4014,8 @@ namespace BetterLegacy.Core.Helpers
                     modifier.Result = "frick";
                     levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("sphereShape", modifier =>
+            },
+            "sphereShape" => modifier =>
             {
                 if (modifier.HasResult() || modifier.reference.IsSpecialShape || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
                     return;
@@ -4024,8 +4025,8 @@ namespace BetterLegacy.Core.Helpers
                 levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
                 modifier.Result = "frick";
                 levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-            }),
-            new ModifierActionFunction<BeatmapObject>("translateShape", modifier =>
+            },
+            "translateShape" => modifier =>
             {
                 if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
                     return;
@@ -4048,13 +4049,13 @@ namespace BetterLegacy.Core.Helpers
 
                 if (modifier.TryGetResult(out KeyValuePair<MeshFilter, Vector3[]> keyValuePair))
                     keyValuePair.Key.mesh.vertices = keyValuePair.Value.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, new Vector2(scaX, scaY)), rot), new Vector2(posX, posY))).ToArray();
-            }),
+            },
 
             #endregion
 
             #region Animation
-            
-            new ModifierActionFunction<BeatmapObject>("animateObject", modifier =>
+
+            "animateObject" => modifier =>
             {
                 var time = modifier.GetFloat(0, 0f);
                 var type = modifier.GetInt(1, 0);
@@ -4089,8 +4090,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 modifier.reference.SetTransform(type, setVector);
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateObjectOther", modifier =>
+            },
+            "animateObjectOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(7)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(7));
 
@@ -4133,8 +4134,8 @@ namespace BetterLegacy.Core.Helpers
 
                     bm.SetTransform(type, setVector);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateSignal", modifier =>
+            },
+            "animateSignal" => modifier =>
             {
                 var time = modifier.GetFloat(0, 0f);
                 var type = modifier.GetInt(1, 0);
@@ -4189,8 +4190,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 modifier.reference.SetTransform(type, setVector);
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateSignalOther", modifier =>
+            },
+            "animateSignalOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(7)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(7));
 
@@ -4255,10 +4256,10 @@ namespace BetterLegacy.Core.Helpers
 
                     bm.SetTransform(type, setVector);
                 }
-            }),
+            },
 
             // todo: continue cleaning up, have to take a break for my sanity
-            new ModifierActionFunction<BeatmapObject>("animateObjectMath", modifier =>
+            "animateObjectMath" => modifier =>
             {
                 if (!int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
                     return;
@@ -4297,8 +4298,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 modifier.reference.SetTransform(type, setVector);
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateObjectMathOther", modifier =>
+            },
+            "animateObjectMathOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
@@ -4343,8 +4344,8 @@ namespace BetterLegacy.Core.Helpers
 
                     bm.SetTransform(type, setVector);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateSignalMath", modifier =>
+            },
+            "animateSignalMath" => modifier =>
             {
                 if (!int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
                     return;
@@ -4404,8 +4405,8 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 modifier.reference.SetTransform(type, setVector);
-            }),
-            new ModifierActionFunction<BeatmapObject>("animateSignalMathOther", modifier =>
+            },
+            "animateSignalMathOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
@@ -4470,9 +4471,9 @@ namespace BetterLegacy.Core.Helpers
 
                     modifier.reference.SetTransform(type, setVector);
                 }
-            }),
+            },
 
-            new ModifierActionFunction<BeatmapObject>("gravity", modifier =>
+            "gravity" => modifier =>
             {
                 var gravityX = Parser.TryParse(modifier.commands[1], 0f);
                 var gravityY = Parser.TryParse(modifier.commands[2], 0f);
@@ -4492,8 +4493,8 @@ namespace BetterLegacy.Core.Helpers
                 var rotation = modifier.reference.InterpolateChainRotation(includeSelf: false);
 
                 modifier.reference.positionOffset = RTMath.Rotate(vector, -rotation);
-            }),
-            new ModifierActionFunction<BeatmapObject>("gravityOther", modifier =>
+            },
+            "gravityOther" => modifier =>
             {
                 var beatmapObjects = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
@@ -4521,9 +4522,9 @@ namespace BetterLegacy.Core.Helpers
 
                     beatmapObject.positionOffset = RTMath.Rotate(vector, -rotation);
                 }
-            }),
+            },
 
-            new ModifierActionFunction<BeatmapObject>("copyAxis", modifier =>
+            "copyAxis" => modifier =>
             {
                 if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                     && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
@@ -4572,8 +4573,8 @@ namespace BetterLegacy.Core.Helpers
                             _ => 0f,
                         }, min, max));
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("copyAxisMath", modifier =>
+            },
+            "copyAxisMath" => modifier =>
             {
                 try
                 {
@@ -4666,8 +4667,8 @@ namespace BetterLegacy.Core.Helpers
                 {
 
                 } // try catch for cases where the math is broken
-            }),
-            new ModifierActionFunction<BeatmapObject>("copyAxisGroup", modifier =>
+            },
+            "copyAxisGroup" => modifier =>
             {
                 var evaluation = modifier.GetValue(0);
 
@@ -4733,8 +4734,8 @@ namespace BetterLegacy.Core.Helpers
                 {
                     CoreHelper.LogException(ex);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("copyPlayerAxis", modifier =>
+            },
+            "copyPlayerAxis" => modifier =>
             {
                 if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                     && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
@@ -4742,8 +4743,8 @@ namespace BetterLegacy.Core.Helpers
                     && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
                     && InputDataManager.inst.players.TryFind(x => x is CustomPlayer customPlayer && customPlayer.Player && customPlayer.Player.rb, out InputDataManager.CustomPlayer p))
                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp((((CustomPlayer)p).Player.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
-            }),
-            new ModifierActionFunction<BeatmapObject>("legacyTail", modifier =>
+            },
+            "legacyTail" => modifier =>
             {
                 if (!modifier.reference || modifier.commands.Count <= 1 || !GameData.Current)
                     return;
@@ -4799,9 +4800,9 @@ namespace BetterLegacy.Core.Helpers
                     prevTracker.lastPos = tracker.pos;
                     tracker.beatmapObject.rotationOffset = tracker.rot.eulerAngles;
                 }
-            }),
+            },
 
-            new ModifierActionFunction<BeatmapObject>("applyAnimation", modifier =>
+            "applyAnimation" => modifier =>
             {
                 if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
                 {
@@ -4852,8 +4853,8 @@ namespace BetterLegacy.Core.Helpers
                         ApplyAnimationTo(bm, from, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                     }
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("applyAnimationFrom", modifier =>
+            },
+            "applyAnimationFrom" => modifier =>
             {
                 if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                 {
@@ -4896,8 +4897,8 @@ namespace BetterLegacy.Core.Helpers
 
                     ApplyAnimationTo(modifier.reference, bm, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("applyAnimationTo", modifier =>
+            },
+            "applyAnimationTo" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
@@ -4945,8 +4946,8 @@ namespace BetterLegacy.Core.Helpers
 
                     ApplyAnimationTo(bm, modifier.reference, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("applyAnimationMath", modifier =>
+            },
+            "applyAnimationMath" => modifier =>
             {
                 if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
                 {
@@ -5001,8 +5002,8 @@ namespace BetterLegacy.Core.Helpers
                         ApplyAnimationTo(bm, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                     }
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("applyAnimationFromMath", modifier =>
+            },
+            "applyAnimationFromMath" => modifier =>
             {
                 if (GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                 {
@@ -5049,8 +5050,8 @@ namespace BetterLegacy.Core.Helpers
 
                     ApplyAnimationTo(modifier.reference, bm, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("applyAnimationToMath", modifier =>
+            },
+            "applyAnimationToMath" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
@@ -5102,13 +5103,13 @@ namespace BetterLegacy.Core.Helpers
 
                     ApplyAnimationTo(bm, modifier.reference, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                 }
-            }),
+            },
 
             #endregion
 
             #region BG Object
-            
-            new ModifierActionFunction<BeatmapObject>("setBGActive", modifier =>
+
+            "setBGActive" => modifier =>
             {
                 if (!bool.TryParse(modifier.value, out bool active))
                     return;
@@ -5117,13 +5118,13 @@ namespace BetterLegacy.Core.Helpers
                 if (!list.IsEmpty())
                     for (int i = 0; i < list.Count; i++)
                         list[i].Enabled = active;
-            }),
+            },
 
             #endregion
 
             #region Prefab
-            
-            new ModifierActionFunction<BeatmapObject>("spawnPrefab", modifier =>
+
+            "spawnPrefab" => modifier =>
             {
                 if (modifier.constant || modifier.HasResult())
                     return;
@@ -5151,8 +5152,8 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = prefabObject;
                 GameData.Current.prefabObjects.Add(prefabObject);
                 Updater.AddPrefabToLevel(prefabObject);
-            }),
-            new ModifierActionFunction<BeatmapObject>("spawnPrefabOffset", modifier =>
+            },
+            "spawnPrefabOffset" => modifier =>
             {
                 if (modifier.constant || modifier.HasResult())
                     return;
@@ -5182,8 +5183,8 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = prefabObject;
                 GameData.Current.prefabObjects.Add(prefabObject);
                 Updater.AddPrefabToLevel(prefabObject);
-            }),
-            new ModifierActionFunction<BeatmapObject>("spawnPrefabOffsetOther", modifier =>
+            },
+            "spawnPrefabOffsetOther" => modifier =>
             {
                 if (modifier.constant || modifier.HasResult())
                     return;
@@ -5216,8 +5217,8 @@ namespace BetterLegacy.Core.Helpers
                     GameData.Current.prefabObjects.Add(prefabObject);
                     Updater.AddPrefabToLevel(prefabObject);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("spawnMultiPrefab", modifier =>
+            },
+            "spawnMultiPrefab" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -5251,8 +5252,8 @@ namespace BetterLegacy.Core.Helpers
 
                 GameData.Current.prefabObjects.Add(prefabObject);
                 Updater.AddPrefabToLevel(prefabObject);
-            }),
-            new ModifierActionFunction<BeatmapObject>("spawnMultiPrefabOffset", modifier =>
+            },
+            "spawnMultiPrefabOffset" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -5288,8 +5289,8 @@ namespace BetterLegacy.Core.Helpers
 
                 GameData.Current.prefabObjects.Add(prefabObject);
                 Updater.AddPrefabToLevel(prefabObject);
-            }),
-            new ModifierActionFunction<BeatmapObject>("spawnMultiPrefabOffsetOther", modifier =>
+            },
+            "spawnMultiPrefabOffsetOther" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -5328,8 +5329,8 @@ namespace BetterLegacy.Core.Helpers
                     GameData.Current.prefabObjects.Add(prefabObject);
                     Updater.AddPrefabToLevel(prefabObject);
                 }
-            }),
-            new ModifierActionFunction<BeatmapObject>("clearSpawnedPrefabs", modifier =>
+            },
+            "clearSpawnedPrefabs" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
@@ -5366,26 +5367,26 @@ namespace BetterLegacy.Core.Helpers
                         otherModifier.Result = null;
                     }
                 }
-            }),
+            },
 
             #endregion
 
             #region Ranking
-            
-            new ModifierActionFunction<BeatmapObject>("saveLevelRank", modifier =>
+
+            "saveLevelRank" => modifier =>
             {
                 if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
                     return;
 
                 LevelManager.UpdateCurrentLevelProgress();
-            }),
+            },
 
-            new ModifierActionFunction<BeatmapObject>("clearHits", modifier =>
+            "clearHits" => modifier =>
             {
                 if (!CoreHelper.InEditor) // hit and death counters are not supported in the editor yet.
                     GameManager.inst.hits.Clear();
-            }),
-            new ModifierActionFunction<BeatmapObject>("addHit", modifier =>
+            },
+            "addHit" => modifier =>
             {
                 if (CoreHelper.InEditor)
                     return;
@@ -5405,18 +5406,18 @@ namespace BetterLegacy.Core.Helpers
                     time = RTMath.Parse(modifier.GetValue(1), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
 
                 GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
-            }),
-            new ModifierActionFunction<BeatmapObject>("subHit", modifier =>
+            },
+            "subHit" => modifier =>
             {
                 if (!CoreHelper.InEditor && GameManager.inst.hits.Count > 0)
                     GameManager.inst.hits.RemoveAt(GameManager.inst.hits.Count - 1);
-            }),
-            new ModifierActionFunction<BeatmapObject>("clearDeaths", modifier =>
+            },
+            "clearDeaths" => modifier =>
             {
                 if (!CoreHelper.InEditor)
                     GameManager.inst.deaths.Clear();
-            }),
-            new ModifierActionFunction<BeatmapObject>("addDeath", modifier =>
+            },
+            "addDeath" => modifier =>
             {
                 if (CoreHelper.InEditor)
                     return;
@@ -5436,24 +5437,24 @@ namespace BetterLegacy.Core.Helpers
                     time = RTMath.Parse(modifier.GetValue(1), modifier.reference.GetObjectVariables(), modifier.reference.GetObjectFunctions());
 
                 GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
-            }),
-            new ModifierActionFunction<BeatmapObject>("subDeath", modifier =>
+            },
+            "subDeath" => modifier =>
             {
                 if (!CoreHelper.InEditor && GameManager.inst.deaths.Count > 0)
                     GameManager.inst.deaths.RemoveAt(GameManager.inst.deaths.Count - 1);
-            }),
+            },
 
             #endregion
 
             #region Updates
-            
+
             // update
-            new ModifierActionFunction<BeatmapObject>("updateObjects", modifier =>
+            "updateObjects" => modifier =>
             {
                 if (!modifier.constant)
                     CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
-            }),
-            new ModifierActionFunction<BeatmapObject>("updateObject", modifier =>
+            },
+            "updateObject" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
@@ -5463,10 +5464,10 @@ namespace BetterLegacy.Core.Helpers
                         Updater.UpdateObject(bm, recalculate: false);
                     Updater.RecalculateObjectStates();
                 }
-            }),
+            },
 
             // parent
-            new ModifierActionFunction<BeatmapObject>("setParent", modifier =>
+            "setParent" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -5475,8 +5476,8 @@ namespace BetterLegacy.Core.Helpers
                     SetParent(modifier.reference, string.Empty);
                 else if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && beatmapObject.CanParent(modifier.reference))
                     SetParent(modifier.reference, beatmapObject.id);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setParentOther", modifier =>
+            },
+            "setParentOther" => modifier =>
             {
                 if (modifier.constant)
                     return;
@@ -5497,13 +5498,13 @@ namespace BetterLegacy.Core.Helpers
                     else if (reference.CanParent(beatmapObject))
                         SetParent(beatmapObject, reference.id);
                 });
-            }),
+            },
 
             #endregion
 
             #region Misc
-            
-            new ModifierActionFunction<BeatmapObject>("quitToMenu", modifier =>
+
+            "quitToMenu" => modifier =>
             {
                 if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                 {
@@ -5521,8 +5522,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (!CoreHelper.InEditor)
                     ArcadeHelper.QuitToMainMenu();
-            }),
-            new ModifierActionFunction<BeatmapObject>("quitToArcade", modifier =>
+            },
+            "quitToArcade" => modifier =>
             {
                 if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                 {
@@ -5542,8 +5543,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (!CoreHelper.InEditor)
                     ArcadeHelper.QuitToArcade();
-            }),
-            new ModifierActionFunction<BeatmapObject>("blackHole", modifier =>
+            },
+            "blackHole" => modifier =>
             {
                 if (!modifier.reference)
                     return;
@@ -5597,15 +5598,15 @@ namespace BetterLegacy.Core.Helpers
 
                     transform.position += (target - vector) * moveDelay;
                 }
-            }),
+            },
 
             // collision
-            new ModifierActionFunction<BeatmapObject>("setCollision", modifier =>
+            "setCollision" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                     levelObject.visualObject.ColliderEnabled = Parser.TryParse(modifier.value, false);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setCollisionOther", modifier =>
+            },
+            "setCollisionOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
@@ -5614,17 +5615,17 @@ namespace BetterLegacy.Core.Helpers
                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                         levelObject.visualObject.ColliderEnabled = Parser.TryParse(modifier.value, false);
                 }
-            }),
+            },
 
             // activation
-            new ModifierActionFunction<BeatmapObject>("signalModifier", modifier =>
+            "signalModifier" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                 foreach (var bm in list)
                     CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
-            }),
-            new ModifierActionFunction<BeatmapObject>("activateModifier", modifier =>
+            },
+            "activateModifier" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
@@ -5656,20 +5657,20 @@ namespace BetterLegacy.Core.Helpers
                         otherModifier.Action?.Invoke(otherModifier);
                     }
                 }
-            }),
-            
-            new ModifierActionFunction<BeatmapObject>("editorNotify", modifier =>
+            },
+
+            "editorNotify" => modifier =>
             {
                 if (CoreHelper.InEditor)
                     EditorManager.inst.DisplayNotification(modifier.value, Parser.TryParse(modifier.commands[1], 0.5f), (EditorManager.NotificationType)Parser.TryParse(modifier.commands[2], 0));
-            }),
+            },
 
             // external
-            new ModifierActionFunction<BeatmapObject>("setWindowTitle", modifier =>
+            "setWindowTitle" => modifier =>
             {
                 WindowController.SetTitle(modifier.value);
-            }),
-            new ModifierActionFunction<BeatmapObject>("setDiscordStatus", modifier =>
+            },
+            "setDiscordStatus" => modifier =>
             {
                 string[] discordSubIcons = new string[]
                 {
@@ -5690,8 +5691,8 @@ namespace BetterLegacy.Core.Helpers
                         string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                         string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                         discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadInterface", modifier =>
+            },
+            "loadInterface" => modifier =>
             {
                 if (CoreHelper.IsEditing) // don't want interfaces to load in editor
                 {
@@ -5733,14 +5734,14 @@ namespace BetterLegacy.Core.Helpers
 
                 InterfaceManager.inst.interfaces.Add(menu);
                 InterfaceManager.inst.SetCurrentInterface(menu);
-            }),
+            },
 
-            new ModifierActionFunction<BeatmapObject>("unlockAchievement", modifier =>
+            "unlockAchievement" => modifier =>
             {
 
-            }), // todo: implement
+            }, // todo: implement
 
-            new ModifierActionFunction<BeatmapObject>("pauseLevel", modifier =>
+            "pauseLevel" => modifier =>
             {
                 if (CoreHelper.InEditor)
                 {
@@ -5749,58 +5750,58 @@ namespace BetterLegacy.Core.Helpers
                 }
 
                 PauseMenu.Pause();
-            }),
+            },
 
             #endregion
-            
+
             // dev only (story mode)
             #region Dev Only
-            
-            new ModifierActionFunction<BeatmapObject>("loadSceneDEVONLY", modifier =>
+
+            "loadSceneDEVONLY" => modifier =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
                 SceneManager.inst.LoadScene(modifier.value, modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], true));
-            }),
-            new ModifierActionFunction<BeatmapObject>("loadStoryLevelDEVONLY", modifier =>
+            },
+            "loadStoryLevelDEVONLY" => modifier =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
                 Story.StoryManager.inst.Play(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetBool(0, false), modifier.GetBool(3, false));
-            }),
-            new ModifierActionFunction<BeatmapObject>("storySaveIntVariableDEVONLY", modifier =>
+            },
+            "storySaveIntVariableDEVONLY" => modifier =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
                 Story.StoryManager.inst.SaveInt(modifier.GetValue(0), modifier.reference.integerVariable);
-            }),
-            new ModifierActionFunction<BeatmapObject>("storySaveIntDEVONLY", modifier =>
+            },
+            "storySaveIntDEVONLY" => modifier =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
                 Story.StoryManager.inst.SaveInt(modifier.GetValue(0), modifier.GetInt(1, 0));
-            }),
-            new ModifierActionFunction<BeatmapObject>("storySaveBoolDEVONLY", modifier =>
+            },
+            "storySaveBoolDEVONLY" => modifier =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
                 Story.StoryManager.inst.SaveBool(modifier.GetValue(0), modifier.GetBool(1, false));
-            }),
-            new ModifierActionFunction<BeatmapObject>("exampleEnableDEVONLY", modifier =>
+            },
+            "exampleEnableDEVONLY" => modifier =>
             {
                 if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
                     Companion.Entity.Example.Current.model.SetActive(modifier.GetBool(0, false));
-            }),
-            new ModifierActionFunction<BeatmapObject>("exampleSayDEVONLY", modifier =>
+            },
+            "exampleSayDEVONLY" => modifier =>
             {
                 if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.chatBubble)
                     Companion.Entity.Example.Current.chatBubble.Say(modifier.GetValue(0));
-            }),
+            },
 
             #endregion
         };

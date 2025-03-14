@@ -2236,7 +2236,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             public static Modifier<GameData>[] DefaultTriggers => new Modifier<GameData>[]
             {
-                new Modifier<GameData>
+                new Modifier<GameData>("time")
                 {
                     type = ModifierBase.Type.Trigger,
                     constant = true,
@@ -2248,7 +2248,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 					},
                     value = "",
                 }, // time
-				new Modifier<GameData>
+				new Modifier<GameData>("playerHit")
                 {
                     type = ModifierBase.Type.Trigger,
                     constant = false,
@@ -2260,7 +2260,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 					},
                     value = "",
                 }, // playerHit
-				new Modifier<GameData>
+				new Modifier<GameData>("playerDeath")
                 {
                     type = ModifierBase.Type.Trigger,
                     constant = false,
@@ -2272,7 +2272,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 					},
                     value = "",
                 }, // playerDeath
-				new Modifier<GameData>
+				new Modifier<GameData>("levelStart")
                 {
                     type = ModifierBase.Type.Trigger,
                     constant = false,
@@ -2287,7 +2287,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 			};
             public static Modifier<GameData>[] DefaultActions => new Modifier<GameData>[]
             {
-                new Modifier<GameData>
+                new Modifier<GameData>("vnInk")
                 {
                     type = ModifierBase.Type.Action,
                     constant = false,
@@ -2297,7 +2297,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     },
                     value = "",
                 }, // vnInk
-				new Modifier<GameData>
+				new Modifier<GameData>("vnTimeline")
                 {
                     type = ModifierBase.Type.Action,
                     constant = false,
@@ -2307,7 +2307,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     },
                     value = "",
                 }, // vnTimeline
-				new Modifier<GameData>
+				new Modifier<GameData>("playerBubble")
                 {
                     type = ModifierBase.Type.Action,
                     constant = false,
@@ -2319,7 +2319,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     },
                     value = "",
                 }, // playerBubble (Probably won't have support for this yet)
-				new Modifier<GameData>
+				new Modifier<GameData>("playerLocation")
                 {
                     type = ModifierBase.Type.Action,
                     constant = false,
@@ -2332,7 +2332,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     },
                     value = "",
                 }, // playerLocation
-				new Modifier<GameData>
+				new Modifier<GameData>("playerBoostLock")
                 {
                     type = ModifierBase.Type.Action,
                     constant = false,
