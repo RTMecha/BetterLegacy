@@ -2212,7 +2212,7 @@ namespace BetterLegacy.Editor.Managers
                         theme.onValueChanged.ClearAll();
                         theme.onValueChanged.AddListener(_val => RTThemeEditor.inst.RenderThemeContent(dialogTmp, _val));
                         RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
-                        EventEditor.inst.RenderThemePreview(dialogTmp);
+                        RTThemeEditor.inst.RenderThemePreview();
 
                         break;
                     }

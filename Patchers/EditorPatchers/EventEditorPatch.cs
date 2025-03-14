@@ -220,7 +220,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderThemeEditorPrefix(int __0 = -1)
         {
-            RTThemeEditor.inst.RenderThemeEditor(__0);
+            //RTThemeEditor.inst.RenderThemeEditor(__0);
             return false;
         }
 

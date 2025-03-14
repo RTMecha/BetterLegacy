@@ -10,6 +10,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BeatmapTheme : BaseBeatmapTheme
     {
+        public bool isDefault;
+
         public string filePath;
 
         public Color guiAccentColor = Color.white;

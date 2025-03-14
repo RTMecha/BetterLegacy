@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
@@ -24,7 +25,7 @@ namespace BetterLegacy.Editor.Data
     /// <summary>
     /// Object for storing theme panel data. Used for the themes in the theme keyframe.
     /// </summary>
-    public class ThemePanel
+    public class ThemePanel : Exists
     {
         public ThemePanel() { }
 
@@ -398,9 +399,9 @@ namespace BetterLegacy.Editor.Data
                             RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
 
                         EventManager.inst.updateEvents();
-                        EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);
+                        RTThemeEditor.inst.RenderThemePreview();
                     }),
-                    new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(Theme.id, 0))),
+                    new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Theme)),
                     new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
                     new ButtonFunction(true),
                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
@@ -446,7 +447,7 @@ namespace BetterLegacy.Editor.Data
             };
 
             EditButton.onClick.ClearAll();
-            EditButton.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(Theme.id, 0)));
+            EditButton.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor(Theme));
 
             DeleteButton.onClick.ClearAll();
             DeleteButton.interactable = !isDefault;
@@ -612,7 +613,7 @@ namespace BetterLegacy.Editor.Data
                 RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
 
             EventManager.inst.updateEvents();
-            EventEditor.inst.RenderThemePreview(RTThemeEditor.inst.themeKeyframe);
+            RTThemeEditor.inst.RenderThemePreview();
         }
 
         public override string ToString() => isFolder ? Path.GetFileName(FilePath) : Theme?.ToString();

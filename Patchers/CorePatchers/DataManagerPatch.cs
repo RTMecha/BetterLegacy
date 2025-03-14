@@ -196,6 +196,7 @@ namespace BetterLegacy.Patchers
                     objectColors = beatmapTheme.objectColors,
                     backgroundColors = beatmapTheme.backgroundColors,
                     effectColors = beatmapTheme.objectColors.Clone(),
+                    isDefault = true,
                 };
             }
 
