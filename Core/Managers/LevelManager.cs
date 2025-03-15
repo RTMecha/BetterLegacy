@@ -342,6 +342,9 @@ namespace BetterLegacy.Core.Managers
                     "In Story",
                     "arcade");
 
+            if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
+                DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
+
             while (!GameManager.inst.introTitle && !GameManager.inst.introArtist)
                 yield return null;
 

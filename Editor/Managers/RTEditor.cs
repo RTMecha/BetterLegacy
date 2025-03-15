@@ -4475,6 +4475,8 @@ namespace BetterLegacy.Editor.Managers
             CheckpointEditor.inst.CreateGhostCheckpoints();
 
             InfoPopup.SetInfo($"Updating states for [ {name} ]");
+            if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
+                DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
             CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.song.title}", "In Editor", "editor");
 
             CoreHelper.Log("Spawning players...");

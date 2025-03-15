@@ -345,6 +345,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> DiscordShowLevel { get; set; }
 
         /// <summary>
+        /// If the Discord status timestamp should update every time you load a level.
+        /// </summary>
+        public Setting<bool> DiscordTimestampUpdatesPerLevel { get; set; }
+
+        /// <summary>
         /// Only change if you already have your own custom Discord status setup.
         /// </summary>
         public Setting<string> DiscordRichPresenceID { get; set; }
@@ -480,6 +485,7 @@ namespace BetterLegacy.Configs
             #region Discord
 
             DiscordShowLevel = Bind(this, DISCORD, "Show Level Status", true, "If level name is shown in your Discord status.");
+            DiscordTimestampUpdatesPerLevel = Bind(this, DISCORD, "Timestamp Updates Per Level", false, "If the Discord status timestamp should update every time you load a level.");
             DiscordRichPresenceID = Bind(this, DISCORD, "Status ID (READ DESC)", "1176264603374735420", "Only change if you already have your own custom Discord status setup.");
 
             #endregion
