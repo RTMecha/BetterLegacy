@@ -36,8 +36,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string id;
 
-        public string MainObjectID;
-
         public float offset;
 
         public string filePath;
@@ -71,7 +69,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 description = og.description,
                 id = newID ? LSText.randomString(16) : og.id,
-                MainObjectID = og.MainObjectID,
                 name = og.name,
                 offset = og.offset,
                 prefabObjects = og.prefabObjects.Clone(),
@@ -98,7 +95,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prefab = new Prefab
             {
                 id = jn["id"] == null ? LSText.randomString(16) : jn["id"],
-                MainObjectID = LSText.randomString(16),
                 name = jn["n"],
                 type = jn["type"].AsInt,
                 offset = -jn["o"].AsFloat,
@@ -124,7 +120,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prefab = new Prefab
             {
                 id = jn["id"],
-                MainObjectID = jn["main_obj_id"] == null ? LSText.randomString(16) : jn["main_obj_id"],
                 name = jn["name"],
                 type = jn["type"].AsInt,
                 offset = jn["offset"].AsFloat,
@@ -183,11 +178,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["o"] = -offset;
 
-            jn["description"] = description;
+            jn["description"] = description ?? string.Empty;
 
             for (int i = 0; i < beatmapObjects.Count; i++)
                 if (beatmapObjects[i] != null)
-                    jn["objs"][i] = ((BeatmapObject)beatmapObjects[i]).ToJSONVG();
+                    jn["objs"][i] = beatmapObjects[i].ToJSONVG();
 
             return jn;
         }
@@ -205,17 +200,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (typeID != null)
                 jn["type_id"] = typeID;
 
-            if (MainObjectID != null)
-                jn["main_obj_id"] = MainObjectID.ToString();
-
-            jn["desc"] = description == null ? "" : description;
+            jn["desc"] = description ?? string.Empty;
 
             for (int i = 0; i < beatmapObjects.Count; i++)
-                jn["objects"][i] = ((BeatmapObject)beatmapObjects[i]).ToJSON();
+                jn["objects"][i] = beatmapObjects[i].ToJSON();
 
-            if (prefabObjects != null && prefabObjects.Count > 0)
+            if (prefabObjects != null && !prefabObjects.IsEmpty())
                 for (int i = 0; i < prefabObjects.Count; i++)
-                    jn["prefab_objects"][i] = ((PrefabObject)prefabObjects[i]).ToJSON();
+                    jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
             var spriteAssets = new Dictionary<string, Sprite>();
 
