@@ -1143,8 +1143,6 @@ namespace BetterLegacy.Core.Components.Player
                 tailBase.layer = 8;
 
                 var playerDelayTracker = tailBase.AddComponent<PlayerDelayTracker>();
-                playerDelayTracker.offset = (-i * tailDistance / 2f) + -0.5f;
-                playerDelayTracker.positionOffset *= (-i + 4);
                 playerDelayTracker.player = this;
                 playerDelayTracker.leader = tailTracker.transform;
 
@@ -1405,28 +1403,29 @@ namespace BetterLegacy.Core.Components.Player
             if (tailMode != 1 || CoreHelper.Paused)
                 return;
 
+            int num = 1;
             for (int i = 1; i < path.Count; i++)
             {
-                int num = i;
-                if (showBoostTail && path[1].active)
-                    num += 1;
-
                 if (i == 1)
                 {
-                    var playerDelayTracker = boostTail.delayTracker;
-                    playerDelayTracker.offset = -i * tailDistance / 2f;
-                    playerDelayTracker.positionOffset = 0.1f * (-i + 5);
-                    playerDelayTracker.rotationOffset = 0.1f * (-i + 5);
+                    if (showBoostTail && path[1].active)
+                        num++;
+
+                    var delayTracker = boostTail.delayTracker;
+                    delayTracker.offset = -i * tailDistance / 2f;
+                    delayTracker.positionOffset = 0.1f * (-i + 5);
+                    delayTracker.rotationOffset = 0.1f * (-i + 5);
                 }
+                else if (tailParts.TryGetAt(i - 2, out PlayerObject tailPart))
+                {
+                    var delayTracker = tailPart.delayTracker;
+                    delayTracker.offset = -num * tailDistance / 2f;
+                    delayTracker.positionOffset = 0.1f * (-num + 5);
+                    delayTracker.rotationOffset = 0.1f * (-num + 5);
 
-                int tailIndex = i - 1;
-                if (!tailParts.InRange(tailIndex))
-                    continue;
-
-                var delayTracker = tailParts[tailIndex].delayTracker;
-                delayTracker.offset = -num * tailDistance / 2f;
-                delayTracker.positionOffset = 0.1f * (-num + 5);
-                delayTracker.rotationOffset = 0.1f * (-num + 5);
+                    if (path[i].active)
+                        num++;
+                }
             }
         }
 
