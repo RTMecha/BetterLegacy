@@ -1,14 +1,17 @@
 ﻿using SimpleJSON;
-using BaseEditorData = DataManager.GameData.BeatmapData.EditorData;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class LevelEditorData : BaseEditorData
+    public class LevelEditorData : Exists
     {
         public LevelEditorData()
         {
 
         }
+
+        public float timelinePos;
+
+        public float mainTimelineZoom;
 
         public static LevelEditorData Parse(JSONNode jn, bool add = true)
         {

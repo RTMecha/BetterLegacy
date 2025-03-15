@@ -2,36 +2,40 @@
 using LSFunctions;
 using SimpleJSON;
 
-using BaseMarker = DataManager.GameData.BeatmapData.Marker;
-
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Marker : BaseMarker
+    public class Marker : Exists
     {
-        public Marker() : base()
+        public Marker()
         {
             id = LSText.randomString(16);
         }
 
-        public Marker(string name, string desc, int color, float time) : base(true, name, desc, color, time)
-        {
-            id = LSText.randomString(16);
-        }
+        public Marker(string name, string desc, int color, float time) : this(LSText.randomString(16), name, desc, color, time) { }
         
-        public Marker(bool active, string name, string desc, int color, float time) : base(active, name, desc, color, time)
-        {
-            id = LSText.randomString(16);
-        }
-
-        public Marker(string id, string name, string desc, int color, float time) : base(true, name, desc, color, time)
+        public Marker(string id, string name, string desc, int color, float time)
         {
             this.id = id;
+            this.name = name;
+            this.desc = desc;
+            this.color = color;
+            this.time = time;
         }
 
         /// <summary>
         /// ID of the Marker to be used for editor identifying.
         /// </summary>
         public string id;
+
+        public bool active;
+
+        public string name = "";
+
+        public string desc = "Description";
+
+        public int color;
+
+        public float time;
 
         /// <summary>
         /// Timeline Marker reference.
@@ -53,7 +57,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed marker.</returns>
-        public static Marker Parse(JSONNode jn) => new Marker(jn["active"].AsBool, jn["name"]?.Value ?? "", jn["desc"]?.Value ?? "", jn["col"].AsInt, jn["t"].AsFloat);
+        public static Marker Parse(JSONNode jn) => new Marker(jn["name"]?.Value ?? "", jn["desc"]?.Value ?? "", jn["col"].AsInt, jn["t"].AsFloat);
 
         /// <summary>
         /// Converts the marker to a JSON Object in the LS format.
