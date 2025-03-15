@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Companion.Data.Parameters;
+using BetterLegacy.Core.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace BetterLegacy.Companion.Data
         /// Gets a random dialogue.
         /// </summary>
         /// <returns>Returns a random dialogue from the group.</returns>
-        public ExampleDialogue GetDialogue()
+        public ExampleDialogue GetDialogue(DialogueParameters parameters)
         {
             if (dialogues.Length < 0)
                 return null;
@@ -44,7 +45,7 @@ namespace BetterLegacy.Companion.Data
 
             int num = UnityEngine.Random.Range(0, dialogues.Length);
             int attempts = 0;
-            while (!dialogues[num].CanSay())
+            while (!dialogues[num].CanSay(parameters))
             {
                 num = UnityEngine.Random.Range(0, dialogues.Length);
 

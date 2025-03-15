@@ -264,7 +264,10 @@ namespace BetterLegacy.Companion.Entity
                 {
                     try
                     {
-                        reference.chatBubble.Say(RTMath.Parse(response).ToString());
+                        CompanionManager.Log($"Response: {response}");
+                        var r = RTMath.Parse(response).ToString();
+                        reference.chatBubble.Say(r);
+                        LSText.CopyToClipboard(r);
                     }
                     catch
                     {
@@ -273,6 +276,7 @@ namespace BetterLegacy.Companion.Entity
                 }, true,
                 new List<ExampleCommand.Phrase>
                 {
+                    new ExampleCommand.Phrase("Evaluate \\((.*?)\\)", true),
                     new ExampleCommand.Phrase("evaluate \\((.*?)\\)", true),
                 }));
 
@@ -287,7 +291,19 @@ namespace BetterLegacy.Companion.Entity
             commands.Add(new ExampleCommand("Refresh selected objects animations", "Updates just the animation of all selected objects.", true,
                 response => EditorHelper.RefreshKeyframesFromSelection()));
             commands.Add(new ExampleCommand("Give a random idea", "Example outputs a random idea.", true,
-                response => reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.RANDOM_IDEA)));
+                response =>
+                {
+                    var ideaContext = IdeaDialogueParameters.IdeaContext.Random;
+                    if (!string.IsNullOrEmpty(response) && System.Enum.TryParse(response, true, out IdeaDialogueParameters.IdeaContext a))
+                        ideaContext = a;
+
+                    reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.RANDOM_IDEA, new IdeaDialogueParameters(ideaContext));
+                },
+                new List<ExampleCommand.Phrase>
+                {
+                    new ExampleCommand.Phrase("Give a (.*?) idea", true),
+                    new ExampleCommand.Phrase("give a (.*?) idea", true),
+                }));
         }
 
         /// <summary>

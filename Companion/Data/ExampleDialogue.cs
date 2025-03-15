@@ -20,7 +20,7 @@ namespace BetterLegacy.Companion.Data
             this.get = get;
         }
 
-        public ExampleDialogue(GetDialogue get, Func<bool> canSay) : this(get)
+        public ExampleDialogue(GetDialogue get, Func<DialogueParameters, bool> canSay) : this(get)
         {
             this.canSay = canSay;
         }
@@ -30,7 +30,7 @@ namespace BetterLegacy.Companion.Data
             this.dialogueCount = dialogueCount;
         }
 
-        public ExampleDialogue(int dialogueCount, GetDialogue get, Func<bool> canSay) : this(dialogueCount, get)
+        public ExampleDialogue(int dialogueCount, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(dialogueCount, get)
         {
             this.canSay = canSay;
         }
@@ -41,7 +41,7 @@ namespace BetterLegacy.Companion.Data
             this.get = get;
         }
 
-        public ExampleDialogue(string key, GetDialogue get, Func<bool> canSay) : this(key, get)
+        public ExampleDialogue(string key, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(key, get)
         {
             this.canSay = canSay;
         }
@@ -53,7 +53,7 @@ namespace BetterLegacy.Companion.Data
             this.get = get;
         }
 
-        public ExampleDialogue(string key, int dialogueCount, GetDialogue get, Func<bool> canSay) : this(key, dialogueCount, get)
+        public ExampleDialogue(string key, int dialogueCount, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(key, dialogueCount, get)
         {
             this.canSay = canSay;
         }
@@ -71,7 +71,7 @@ namespace BetterLegacy.Companion.Data
         /// <summary>
         /// If Example can say this line of dialogue.
         /// </summary>
-        public Func<bool> canSay;
+        public Func<DialogueParameters, bool> canSay;
 
         /// <summary>
         /// How many dialogues the dialogue stores.
@@ -82,7 +82,7 @@ namespace BetterLegacy.Companion.Data
         /// Checks if Example can say this line of dialogue.
         /// </summary>
         /// <returns>Returns true if Example can say this line of dialogue.</returns>
-        public bool CanSay() => canSay?.Invoke() ?? true;
+        public bool CanSay(DialogueParameters parameters) => canSay?.Invoke(parameters) ?? true;
 
         /// <summary>
         /// Parses a dialogue.

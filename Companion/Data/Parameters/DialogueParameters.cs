@@ -106,4 +106,25 @@ namespace BetterLegacy.Companion.Data.Parameters
         /// </summary>
         public CustomPlayer player;
     }
+
+    /// <summary>
+    /// Dialogue parameters passed from an idea request.
+    /// </summary>
+    public class IdeaDialogueParameters : DialogueParameters
+    {
+        public IdeaDialogueParameters(IdeaContext ideaContext) : base() => this.ideaContext = ideaContext;
+
+        /// <summary>
+        /// Context of the idea to give.
+        /// </summary>
+        public IdeaContext ideaContext;
+
+        public enum IdeaContext
+        {
+            Random,
+            Level,
+            Prefab,
+            Character,
+        }
+    }
 }
