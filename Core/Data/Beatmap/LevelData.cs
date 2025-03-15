@@ -15,6 +15,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool lockBoost = false;
         public float speedMultiplier = 1f;
         public int gameMode = 0;
+        public float floatDrag = 2f;
         public float jumpGravity = 1f;
         public float jumpIntensity = 1f;
         public int maxJumpCount = 10;

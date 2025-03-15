@@ -419,7 +419,7 @@ namespace BetterLegacy.Core.Components.Player
 
         public float time;
 
-        public bool resetVelocity = true;
+        public static bool resetVelocity = true;
 
         /// <summary>
         /// If the player can take damage.
