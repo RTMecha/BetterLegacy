@@ -9,6 +9,7 @@
 - Fixed metadata editor not closing.
 - Fixed some issues with the BG camera layer getting offset from the foreground.
 - Reverted BG camera near clip plane not changing with the zoom. This means the negative zoom frame bleeding effect is back.
+- Due to the above change, "Align Near Clip Plane" value has been added to the Camera Depth event keyframe.
 - Fixed objects highlighting and not unhighlighting when they disable and re-enable.
 - Removed the modifiers tab from the Config Manager and moved its settings to Editor > Modifiers.
 - Custom configs can kinda be registered now.
@@ -20,6 +21,7 @@
 - Fixed Discord status timestamp being used incorrectly.
 - Added currentEpoch to math parser variables.
 - Reworked the way modifier functions are assigned to fix game freeze on first modifier running.
+- Trying to rework how themes are loaded.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
