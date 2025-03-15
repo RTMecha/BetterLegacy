@@ -653,13 +653,7 @@ namespace BetterLegacy.Story
             for (int i = 0; i < jn["levelData"]["checkpoints"].Count; i++)
             {
                 var jnCheckpoint = jn["levelData"]["checkpoints"][i];
-                gameData.data.checkpoints.Add(new Checkpoint(
-                    jnCheckpoint["active"].AsBool,
-                    jnCheckpoint["name"],
-                    jnCheckpoint["time"].AsFloat,
-                    new Vector2(
-                        jnCheckpoint["pos"]["x"].AsFloat,
-                        jnCheckpoint["pos"]["y"].AsFloat)));
+                gameData.data.checkpoints.Add(new Checkpoint(jnCheckpoint["name"], jnCheckpoint["time"].AsFloat, jnCheckpoint["pos"].AsVector2()));
             }
 
             CoreHelper.Log($"Update...");

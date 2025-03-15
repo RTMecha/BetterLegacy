@@ -10,6 +10,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             modVersion = LegacyPlugin.ModVersion.ToString();
         }
 
+        public string levelVersion = "4.1.16";
         public string modVersion;
         public bool lockBoost = false;
         public float speedMultiplier = 1f;
@@ -34,7 +35,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector2 limitBoostMaxTime = new Vector2(0.18f, 0.18f);
         public Vector2 limitHitCooldown = new Vector2(0.001f, 2.5f);
 
-        public string levelVersion = "4.1.16";
+        /// <summary>
+        /// If the song should reverse at all when all players are dead.
+        /// </summary>
+        public bool reverse = true;
 
         public int backgroundColor;
 

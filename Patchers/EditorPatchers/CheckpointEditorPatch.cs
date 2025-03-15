@@ -223,11 +223,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewCheckpointPrefix(float __0, Vector2 __1)
         {
-            GameData.Current.data.checkpoints.Add(new Checkpoint(
-                false,
-                "Checkpoint",
-                Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length),
-                __1));
+            GameData.Current.data.checkpoints.Add(new Checkpoint(Checkpoint.DEFAULT_CHECKPOINT_NAME, Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length), __1));
 
             (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? (Action)Instance.CreateCheckpoints : Instance.CreateGhostCheckpoints).Invoke();
 

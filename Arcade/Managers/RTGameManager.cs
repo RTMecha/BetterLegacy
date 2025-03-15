@@ -145,7 +145,7 @@ namespace BetterLegacy.Arcade.Managers
         /// </summary>
         /// <param name="time">Time of the checkpoint to rewind to when reversing to it.</param>
         /// <param name="position">Position to spawn the players at.</param>
-        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new Checkpoint(false, "Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
+        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new Checkpoint("Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
 
         /// <summary>
         /// Sets the currently active checkpoint based on an index.
@@ -153,14 +153,14 @@ namespace BetterLegacy.Arcade.Managers
         /// <param name="index">Index of the checkpoint.</param>
         /// <param name="playAnimation">If the animation should play.</param>
         /// <param name="spawnPlayers">If players should be respawned.</param>
-        public void SetCheckpoint(int index, bool playAnimation = true, bool spawnPlayers = true)
+        public void SetCheckpoint(int index)
         {
             var checkpoints = Checkpoints;
             if (!checkpoints.InRange(index))
                 return;
 
             CoreHelper.Log($"Set checkpoint: {index}");
-            SetCheckpoint(checkpoints[index], index + 1, playAnimation, spawnPlayers);
+            SetCheckpoint(checkpoints[index], index + 1);
         }
 
         /// <summary>
@@ -170,19 +170,19 @@ namespace BetterLegacy.Arcade.Managers
         /// <param name="nextIndex">Index of the next checkpoint to activate. If left at -1, it will not update the next index.</param>
         /// <param name="playAnimation">If the animation should play.</param>
         /// <param name="spawnPlayers">If players should be respawned.</param>
-        public void SetCheckpoint(Checkpoint checkpoint, int nextIndex = -1, bool playAnimation = true, bool spawnPlayers = true)
+        public void SetCheckpoint(Checkpoint checkpoint, int nextIndex = -1)
         {
             ActiveCheckpoint = checkpoint;
             if (nextIndex >= 0)
                 nextCheckpointIndex = nextIndex;
 
-            if (spawnPlayers)
+            if (checkpoint.heal)
+                PlayerManager.Players.ForLoop(customPlayer => customPlayer.ResetHealth());
+
+            if (checkpoint.respawn)
                 PlayerManager.SpawnPlayers(ActiveCheckpoint.pos);
-            if (playAnimation)
-            {
-                GameManager.inst.playingCheckpointAnimation = true;
-                StartCoroutine(IPlayCheckpointAnimation());
-            }
+
+            StartCoroutine(IPlayCheckpointAnimation());
         }
 
         /// <summary>
@@ -229,32 +229,33 @@ namespace BetterLegacy.Arcade.Managers
             if (GameManager.inst.isReversing)
                 yield break;
 
-            GameManager.inst.playingCheckpointAnimation = true;
             GameManager.inst.isReversing = true;
 
             var checkpoint = ActiveCheckpoint ?? GameData.Current.data.GetLastCheckpoint();
 
-            var animation = new RTAnimation("Reverse");
-            animation.animationHandlers = new List<AnimationHandlerBase>
+            if (GameData.Current.data.levelData.reverse && checkpoint.reverse)
             {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
+                var animation = new RTAnimation("Reverse");
+                animation.animationHandlers = new List<AnimationHandlerBase>
                 {
-                    new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
-                    new FloatKeyframe(1f, -1.5f, Ease.CircIn)
-                }, x =>
-                {
-                    if (AudioManager.inst.CurrentAudioSource.time > 1f)
-                        AudioManager.inst.SetPitch(x);
-                    else
-                        AudioManager.inst.SetMusicTime(1f);
-                }),
-            };
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
+                        new FloatKeyframe(1f, -1.5f, Ease.CircIn)
+                    }, x =>
+                    {
+                        if (AudioManager.inst.CurrentAudioSource.time > 1f)
+                            AudioManager.inst.SetPitch(x);
+                        else
+                            AudioManager.inst.SetMusicTime(1f);
+                    }),
+                };
 
-            animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
+                animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
 
-            AnimationManager.inst.Play(animation);
-
-            SoundManager.inst.PlaySound(DefaultSounds.rewind);
+                AnimationManager.inst.Play(animation);
+                SoundManager.inst.PlaySound(DefaultSounds.rewind);
+            }
 
             yield return new WaitForSeconds(2f);
 
@@ -262,7 +263,9 @@ namespace BetterLegacy.Arcade.Managers
             if (!CoreHelper.InEditor && (PlayerManager.Is1Life || PlayerManager.IsNoHit))
                 time = 0.1f;
 
-            AudioManager.inst.SetMusicTime(time);
+            if (checkpoint.setTime)
+                AudioManager.inst.SetMusicTime(time);
+
             GameManager.inst.gameState = GameManager.State.Playing;
 
             AudioManager.inst.CurrentAudioSource.Play();
@@ -274,7 +277,7 @@ namespace BetterLegacy.Arcade.Managers
             yield return new WaitForSeconds(0.1f);
 
             PlayerManager.SpawnPlayers(checkpoint.pos);
-            GameManager.inst.playingCheckpointAnimation = false;
+
             checkpoint = null;
 
             yield break;
@@ -307,7 +310,8 @@ namespace BetterLegacy.Arcade.Managers
             new FloatKeyframe(0.05f, 12f, Ease.SineOut),
             new FloatKeyframe(0.08f, 8f, Ease.SineInOut),
             new FloatKeyframe(0.15f, 0f, Ease.SineIn),
-        }, x =>
+        },
+        x =>
         {
             image.color = ThemeManager.inst.Current.guiColor;
             image.rectTransform.sizeDelta = new Vector2(!vertical ? x : 0f, vertical ? x : 0f);

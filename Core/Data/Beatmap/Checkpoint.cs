@@ -12,21 +12,103 @@ namespace BetterLegacy.Core.Data.Beatmap
 	{
 		public Checkpoint() { }
 
-		public Checkpoint(bool active, string name, float time, Vector2 pos)
+		public Checkpoint(string name, float time, Vector2 pos)
 		{
-			this.active = active;
 			this.name = name ?? DEFAULT_CHECKPOINT_NAME;
 			this.time = time;
 			this.pos = pos;
 		}
 
-		public static Checkpoint DeepCopy(Checkpoint orig) => new Checkpoint(orig.active, orig.name, orig.time, orig.pos);
+        #region Values
 
-		public static Checkpoint ParseVG(JSONNode jn) => new Checkpoint(true, jn["n"], jn["t"].AsFloat, jn["p"].AsVector2());
-		public static Checkpoint Parse(JSONNode jn) => new Checkpoint(jn["active"].AsBool, jn["name"], jn["t"].AsFloat, jn["pos"].AsVector2());
+		public string name = DEFAULT_CHECKPOINT_NAME;
+
+		public float time;
+
+		public Vector2 pos = Vector2.zero;
+
+		/// <summary>
+		/// Positions that the player is spawned at.
+		/// </summary>
+		public List<Vector2> positions = new List<Vector2>();
+
+		/// <summary>
+		/// Spawn position behavior.
+		/// </summary>
+		public SpawnPositionType spawnType;
+
+		/// <summary>
+		/// If the players should respawn when the checkpoint is triggered.
+		/// </summary>
+		public bool respawn = true;
+
+		/// <summary>
+		/// If the players should heal when the checkpoint is triggered.
+		/// </summary>
+		public bool heal = false;
+
+		/// <summary>
+		/// If true, the game will reverse to the checkpoint time. Otherwise if false, the game will reverse to the start of the song.
+		/// </summary>
+		public bool setTime = true;
+
+		/// <summary>
+		/// If the song should reverse at all when all players are dead.
+		/// </summary>
+		public bool reverse = true;
+
+		#region Global
+
+		/// <summary>
+		/// The name of the first checkpoint.
+		/// </summary>
+		public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
+
+		/// <summary>
+		/// The default name of a checkpoint.
+		/// </summary>
+		public const string DEFAULT_CHECKPOINT_NAME = "Checkpoint";
+
+		/// <summary>
+		/// Represents what checkpoint a player spawns at.
+		/// </summary>
+		public enum SpawnPositionType
+		{
+			/// <summary>
+			/// The default checkpoint position. All players spawn here.
+			/// </summary>
+			Single,
+			/// <summary>
+			/// Fills all checkpoint positions with a player individually up until the last, then it loops over.
+			/// </summary>
+			FillAll,
+			/// <summary>
+			/// Fills all checkpoint positions with a player individually up until the last, then it loops over. Each player is assigned to a random checkpoint, instead of from 0.
+			/// </summary>
+			RandomFillAll,
+			/// <summary>
+			/// All players end up at the same checkpoint, but randomly.
+			/// </summary>
+			IndividualRandom,
+			/// <summary>
+			/// All players end up at random checkpoints.
+			/// </summary>
+			Random,
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Methods
+
+		public static Checkpoint DeepCopy(Checkpoint orig) => new Checkpoint(orig.name, orig.time, orig.pos);
+
+		public static Checkpoint ParseVG(JSONNode jn) => new Checkpoint(jn["n"], jn["t"].AsFloat, jn["p"].AsVector2());
+		public static Checkpoint Parse(JSONNode jn) => new Checkpoint(jn["name"], jn["t"].AsFloat, jn["pos"].AsVector2());
 
 		public JSONNode ToJSONVG()
-        {
+		{
 			var jn = JSON.Parse("{}");
 
 			jn["n"] = name;
@@ -35,9 +117,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
 			return jn;
 		}
-		
+
 		public JSONNode ToJSON()
-        {
+		{
 			var jn = JSON.Parse("{}");
 
 			// save "False" because vanilla Legacy can't handle "active" being null.
@@ -49,22 +131,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 			return jn;
 		}
 
-		public bool active;
-
-		public string name = DEFAULT_CHECKPOINT_NAME;
-
-		public float time;
-
-		public Vector2 pos = Vector2.zero;
-
 		/// <summary>
-		/// The name of the first checkpoint.
+		/// Gets a position at a specific index.
 		/// </summary>
-		public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
+		/// <param name="index">The position index.</param>
+		/// <returns>Returns a checkpoint position.</returns>
+		public Vector2 GetPosition(int index) => spawnType == SpawnPositionType.Single || positions == null || !positions.InRange(index) ? pos : positions[index];
 
-		/// <summary>
-		/// The default name of a checkpoint.
-		/// </summary>
-		public const string DEFAULT_CHECKPOINT_NAME = "Checkpoint";
+		#endregion
 	}
 }
