@@ -17,7 +17,6 @@ using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 
 using Axis = BetterLegacy.Editor.Components.SelectObject.Axis;
-using BaseCheckpoint = DataManager.GameData.BeatmapData.Checkpoint;
 
 namespace BetterLegacy.Arcade.Managers
 {
@@ -121,9 +120,9 @@ namespace BetterLegacy.Arcade.Managers
         /// <summary>
         /// The currently activated checkpoint.
         /// </summary>
-        public BaseCheckpoint ActiveCheckpoint { get; set; }
+        public Checkpoint ActiveCheckpoint { get; set; }
 
-        List<BaseCheckpoint> Checkpoints => GameData.Current?.data?.checkpoints;
+        List<Checkpoint> Checkpoints => GameData.Current?.data?.checkpoints;
 
         int nextCheckpointIndex;
 
@@ -146,7 +145,7 @@ namespace BetterLegacy.Arcade.Managers
         /// </summary>
         /// <param name="time">Time of the checkpoint to rewind to when reversing to it.</param>
         /// <param name="position">Position to spawn the players at.</param>
-        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new BaseCheckpoint(false, "Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
+        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new Checkpoint(false, "Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
 
         /// <summary>
         /// Sets the currently active checkpoint based on an index.
@@ -171,7 +170,7 @@ namespace BetterLegacy.Arcade.Managers
         /// <param name="nextIndex">Index of the next checkpoint to activate. If left at -1, it will not update the next index.</param>
         /// <param name="playAnimation">If the animation should play.</param>
         /// <param name="spawnPlayers">If players should be respawned.</param>
-        public void SetCheckpoint(BaseCheckpoint checkpoint, int nextIndex = -1, bool playAnimation = true, bool spawnPlayers = true)
+        public void SetCheckpoint(Checkpoint checkpoint, int nextIndex = -1, bool playAnimation = true, bool spawnPlayers = true)
         {
             ActiveCheckpoint = checkpoint;
             if (nextIndex >= 0)

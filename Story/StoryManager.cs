@@ -643,7 +643,7 @@ namespace BetterLegacy.Story
             var gameData = new GameData();
 
             gameData.data = new LevelBeatmapData();
-            gameData.data.checkpoints = new List<DataManager.GameData.BeatmapData.Checkpoint>();
+            gameData.data.checkpoints = new List<Checkpoint>();
             gameData.data.editorData = new LevelEditorData();
             gameData.data.levelData = new LevelData();
 
@@ -653,7 +653,7 @@ namespace BetterLegacy.Story
             for (int i = 0; i < jn["levelData"]["checkpoints"].Count; i++)
             {
                 var jnCheckpoint = jn["levelData"]["checkpoints"][i];
-                gameData.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(
+                gameData.data.checkpoints.Add(new Checkpoint(
                     jnCheckpoint["active"].AsBool,
                     jnCheckpoint["name"],
                     jnCheckpoint["time"].AsFloat,

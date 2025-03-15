@@ -664,7 +664,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 followPlayer = orig.data.levelData.followPlayer,
                 showIntro = orig.data.levelData.showIntro
             };
-            beatmapData.checkpoints = orig.data.checkpoints.Select(x => DataManager.GameData.BeatmapData.Checkpoint.DeepCopy(x)).ToList();
+            beatmapData.checkpoints = orig.data.checkpoints.Select(x => Checkpoint.DeepCopy(x)).ToList();
             beatmapData.markers = orig.data.markers.Select(x => Marker.DeepCopy(x)).ToList();
 
             gameData.data = beatmapData;
@@ -736,17 +736,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             CoreHelper.Log($"Parsing BeatmapData");
             gameData.data = LevelBeatmapData.ParseVG(jn);
-
-            gameData.data.markers = gameData.data.markers.OrderBy(x => x.time).ToList();
-
-            CoreHelper.Log($"Parsing Checkpoints");
-            for (int i = 0; i < jn["checkpoints"].Count; i++)
-            {
-                var name = jn["checkpoints"][i]["n"] == null ? "" : (string)jn["checkpoints"][i]["n"];
-                var time = jn["checkpoints"][i]["t"] == null ? 0f : jn["checkpoints"][i]["t"].AsFloat;
-                var pos = jn["checkpoints"][i]["p"] == null ? Vector2.zero : new Vector2(jn["checkpoints"][i]["p"]["x"] == null ? 0f : jn["checkpoints"][i]["p"]["x"].AsFloat, jn["checkpoints"][i]["p"]["y"] == null ? 0f : jn["checkpoints"][i]["p"]["y"].AsFloat);
-                gameData.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(true, name, time, pos));
-            }
 
             CoreHelper.Log($"Parsing Objects");
             for (int i = 0; i < jn["objects"].Count; i++)
@@ -1150,22 +1139,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             gameData.data = LevelBeatmapData.Parse(jn);
 
-            gameData.data.markers = gameData.data.markers.OrderBy(x => x.time).ToList();
-
-            for (int i = 0; i < jn["checkpoints"].Count; i++)
-            {
-                var jnCheckpoint = jn["checkpoints"][i];
-                gameData.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(
-                    jnCheckpoint["active"].AsBool,
-                    jnCheckpoint["name"],
-                    jnCheckpoint["t"].AsFloat,
-                    new Vector2(
-                        jnCheckpoint["pos"]["x"].AsFloat,
-                        jnCheckpoint["pos"]["y"].AsFloat)));
-            }
-
-            gameData.data.checkpoints = gameData.data.checkpoints.OrderBy(x => x.time).ToList();
-
             for (int i = 0; i < jn["prefabs"].Count; i++)
             {
                 var prefab = Prefab.Parse(jn["prefabs"][i]);
@@ -1329,13 +1302,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             for (int i = 0; i < data.checkpoints.Count; i++)
-            {
-                var checkpoint = data.checkpoints[i];
-                jn["checkpoints"][i]["n"] = checkpoint.name;
-                jn["checkpoints"][i]["t"] = checkpoint.time;
-                jn["checkpoints"][i]["p"]["X"] = checkpoint.pos.x;
-                jn["checkpoints"][i]["p"]["y"] = checkpoint.pos.y;
-            }
+                jn["checkpoints"][i] = data.checkpoints[i].ToJSONVG();
 
             for (int i = 0; i < beatmapObjects.Count; i++)
                 jn["objects"][i] = beatmapObjects[i].ToJSONVG();
@@ -1542,7 +1509,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             CoreHelper.Log("Saving Markers");
             for (int i = 0; i < data.markers.Count; i++)
-                jn["ed"]["markers"][i] = ((Marker)data.markers[i]).ToJSON();
+                jn["ed"]["markers"][i] = data.markers[i].ToJSON();
 
             for (int i = 0; i < levelModifiers.Count; i++)
             {
@@ -1586,13 +1553,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             CoreHelper.Log("Saving Checkpoints");
             for (int i = 0; i < data.checkpoints.Count; i++)
-            {
-                jn["checkpoints"][i]["active"] = "False";
-                jn["checkpoints"][i]["name"] = data.checkpoints[i].name;
-                jn["checkpoints"][i]["t"] = data.checkpoints[i].time.ToString();
-                jn["checkpoints"][i]["pos"]["x"] = data.checkpoints[i].pos.x.ToString();
-                jn["checkpoints"][i]["pos"]["y"] = data.checkpoints[i].pos.y.ToString();
-            }
+                jn["checkpoints"][i] = data.checkpoints[i].ToJSON();
 
             CoreHelper.Log("Saving Beatmap Objects");
             if (beatmapObjects != null)
@@ -2328,7 +2289,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (gameDatas[i].data != null && baseData.data != null)
                         {
                             if (baseData.data.checkpoints == null)
-                                baseData.data.checkpoints = new List<DataManager.GameData.BeatmapData.Checkpoint>();
+                                baseData.data.checkpoints = new List<Checkpoint>();
                             if (baseData.data.markers == null)
                                 baseData.data.markers = new List<Marker>();
 

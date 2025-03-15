@@ -1,10 +1,10 @@
 ﻿using SimpleJSON;
 using System.Collections.Generic;
-using BaseBeatmapData = DataManager.GameData.BeatmapData;
+using System.Linq;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class LevelBeatmapData : BaseBeatmapData
+    public class LevelBeatmapData : Exists
     {
         public LevelBeatmapData()
         {
@@ -15,13 +15,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapData = new LevelBeatmapData
             {
-                levelData = new Beatmap.LevelData(),
+                levelData = new LevelData(),
                 editorData = new LevelEditorData(),
-                markers = new List<Beatmap.Marker>()
+                markers = new List<Marker>()
             };
 
             for (int i = 0; i < jn["markers"].Count; i++)
-                beatmapData.markers.Add(Beatmap.Marker.ParseVG(jn["markers"][i]));
+                beatmapData.markers.Add(Marker.ParseVG(jn["markers"][i]));
+            
+            for (int i = 0; i < jn["checkpoints"].Count; i++)
+                beatmapData.checkpoints.Add(Checkpoint.ParseVG(jn["checkpoints"][i]));
+
+            beatmapData.markers = beatmapData.markers.OrderBy(x => x.time).ToList();
+            beatmapData.checkpoints = beatmapData.checkpoints.OrderBy(x => x.time).ToList();
 
             return beatmapData;
         }
@@ -30,13 +36,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapData = new LevelBeatmapData
             {
-                levelData = Beatmap.LevelData.Parse(jn["level_data"]),
+                levelData = LevelData.Parse(jn["level_data"]),
                 editorData = LevelEditorData.Parse(jn["ed"]),
-                markers = new List<Beatmap.Marker>()
+                markers = new List<Marker>(),
             };
 
             for (int i = 0; i < jn["ed"]["markers"].Count; i++)
-                beatmapData.markers.Add(Beatmap.Marker.Parse(jn["ed"]["markers"][i]));
+                beatmapData.markers.Add(Marker.Parse(jn["ed"]["markers"][i]));
+
+            for (int i = 0; i < jn["checkpoints"].Count; i++)
+                beatmapData.checkpoints.Add(Checkpoint.Parse(jn["checkpoints"][i]));
+
+            beatmapData.markers = beatmapData.markers.OrderBy(x => x.time).ToList();
+            beatmapData.checkpoints = beatmapData.checkpoints.OrderBy(x => x.time).ToList();
 
             return beatmapData;
         }
@@ -49,9 +61,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public Checkpoint GetLastCheckpoint() => checkpoints[GetLastCheckpointIndex()];
 
-        public new List<Beatmap.Marker> markers = new List<Beatmap.Marker>();
+        public List<Checkpoint> checkpoints = new List<Checkpoint>();
+        public List<Marker> markers = new List<Marker>();
 
-        public new Beatmap.LevelData levelData;
-        public new LevelEditorData editorData;
+        public LevelData levelData;
+        public LevelEditorData editorData;
     }
 }

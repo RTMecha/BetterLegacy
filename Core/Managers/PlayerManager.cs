@@ -274,7 +274,7 @@ namespace BetterLegacy.Core.Managers
         #region Spawning
 
         // todo: implement new checkpoint system
-        public static void SpawnPlayers(DataManager.GameData.BeatmapData.Checkpoint checkpoint)
+        public static void SpawnPlayers(Checkpoint checkpoint)
         {
             SpawnPlayers(checkpoint.pos);
         }

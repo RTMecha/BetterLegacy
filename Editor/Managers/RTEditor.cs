@@ -679,11 +679,6 @@ namespace BetterLegacy.Editor.Managers
         public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
 
         /// <summary>
-        /// The name of the first checkpoint.
-        /// </summary>
-        public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
-
-        /// <summary>
         /// Represents the local system browser (e.g. File Explorer)
         /// </summary>
         public const string SYSTEM_BROWSER = "System Browser";
@@ -4789,7 +4784,7 @@ namespace BetterLegacy.Editor.Managers
                 limitPlayer = false,
             };
             gameData.data.editorData = new LevelEditorData();
-            gameData.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
+            gameData.data.checkpoints.Add(new Checkpoint(false, Checkpoint.BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
 
             if (gameData.events == null)
                 gameData.events = new List<List<EventKeyframe>>();

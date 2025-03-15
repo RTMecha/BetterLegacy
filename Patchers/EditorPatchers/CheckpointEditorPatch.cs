@@ -17,7 +17,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(CheckpointEditor))]
     public class CheckpointEditorPatch : MonoBehaviour
     {
-        public static DataManager.GameData.BeatmapData.Checkpoint currentCheckpoint;
+        public static Checkpoint currentCheckpoint;
         public static CheckpointEditor Instance { get => CheckpointEditor.inst; set => CheckpointEditor.inst = value; }
 
         [HarmonyPatch(nameof(CheckpointEditor.Awake))]
@@ -223,7 +223,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewCheckpointPrefix(float __0, Vector2 __1)
         {
-            GameData.Current.data.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(
+            GameData.Current.data.checkpoints.Add(new Checkpoint(
                 false,
                 "Checkpoint",
                 Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length),

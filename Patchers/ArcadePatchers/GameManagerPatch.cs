@@ -164,16 +164,13 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool FixedUpdatePrefix()
         {
-            if (DataManager.inst && GameData.Current && GameData.Current.data != null && GameData.Current.data.checkpoints != null &&
-                GameData.Current.data.checkpoints.Count > 0 && (CoreHelper.Playing || CoreHelper.Reversing))
+            if (DataManager.inst && GameData.Current && GameData.Current.data && GameData.Current.data.checkpoints != null &&
+                !GameData.Current.data.checkpoints.IsEmpty() && (CoreHelper.Playing || CoreHelper.Reversing))
             {
                 if (!CoreHelper.Reversing)
-                {
                     Instance.UpcomingCheckpointIndex = GameData.Current.data.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
-                    if (Instance.UpcomingCheckpointIndex > 0)
-                        Instance.UpcomingCheckpoint = GameData.Current.data.checkpoints[Instance.UpcomingCheckpointIndex];
-                }
-                if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null)
+
+                if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip)
                 {
                     float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
                     if (Instance.timeline.transform.Find("Base/position"))
@@ -181,9 +178,6 @@ namespace BetterLegacy.Patchers
                     else
                         Instance.UpdateTimeline();
                 }
-
-                //if (!CoreHelper.Reversing)
-                //    Instance.lastCheckpointState = GameData.Current.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
             }
             Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
             return false;
