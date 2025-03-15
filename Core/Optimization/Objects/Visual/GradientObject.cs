@@ -8,10 +8,6 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class GradientObject : VisualObject
     {
-        public override GameObject GameObject { get; set; }
-        public override Renderer Renderer { get; set; }
-        public override Collider2D Collider { get; set; }
-
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
         public Material material;
 
@@ -20,33 +16,35 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         readonly int gradientType;
         public GradientObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType)
         {
-            GameObject = gameObject;
+            this.gameObject = gameObject;
 
             this.opacity = opacity;
             this.gradientType = gradientType;
             
-            Renderer = gameObject.GetComponent<Renderer>();
-            Renderer.enabled = true;
+            renderer = gameObject.GetComponent<Renderer>();
+            renderer.enabled = true;
             if (background)
-                GameObject.layer = 9;
+                this.gameObject.layer = 9;
 
-            Renderer.material = gradientType <= 2 ? LegacyPlugin.gradientMaterial : LegacyPlugin.radialGradientMaterial;
+            renderer.material = gradientType <= 2 ? LegacyPlugin.gradientMaterial : LegacyPlugin.radialGradientMaterial;
            
-            material = Renderer.material;
+            material = renderer.material;
 
-            Collider = gameObject.GetComponent<Collider2D>();
+            collider = gameObject.GetComponent<Collider2D>();
 
-            if (Collider != null)
+            if (collider != null)
             {
-                Collider.enabled = true;
+                collider.enabled = true;
                 if (hasCollider)
-                    Collider.tag = Tags.HELPER;
+                    collider.tag = Tags.HELPER;
 
-                Collider.isTrigger = !solid;
+                collider.isTrigger = !solid;
             }
 
             this.opacityCollision = opacityCollision;
         }
+
+        public override void InterpolateColor(float time) => SetColor(colorSequence.Interpolate(time), secondaryColorSequence.Interpolate(time));
 
         public override void SetColor(Color color) => material.color = new Color(color.r, color.g, color.b, color.a * opacity);
 
@@ -77,7 +75,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             }
             
             if (opacityCollision)
-                ColliderEnabled = color.a + color2.a > 1.99f;
+                colliderEnabled = color.a + color2.a > 1.99f;
         }
 
         public override Color GetPrimaryColor() => material.color;
@@ -105,9 +103,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void Clear()
         {
-            GameObject = null;
-            Renderer = null;
-            Collider = null;
+            base.Clear();
             material = null;
         }
     }

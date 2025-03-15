@@ -456,9 +456,9 @@ namespace BetterLegacy.Editor.Components
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var bm = beatmapObjects[i];
-                    if (Updater.TryGetObject(bm, out Core.Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Renderer)
+                    if (Updater.TryGetObject(bm, out Core.Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.renderer)
                     {
-                        var renderer = levelObject.visualObject.Renderer;
+                        var renderer = levelObject.visualObject.renderer;
                         if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
                             continue;
 

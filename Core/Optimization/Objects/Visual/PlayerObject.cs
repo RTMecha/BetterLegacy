@@ -7,11 +7,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class PlayerObject : VisualObject
     {
-        public override GameObject GameObject { get; set; }
-        public override Renderer Renderer { get; set; }
-        public override Collider2D Collider { get; set; }
-
-        public PlayerObject(GameObject gameObject) => GameObject = gameObject;
+        public PlayerObject(GameObject gameObject) => this.gameObject = gameObject;
 
         public override void SetColor(Color color) { }
 
@@ -19,9 +15,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void Clear()
         {
-            GameObject = null;
-            Renderer = null;
-            Collider = null;
+            base.Clear();
         }
     }
 }

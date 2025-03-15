@@ -13,9 +13,6 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class PolygonObject : VisualObject
     {
-        public override GameObject GameObject { get; set; }
-        public override Renderer Renderer { get; set; }
-        public override Collider2D Collider { get; set; }
         public Material material;
 
         readonly bool opacityCollision;
@@ -23,29 +20,29 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, PolygonShape polygonShape)
         {
-            GameObject = gameObject;
+            this.gameObject = gameObject;
 
             this.opacity = opacity;
 
-            Renderer = gameObject.GetComponent<Renderer>();
-            Renderer.enabled = true;
+            renderer = gameObject.GetComponent<Renderer>();
+            renderer.enabled = true;
             if (background)
             {
-                GameObject.layer = 9;
-                Renderer.material = ObjectManager.inst.norm; // todo: replace with a material that supports perspective and doesn't have issues with opacity
+                this.gameObject.layer = 9;
+                renderer.material = ObjectManager.inst.norm; // todo: replace with a material that supports perspective and doesn't have issues with opacity
             }
 
-            material = Renderer.material;
+            material = renderer.material;
 
-            Collider = gameObject.GetComponent<Collider2D>();
+            collider = gameObject.GetComponent<Collider2D>();
 
-            if (Collider != null)
+            if (collider != null)
             {
-                Collider.enabled = true;
+                collider.enabled = true;
                 if (hasCollider)
-                    Collider.tag = Tags.HELPER;
+                    collider.tag = Tags.HELPER;
 
-                Collider.isTrigger = !solid;
+                collider.isTrigger = !solid;
             }
 
             this.opacityCollision = opacityCollision;
@@ -56,16 +53,14 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             float a = color.a * opacity;
             material?.SetColor(new Color(color.r, color.g, color.b, a));
             if (opacityCollision)
-                ColliderEnabled = a > 0.99f;
+                colliderEnabled = a > 0.99f;
         }
 
         public override Color GetPrimaryColor() => material.color;
 
         public override void Clear()
         {
-            GameObject = null;
-            Renderer = null;
-            Collider = null;
+            base.Clear();
             material = null;
         }
     }

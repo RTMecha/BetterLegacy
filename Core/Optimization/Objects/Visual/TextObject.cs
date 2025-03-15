@@ -8,10 +8,6 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class TextObject : VisualObject
     {
-        public override GameObject GameObject { get; set; }
-        public override Renderer Renderer { get; set; }
-        public override Collider2D Collider { get; set; }
-
         public TextMeshPro textMeshPro;
         readonly float opacity;
 
@@ -20,14 +16,14 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, bool background)
         {
-            GameObject = gameObject;
+            this.gameObject = gameObject;
             this.opacity = opacity;
 
-            if (GameObject.TryGetComponent(out Renderer renderer))
-                Renderer = renderer;
+            if (this.gameObject.TryGetComponent(out Renderer renderer))
+                this.renderer = renderer;
 
             if (background)
-                GameObject.layer = 9;
+                this.gameObject.layer = 9;
 
             textMeshPro = gameObject.GetComponent<TextMeshPro>();
             textMeshPro.enabled = true;
@@ -55,14 +51,14 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void SetOrigin(Vector3 origin)
         {
-            if (!GameObject)
+            if (!gameObject)
                 return;
 
             if (textMeshPro && autoTextAlign)
                 textMeshPro.alignment = autoTextAlign ? GetAlignment(origin) : TextAlignmentOptions.Center;
 
             if (!autoTextAlign)
-                GameObject.transform.localPosition = origin;
+                gameObject.transform.localPosition = origin;
         }
 
         public static TextAlignmentOptions GetAlignment(Vector2 origin) => origin.x switch
@@ -75,9 +71,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void Clear()
         {
-            GameObject = null;
-            Renderer = null;
-            Collider = null;
+            base.Clear();
             textMeshPro = null;
         }
     }

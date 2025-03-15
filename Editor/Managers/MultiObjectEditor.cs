@@ -1302,8 +1302,8 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = true;
-                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                                levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
+                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                                levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
                         }
                     }),
                     new ButtonFunction("Foreground", () =>
@@ -1311,8 +1311,8 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = false;
-                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                                levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
+                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                                levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
                         }
                     }));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
@@ -1320,8 +1320,8 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.background = !beatmapObject.background;
-                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                            levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
+                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                            levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
                     }
                 }));
 

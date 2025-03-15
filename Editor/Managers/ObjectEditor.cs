@@ -4666,8 +4666,8 @@ namespace BetterLegacy.Editor.Managers
             Dialog.RenderTypeDropdown.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.background = _val == 1;
-                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                    levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
+                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                    levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
             });
         }
 
@@ -6238,9 +6238,9 @@ namespace BetterLegacy.Editor.Managers
                     string desc = "";
                     string hint = "";
 
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
                     {
-                        var transform = levelObject.visualObject.GameObject.transform;
+                        var transform = levelObject.visualObject.gameObject.transform;
 
                         string parent = "";
                         if (!string.IsNullOrEmpty(beatmapObject.Parent))

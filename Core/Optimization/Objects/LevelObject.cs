@@ -9,90 +9,19 @@ namespace BetterLegacy.Core.Optimization.Objects
 {
     public class LevelObject : Exists, ILevelObject
     {
-        public float StartTime { get; set; }
-        public float KillTime { get; set; }
-
-        public string ID { get; }
-        public BeatmapObject beatmapObject;
-
-        public List<LevelParentObject> parentObjects;
-        public VisualObject visualObject;
-        public GradientObject gradientObject;
-        
-        public Sequence<Color> colorSequence;
-        public Sequence<Color> secondaryColorSequence;
-        public float depth;
-
-        public bool cameraParent;
-        public bool positionParent;
-        public bool scaleParent;
-        public bool rotationParent;
-
-        public bool isImage;
-        public bool isGradient;
-        public float positionParentOffset;
-        public float scaleParentOffset;
-        public float rotationParentOffset;
-
-        public Vector3 topPositionOffset;
-        public Vector3 topScaleOffset;
-        public Vector3 topRotationOffset;
-
-        public Vector3 prefabOffsetPosition;
-        public Vector3 prefabOffsetScale;
-        public Vector3 prefabOffsetRotation;
-
-        public Transform top;
-
-        public void Clear()
-        {
-            if (parentObjects != null)
-            {
-                for (int i = 0; i < parentObjects.Count; i++)
-                {
-                    var parentObject = parentObjects[i];
-                    parentObject.BeatmapObject = null;
-                    parentObject.gameObject = null;
-                    parentObject.id = null;
-                    parentObject.position3DSequence = null;
-                    parentObject.positionSequence = null;
-                    parentObject.scaleSequence = null;
-                    parentObject.rotationSequence = null;
-                }
-                parentObjects.Clear();
-            }
-
-            parentObjects = null;
-            colorSequence = null;
-            top = null;
-            beatmapObject = null;
-
-            if (visualObject != null)
-            {
-                visualObject.GameObject = null;
-                visualObject.Collider = null;
-                visualObject.Renderer = null;
-            }
-            visualObject = null;
-        }
-
-        public LevelObject(BeatmapObject beatmapObject, Sequence<Color> colorSequence, Sequence<Color> secondaryColorSequence, List<LevelParentObject> parentObjects, VisualObject visualObject,
+        public LevelObject(BeatmapObject beatmapObject, List<LevelParentObject> parentObjects, VisualObject visualObject,
             Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
         {
             this.beatmapObject = beatmapObject;
 
-            ID = beatmapObject.id;
             StartTime = beatmapObject.StartTime;
             KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
             depth = beatmapObject.Depth;
 
             this.parentObjects = parentObjects;
             this.visualObject = visualObject;
-            
-            this.colorSequence = colorSequence;
-            this.secondaryColorSequence = secondaryColorSequence;
 
-            isGradient = this.secondaryColorSequence != null;
+            isGradient = visualObject.secondaryColorSequence != null;
             if (isGradient)
                 gradientObject = (GradientObject)visualObject;
             isImage = visualObject is ImageObject;
@@ -130,7 +59,84 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
         }
 
+        #region Values
+
+        public float StartTime { get; set; }
+        public float KillTime { get; set; }
+
+        public BeatmapObject beatmapObject;
+
+        public List<LevelParentObject> parentObjects;
+        public VisualObject visualObject;
+        public GradientObject gradientObject;
+        
+        public float depth;
+
+        public bool cameraParent;
+        public bool positionParent;
+        public bool scaleParent;
+        public bool rotationParent;
+
+        public bool isImage;
+        public bool isGradient;
+        public float positionParentOffset;
+        public float scaleParentOffset;
+        public float rotationParentOffset;
+
+        public Vector3 topPositionOffset;
+        public Vector3 topScaleOffset;
+        public Vector3 topRotationOffset;
+
+        public Vector3 prefabOffsetPosition;
+        public Vector3 prefabOffsetScale;
+        public Vector3 prefabOffsetRotation;
+
+        public Transform top;
+
+        #region Internal
+
         bool active = false;
+        float prevStartTime = 0f;
+        bool spawned = false;
+        int desyncParentIndex;
+        int syncParentIndex;
+
+        Vector3 currentScale; // if scale is 0, 0 then disable collider and renderer
+
+        #endregion
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Clears the data of the object.
+        /// </summary>
+        public void Clear()
+        {
+            if (parentObjects != null)
+            {
+                for (int i = 0; i < parentObjects.Count; i++)
+                {
+                    var parentObject = parentObjects[i];
+                    parentObject.BeatmapObject = null;
+                    parentObject.gameObject = null;
+                    parentObject.id = null;
+                    parentObject.positionSequence = null;
+                    parentObject.scaleSequence = null;
+                    parentObject.rotationSequence = null;
+                }
+                parentObjects.Clear();
+            }
+
+            parentObjects = null;
+            top = null;
+            beatmapObject = null;
+
+            visualObject?.Clear();
+            visualObject = null;
+        }
+
         public void SetActive(bool active)
         {
             if (!parentObjects.IsEmpty())
@@ -142,44 +148,24 @@ namespace BetterLegacy.Core.Optimization.Objects
                 spawned = false;
 
                 var parentObject = parentObjects[0];
-                for (int j = 0; j < parentObject.position3DSequence.keyframes.Length; j++)
-                    parentObject.position3DSequence.keyframes[j].Stop();
+                for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
+                    parentObject.positionSequence.keyframes[j].Stop();
                 for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
                     parentObject.scaleSequence.keyframes[j].Stop();
                 for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
                     parentObject.rotationSequence.keyframes[j].Stop();
-                for (int i = 0; i < colorSequence.keyframes.Length; i++)
-                    colorSequence.keyframes[i].Stop();
+                for (int i = 0; i < visualObject.colorSequence.keyframes.Length; i++)
+                    visualObject.colorSequence.keyframes[i].Stop();
             }
 
             this.active = active;
         }
 
-        float prevStartTime = 0f;
-        bool spawned = false;
-        int desyncParentIndex;
-        int syncParentIndex;
-
-        Vector3 currentScale;
-
-        void CheckCollision()
-        {
-            var active = RTMath.Distance(0f, currentScale.x) > 0.001f && RTMath.Distance(0f, currentScale.y) > 0.001f && RTMath.Distance(0f, currentScale.z) > 0.001f;
-
-            if (visualObject.Collider)
-                visualObject.Collider.enabled = visualObject.ColliderEnabled && active;
-            if (visualObject.Renderer)
-                visualObject.Renderer.enabled = active;
-        }
-
         public void Interpolate(float time)
         {
             // Set visual object color
-            if(!isGradient)
-                visualObject.SetColor(colorSequence.Interpolate(time - StartTime));
-            else
-                gradientObject.SetColor(colorSequence.Interpolate(time - StartTime), secondaryColorSequence.Interpolate(time - StartTime));
-            
+            visualObject.InterpolateColor(time - StartTime);
+
             if (isImage)
                 visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f)); // fixes origin being off.
 
@@ -260,19 +246,11 @@ namespace BetterLegacy.Core.Optimization.Objects
                     // If last parent is position parented, animate position
                     if (animatePosition)
                     {
-                        if (parentObject.position3DSequence != null)
-                        {
-                            var value = parentObject.position3DSequence.Interpolate(time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) + parentObject.BeatmapObject.reactivePositionOffset + parentObject.BeatmapObject.positionOffset;
+                        var value = parentObject.positionSequence.Interpolate(time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) + parentObject.BeatmapObject.reactivePositionOffset + parentObject.BeatmapObject.positionOffset;
 
-                            float z = depth * 0.0005f + (value.z / 10f);
+                        float z = depth * 0.0005f + (value.z / 10f);
 
-                            parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
-                        }
-                        else
-                        {
-                            var value = parentObject.positionSequence.Interpolate(time - parentObject.timeOffset - (positionOffset + positionAddedOffset));
-                            parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, depth * 0.0005f);
-                        }
+                        parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
                     }
 
                     // If last parent is scale parented, animate scale
@@ -326,5 +304,17 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             CheckCollision();
         }
+
+        void CheckCollision()
+        {
+            var active = RTMath.Distance(0f, currentScale.x) > 0.001f && RTMath.Distance(0f, currentScale.y) > 0.001f && RTMath.Distance(0f, currentScale.z) > 0.001f;
+
+            if (visualObject.collider)
+                visualObject.collider.enabled = visualObject.colliderEnabled && active;
+            if (visualObject.renderer)
+                visualObject.renderer.enabled = active;
+        }
+
+        #endregion
     }
 }

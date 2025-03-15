@@ -9,8 +9,7 @@ namespace BetterLegacy.Core.Optimization.Objects
     {
         public LevelParentObject() { }
 
-        public Sequence<Vector2> positionSequence;
-        public Sequence<Vector3> position3DSequence;
+        public Sequence<Vector3> positionSequence;
         public Sequence<Vector2> scaleSequence;
         public Sequence<float> rotationSequence;
 

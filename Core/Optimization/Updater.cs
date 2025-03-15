@@ -233,15 +233,18 @@ namespace BetterLegacy.Core.Optimization
             if (!TryGetObject(beatmapObject, out LevelObject levelObject))
                 return;
 
-            levelObject.colorSequence = collection.ColorSequence;
-            levelObject.secondaryColorSequence = collection.SecondaryColorSequence;
+            if (levelObject.visualObject)
+            {
+                levelObject.visualObject.colorSequence = collection.ColorSequence;
+                levelObject.visualObject.secondaryColorSequence = collection.SecondaryColorSequence;
+            }
 
             if (updateParents)
                 foreach (var levelParent in levelObject.parentObjects)
                 {
                     if (converter.cachedSequences.TryGetValue(levelParent.id, out ObjectConverter.CachedSequences cachedSequences))
                     {
-                        levelParent.position3DSequence = cachedSequences.Position3DSequence;
+                        levelParent.positionSequence = cachedSequences.Position3DSequence;
                         levelParent.scaleSequence = cachedSequences.ScaleSequence;
                         levelParent.rotationSequence = cachedSequences.RotationSequence;
                     }

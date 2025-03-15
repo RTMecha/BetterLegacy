@@ -2126,7 +2126,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 case 2:
                     {
-                        var position = selectionType == SelectionType.Prefab ? new Vector3(prefabObject.events[0].values[0], prefabObject.events[0].values[1], 0f) : beatmapObject.levelObject?.visualObject?.GameObject.transform.position ??
+                        var position = selectionType == SelectionType.Prefab ? new Vector3(prefabObject.events[0].values[0], prefabObject.events[0].values[1], 0f) : beatmapObject.levelObject?.visualObject?.gameObject.transform.position ??
                             new Vector3(beatmapObject.events[0].FindLast(x => x.time < AudioManager.inst.CurrentAudioSource.time).values[0], beatmapObject.events[0].FindLast(x => x.time < AudioManager.inst.CurrentAudioSource.time).values[1], 0f);
 
                         if (!setKeyframeValues)

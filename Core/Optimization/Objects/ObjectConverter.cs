@@ -77,8 +77,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 try
                 {
-                    var sprite = ShowEmpties && beatmapObject.objectType == ObjectType.Empty ? LegacyPlugin.EmptyObjectSprite : null;
-                    levelObject = ToLevelObject(beatmapObject, sprite);
+                    levelObject = ToLevelObject(beatmapObject);
                 }
                 catch (Exception e)
                 {
@@ -112,8 +111,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                var sprite = ShowEmpties && beatmapObject.objectType == ObjectType.Empty ? LegacyPlugin.EmptyObjectSprite : null;
-                levelObject = ToLevelObject(beatmapObject, sprite);
+                levelObject = ToLevelObject(beatmapObject);
             }
             catch (Exception e)
             {
@@ -128,7 +126,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             return levelObject ?? null;
         }
 
-        LevelObject ToLevelObject(BeatmapObject beatmapObject, Sprite sprite = null)
+        LevelObject ToLevelObject(BeatmapObject beatmapObject)
         {
             var parentObjects = new List<LevelParentObject>();
 
@@ -140,12 +138,6 @@ namespace BetterLegacy.Core.Optimization.Objects
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
-
-            if (sprite != null)
-            {
-                shape = 6;
-                shapeOption = 0;
-            }
 
             GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent == null ? ObjectManager.inst.objectParent.transform : parent.transform);
             
@@ -240,15 +232,15 @@ namespace BetterLegacy.Core.Optimization.Objects
             bool isSolid = beatmapObject.objectType == ObjectType.Solid;
             bool isBackground = beatmapObject.background;
 
-            // 4 = text object
-            // 6 = image object
-            // 9 = player object
-            VisualObject visual =
-                sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), isBackground) :
-                sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite ?? (AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null)) :
-                beatmapObject.shape == 9 ? new PlayerObject(visualObject) : 
-                beatmapObject.gradientType != BeatmapObject.GradientType.Normal ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) : 
-                new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
+            VisualObject visual = shapeType switch
+            {
+                ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), isBackground),
+                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
+                ShapeType.Player => new PlayerObject(visualObject),
+                _ => beatmapObject.gradientType != BeatmapObject.GradientType.Normal ?
+                    new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) :
+                    new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision),
+            };
 
             if (CoreHelper.InEditor && shapeType != ShapeType.Player)
             {
@@ -260,10 +252,12 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             var cachedSequence = cachedSequences[beatmapObject.id];
+
+            visual.colorSequence = cachedSequence.ColorSequence;
+            visual.secondaryColorSequence = cachedSequence.SecondaryColorSequence;
+
             var levelObject = new LevelObject(
                 beatmapObject,
-                cachedSequence.ColorSequence,
-                cachedSequence.SecondaryColorSequence,
                 parentObjects, visual,
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
@@ -318,7 +312,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (cachedSequences != null)
                     levelParentObject = new LevelParentObject
                     {
-                        position3DSequence = cachedSequences.Position3DSequence,
+                        positionSequence = cachedSequences.Position3DSequence,
                         scaleSequence = cachedSequences.ScaleSequence,
                         rotationSequence = cachedSequences.RotationSequence,
 
@@ -359,7 +353,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                     levelParentObject = new LevelParentObject
                     {
-                        position3DSequence = new Sequence<Vector3>(pos),
+                        positionSequence = new Sequence<Vector3>(pos),
                         scaleSequence = new Sequence<Vector2>(sca),
                         rotationSequence = new Sequence<float>(rot),
 

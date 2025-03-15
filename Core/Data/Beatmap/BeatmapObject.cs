@@ -1644,9 +1644,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["otherRotationOffsetY"] = rotationOffset.y;
             variables["otherRotationOffsetZ"] = rotationOffset.z;
 
-            if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+            if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
             {
-                var transform = levelObject.visualObject.GameObject.transform;
+                var transform = levelObject.visualObject.gameObject.transform;
 
                 variables["otherVisualPosX"] = transform.position.x;
                 variables["otherVisualPosY"] = transform.position.y;
@@ -1678,9 +1678,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["rotationOffsetY"] = rotationOffset.y;
             variables["rotationOffsetZ"] = rotationOffset.z;
 
-            if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+            if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
             {
-                var transform = levelObject.visualObject.GameObject.transform;
+                var transform = levelObject.visualObject.gameObject.transform;
 
                 variables["visualPosX"] = transform.position.x;
                 variables["visualPosY"] = transform.position.y;

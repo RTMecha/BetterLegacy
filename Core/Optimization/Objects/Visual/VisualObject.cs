@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
@@ -11,19 +12,38 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// <summary>
         /// The visual objects' game object.
         /// </summary>
-        public abstract GameObject GameObject { get; set; }
+        public GameObject gameObject;
 
         /// <summary>
         /// The visual objects' renderer.
         /// </summary>
-        public abstract Renderer Renderer { get; set; }
+        public Renderer renderer;
 
         /// <summary>
         /// The visual objects' collider.
         /// </summary>
-        public abstract Collider2D Collider { get; set; }
+        public Collider2D collider;
 
-        public virtual bool ColliderEnabled { get; set; } = true;
+        /// <summary>
+        /// If the <see cref="collider"/> component is dynamically enabled.
+        /// </summary>
+        public bool colliderEnabled = true;
+
+        /// <summary>
+        /// Color sequence to interpolate through.
+        /// </summary>
+        public Sequence<Color> colorSequence;
+
+        /// <summary>
+        /// Gradient color sequence to interpolate through.
+        /// </summary>
+        public Sequence<Color> secondaryColorSequence;
+
+        /// <summary>
+        /// Interpolates the visual objects' colors.
+        /// </summary>
+        /// <param name="time">Time scale.</param>
+        public virtual void InterpolateColor(float time) => SetColor(colorSequence.Interpolate(time));
 
         /// <summary>
         /// Sets the visual objects' main color.
@@ -43,10 +63,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// <param name="origin">Origin to set.</param>
         public virtual void SetOrigin(Vector3 origin)
         {
-            if (!GameObject)
+            if (!gameObject)
                 return;
 
-            GameObject.transform.localPosition = origin;
+            gameObject.transform.localPosition = origin;
         }
 
         /// <summary>
@@ -55,8 +75,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// <param name="scale">Scale to set.</param>
         public void SetScaleOffset(Vector2 scale)
         {
-            if (GameObject)
-                GameObject.transform.localScale = new Vector3(scale.x, scale.y, 1f);
+            if (gameObject)
+                gameObject.transform.localScale = new Vector3(scale.x, scale.y, 1f);
         }
 
         /// <summary>
@@ -65,13 +85,18 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// <param name="rot">Rotation to set.</param>
         public void SetRotationOffset(float rot)
         {
-            if (GameObject)
-                GameObject.transform.localRotation = Quaternion.Euler(0f, 0f, rot);
+            if (gameObject)
+                gameObject.transform.localRotation = Quaternion.Euler(0f, 0f, rot);
         }
 
         /// <summary>
         /// Clears the visual object data.
         /// </summary>
-        public abstract void Clear();
+        public virtual void Clear()
+        {
+            gameObject = null;
+            renderer = null;
+            collider = null;
+        }
     }
 }

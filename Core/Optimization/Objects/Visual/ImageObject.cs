@@ -8,10 +8,6 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class ImageObject : VisualObject
     {
-        public override GameObject GameObject { get; set; }
-        public override Renderer Renderer { get; set; }
-        public override Collider2D Collider { get; set; }
-
         SpriteRenderer spriteRenderer;
 
         Material material;
@@ -21,19 +17,19 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public ImageObject(GameObject gameObject, float opacity, string text, bool background, Sprite imageData)
         {
-            GameObject = gameObject;
+            this.gameObject = gameObject;
             this.opacity = opacity;
 
-            if (GameObject.TryGetComponent(out Renderer renderer))
-                Renderer = renderer;
+            if (this.gameObject.TryGetComponent(out Renderer renderer))
+                this.renderer = renderer;
 
-            spriteRenderer = Renderer as SpriteRenderer;
+            spriteRenderer = this.renderer as SpriteRenderer;
 
             if (background)
-                GameObject.layer = 9;
+                this.gameObject.layer = 9;
 
-            if (Renderer)
-                material = Renderer.material;
+            if (this.renderer)
+                material = this.renderer.material;
 
             if (CoreHelper.InEditor)
             {
@@ -41,7 +37,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                 gameObject.tag = Tags.HELPER;
                 collider.isTrigger = true;
                 collider.size = Vector2.one;
-                Collider = collider;
+                this.collider = collider;
             }
 
             if (imageData != null)
@@ -88,9 +84,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public override void Clear()
         {
-            GameObject = null;
-            Renderer = null;
-            Collider = null;
+            base.Clear();
             material = null;
             spriteRenderer = null;
         }
