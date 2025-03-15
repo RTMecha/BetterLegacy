@@ -460,8 +460,9 @@ namespace BetterLegacy.Core.Optimization
                     case "originoffset":
                         {
                             levelObject.depth = beatmapObject.Depth;
-                            if (levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                                levelObject.visualObject.GameObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
+                            if (levelObject.visualObject)
+                                levelObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
+
                             break;
                         } // Origin & Depth
                     case "shape":

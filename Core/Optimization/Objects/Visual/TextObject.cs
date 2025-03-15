@@ -15,9 +15,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         public TextMeshPro textMeshPro;
         readonly float opacity;
 
+        readonly bool autoTextAlign;
         public string text;
 
-        public TextObject(GameObject gameObject, float opacity, string text, bool background)
+        public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, bool background)
         {
             GameObject = gameObject;
             this.opacity = opacity;
@@ -32,6 +33,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             textMeshPro.enabled = true;
             this.text = text;
             SetText(this.text);
+            this.autoTextAlign = autoTextAlign;
+
+            if (autoTextAlign)
+                textMeshPro.alignment = textAlignment;
         }
 
         /// <summary>
@@ -47,6 +52,26 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         public override void SetColor(Color color) => textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
 
         public override Color GetPrimaryColor() => textMeshPro.color;
+
+        public override void SetOrigin(Vector3 origin)
+        {
+            if (!GameObject)
+                return;
+
+            if (textMeshPro && autoTextAlign)
+                textMeshPro.alignment = autoTextAlign ? GetAlignment(origin) : TextAlignmentOptions.Center;
+
+            if (!autoTextAlign)
+                GameObject.transform.localPosition = origin;
+        }
+
+        public static TextAlignmentOptions GetAlignment(Vector2 origin) => origin.x switch
+        {
+            -0.5f => origin.y == 0.5f ? TextAlignmentOptions.TopRight : origin.y == -0.5f ? TextAlignmentOptions.BottomRight : TextAlignmentOptions.Left,
+            0f => origin.y == 0.5f ? TextAlignmentOptions.Top : origin.y == -0.5f ? TextAlignmentOptions.Bottom : TextAlignmentOptions.Center,
+            0.5f => origin.y == 0.5f ? TextAlignmentOptions.TopRight : origin.y == -0.5f ? TextAlignmentOptions.BottomRight : TextAlignmentOptions.Right,
+            _ => TextAlignmentOptions.Center,
+        };
 
         public override void Clear()
         {

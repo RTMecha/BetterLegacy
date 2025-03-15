@@ -4274,7 +4274,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.gradientType = (BeatmapObject.GradientType)index;
 
-                    if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (beatmapObject.shape == 4 || beatmapObject.shape == 6 || beatmapObject.shape == 10))
+                    if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal &&
+                        (beatmapObject.ShapeType == ShapeType.Text || beatmapObject.ShapeType == ShapeType.Image || beatmapObject.ShapeType == ShapeType.Player))
                     {
                         beatmapObject.shape = 0;
                         beatmapObject.shapeOption = 0;
@@ -4377,10 +4378,9 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            switch (beatmapObject.shape)
+            switch (beatmapObject.ShapeType)
             {
-                case 4:
-                    {
+                case ShapeType.Text: {
                         var textIF = shapeSettings.Find("5").GetComponent<InputField>();
                         textIF.textComponent.alignment = TextAnchor.UpperLeft;
                         textIF.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
@@ -4431,6 +4431,11 @@ namespace BetterLegacy.Editor.Managers
                                     }
                                 }),
                                 new ButtonFunction(true),
+                                new ButtonFunction($"Auto Align: [{(beatmapObject.autoTextAlign)}]", () =>
+                                {
+                                    beatmapObject.autoTextAlign = !beatmapObject.autoTextAlign;
+                                    Updater.UpdateObject(beatmapObject);
+                                }),
                                 new ButtonFunction("Align Left", () => textIF.text = "<align=left>" + textIF.text),
                                 new ButtonFunction("Align Center", () => textIF.text = "<align=center>" + textIF.text),
                                 new ButtonFunction("Align Right", () => textIF.text = "<align=right>" + textIF.text)
@@ -4439,8 +4444,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case 6:
-                    {
+                case ShapeType.Image: {
                         var select = shapeSettings.Find("7/select").GetComponent<Button>();
                         select.onClick.ClearAll();
                         var selectContextClickable = select.gameObject.GetOrAddComponent<ContextClickable>();
@@ -4546,8 +4550,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                default:
-                    {
+                default: {
                         num = 0;
                         foreach (var toggle in shapeOptionToggles[beatmapObject.shape])
                         {

@@ -139,6 +139,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
+            var shapeType = (ShapeType)shape;
 
             if (sprite != null)
             {
@@ -148,7 +149,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent == null ? ObjectManager.inst.objectParent.transform : parent.transform);
             
-            if (shape == 9)
+            if (shapeType == ShapeType.Player)
             {
                 var rtPlayer = baseObject.GetComponent<RTPlayer>();
                 rtPlayer.Model = ObjectManager.inst.objectPrefabs[shape].options[shapeOption].GetComponent<RTPlayer>().Model;
@@ -161,12 +162,13 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             baseObject.transform.localScale = Vector3.one;
 
-            var visualObject = baseObject.transform.GetChild(shape == 9 ? 1 : 0).gameObject;
-            visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
-            if (shape != 9)
+            var visualObject = baseObject.transform.GetChild(shapeType == ShapeType.Player ? 1 : 0).gameObject;
+            if (beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.autoTextAlign)
+                visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
+            if (shapeType != ShapeType.Player)
                 visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
-            if (shape == 9)
+            if (shapeType == ShapeType.Player)
                 baseObject.SetActive(true);
 
             int num = 0;
@@ -242,20 +244,20 @@ namespace BetterLegacy.Core.Optimization.Objects
             // 6 = image object
             // 9 = player object
             VisualObject visual =
-                sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, isBackground) :
+                sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), isBackground) :
                 sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite ?? (AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null)) :
                 beatmapObject.shape == 9 ? new PlayerObject(visualObject) : 
                 beatmapObject.gradientType != BeatmapObject.GradientType.Normal ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) : 
                 new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
 
-            if (CoreHelper.InEditor && shape != 9)
+            if (CoreHelper.InEditor && shapeType != ShapeType.Player)
             {
                 var obj = visualObject.AddComponent<SelectObject>();
                 obj.SetObject(beatmapObject);
                 beatmapObject.selector = obj;
-            }
 
-            Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
+                Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
+            }
 
             var cachedSequence = cachedSequences[beatmapObject.id];
             var levelObject = new LevelObject(

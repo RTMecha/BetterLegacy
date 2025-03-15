@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using BetterLegacy.Core.Data;
+using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
 {
     /// <summary>
     /// Base Class for all VisualObjects.
     /// </summary>
-    public abstract class VisualObject
+    public abstract class VisualObject : Exists
     {
         /// <summary>
         /// The visual objects' game object.
@@ -40,7 +41,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// Sets the origin of the visual object.
         /// </summary>
         /// <param name="origin">Origin to set.</param>
-        public void SetOrigin(Vector3 origin)
+        public virtual void SetOrigin(Vector3 origin)
         {
             if (!GameObject)
                 return;
