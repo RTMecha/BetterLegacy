@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Player
             AssignDefaultModels();
         }
 
-        public static bool AllowCustomModels => GameData.Current && GameData.Current.data != null && GameData.Current.data.levelData.allowCustomPlayerModels;
+        public static bool AllowCustomModels => GameData.Current && GameData.Current.data != null && GameData.Current.data.level.allowCustomPlayerModels;
 
         /// <summary>
         /// If custom models should be used instead of the loaded ones.

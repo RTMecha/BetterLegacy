@@ -216,7 +216,7 @@ namespace BetterLegacy.Patchers
 
             if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
             {
-                bool introActive = GameData.Current && GameData.Current.data != null && GameData.Current.data.levelData is LevelData levelData && !levelData.showIntro;
+                bool introActive = GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData && !levelData.showIntro;
 
                 __instance.introTitle.gameObject.SetActive(introActive);
                 __instance.introArtist.gameObject.SetActive(introActive);

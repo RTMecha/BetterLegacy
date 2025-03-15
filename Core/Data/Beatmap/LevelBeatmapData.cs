@@ -15,8 +15,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapData = new LevelBeatmapData
             {
-                levelData = new LevelData(),
-                editorData = new LevelEditorData(),
+                level = new LevelData(),
+                editor = new LevelEditorData(),
                 markers = new List<Marker>()
             };
 
@@ -36,8 +36,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapData = new LevelBeatmapData
             {
-                levelData = LevelData.Parse(jn["level_data"]),
-                editorData = LevelEditorData.Parse(jn["ed"]),
+                level = LevelData.Parse(jn["level_data"]),
+                editor = LevelEditorData.Parse(jn["ed"]),
                 markers = new List<Marker>(),
             };
 
@@ -64,7 +64,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<Checkpoint> checkpoints = new List<Checkpoint>();
         public List<Marker> markers = new List<Marker>();
 
-        public LevelData levelData;
-        public LevelEditorData editorData;
+        public LevelData level;
+        public LevelEditorData editor;
     }
 }

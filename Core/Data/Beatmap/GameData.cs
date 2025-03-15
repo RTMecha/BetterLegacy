@@ -652,17 +652,17 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             var gameData = new GameData();
             var beatmapData = new LevelBeatmapData();
-            beatmapData.editorData = new LevelEditorData
+            beatmapData.editor = new LevelEditorData
             {
-                timelinePos = orig.data.editorData.timelinePos,
-                mainTimelineZoom = orig.data.editorData.mainTimelineZoom
+                timelinePos = orig.data.editor.timelinePos,
+                mainTimelineZoom = orig.data.editor.mainTimelineZoom
             };
-            beatmapData.levelData = new LevelData
+            beatmapData.level = new LevelData
             {
-                levelVersion = orig.data.levelData.levelVersion,
-                backgroundColor = orig.data.levelData.backgroundColor,
-                followPlayer = orig.data.levelData.followPlayer,
-                showIntro = orig.data.levelData.showIntro
+                levelVersion = orig.data.level.levelVersion,
+                backgroundColor = orig.data.level.backgroundColor,
+                followPlayer = orig.data.level.followPlayer,
+                showIntro = orig.data.level.showIntro
             };
             beatmapData.checkpoints = orig.data.checkpoints.Select(x => Checkpoint.DeepCopy(x)).ToList();
             beatmapData.markers = orig.data.markers.Select(x => Marker.DeepCopy(x)).ToList();
@@ -1234,7 +1234,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             try
             {
                 if (gameData.data is LevelBeatmapData levelBeatmapData &&
-                    levelBeatmapData.levelData is LevelData modLevelData &&
+                    levelBeatmapData.level is LevelData modLevelData &&
                     Version.TryParse(modLevelData.modVersion, out Version modVersion) && modVersion < new Version(1, 3, 4))
                 {
                     for (int i = 0; i < gameData.events[3].Count; i++)
@@ -1532,7 +1532,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
             CoreHelper.Log("Saving Level Data");
-            jn["level_data"] = data.levelData.ToJSON();
+            jn["level_data"] = data.level.ToJSON();
 
             CoreHelper.Log("Saving prefabs");
             if (prefabs != null)
@@ -2278,8 +2278,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     data = new LevelBeatmapData
                     {
-                        editorData = new LevelEditorData(),
-                        levelData = new LevelData(),
+                        editor = new LevelEditorData(),
+                        level = new LevelData(),
                     },
                 };
 

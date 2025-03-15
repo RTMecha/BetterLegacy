@@ -4779,11 +4779,11 @@ namespace BetterLegacy.Editor.Managers
         {
             var gameData = new GameData();
             gameData.data = new LevelBeatmapData();
-            gameData.data.levelData = new LevelData()
+            gameData.data.level = new LevelData()
             {
                 limitPlayer = false,
             };
-            gameData.data.editorData = new LevelEditorData();
+            gameData.data.editor = new LevelEditorData();
             gameData.data.checkpoints.Add(new Checkpoint(Checkpoint.BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
 
             if (gameData.events == null)

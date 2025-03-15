@@ -764,14 +764,14 @@ namespace BetterLegacy.Editor.Managers
             unlockComplete.isOn = metadata.unlockAfterCompletion;
             unlockComplete.onValueChanged.AddListener(_val => metadata.unlockAfterCompletion = _val);
 
-            var levelData = GameData.Current?.data?.levelData;
+            var levelData = GameData.Current?.data?.level;
 
             var showIntro = content.Find("show intro/toggle").GetComponent<Toggle>();
             showIntro.onValueChanged.ClearAll();
             showIntro.isOn = !levelData.showIntro;
             showIntro.onValueChanged.AddListener(_val =>
             {
-                if (GameData.Current && GameData.Current.data != null && GameData.Current.data.levelData is LevelData levelData)
+                if (GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData)
                     levelData.showIntro = !_val;
             });
             
@@ -780,7 +780,7 @@ namespace BetterLegacy.Editor.Managers
             replayEndLevelOff.isOn = levelData.forceReplayLevelOff;
             replayEndLevelOff.onValueChanged.AddListener(_val =>
             {
-                if (GameData.Current && GameData.Current.data != null && GameData.Current.data.levelData is LevelData levelData)
+                if (GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData)
                     levelData.forceReplayLevelOff = !_val;
             });
 

@@ -233,7 +233,7 @@ namespace BetterLegacy.Arcade.Managers
 
             var checkpoint = ActiveCheckpoint ?? GameData.Current.data.GetLastCheckpoint();
 
-            if (GameData.Current.data.levelData.reverse && checkpoint.reverse)
+            if (GameData.Current.data.level.reverse && checkpoint.reverse)
             {
                 var animation = new RTAnimation("Reverse");
                 animation.animationHandlers = new List<AnimationHandlerBase>
