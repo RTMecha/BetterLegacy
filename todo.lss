@@ -97,7 +97,6 @@ Toolkit mechanics:
 ### Internal
 - Make Editor Documentation read from a json file. > 1.8.0
 - Rework shapes to read from a singular json file. > 1.8.0
-- Add support for VG text object origin offset. > 1.7.0+
 - Update the file browser UI to include more info / functions.
 - Make Example's animations read from a file.
 - Change how modifiers are saved for better consistency.
