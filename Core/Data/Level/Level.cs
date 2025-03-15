@@ -346,11 +346,13 @@ namespace BetterLegacy.Core.Data.Level
         {
             var path = GetFile(CurrentFile);
             var rawJSON = RTFile.ReadFromFile(path);
-            if (ProjectArrhythmia.RequireUpdate(metadata.beatmap.game_version))
-                rawJSON = LevelManager.UpdateBeatmap(rawJSON, metadata.beatmap.game_version);
+            var version = metadata.Version;
+
+            if (ProjectArrhythmia.RequireUpdate(version))
+                rawJSON = LevelManager.UpdateBeatmap(rawJSON, version);
 
             var jn = JSON.Parse(rawJSON);
-            return IsVG ? GameData.ParseVG(jn, metadata.Version) : GameData.Parse(jn);
+            return IsVG ? GameData.ParseVG(jn, version) : GameData.Parse(jn);
         }
 
         /// <summary>

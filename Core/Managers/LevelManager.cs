@@ -606,11 +606,17 @@ namespace BetterLegacy.Core.Managers
         /// <param name="json">The Beatmap JSON to update.</param>
         /// <param name="ver">The PA version the Beatmap was made in.</param>
         /// <returns>Updated Beatmap JSON.</returns>
-        public static string UpdateBeatmap(string json, string ver)
-        {
-            CoreHelper.Log($"[ -- Updating Beatmap! -- ] - [{ver}]");
+        public static string UpdateBeatmap(string json, string ver) => UpdateBeatmap(json, new Version(ver));
 
-            var version = new Version(ver);
+        /// <summary>
+        /// Updates the Beatmap JSON depending on version.
+        /// </summary>
+        /// <param name="json">The Beatmap JSON to update.</param>
+        /// <param name="version">The PA version the Beatmap was made in.</param>
+        /// <returns>Updated Beatmap JSON.</returns>
+        public static string UpdateBeatmap(string json, Version version)
+        {
+            CoreHelper.Log($"[ -- Updating Beatmap! -- ] - [{version}]");
 
             // 3.7.26
             if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 26)
