@@ -2644,7 +2644,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.isOn = num == currentValue;
                 toggle.onValueChanged.AddListener(_val => SetObjectColors(toggles, index, toggleIndex, modifier));
 
-                toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(toggleIndex);
+                toggle.GetComponent<Image>().color = ThemeManager.inst.Current.GetObjColor(toggleIndex);
 
                 if (!toggle.GetComponent<HoverUI>())
                 {

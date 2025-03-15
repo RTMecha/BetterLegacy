@@ -915,11 +915,11 @@ namespace BetterLegacy.Arcade.Managers
         public static void UpdateTheme(float x)
         {
             inst.themeLerp = x;
-            var beatmapTheme = BeatmapTheme.DeepCopy((BeatmapTheme)GameManager.inst.LiveTheme);
+            var beatmapTheme = BeatmapTheme.DeepCopy(ThemeManager.inst.Current);
 
-            ((BeatmapTheme)GameManager.inst.LiveTheme).Lerp(ThemeManager.inst.GetTheme(inst.prevTheme), ThemeManager.inst.GetTheme(inst.nextTheme), x);
+            ThemeManager.inst.Current.Lerp(ThemeManager.inst.GetTheme(inst.prevTheme), ThemeManager.inst.GetTheme(inst.nextTheme), x);
 
-            if (beatmapTheme != (BeatmapTheme)GameManager.inst.LiveTheme)
+            if (beatmapTheme != ThemeManager.inst.Current)
                 GameManager.inst.UpdateTheme();
         }
 

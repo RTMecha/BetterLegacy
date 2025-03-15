@@ -12,12 +12,10 @@ using HarmonyLib;
 using LSFunctions;
 using SimpleJSON;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
-using BaseBeatmapTheme = DataManager.BeatmapTheme;
+
 using BasePrefab = DataManager.GameData.Prefab;
 
 namespace BetterLegacy.Patchers
@@ -303,35 +301,6 @@ namespace BetterLegacy.Patchers
             __result = JSON.Parse("{}");
             return false;
         }
-
-        #region Themes
-
-        [HarmonyPatch(nameof(DataManager.GetTheme))]
-        [HarmonyPrefix]
-        static bool GetThemePrefix(ref BaseBeatmapTheme __result, DataManager __instance, int __0)
-        {
-            __result = ThemeManager.inst.AllThemes[__instance.GetThemeIDToIndex(__0)];
-            return false;
-        }
-
-        [HarmonyPatch(nameof(DataManager.GetThemeIndexToID))]
-        [HarmonyPrefix]
-        static bool GetThemeIndexToIDPrefix(ref int __result, DataManager __instance, int __0)
-        {
-            __result = __instance.BeatmapThemeIndexToID.TryGetValue(__0, out int value) ? value : 0;
-            return false;
-        }
-
-
-        [HarmonyPatch(nameof(DataManager.GetThemeIDToIndex))]
-        [HarmonyPrefix]
-        static bool GetThemeIDToIndexPrefix(ref int __result, DataManager __instance, int __0)
-        {
-            __result = __instance.BeatmapThemeIDToIndex.TryGetValue(__0, out int value) ? value : 0;
-            return false;
-        }
-
-        #endregion
 
         #region PlayerPrefs Patches
 

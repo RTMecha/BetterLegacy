@@ -36,7 +36,7 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < jn["themes"].Count; i++)
                 defaultThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
 
-            currentTheme = BeatmapTheme.DeepCopy(defaultThemes[0]);
+            Current = BeatmapTheme.DeepCopy(defaultThemes[0]);
 
             UpdateAllThemes();
         }
@@ -45,7 +45,7 @@ namespace BetterLegacy.Core.Managers
 
         #region Themes
 
-        public BeatmapTheme currentTheme;
+        public BeatmapTheme Current { get; set; }
 
         public List<string> themeIDs = new List<string>();
 

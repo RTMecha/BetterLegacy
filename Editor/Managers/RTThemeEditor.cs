@@ -32,6 +32,8 @@ namespace BetterLegacy.Editor.Managers
 
         public List<BeatmapTheme> AllThemes => ThemeManager.inst.AllThemes;
 
+        public BeatmapTheme PreviewTheme { get; set; }
+
         void Awake()
         {
             inst = this;
@@ -192,6 +194,7 @@ namespace BetterLegacy.Editor.Managers
 
             dialog.Find("data/left/theme").gameObject.AddComponent<ActiveState>().onStateChanged = OnDialog;
 
+            PreviewTheme = ThemeManager.inst.DefaultThemes[0];
             StartCoroutine(LoadThemes());
         }
 
@@ -990,8 +993,6 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.HideWarningPopup();
         }, RTEditor.inst.HideWarningPopup);
-
-        public BeatmapTheme PreviewTheme { get => (BeatmapTheme)EventEditor.inst.previewTheme; set => EventEditor.inst.previewTheme = value; }
 
         public void ShuffleThemeID(BeatmapTheme beatmapTheme) => RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", () =>
         {

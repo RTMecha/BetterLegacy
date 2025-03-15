@@ -80,11 +80,10 @@ namespace BetterLegacy.Patchers
             CoreHelper.SetCameraRenderDistance();
             CoreHelper.SetAntiAliasing();
             var beatmapTheme = GameManager.inst.LiveTheme;
-            GameManager.inst.LiveTheme = new BeatmapTheme
+            ThemeManager.inst.Current = new BeatmapTheme
             {
                 id = beatmapTheme.id,
                 name = beatmapTheme.name,
-                expanded = beatmapTheme.expanded,
                 backgroundColor = beatmapTheme.backgroundColor,
                 guiAccentColor = beatmapTheme.guiColor,
                 guiColor = beatmapTheme.guiColor,

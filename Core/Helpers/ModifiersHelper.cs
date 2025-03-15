@@ -3181,12 +3181,12 @@ namespace BetterLegacy.Core.Helpers
             "reactiveCol" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
-                    levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + GameManager.inst.LiveTheme.GetObjColor(modifier.GetInt(2, 0)) * Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
+                    levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0)) * Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
             },
             "reactiveColLerp" => modifier =>
             {
                 if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
-                    levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), GameManager.inst.LiveTheme.GetObjColor(modifier.GetInt(2, 0)), Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f))));
+                    levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0)), Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f))));
             },
             "reactivePosChain" => modifier =>
             {
@@ -3358,7 +3358,7 @@ namespace BetterLegacy.Core.Helpers
                 var sat = modifier.GetFloat(3, 0f);
                 var val = modifier.GetFloat(4, 0f);
 
-                var color = CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val) * multiply;
+                var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply;
                 //if (levelObject.isGradient)
                 //    levelObject.gradientObject.SetColor(levelObject.gradientObject.GetPrimaryColor() + color, levelObject.gradientObject.GetSecondaryColor() + color);
                 //else
@@ -3382,7 +3382,7 @@ namespace BetterLegacy.Core.Helpers
                     if (!Updater.TryGetObject(bm, out LevelObject levelObject))
                         continue;
 
-                    var color = CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val) * multiply;
+                    var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply;
                     //if (levelObject.isGradient)
                     //    levelObject.gradientObject.SetColor(levelObject.gradientObject.GetPrimaryColor() + color, levelObject.gradientObject.GetSecondaryColor() + color);
                     //else
@@ -3400,7 +3400,7 @@ namespace BetterLegacy.Core.Helpers
                 var sat = modifier.GetFloat(3, 0f);
                 var val = modifier.GetFloat(4, 0f);
 
-                levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val), multiply));
+                levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
             },
             "lerpColorOther" => modifier =>
             {
@@ -3415,7 +3415,7 @@ namespace BetterLegacy.Core.Helpers
                 var sat = modifier.GetFloat(4, 0f);
                 var val = modifier.GetFloat(5, 0f);
 
-                var color = CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val);
+                var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
                 for (int i = 0; i < list.Count; i++)
                 {
                     var bm = list[i];
@@ -3441,7 +3441,7 @@ namespace BetterLegacy.Core.Helpers
 
                 var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.GameObject.transform.position);
 
-                levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + GameManager.inst.LiveTheme.GetObjColor(index) * -(distance * multiply - offset));
+                levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(index) * -(distance * multiply - offset));
             },
             "lerpColorPlayerDistance" => modifier =>
             {
@@ -3464,7 +3464,7 @@ namespace BetterLegacy.Core.Helpers
                 var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.GameObject.transform.position);
 
                 levelObject.visualObject.SetColor(Color.Lerp(levelObject.visualObject.GetPrimaryColor(),
-                                LSColors.fadeColor(CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val), opacity),
+                                LSColors.fadeColor(CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
                                 -(distance * multiply - offset)));
             },
 

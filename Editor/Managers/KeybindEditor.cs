@@ -1175,7 +1175,7 @@ namespace BetterLegacy.Editor.Managers
                     var val = bm.events[type][index].values[value];
 
                     if (type == 3 && val == 0)
-                        val = Mathf.Clamp(val + amount, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                        val = Mathf.Clamp(val + amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
                     else
                         val += amount;
 
@@ -1217,7 +1217,7 @@ namespace BetterLegacy.Editor.Managers
                     var val = bm.events[type][index].values[value];
 
                     if (type == 3 && val == 0)
-                        val = Mathf.Clamp(val - amount, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                        val = Mathf.Clamp(val - amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
                     else
                         val -= amount;
 
@@ -1259,7 +1259,7 @@ namespace BetterLegacy.Editor.Managers
                     var val = bm.events[type][index].values[value];
 
                     if (type == 3 && val == 0)
-                        val = Mathf.Clamp(amount, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                        val = Mathf.Clamp(amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
                     else
                         val = amount;
 

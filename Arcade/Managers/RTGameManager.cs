@@ -310,7 +310,7 @@ namespace BetterLegacy.Arcade.Managers
             new FloatKeyframe(0.15f, 0f, Ease.SineIn),
         }, x =>
         {
-            image.color = GameManager.inst.LiveTheme.guiColor;
+            image.color = ThemeManager.inst.Current.guiColor;
             image.rectTransform.sizeDelta = new Vector2(!vertical ? x : 0f, vertical ? x : 0f);
         }, interpolateOnComplete: true);
 

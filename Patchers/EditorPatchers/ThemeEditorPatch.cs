@@ -40,19 +40,11 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(ThemeEditor.DeleteTheme))]
         [HarmonyPrefix]
-        static bool DeleteThemePrefix(DataManager.BeatmapTheme __0)
-        {
-            RTThemeEditor.inst.DeleteTheme((BeatmapTheme)__0);
-            return false;
-        }
+        static bool DeleteThemePrefix() => false;
 
         [HarmonyPatch(nameof(ThemeEditor.SaveTheme))]
         [HarmonyPrefix]
-        static bool SaveThemePrefix(DataManager.BeatmapTheme __0)
-        {
-            RTThemeEditor.inst.SaveTheme((BeatmapTheme)__0);
-            return false;
-        }
+        static bool SaveThemePrefix() => false;
 
         [HarmonyPatch(nameof(ThemeEditor.LoadThemes))]
         [HarmonyPrefix]

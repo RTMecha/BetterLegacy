@@ -2504,7 +2504,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 case 20: // BG
                     {
-                        SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, GameManager.inst.LiveTheme.backgroundColor, Color.black);
+                        SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black);
 
                         SetToggle(dialogTmp, "active", 1, 0, 1);
 
@@ -2537,7 +2537,7 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "rotation/x", 5, 15f, 3f);
 
                         // Timeline Color
-                        SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, GameManager.inst.LiveTheme.guiColor, Color.black);
+                        SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black);
 
                         // Timeline Color Shift
                         SetFloatInputField(dialogTmp, "colorshift/x", 7);

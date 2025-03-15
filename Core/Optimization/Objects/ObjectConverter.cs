@@ -606,7 +606,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                     continue;
 
                 int value = (int)eventKeyframe.values[index];
-                value = Mathf.Clamp(value, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                value = Mathf.Clamp(value, 0, ThemeManager.inst.Current.objectColors.Count - 1);
 
                 keyframes.Add(new ThemeKeyframe(eventKeyframe.time, value, eventKeyframe.values[index + 1], eventKeyframe.values[index + 2], eventKeyframe.values[index + 3], eventKeyframe.values[index + 4], Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
 

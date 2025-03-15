@@ -1363,7 +1363,7 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(__instance.left.Find("reactive-color"));
 
             int num = 0;
-            foreach (var col in GameManager.inst.LiveTheme.backgroundColors)
+            foreach (var col in ThemeManager.inst.Current.backgroundColors)
             {
                 int colTmp = num;
                 SetColorToggle(col, backgroundObject.color, colTmp, __instance.left.Find("color"), __instance.SetColor);
@@ -1740,7 +1740,7 @@ namespace BetterLegacy.Editor.Managers
             var bg = CurrentSelectedBG;
             var colorList = BackgroundEditor.inst.left.Find(name);
 
-            for (int i = 0; i < GameManager.inst.LiveTheme.backgroundColors.Count; i++)
+            for (int i = 0; i < ThemeManager.inst.Current.backgroundColors.Count; i++)
                 if (colorList.childCount > i)
                     colorList.GetChild(i).Find("Image").gameObject.SetActive(name == "fade-color" ? bg.FadeColor == i : bg.reactiveCol == i);
         }
@@ -2380,7 +2380,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.isOn = num == i;
                 toggle.onValueChanged.AddListener(_val => SetObjectColors(toggles, index, toggleIndex, modifier));
 
-                toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(toggleIndex);
+                toggle.GetComponent<Image>().color = ThemeManager.inst.Current.GetObjColor(toggleIndex);
 
                 if (!toggle.GetComponent<HoverUI>())
                 {

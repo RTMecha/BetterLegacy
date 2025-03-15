@@ -135,7 +135,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// Gets the current interpolated theme or if the user is in the theme editor, the preview theme.
         /// </summary>
-        public static BeatmapTheme CurrentBeatmapTheme => InEditor && EventEditor.inst.showTheme ? (BeatmapTheme)EventEditor.inst.previewTheme : (BeatmapTheme)GameManager.inst?.LiveTheme;
+        public static BeatmapTheme CurrentBeatmapTheme => InEditor && EventEditor.inst.showTheme ? RTThemeEditor.inst.PreviewTheme : ThemeManager.inst.Current;
 
         /// <summary>
         /// jokes on you, I FIXED THE BUG

@@ -2,6 +2,7 @@
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
@@ -93,7 +94,7 @@ namespace BetterLegacy.Patchers
                 name.text = backgroundObject.name;
                 text.text = $"({backgroundObject.pos.x}, {backgroundObject.pos.y})";
 
-                image.color = GameManager.inst.LiveTheme.GetBGColor(backgroundObject.color);
+                image.color = ThemeManager.inst.Current.GetBGColor(backgroundObject.color);
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.AddListener(() => { Instance.SetCurrentBackground(index); });
@@ -199,7 +200,7 @@ namespace BetterLegacy.Patchers
         static bool UpdateColorSelectionPrefix()
         {
             var backgroundObject = GameData.Current.backgroundObjects[Instance.currentObj];
-            for (int i = 0; i < GameManager.inst.LiveTheme.backgroundColors.Count; i++)
+            for (int i = 0; i < ThemeManager.inst.Current.backgroundColors.Count; i++)
                 Instance.left.Find("color").GetChild(i).Find("Image").gameObject.SetActive(backgroundObject.color == i);
             return false;
         }

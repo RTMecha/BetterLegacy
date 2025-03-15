@@ -5,21 +5,38 @@ using SimpleJSON;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using BaseBeatmapTheme = DataManager.BeatmapTheme;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BeatmapTheme : BaseBeatmapTheme
+    public class BeatmapTheme : Exists
     {
+        #region Values
+
+        public string id = string.Empty;
+
+        public string VGID { get; set; }
+
+        public string name = string.Empty;
+
         public bool isDefault;
 
         public string filePath;
+
+        public Color backgroundColor = LSColors.gray100;
+
+        public Color guiColor = LSColors.gray900;
 
         public Color guiAccentColor = Color.white;
 
         public List<Color> effectColors = new List<Color>();
 
-        public string VGID { get; set; }
+        public List<Color> playerColors = new List<Color>();
+
+        public List<Color> objectColors = new List<Color>();
+
+        public List<Color> backgroundColors = new List<Color>();
+
+        #endregion
 
         #region Consts
 
@@ -114,7 +131,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public static BeatmapTheme DeepCopy(BeatmapTheme orig, bool _copyID = false)
+        public static BeatmapTheme DeepCopy(BeatmapTheme orig, bool copyID = false)
         {
             var beatmapTheme = new BeatmapTheme();
             beatmapTheme.name = orig.name;
@@ -129,8 +146,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             beatmapTheme.guiColor = orig.guiColor;
             beatmapTheme.backgroundColor = orig.backgroundColor;
 
-            beatmapTheme.expanded = orig.expanded;
-            if (_copyID)
+            if (copyID)
                 beatmapTheme.id = orig.id;
 
             var lastObjColor = beatmapTheme.objectColors.Last();
@@ -346,7 +362,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return colors;
         }
 
-        public new void ClearBeatmap()
+        public void ClearBeatmap()
         {
             playerColors.Clear();
             objectColors.Clear();
@@ -407,15 +423,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        public Color GetPlayerColor(int _val) => playerColors[Mathf.Clamp(_val, 0, playerColors.Count - 1)];
+
+        public Color GetObjColor(int _val) => objectColors[Mathf.Clamp(_val, 0, objectColors.Count - 1)];
+
+        public Color GetBGColor(int _val) => backgroundColors[Mathf.Clamp(_val, 0, backgroundColors.Count - 1)];
+
         public Color GetFXColor(int _val) => effectColors[Mathf.Clamp(_val, 0, effectColors.Count - 1)];
 
         #endregion
 
         #region Operators
 
-        public static implicit operator bool(BeatmapTheme exists) => exists != null;
-
-        public override bool Equals(object obj) => obj is BeatmapTheme && id == (obj as BeatmapTheme).id;
+        public override bool Equals(object obj) => obj is BeatmapTheme beatmapTheme && id == beatmapTheme.id;
 
         public override int GetHashCode() => base.GetHashCode();
 

@@ -14,8 +14,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-using BaseBeatmapTheme = DataManager.BeatmapTheme;
-
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>

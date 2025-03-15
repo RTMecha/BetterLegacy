@@ -35,47 +35,6 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.LogInit(__instance.className);
 
-            for (int i = 0; i < 9; i++)
-            {
-                __instance.previewTheme.objectColors.Add(LSColors.pink900);
-            }
-
-            var beatmapTheme = __instance.previewTheme;
-
-            __instance.previewTheme = new BeatmapTheme
-            {
-                id = beatmapTheme.id,
-                name = beatmapTheme.name,
-                expanded = beatmapTheme.expanded,
-                backgroundColor = beatmapTheme.backgroundColor,
-                guiAccentColor = beatmapTheme.guiColor,
-                guiColor = beatmapTheme.guiColor,
-                playerColors = beatmapTheme.playerColors,
-                objectColors = beatmapTheme.objectColors,
-                backgroundColors = beatmapTheme.backgroundColors,
-                effectColors = new List<Color>
-                {
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                },
-            };
-
             return false;
         }
 

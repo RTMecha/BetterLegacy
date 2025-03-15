@@ -471,7 +471,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 try
                 {
-                    return !CustomPlayer ? string.Empty : "<#" + LSColors.ColorToHex(GameManager.inst.LiveTheme.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4))) + ">Player " + (PlayersData.Current.GetMaxIndex(playerIndex, 4) + 1).ToString() + " " + RTString.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
+                    return !CustomPlayer ? string.Empty : "<#" + LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4))) + ">Player " + (PlayersData.Current.GetMaxIndex(playerIndex, 4) + 1).ToString() + " " + RTString.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
                 }
                 catch (Exception)
                 {
@@ -1249,8 +1249,8 @@ namespace BetterLegacy.Core.Components.Player
                     var index = PlayersData.Current.GetMaxIndex(playerIndex, 4);
 
                     nametagText.text = NametagText;
-                    nametagBase.material.color = LSColors.fadeColor(GameManager.inst.LiveTheme.GetPlayerColor(index), 0.3f);
-                    nametagBase.transform.localScale = new Vector3((float)initialHealthCount * 2.25f, 1.5f, 1f);
+                    nametagBase.material.color = LSColors.fadeColor(ThemeManager.inst.Current.GetPlayerColor(index), 0.3f);
+                    nametagBase.transform.localScale = new Vector3(initialHealthCount * 2.25f, 1.5f, 1f);
                 }
             }
 
