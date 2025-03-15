@@ -48,7 +48,7 @@ namespace BetterLegacy.Core
                     context.RegisterVariable("hitCount", GameManager.inst.hits.Count);
                     context.RegisterVariable("boostCount", LevelManager.BoostCount);
                     context.RegisterVariable("smoothedTime", RTEventManager.inst.currentTime);
-                    context.RegisterVariable("playerHealthTotal", PlayerManager.Players.Sum(x => x.Health));
+                    context.RegisterVariable("playerHealthTotal", InputDataManager.inst.players.IsEmpty() ? 0 : PlayerManager.Players.Sum(x => x.Health));
                     context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
                     context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
                     context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
