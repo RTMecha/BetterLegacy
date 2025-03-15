@@ -36,6 +36,7 @@ namespace BetterLegacy.Patchers
             // Initialize managers
             ModCompatibility.Init();
             ShapeManager.Init();
+            ThemeManager.Init();
             UIManager.Init();
             QuickElementManager.Init();
             FontManager.Init();
@@ -112,92 +113,6 @@ namespace BetterLegacy.Patchers
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to set LevelRank sayings.\nException: {ex}");
-            }
-
-            //Themes
-            __instance.BeatmapThemes[0].name = "PA Machine";
-            __instance.BeatmapThemes[1].name = "PA Anarchy";
-            __instance.BeatmapThemes[2].name = "PA Day Night";
-            __instance.BeatmapThemes[3].name = "PA Donuts";
-            __instance.BeatmapThemes[4].name = "PA Classic";
-            __instance.BeatmapThemes[5].name = "PA New";
-            __instance.BeatmapThemes[6].name = "PA Dark";
-            __instance.BeatmapThemes[7].name = "PA White On Black";
-            __instance.BeatmapThemes[8].name = "PA Black On White";
-
-            __instance.BeatmapThemes.Add(new BaseBeatmapTheme
-            {
-                name = "PA Example Theme",
-                id = "9",
-                backgroundColor = LSColors.HexToColor("212121"),
-                guiColor = LSColors.HexToColorAlpha("504040"),
-                playerColors = new List<Color>
-                {
-                    LSColors.HexToColorAlpha("E57373FF"),
-                    LSColors.HexToColorAlpha("64B5F6FF"),
-                    LSColors.HexToColorAlpha("81C784FF"),
-                    LSColors.HexToColorAlpha("FFB74DFF")
-                },
-                objectColors = new List<Color>
-                {
-                    LSColors.HexToColorAlpha("3F59FCFF"),
-                    LSColors.HexToColorAlpha("3AD4F5FF"),
-                    LSColors.HexToColorAlpha("E91E63FF"),
-                    LSColors.HexToColorAlpha("E91E63FF"),
-                    LSColors.HexToColorAlpha("E91E63FF"),
-                    LSColors.HexToColorAlpha("E91E63FF"),
-                    LSColors.HexToColorAlpha("E91E6345"),
-                    LSColors.HexToColorAlpha("FFFFFFFF"),
-                    LSColors.HexToColorAlpha("000000FF")
-                },
-                backgroundColors = new List<Color>
-                {
-                    LSColors.HexToColor("212121"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63"),
-                    LSColors.HexToColor("E91E63")
-                }
-            });
-
-            for (int i = 0; i < __instance.BeatmapThemes.Count; i++)
-            {
-                var beatmapTheme = __instance.BeatmapThemes[i];
-
-                if (beatmapTheme.objectColors.Count < 18)
-                    while (beatmapTheme.objectColors.Count < 18)
-                    {
-                        beatmapTheme.objectColors.Add(beatmapTheme.objectColors[beatmapTheme.objectColors.Count - 1]);
-                    }
-                if (beatmapTheme.backgroundColors.Count < 9)
-                    while (beatmapTheme.backgroundColors.Count < 9)
-                    {
-                        beatmapTheme.backgroundColors.Add(beatmapTheme.backgroundColors[beatmapTheme.backgroundColors.Count - 1]);
-                    }
-
-                beatmapTheme.backgroundColor = LSColors.fadeColor(beatmapTheme.backgroundColor, 1f);
-
-                for (int j = 0; j < beatmapTheme.backgroundColors.Count; j++)
-                    beatmapTheme.backgroundColors[j] = LSColors.fadeColor(beatmapTheme.backgroundColors[j], 1f);
-
-                __instance.BeatmapThemes[i] = new BeatmapTheme
-                {
-                    id = beatmapTheme.id,
-                    name = beatmapTheme.name,
-                    expanded = beatmapTheme.expanded,
-                    backgroundColor = beatmapTheme.backgroundColor,
-                    guiAccentColor = beatmapTheme.guiColor,
-                    guiColor = beatmapTheme.guiColor,
-                    playerColors = beatmapTheme.playerColors,
-                    objectColors = beatmapTheme.objectColors,
-                    backgroundColors = beatmapTheme.backgroundColors,
-                    effectColors = beatmapTheme.objectColors.Clone(),
-                    isDefault = true,
-                };
             }
 
             __instance.UpdateSettingString("versionNumber", ProjectArrhythmia.GAME_VERSION);
@@ -388,6 +303,35 @@ namespace BetterLegacy.Patchers
             __result = JSON.Parse("{}");
             return false;
         }
+
+        #region Themes
+
+        [HarmonyPatch(nameof(DataManager.GetTheme))]
+        [HarmonyPrefix]
+        static bool GetThemePrefix(ref BaseBeatmapTheme __result, DataManager __instance, int __0)
+        {
+            __result = ThemeManager.inst.AllThemes[__instance.GetThemeIDToIndex(__0)];
+            return false;
+        }
+
+        [HarmonyPatch(nameof(DataManager.GetThemeIndexToID))]
+        [HarmonyPrefix]
+        static bool GetThemeIndexToIDPrefix(ref int __result, DataManager __instance, int __0)
+        {
+            __result = __instance.BeatmapThemeIndexToID.TryGetValue(__0, out int value) ? value : 0;
+            return false;
+        }
+
+
+        [HarmonyPatch(nameof(DataManager.GetThemeIDToIndex))]
+        [HarmonyPrefix]
+        static bool GetThemeIDToIndexPrefix(ref int __result, DataManager __instance, int __0)
+        {
+            __result = __instance.BeatmapThemeIDToIndex.TryGetValue(__0, out int value) ? value : 0;
+            return false;
+        }
+
+        #endregion
 
         #region PlayerPrefs Patches
 

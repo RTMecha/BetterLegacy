@@ -342,7 +342,7 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         /// <param name="parseThemes">If the theme list should be replaced with the game datas' themes.</param>
         /// <returns>Returns a parsed game data from the level folder.</returns>
-        public GameData LoadGameData(bool parseThemes = true)
+        public virtual GameData LoadGameData()
         {
             var path = GetFile(CurrentFile);
             var rawJSON = RTFile.ReadFromFile(path);
@@ -350,7 +350,7 @@ namespace BetterLegacy.Core.Data.Level
                 rawJSON = LevelManager.UpdateBeatmap(rawJSON, metadata.beatmap.game_version);
 
             var jn = JSON.Parse(rawJSON);
-            return IsVG ? GameData.ParseVG(jn, parseThemes, metadata.Version) : GameData.Parse(jn, parseThemes);
+            return IsVG ? GameData.ParseVG(jn, metadata.Version) : GameData.Parse(jn);
         }
 
         /// <summary>

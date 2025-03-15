@@ -315,6 +315,11 @@ namespace BetterLegacy.Core.Managers
                 GameData.Current = level.LoadGameData();
             }
 
+            ThemeManager.inst.Clear();
+            for (int i = 0; i < GameData.Current.beatmapThemes.Count; i++)
+                ThemeManager.inst.AddTheme(GameData.Current.beatmapThemes[i]);
+            ThemeManager.inst.UpdateAllThemes();
+
             Debug.Log($"{className}Setting paths...");
 
             DataManager.inst.metaData = level.metadata;

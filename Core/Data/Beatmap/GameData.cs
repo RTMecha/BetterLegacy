@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// The default events in BetterLegacy.
         /// </summary>
-        public static List<EventKeyframe> DefaultKeyframes = new List<EventKeyframe>
+        public static List<EventKeyframe> DefaultKeyframes => new List<EventKeyframe>
         {
             #region Vanilla
 
@@ -531,11 +531,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 			new EventKeyframe
             {
                 time = 0f,
-                values = new float[3]
+                values = new float[4]
                 {
                     -10f, // Depth
 					0f, // Zoom
 					0f, // Global Position
+					1f, // Near Clip Plane Align
                 },
                 id = LSText.randomNumString(8),
             }, // Camera Depth
@@ -686,10 +687,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
         /// <param name="version">The exact version the level is from.</param>
         /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
-        public static GameData ReadFromFile(string path, ArrhythmiaType fileType, bool parseThemes = true, Version version = default) => fileType switch
+        public static GameData ReadFromFile(string path, ArrhythmiaType fileType, Version version = default) => fileType switch
         {
-            ArrhythmiaType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes),
-            ArrhythmiaType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes, version),
+            ArrhythmiaType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path))),
+            ArrhythmiaType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path)), version),
             _ => null,
         };
 
@@ -700,7 +701,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
         /// <param name="version">The exact version the level is from.</param>
         /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
-        public static GameData ParseVG(JSONNode jn, bool parseThemes = true, Version version = default)
+        public static GameData ParseVG(JSONNode jn, Version version = default)
         {
             var gameData = new GameData();
             var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
@@ -771,13 +772,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 CoreHelper.Log($"Parsing Beatmap Themes");
 
-                if (parseThemes)
-                {
-                    DataManager.inst.CustomBeatmapThemes.Clear();
-                    DataManager.inst.BeatmapThemeIndexToID.Clear();
-                    DataManager.inst.BeatmapThemeIDToIndex.Clear();
-                }
-
                 for (int i = 0; i < jn["themes"].Count; i++)
                 {
                     var beatmapTheme = BeatmapTheme.ParseVG(jn["themes"][i]);
@@ -785,35 +779,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     if (!string.IsNullOrEmpty(beatmapTheme.VGID) && !idConversion.ContainsKey(beatmapTheme.VGID))
                         idConversion.Add(beatmapTheme.VGID, beatmapTheme.id);
 
-                    if (!gameData.beatmapThemes.ContainsKey(beatmapTheme.id))
-                        gameData.beatmapThemes.Add(beatmapTheme.id, beatmapTheme);
-
-                    if (parseThemes)
-                    {
-                        DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
-                        if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(beatmapTheme.id)))
-                        {
-                            var list = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).ToList();
-                            var str = "";
-                            for (int j = 0; j < list.Count; j++)
-                            {
-                                str += list[j].name;
-                                if (i != list.Count - 1)
-                                    str += ", ";
-                            }
-
-                            if (CoreHelper.InEditor)
-                                EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
-                        }
-                        else
-                        {
-                            DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(beatmapTheme.id));
-                            DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(beatmapTheme.id), DataManager.inst.AllThemes.Count - 1);
-                        }
-                    }
+                    gameData.beatmapThemes.Add(beatmapTheme);
 
                     beatmapTheme = null;
                 }
+
+                ThemeManager.inst.UpdateAllThemes();
             }
 
             gameData.backgroundObjects.Add(new BackgroundObject
@@ -1158,7 +1129,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="jn">LS JSON to parse.</param>
         /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
         /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
-        public static GameData Parse(JSONNode jn, bool parseThemes = true)
+        public static GameData Parse(JSONNode jn)
         {
             var gameData = new GameData();
 
@@ -1211,49 +1182,22 @@ namespace BetterLegacy.Core.Data.Beatmap
                     gameData.prefabObjects.Add(prefab);
             }
 
-            foreach (var theme in DataManager.inst.BeatmapThemes)
-                gameData.beatmapThemes.Add(theme.id, theme);
+            foreach (var theme in ThemeManager.inst.DefaultThemes)
+                gameData.beatmapThemes.Add(theme);
 
-            if (parseThemes)
-            {
-                DataManager.inst.CustomBeatmapThemes.Clear();
-                DataManager.inst.BeatmapThemeIndexToID.Clear();
-                DataManager.inst.BeatmapThemeIDToIndex.Clear();
-            }
             for (int i = 0; i < jn["themes"].Count; i++)
             {
-                var beatmapTheme = BeatmapTheme.Parse(jn["themes"][i]);
+                if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
+                    continue;
 
-                if (parseThemes)
-                    DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
-                if (parseThemes && DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(beatmapTheme.id)))
-                {
-                    var list = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).ToList();
-                    var str = "";
-                    for (int j = 0; j < list.Count; j++)
-                    {
-                        str += list[j].name;
-                        if (i != list.Count - 1)
-                            str += ", ";
-                    }
-
-                    if (CoreHelper.InEditor)
-                        EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
-                }
-                else if (parseThemes)
-                {
-                    DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(beatmapTheme.id));
-                    DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(beatmapTheme.id), DataManager.inst.AllThemes.Count - 1);
-                }
-
-                if (!string.IsNullOrEmpty(jn["themes"][i]["id"]) && !gameData.beatmapThemes.ContainsKey(jn["themes"][i]["id"]))
-                    gameData.beatmapThemes.Add(jn["themes"][i]["id"], beatmapTheme);
+                gameData.beatmapThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
             }
 
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
             {
                 var beatmapObject = BeatmapObject.Parse(jn["beatmap_objects"][i]);
 
+                // remove objects with duplicate ID's due to a stupid dev branch bug
                 if (gameData.beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
                     gameData.beatmapObjects.RemoveAt(index);
 
@@ -1413,7 +1357,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var idsConverter = new Dictionary<string, string>();
 
             int themeIndex = 0;
-            var themes = DataManager.inst.CustomBeatmapThemes.Select(x => x as BeatmapTheme).Where(x => events[4].Has(y => int.TryParse(x.id, out int id) && id == y.values[0]));
+            var themes = ThemeManager.inst.CustomThemes.Where(x => events[4].Has(y => int.TryParse(x.id, out int id) && id == y.values[0]));
             if (themes.Count() > 0)
                 foreach (var beatmapTheme in themes)
                 {
@@ -1633,13 +1577,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             CoreHelper.Log($"Saving themes");
             var levelThemes =
                 saveGameDataThemes ?
-                    beatmapThemes.Where(x => Parser.TryParse(x.Value.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.Value.id, 0))).Select(x => x.Value).ToList() :
-                    DataManager.inst.CustomBeatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
+                    beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList() :
+                    ThemeManager.inst.CustomThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
 
             for (int i = 0; i < levelThemes.Count; i++)
             {
                 CoreHelper.Log($"Saving {levelThemes[i].id} - {levelThemes[i].name} to level!");
-                jn["themes"][i] = ((BeatmapTheme)levelThemes[i]).ToJSON();
+                jn["themes"][i] = levelThemes[i].ToJSON();
             }
 
             CoreHelper.Log("Saving Checkpoints");
@@ -1807,6 +1751,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         #region Helpers
+
+        public List<BeatmapTheme> GetUsedThemes() => GetUsedThemes(beatmapThemes);
+
+        public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
+
+        public void UpdateUsedThemes() => beatmapThemes = GetUsedThemes(ThemeManager.inst.CustomThemes);
 
         /// <summary>
         /// Gets closest event keyframe to current time.
@@ -2060,7 +2010,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<LevelModifier> levelModifiers = new List<LevelModifier>();
 
-        public Dictionary<string, BaseBeatmapTheme> beatmapThemes = new Dictionary<string, BaseBeatmapTheme>();
+        public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
 
@@ -2129,27 +2079,22 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 var time = Updater.CurrentTime;
 
-                switch (modiifer.commands[0].ToLower())
+                switch (modiifer.Name.ToLower())
                 {
-                    case "none":
-                        {
+                    case "none": {
                             return true;
                         }
-                    case "time":
-                        {
+                    case "time": {
                             return modiifer.commands.Count > 2 && float.TryParse(modiifer.commands[1], out float min) && float.TryParse(modiifer.commands[2], out float max)
                                 && time >= min - 0.01f && time <= max + 0.1f;
                         }
-                    case "playerhit":
-                        {
+                    case "playerhit":  {
                             return PlayerManager.Players.Any(x => x.Player != null && x.Player.isTakingHit);
                         }
-                    case "playerdeath":
-                        {
+                    case "playerdeath": {
                             return PlayerManager.Players.Any(x => x.Player != null && x.Player.isDead);
                         }
-                    case "levelstart":
-                        {
+                    case "levelstart": {
                             return AudioManager.inst.CurrentAudioSource.time < 0.1f;
                         }
                 }
@@ -2164,10 +2109,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (modifier == null)
                     return;
 
-                switch (modifier.commands[0].ToLower().Replace(" ", "").Replace("_", ""))
+                switch (modifier.Name.ToLower().Replace(" ", "").Replace("_", ""))
                 {
-                    case "playerlocation":
-                        {
+                    case "playerlocation": {
                             float x = 0f;
                             float y = 0f;
                             float t = 0f;
@@ -2223,8 +2167,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                             break;
                         }
-                    case "playerboostlock":
-                        {
+                    case "playerboostlock": {
                             if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.commands[1], out bool lockBoost))
                                 RTPlayer.LockBoost = lockBoost;
 
@@ -2456,8 +2399,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         foreach (var beatmapTheme in gameDatas[i].beatmapThemes)
                         {
-                            if (!baseData.beatmapThemes.ContainsKey(beatmapTheme.Key))
-                                baseData.beatmapThemes.Add(beatmapTheme.Key, beatmapTheme.Value);
+                            if (!baseData.beatmapThemes.Has(x => x.id == beatmapTheme.id))
+                                baseData.beatmapThemes.Add(beatmapTheme);
                         }
 
                         // Clearing

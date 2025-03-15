@@ -532,7 +532,7 @@ namespace BetterLegacy.Menus
         /// </summary>
         public BeatmapTheme CurrentTheme =>
             Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme) ?
-                interfaceTheme : themes != null && themes.Count > 0 ? themes[0] : DataManager.inst.BeatmapThemes[1] as BeatmapTheme;
+                interfaceTheme : themes != null && themes.Count > 0 ? themes[0] : ThemeManager.inst.DefaultThemes[1];
 
         /// <summary>
         /// Themes that should be used in the interface.

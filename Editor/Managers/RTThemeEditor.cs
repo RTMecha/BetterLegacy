@@ -30,7 +30,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void Init() => ThemeEditor.inst?.gameObject?.AddComponent<RTThemeEditor>();
 
-        public List<BeatmapTheme> AllThemes => DataManager.inst.AllThemes.Select(x => x as BeatmapTheme).ToList();
+        public List<BeatmapTheme> AllThemes => ThemeManager.inst.AllThemes;
 
         void Awake()
         {
@@ -219,11 +219,7 @@ namespace BetterLegacy.Editor.Managers
             while (!EventEditor.inst || !EventEditor.inst.dialogRight || !GameData.Current)
                 yield return null;
 
-            DataManager.inst.CustomBeatmapThemes.Clear();
-            DataManager.inst.BeatmapThemeIDToIndex.Clear();
-            DataManager.inst.BeatmapThemeIndexToID.Clear();
-
-            GameData.Current.beatmapThemes.Clear();
+            ThemeManager.inst.Clear();
 
             var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
             var parent = dialogTmp.Find("themes/viewport/content");
@@ -316,15 +312,10 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
 
-            int num = 0;
-            foreach (var beatmapTheme in DataManager.inst.BeatmapThemes.Select(x => x as BeatmapTheme))
+            foreach (var beatmapTheme in ThemeManager.inst.DefaultThemes)
             {
-                DataManager.inst.BeatmapThemeIDToIndex.Add(num, num);
-                DataManager.inst.BeatmapThemeIndexToID.Add(num, num);
+                SetupThemePanel(beatmapTheme, true, index: themePanelIndex);
 
-                RTThemeEditor.inst.SetupThemePanel(beatmapTheme, true, index: themePanelIndex);
-
-                num++;
                 themePanelIndex++;
             }
 
@@ -335,49 +326,17 @@ namespace BetterLegacy.Editor.Managers
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
                 var orig = BeatmapTheme.Parse(jn);
                 orig.filePath = file.Replace("\\", "/");
-                DataManager.inst.CustomBeatmapThemes.Add(orig);
 
-                if (jn["id"] != null && GameData.Current.beatmapThemes != null && !GameData.Current.beatmapThemes.ContainsKey(jn["id"]))
-                    GameData.Current.beatmapThemes.Add(jn["id"], orig);
-
-                if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(orig.id)))
-                {
-                    var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == orig.id).Select(x => x.name).ToArray();
-                    var str = RTString.ArrayToString(array);
-
-                    if (CoreHelper.InEditor)
-                        EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] due to conflicting themes: {str}", 2f * array.Length, EditorManager.NotificationType.Error);
-
-                    RTThemeEditor.inst.SetupThemePanel(orig, false, true, index: themePanelIndex);
-                }
-                else
-                {
-                    DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(orig.id));
-                    DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(orig.id), DataManager.inst.AllThemes.Count - 1);
-
-                    try
-                    {
-                        RTThemeEditor.inst.SetupThemePanel(orig, false, index: themePanelIndex);
-                    }
-                    catch (Exception ex)
-                    {
-                        EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] for some reason. Press {CoreConfig.Instance.OpenPAPersistentFolder.Value} key to open the log folder and give the Player.log file to RTMecha.", 8f, EditorManager.NotificationType.Error);
-                        CoreHelper.LogException(ex);
-                    }
-                }
-
-                if (jn["id"] == null)
-                {
-                    var beatmapTheme = BeatmapTheme.DeepCopy(orig);
-                    beatmapTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
-                    DataManager.inst.CustomBeatmapThemes.Remove(orig);
-                    RTFile.DeleteFile(file);
-                    RTThemeEditor.inst.SaveTheme(beatmapTheme);
-                    DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
-                }
+                ThemeManager.inst.AddTheme(orig,
+                    (beatmapTheme) => SetupThemePanel(beatmapTheme, false, index: themePanelIndex),
+                    (beatmapTheme) => SetupThemePanel(beatmapTheme, false, true, index: themePanelIndex));
 
                 themePanelIndex++;
             }
+
+            ThemeManager.inst.UpdateAllThemes();
+            GameData.Current.UpdateUsedThemes();
+
             themesLoading = false;
 
             if (refreshGUI)
@@ -471,7 +430,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (int.TryParse(_val, out int p))
                         {
-                            themePage = Mathf.Clamp(p, 0, AllThemes.Count / themesPerPage);
+                            themePage = Mathf.Clamp(p, 0, ThemeManager.inst.ThemeCount / themesPerPage);
                             RefreshThemeSearch();
                         }
                     });
@@ -487,21 +446,21 @@ namespace BetterLegacy.Editor.Managers
                     pageStorage.leftButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
-                            pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, AllThemes.Count / themesPerPage).ToString();
+                            pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, ThemeManager.inst.ThemeCount / themesPerPage).ToString();
                     });
 
                     pageStorage.rightButton.onClick.ClearAll();
                     pageStorage.rightButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
-                            pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, AllThemes.Count / themesPerPage).ToString();
+                            pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, ThemeManager.inst.ThemeCount / themesPerPage).ToString();
                     });
 
                     pageStorage.rightGreaterButton.onClick.ClearAll();
                     pageStorage.rightGreaterButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
-                            pageStorage.inputField.text = (DataManager.inst.AllThemes.Count / themesPerPage).ToString();
+                            pageStorage.inputField.text = (ThemeManager.inst.ThemeCount / themesPerPage).ToString();
                     });
 
                     Destroy(pageStorage.middleButton.gameObject);
@@ -755,10 +714,10 @@ namespace BetterLegacy.Editor.Managers
 
             var layer = themePage + 1;
 
-            TriggerHelper.AddEventTriggers(pageStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageStorage.inputField, max: AllThemes.Count / themesPerPage));
+            TriggerHelper.AddEventTriggers(pageStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageStorage.inputField, max: ThemeManager.inst.ThemeCount / themesPerPage));
 
             int num = 0;
-            foreach (var beatmapTheme in AllThemes)
+            foreach (var beatmapTheme in ThemeManager.inst.AllThemes)
             {
                 int max = layer * themesPerPage;
 
@@ -911,43 +870,21 @@ namespace BetterLegacy.Editor.Managers
         {
             var dialog = RTEventEditor.inst.Dialog.keyframeDialogs[EventEditor.inst.currentEventType].GameObject.transform;
 
-            int themeIDToIndex = DataManager.inst.GetThemeIDToIndex((int)RTEventEditor.inst.CurrentSelectedKeyframe.values[0]);
-            dialog.Find("current_title/current_title").GetComponent<Text>().text = DataManager.inst.AllThemes[themeIDToIndex].name;
-            for (int i = 0; i <= 8; i++)
-            {
-                if (DataManager.inst.AllThemes[themeIDToIndex].objectColors.Count - 1 > i)
-                {
-                    dialog.Find("object_cols/" + i).GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].objectColors[i];
-                }
-                else
-                {
-                    dialog.Find("object_cols/" + i).GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].objectColors[DataManager.inst.AllThemes[themeIDToIndex].objectColors.Count - 1];
-                }
-            }
-            for (int j = 0; j <= 8; j++)
-            {
-                if (DataManager.inst.AllThemes[themeIDToIndex].backgroundColors.Count - 1 > j)
-                {
-                    dialog.Find("bg_cols/" + j).GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].backgroundColors[j];
-                }
-                else
-                {
-                    dialog.Find("bg_cols/" + j).GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].backgroundColors[DataManager.inst.AllThemes[themeIDToIndex].backgroundColors.Count - 1];
-                }
-            }
+            var beatmapTheme = ThemeManager.inst.GetTheme((int)RTEventEditor.inst.CurrentSelectedKeyframe.values[0]);
+
+            dialog.Find("current_title/current_title").GetComponent<Text>().text = beatmapTheme.name;
+
             for (int k = 0; k <= 3; k++)
-            {
-                if (DataManager.inst.AllThemes[themeIDToIndex].playerColors.Count - 1 > k)
-                {
-                    dialog.Find("player_cols/" + k).GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].playerColors[k];
-                }
-                else
-                {
-                    dialog.Find("player_cols/" + k).GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].playerColors[DataManager.inst.AllThemes[themeIDToIndex].playerColors.Count - 1];
-                }
-            }
-            dialog.Find("player_cols/4").GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].backgroundColor;
-            dialog.Find("player_cols/5").GetComponent<Image>().color = DataManager.inst.AllThemes[themeIDToIndex].guiColor;
+                dialog.Find("player_cols/" + k).GetComponent<Image>().color = beatmapTheme.GetPlayerColor(k);
+
+            dialog.Find("player_cols/4").GetComponent<Image>().color = beatmapTheme.backgroundColor;
+            dialog.Find("player_cols/5").GetComponent<Image>().color = beatmapTheme.guiColor;
+
+            for (int i = 0; i <= 8; i++)
+                dialog.Find("object_cols/" + i).GetComponent<Image>().color = beatmapTheme.GetObjColor(i);
+
+            for (int i = 0; i <= 8; i++)
+                dialog.Find("bg_cols/" + i).GetComponent<Image>().color = beatmapTheme.GetBGColor(i);
         }
 
         public IEnumerator RenderThemeList(string search)
@@ -1049,6 +986,8 @@ namespace BetterLegacy.Editor.Managers
             RenderThemePreview();
             EventEditor.inst.showTheme = false;
             EventEditor.inst.dialogLeft.Find("theme").gameObject.SetActive(false);
+            GameData.Current.UpdateUsedThemes();
+
             RTEditor.inst.HideWarningPopup();
         }, RTEditor.inst.HideWarningPopup);
 
@@ -1140,8 +1079,8 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 SaveTheme(beatmapTheme);
-                if (DataManager.inst.CustomBeatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int themeIndex))
-                    DataManager.inst.CustomBeatmapThemes[themeIndex] = beatmapTheme;
+                if (ThemeManager.inst.CustomThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int themeIndex))
+                    ThemeManager.inst.CustomThemes[themeIndex] = beatmapTheme;
 
                 if (themePanel)
                 {
@@ -1180,36 +1119,24 @@ namespace BetterLegacy.Editor.Managers
                 if (isDefaultTheme)
                     StartCoroutine(LoadThemes(true));
 
-                if (DataManager.inst.CustomBeatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int themeIndex))
-                    DataManager.inst.CustomBeatmapThemes[themeIndex] = beatmapTheme;
+                if (ThemeManager.inst.CustomThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int themeIndex))
+                    ThemeManager.inst.CustomThemes[themeIndex] = beatmapTheme;
 
-                var duplicate = DataManager.inst.CustomBeatmapThemes.FindAll(x => x.id == beatmapTheme.id).Count > 1;
-                if (!isDefaultTheme && ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel))
+                if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel))
                 {
-                    themePanel.Theme = beatmapTheme;
-                    themePanel.Render();
+                    if (!isDefaultTheme)
+                    {
+                        themePanel.Theme = beatmapTheme;
+                        themePanel.Render();
+                        CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
+                    }
 
-                    CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
+                    themePanel.Use();
                 }
 
                 RenderThemePreview();
                 EventEditor.inst.showTheme = false;
                 theme.gameObject.SetActive(false);
-
-                if (duplicate)
-                {
-                    var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
-                    var str = RTString.ArrayToString(array);
-
-                    EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                    foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        timelineObject.eventKeyframe.values[0] = Parser.TryParse(beatmapTheme.id, 0);
-                else
-                    RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(beatmapTheme.id, 0);
             });
 
             var bgHex = themeContent.Find("bg/hex").GetComponent<InputField>();

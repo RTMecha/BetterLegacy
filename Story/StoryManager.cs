@@ -523,7 +523,7 @@ namespace BetterLegacy.Story
 
             if (jsonPath == "demo_new/level")
             {
-                gameData.beatmapThemes["003051"] = new BeatmapTheme()
+                gameData.beatmapThemes.Add(new BeatmapTheme()
                 {
                     id = "003051",
                     name = "PA Ahead of the Curve",
@@ -556,7 +556,7 @@ namespace BetterLegacy.Story
                         new Color(0.9922f, 0.5922f, 0.0039f, 1f),
                     },
                     effectColors = new List<Color>().Fill(18, Color.white),
-                };
+                });
                 gameData.events[4][0].values[0] = 3051;
             }
 
@@ -666,42 +666,25 @@ namespace BetterLegacy.Story
             gameData.data.checkpoints = gameData.data.checkpoints.OrderBy(x => x.time).ToList();
 
             CoreHelper.Log($"Set...");
-            foreach (var theme in DataManager.inst.BeatmapThemes)
-                gameData.beatmapThemes.Add(theme.id, theme);
+            foreach (var theme in ThemeManager.inst.DefaultThemes)
+                gameData.beatmapThemes.Add(theme);
 
             CoreHelper.Log($"Clear...");
-            DataManager.inst.CustomBeatmapThemes.Clear();
-            DataManager.inst.BeatmapThemeIndexToID.Clear();
-            DataManager.inst.BeatmapThemeIDToIndex.Clear();
+            ThemeManager.inst.CustomThemes.Clear();
+            ThemeManager.inst.themeIDs.Clear();
+
             if (jn["themes"] != null)
                 for (int i = 0; i < jn["themes"].Count; i++)
                 {
+                    if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
+                        continue;
+
                     var beatmapTheme = BeatmapTheme.Parse(jn["themes"][i]);
 
-                    DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
-                    if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(beatmapTheme.id)))
-                    {
-                        var list = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).ToList();
-                        var str = "";
-                        for (int j = 0; j < list.Count; j++)
-                        {
-                            str += list[j].name;
-                            if (i != list.Count - 1)
-                                str += ", ";
-                        }
-
-                        if (CoreHelper.InEditor)
-                            EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
-                    }
-                    else
-                    {
-                        DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(beatmapTheme.id));
-                        DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(beatmapTheme.id), DataManager.inst.AllThemes.Count - 1);
-                    }
-
-                    if (!string.IsNullOrEmpty(jn["themes"][i]["id"]) && !gameData.beatmapThemes.ContainsKey(jn["themes"][i]["id"]))
-                        gameData.beatmapThemes.Add(jn["themes"][i]["id"], beatmapTheme);
+                    ThemeManager.inst.AddTheme(beatmapTheme, gameData.beatmapThemes.Add);
                 }
+
+            ThemeManager.inst.UpdateAllThemes();
 
             CoreHelper.Log($"Parsing beatmap objects...");
             for (int i = 0; i < jn["beatmapObjects"].Count; i++)

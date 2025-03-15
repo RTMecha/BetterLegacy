@@ -4,6 +4,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
@@ -2851,7 +2852,7 @@ namespace BetterLegacy.Configs
             if (!CoreHelper.InEditor)
                 return;
 
-            var p = Mathf.Clamp(RTThemeEditor.inst.eventThemePage, 0, DataManager.inst.AllThemes.Count / RTThemeEditor.eventThemesPerPage).ToString();
+            var p = Mathf.Clamp(RTThemeEditor.inst.eventThemePage, 0, ThemeManager.inst.ThemeCount / RTThemeEditor.eventThemesPerPage).ToString();
 
             if (RTThemeEditor.eventPageStorage.inputField.text != p)
             {

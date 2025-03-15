@@ -4,6 +4,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
@@ -379,28 +380,7 @@ namespace BetterLegacy.Editor.Data
                 }
 
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Use", () =>
-                    {
-                        if (isDuplicate)
-                        {
-                            var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == Theme.id).Select(x => x.name).ToArray();
-                            var str = RTString.ArrayToString(array);
-
-                            EditorManager.inst.DisplayNotification($"Unable to use Theme [{Theme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                        {
-                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                timelineObject.eventKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
-                        }
-                        else
-                            RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
-
-                        EventManager.inst.updateEvents();
-                        RTThemeEditor.inst.RenderThemePreview();
-                    }),
+                    new ButtonFunction("Use", Use),
                     new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Theme)),
                     new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
                     new ButtonFunction(true),
@@ -597,7 +577,7 @@ namespace BetterLegacy.Editor.Data
         {
             if (isDuplicate)
             {
-                var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == Theme.id).Select(x => x.name).ToArray();
+                var array = ThemeManager.inst.CustomThemes.Where(x => x.id == Theme.id).Select(x => x.name).ToArray();
                 var str = RTString.ArrayToString(array);
 
                 EditorManager.inst.DisplayNotification($"Unable to use Theme [{Theme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
@@ -614,6 +594,8 @@ namespace BetterLegacy.Editor.Data
 
             EventManager.inst.updateEvents();
             RTThemeEditor.inst.RenderThemePreview();
+
+            GameData.Current.UpdateUsedThemes();
         }
 
         public override string ToString() => isFolder ? Path.GetFileName(FilePath) : Theme?.ToString();

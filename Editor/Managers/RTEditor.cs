@@ -4425,8 +4425,8 @@ namespace BetterLegacy.Editor.Managers
 
                 GameData.Current = null;
                 GameData.Current = level.IsVG ?
-                    GameData.ParseVG(JSON.Parse(rawJSON), false, new Core.Data.Version(MetaData.Current.beatmap.game_version)) :
-                    GameData.Parse(JSON.Parse(rawJSON), false);
+                    GameData.ParseVG(JSON.Parse(rawJSON), MetaData.Current.Version) :
+                    GameData.Parse(JSON.Parse(rawJSON));
             }
             catch (Exception ex)
             {
@@ -4506,6 +4506,8 @@ namespace BetterLegacy.Editor.Managers
             RTMarkerEditor.inst.markerLoopEnd = null;
 
             EventManager.inst.updateEvents();
+            GameData.Current.UpdateUsedThemes();
+
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             RTEventManager.inst.SetResetOffsets();
@@ -6747,7 +6749,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     var levelVGJN = JSON.Parse(levelVGJSON);
 
-                                    var level = GameData.ParseVG(levelVGJN, false, metadata.Version);
+                                    var level = GameData.ParseVG(levelVGJN, metadata.Version);
 
                                     level.SaveData(RTFile.CombinePaths(copyTo, Level.LEVEL_LSB), () =>
                                     {

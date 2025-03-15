@@ -115,6 +115,6 @@ namespace BetterLegacy.Story
         /// Loads the story levels' game data.
         /// </summary>
         /// <returns>Returns the loaded game data.</returns>
-        public GameData LoadGameData() => GameData.Parse(JSON.Parse(json));
+        public override GameData LoadGameData() => GameData.Parse(JSON.Parse(json));
     }
 }

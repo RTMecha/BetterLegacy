@@ -177,7 +177,7 @@ namespace BetterLegacy.Editor.Data
         public GameData GetGameData() =>
             !RTFile.FileExists(RTFile.CombinePaths(Directory, Level.LEVEL_LSB)) ?
                 RTEditor.inst.CreateBaseBeatmap() :
-                GameData.ReadFromFile(RTFile.CombinePaths(Directory, Level.LEVEL_LSB), ArrhythmiaType.LS, false);
+                GameData.ReadFromFile(RTFile.CombinePaths(Directory, Level.LEVEL_LSB), ArrhythmiaType.LS);
 
         #endregion
     }

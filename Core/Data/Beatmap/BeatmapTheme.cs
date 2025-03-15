@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
@@ -214,7 +215,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var beatmapTheme = new BeatmapTheme();
 
-            beatmapTheme.id = jn["id"] ?? DataManager.inst.AllThemes.Count.ToString();
+            beatmapTheme.id = jn["id"] ?? ThemeManager.inst.ThemeCount.ToString();
 
             beatmapTheme.name = jn["name"] ?? "name your themes!";
 
@@ -415,6 +416,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static implicit operator bool(BeatmapTheme exists) => exists != null;
 
         public override bool Equals(object obj) => obj is BeatmapTheme && id == (obj as BeatmapTheme).id;
+
+        public override int GetHashCode() => base.GetHashCode();
 
         public override string ToString() => $"{id}: {name}";
 

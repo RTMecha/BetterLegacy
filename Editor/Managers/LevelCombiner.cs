@@ -241,7 +241,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var editorWrapper in selected)
             {
                 Debug.Log($"{EditorManager.inst.className}Parsing GameData from {editorWrapper.Level.FolderName}");
-                combineList.Add(editorWrapper.Level.LoadGameData(false));
+                combineList.Add(editorWrapper.Level.LoadGameData());
             }
 
             Debug.Log($"{EditorManager.inst.className}Can Combine: {combineList.Count > 0 && !string.IsNullOrEmpty(savePath)}" +

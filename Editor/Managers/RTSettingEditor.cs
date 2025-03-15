@@ -295,7 +295,7 @@ namespace BetterLegacy.Editor.Managers
                     SetText("Camera Zoom", Camera.main.orthographicSize.ToString());
                     SetText("Camera Rotation", Camera.main.transform.rotation.eulerAngles.z.ToString());
                     SetText("Event Count", GameData.Current.events.Sum(x => x.Count).ToString());
-                    SetText("Theme Count", DataManager.inst.AllThemes.Count.ToString());
+                    SetText("Theme Count", ThemeManager.inst.ThemeCount.ToString());
 
                     SetText("Prefab External Count", RTPrefabEditor.inst.PrefabPanels.Count.ToString());
                     SetText("Prefab Internal Count", GameData.Current.prefabs.Count.ToString());
