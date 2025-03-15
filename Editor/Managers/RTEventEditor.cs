@@ -1036,8 +1036,11 @@ namespace BetterLegacy.Editor.Managers
             return colorsObject;
         }
 
+        // todo: look into reworking this
         void GenerateEventDialogs()
         {
+            #region Events
+
             var shake = EventEditor.inst.dialogRight.Find("shake");
             {
                 var direction = GenerateUIElement("direction", "Vector2", shake, 10, "Direction X", "Direction Y");
@@ -1413,6 +1416,10 @@ namespace BetterLegacy.Editor.Managers
                 var global = GenerateUIElement("global", "Bool", cameraDepth.transform, 12, "Set Global Position");
                 var globalText = global["UI"].transform.Find("Text").GetComponent<Text>();
                 globalText.text = "Global";
+                
+                var align = GenerateUIElement("align", "Bool", cameraDepth.transform, 14, "Align Near Clip Plane");
+                var alignText = align["UI"].transform.Find("Text").GetComponent<Text>();
+                alignText.text = "Align";
 
                 EditorThemeManager.AddInputFields(depth["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(perspectiveZoom["UI"], true, "Event Editor");
@@ -1487,6 +1494,8 @@ namespace BetterLegacy.Editor.Managers
                 var intensity = GenerateUIElement("intensity", "Single", digitalGlitch.transform, 8, "Intensity");
                 EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
             }
+
+            #endregion
 
             #region Multi Event Keyframe Editor
 
@@ -2703,6 +2712,7 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "depth/x", 0);
                         SetFloatInputField(dialogTmp, "zoom/x", 1);
                         SetToggle(dialogTmp, "global", 2, 0, 1);
+                        SetToggle(dialogTmp, "align", 3, 1, 0);
 
                         break;
                     }

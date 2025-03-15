@@ -413,7 +413,6 @@ namespace BetterLegacy.Arcade.Managers
         }
 
         public float fieldOfView = 50f;
-        public bool setPerspectiveCamClip = true;
         public float camPerspectiveOffset = 10f;
 
         public float currentTime;
@@ -500,7 +499,7 @@ namespace BetterLegacy.Arcade.Managers
                 EventManager.inst.camPer.transform.SetLocalPositionX(0f);
                 EventManager.inst.camPer.transform.SetLocalPositionY(0f);
 
-                EventManager.inst.camPer.nearClipPlane = inst.setPerspectiveCamClip ? -EventManager.inst.camPer.transform.position.z + inst.camPerspectiveOffset : 0.3f;
+                EventManager.inst.camPer.nearClipPlane = inst.bgAlignNearPlane ? -EventManager.inst.camPer.transform.position.z + inst.camPerspectiveOffset : 0.3f;
 
                 #endregion
 
@@ -712,7 +711,7 @@ namespace BetterLegacy.Arcade.Managers
             var allEvents = GameData.Current.events;
             var time = currentTime;
 
-            FindColor(time, allEvents, ref EventManager.inst.LastTheme, ref EventManager.inst.NewTheme, 4, 0);
+            FindColor(time, allEvents, ref prevTheme, ref nextTheme, 4, 0);
             FindColor(time, allEvents, ref prevBloomColor, ref nextBloomColor, 6, 4);
             FindColor(time, allEvents, ref prevVignetteColor, ref nextVignetteColor, 7, 6);
             FindColor(time, allEvents, ref prevGradientColor1, ref nextGradientColor1, ref prevGradientColor2, ref nextGradientColor2, 15, 2, 3);
@@ -871,345 +870,338 @@ namespace BetterLegacy.Arcade.Managers
         #region Move - 0
 
         // 0 - 0
-        public static void updateCameraPositionX(float x) => EventManager.inst.camPos.x = x;
+        public static void UpdateCameraPositionX(float x) => EventManager.inst.camPos.x = x;
         // 0 - 1
-        public static void updateCameraPositionY(float x) => EventManager.inst.camPos.y = x;
+        public static void UpdateCameraPositionY(float x) => EventManager.inst.camPos.y = x;
 
         #endregion
 
         #region Zoom - 1
 
         // 1 - 0
-        public static void updateCameraZoom(float x) => EventManager.inst.camZoom = x;
+        public static void UpdateCameraZoom(float x) => EventManager.inst.camZoom = x;
 
         #endregion
 
         #region Rotate - 2
 
         // 2 - 0
-        public static void updateCameraRotation(float x) => EventManager.inst.camRot = x;
+        public static void UpdateCameraRotation(float x) => EventManager.inst.camRot = x;
 
         #endregion
 
         #region Shake - 3
 
         // 3 - 0
-        public static void updateCameraShakeMultiplier(float x) => EventManager.inst.shakeMultiplier = x;
+        public static void UpdateCameraShakeMultiplier(float x) => EventManager.inst.shakeMultiplier = x;
 
         // 3 - 1
-        public static void updateCameraShakeX(float x) => inst.shakeX = x;
+        public static void UpdateCameraShakeX(float x) => inst.shakeX = x;
 
         // 3 - 2
-        public static void updateCameraShakeY(float x) => inst.shakeY = x;
+        public static void UpdateCameraShakeY(float x) => inst.shakeY = x;
 
         // 3 - 3
-        public static void updateCameraShakeSmoothness(float x) => inst.shakeSmoothness = x;
+        public static void UpdateCameraShakeSmoothness(float x) => inst.shakeSmoothness = x;
 
         // 3 - 4
-        public static void updateCameraShakeSpeed(float x) => inst.shakeSpeed = x;
+        public static void UpdateCameraShakeSpeed(float x) => inst.shakeSpeed = x;
 
         #endregion
 
         #region Theme - 4
 
         // 4 - 0
-        public static void updateTheme(float x)
+        public static void UpdateTheme(float x)
         {
             inst.themeLerp = x;
             var beatmapTheme = BeatmapTheme.DeepCopy((BeatmapTheme)GameManager.inst.LiveTheme);
 
-            ((BeatmapTheme)GameManager.inst.LiveTheme).Lerp((BeatmapTheme)GetTheme(EventManager.inst.LastTheme), (BeatmapTheme)GetTheme(EventManager.inst.NewTheme), x);
+            ((BeatmapTheme)GameManager.inst.LiveTheme).Lerp(ThemeManager.inst.GetTheme(inst.prevTheme), ThemeManager.inst.GetTheme(inst.nextTheme), x);
 
             if (beatmapTheme != (BeatmapTheme)GameManager.inst.LiveTheme)
                 GameManager.inst.UpdateTheme();
         }
-
-        /// <summary>
-        /// BeatmapTheme finder.
-        /// </summary>
-        /// <param name="id">Finds the BeatmapTheme with the matching ID.</param>
-        /// <returns>The current BeatmapTheme.</returns>
-        public static DataManager.BeatmapTheme GetTheme(int id) => DataManager.inst.AllThemes.TryFind(x => Parser.TryParse(x.id, 0) == id, out DataManager.BeatmapTheme beatmapTheme) ? beatmapTheme : DataManager.inst.AllThemes[0];
 
         #endregion
 
         #region Chroma - 5
 
         // 5 - 0
-        public static void updateCameraChromatic(float x) => EventManager.inst.camChroma = x;
+        public static void UpdateCameraChromatic(float x) => EventManager.inst.camChroma = x;
 
         #endregion
 
         #region Bloom - 6
 
         // 6 - 0
-        public static void updateCameraBloom(float x) => EventManager.inst.camBloom = x;
+        public static void UpdateCameraBloom(float x) => EventManager.inst.camBloom = x;
 
         // 6 - 1
-        public static void updateCameraBloomDiffusion(float x) => LSEffectsManager.inst.bloom.diffusion.Override(x);
+        public static void UpdateCameraBloomDiffusion(float x) => LSEffectsManager.inst.bloom.diffusion.Override(x);
 
         // 6 - 2
-        public static void updateCameraBloomThreshold(float x) => LSEffectsManager.inst.bloom.threshold.Override(x);
+        public static void UpdateCameraBloomThreshold(float x) => LSEffectsManager.inst.bloom.threshold.Override(x);
 
         // 6 - 3
-        public static void updateCameraBloomAnamorphicRatio(float x) => LSEffectsManager.inst.bloom.anamorphicRatio.Override(x);
+        public static void UpdateCameraBloomAnamorphicRatio(float x) => LSEffectsManager.inst.bloom.anamorphicRatio.Override(x);
 
         // 6 - 4
-        public static void updateCameraBloomColor(float x) => inst.bloomColor = x;
+        public static void UpdateCameraBloomColor(float x) => inst.bloomColor = x;
 
         // 6 - 5
-        public static void updateCameraBloomHue(float x) => inst.bloomHue = x;
+        public static void UpdateCameraBloomHue(float x) => inst.bloomHue = x;
 
         // 6 - 6
-        public static void updateCameraBloomSat(float x) => inst.bloomSat = x;
+        public static void UpdateCameraBloomSat(float x) => inst.bloomSat = x;
 
         // 6 - 7
-        public static void updateCameraBloomVal(float x) => inst.bloomVal = x;
+        public static void UpdateCameraBloomVal(float x) => inst.bloomVal = x;
 
         #endregion
 
         #region Vignette - 7
 
         // 7 - 0
-        public static void updateCameraVignette(float x) => EventManager.inst.vignetteIntensity = x;
+        public static void UpdateCameraVignette(float x) => EventManager.inst.vignetteIntensity = x;
 
         // 7 - 1
-        public static void updateCameraVignetteSmoothness(float x) => EventManager.inst.vignetteSmoothness = x;
+        public static void UpdateCameraVignetteSmoothness(float x) => EventManager.inst.vignetteSmoothness = x;
 
         // 7 - 2
-        public static void updateCameraVignetteRounded(float x) => EventManager.inst.vignetteRounded = x;
+        public static void UpdateCameraVignetteRounded(float x) => EventManager.inst.vignetteRounded = x;
 
         // 7 - 3
-        public static void updateCameraVignetteRoundness(float x) => EventManager.inst.vignetteRoundness = x;
+        public static void UpdateCameraVignetteRoundness(float x) => EventManager.inst.vignetteRoundness = x;
 
         // 7 - 4
-        public static void updateCameraVignetteCenterX(float x) => EventManager.inst.vignetteCenter.x = x;
+        public static void UpdateCameraVignetteCenterX(float x) => EventManager.inst.vignetteCenter.x = x;
 
         // 7 - 5
-        public static void updateCameraVignetteCenterY(float x) => EventManager.inst.vignetteCenter.y = x;
+        public static void UpdateCameraVignetteCenterY(float x) => EventManager.inst.vignetteCenter.y = x;
 
         // 7 - 6
-        public static void updateCameraVignetteColor(float x) => inst.vignetteColor = x;
+        public static void UpdateCameraVignetteColor(float x) => inst.vignetteColor = x;
 
         // 7 - 7
-        public static void updateCameraVignetteHue(float x) => inst.vignetteHue = x;
+        public static void UpdateCameraVignetteHue(float x) => inst.vignetteHue = x;
 
         // 7 - 8
-        public static void updateCameraVignetteSat(float x) => inst.vignetteSat = x;
+        public static void UpdateCameraVignetteSat(float x) => inst.vignetteSat = x;
 
         // 7 - 9
-        public static void updateCameraVignetteVal(float x) => inst.vignetteVal = x;
+        public static void UpdateCameraVignetteVal(float x) => inst.vignetteVal = x;
 
         #endregion
 
         #region Lens - 8
 
         // 8 - 0
-        public static void updateCameraLens(float x) => EventManager.inst.lensDistortIntensity = x;
+        public static void UpdateCameraLens(float x) => EventManager.inst.lensDistortIntensity = x;
 
         // 8 - 1
-        public static void updateCameraLensCenterX(float x) => LSEffectsManager.inst.lensDistort.centerX.Override(x);
+        public static void UpdateCameraLensCenterX(float x) => LSEffectsManager.inst.lensDistort.centerX.Override(x);
 
         // 8 - 2
-        public static void updateCameraLensCenterY(float x) => LSEffectsManager.inst.lensDistort.centerY.Override(x);
+        public static void UpdateCameraLensCenterY(float x) => LSEffectsManager.inst.lensDistort.centerY.Override(x);
 
         // 8 - 3
-        public static void updateCameraLensIntensityX(float x) => LSEffectsManager.inst.lensDistort.intensityX.Override(x);
+        public static void UpdateCameraLensIntensityX(float x) => LSEffectsManager.inst.lensDistort.intensityX.Override(x);
 
         // 8 - 4
-        public static void updateCameraLensIntensityY(float x) => LSEffectsManager.inst.lensDistort.intensityY.Override(x);
+        public static void UpdateCameraLensIntensityY(float x) => LSEffectsManager.inst.lensDistort.intensityY.Override(x);
 
         // 8 - 5
-        public static void updateCameraLensScale(float x) => LSEffectsManager.inst.lensDistort.scale.Override(x);
+        public static void UpdateCameraLensScale(float x) => LSEffectsManager.inst.lensDistort.scale.Override(x);
 
         #endregion
 
         #region Grain - 9
 
         // 9 - 0
-        public static void updateCameraGrain(float x) => EventManager.inst.grainIntensity = x;
+        public static void UpdateCameraGrain(float x) => EventManager.inst.grainIntensity = x;
 
         // 9 - 1
-        public static void updateCameraGrainColored(float _colored) => EventManager.inst.grainColored = _colored;
+        public static void UpdateCameraGrainColored(float _colored) => EventManager.inst.grainColored = _colored;
 
         // 9 - 2
-        public static void updateCameraGrainSize(float x) => EventManager.inst.grainSize = x;
+        public static void UpdateCameraGrainSize(float x) => EventManager.inst.grainSize = x;
 
         #endregion
 
         #region ColorGrading - 10
 
         // 10 - 0
-        public static void updateCameraHueShift(float x) => inst.colorGradingHueShift = x;
+        public static void UpdateCameraHueShift(float x) => inst.colorGradingHueShift = x;
 
         // 10 - 1
-        public static void updateCameraContrast(float x) => inst.colorGradingContrast = x;
+        public static void UpdateCameraContrast(float x) => inst.colorGradingContrast = x;
 
         // 10 - 2
-        public static void updateCameraGammaX(float x) => inst.colorGradingGamma.x = x;
+        public static void UpdateCameraGammaX(float x) => inst.colorGradingGamma.x = x;
 
         // 10 - 3
-        public static void updateCameraGammaY(float x) => inst.colorGradingGamma.y = x;
+        public static void UpdateCameraGammaY(float x) => inst.colorGradingGamma.y = x;
 
         // 10 - 4
-        public static void updateCameraGammaZ(float x) => inst.colorGradingGamma.z = x;
+        public static void UpdateCameraGammaZ(float x) => inst.colorGradingGamma.z = x;
 
         // 10 - 5
-        public static void updateCameraGammaW(float x) => inst.colorGradingGamma.w = x;
+        public static void UpdateCameraGammaW(float x) => inst.colorGradingGamma.w = x;
 
         // 10 - 6
-        public static void updateCameraSaturation(float x) => inst.colorGradingSaturation = x;
+        public static void UpdateCameraSaturation(float x) => inst.colorGradingSaturation = x;
 
         // 10 - 7
-        public static void updateCameraTemperature(float x) => inst.colorGradingTemperature = x;
+        public static void UpdateCameraTemperature(float x) => inst.colorGradingTemperature = x;
 
         // 10 - 8
-        public static void updateCameraTint(float x) => inst.colorGradingTint = x;
+        public static void UpdateCameraTint(float x) => inst.colorGradingTint = x;
 
         #endregion
 
         #region Ripples - 11
 
         // 11 - 0
-        public static void updateCameraRipplesStrength(float x) => inst.ripplesStrength = x;
+        public static void UpdateCameraRipplesStrength(float x) => inst.ripplesStrength = x;
 
         // 11 - 1
-        public static void updateCameraRipplesSpeed(float x) => inst.ripplesSpeed = x;
+        public static void UpdateCameraRipplesSpeed(float x) => inst.ripplesSpeed = x;
 
         // 11 - 2
-        public static void updateCameraRipplesDistance(float x) => inst.ripplesDistance = Mathf.Clamp(x, 0.0001f, float.PositiveInfinity);
+        public static void UpdateCameraRipplesDistance(float x) => inst.ripplesDistance = Mathf.Clamp(x, 0.0001f, float.PositiveInfinity);
 
         // 11 - 3
-        public static void updateCameraRipplesHeight(float x) => inst.ripplesHeight = x;
+        public static void UpdateCameraRipplesHeight(float x) => inst.ripplesHeight = x;
 
         // 11 - 4
-        public static void updateCameraRipplesWidth(float x) => inst.ripplesWidth = x;
+        public static void UpdateCameraRipplesWidth(float x) => inst.ripplesWidth = x;
         
         // 11 - 5
-        public static void updateCameraRipplesMode(float x) => inst.ripplesMode = (int)x;
+        public static void UpdateCameraRipplesMode(float x) => inst.ripplesMode = (int)x;
 
         #endregion
 
         #region RadialBlur - 12
 
         // 12 - 0
-        public static void updateCameraRadialBlurIntensity(float x) => inst.radialBlurIntensity = x;
+        public static void UpdateCameraRadialBlurIntensity(float x) => inst.radialBlurIntensity = x;
 
         // 12 - 1
-        public static void updateCameraRadialBlurIterations(float x) => inst.radialBlurIterations = Mathf.Clamp((int)x, 1, 30);
+        public static void UpdateCameraRadialBlurIterations(float x) => inst.radialBlurIterations = Mathf.Clamp((int)x, 1, 30);
 
         #endregion
 
         #region ColorSplit - 13
 
         // 13 - 0
-        public static void updateCameraColorSplit(float x) => inst.colorSplitOffset = x;
+        public static void UpdateCameraColorSplit(float x) => inst.colorSplitOffset = x;
 
         // 13 - 1
-        public static void updateCameraColorSplitMode(float x) => inst.colorSplitMode = (int)x;
+        public static void UpdateCameraColorSplitMode(float x) => inst.colorSplitMode = (int)x;
 
         #endregion
 
         #region Offset - 14
 
         // 14 - 0
-        public static void updateCameraOffsetX(float x) => inst.camOffsetX = x;
+        public static void UpdateCameraOffsetX(float x) => inst.camOffsetX = x;
 
         // 14 - 1
-        public static void updateCameraOffsetY(float x) => inst.camOffsetY = x;
+        public static void UpdateCameraOffsetY(float x) => inst.camOffsetY = x;
 
         #endregion
 
         #region Gradient - 15
 
         // 15 - 0
-        public static void updateCameraGradientIntensity(float x) => inst.gradientIntensity = x;
+        public static void UpdateCameraGradientIntensity(float x) => inst.gradientIntensity = x;
 
         // 15 - 1
-        public static void updateCameraGradientRotation(float x) => inst.gradientRotation = x;
+        public static void UpdateCameraGradientRotation(float x) => inst.gradientRotation = x;
 
         // 15 - 2
-        public static void updateCameraGradientColor1(float x) => inst.gradientColor1 = x;
+        public static void UpdateCameraGradientColor1(float x) => inst.gradientColor1 = x;
 
         // 15 - 3
-        public static void updateCameraGradientColor2(float x) => inst.gradientColor2 = x;
+        public static void UpdateCameraGradientColor2(float x) => inst.gradientColor2 = x;
 
         // 15 - 4
-        public static void updateCameraGradientMode(float x) => RTEffectsManager.inst.gradient.blendMode.Override((SCPE.Gradient.BlendMode)(int)x);
+        public static void UpdateCameraGradientMode(float x) => RTEffectsManager.inst.gradient.blendMode.Override((SCPE.Gradient.BlendMode)(int)x);
 
         // 15 - 5
-        public static void updateCameraGradientColor1Opacity(float x) => inst.gradientColor1Opacity = x;
+        public static void UpdateCameraGradientColor1Opacity(float x) => inst.gradientColor1Opacity = x;
 
         // 15 - 6
-        public static void updateCameraGradientColor1Hue(float x) => inst.gradientColor1Hue = x;
+        public static void UpdateCameraGradientColor1Hue(float x) => inst.gradientColor1Hue = x;
 
         // 15 - 7
-        public static void updateCameraGradientColor1Sat(float x) => inst.gradientColor1Sat = x;
+        public static void UpdateCameraGradientColor1Sat(float x) => inst.gradientColor1Sat = x;
 
         // 15 - 8
-        public static void updateCameraGradientColor1Val(float x) => inst.gradientColor1Val = x;
+        public static void UpdateCameraGradientColor1Val(float x) => inst.gradientColor1Val = x;
 
         // 15 - 5
-        public static void updateCameraGradientColor2Opacity(float x) => inst.gradientColor2Opacity = x;
+        public static void UpdateCameraGradientColor2Opacity(float x) => inst.gradientColor2Opacity = x;
 
         // 15 - 6
-        public static void updateCameraGradientColor2Hue(float x) => inst.gradientColor2Hue = x;
+        public static void UpdateCameraGradientColor2Hue(float x) => inst.gradientColor2Hue = x;
 
         // 15 - 7
-        public static void updateCameraGradientColor2Sat(float x) => inst.gradientColor2Sat = x;
+        public static void UpdateCameraGradientColor2Sat(float x) => inst.gradientColor2Sat = x;
 
         // 15 - 8
-        public static void updateCameraGradientColor2Val(float x) => inst.gradientColor2Val = x;
+        public static void UpdateCameraGradientColor2Val(float x) => inst.gradientColor2Val = x;
 
         #endregion
 
         #region DoubleVision - 16
 
         // 16 - 0
-        public static void updateCameraDoubleVision(float x) => inst.doubleVision = x;
+        public static void UpdateCameraDoubleVision(float x) => inst.doubleVision = x;
 
         // 16 - 1
-        public static void updateCameraDoubleVisionMode(float x) => inst.doubleVisionMode = (int)x;
+        public static void UpdateCameraDoubleVisionMode(float x) => inst.doubleVisionMode = (int)x;
 
         #endregion
 
         #region ScanLines - 17
 
         // 17 - 0
-        public static void updateCameraScanLinesIntensity(float x) => inst.scanLinesIntensity = x;
+        public static void UpdateCameraScanLinesIntensity(float x) => inst.scanLinesIntensity = x;
 
         // 17 - 1
-        public static void updateCameraScanLinesAmount(float x) => inst.scanLinesAmount = x;
+        public static void UpdateCameraScanLinesAmount(float x) => inst.scanLinesAmount = x;
 
         // 17 - 2
-        public static void updateCameraScanLinesSpeed(float x) => inst.scanLinesSpeed = x;
+        public static void UpdateCameraScanLinesSpeed(float x) => inst.scanLinesSpeed = x;
 
         #endregion
 
         #region Blur - 18
 
         // 18 - 0
-        public static void updateCameraBlurAmount(float x) => LSEffectsManager.inst.blur.amount.Override(!EventsConfig.Instance.ShowFX.Value ? 0f : x);
+        public static void UpdateCameraBlurAmount(float x) => LSEffectsManager.inst.blur.amount.Override(!EventsConfig.Instance.ShowFX.Value ? 0f : x);
 
         // 18 - 1
-        public static void updateCameraBlurIterations(float x) => LSEffectsManager.inst.blur.iterations.Override(Mathf.Clamp((int)x, 1, 30));
+        public static void UpdateCameraBlurIterations(float x) => LSEffectsManager.inst.blur.iterations.Override(Mathf.Clamp((int)x, 1, 30));
 
         #endregion
 
         #region Pixelize - 19
 
         // 19 - 0
-        public static void updateCameraPixelize(float x) => inst.pixel = Mathf.Clamp(x, 0f, 0.99999f);
+        public static void UpdateCameraPixelize(float x) => inst.pixel = Mathf.Clamp(x, 0f, 0.99999f);
 
         #endregion
 
         #region BG - 20
 
         // 20 - 0
-        public static void updateCameraBGColor(float x) => inst.bgColor = x;
+        public static void UpdateCameraBGColor(float x) => inst.bgColor = x;
 
         // 20 - 1
-        public static void updateCameraBGActive(float x)
+        public static void UpdateCameraBGActive(float x)
         {
             inst.bgActive = x;
 
@@ -1221,64 +1213,64 @@ namespace BetterLegacy.Arcade.Managers
         public float bgActive = 0f;
 
         // 20 - 2
-        public static void updateCameraBGHue(float x) => inst.bgHue = x;
+        public static void UpdateCameraBGHue(float x) => inst.bgHue = x;
 
         // 20 - 3
-        public static void updateCameraBGSat(float x) => inst.bgSat = x;
+        public static void UpdateCameraBGSat(float x) => inst.bgSat = x;
 
         // 20 - 4
-        public static void updateCameraBGVal(float x) => inst.bgVal = x;
+        public static void UpdateCameraBGVal(float x) => inst.bgVal = x;
 
         #endregion
 
         #region Invert - 21
 
         // 21 - 0
-        public static void updateCameraInvert(float x) => inst.invertAmount = x;
+        public static void UpdateCameraInvert(float x) => inst.invertAmount = x;
 
         #endregion
 
         #region Timeline - 22
 
         // 22 - 0
-        public static void updateTimelineActive(float x) => inst.timelineActive = (int)x == 0;
+        public static void UpdateTimelineActive(float x) => inst.timelineActive = (int)x == 0;
 
         // 22 - 1
-        public static void updateTimelinePosX(float x) => inst.timelinePos.x = x;
+        public static void UpdateTimelinePosX(float x) => inst.timelinePos.x = x;
 
         // 22 - 2
-        public static void updateTimelinePosY(float x) => inst.timelinePos.y = x;
+        public static void UpdateTimelinePosY(float x) => inst.timelinePos.y = x;
 
         // 22 - 3
-        public static void updateTimelineScaX(float x) => inst.timelineSca.x = x;
+        public static void UpdateTimelineScaX(float x) => inst.timelineSca.x = x;
 
         // 22 - 4
-        public static void updateTimelineScaY(float x) => inst.timelineSca.y = x;
+        public static void UpdateTimelineScaY(float x) => inst.timelineSca.y = x;
 
         // 22 - 5
-        public static void updateTimelineRot(float x) => inst.timelineRot = x;
+        public static void UpdateTimelineRot(float x) => inst.timelineRot = x;
 
         // 22 - 6
-        public static void updateTimelineColor(float x) => inst.timelineColor = x;
+        public static void UpdateTimelineColor(float x) => inst.timelineColor = x;
 
         // 22 - 7
-        public static void updateTimelineOpacity(float x) => inst.timelineOpacity = x;
+        public static void UpdateTimelineOpacity(float x) => inst.timelineOpacity = x;
 
         // 22 - 8
-        public static void updateTimelineHue(float x) => inst.timelineHue = x;
+        public static void UpdateTimelineHue(float x) => inst.timelineHue = x;
 
         // 22 - 9
-        public static void updateTimelineSat(float x) => inst.timelineSat = x;
+        public static void UpdateTimelineSat(float x) => inst.timelineSat = x;
 
         // 22 - 10
-        public static void updateTimelineVal(float x) => inst.timelineVal = x;
+        public static void UpdateTimelineVal(float x) => inst.timelineVal = x;
 
         #endregion
 
         #region Player - 23
 
         // 23 - 0
-        public static void updatePlayerActive(float x)
+        public static void UpdatePlayerActive(float x)
         {
             var active = (int)x == 0;
 
@@ -1294,7 +1286,7 @@ namespace BetterLegacy.Arcade.Managers
         }
 
         // 23 - 1
-        public static void updatePlayerMoveable(float x)
+        public static void UpdatePlayerMoveable(float x)
         {
             inst.playersCanMove = (int)x == 0;
             foreach (var customPlayer in PlayerManager.Players)
@@ -1308,242 +1300,244 @@ namespace BetterLegacy.Arcade.Managers
         }
 
         // 23 - 2
-        public static void updatePlayerPositionX(float x) => inst.playerPositionX = x;
+        public static void UpdatePlayerPositionX(float x) => inst.playerPositionX = x;
 
         // 23 - 3
-        public static void updatePlayerPositionY(float x) => inst.playerPositionY = x;
+        public static void UpdatePlayerPositionY(float x) => inst.playerPositionY = x;
 
         // 23 - 4
-        public static void updatePlayerRotation(float x) => inst.playerRotation = x;
+        public static void UpdatePlayerRotation(float x) => inst.playerRotation = x;
 
         // 23 - 5
-        public static void updatePlayerOoB(float x) => RTPlayer.OutOfBounds = x == 1f;
+        public static void UpdatePlayerOoB(float x) => RTPlayer.OutOfBounds = x == 1f;
 
         #endregion
 
         #region Camera Follows Player - 24
 
         // 24 - 0
-        public static void updateDelayTrackerActive(float x) => inst.delayTracker.active = (int)x == 1;
+        public static void UpdateDelayTrackerActive(float x) => inst.delayTracker.active = (int)x == 1;
 
         // 24 - 1
-        public static void updateDelayTrackerMove(float x) => inst.delayTracker.move = (int)x == 1;
+        public static void UpdateDelayTrackerMove(float x) => inst.delayTracker.move = (int)x == 1;
 
         // 24 - 2
-        public static void updateDelayTrackerRotate(float x) => inst.delayTracker.rotate = (int)x == 1;
+        public static void UpdateDelayTrackerRotate(float x) => inst.delayTracker.rotate = (int)x == 1;
 
         // 24 - 3
-        public static void updateDelayTrackerSharpness(float x) => inst.delayTracker.followSharpness = Mathf.Clamp(x, 0.001f, 1f);
+        public static void UpdateDelayTrackerSharpness(float x) => inst.delayTracker.followSharpness = Mathf.Clamp(x, 0.001f, 1f);
 
         // 24 - 4
-        public static void updateDelayTrackerOffset(float x) => inst.delayTracker.offset = x;
+        public static void UpdateDelayTrackerOffset(float x) => inst.delayTracker.offset = x;
 
         // 24 - 5
-        public static void updateDelayTrackerLimitLeft(float x) => inst.delayTracker.limitLeft = x;
+        public static void UpdateDelayTrackerLimitLeft(float x) => inst.delayTracker.limitLeft = x;
 
         // 24 - 6
-        public static void updateDelayTrackerLimitRight(float x) => inst.delayTracker.limitRight = x;
+        public static void UpdateDelayTrackerLimitRight(float x) => inst.delayTracker.limitRight = x;
 
         // 24 - 7
-        public static void updateDelayTrackerLimitUp(float x) => inst.delayTracker.limitUp = x;
+        public static void UpdateDelayTrackerLimitUp(float x) => inst.delayTracker.limitUp = x;
 
         // 24 - 8
-        public static void updateDelayTrackerLimitDown(float x) => inst.delayTracker.limitDown = x;
+        public static void UpdateDelayTrackerLimitDown(float x) => inst.delayTracker.limitDown = x;
 
         // 24 - 9
-        public static void updateDelayTrackerAnchor(float x) => inst.delayTracker.anchor = x;
+        public static void UpdateDelayTrackerAnchor(float x) => inst.delayTracker.anchor = x;
 
         #endregion
 
         #region Audio - 25
 
         // 25 - 0
-        public static void updateAudioPitch(float x) => AudioManager.inst.pitch = Mathf.Clamp(x, 0.001f, 10f) * CoreHelper.Pitch * inst.pitchOffset;
+        public static void UpdateAudioPitch(float x) => AudioManager.inst.pitch = Mathf.Clamp(x, 0.001f, 10f) * CoreHelper.Pitch * inst.pitchOffset;
 
         // 25 - 1
-        public static void updateAudioVolume(float x) => inst.audioVolume = Mathf.Clamp(x, 0f, 1f);
+        public static void UpdateAudioVolume(float x) => inst.audioVolume = Mathf.Clamp(x, 0f, 1f);
 
         #endregion
 
         #region Video BG Parent - 26
 
         // 26 - 0
-        public static void updateVideoBGParentPositionX(float x) => inst.videoBGParentPos.x = x;
+        public static void UpdateVideoBGParentPositionX(float x) => inst.videoBGParentPos.x = x;
         // 26 - 1
-        public static void updateVideoBGParentPositionY(float x) => inst.videoBGParentPos.y = x;
+        public static void UpdateVideoBGParentPositionY(float x) => inst.videoBGParentPos.y = x;
         // 26 - 2
-        public static void updateVideoBGParentPositionZ(float x) => inst.videoBGParentPos.z = x;
+        public static void UpdateVideoBGParentPositionZ(float x) => inst.videoBGParentPos.z = x;
         // 26 - 3
-        public static void updateVideoBGParentScaleX(float x) => inst.videoBGParentSca.x = x;
+        public static void UpdateVideoBGParentScaleX(float x) => inst.videoBGParentSca.x = x;
         // 26 - 4
-        public static void updateVideoBGParentScaleY(float x) => inst.videoBGParentSca.y = x;
+        public static void UpdateVideoBGParentScaleY(float x) => inst.videoBGParentSca.y = x;
         // 26 - 5
-        public static void updateVideoBGParentScaleZ(float x) => inst.videoBGParentSca.z = x;
+        public static void UpdateVideoBGParentScaleZ(float x) => inst.videoBGParentSca.z = x;
         // 26 - 6
-        public static void updateVideoBGParentRotationX(float x) => inst.videoBGParentRot.x = x;
+        public static void UpdateVideoBGParentRotationX(float x) => inst.videoBGParentRot.x = x;
         // 26 - 7
-        public static void updateVideoBGParentRotationY(float x) => inst.videoBGParentRot.y = x;
+        public static void UpdateVideoBGParentRotationY(float x) => inst.videoBGParentRot.y = x;
         // 26 - 8
-        public static void updateVideoBGParentRotationZ(float x) => inst.videoBGParentRot.z = x;
+        public static void UpdateVideoBGParentRotationZ(float x) => inst.videoBGParentRot.z = x;
 
         #endregion
 
         #region Video BG - 27
 
         // 27 - 0
-        public static void updateVideoBGPositionX(float x) => inst.videoBGPos.x = x;
+        public static void UpdateVideoBGPositionX(float x) => inst.videoBGPos.x = x;
         // 27 - 1
-        public static void updateVideoBGPositionY(float x) => inst.videoBGPos.y = x;
+        public static void UpdateVideoBGPositionY(float x) => inst.videoBGPos.y = x;
         // 27 - 2
-        public static void updateVideoBGPositionZ(float x) => inst.videoBGPos.z = x;
+        public static void UpdateVideoBGPositionZ(float x) => inst.videoBGPos.z = x;
         // 27 - 3
-        public static void updateVideoBGScaleX(float x) => inst.videoBGSca.x = x;
+        public static void UpdateVideoBGScaleX(float x) => inst.videoBGSca.x = x;
         // 27 - 4
-        public static void updateVideoBGScaleY(float x) => inst.videoBGSca.y = x;
+        public static void UpdateVideoBGScaleY(float x) => inst.videoBGSca.y = x;
         // 27 - 5
-        public static void updateVideoBGScaleZ(float x) => inst.videoBGSca.z = x;
+        public static void UpdateVideoBGScaleZ(float x) => inst.videoBGSca.z = x;
         // 27 - 6
-        public static void updateVideoBGRotationX(float x) => inst.videoBGRot.x = x;
+        public static void UpdateVideoBGRotationX(float x) => inst.videoBGRot.x = x;
         // 27 - 7
-        public static void updateVideoBGRotationY(float x) => inst.videoBGRot.y = x;
+        public static void UpdateVideoBGRotationY(float x) => inst.videoBGRot.y = x;
         // 27 - 8
-        public static void updateVideoBGRotationZ(float x) => inst.videoBGRot.z = x;
+        public static void UpdateVideoBGRotationZ(float x) => inst.videoBGRot.z = x;
         // 27 - 9
-        public static void updateVideoBGRenderLayer(float x) => inst.videoBGRenderLayer = (int)x;
+        public static void UpdateVideoBGRenderLayer(float x) => inst.videoBGRenderLayer = (int)x;
 
         #endregion
 
         #region Sharpen - 28
 
         // 28 - 0
-        public static void updateSharpen(float x) => inst.sharpen = x;
+        public static void UpdateSharpen(float x) => inst.sharpen = x;
 
         #endregion
 
         #region Bars - 29
 
         // 29 - 0
-        public static void updateBlackBarsIntensity(float x) => inst.blackBarsIntensity = x;
+        public static void UpdateBlackBarsIntensity(float x) => inst.blackBarsIntensity = x;
         // 29 - 1
-        public static void updateBlackBarsMode(float x) => inst.blackBarsMode = x;
+        public static void UpdateBlackBarsMode(float x) => inst.blackBarsMode = x;
 
         #endregion
 
         #region Danger - 30
 
         // 30 - 0
-        public static void updateDangerIntensity(float x) => inst.dangerIntensity = x;
+        public static void UpdateDangerIntensity(float x) => inst.dangerIntensity = x;
         // 30 - 1
-        public static void updateDangerSize(float x) => inst.dangerSize = x;
+        public static void UpdateDangerSize(float x) => inst.dangerSize = x;
         // 30 - 2
-        public static void updateDangerColor(float x) => inst.dangerColor = x;
+        public static void UpdateDangerColor(float x) => inst.dangerColor = x;
 
         // 30 - 3
-        public static void updateCameraDangerOpacity(float x) => inst.dangerOpacity = x;
+        public static void UpdateCameraDangerOpacity(float x) => inst.dangerOpacity = x;
 
         // 30 - 4
-        public static void updateCameraDangerHue(float x) => inst.dangerHue = x;
+        public static void UpdateCameraDangerHue(float x) => inst.dangerHue = x;
 
         // 30 - 5
-        public static void updateCameraDangerSat(float x) => inst.dangerSat = x;
+        public static void UpdateCameraDangerSat(float x) => inst.dangerSat = x;
 
         // 30 - 6
-        public static void updateCameraDangerVal(float x) => inst.dangerVal = x;
+        public static void UpdateCameraDangerVal(float x) => inst.dangerVal = x;
 
         #endregion
 
         #region 3D Rotation - 31
 
         // 31 - 0
-        public static void updateCameraRotationX(float x) => inst.camRotOffset.x = x;
+        public static void UpdateCameraRotationX(float x) => inst.camRotOffset.x = x;
         // 31 - 1
-        public static void updateCameraRotationY(float x) => inst.camRotOffset.y = x;
+        public static void UpdateCameraRotationY(float x) => inst.camRotOffset.y = x;
 
         #endregion
 
         #region Camera Depth - 32
 
         // 32 - 0
-        public static void updateCameraDepth(float x) => inst.zPosition = x;
+        public static void UpdateCameraDepth(float x) => inst.zPosition = x;
         // 32 - 1
-        public static void updateCameraPerspectiveZoom(float x) => inst.perspectiveZoom = x;
+        public static void UpdateCameraPerspectiveZoom(float x) => inst.perspectiveZoom = x;
         // 32 - 2
         public static void UpdateCameraPerspectiveGlobal(float x) => inst.bgGlobalPosition = x == 0f;
+        // 32 - 3
+        public static void UpdateCameraPerspectiveAlign(float x) => inst.bgAlignNearPlane = x == 1f;
 
         #endregion
 
         #region Window Base - 33
 
         // 33 - 0
-        public static void updateWindowForceResolution(float x) => inst.forceWindow = (int)x == 1;
+        public static void UpdateWindowForceResolution(float x) => inst.forceWindow = (int)x == 1;
         // 33 - 1
-        public static void updateWindowResolutionX(float x) => inst.windowResolution.x = x;
+        public static void UpdateWindowResolutionX(float x) => inst.windowResolution.x = x;
         // 33 - 2
-        public static void updateWindowResolutionY(float x) => inst.windowResolution.y = x;
+        public static void UpdateWindowResolutionY(float x) => inst.windowResolution.y = x;
         // 33 - 3
-        public static void updateWindowAllowPositioning(float x) => inst.allowWindowPositioning = (int)x == 1;
+        public static void UpdateWindowAllowPositioning(float x) => inst.allowWindowPositioning = (int)x == 1;
 
         #endregion
 
         #region Window Position X - 34
 
         // 34 - 0
-        public static void updateWindowPositionX(float x) => inst.windowPosition.x = x;
+        public static void UpdateWindowPositionX(float x) => inst.windowPosition.x = x;
 
         #endregion
 
         #region Window Position Y - 35
 
         // 35 - 0
-        public static void updateWindowPositionY(float x) => inst.windowPosition.y = x;
+        public static void UpdateWindowPositionY(float x) => inst.windowPosition.y = x;
 
         #endregion
 
         #region Player Force - 36
 
         // 36 - 0
-        public static void updatePlayerForceX(float x) => inst.playerForceX = x;
+        public static void UpdatePlayerForceX(float x) => inst.playerForceX = x;
 
         // 36 - 1
-        public static void updatePlayerForceY(float x) => inst.playerForceY = x;
+        public static void UpdatePlayerForceY(float x) => inst.playerForceY = x;
 
         #endregion
 
         #region Mosaic - 37
 
         // 37 - 0
-        public static void updateCameraMosaic(float x) => inst.mosaicIntensity = x;
+        public static void UpdateCameraMosaic(float x) => inst.mosaicIntensity = x;
 
         #endregion
 
         #region Analog Glitch - 38
 
         // 38 - 0
-        public static void updateAnalogGlitchEnabled(float x) => inst.analogGlitchEnabled = (int)x == 1;
+        public static void UpdateAnalogGlitchEnabled(float x) => inst.analogGlitchEnabled = (int)x == 1;
 
         // 38 - 1
-        public static void updateAnalogGlitchColorDrift(float x)
+        public static void UpdateAnalogGlitchColorDrift(float x)
         {
             if (inst.analogGlitch)
                 inst.analogGlitch.colorDrift = x;
         }
 
         // 38 - 2
-        public static void updateAnalogGlitchHorizontalShake(float x)
+        public static void UpdateAnalogGlitchHorizontalShake(float x)
         {
             if (inst.analogGlitch)
                 inst.analogGlitch.horizontalShake = x;
         }
 
         // 38 - 3
-        public static void updateAnalogGlitchScanLineJitter(float x)
+        public static void UpdateAnalogGlitchScanLineJitter(float x)
         {
             if (inst.analogGlitch)
                 inst.analogGlitch.scanLineJitter = x;
         }
 
         // 38 - 4
-        public static void updateAnalogGlitchVerticalJump(float x)
+        public static void UpdateAnalogGlitchVerticalJump(float x)
         {
             if (inst.analogGlitch)
                 inst.analogGlitch.verticalJump = x;
@@ -1554,7 +1548,7 @@ namespace BetterLegacy.Arcade.Managers
         #region Digital Glitch - 39
 
         // 39 - 0
-        public static void updateDigitalGlitchIntensity(float x)
+        public static void UpdateDigitalGlitchIntensity(float x)
         {
             if (inst.digitalGlitch)
                 inst.digitalGlitch.intensity = x;
@@ -1565,6 +1559,11 @@ namespace BetterLegacy.Arcade.Managers
         #endregion
 
         #region Variables
+
+        public int prevTheme;
+        public int nextTheme;
+
+        public bool bgAlignNearPlane = true;
 
         public bool bgGlobalPosition = false;
 
@@ -1737,7 +1736,7 @@ namespace BetterLegacy.Arcade.Managers
 
         public void SetOffset(int eventType, int indexValue, float value)
         {
-            if (eventType >= 0 && eventType < offsets.Count && indexValue >= 0 && indexValue < offsets[eventType].Count)
+            if (offsets.InRange(eventType) && offsets[eventType].InRange(indexValue))
                 offsets[eventType][indexValue] = value;
         }
 
@@ -1746,288 +1745,14 @@ namespace BetterLegacy.Arcade.Managers
             previousAudioTime = 0.0f;
             audioTimeVelocity = 0.0f;
 
-            return new List<List<float>>
+            var list = new List<List<float>>();
+            for (int i = 0; i < events.Length; i++)
             {
-                new List<float>
-                {
-                    0f, // Move X
-                    0f, // Move Y
-                }, // Move - 0
-                new List<float>
-                {
-                    0f, // Zoom
-                }, // Zoom - 1
-                new List<float>
-                {
-                    0f, // Rotate
-                }, // Rotate - 2
-                new List<float>
-                {
-                    0f, // Shake
-                    0f, // Shake X
-                    0f, // Shake Y
-                    0f, // Shake Interpolation
-                    0f, // Shake Speed
-                }, // Shake - 3
-                new List<float>
-                {
-                    0f, // Theme
-                }, // Theme - 4
-                new List<float>
-                {
-                    0f, // Chromatic
-                }, // Chromatic - 5
-                new List<float>
-                {
-                    0f, // Bloom Intensity
-                    0f, // Bloom Diffusion
-                    0f, // Bloom Threshold
-                    0f, // Bloom Anamorphic Ratio
-                    0f, // Bloom Color
-                    0f, // Bloom Hue
-                    0f, // Bloom Sat
-                    0f, // Bloom Val
-                }, // Bloom - 6
-                new List<float>
-                {
-                    0f, // Vignette Intensity
-                    0f, // Vignette Smoothness
-                    0f, // Vignette Rounded
-                    0f, // Vignette Roundness
-                    0f, // Vignette Center X
-                    0f, // Vignette Center Y
-                    0f, // Vignette Color
-                    0f, // Vignette Hue
-                    0f, // Vignette Sat
-                    0f, // Vignette Val
-                }, // Vignette - 7
-                new List<float>
-                {
-                    0f, // Lens Intensity
-                    0f, // Lens Center X
-                    0f, // Lens Center Y
-                    0f, // Lens Intensity X
-                    0f, // Lens Intensity Y
-                    0f, // Lens Scale
-                }, // Lens - 8
-                new List<float>
-                {
-                    0f, // Grain Intensity
-                    0f, // Grain Colored
-                    0f, // Grain Size
-                }, // Grain - 9
-                new List<float>
-                {
-                    0f, // ColorGrading Hueshift
-                    0f, // ColorGrading Contrast
-                    0f, // ColorGrading Gamma X
-                    0f, // ColorGrading Gamma Y
-                    0f, // ColorGrading Gamma Z
-                    0f, // ColorGrading Gamma W
-                    0f, // ColorGrading Saturation
-                    0f, // ColorGrading Temperature
-                    0f, // ColorGrading Tint
-                }, // ColorGrading - 10
-                new List<float>
-                {
-                    0f, // Ripples Strength
-                    0f, // Ripples Speed
-                    0f, // Ripples Distance
-                    0f, // Ripples Height
-                    0f, // Ripples Width
-                    0f, // Ripples Mode
-                }, // Ripples - 11
-                new List<float>
-                {
-                    0f, // RadialBlur Intensity
-                    0f, // RadialBlur Iterations
-                }, // RadialBlur - 12
-                new List<float>
-                {
-                    0f, // ColorSplit Offset
-                    0f, // ColorSplit Mode
-                }, // ColorSplit - 13
-                new List<float>
-                {
-                    0f, // Camera Offset X
-                    0f, // Camera Offset Y
-                }, // Offset - 14
-                new List<float>
-                {
-                    0f, // Gradient Intensity
-                    0f, // Gradient Rotation
-                    0f, // Gradient Color Top
-                    0f, // Gradient Color Bottom
-                    0f, // Gradient Mode
-                    0f, // Gradient Color Top Opacity
-                    0f, // Gradient Color Top Hue
-                    0f, // Gradient Color Top Sat
-                    0f, // Gradient Color Top Val
-                    0f, // Gradient Color Bottom Opacity
-                    0f, // Gradient Color Bottom Hue
-                    0f, // Gradient Color Bottom Sat
-                    0f, // Gradient Color Bottom Val
-                }, // Gradient - 15
-                new List<float>
-                {
-                    0f, // DoubleVision Intensity
-                    0f, // DoubleVision Mode
-                }, // DoubleVision
-                new List<float>
-                {
-                    0f, // ScanLines Intensity
-                    0f, // ScanLines Amount
-                    0f, // ScanLines Speed
-                }, // ScanLines
-                new List<float>
-                {
-                    0f, // Blur Amount
-                    0f, // Blur Iterations
-                }, // Blur
-                new List<float>
-                {
-                    0f, // Pixelize Amount
-                }, // Pixelize
-                new List<float>
-                {
-                    0f, // BG Color
-                    0f, // BG Active
-                    0f, // BG Hue
-                    0f, // BG Sat
-                    0f, // BG Val
-                }, // BG
-                new List<float>
-                {
-                    0f, // Invert Amount
-                }, // Invert
-                new List<float>
-                {
-                    0f, // Timeline Active
-                    0f, // Timeline Pos X
-                    0f, // Timeline Pos Y
-                    0f, // Timeline Sca X
-                    0f, // Timeline Sca Y
-                    0f, // Timeline Rot
-                    0f, // Timeline Color
-                    0f, // Timeline Opacity
-                    0f, // Timeline Hue
-                    0f, // Timeline Sat
-                    0f, // Timeline Val
-                }, // Timeline
-                new List<float>
-                {
-                    0f, // Player Active
-                    0f, // Player Moveable
-                    0f, // Player Velocity
-                    0f, // Player Rotation
-                    0f, // Player OoB
-                },
-                new List<float>
-                {
-                    0f, // Follow Player Active
-                    0f, // Follow Player Move
-                    0f, // Follow Player Rotate
-                    0f, // Follow Player Sharpness
-                    0f, // Follow Player Offset
-                    0f, // Follow Player Limit Left
-                    0f, // Follow Player Limit Right
-                    0f, // Follow Player Limit Up
-                    0f, // Follow Player Limit Down
-                    0f, // Follow Player Anchor
-                },
-                new List<float>
-                {
-                    0f, // Audio Pitch
-                    0f, // Audio Volume
-                },
-                new List<float>
-                {
-                    0f, // Video BG Parent Position X
-                    0f, // Video BG Parent Position Y
-                    0f, // Video BG Parent Position Z
-                    0f, // Video BG Parent Scale X
-                    0f, // Video BG Parent Scale Y
-                    0f, // Video BG Parent Scale Z
-                    0f, // Video BG Parent Rotation X
-                    0f, // Video BG Parent Rotation Y
-                    0f, // Video BG Parent Rotation Z
-                },
-                new List<float>
-                {
-                    0f, // Video BG Position X
-                    0f, // Video BG Position Y
-                    0f, // Video BG Position Z
-                    0f, // Video BG Scale X
-                    0f, // Video BG Scale Y
-                    0f, // Video BG Scale Z
-                    0f, // Video BG Rotation X
-                    0f, // Video BG Rotation Y
-                    0f, // Video BG Rotation Z
-                    0f, // Video BG Render Layer
-                },
-                new List<float>
-                {
-                    0f, // Sharpen
-                },
-                new List<float>
-                {
-                    0f, // Bars Intensity
-                    0f, // Bars Mode
-                },
-                new List<float>
-                {
-                    0f, // Danger Intensity
-                    0f, // Danger Size
-                    0f, // Danger Color
-                    0f, // Danger Opacity
-                    0f, // Danger Hue
-                    0f, // Danger Sat
-                    0f, // Danger Val
-                }, // Danger
-                new List<float>
-                {
-                    0f, // Rotation X
-                    0f, // Rotation Y
-                },
-                new List<float>
-                {
-                    0f, // Camera Depth
-                    0f, // Camera Perspective Zoom
-                    0f, // Camera BG Global Position
-                },
-                new List<float>
-                {
-                    0f, // Force Window Resolution (1 = true, includes position)
-					0f, // Window Resolution X
-					0f, // Window Resolution Y
-					0f, // Window Allow Positioning
-                },
-                new List<float>
-                {
-                    0f, // Window Position X
-                },
-                new List<float>
-                {
-                    0f, // Window Position Y
-                },
-                new List<float>
-                {
-                    0f, // Player Force X
-                    0f, // Player Force Y
-                }, // Player Force
-                new List<float>
-                {
-                    0f,
-                    0f,
-                    0f,
-                    0f,
-                    0f,
-                }, // Analog Glitch
-                new List<float>
-                {
-                    0f,
-                }, // Digital Glitch
-            };
+                list.Add(new List<float>());
+                for (int j = 0; j < events[i].Length; j++)
+                    list[i].Add(0f);
+            }
+            return list;
         }
 
         public List<List<float>> offsets;
@@ -2042,287 +1767,288 @@ namespace BetterLegacy.Arcade.Managers
         {
             new KFDelegate[]
             {
-                updateCameraPositionX,
-                updateCameraPositionY,
+                UpdateCameraPositionX,
+                UpdateCameraPositionY,
             }, // Move
             new KFDelegate[]
             {
-                updateCameraZoom
+                UpdateCameraZoom
             }, // Rotate
             new KFDelegate[]
             {
-                updateCameraRotation
+                UpdateCameraRotation
             }, // Zoom
             new KFDelegate[]
             {
-                updateCameraShakeMultiplier,
-                updateCameraShakeX,
-                updateCameraShakeY,
-                updateCameraShakeSmoothness,
-                updateCameraShakeSpeed
+                UpdateCameraShakeMultiplier,
+                UpdateCameraShakeX,
+                UpdateCameraShakeY,
+                UpdateCameraShakeSmoothness,
+                UpdateCameraShakeSpeed
             }, // Shake
             new KFDelegate[]
             {
-                updateTheme
+                UpdateTheme
             }, // Theme
             new KFDelegate[]
             {
-                updateCameraChromatic
+                UpdateCameraChromatic
             }, // Chroma
             new KFDelegate[]
             {
-                updateCameraBloom,
-                updateCameraBloomDiffusion,
-                updateCameraBloomThreshold,
-                updateCameraBloomAnamorphicRatio,
-                updateCameraBloomColor,
-                updateCameraBloomHue,
-                updateCameraBloomSat,
-                updateCameraBloomVal,
+                UpdateCameraBloom,
+                UpdateCameraBloomDiffusion,
+                UpdateCameraBloomThreshold,
+                UpdateCameraBloomAnamorphicRatio,
+                UpdateCameraBloomColor,
+                UpdateCameraBloomHue,
+                UpdateCameraBloomSat,
+                UpdateCameraBloomVal,
             }, // Bloom
             new KFDelegate[]
             {
-                updateCameraVignette,
-                updateCameraVignetteSmoothness,
-                updateCameraVignetteRounded,
-                updateCameraVignetteRoundness,
-                updateCameraVignetteCenterX,
-                updateCameraVignetteCenterY,
-                updateCameraVignetteColor,
-                updateCameraVignetteHue,
-                updateCameraVignetteSat,
-                updateCameraVignetteVal,
+                UpdateCameraVignette,
+                UpdateCameraVignetteSmoothness,
+                UpdateCameraVignetteRounded,
+                UpdateCameraVignetteRoundness,
+                UpdateCameraVignetteCenterX,
+                UpdateCameraVignetteCenterY,
+                UpdateCameraVignetteColor,
+                UpdateCameraVignetteHue,
+                UpdateCameraVignetteSat,
+                UpdateCameraVignetteVal,
             }, // Vignette
             new KFDelegate[]
             {
-                updateCameraLens,
-                updateCameraLensCenterX,
-                updateCameraLensCenterY,
-                updateCameraLensIntensityX,
-                updateCameraLensIntensityY,
-                updateCameraLensScale
+                UpdateCameraLens,
+                UpdateCameraLensCenterX,
+                UpdateCameraLensCenterY,
+                UpdateCameraLensIntensityX,
+                UpdateCameraLensIntensityY,
+                UpdateCameraLensScale
             }, // Lens
             new KFDelegate[]
             {
-                updateCameraGrain,
-                updateCameraGrainColored,
-                updateCameraGrainSize
+                UpdateCameraGrain,
+                UpdateCameraGrainColored,
+                UpdateCameraGrainSize
             }, // Grain
             new KFDelegate[]
             {
-                updateCameraHueShift,
-                updateCameraContrast,
-                updateCameraGammaX,
-                updateCameraGammaY,
-                updateCameraGammaZ,
-                updateCameraGammaW,
-                updateCameraSaturation,
-                updateCameraTemperature,
-                updateCameraTint
+                UpdateCameraHueShift,
+                UpdateCameraContrast,
+                UpdateCameraGammaX,
+                UpdateCameraGammaY,
+                UpdateCameraGammaZ,
+                UpdateCameraGammaW,
+                UpdateCameraSaturation,
+                UpdateCameraTemperature,
+                UpdateCameraTint
             }, // ColorGrading
             new KFDelegate[]
             {
-                updateCameraRipplesStrength,
-                updateCameraRipplesSpeed,
-                updateCameraRipplesDistance,
-                updateCameraRipplesHeight,
-                updateCameraRipplesWidth,
-                updateCameraRipplesMode
+                UpdateCameraRipplesStrength,
+                UpdateCameraRipplesSpeed,
+                UpdateCameraRipplesDistance,
+                UpdateCameraRipplesHeight,
+                UpdateCameraRipplesWidth,
+                UpdateCameraRipplesMode
             }, // Ripples
             new KFDelegate[]
             {
-                updateCameraRadialBlurIntensity,
-                updateCameraRadialBlurIterations
+                UpdateCameraRadialBlurIntensity,
+                UpdateCameraRadialBlurIterations
             }, // RadialBlur
             new KFDelegate[]
             {
-                updateCameraColorSplit,
-                updateCameraColorSplitMode
+                UpdateCameraColorSplit,
+                UpdateCameraColorSplitMode
             }, // ColorSplit
             new KFDelegate[]
             {
-                updateCameraOffsetX,
-                updateCameraOffsetY
+                UpdateCameraOffsetX,
+                UpdateCameraOffsetY
             }, // Offset
             new KFDelegate[]
             {
-                updateCameraGradientIntensity,
-                updateCameraGradientRotation,
-                updateCameraGradientColor1,
-                updateCameraGradientColor2,
-                updateCameraGradientMode,
-                updateCameraGradientColor1Opacity,
-                updateCameraGradientColor1Hue,
-                updateCameraGradientColor1Sat,
-                updateCameraGradientColor1Val,
-                updateCameraGradientColor2Opacity,
-                updateCameraGradientColor2Hue,
-                updateCameraGradientColor2Sat,
-                updateCameraGradientColor2Val,
+                UpdateCameraGradientIntensity,
+                UpdateCameraGradientRotation,
+                UpdateCameraGradientColor1,
+                UpdateCameraGradientColor2,
+                UpdateCameraGradientMode,
+                UpdateCameraGradientColor1Opacity,
+                UpdateCameraGradientColor1Hue,
+                UpdateCameraGradientColor1Sat,
+                UpdateCameraGradientColor1Val,
+                UpdateCameraGradientColor2Opacity,
+                UpdateCameraGradientColor2Hue,
+                UpdateCameraGradientColor2Sat,
+                UpdateCameraGradientColor2Val,
             }, // Gradient
             new KFDelegate[]
             {
-                updateCameraDoubleVision,
-                updateCameraDoubleVisionMode
+                UpdateCameraDoubleVision,
+                UpdateCameraDoubleVisionMode
             }, // DoubleVision
             new KFDelegate[]
             {
-                updateCameraScanLinesIntensity,
-                updateCameraScanLinesAmount,
-                updateCameraScanLinesSpeed
+                UpdateCameraScanLinesIntensity,
+                UpdateCameraScanLinesAmount,
+                UpdateCameraScanLinesSpeed
             }, // ScanLines
             new KFDelegate[]
             {
-                updateCameraBlurAmount,
-                updateCameraBlurIterations
+                UpdateCameraBlurAmount,
+                UpdateCameraBlurIterations
             }, // Blur
             new KFDelegate[]
             {
-                updateCameraPixelize
+                UpdateCameraPixelize
             }, // Pixelize
             new KFDelegate[]
             {
-                updateCameraBGColor,
-                updateCameraBGActive,
-                updateCameraBGHue,
-                updateCameraBGSat,
-                updateCameraBGVal,
+                UpdateCameraBGColor,
+                UpdateCameraBGActive,
+                UpdateCameraBGHue,
+                UpdateCameraBGSat,
+                UpdateCameraBGVal,
             }, // BG
             new KFDelegate[]
             {
-                updateCameraInvert
+                UpdateCameraInvert
             }, // Invert
             new KFDelegate[]
             {
-                updateTimelineActive,
-                updateTimelinePosX,
-                updateTimelinePosY,
-                updateTimelineScaX,
-                updateTimelineScaY,
-                updateTimelineRot,
-                updateTimelineColor,
-                updateTimelineOpacity,
-                updateTimelineHue,
-                updateTimelineSat,
-                updateTimelineVal,
+                UpdateTimelineActive,
+                UpdateTimelinePosX,
+                UpdateTimelinePosY,
+                UpdateTimelineScaX,
+                UpdateTimelineScaY,
+                UpdateTimelineRot,
+                UpdateTimelineColor,
+                UpdateTimelineOpacity,
+                UpdateTimelineHue,
+                UpdateTimelineSat,
+                UpdateTimelineVal,
             }, // Timeline
             new KFDelegate[]
             {
-                updatePlayerActive,
-                updatePlayerMoveable,
-                updatePlayerPositionX,
-                updatePlayerPositionY,
-                updatePlayerRotation,
-                updatePlayerOoB
+                UpdatePlayerActive,
+                UpdatePlayerMoveable,
+                UpdatePlayerPositionX,
+                UpdatePlayerPositionY,
+                UpdatePlayerRotation,
+                UpdatePlayerOoB
             }, // Player
             new KFDelegate[]
             {
-                updateDelayTrackerActive,
-                updateDelayTrackerMove,
-                updateDelayTrackerRotate,
-                updateDelayTrackerSharpness,
-                updateDelayTrackerOffset,
-                updateDelayTrackerLimitLeft,
-                updateDelayTrackerLimitRight,
-                updateDelayTrackerLimitUp,
-                updateDelayTrackerLimitDown,
-                updateDelayTrackerAnchor,
+                UpdateDelayTrackerActive,
+                UpdateDelayTrackerMove,
+                UpdateDelayTrackerRotate,
+                UpdateDelayTrackerSharpness,
+                UpdateDelayTrackerOffset,
+                UpdateDelayTrackerLimitLeft,
+                UpdateDelayTrackerLimitRight,
+                UpdateDelayTrackerLimitUp,
+                UpdateDelayTrackerLimitDown,
+                UpdateDelayTrackerAnchor,
             }, // Camera Follows Player
             new KFDelegate[]
             {
-                updateAudioPitch,
-                updateAudioVolume
+                UpdateAudioPitch,
+                UpdateAudioVolume
             }, // Audio
             new KFDelegate[]
             {
-                updateVideoBGParentPositionX,
-                updateVideoBGParentPositionY,
-                updateVideoBGParentPositionZ,
-                updateVideoBGParentScaleX,
-                updateVideoBGParentScaleY,
-                updateVideoBGParentScaleZ,
-                updateVideoBGParentRotationX,
-                updateVideoBGParentRotationY,
-                updateVideoBGParentRotationZ,
+                UpdateVideoBGParentPositionX,
+                UpdateVideoBGParentPositionY,
+                UpdateVideoBGParentPositionZ,
+                UpdateVideoBGParentScaleX,
+                UpdateVideoBGParentScaleY,
+                UpdateVideoBGParentScaleZ,
+                UpdateVideoBGParentRotationX,
+                UpdateVideoBGParentRotationY,
+                UpdateVideoBGParentRotationZ,
             }, // Video BG Parent
             new KFDelegate[]
             {
-                updateVideoBGPositionX,
-                updateVideoBGPositionY,
-                updateVideoBGPositionZ,
-                updateVideoBGScaleX,
-                updateVideoBGScaleY,
-                updateVideoBGScaleZ,
-                updateVideoBGRotationX,
-                updateVideoBGRotationY,
-                updateVideoBGRotationZ,
-                updateVideoBGRenderLayer,
+                UpdateVideoBGPositionX,
+                UpdateVideoBGPositionY,
+                UpdateVideoBGPositionZ,
+                UpdateVideoBGScaleX,
+                UpdateVideoBGScaleY,
+                UpdateVideoBGScaleZ,
+                UpdateVideoBGRotationX,
+                UpdateVideoBGRotationY,
+                UpdateVideoBGRotationZ,
+                UpdateVideoBGRenderLayer,
             }, // Video BG
             new KFDelegate[]
             {
-                updateSharpen
+                UpdateSharpen
             }, // Sharpen
             new KFDelegate[]
             {
-                updateBlackBarsIntensity,
-                updateBlackBarsMode
+                UpdateBlackBarsIntensity,
+                UpdateBlackBarsMode
             }, // Bars
             new KFDelegate[]
             {
-                updateDangerIntensity,
-                updateDangerSize,
-                updateDangerColor,
-                updateCameraDangerOpacity,
-                updateCameraDangerHue,
-                updateCameraDangerSat,
-                updateCameraDangerVal,
+                UpdateDangerIntensity,
+                UpdateDangerSize,
+                UpdateDangerColor,
+                UpdateCameraDangerOpacity,
+                UpdateCameraDangerHue,
+                UpdateCameraDangerSat,
+                UpdateCameraDangerVal,
             }, // Danger
             new KFDelegate[]
             {
-                updateCameraRotationX,
-                updateCameraRotationY
+                UpdateCameraRotationX,
+                UpdateCameraRotationY
             }, // 3D Rotation
             new KFDelegate[]
             {
-                updateCameraDepth,
-                updateCameraPerspectiveZoom,
-                UpdateCameraPerspectiveGlobal
+                UpdateCameraDepth,
+                UpdateCameraPerspectiveZoom,
+                UpdateCameraPerspectiveGlobal,
+                UpdateCameraPerspectiveAlign
             }, // Camera Depth
             new KFDelegate[]
             {
-                updateWindowForceResolution,
-                updateWindowResolutionX,
-                updateWindowResolutionY,
-                updateWindowAllowPositioning
+                UpdateWindowForceResolution,
+                UpdateWindowResolutionX,
+                UpdateWindowResolutionY,
+                UpdateWindowAllowPositioning
             }, // Window Base
             new KFDelegate[]
             {
-                updateWindowPositionX
+                UpdateWindowPositionX
             }, // Window Position X
             new KFDelegate[]
             {
-                updateWindowPositionY
+                UpdateWindowPositionY
             }, // Window Position Y
             new KFDelegate[]
             {
-                updatePlayerForceX,
-                updatePlayerForceY
+                UpdatePlayerForceX,
+                UpdatePlayerForceY
             }, // Player Force
             new KFDelegate[]
             {
-                updateCameraMosaic
+                UpdateCameraMosaic
             }, // Mosaic
             new KFDelegate[]
             {
-                updateAnalogGlitchEnabled,
-                updateAnalogGlitchColorDrift,
-                updateAnalogGlitchHorizontalShake,
-                updateAnalogGlitchScanLineJitter,
-                updateAnalogGlitchVerticalJump,
+                UpdateAnalogGlitchEnabled,
+                UpdateAnalogGlitchColorDrift,
+                UpdateAnalogGlitchHorizontalShake,
+                UpdateAnalogGlitchScanLineJitter,
+                UpdateAnalogGlitchVerticalJump,
             }, // Analog Glitch
             new KFDelegate[]
             {
-                updateDigitalGlitchIntensity,
+                UpdateDigitalGlitchIntensity,
             }, // Digital Glitch
         };
 
