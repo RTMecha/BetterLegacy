@@ -9,7 +9,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Name of the modifier.
         /// </summary>
-        public string Name => commands != null && commands.Count > 0 ? commands[0] : "Invalid Modifier";
+        public string Name => commands != null && !commands.IsEmpty() ? commands[0] : "Invalid Modifier";
 
         /// <summary>
         /// Function type.
@@ -120,7 +120,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool GetBool(int index, bool defaultValue)
         {
-            if (index < 0 || index >= commands.Count)
+            if (!commands.InRange(index))
                 return defaultValue;
 
             return Parser.TryParse(GetValue(index), defaultValue);
@@ -128,7 +128,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         
         public float GetFloat(int index, float defaultValue)
         {
-            if (index < 0 || index >= commands.Count)
+            if (!commands.InRange(index))
                 return defaultValue;
 
             return Parser.TryParse(GetValue(index), defaultValue);
@@ -136,7 +136,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         
         public int GetInt(int index, int defaultValue)
         {
-            if (index < 0 || index >= commands.Count)
+            if (!commands.InRange(index))
                 return defaultValue;
 
             return Parser.TryParse(GetValue(index), defaultValue);
@@ -144,7 +144,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string GetString(int index, string defaultValue)
         {
-            if (index < 0 || index >= commands.Count)
+            if (!commands.InRange(index))
                 return defaultValue;
 
             return GetValue(index);

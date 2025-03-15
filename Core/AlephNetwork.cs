@@ -78,7 +78,7 @@ namespace BetterLegacy.Core
                 _ => null,
             };
 
-            if (links == null || site < 0 || site >= links.Count)
+            if (links == null || !links.InRange(site))
                 return null;
 
             var linkFormat = links[site];

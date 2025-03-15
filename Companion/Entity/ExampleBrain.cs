@@ -57,7 +57,7 @@ namespace BetterLegacy.Companion.Entity
         {
             get
             {
-                if (!Cursor.visible && InputDataManager.inst.players.Count > 0)
+                if (!Cursor.visible && !InputDataManager.inst.players.IsEmpty())
                 {
                     var player = PlayerManager.Players[0];
 

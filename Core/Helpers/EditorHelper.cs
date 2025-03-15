@@ -283,7 +283,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var kfs = ObjectEditor.inst.copiedObjectKeyframes;
 
-            if (kfs.Count <= 0)
+            if (kfs.IsEmpty())
             {
                 EditorManager.inst.DisplayNotification("No copied keyframes yet!", 2f, EditorManager.NotificationType.Warning);
                 return;
@@ -327,7 +327,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var kfs = ObjectEditor.inst.copiedObjectKeyframes;
 
-            if (kfs.Count <= 0)
+            if (kfs.IsEmpty())
             {
                 EditorManager.inst.DisplayNotification("No copied keyframes yet!", 2f, EditorManager.NotificationType.Warning);
                 return;

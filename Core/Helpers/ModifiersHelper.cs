@@ -153,7 +153,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (active)
             {
-                if (triggers.Count > 0)
+                if (!triggers.IsEmpty())
                 {
                     // If all triggers are active
                     if (CheckTriggers(triggers))
@@ -301,11 +301,11 @@ namespace BetterLegacy.Core.Helpers
             {
                 modifier.verified = true;
 
-                if (modifier.commands.Count > 0 && !modifier.Name.Contains("DEVONLY"))
+                if (!modifier.commands.IsEmpty() && !modifier.Name.Contains("DEVONLY"))
                     modifier.VerifyModifier(modifiers);
             }
 
-            return modifier.commands.Count > 0;
+            return !modifier.commands.IsEmpty();
         }
 
         #region BeatmapObject
@@ -335,23 +335,23 @@ namespace BetterLegacy.Core.Helpers
             },
             "playerHealthEquals" => modifier =>
             {
-                return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health == modifier.GetInt(0, 0));
+                return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health == modifier.GetInt(0, 0));
             },
             "playerHealthLesserEquals" => modifier =>
             {
-                return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health <= modifier.GetInt(0, 0));
+                return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health <= modifier.GetInt(0, 0));
             },
             "playerHealthGreaterEquals" => modifier =>
             {
-                return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health >= modifier.GetInt(0, 0));
+                return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health >= modifier.GetInt(0, 0));
             },
             "playerHealthLesser" => modifier =>
             {
-                return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health < modifier.GetInt(0, 0));
+                return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health < modifier.GetInt(0, 0));
             },
             "playerHealthGreater" => modifier =>
             {
-                return InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x.health > modifier.GetInt(0, 0));
+                return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health > modifier.GetInt(0, 0));
             },
             "playerMoving" => modifier =>
             {
@@ -382,7 +382,7 @@ namespace BetterLegacy.Core.Helpers
                         .Where(x => x.Player && x.Player.rb)
                         .OrderBy(x => Vector2.Distance(x.Player.rb.position, levelObject.visualObject.GameObject.transform.position)).ToList();
 
-                    if (orderedList.Count > 0)
+                    if (!orderedList.IsEmpty())
                     {
                         var closest = orderedList[0];
 
@@ -394,11 +394,11 @@ namespace BetterLegacy.Core.Helpers
             },
             "playerAlive" => modifier =>
             {
-                if (int.TryParse(modifier.value, out int hit) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                if (int.TryParse(modifier.value, out int index) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                 {
-                    if (PlayerManager.Players.Count > hit)
+                    if (PlayerManager.Players.Count > index)
                     {
-                        var closest = PlayerManager.Players[hit];
+                        var closest = PlayerManager.Players[index];
 
                         return closest.Player && closest.Player.Alive;
                     }
@@ -584,7 +584,7 @@ namespace BetterLegacy.Core.Helpers
 
                     if (modifier.reference.detector)
                     {
-                        if (modifier.reference.detector.hovered && list.Count > 0)
+                        if (modifier.reference.detector.hovered && !list.IsEmpty())
                         {
                             foreach (var bm in list)
                                 CoreHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(0, 0f)));
@@ -672,7 +672,7 @@ namespace BetterLegacy.Core.Helpers
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                 {
                     var list = (!modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value)).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.Collider);
-                    return list.Count > 0 && list.Any(x => x.levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
+                    return !list.IsEmpty() && list.Any(x => x.levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
                 }
 
                 return false;
@@ -788,7 +788,7 @@ namespace BetterLegacy.Core.Helpers
 
                 int num = modifier.GetInt(0, 0);
 
-                return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable == num);
+                return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable == num);
             },
             "variableOtherLesserEquals" => modifier =>
             {
@@ -796,7 +796,7 @@ namespace BetterLegacy.Core.Helpers
 
                 int num = modifier.GetInt(0, 0);
 
-                return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable <= num);
+                return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable <= num);
             },
             "variableOtherGreaterEquals" => modifier =>
             {
@@ -804,7 +804,7 @@ namespace BetterLegacy.Core.Helpers
 
                 int num = modifier.GetInt(0, 0);
 
-                return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable >= num);
+                return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable >= num);
             },
             "variableOtherLesser" => modifier =>
             {
@@ -812,7 +812,7 @@ namespace BetterLegacy.Core.Helpers
 
                 int num = modifier.GetInt(0, 0);
 
-                return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable < num);
+                return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable < num);
             },
             "variableOtherGreater" => modifier =>
             {
@@ -820,7 +820,7 @@ namespace BetterLegacy.Core.Helpers
 
                 int num = modifier.GetInt(0, 0);
 
-                return beatmapObjects.Count > 0 && beatmapObjects.Any(x => x.integerVariable > num);
+                return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable > num);
             },
 
             #endregion
@@ -1774,7 +1774,7 @@ namespace BetterLegacy.Core.Helpers
             "blurOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var num = modifier.GetFloat(0, 0f);
@@ -1816,7 +1816,7 @@ namespace BetterLegacy.Core.Helpers
             "blurVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var num = modifier.GetFloat(0, 0f);
@@ -1862,7 +1862,7 @@ namespace BetterLegacy.Core.Helpers
             "blurColoredOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var num = modifier.GetFloat(0, 0f);
@@ -2084,7 +2084,7 @@ namespace BetterLegacy.Core.Helpers
                 var bodyType = modifier.GetInt(6, 0);
 
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 foreach (var beatmapObject in list)
@@ -2762,7 +2762,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.commands.Count == 2)
                 {
                     var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
-                    if (list.Count <= 0)
+                    if (list.IsEmpty())
                         return;
 
                     int num = modifier.GetInt(0, 0);
@@ -2776,7 +2776,7 @@ namespace BetterLegacy.Core.Helpers
             "addVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 int num = modifier.GetInt(0, 0);
@@ -2789,7 +2789,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.commands.Count == 2)
                 {
                     var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
-                    if (list.Count <= 0)
+                    if (list.IsEmpty())
                         return;
 
                     int num = modifier.GetInt(0, 0);
@@ -2803,7 +2803,7 @@ namespace BetterLegacy.Core.Helpers
             "subVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 int num = modifier.GetInt(0, 0);
@@ -2816,7 +2816,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.commands.Count == 2)
                 {
                     var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
-                    if (list.Count <= 0)
+                    if (list.IsEmpty())
                         return;
 
                     int num = modifier.GetInt(0, 0);
@@ -2830,7 +2830,7 @@ namespace BetterLegacy.Core.Helpers
             "setVariableOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 int num = modifier.GetInt(0, 0);
@@ -2843,7 +2843,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.commands.Count == 3)
                 {
                     var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
-                    if (list.Count <= 0)
+                    if (list.IsEmpty())
                         return;
 
                     int min = modifier.GetInt(1, 0);
@@ -2862,7 +2862,7 @@ namespace BetterLegacy.Core.Helpers
             "setVariableRandomOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 int min = modifier.GetInt(1, 0);
@@ -2883,7 +2883,7 @@ namespace BetterLegacy.Core.Helpers
                 var loop = modifier.GetFloat(8, 0);
 
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 for (int i = 0; i < list.Count; i++)
@@ -2943,7 +2943,7 @@ namespace BetterLegacy.Core.Helpers
                 var min = Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0);
                 var max = Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1);
 
-                if (list.Count > 0)
+                if (!list.IsEmpty())
                     foreach (var bm in list)
                         bm.integerVariable = Mathf.Clamp(bm.integerVariable, min, max);
             },
@@ -2983,7 +2983,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
-                if (list.Count > 0)
+                if (!list.IsEmpty())
                     foreach (var beatmapObject in list)
                         if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                             levelObject.top.gameObject.SetActive(true);
@@ -3045,7 +3045,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
-                if (list.Count > 0)
+                if (!list.IsEmpty())
                     foreach (var beatmapObject in list)
                         if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                             levelObject.top.gameObject.SetActive(false);
@@ -3314,7 +3314,7 @@ namespace BetterLegacy.Core.Helpers
             "vignetteTracksPlayer" => modifier =>
             {
                 var players = PlayerManager.Players;
-                if (players.Count < 1)
+                if (players.IsEmpty())
                     return;
 
                 var player = players[0].Player;
@@ -3329,7 +3329,7 @@ namespace BetterLegacy.Core.Helpers
             "lensTracksPlayer" => modifier =>
             {
                 var players = PlayerManager.Players;
-                if (players.Count < 1)
+                if (players.IsEmpty())
                     return;
 
                 var player = players[0].Player;
@@ -3368,7 +3368,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var multiply = modifier.GetFloat(0, 0f);
@@ -3406,7 +3406,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var multiply = modifier.GetFloat(0, 0f);
@@ -3483,7 +3483,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var num = modifier.GetFloat(0, 1f);
@@ -3499,7 +3499,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 var num = modifier.GetFloat(0, 1f);
@@ -3528,7 +3528,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
-                if (list.Count <= 0 || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
+                if (list.IsEmpty() || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                     return;
 
                 var applyColor1 = modifier.GetBool(1, true);
@@ -3546,7 +3546,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
-                if (list.Count <= 0 || !Updater.levelProcessor.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequence))
+                if (list.IsEmpty() || !Updater.levelProcessor.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequence))
                     return;
 
                 var beatmapObject = modifier.reference;
@@ -3680,7 +3680,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
 
-                if (list.Count <= 0)
+                if (list.IsEmpty())
                     return;
 
                 foreach (var bm in list)
@@ -4150,7 +4150,7 @@ namespace BetterLegacy.Core.Helpers
 
                     foreach (var bm in list)
                     {
-                        if (bm.modifiers.Count > 0 && bm.modifiers.Where(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                        if (!bm.modifiers.IsEmpty() && !bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).IsEmpty() &&
                             bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                             m.Result = null;
                     }
@@ -4211,7 +4211,7 @@ namespace BetterLegacy.Core.Helpers
 
                     foreach (var bm in list2)
                     {
-                        if (bm.modifiers.Count > 0 && bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count > 0 &&
+                        if (!bm.modifiers.IsEmpty() && !bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).IsEmpty() &&
                             bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                         {
                             m.Result = null;
@@ -4303,7 +4303,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
-                if (list.Count < 1 || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
+                if (list.IsEmpty() || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
                     return;
 
                 string easing = modifier.commands[6];
@@ -4356,7 +4356,7 @@ namespace BetterLegacy.Core.Helpers
 
                     foreach (var bm in list)
                     {
-                        if (bm.modifiers.Count > 0 && bm.modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                        if (!bm.modifiers.IsEmpty() && !bm.modifiers.FindAll(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).IsEmpty() &&
                             bm.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                             m.Result = null;
                     }
@@ -4410,7 +4410,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
-                if (list.Count < 1 || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
+                if (list.IsEmpty() || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
                     return;
 
                 if (!Parser.TryParse(modifier.commands[10], true))
@@ -4746,7 +4746,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "legacyTail" => modifier =>
             {
-                if (!modifier.reference || modifier.commands.Count <= 1 || !GameData.Current)
+                if (!modifier.reference || modifier.commands.IsEmpty() || !GameData.Current)
                     return;
 
                 var totalTime = Parser.TryParse(modifier.value, 200f);
@@ -4761,7 +4761,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var group = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[i]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[i]);
 
-                        if (modifier.commands.Count <= i + 2 || group.Count() < 1)
+                        if (modifier.commands.Count <= i + 2 || group.Count < 1)
                             break;
 
                         var distance = Parser.TryParse(modifier.commands[i + 1], 2f);
@@ -5409,7 +5409,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "subHit" => modifier =>
             {
-                if (!CoreHelper.InEditor && GameManager.inst.hits.Count > 0)
+                if (!CoreHelper.InEditor && !GameManager.inst.hits.IsEmpty())
                     GameManager.inst.hits.RemoveAt(GameManager.inst.hits.Count - 1);
             },
             "clearDeaths" => modifier =>
@@ -5440,7 +5440,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "subDeath" => modifier =>
             {
-                if (!CoreHelper.InEditor && GameManager.inst.deaths.Count > 0)
+                if (!CoreHelper.InEditor && !GameManager.inst.deaths.IsEmpty())
                     GameManager.inst.deaths.RemoveAt(GameManager.inst.deaths.Count - 1);
             },
 
@@ -5458,7 +5458,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
-                if (!modifier.constant && list.Count > 0)
+                if (!modifier.constant && !list.IsEmpty())
                 {
                     foreach (var bm in list)
                         Updater.UpdateObject(bm, recalculate: false);
@@ -5818,7 +5818,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (modifier.commands.Count < 0)
+            if (modifier.commands.IsEmpty())
                 return;
 
             try
@@ -5885,7 +5885,7 @@ namespace BetterLegacy.Core.Helpers
                     case "enableObjectOther": {
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
-                            if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
                                 foreach (var beatmapObject in list)
                                 {
@@ -5970,7 +5970,7 @@ namespace BetterLegacy.Core.Helpers
                     case "disableObjectOther": {
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value);
 
-                            if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
                                 foreach (var beatmapObject in list)
                                 {
@@ -6063,11 +6063,10 @@ namespace BetterLegacy.Core.Helpers
                     case "mouseOverSignalModifier": {
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                            if (list.Count > 0 && list.Any(x => x.modifiers.Any(y => y.Result != null)))
+                            if (!list.IsEmpty() && list.Any(x => x.modifiers.Any(y => y.Result != null)))
                                 foreach (var bm in list)
                                 {
-                                    if (bm.modifiers.Count > 0 && bm.modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
-                                        bm.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                         m.Result = null;
                                 }
 
@@ -6081,14 +6080,11 @@ namespace BetterLegacy.Core.Helpers
                             int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[groupIndex]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[groupIndex]);
 
-                            if (list.Count > 0 && !modifier.constant)
+                            if (!list.IsEmpty() && !modifier.constant)
                                 foreach (var bm in list)
                                 {
-                                    if (bm.modifiers.Count > 0 && bm.modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
-                                        bm.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
-                                    {
+                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                         m.Result = null;
-                                    }
                                 }
 
                             break;
@@ -6110,7 +6106,7 @@ namespace BetterLegacy.Core.Helpers
                     case "setTextOther": {
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                            if (modifier.constant && list.Count > 0)
+                            if (modifier.constant && !list.IsEmpty())
                                 foreach (var bm in list)
                                     if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
                                         bm.levelObject.visualObject is TextObject textObject)
@@ -6159,7 +6155,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (modifier.commands.Count < 0)
+            if (modifier.commands.IsEmpty())
                 return false;
 
             switch (modifier.Name)
@@ -6193,7 +6189,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (modifier.commands.Count < 0)
+            if (modifier.commands.IsEmpty())
                 return;
 
             modifier.hasChanged = false;
@@ -6210,7 +6206,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
 
                         var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(modifier.commands[1]));
-                        if (list.Count > 0)
+                        if (!list.IsEmpty())
                             for (int i = 0; i < list.Count; i++)
                                 list[i].Enabled = active;
 
@@ -6381,7 +6377,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (modifier.commands.Count < 0)
+            if (modifier.commands.IsEmpty())
                 return;
         }
 
@@ -6402,7 +6398,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(null);
             }
             
-            if (modifier.commands.Count < 0 || !modifier.reference)
+            if (modifier.commands.IsEmpty() || !modifier.reference)
                 return false;
 
             modifier.hasChanged = false;
@@ -6514,7 +6510,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (modifier.commands.Count < 0 || !modifier.reference)
+            if (modifier.commands.IsEmpty() || !modifier.reference)
                 return;
 
             modifier.hasChanged = false;
@@ -6654,7 +6650,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (modifier.commands.Count < 0 || modifier.reference == null)
+            if (modifier.commands.IsEmpty() || modifier.reference == null)
                 return;
 
             switch (modifier.Name)

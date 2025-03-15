@@ -356,11 +356,11 @@ namespace BetterLegacy.Core.Data.Player
                 for (int i = 0; i < tailParts.Count; i++)
                 jn["tail"][i] = tailParts[i].ToJSON();
 
-            if (modifiers != null && modifiers.Count > 0)
+            if (modifiers != null && !modifiers.IsEmpty())
                 for (int i = 0; i < modifiers.Count; i++)
                     jn["modifiers"][i] = modifiers[i].ToJSON();
 
-            if (customObjects != null && customObjects.Count > 0)
+            if (customObjects != null && !customObjects.IsEmpty())
                 for (int i = 0; i < customObjects.Count; i++)
                     jn["custom_objects"][i] = customObjects[i].ToJSON();
 
@@ -1823,7 +1823,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public void RemoveTail(int index)
         {
-            if (tailParts.Count > 1 || index >= tailParts.Count)
+            if (tailParts.Count > 1 || !tailParts.InRange(index))
                 return;
             tailParts.RemoveAt(index);
         }

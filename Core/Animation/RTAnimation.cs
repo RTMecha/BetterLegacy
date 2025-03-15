@@ -86,7 +86,7 @@ namespace BetterLegacy.Core.Animation
         /// <param name="runOnComplete">True if on complete functions should run.</param>
         public void Interpolate(float t, bool runOnComplete = false)
         {
-            if (animationHandlers == null || animationHandlers.Count < 1)
+            if (animationHandlers == null || animationHandlers.IsEmpty())
                 return;
 
             for (int i = 0; i < animationHandlers.Count; i++)
@@ -218,7 +218,7 @@ namespace BetterLegacy.Core.Animation
         {
             Pause();
 
-            if (animationHandlers == null || animationHandlers.Count < 1)
+            if (animationHandlers == null || animationHandlers.IsEmpty())
             {
                 Finish();
                 return;

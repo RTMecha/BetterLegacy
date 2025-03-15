@@ -225,7 +225,7 @@ namespace BetterLegacy.Companion.Entity
         {
             checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
             checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.FileExists(RTFile.GetAsset("Example Companion"))));
-            checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && RTEditor.inst.LevelPanels.Count > 0));
+            checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && !RTEditor.inst.LevelPanels.IsEmpty()));
             checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel));
             checks.Add(new ExampleCheck(Checks.BEING_DRAGGED, () => reference && reference.dragging));
             checks.Add(new ExampleCheck(Checks.USER_IS_SLEEPYZ, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.ToLower(), "sleepyz", "sleepyzgamer")));
@@ -238,7 +238,7 @@ namespace BetterLegacy.Companion.Entity
             checks.Add(new ExampleCheck(Checks.USER_IS_DEFAULT, () => CoreConfig.Instance.DisplayName.Value == CoreConfig.Instance.DisplayName.Default));
             checks.Add(new ExampleCheck(Checks.TIME_LONGER_THAN_10_HOURS, () => Time.time > 36000f));
             checks.Add(new ExampleCheck(Checks.OBJECTS_ALIVE_COUNT_HIGH, () => Updater.levelProcessor && Updater.levelProcessor.engine && Updater.levelProcessor.engine.objectSpawner != null && Updater.levelProcessor.engine.objectSpawner.activateList.Count > 900));
-            checks.Add(new ExampleCheck(Checks.NO_EDITOR_LEVELS, () => CoreHelper.InEditor && RTEditor.inst.LevelPanels.Count <= 0));
+            checks.Add(new ExampleCheck(Checks.NO_EDITOR_LEVELS, () => CoreHelper.InEditor && RTEditor.inst.LevelPanels.IsEmpty()));
             checks.Add(new ExampleCheck(Checks.IS_HAPPY, () => reference && reference.brain && reference.brain.GetAttribute("HAPPINESS").Value > 100.0));
             checks.Add(new ExampleCheck(Checks.IS_SAD, () => reference && reference.brain && reference.brain.GetAttribute("HAPPINESS").Value < 100.0));
         }

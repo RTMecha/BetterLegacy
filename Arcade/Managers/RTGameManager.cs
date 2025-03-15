@@ -136,7 +136,7 @@ namespace BetterLegacy.Arcade.Managers
         public void UpdateCheckpoints()
         {
             var checkpoints = Checkpoints;
-            if (checkpoints != null && nextCheckpointIndex >= 0 && nextCheckpointIndex < checkpoints.Count && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
+            if (checkpoints != null && checkpoints.InRange(nextCheckpointIndex) && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
                 SetCheckpoint(nextCheckpointIndex);
         }
 
@@ -156,7 +156,7 @@ namespace BetterLegacy.Arcade.Managers
         public void SetCheckpoint(int index, bool playAnimation = true, bool spawnPlayers = true)
         {
             var checkpoints = Checkpoints;
-            if (index < 0 || index >= checkpoints.Count)
+            if (!checkpoints.InRange(index))
                 return;
 
             CoreHelper.Log($"Set checkpoint: {index}");

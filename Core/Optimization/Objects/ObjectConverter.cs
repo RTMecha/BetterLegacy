@@ -174,7 +174,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 num = parentObjects.Count;
 
             var p = InitLevelParentObject(beatmapObject, baseObject);
-            if (parentObjects.Count > 0)
+            if (!parentObjects.IsEmpty())
                 parentObjects.Insert(0, p);
             else
                 parentObjects.Add(p);
@@ -221,7 +221,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 prefabOffsetRotation = rot.eulerAngles;
             }
 
-            var tf = parentObjects != null && parentObjects.Count > 0 && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
+            var tf = parentObjects != null && !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
                 parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
 
             tf.SetParent(top.transform);
@@ -504,7 +504,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             // If there is no keyframe, add default
-            if (keyframes.Count == 0)
+            if (keyframes.IsEmpty())
                 keyframes.Add(defaultKeyframe);
 
             return keyframes;
@@ -536,7 +536,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             // If there is no keyframe, add default
-            if (keyframes.Count == 0)
+            if (keyframes.IsEmpty())
                 keyframes.Add(defaultKeyframe);
 
             return keyframes;
@@ -585,7 +585,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             // If there is no keyframe, add default
-            if (keyframes.Count == 0)
+            if (keyframes.IsEmpty())
                 keyframes.Add(defaultKeyframe);
 
             return keyframes;
@@ -614,7 +614,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             // If there is no keyframe, add default
-            if (keyframes.Count == 0)
+            if (keyframes.IsEmpty())
                 keyframes.Add(defaultKeyframe);
 
             return keyframes;

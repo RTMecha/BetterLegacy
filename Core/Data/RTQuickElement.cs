@@ -57,7 +57,7 @@ namespace BetterLegacy.Core.Data
         /// <returns>Returns the specific frame of the QuickElement.</returns>
         public string Interpolate(float t)
         {
-            if (keyframes == null || keyframes.Count < 1)
+            if (keyframes == null || keyframes.IsEmpty())
                 return string.Empty;
 
             var index = keyframes.FindIndex(x => x.time > (loop ? t % 0f : t)) - 1;

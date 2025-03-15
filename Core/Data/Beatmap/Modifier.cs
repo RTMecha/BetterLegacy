@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void VerifyModifier(List<Modifier<T>> modifiers)
         {
-            if (commands.Count < 1)
+            if (commands.IsEmpty())
                 return;
 
             if (modifiers.TryFind(x => x.Name == Name && x.type == type, out Modifier<T> defaultModifier))

@@ -92,7 +92,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             this.colorSequence = colorSequence;
             this.secondaryColorSequence = secondaryColorSequence;
 
-            this.isGradient = this.secondaryColorSequence != null;
+            isGradient = this.secondaryColorSequence != null;
             if (isGradient)
                 gradientObject = (GradientObject)visualObject;
             isImage = visualObject is ImageObject;
@@ -109,7 +109,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 var pc = beatmapObject.GetParentChain();
 
-                if (pc != null && pc.Count > 0)
+                if (pc != null && !pc.IsEmpty())
                 {
                     var beatmapParent = pc[pc.Count - 1];
 
@@ -133,7 +133,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         bool active = false;
         public void SetActive(bool active)
         {
-            if (parentObjects.Count > 0)
+            if (!parentObjects.IsEmpty())
                 parentObjects[parentObjects.Count - 1].gameObject?.SetActive(active);
 
             if (!active && this.active)

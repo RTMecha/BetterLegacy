@@ -2201,7 +2201,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public void ShuffleQueue(bool play)
         {
-            if (LevelManager.Levels.Count < 1)
+            if (LevelManager.Levels.IsEmpty())
             {
                 CoreHelper.LogError($"No levels to shuffle!");
                 return;

@@ -367,7 +367,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         else
                             LevelManager.CurrentLevel = CurrentLevel;
                     }
-                    else if (LevelManager.ArcadeQueue.Count > 1)
+                    else if (!LevelManager.ArcadeQueue.IsEmpty())
                     {
                         LevelManager.currentQueueIndex = 0;
                         LevelManager.CurrentLevel = LevelManager.ArcadeQueue[0];

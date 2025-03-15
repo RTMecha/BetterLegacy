@@ -81,7 +81,7 @@ namespace BetterLegacy.Arcade.Managers
             (CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded) &&
             GameData.Current &&
             GameData.Current.events != null &&
-            GameData.Current.events.Count > 0;
+            !GameData.Current.events.IsEmpty();
 
         void EditorCameraHandler()
         {
@@ -288,7 +288,7 @@ namespace BetterLegacy.Arcade.Managers
                         events[i][j](x + offset);
                     }
                 }
-                else if (list.Count > 0)
+                else if (!list.IsEmpty())
                 {
                     if (events.Length <= i)
                         continue;
@@ -301,7 +301,7 @@ namespace BetterLegacy.Arcade.Managers
                         var total = 0f;
                         for (int k = 0; k < list.Count - 1; k++)
                         {
-                            if (((EventKeyframe)allEvents[i][k + 1]).relative)
+                            if (allEvents[i][k + 1].relative)
                                 total += allEvents[i][k].values[j];
                             else
                                 total = 0f;
@@ -722,7 +722,7 @@ namespace BetterLegacy.Arcade.Managers
 
         void FindColor(float time, List<List<EventKeyframe>> allEvents, ref int prev, ref int next, int type, int valueIndex)
         {
-            if (allEvents.Count <= type || allEvents[type].Count <= 0)
+            if (allEvents.Count <= type || allEvents[type].IsEmpty())
                 return;
 
             var nextKFIndex = allEvents[type].FindLastIndex(x => x.time <= time) + 1;
@@ -755,7 +755,7 @@ namespace BetterLegacy.Arcade.Managers
 
         void FindColor(float time, List<List<EventKeyframe>> allEvents, ref int prev1, ref int next1, ref int prev2, ref int next2, int type, int valueIndex1, int valueIndex2)
         {
-            if (allEvents.Count <= type || allEvents[type].Count <= 0)
+            if (allEvents.Count <= type || allEvents[type].IsEmpty())
                 return;
 
             var nextKFIndex = allEvents[type].FindLastIndex(x => x.time <= time) + 1;

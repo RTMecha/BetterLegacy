@@ -497,7 +497,7 @@ namespace BetterLegacy.Core.Components.Player
                 MaxJumpBoostCount = levelData.maxJumpBoostCount;
                 CustomPlayer.MaxHealth = levelData.maxHealth;
 
-                if (CoreHelper.InEditor && PlayerManager.Players.Count > 0)
+                if (CoreHelper.InEditor && !InputDataManager.inst.players.IsEmpty())
                 {
                     foreach (var customPlayer in PlayerManager.Players)
                         if (customPlayer.PlayerModel)
@@ -1420,7 +1420,7 @@ namespace BetterLegacy.Core.Components.Player
                 }
 
                 int tailIndex = i - 1;
-                if (tailIndex < 0 || tailIndex >= tailParts.Count)
+                if (!tailParts.InRange(tailIndex))
                     continue;
 
                 var delayTracker = tailParts[tailIndex].delayTracker;
@@ -1437,7 +1437,7 @@ namespace BetterLegacy.Core.Components.Player
 
             for (int i = 0; i < Model.tailParts.Count; i++)
             {
-                if (i >= tailParts.Count)
+                if (!tailParts.InRange(i))
                     continue;
 
                 var t2 = Model.tailParts[i].scale;
@@ -2032,7 +2032,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateCustomTheme()
         {
-            if (customObjects.Count < 1)
+            if (customObjects.IsEmpty())
                 return;
 
             var index = PlayersData.Current.GetMaxIndex(playerIndex);
@@ -2050,7 +2050,7 @@ namespace BetterLegacy.Core.Components.Player
                     return;
 
                 var active = customObject.active &&
-                    (customObject.reference.visibilitySettings.Count < 1 ? customObject.reference.active :
+                    (customObject.reference.visibilitySettings.IsEmpty() ? customObject.reference.active :
                         customObject.reference.requireAll ?
                             customObject.reference.visibilitySettings.All(x => CheckVisibility(x)) :
                             customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)));
@@ -2066,7 +2066,7 @@ namespace BetterLegacy.Core.Components.Player
                 else if (customObject.renderer)
                     customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
 
-                if (!customObject.idle || reference.animations.Count < 1)
+                if (!customObject.idle || reference.animations.IsEmpty())
                 {
                     var origPos = reference.position;
                     var origSca = reference.scale;
@@ -2117,7 +2117,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateBoostTheme()
         {
-            if (emitted.Count < 1)
+            if (emitted.IsEmpty())
                 return;
 
             var index = PlayersData.Current.GetMaxIndex(playerIndex);
@@ -2359,7 +2359,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <param name="pos">Position to set.</param>
         public void SetPath(int index, Vector2 pos)
         {
-            if (index < 0 || index > path.Count)
+            if (!path.InRange(index))
                 return;
             path[index].pos = new Vector3(pos.x, pos.y);
             path[index].lastPos = new Vector3(pos.x, pos.y);
@@ -2463,7 +2463,7 @@ namespace BetterLegacy.Core.Components.Player
             });
         }
 
-        // to do: aiming so you don't need to be facing the direction of the bullet (maybe create a parent that rotates in the direction of the right stick?)
+        // todo: aiming so you don't need to be facing the direction of the bullet (maybe create a parent that rotates in the direction of the right stick?)
         /// <summary>
         /// Shoots a bullet from the player that can damage objects or other players.
         /// </summary>
@@ -2599,6 +2599,7 @@ namespace BetterLegacy.Core.Components.Player
             });
         }
 
+        // todo: figure out how to implement this...
         /// <summary>
         /// Changes how the players collision works.
         /// </summary>
@@ -3062,7 +3063,7 @@ namespace BetterLegacy.Core.Components.Player
                 jumpAnimationCustom = null;
             }
 
-            if (currentModelCustomObjects == null || currentModelCustomObjects.Count < 1)
+            if (currentModelCustomObjects == null || currentModelCustomObjects.IsEmpty())
                 return;
 
             for (int i = 0; i < currentModelCustomObjects.Count; i++)
@@ -3428,7 +3429,7 @@ namespace BetterLegacy.Core.Components.Player
 
             var health = CustomPlayer.Health;
 
-            if (healthObjects.Count > 0)
+            if (!healthObjects.IsEmpty())
                 for (int i = 0; i < healthObjects.Count; i++)
                     healthObjects[i].gameObject.SetActive(i < health && currentModel.guiPart.active && currentModel.guiPart.mode == PlayerModel.GUI.GUIHealthMode.Images);
 

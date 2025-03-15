@@ -414,7 +414,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 integerVariable = copyVariables ? orig.integerVariable : 0,
                 floatVariable = copyVariables ? orig.floatVariable : 0f,
                 stringVariable = copyVariables ? orig.stringVariable : "",
-                tags = orig.tags.Count > 0 ? orig.tags.Clone() : new List<string>(),
+                tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>(),
                 background = orig.background,
                 ignoreLifespan = orig.ignoreLifespan,
                 orderModifiers = orig.orderModifiers,
@@ -423,10 +423,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             };
 
             for (int i = 0; i < beatmapObject.events.Count; i++)
-                beatmapObject.events[i].AddRange(orig.events[i].Select(x => EventKeyframe.DeepCopy((EventKeyframe)x)));
+                beatmapObject.events[i].AddRange(orig.events[i].Select(x => EventKeyframe.DeepCopy(x)));
 
-            beatmapObject.modifiers = new List<Modifier<BeatmapObject>>();
-            beatmapObject.modifiers = orig.modifiers.Count > 0 ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, beatmapObject)).ToList() : new List<Modifier<BeatmapObject>>();
+            beatmapObject.modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, beatmapObject)).ToList() : new List<Modifier<BeatmapObject>>();
             return beatmapObject;
         }
 
@@ -1147,7 +1146,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (!string.IsNullOrEmpty(text))
                 jn["text"] = text;
 
-            if (tags != null && tags.Count > 0)
+            if (tags != null && !tags.IsEmpty())
                 for (int i = 0; i < tags.Count; i++)
                     jn["tags"][i] = tags[i];
 
@@ -1202,7 +1201,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var beatmapObject = this;
                 var spawnDuration = SpawnDuration;
 
-                if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().time < spawnDuration &&
+                if (beatmapObject.events != null && !beatmapObject.events.IsEmpty() && beatmapObject.events[1].Last().time < spawnDuration &&
                     (beatmapObject.events[1].Last().values[0] == 0f || beatmapObject.events[1].Last().values[1] == 0f ||
                     beatmapObject.events[1].Last().values[0] == 0.001f || beatmapObject.events[1].Last().values[1] == 0.001f) &&
                     beatmapObject.parentType[1] == '1')
@@ -1217,7 +1216,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     beatmapObject = beatmapObjects.Find(x => x.id == parent);
                     parent = beatmapObject.Parent;
 
-                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().time < spawnDuration &&
+                    if (beatmapObject.events != null && !beatmapObject.events.IsEmpty() && beatmapObject.events[1].Last().time < spawnDuration &&
                         (beatmapObject.events[1].Last().values[0] == 0f || beatmapObject.events[1].Last().values[1] == 0f ||
                         beatmapObject.events[1].Last().values[0] == 0.001f || beatmapObject.events[1].Last().values[1] == 0.001f) &&
                         beatmapObject.parentType[1] == '1')
@@ -1345,8 +1344,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (prevKFIndex < 0)
                 prevKFIndex = 0;
 
-            var nextKF = list[nextKFIndex] as EventKeyframe;
-            var prevKF = list[prevKFIndex] as EventKeyframe;
+            var nextKF = list[nextKFIndex];
+            var prevKF = list[prevKFIndex];
 
             type = Mathf.Clamp(type, 0, list.Count);
             valueIndex = Mathf.Clamp(valueIndex, 0, list[0].values.Length);
@@ -1358,12 +1357,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prevtotal = 0f;
             for (int k = 0; k < nextKFIndex; k++)
             {
-                if (((EventKeyframe)list[k + 1]).relative)
+                if (list[k + 1].relative)
                     total += list[k].values[valueIndex];
                 else
                     total = 0f;
 
-                if (((EventKeyframe)list[k]).relative)
+                if (list[k].relative)
                     prevtotal += list[k].values[valueIndex];
                 else
                     prevtotal = 0f;

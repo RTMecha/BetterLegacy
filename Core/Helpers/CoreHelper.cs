@@ -165,8 +165,8 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="difficulty">The difficulty index.</param>
         /// <returns>Returns a known difficulty if the index is in the range of the difficulty list. If it isn't, it'll return an unknown difficulty.</returns>
         public static DataManager.Difficulty GetDifficulty(int difficulty)
-            => difficulty >= 0 && difficulty < DataManager.inst.difficulties.Count ?
-            DataManager.inst.difficulties[difficulty] : new DataManager.Difficulty("Unknown Difficulty", LSColors.HexToColor("424242"));
+            => DataManager.inst.difficulties.InRange(difficulty) ?
+                DataManager.inst.difficulties[difficulty] : new DataManager.Difficulty("Unknown Difficulty", LSColors.HexToColor("424242"));
 
         #endregion
 

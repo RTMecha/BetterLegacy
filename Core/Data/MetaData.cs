@@ -687,8 +687,7 @@ namespace BetterLegacy.Core.Data
 
         }
 
-        public string URL
-            => LinkType < 0 || LinkType > DataManager.inst.linkTypes.Count - 1 || Link.Contains("http://") || Link.Contains("https://") ? null : string.Format(DataManager.inst.linkTypes[LinkType].linkFormat, Link);
+        public string URL => AlephNetwork.GetURL(URLSource.Artist, LinkType, Link);
 
         #region Operators
 

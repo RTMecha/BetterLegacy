@@ -40,7 +40,7 @@ namespace BetterLegacy.Core.Managers
             {
                 var beatmapObject = beatmapObjects[i];
 
-                if (beatmapObject.modifiers.Count <= 0 || ldm && beatmapObject.LDM)
+                if (beatmapObject.modifiers.IsEmpty() || ldm && beatmapObject.LDM)
                     continue;
 
                 if (beatmapObject.orderModifiers)
@@ -65,7 +65,7 @@ namespace BetterLegacy.Core.Managers
                 }
             }
 
-            if (queuedAudioToDelete.Count > 0)
+            if (!queuedAudioToDelete.IsEmpty())
             {
                 foreach (var audio in queuedAudioToDelete)
                     DeleteKey(audio.Key, audio.Value);

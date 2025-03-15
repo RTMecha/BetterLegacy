@@ -102,7 +102,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public void UpdateModifiers()
         {
-            if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.Count <= 0)
+            if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.IsEmpty())
                 return;
 
             for (int i = 0; i < PlayerModel.modifiers.Count; i++)

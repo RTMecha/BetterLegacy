@@ -1307,13 +1307,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < beatmapObjects.Count; i++)
                 jn["objects"][i] = beatmapObjects[i].ToJSONVG();
 
-            if (prefabObjects.Count > 0)
+            if (!prefabObjects.IsEmpty())
                 for (int i = 0; i < prefabObjects.Count; i++)
                     jn["prefab_objects"][i] = prefabObjects[i].ToJSONVG();
             else
                 jn["prefab_objects"] = new JSONArray();
 
-            if (prefabs.Count > 0)
+            if (!prefabs.IsEmpty())
                 for (int i = 0; i < prefabs.Count; i++)
                     jn["prefabs"][i] = prefabs[i].ToJSONVG();
             else
@@ -1337,9 +1337,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             else
                 jn["themes"] = new JSONArray();
 
-            if (data.markers.Count > 0)
+            if (!data.markers.IsEmpty())
                 for (int i = 0; i < data.markers.Count; i++)
-                    jn["markers"][i] = ((Marker)data.markers[i]).ToJSONVG();
+                    jn["markers"][i] = data.markers[i].ToJSONVG();
             else
                 jn["markers"] = new JSONArray();
 

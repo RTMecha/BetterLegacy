@@ -63,7 +63,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// If the game has no players loaded.
         /// </summary>
-        public static bool NoPlayers => InputDataManager.inst.players == null || InputDataManager.inst.players.Count == 0;
+        public static bool NoPlayers => InputDataManager.inst.players == null || InputDataManager.inst.players.IsEmpty();
 
         /// <summary>
         /// If other players should be considered in the level ranking.
@@ -121,7 +121,7 @@ namespace BetterLegacy.Core.Managers
         {
             var players = Players;
             var index = GetClosestPlayerIndex(pos);
-            return index >= 0 && index < players.Count ? players[index] : null;
+            return players.InRange(index) ? players[index] : null;
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace BetterLegacy.Core.Managers
                 return singleplayer && singleplayer.Player ? 0 : -1;
             }
 
-            if (players.Count < 1)
+            if (players.IsEmpty())
                 return -1;
 
             var orderedList = players
@@ -166,7 +166,7 @@ namespace BetterLegacy.Core.Managers
                 return customPlayer.Player && customPlayer.Player.rb ? customPlayer.Player.rb.transform.position : Vector2.zero;
             }
 
-            if (players.Count == 0)
+            if (players.IsEmpty())
                 return Vector2.zero;
 
             int count = 0;
@@ -486,7 +486,8 @@ namespace BetterLegacy.Core.Managers
         /// <param name="index">Index of a player to destroy.</param>
         public static void DestroyPlayer(int index)
         {
-            if (index < 0 || index >= Players.Count)
+            var players = Players;
+            if (!players.InRange(index))
                 return;
 
             var player = Players[index];
@@ -525,7 +526,8 @@ namespace BetterLegacy.Core.Managers
         /// <param name="pos">Position to spawn at.</param>
         public static void RespawnPlayer(int index, Vector2 pos)
         {
-            if (index < 0 || index >= Players.Count)
+            var players = Players;
+            if (!players.InRange(index))
                 return;
 
             var player = Players[index];
@@ -549,7 +551,7 @@ namespace BetterLegacy.Core.Managers
             if (prevIndex < 0)
                 prevIndex = 0;
 
-            return GameData.Current && GameData.Current.data.checkpoints.Count > prevIndex && GameData.Current.data.checkpoints[prevIndex] != null ?
+            return GameData.Current && GameData.Current.data.checkpoints.InRange(prevIndex) && GameData.Current.data.checkpoints[prevIndex] != null ?
                 GameData.Current.data.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position;
         }
 
@@ -578,7 +580,7 @@ namespace BetterLegacy.Core.Managers
         public static void AssignPlayerModels()
         {
             var players = Players;
-            if (players.Count > 0)
+            if (!players.IsEmpty())
                 for (int i = 0; i < players.Count; i++)
                     players[i].CurrentModel = PlayersData.Current.GetPlayerModel(i).basePart.id;
         }

@@ -156,7 +156,7 @@ namespace BetterLegacy.Core.Managers
 
         public static string ConvertQuickElement(QuickElement quickElement, float t)
         {
-            if (quickElement == null || quickElement.keyframes == null || quickElement.keyframes.Count < 1)
+            if (quickElement == null || quickElement.keyframes == null || quickElement.keyframes.IsEmpty())
                 return "";
 
             var times = new List<float>();
@@ -170,7 +170,7 @@ namespace BetterLegacy.Core.Managers
                 totalTime += kf.time;
             }
 
-            var looping = quickElement.effects != null && quickElement.effects.Find(x => x.data.Count > 0 && x.name == "loop") != null;
+            var looping = quickElement.effects != null && quickElement.effects.Find(x => !x.data.IsEmpty() && x.name == "loop") != null;
             var index = times.FindIndex(x => x > (looping ? t % totalTime : t)) - 1;
             if (t < 0f)
                 index = 0;

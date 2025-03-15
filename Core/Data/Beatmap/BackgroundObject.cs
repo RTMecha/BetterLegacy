@@ -103,7 +103,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool Enabled { get; set; } = true;
 
-        public GameObject BaseObject => gameObjects.Count > 0 ? gameObjects[0] : null;
+        public GameObject BaseObject => !gameObjects.IsEmpty() ? gameObjects[0] : null;
 
         public List<GameObject> gameObjects = new List<GameObject>();
         public List<Transform> transforms = new List<Transform>();
@@ -396,7 +396,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["active"] = active.ToString();
             jn["name"] = name.ToString();
 
-            if (tags != null && tags.Count > 0)
+            if (tags != null && !tags.IsEmpty())
                 for (int i = 0; i < tags.Count; i++)
                     jn["tags"][i] = tags[i];
 
