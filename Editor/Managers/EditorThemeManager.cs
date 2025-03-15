@@ -438,6 +438,17 @@ namespace BetterLegacy.Editor.Managers
             }, canSetHandleRounded, handleRounded, handleRoundedSide, selectable));
         }
 
+        public static void ClearSelectableColors(Selectable selectable) => selectable.colors = new ColorBlock()
+        {
+            normalColor = Color.white,
+            highlightedColor = Color.white,
+            pressedColor = Color.white,
+            selectedColor = Color.white,
+            disabledColor = Color.white,
+            colorMultiplier = 1f,
+            fadeDuration = 0.2f,
+        };
+
         public class EditorTheme
         {
             public EditorTheme(string name, Dictionary<ThemeGroup, Color> colorGroups)

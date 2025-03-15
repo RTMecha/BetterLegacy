@@ -19,6 +19,7 @@ using System.IO;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
+using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -94,44 +95,32 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<EditorDocument.Element>
             {
-                new EditorDocument.Element("Reimnop's Catalyst (PA object and animation optimization)", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", "https://github.com/Reimnop/Catalyst"),
-
-                new EditorDocument.Element("Reimnop's ILMath (fast math parser / evaluator)", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/ILMath", "https://github.com/Reimnop/ILMath"),
+                HyperLinkElement("Reimnop's Catalyst (PA object and animation optimization)\n<b>Source Code</b>", "https://github.com/Reimnop/Catalyst"),
+                HyperLinkElement("Reimnop's ILMath (fast math parser / evaluator)\n<b>Source Code</b>", "https://github.com/Reimnop/ILMath"),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                HyperLinkElement("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)\n<b>Source code</b>", "https://github.com/keijiro/KinoGlitch"),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                HyperLinkElement("WestHillApps' UniBpmAnalyzer\n<b>Source code</b>", "https://github.com/WestHillApps/UniBpmAnalyzer"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Source code</b>:\nhttps://github.com/keijiro/KinoGlitch", "https://github.com/keijiro/KinoGlitch"),
+                new EditorDocument.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)\n" +
+                    $"<b>Website</b>:\n {LinkFormat("https://www.h3xed.com/\n")}" +
+                    $"<b>Source code</b>:\n {LinkFormat("https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity")}", true),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("WestHillApps' UniBpmAnalyzer", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Source code</b>:\nhttps://github.com/WestHillApps/UniBpmAnalyzer", "https://github.com/WestHillApps/UniBpmAnalyzer"),
+                HyperLinkElement("Crafty Font for the Pixellet font.\n<b>Website</b>", "https://craftyfont.gumroad.com/"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Website</b>:\nhttps://www.h3xed.com/", "https://www.h3xed.com/"),
-                LinkElement("<b>Source code</b>:\nhttps://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity", "https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity"),
+                HyperLinkElement("HAWTPIXEL for the File Deletion font.\n<b>Website</b>", "https://www.hawtpixel.com/"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("Crafty Font for the Pixellet font.", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Website</b>:\nhttps://craftyfont.gumroad.com/", "https://craftyfont.gumroad.com/"),
+                HyperLinkElement("Sans Sans font.\n<b>Website</b>", "https://www.font.download/font/sans"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("HAWTPIXEL for the File Deletion font.", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Website</b>:\nhttps://www.hawtpixel.com/", "https://www.hawtpixel.com/"),
+                HyperLinkElement("Fontworks for the RocknRoll font.\n<b>Website</b>", "https://github.com/fontworks-fonts/RocknRoll"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("Sans Sans font.", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Website</b>:\nhttps://www.font.download/font/sans", "https://www.font.download/font/sans"),
-
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("Fontworks for the RocknRoll font.", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Website</b>:\nhttps://github.com/fontworks-fonts/RocknRoll", "https://github.com/fontworks-fonts/RocknRoll"),
-
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("ManiackersDesign for the Monomaniac One font.", EditorDocument.Element.Type.Text),
-                LinkElement("<b>Website</b>:\nhttps://github.com/ManiackersDesign/monomaniac", "https://github.com/ManiackersDesign/monomaniac"),
+                HyperLinkElement("ManiackersDesign for the Monomaniac One font.\n<b>Website</b>", "https://github.com/ManiackersDesign/monomaniac"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>SPECIAL THANKS</b>", EditorDocument.Element.Type.Text),
@@ -173,8 +162,8 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<i>Do not</i> reupload other people's levels to the server unless you have their permission. If you do reupload, it has to have been a level from the Steam workshop.\n" +
                                     "Remakes are allowed, as long as you have permission from the original creator(s).", EditorDocument.Element.Type.Text),
-                LinkElement("If you want to comment on a level, join the System Error Discord server (<color=#0084FF>https://discord.gg/nB27X2JZcY</color>), go to <b>#arcade-server-uploads</b>, create a thread (if there isn't already one) and make your comment there.\n" +
-                "You can click this element to open the Discord link.", "https://discord.gg/nB27X2JZcY"),
+                new EditorDocument.Element($"If you want to comment on a level, join the <link=\"{AlephNetwork.MOD_DISCORD_URL}\">System Error Discord server</link>, go to <b>#arcade-server-uploads</b>, create a thread (if there isn't already one) and make your comment there.\n" +
+                "You can click this element to open the Discord link.", EditorDocument.Element.Type.Text) { containsLinks = true, },
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("When updating a level, make sure you include a message in the changelogs to let users know what changed in your level. Feel free to format it with dot points, or as a regular sentence / paragraph.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
@@ -845,7 +834,7 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDocument("[MODDED] Math Evaluation", "Some places you can write out a math equation and get a result from it.", new List<EditorDocument.Element>
             {
-                LinkElement("Math Evaluation is implemented from ILMath, created by Reimnop. If you want to know more, visit the link: https://github.com/Reimnop/ILMath", "https://github.com/Reimnop/ILMath"),
+                HyperLinkElement("Math Evaluation is implemented from ILMath, created by Reimnop. If you want to know more, visit the link", "https://github.com/Reimnop/ILMath"),
                 new EditorDocument.Element("Below is a list of variables that can be used with math evaluation.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>deathCount</b> - Amount of deaths in a level (Arcade only).\n" +
                                      "<b>hitCount</b> - Amount of hits in a level (Arcade only).\n" +
@@ -1001,7 +990,7 @@ namespace BetterLegacy.Editor.Managers
 
                 elements.Add(new EditorDocument.Element("oops, i spilled my images everywhere...", EditorDocument.Element.Type.Text));
 
-                var dir = Directory.GetFiles(RTFile.ApplicationDirectory, "*.png", SearchOption.AllDirectories);
+                var dir = Directory.GetFiles(RTFile.ApplicationDirectory, FileFormat.PNG.ToPattern(), SearchOption.AllDirectories);
 
                 for (int i = 0; i < UnityEngine.Random.Range(0, Mathf.Clamp(dir.Length, 0, 20)); i++)
                     elements.Add(new EditorDocument.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Replace(RTFile.ApplicationDirectory, ""), EditorDocument.Element.Type.Image));
@@ -1081,14 +1070,13 @@ namespace BetterLegacy.Editor.Managers
             {
                 switch (element.type)
                 {
-                    case EditorDocument.Element.Type.Text:
-                        {
+                    case EditorDocument.Element.Type.Text: {
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
 
                             var gameObject = Creator.NewUIObject("element", documentationContent);
-                            RectValues.FullAnchored.AnchoredPosition(1f, 0f).Pivot(0f, 1f)
-                                .SizeDelta(722f, element.Autosize || element.Height == 0f ? (22f * LSText.WordWrap(element.Data, 67).Count) : element.Height).AssignToRectTransform(gameObject.transform.AsRT());
+                            var height = element.Autosize || element.Height == 0f ? (22f * LSText.WordWrap(element.Data, 67).Count) : element.Height;
+                            RectValues.FullAnchored.AnchoredPosition(1f, 0f).Pivot(0f, 1f).SizeDelta(722f, height).AssignToRectTransform(gameObject.transform.AsRT());
 
                             var horizontalLayoutGroup = gameObject.AddComponent<HorizontalLayoutGroup>();
 
@@ -1099,8 +1087,7 @@ namespace BetterLegacy.Editor.Managers
                             var image = gameObject.AddComponent<Image>();
 
                             var labels = Creator.NewUIObject("label", gameObject.transform);
-                            RectValues.FullAnchored.Pivot(0f, 1f)
-                                .SizeDelta(722f, 22f).AssignToRectTransform(labels.transform.AsRT());
+                            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, height).AssignToRectTransform(labels.transform.AsRT());
 
                             var labelsHLG = labels.AddComponent<HorizontalLayoutGroup>();
 
@@ -1124,15 +1111,21 @@ namespace BetterLegacy.Editor.Managers
                                 button.image = image;
                                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                             }
+                            else if (element.containsLinks)
+                            {
+                                var links = label.AddComponent<OpenHyperlinks>();
+
+                                EditorThemeManager.ClearSelectableColors(label.AddComponent<Button>());
+                                EditorThemeManager.ApplyGraphic(image, ThemeGroup.List_Button_1_Normal, true);
+                            }
                             else
                                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.List_Button_1_Normal, true);
 
-                            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(label.transform.AsRT());
+                            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, height).AssignToRectTransform(label.transform.AsRT());
 
                             break;
                         }
-                    case EditorDocument.Element.Type.Image:
-                        {
+                    case EditorDocument.Element.Type.Image: {
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
 
@@ -1185,13 +1178,15 @@ namespace BetterLegacy.Editor.Managers
 
         #region Internal
 
+        string LinkFormat(string url) => $"<link=\"{url}\">{url}</link>";
+
         EditorDocument.Element FontElement(EditorDocument.SupportType condition, string name, string desc) => new EditorDocument.Element($"<b>[{condition}]</b> <font={name}>{name}</font> ({name}) - {desc}", EditorDocument.Element.Type.Text, () =>
         {
             EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
             LSText.CopyToClipboard($"<font={name}>");
         });
 
-        EditorDocument.Element LinkElement(string text, string url) => new EditorDocument.Element(text, EditorDocument.Element.Type.Text, () => Application.OpenURL(url));
+        EditorDocument.Element HyperLinkElement(string text, string url) => new EditorDocument.Element($"{text}:\n<link=\"{url}\">{url}</link>", true);
 
         EditorDocument GenerateDocument(string name, string description, List<EditorDocument.Element> elements)
         {

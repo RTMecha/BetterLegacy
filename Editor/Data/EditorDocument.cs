@@ -71,6 +71,13 @@ namespace BetterLegacy.Editor.Data
                 Function = function;
             }
 
+            public Element(string data, bool containsLinks)
+            {
+                Data = data;
+                this.containsLinks = containsLinks;
+                type = Type.Text;
+            }
+
             public bool Autosize { get; set; } = true;
             public float Height { get; set; } = 22f;
 
@@ -78,6 +85,8 @@ namespace BetterLegacy.Editor.Data
 
             public void RunFunction() => Function();
             public Action Function { get; set; }
+
+            public bool containsLinks;
 
             public Type type;
 

@@ -22,6 +22,7 @@ using System.Net;
 using UnityEngine.Networking;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
@@ -218,7 +219,21 @@ namespace BetterLegacy.Editor.Managers
 
             content.Find("creator/description").AsRT().sizeDelta = new Vector2(757f, 140f);
             content.Find("creator/description/input").AsRT().sizeDelta = new Vector2(523f, 140f);
-            content.Find("agreement").AsRT().sizeDelta = new Vector2(732f, 220f);
+            content.Find("agreement").AsRT().sizeDelta = new Vector2(732f, 260f);
+            DestroyImmediate(content.Find("agreement/text").GetComponent<Text>());
+            var agreementText = content.Find("agreement/text").gameObject.AddComponent<TMPro.TextMeshProUGUI>();
+            agreementText.alignment = TMPro.TextAlignmentOptions.Top;
+            agreementText.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
+            agreementText.fontSize = 22;
+            agreementText.enableWordWrapping = true;
+            agreementText.text =
+                "If your level does not use any modded features (not including alpha ported ones) and your level uses a verified song, you can convert the level to an alpha level format and upload it using the alpha editor.*\n" +
+                "However, if your level DOES use modded features not present anywhere in vanilla or the song is not verified, then upload it to the Arcade server.\n\n" +
+                "* Make sure you test the level in vanilla first!\n\n" +
+                "If you want to know more, <link=\"DOC_UPLOAD_LEVEL\">check out the documentation</link>.";
+            var agreementLink = agreementText.gameObject.AddComponent<OpenHyperlinks>();
+            agreementLink.RegisterLink("DOC_UPLOAD_LEVEL", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"));
+            EditorThemeManager.ClearSelectableColors(agreementText.gameObject.AddComponent<Button>());
 
             content.Find("id/revisions").gameObject.SetActive(true);
 
@@ -293,7 +308,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(creatorLinkTitle);
             EditorThemeManager.AddLightText(creator.Find("description/Panel/title").GetComponent<Text>());
             EditorThemeManager.AddLightText(creator.Find("tags/Panel/title").GetComponent<Text>());
-            EditorThemeManager.AddLightText(content.Find("agreement/text").GetComponent<Text>());
+            EditorThemeManager.AddLightText(agreementText);
             EditorThemeManager.AddLightText(content.Find("id/id").GetComponent<Text>());
             EditorThemeManager.AddLightText(content.Find("id/revisions").GetComponent<Text>());
             EditorThemeManager.AddLightText(serverID.transform.Find("id").GetComponent<Text>());
@@ -827,19 +842,6 @@ namespace BetterLegacy.Editor.Managers
                     metadata.changelog = _val;
                 });
             }
-
-            //content.Find("agreement/text").GetComponent<Text>().text =
-            //    "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop." +
-            //    "Beware any modded features not in current PA will not be saved. " +
-            //    "However, if you want to include modded features, then it's recommended to upload to the Arcade server.";
-            content.Find("agreement/text").GetComponent<Text>().text =
-                "If your level does not use any modded features (not including alpha ported ones) and your level uses a verified song, you can convert the level to an alpha level format and upload it using the alpha editor.*\n" +
-                "However, if your level DOES use modded features not present anywhere in vanilla or the song is not verified, then upload it to the Arcade server.\n\n" +
-                "* Make sure you test the level in vanilla first!\n\n" +
-                "If you want to know more, click this text.";
-
-            var agreementText = content.Find("agreement/text").GetComponent<Clickable>() ?? content.Find("agreement/text").gameObject.AddComponent<Clickable>();
-            agreementText.onClick = eventData => EditorDocumentation.inst.OpenDocument("Uploading a Level");
 
             content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
