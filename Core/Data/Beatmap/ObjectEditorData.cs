@@ -61,12 +61,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = JSON.Parse("{}");
 
-            jn["bin"] = Bin.ToString();
-            jn["layer"] = Layer.ToString();
+            jn["bin"] = Bin;
+            jn["layer"] = Layer;
             if (collapse)
-                jn["collapse"] = collapse.ToString();
+                jn["collapse"] = collapse;
             if (locked)
-                jn["locked"] = locked.ToString();
+                jn["locked"] = locked;
 
             return jn;
         }

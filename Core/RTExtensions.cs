@@ -899,12 +899,12 @@ namespace BetterLegacy.Core
             return jn;
         }
         
-        public static JSONNode ToJSON(this Vector2 vector2)
+        public static JSONNode ToJSON(this Vector2 vector2, bool toString = true)
         {
             var jn = JSON.Parse("{}");
 
-            jn["x"] = vector2.x.ToString();
-            jn["y"] = vector2.y.ToString();
+            jn["x"] = vector2.x;
+            jn["y"] = vector2.y;
 
             return jn;
         }

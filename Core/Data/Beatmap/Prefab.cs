@@ -94,7 +94,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             var prefab = new Prefab
             {
-                id = jn["id"] == null ? LSText.randomString(16) : jn["id"],
+                id = jn["id"] ?? LSText.randomString(16),
                 name = jn["n"],
                 type = jn["type"].AsInt,
                 offset = -jn["o"].AsFloat,
@@ -192,10 +192,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             var jn = JSON.Parse("{}");
             jn["name"] = name;
             jn["type"] = (PrefabType.prefabTypeLSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
-            jn["offset"] = offset.ToString();
+            jn["offset"] = offset;
 
             if (id != null)
-                jn["id"] = id.ToString();
+                jn["id"] = id;
 
             if (typeID != null)
                 jn["type_id"] = typeID;

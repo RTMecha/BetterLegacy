@@ -275,9 +275,9 @@ namespace BetterLegacy.Core.Data.Player
             playerModel.headPart = Generic.Parse(jn["head"], playerModel);
             if (jn["face"] != null)
             {
-                if (jn["face"]["position"] != null && !string.IsNullOrEmpty(jn["face"]["position"]["x"]) && !string.IsNullOrEmpty(jn["face"]["position"]["y"]))
+                if (jn["face"]["position"] != null && jn["face"]["position"]["x"] != null && jn["face"]["position"]["y"] != null)
                     playerModel.facePosition = jn["face"]["position"].AsVector2();
-                if (!string.IsNullOrEmpty(jn["face"]["con_active"]))
+                if (jn["face"]["con_active"] != null)
                     playerModel.faceControlActive = jn["face"]["con_active"].AsBool;
             }
             playerModel.boostPart = Generic.Parse(jn["boost"], playerModel);
@@ -2581,22 +2581,22 @@ namespace BetterLegacy.Core.Data.Player
                 if (!string.IsNullOrEmpty(jn["d"]))
                     pulse.depth = jn["d"].AsFloat;
 
-                if (jn["pos"] != null && !string.IsNullOrEmpty(jn["pos"]["start"]["x"]) && !string.IsNullOrEmpty(jn["pos"]["start"]["x"]))
+                if (jn["pos"] != null && jn["pos"]["start"]["x"] != null && jn["pos"]["start"]["x"] != null)
                     pulse.startPosition = jn["pos"]["start"].AsVector2();
                 //pulse.startPosition = new Vector2(jn["pos"]["start"]["x"].AsFloat, jn["pos"]["start"]["y"].AsFloat);
 
-                if (jn["pos"] != null && !string.IsNullOrEmpty(jn["pos"]["end"]["x"]) && !string.IsNullOrEmpty(jn["pos"]["end"]["x"]))
+                if (jn["pos"] != null && jn["pos"]["end"]["x"] != null && jn["pos"]["end"]["x"] != null)
                     pulse.endPosition = jn["pos"]["end"].AsVector2();
                 //pulse.endPosition = new Vector2(jn["pos"]["end"]["x"].AsFloat, jn["pos"]["end"]["y"].AsFloat);
 
                 if (jn["pos"] != null && !string.IsNullOrEmpty(jn["pos"]["easing"]))
                     pulse.easingPosition = jn["pos"]["easing"].AsInt;
 
-                if (jn["sca"] != null && !string.IsNullOrEmpty(jn["sca"]["start"]["x"]) && !string.IsNullOrEmpty(jn["sca"]["start"]["x"]))
+                if (jn["sca"] != null && jn["sca"]["start"]["x"] != null && jn["sca"]["start"]["x"] != null)
                     pulse.startScale = jn["sca"]["start"].AsVector2();
                 //pulse.startScale = new Vector2(jn["sca"]["start"]["x"].AsFloat, jn["sca"]["start"]["y"].AsFloat);
 
-                if (jn["sca"] != null && !string.IsNullOrEmpty(jn["sca"]["end"]["x"]) && !string.IsNullOrEmpty(jn["sca"]["end"]["x"]))
+                if (jn["sca"] != null && jn["sca"]["end"]["x"] != null && jn["sca"]["end"]["x"] != null)
                     pulse.endScale = jn["sca"]["end"].AsVector2();
                 //pulse.endScale = new Vector2(jn["sca"]["end"]["x"].AsFloat, jn["sca"]["end"]["y"].AsFloat);
                 

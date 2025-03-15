@@ -64,43 +64,43 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["show_intro"] != null)
                 levelData.showIntro = jn["show_intro"].AsBool;
 
-            if (!string.IsNullOrEmpty(jn["lock_boost"]))
+            if (jn["lock_boost"] != null)
                 levelData.lockBoost = jn["lock_boost"].AsBool;
             
-            if (!string.IsNullOrEmpty(jn["speed_multiplier"]))
+            if (jn["speed_multiplier"] != null)
                 levelData.speedMultiplier = jn["speed_multiplier"].AsFloat;
             
-            if (!string.IsNullOrEmpty(jn["gamemode"]))
+            if (jn["gamemode"] != null)
                 levelData.gameMode = jn["gamemode"].AsInt;
 
-            if (!string.IsNullOrEmpty(jn["jump_gravity"]))
+            if (jn["jump_gravity"] != null)
                 levelData.jumpGravity = jn["jump_gravity"].AsFloat;
             
-            if (!string.IsNullOrEmpty(jn["jump_intensity"]))
+            if (jn["jump_intensity"] != null)
                 levelData.jumpIntensity = jn["jump_intensity"].AsFloat;
 
-            if (!string.IsNullOrEmpty(jn["max_jump"]))
+            if (jn["max_jump"] != null)
                 levelData.maxJumpCount = jn["max_jump"].AsInt;
 
-            if (!string.IsNullOrEmpty(jn["max_jump_boost"]))
+            if (jn["max_jump_boost"] != null)
                 levelData.maxJumpBoostCount = jn["max_jump_boost"].AsInt;
 
-            if (!string.IsNullOrEmpty(jn["max_health"]))
+            if (jn["max_health"] != null)
                 levelData.maxHealth = jn["max_health"].AsInt;
 
-            if (!string.IsNullOrEmpty(jn["force_replay_level_off"]))
+            if (jn["force_replay_level_off"] != null)
                 levelData.forceReplayLevelOff = jn["force_replay_level_off"].AsBool;
 
-            if (!string.IsNullOrEmpty(jn["multiply_player_speed"]))
+            if (jn["multiply_player_speed"] != null)
                 levelData.multiplyPlayerSpeed = jn["multiply_player_speed"].AsBool;
 
-            if (!string.IsNullOrEmpty(jn["allow_custom_player_models"]))
+            if (jn["allow_custom_player_models"] != null)
                 levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
 
-            if (!string.IsNullOrEmpty(jn["spawn_players"]))
+            if (jn["spawn_players"] != null)
                 levelData.spawnPlayers = jn["spawn_players"].AsBool;
 
-            if (!string.IsNullOrEmpty(jn["limit_player"]))
+            if (jn["limit_player"] != null)
                 levelData.limitPlayer = jn["limit_player"].AsBool;
             else if (jn["mod_version"] != null)
                 levelData.limitPlayer = false;
@@ -128,44 +128,44 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["mod_version"] = modVersion;
 
             if (showIntro)
-                jn["show_intro"] = showIntro.ToString(); // this will be reversed since the default unmodded value is false
+                jn["show_intro"] = showIntro; // this will be reversed since the default unmodded value is false
 
             if (lockBoost)
-                jn["lock_boost"] = lockBoost.ToString();
+                jn["lock_boost"] = lockBoost;
 
             if (speedMultiplier != 1f)
-                jn["speed_multiplier"] = speedMultiplier.ToString();
+                jn["speed_multiplier"] = speedMultiplier;
 
             if (gameMode != 0)
-                jn["gamemode"] = gameMode.ToString();
+                jn["gamemode"] = gameMode;
 
             if (jumpGravity != 1f)
-                jn["jump_gravity"] = jumpGravity.ToString();
+                jn["jump_gravity"] = jumpGravity;
 
             if (jumpIntensity != 1f)
-                jn["jump_intensity"] = jumpIntensity.ToString();
+                jn["jump_intensity"] = jumpIntensity;
 
             if (maxJumpCount != 10)
-                jn["max_jump"] = maxJumpCount.ToString();
+                jn["max_jump"] = maxJumpCount;
             if (maxJumpBoostCount != 1)
-                jn["max_jump_boost"] = maxJumpBoostCount.ToString();
+                jn["max_jump_boost"] = maxJumpBoostCount;
 
             if (maxHealth != 3)
-                jn["max_health"] = maxHealth.ToString();
+                jn["max_health"] = maxHealth;
 
             if (forceReplayLevelOff)
-                jn["force_replay_level_off"] = forceReplayLevelOff.ToString();
+                jn["force_replay_level_off"] = forceReplayLevelOff;
 
             if (!multiplyPlayerSpeed)
-                jn["multiply_player_speed"] = multiplyPlayerSpeed.ToString();
+                jn["multiply_player_speed"] = multiplyPlayerSpeed;
 
             if (!allowCustomPlayerModels)
-                jn["allow_custom_player_models"] = allowCustomPlayerModels.ToString();
+                jn["allow_custom_player_models"] = allowCustomPlayerModels;
             
             if (!spawnPlayers)
-                jn["spawn_players"] = spawnPlayers.ToString();
+                jn["spawn_players"] = spawnPlayers;
 
-            jn["limit_player"] = limitPlayer.ToString();
+            jn["limit_player"] = limitPlayer;
 
             if (limitMoveSpeed.x != 20f || limitMoveSpeed.y != 20f)
                 jn["limit_move_speed"] = limitMoveSpeed.ToJSON();

@@ -21,10 +21,19 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
+		/// <summary>
+		/// Name of the checkpoint.
+		/// </summary>
 		public string name = DEFAULT_CHECKPOINT_NAME;
 
+		/// <summary>
+		/// Time to reverse to when all players are dead.
+		/// </summary>
 		public float time;
 
+		/// <summary>
+		/// Default position to spawn players at.
+		/// </summary>
 		public Vector2 pos = Vector2.zero;
 
 		/// <summary>
@@ -112,8 +121,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 			var jn = JSON.Parse("{}");
 
 			jn["n"] = name;
-			jn["t"] = time.ToString();
-			jn["p"] = pos.ToJSON();
+			if (time != 0f)
+				jn["t"] = time.ToString();
+			if (pos.x != 0f && pos.y != 0f)
+				jn["p"] = pos.ToJSON();
 
 			return jn;
 		}
@@ -122,10 +133,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 		{
 			var jn = JSON.Parse("{}");
 
-			// save "False" because vanilla Legacy can't handle "active" being null.
-			jn["active"] = "False";
 			jn["name"] = name;
-			jn["t"] = time.ToString();
+			if (time != 0f)
+				jn["t"] = time;
 			jn["pos"] = pos.ToJSON();
 
 			return jn;
@@ -138,6 +148,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 		/// <returns>Returns a checkpoint position.</returns>
 		public Vector2 GetPosition(int index) => spawnType == SpawnPositionType.Single || positions == null || !positions.InRange(index) ? pos : positions[index];
 
-		#endregion
-	}
+		public override string ToString() => name;
+
+        #endregion
+    }
 }

@@ -132,14 +132,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1)
         {
             JSONNode jn = JSON.Parse("{}");
-            jn["t"] = time.ToString();
+            jn["t"] = time;
 
             for (int i = 0; i < values.Length; i++)
             {
                 if (maxValuesToSave != -1 && i >= maxValuesToSave)
                     break;
 
-                jn[axis[i]] = values[i].ToString();
+                jn[axis[i]] = values[i];
             }
 
             if (curve != Easing.Linear)
@@ -147,16 +147,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (random != 0)
             {
-                jn["r"] = random.ToString();
+                jn["r"] = random;
                 for (int i = 0; i < randomValues.Length; i++)
-                    jn[raxis[i]] = randomValues[i].ToString();
+                    jn[raxis[i]] = randomValues[i];
             }
 
             if (relative != defaultRelative)
-                jn["rel"] = relative.ToString();
+                jn["rel"] = relative;
 
             if (locked)
-                jn["l"] = locked.ToString();
+                jn["l"] = locked;
 
             return jn;
         }

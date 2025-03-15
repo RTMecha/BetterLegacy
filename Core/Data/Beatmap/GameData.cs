@@ -1517,13 +1517,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 jn["modifiers"][i]["action"] = levelModifier.ActionModifier.ToJSON();
                 jn["modifiers"][i]["trigger"] = levelModifier.TriggerModifier.ToJSON();
-                jn["modifiers"][i]["retrigger"] = levelModifier.retriggerAmount.ToString();
+                jn["modifiers"][i]["retrigger"] = levelModifier.retriggerAmount;
             }
 
             for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
             {
-                jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
-                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
+                var spriteAsset = AssetManager.SpriteAssets.ElementAt(i);
+                jn["assets"]["spr"][i]["n"] = spriteAsset.Key;
+                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(spriteAsset.Value);
             }
 
             CoreHelper.Log("Saving Object Prefabs");
@@ -1577,7 +1578,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < events.Count; i++)
                 for (int j = 0; j < events[i].Count; j++)
                     if (EventTypes.Length > i)
-                        jn["events"][EventTypes[i]][j] = ((EventKeyframe)events[i][j]).ToJSON();
+                        jn["events"][EventTypes[i]][j] = events[i][j].ToJSON();
 
             return jn;
         }

@@ -27,8 +27,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string id;
 
-        public bool active;
-
         public string name = "";
 
         public string desc = "Description";
@@ -53,41 +51,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static Marker DeepCopy(Marker orig, bool newID = true) => new Marker(newID ? LSText.randomString(16) : orig.id, orig.name, orig.desc, orig.color, orig.time);
 
         /// <summary>
+        /// Parses a Marker from a VG format file.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed marker.</returns>
+        public static Marker ParseVG(JSONNode jn) => new Marker(jn["ID"]?.Value ?? LSText.randomString(16), jn["n"] ?? string.Empty, jn["d"] ?? string.Empty, jn["c"].AsInt, jn["t"].AsFloat);
+
+        /// <summary>
         /// Parses a Marker from an LS format file.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed marker.</returns>
         public static Marker Parse(JSONNode jn) => new Marker(jn["name"]?.Value ?? "", jn["desc"]?.Value ?? "", jn["col"].AsInt, jn["t"].AsFloat);
-
-        /// <summary>
-        /// Converts the marker to a JSON Object in the LS format.
-        /// </summary>
-        /// <returns>Returns a JSON Object representing the Marker.</returns>
-        public JSONNode ToJSON()
-        {
-            var jn = JSON.Parse("{}");
-            jn["active"] = active.ToString();
-
-            if (!string.IsNullOrEmpty(name))
-                jn["name"] = name.ToString();
-
-            if (!string.IsNullOrEmpty(desc) && desc != "Description")
-                jn["desc"] = desc.ToString();
-
-            if (color != 0)
-                jn["col"] = color.ToString();
-
-            jn["t"] = time.ToString();
-
-            return jn;
-        }
-
-        /// <summary>
-        /// Parses a Marker from a VG format file.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed marker.</returns>
-        public static Marker ParseVG(JSONNode jn) => new Marker(jn["ID"]?.Value ?? LSText.randomString(16), jn["n"] ?? "", jn["d"] ?? "", jn["c"].AsInt, jn["t"].AsFloat);
 
         /// <summary>
         /// Converts the marker to a JSON Object in the VG format.
@@ -102,6 +77,27 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["n"] = name;
             jn["d"] = desc;
             jn["c"] = color;
+            jn["t"] = time;
+
+            return jn;
+        }
+
+        /// <summary>
+        /// Converts the marker to a JSON Object in the LS format.
+        /// </summary>
+        /// <returns>Returns a JSON Object representing the Marker.</returns>
+        public JSONNode ToJSON()
+        {
+            var jn = JSON.Parse("{}");
+            if (!string.IsNullOrEmpty(name))
+                jn["name"] = name;
+
+            if (!string.IsNullOrEmpty(desc) && desc != "Description")
+                jn["desc"] = desc;
+
+            if (color != 0)
+                jn["col"] = color;
+
             jn["t"] = time;
 
             return jn;

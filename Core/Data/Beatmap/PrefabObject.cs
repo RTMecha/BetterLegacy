@@ -29,20 +29,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             };
         }
 
-        public PrefabObject(string prefabID, float startTime)
+        public PrefabObject(string prefabID, float startTime) : this()
         {
-			id = LSText.randomString(16);
 			this.prefabID = prefabID;
 			this.startTime = startTime;
-			editorData.Bin = 0;
-			editorData.Layer = 0;
-            editorData = new ObjectEditorData();
-            events = new List<EventKeyframe>
-            {
-                new EventKeyframe(),
-                new EventKeyframe(),
-                new EventKeyframe()
-            };
         }
 
         #region Values
@@ -257,17 +247,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static PrefabObject Parse(JSONNode jn)
         {
             var prefabObject = new PrefabObject();
-            prefabObject.id = jn["id"] != null ? jn["id"] : LSText.randomString(16);
+            prefabObject.id = jn["id"] ?? LSText.randomString(16);
             prefabObject.prefabID = jn["pid"];
             prefabObject.StartTime = jn["st"].AsFloat;
 
             if (jn["p"] != null)
                 prefabObject.parent = jn["p"];
 
-            if (!string.IsNullOrEmpty(jn["rc"]))
+            if (jn["rc"] != null)
                 prefabObject.RepeatCount = jn["rc"].AsInt;
 
-            if (!string.IsNullOrEmpty(jn["ro"]))
+            if (jn["ro"] != null)
                 prefabObject.RepeatOffsetTime = jn["ro"].AsFloat;
 
             if (jn["sp"] != null)
@@ -291,67 +281,37 @@ namespace BetterLegacy.Core.Data.Beatmap
                     var kf = new EventKeyframe();
                     var jnpos = jn["e"]["pos"];
 
-                    kf.SetEventValues(new float[]
-                    {
-                        jnpos["x"].AsFloat,
-                        jnpos["y"].AsFloat
-                    });
+                    kf.SetEventValues(jnpos["x"].AsFloat, jnpos["y"].AsFloat);
                     kf.random = jnpos["r"].AsInt;
-                    kf.SetEventRandomValues(new float[]
-                    {
-                        jnpos["rx"].AsFloat,
-                        jnpos["ry"].AsFloat,
-                        jnpos["rz"].AsFloat
-                    });
+                    kf.SetEventRandomValues(jnpos["rx"].AsFloat, jnpos["ry"].AsFloat, jnpos["rz"].AsFloat);
                     prefabObject.events.Add(kf);
                 }
                 else
-                {
                     prefabObject.events.Add(new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
-                }
+
                 if (jn["e"]["sca"] != null)
                 {
                     var kf = new EventKeyframe();
                     var jnsca = jn["e"]["sca"];
-                    kf.SetEventValues(new float[]
-                    {
-                        jnsca["x"].AsFloat,
-                        jnsca["y"].AsFloat
-                    });
+                    kf.SetEventValues(jnsca["x"].AsFloat, jnsca["y"].AsFloat);
                     kf.random = jnsca["r"].AsInt;
-                    kf.SetEventRandomValues(new float[]
-                    {
-                        jnsca["rx"].AsFloat,
-                        jnsca["ry"].AsFloat,
-                        jnsca["rz"].AsFloat
-                    });
+                    kf.SetEventRandomValues(jnsca["rx"].AsFloat, jnsca["ry"].AsFloat, jnsca["rz"].AsFloat);
                     prefabObject.events.Add(kf);
                 }
                 else
-                {
                     prefabObject.events.Add(new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }));
-                }
+
                 if (jn["e"]["rot"] != null)
                 {
                     var kf = new EventKeyframe();
                     var jnrot = jn["e"]["rot"];
-                    kf.SetEventValues(new float[]
-                    {
-                        jnrot["x"].AsFloat
-                    });
+                    kf.SetEventValues(jnrot["x"].AsFloat);
                     kf.random = jnrot["r"].AsInt;
-                    kf.SetEventRandomValues(new float[]
-                    {
-                        jnrot["rx"].AsFloat,
-                        0f,
-                        jnrot["rz"].AsFloat
-                    });
+                    kf.SetEventRandomValues(jnrot["rx"].AsFloat, 0f, jnrot["rz"].AsFloat);
                     prefabObject.events.Add(kf);
                 }
                 else
-                {
                     prefabObject.events.Add(new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
-                }
             }
             else
             {
@@ -372,7 +332,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["id"] = id;
             jn["pid"] = prefabID;
 
-            jn["ed"] = ((ObjectEditorData)editorData).ToJSONVG();
+            jn["ed"] = editorData.ToJSONVG();
 
             jn["e"][0]["ct"] = "Linear";
             jn["e"][0]["ev"][0] = events[0].values[0];
@@ -396,10 +356,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["id"] = id;
             jn["pid"] = prefabID;
-            jn["st"] = StartTime.ToString();
+            jn["st"] = StartTime;
 
             if (Speed != 1f)
-                jn["sp"] = Speed.ToString();
+                jn["sp"] = Speed;
 
             if (parentType != "111")
                 jn["pt"] = parentType;
@@ -407,7 +367,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (parentOffsets.Any(x => x != 0f))
             {
                 for (int i = 0; i < parentOffsets.Length; i++)
-                    jn["po"][i] = parentOffsets[i].ToString();
+                    jn["po"][i] = parentOffsets[i];
             }
 
             if (parentAdditive != "000")
@@ -416,7 +376,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (parentParallax.Any(x => x != 1f))
             {
                 for (int i = 0; i < parentParallax.Length; i++)
-                    jn["ps"][i] = parentParallax[i].ToString();
+                    jn["ps"][i] = parentParallax[i];
             }
 
             if (!string.IsNullOrEmpty(parent))
@@ -424,53 +384,53 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (autoKillType != AutoKillType.Regular)
             {
-                jn["akt"] = ((int)autoKillType).ToString();
+                jn["akt"] = (int)autoKillType;
 
                 if (autoKillOffset != -1f)
-                    jn["ako"] = autoKillOffset.ToString();
+                    jn["ako"] = autoKillOffset;
             }
 
             if (RepeatCount > 0)
-                jn["rc"] = RepeatCount.ToString();
+                jn["rc"] = RepeatCount;
             if (RepeatOffsetTime > 0f)
-                jn["ro"] = RepeatOffsetTime.ToString();
+                jn["ro"] = RepeatOffsetTime;
 
             if (editorData.locked)
-                jn["ed"]["locked"] = editorData.locked.ToString();
+                jn["ed"]["locked"] = editorData.locked;
             if (editorData.collapse)
-                jn["ed"]["shrink"] = editorData.collapse.ToString();
+                jn["ed"]["shrink"] = editorData.collapse;
 
             if (editorData.Layer != 0)
-                jn["ed"]["layer"] = editorData.Layer.ToString();
+                jn["ed"]["layer"] = editorData.Layer;
             if (editorData.Bin != 0)
-                jn["ed"]["bin"] = editorData.Bin.ToString();
+                jn["ed"]["bin"] = editorData.Bin;
 
-            jn["e"]["pos"]["x"] = events[0].values[0].ToString();
-            jn["e"]["pos"]["y"] = events[0].values[1].ToString();
+            jn["e"]["pos"]["x"] = events[0].values[0];
+            jn["e"]["pos"]["y"] = events[0].values[1];
             if (events[0].random != 0)
             {
-                jn["e"]["pos"]["r"] = events[0].random.ToString();
-                jn["e"]["pos"]["rx"] = events[0].randomValues[0].ToString();
-                jn["e"]["pos"]["ry"] = events[0].randomValues[1].ToString();
-                jn["e"]["pos"]["rz"] = events[0].randomValues[2].ToString();
+                jn["e"]["pos"]["r"] = events[0].random;
+                jn["e"]["pos"]["rx"] = events[0].randomValues[0];
+                jn["e"]["pos"]["ry"] = events[0].randomValues[1];
+                jn["e"]["pos"]["rz"] = events[0].randomValues[2];
             }
 
-            jn["e"]["sca"]["x"] = events[1].values[0].ToString();
-            jn["e"]["sca"]["y"] = events[1].values[1].ToString();
+            jn["e"]["sca"]["x"] = events[1].values[0];
+            jn["e"]["sca"]["y"] = events[1].values[1];
             if (events[1].random != 0)
             {
-                jn["e"]["sca"]["r"] = events[1].random.ToString();
-                jn["e"]["sca"]["rx"] = events[1].randomValues[0].ToString();
-                jn["e"]["sca"]["ry"] = events[1].randomValues[1].ToString();
-                jn["e"]["sca"]["rz"] = events[1].randomValues[2].ToString();
+                jn["e"]["sca"]["r"] = events[1].random;
+                jn["e"]["sca"]["rx"] = events[1].randomValues[0];
+                jn["e"]["sca"]["ry"] = events[1].randomValues[1];
+                jn["e"]["sca"]["rz"] = events[1].randomValues[2];
             }
 
-            jn["e"]["rot"]["x"] = events[2].values[0].ToString();
+            jn["e"]["rot"]["x"] = events[2].values[0];
             if (events[1].random != 0)
             {
-                jn["e"]["rot"]["r"] = events[2].random.ToString();
-                jn["e"]["rot"]["rx"] = events[2].randomValues[0].ToString();
-                jn["e"]["rot"]["rz"] = events[2].randomValues[2].ToString();
+                jn["e"]["rot"]["r"] = events[2].random;
+                jn["e"]["rot"]["rx"] = events[2].randomValues[0];
+                jn["e"]["rot"]["rz"] = events[2].randomValues[2];
             }
 
             return jn;

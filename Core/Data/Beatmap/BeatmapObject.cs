@@ -181,11 +181,25 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Shape
 
+        /// <summary>
+        /// Shape group.
+        /// </summary>
         public int shape;
 
+        /// <summary>
+        /// Shape option.
+        /// </summary>
         public int shapeOption;
 
+        /// <summary>
+        /// Text data for <see cref="ShapeType.Text"/>.
+        /// </summary>
         public string text = string.Empty;
+
+        /// <summary>
+        /// If the <see cref="ShapeType.Text"/> object should align the text to the origin.
+        /// </summary>
+        public bool autoTextAlign;
 
         /// <summary>
         /// Settings for the custom polygon shape.
@@ -645,6 +659,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["csp"] != null)
                 beatmapObject.polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
 
+            beatmapObject.autoTextAlign = beatmapObject.ShapeType == ShapeType.Text;
+
             if (jn["gt"] != null)
                 beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
 
@@ -914,6 +930,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["text"] != null)
                 beatmapObject.text = ((string)jn["text"]).Replace("{{colon}}", ":");
 
+            if (jn["ata"] != null)
+                beatmapObject.autoTextAlign = jn["ata"];
+
             if (jn["ak"] != null)
                 beatmapObject.autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.OldStyleNoAutokill;
             else if (jn["akt"] != null)
@@ -923,7 +942,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.autoKillOffset = jn["ako"].AsFloat;
 
             if (jn["o"] != null)
-                beatmapObject.origin = new Vector2(jn["o"]["x"].AsFloat, jn["o"]["y"].AsFloat);
+                beatmapObject.origin = jn["o"].AsVector2();
 
             if (jn["ed"] != null)
                 beatmapObject.editorData = ObjectEditorData.Parse(jn["ed"]);
@@ -1094,35 +1113,35 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (parentOffsets.Any(x => x != 0f))
                 for (int i = 0; i < parentOffsets.Length; i++)
-                    jn["po"][i] = parentOffsets[i].ToString();
+                    jn["po"][i] = parentOffsets[i];
 
             if (parentAdditive != "000")
                 jn["pa"] = parentAdditive;
 
             if (parallaxSettings.Any(x => x != 1f))
                 for (int i = 0; i < parallaxSettings.Length; i++)
-                    jn["ps"][i] = parallaxSettings[i].ToString();
+                    jn["ps"][i] = parallaxSettings[i];
 
             if (!string.IsNullOrEmpty(parent))
                 jn["p"] = parent;
 
             if (Depth != 15)
-                jn["d"] = Depth.ToString();
+                jn["d"] = Depth;
             if (background)
                 jn["rdt"] = "1";
             if (opacityCollision)
-                jn["opcol"] = opacityCollision.ToString();
+                jn["opcol"] = opacityCollision;
             if (ignoreLifespan)
-                jn["iglif"] = ignoreLifespan.ToString();
+                jn["iglif"] = ignoreLifespan;
             if (orderModifiers)
-                jn["ordmod"] = orderModifiers.ToString();
+                jn["ordmod"] = orderModifiers;
             if (desync && !string.IsNullOrEmpty(parent))
-                jn["desync"] = desync.ToString();
+                jn["desync"] = desync;
 
             if (LDM)
-                jn["ldm"] = LDM.ToString();
+                jn["ldm"] = LDM;
 
-            jn["st"] = StartTime.ToString();
+            jn["st"] = StartTime;
 
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
@@ -1132,19 +1151,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["ako"] = autoKillOffset;
 
             if (gradientType != GradientType.Normal)
-                jn["gt"] = ((int)gradientType).ToString();
+                jn["gt"] = (int)gradientType;
 
             if (shape != 0)
-                jn["shape"] = shape.ToString();
+                jn["shape"] = shape;
 
             if (shapeOption != 0)
-                jn["so"] = shapeOption.ToString();
+                jn["so"] = shapeOption;
 
             if (ShapeType == ShapeType.Polygon && polygonShapeSettings != null)
                 jn["csp"] = polygonShapeSettings.ToJSON();
 
             if (!string.IsNullOrEmpty(text))
                 jn["text"] = text;
+
+            if (autoTextAlign)
+                jn["ata"] = autoTextAlign;
 
             if (tags != null && !tags.IsEmpty())
                 for (int i = 0; i < tags.Count; i++)
@@ -1153,22 +1175,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (origin.x != 0f || origin.y != 0f)
                 jn["o"] = origin.ToJSON();
 
-            if (editorData.locked)
-                jn["ed"]["locked"] = editorData.locked.ToString();
-            if (editorData.collapse)
-                jn["ed"]["shrink"] = editorData.collapse.ToString();
-
-            jn["ed"]["bin"] = editorData.Bin.ToString();
-            jn["ed"]["layer"] = editorData.Layer.ToString();
+            jn["ed"] = editorData.ToJSON();
 
             for (int i = 0; i < events[0].Count; i++)
-                jn["events"]["pos"][i] = ((EventKeyframe)events[0][i]).ToJSON();
+                jn["events"]["pos"][i] = events[0][i].ToJSON();
             for (int i = 0; i < events[1].Count; i++)
-                jn["events"]["sca"][i] = ((EventKeyframe)events[1][i]).ToJSON();
+                jn["events"]["sca"][i] = events[1][i].ToJSON();
             for (int i = 0; i < events[2].Count; i++)
-                jn["events"]["rot"][i] = ((EventKeyframe)events[2][i]).ToJSON(true);
+                jn["events"]["rot"][i] = events[2][i].ToJSON(true);
             for (int i = 0; i < events[3].Count; i++)
-                jn["events"]["col"][i] = ((EventKeyframe)events[3][i]).ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
+                jn["events"]["col"][i] = events[3][i].ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
 
             for (int i = 0; i < modifiers.Count; i++)
                 jn["modifiers"][i] = modifiers[i].ToJSON();
