@@ -92,6 +92,7 @@ Toolkit mechanics:
 - Require Version field / toggle for metadata.
 - Variable Modifier that registers an object variable based on what the modifier takes.
 - Prefab reference name in object editor
+- Player float gamemode?
 
 ### Internal
 - Make Editor Documentation read from a json file. > 1.8.0
