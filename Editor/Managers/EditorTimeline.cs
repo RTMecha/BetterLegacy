@@ -36,6 +36,9 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
+            if (Input.GetMouseButtonUp((int)UnityEngine.EventSystems.PointerEventData.InputButton.Middle))
+                movingTimeline = false;
+
             if (!movingTimeline)
                 return;
 
