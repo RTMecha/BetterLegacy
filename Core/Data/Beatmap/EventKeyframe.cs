@@ -9,19 +9,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class EventKeyframe : Exists
     {
-        public EventKeyframe()
-        {
-            values[0] = 0f;
-            values[1] = 0f;
-            randomValues[0] = 0f;
-            randomValues[1] = 0f;
-            randomValues[2] = 0f;
-        }
+        public EventKeyframe() { }
 
-        public EventKeyframe(float time) 
-        {
-            this.time = time;
-        }
+        public EventKeyframe(float time) => this.time = time;
 
         public EventKeyframe(float[] values, float[] randomValues, int random = 0)
         {
