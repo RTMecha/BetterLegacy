@@ -244,7 +244,7 @@ namespace BetterLegacy.Core.Optimization
                 {
                     if (converter.cachedSequences.TryGetValue(levelParent.id, out ObjectConverter.CachedSequences cachedSequences))
                     {
-                        levelParent.positionSequence = cachedSequences.Position3DSequence;
+                        levelParent.positionSequence = cachedSequences.PositionSequence;
                         levelParent.scaleSequence = cachedSequences.ScaleSequence;
                         levelParent.rotationSequence = cachedSequences.RotationSequence;
                     }
@@ -258,8 +258,8 @@ namespace BetterLegacy.Core.Optimization
         {
             foreach (var cachedSequence in levelProcessor.converter.cachedSequences.Values)
             {
-                for (int i = 0; i < cachedSequence.Position3DSequence.keyframes.Length; i++)
-                    cachedSequence.Position3DSequence.keyframes[i].Stop();
+                for (int i = 0; i < cachedSequence.PositionSequence.keyframes.Length; i++)
+                    cachedSequence.PositionSequence.keyframes[i].Stop();
                 for (int i = 0; i < cachedSequence.RotationSequence.keyframes.Length; i++)
                     cachedSequence.RotationSequence.keyframes[i].Stop();
                 for (int i = 0; i < cachedSequence.ColorSequence.keyframes.Length; i++)

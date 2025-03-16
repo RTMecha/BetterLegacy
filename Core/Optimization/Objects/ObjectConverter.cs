@@ -27,7 +27,7 @@ namespace BetterLegacy.Core.Optimization.Objects
     {
         public class CachedSequences
         {
-            public Sequence<Vector3> Position3DSequence { get; set; }
+            public Sequence<Vector3> PositionSequence { get; set; }
             public Sequence<Vector2> ScaleSequence { get; set; }
             public Sequence<float> RotationSequence { get; set; }
             public Sequence<Color> ColorSequence { get; set; }
@@ -312,7 +312,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (cachedSequences != null)
                     levelParentObject = new LevelParentObject
                     {
-                        positionSequence = cachedSequences.Position3DSequence,
+                        positionSequence = cachedSequences.PositionSequence,
                         scaleSequence = cachedSequences.ScaleSequence,
                         rotationSequence = cachedSequences.RotationSequence,
 
@@ -407,10 +407,10 @@ namespace BetterLegacy.Core.Optimization.Objects
         {
             var collection = new CachedSequences()
             {
-                Position3DSequence = GetVector3Sequence(beatmapObject.events[0], DefaultVector3Keyframe),
+                PositionSequence = GetVector3Sequence(beatmapObject.events[0], DefaultVector3Keyframe),
                 ScaleSequence = GetVector2Sequence(beatmapObject.events[1], DefaultVector2Keyframe),
             };
-            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.Position3DSequence, false);
+            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.PositionSequence, false);
 
             // Empty objects don't need a color sequence, so it is not cached
             if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
@@ -437,9 +437,9 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public void UpdateCachedSequence(BeatmapObject beatmapObject, CachedSequences collection)
         {
-            collection.Position3DSequence = GetVector3Sequence(beatmapObject.events[0], DefaultVector3Keyframe);
+            collection.PositionSequence = GetVector3Sequence(beatmapObject.events[0], DefaultVector3Keyframe);
             collection.ScaleSequence = GetVector2Sequence(beatmapObject.events[1], DefaultVector2Keyframe);
-            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.Position3DSequence, false);
+            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.PositionSequence, false);
 
             // Empty objects don't need a color sequence, so it is not cached
             if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)

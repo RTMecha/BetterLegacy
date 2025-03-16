@@ -2904,7 +2904,7 @@ namespace BetterLegacy.Core.Helpers
                         // From Type Position
                         case 0:
                             {
-                                var sequence = cachedSequence.Position3DSequence.Interpolate(time - beatmapObject.StartTime - delay);
+                                var sequence = cachedSequence.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 break;
@@ -3303,7 +3303,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!useVisual && Updater.levelProcessor.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequences))
                     RTEventManager.inst.SetOffset(toType, toAxis, fromType switch
                     {
-                        0 => Mathf.Clamp((cachedSequences.Position3DSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                        0 => Mathf.Clamp((cachedSequences.PositionSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                         1 => Mathf.Clamp((cachedSequences.ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                         2 => Mathf.Clamp((cachedSequences.RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop, min, max),
                         _ => 0f,
@@ -3630,13 +3630,13 @@ namespace BetterLegacy.Core.Helpers
 
                 float t = !isEmpty ? type switch
                 {
-                    0 => axis == 0 ? cachedSequence.Position3DSequence.Value.x : axis == 1 ? cachedSequence.Position3DSequence.Value.y : cachedSequence.Position3DSequence.Value.z,
+                    0 => axis == 0 ? cachedSequence.PositionSequence.Value.x : axis == 1 ? cachedSequence.PositionSequence.Value.y : cachedSequence.PositionSequence.Value.z,
                     1 => axis == 0 ? cachedSequence.ScaleSequence.Value.x : cachedSequence.ScaleSequence.Value.y,
                     2 => cachedSequence.RotationSequence.Value,
                     _ => 0f
                 } : type switch
                 {
-                    0 => axis == 0 ? cachedSequence.Position3DSequence.Interpolate(time).x : axis == 1 ? cachedSequence.Position3DSequence.Interpolate(time).y : cachedSequence.Position3DSequence.Interpolate(time).z,
+                    0 => axis == 0 ? cachedSequence.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequence.PositionSequence.Interpolate(time).y : cachedSequence.PositionSequence.Interpolate(time).z,
                     1 => axis == 0 ? cachedSequence.ScaleSequence.Interpolate(time).x : cachedSequence.ScaleSequence.Interpolate(time).y,
                     2 => cachedSequence.RotationSequence.Interpolate(time),
                     _ => 0f
@@ -4556,7 +4556,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                         modifier.reference.SetTransform(toType, toAxis, fromType switch
                         {
-                            0 => Mathf.Clamp((cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp((cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                             1 => Mathf.Clamp((cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                             2 => Mathf.Clamp((cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
                             _ => 0f,
@@ -4621,7 +4621,7 @@ namespace BetterLegacy.Core.Helpers
                                 var variables = modifier.reference.GetObjectVariables();
                                 variables["axis"] = fromType switch
                                 {
-                                    0 => cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
+                                    0 => cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
                                     1 => cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
                                     2 => cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay),
                                     _ => 0f,
@@ -4708,7 +4708,7 @@ namespace BetterLegacy.Core.Helpers
                         if (!useVisual && cachedSequence != null)
                             variables[name] = fromType switch
                             {
-                                0 => Mathf.Clamp(cachedSequence.Position3DSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                                0 => Mathf.Clamp(cachedSequence.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                                 1 => Mathf.Clamp(cachedSequence.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                                 2 => Mathf.Clamp(cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay), min, max),
                                 _ => 0f,
@@ -6335,7 +6335,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     case 0:
                                         {
-                                            var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay);
                                             float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
@@ -6810,7 +6810,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 // Animate position
                 if (animatePos)
-                    applyTo.positionOffset = cachedSequences.Position3DSequence.Interpolate(currentTime - time - delayPos);
+                    applyTo.positionOffset = cachedSequences.PositionSequence.Interpolate(currentTime - time - delayPos);
 
                 // Animate scale
                 if (animateSca)
@@ -6865,7 +6865,7 @@ namespace BetterLegacy.Core.Helpers
             if (!visual && Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
                 return fromType switch
                 {
-                    0 => Mathf.Clamp((cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    0 => Mathf.Clamp((cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                     2 => Mathf.Clamp((cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
                     _ => 0f,

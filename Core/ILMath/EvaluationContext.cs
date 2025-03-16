@@ -158,7 +158,7 @@ namespace ILMath
 
                             result = fromType switch
                             {
-                                0 => cachedSequence.Position3DSequence.Interpolate(time)[fromAxis],
+                                0 => cachedSequence.PositionSequence.Interpolate(time)[fromAxis],
                                 1 => cachedSequence.ScaleSequence.Interpolate(time)[fromAxis],
                                 2 => cachedSequence.RotationSequence.Interpolate(time),
                                 _ => 0,
