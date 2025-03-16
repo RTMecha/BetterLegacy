@@ -139,7 +139,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent == null ? ObjectManager.inst.objectParent.transform : parent.transform);
+            GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : ObjectManager.inst.objectParent.transform);
             
             if (shapeType == ShapeType.Player)
             {
@@ -147,9 +147,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 rtPlayer.Model = ObjectManager.inst.objectPrefabs[shape].options[shapeOption].GetComponent<RTPlayer>().Model;
                 rtPlayer.playerIndex = beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].values.Length > 0 ? (int)beatmapObject.events[3][0].values[0] : 0;
                 if (beatmapObject.tags != null && beatmapObject.tags.Has(x => x == "DontRotate"))
-                {
                     rtPlayer.CanRotate = false;
-                }
             }
 
             baseObject.transform.localScale = Vector3.one;
@@ -163,9 +161,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             if (shapeType == ShapeType.Player)
                 baseObject.SetActive(true);
 
-            int num = 0;
-            if (parentObjects != null)
-                num = parentObjects.Count;
+            int num = parentObjects.Count;
 
             var p = InitLevelParentObject(beatmapObject, baseObject);
             if (!parentObjects.IsEmpty())
@@ -215,7 +211,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 prefabOffsetRotation = rot.eulerAngles;
             }
 
-            var tf = parentObjects != null && !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
+            var tf = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
                 parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
 
             tf.SetParent(top.transform);
