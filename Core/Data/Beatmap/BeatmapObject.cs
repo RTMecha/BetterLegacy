@@ -1300,6 +1300,29 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Custom Interpolation
 
+        /// <summary>
+        /// Resets the transform offsets.
+        /// </summary>
+        public void ResetOffsets()
+        {
+            reactivePositionOffset = Vector3.zero;
+            reactiveScaleOffset = Vector3.zero;
+            reactiveRotationOffset = 0f;
+            positionOffset = Vector3.zero;
+            scaleOffset = Vector3.zero;
+            rotationOffset = Vector3.zero;
+        }
+
+        /// <summary>
+        /// Gets a transform offset from the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <returns>Returns a transform offset.</returns>
         public Vector3 GetTransformOffset(int type) => type switch
         {
             0 => positionOffset,
@@ -1307,9 +1330,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             _ => rotationOffset,
         };
 
-        public void SetTransform(int toType, Vector3 value)
+        /// <summary>
+        /// Sets a transform offset of the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="value">Value to assign to the offset.</param>
+        public void SetTransform(int type, Vector3 value)
         {
-            switch (toType)
+            switch (type)
             {
                 case 0: {
                         positionOffset = value;
@@ -1326,27 +1359,61 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public void SetTransform(int toType, int toAxis, float value)
+        /// <summary>
+        /// Sets a transform offset of the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="axis">The axis of the transform value to get.</param>
+        /// <param name="value">Value to assign to the offset's axis.</param>
+        public void SetTransform(int type, int axis, float value)
         {
-            switch (toType)
+            switch (type)
             {
                 case 0: {
-                        positionOffset[toAxis] = value;
+                        positionOffset[axis] = value;
                         break;
                     }
                 case 1: {
-                        scaleOffset[toAxis] = value;
+                        scaleOffset[axis] = value;
                         break;
                     }
                 case 2: {
-                        rotationOffset[toAxis] = value;
+                        rotationOffset[axis] = value;
                         break;
                     }
             }
         }
 
+        /// <summary>
+        /// Interpolates an animation from the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="valueIndex">Axis index to interpolate.</param>
+        /// <returns>Returns a single value based on the event.</returns>
         public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, Updater.CurrentTime - StartTime);
-        
+
+        /// <summary>
+        /// Interpolates an animation from the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="valueIndex">Axis index to interpolate.</param>
+        /// <param name="time">Time to interpolate to.</param>
+        /// <returns>Returns a single value based on the event.</returns>
         public float Interpolate(int type, int valueIndex, float time)
         {
             var list = events[type].OrderBy(x => x.time).ToList();
@@ -1412,7 +1479,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             return x;
         }
 
-        public float InterpolateChain(int type, int valueIndex, float time)
+        /// <summary>
+        /// Interpolates an animation from the objects' parent chain.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="valueIndex">Axis index to interpolate.</param>
+        /// <param name="time">Time to interpolate to.</param>
+        /// <returns>Returns a single value based on the event.</returns>
+        public float InterpolateChain(int type, int valueIndex, float time, MathOperation operation = MathOperation.Addition)
         {
             float result = 0f;
 
