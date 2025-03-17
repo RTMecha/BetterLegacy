@@ -21,10 +21,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             this.parentObjects = parentObjects;
             this.visualObject = visualObject;
 
-            isGradient = visualObject.secondaryColorSequence != null;
-            if (isGradient)
-                gradientObject = (GradientObject)visualObject;
-            isImage = visualObject is ImageObject;
+            isImage = beatmapObject.ShapeType == ShapeType.Image;
 
             this.prefabOffsetPosition = prefabOffsetPosition;
             this.prefabOffsetScale = prefabOffsetScale;
@@ -68,7 +65,6 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public List<LevelParentObject> parentObjects;
         public VisualObject visualObject;
-        public GradientObject gradientObject;
         
         public float depth;
 
@@ -78,7 +74,6 @@ namespace BetterLegacy.Core.Optimization.Objects
         public bool rotationParent;
 
         public bool isImage;
-        public bool isGradient;
         public float positionParentOffset;
         public float scaleParentOffset;
         public float rotationParentOffset;

@@ -4,6 +4,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Optimization.Objects.Visual;
 using LSFunctions;
 using System.Collections;
 using System.Collections.Generic;
@@ -321,8 +322,14 @@ namespace BetterLegacy.Core.Optimization
             {
                 switch (context)
                 {
-                    case "gradienttype": // TODO: find a way to do this better
-                    case "objecttype":
+                    case "gradienttype":
+                        {
+                            if (levelObject.visualObject is SolidObject solidObject)
+                                solidObject.UpdateMaterial((int)beatmapObject.gradientType);
+
+                            break;
+                        }
+                    case "objecttype": // TODO: find a way to do this better
                         {
                             UpdateObject(beatmapObject);
                             break;
@@ -599,6 +606,12 @@ namespace BetterLegacy.Core.Optimization
                 if (restart)
                     OnLevelStart();
             }
+        }
+
+        public static class ObjectContext
+        {
+            public const string START_TIME = "starttime";
+            public const string DRAG = "drag";
         }
 
         #endregion

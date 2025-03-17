@@ -505,9 +505,9 @@ namespace BetterLegacy.Editor.Components
             currentColor += Highlight(currentColor);
             renderer.material.color = LSColors.fadeColor(currentColor, 1f);
 
-            if (levelObject.isGradient)
+            if (levelObject.visualObject.isGradient)
             {
-                var secondaryColor = levelObject.gradientObject.GetSecondaryColor();
+                var secondaryColor = levelObject.visualObject.GetSecondaryColor();
                 secondaryColor += Highlight(secondaryColor);
                 renderer.material.SetColor("_ColorSecondary", LSColors.fadeColor(secondaryColor, 1f));
             }
@@ -531,9 +531,9 @@ namespace BetterLegacy.Editor.Components
                 if (renderer.material.color != color)
                     renderer.material.color = color;
 
-                if (levelObject && levelObject.isGradient && levelObject.gradientObject != null)
+                if (levelObject && levelObject.visualObject.isGradient)
                 {
-                    var secondaryColor = levelObject.gradientObject.GetSecondaryColor();
+                    var secondaryColor = levelObject.visualObject.GetSecondaryColor();
                     var layerSecondaryColor = LSColors.fadeColor(secondaryColor, secondaryColor.a * LayerOpacity);
                     if (secondaryColor != layerSecondaryColor)
                         renderer.material.SetColor("_ColorSecondary", layerSecondaryColor);

@@ -3647,12 +3647,12 @@ namespace BetterLegacy.Core.Helpers
                     if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject))
                         continue;
 
-                    if (!otherLevelObject.isGradient)
+                    if (!otherLevelObject.visualObject.isGradient)
                         otherLevelObject.visualObject.SetColor(Color.Lerp(otherLevelObject.visualObject.GetPrimaryColor(), color, t));
-                    else
+                    else if (otherLevelObject.visualObject is SolidObject solidObject)
                     {
-                        var colors = otherLevelObject.gradientObject.GetColors();
-                        otherLevelObject.gradientObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
+                        var colors = solidObject.GetColors();
+                        solidObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
                     }
                 }
             },
@@ -3663,15 +3663,15 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                     return;
 
-                if (!levelObject.isGradient)
+                if (!levelObject.visualObject.isGradient)
                 {
                     var color = levelObject.visualObject.GetPrimaryColor();
                     levelObject.visualObject.SetColor(string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), color.a));
                 }
-                else
+                else if (levelObject.visualObject is SolidObject solidObject)
                 {
-                    var colors = levelObject.gradientObject.GetColors();
-                    levelObject.gradientObject.SetColor(
+                    var colors = solidObject.GetColors();
+                    solidObject.SetColor(
                         string.IsNullOrEmpty(modifier.GetValue(0)) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), colors.startColor.a),
                         string.IsNullOrEmpty(modifier.GetValue(1)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(1)), colors.endColor.a));
                 }
@@ -3688,15 +3688,15 @@ namespace BetterLegacy.Core.Helpers
                     if (!Updater.TryGetObject(bm, out LevelObject levelObject))
                         continue;
 
-                    if (!levelObject.isGradient)
+                    if (!levelObject.visualObject.isGradient)
                     {
                         var color = levelObject.visualObject.GetPrimaryColor();
                         levelObject.visualObject.SetColor(string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), color.a));
                     }
-                    else
+                    else if (levelObject.visualObject is SolidObject solidObject)
                     {
-                        var colors = levelObject.gradientObject.GetColors();
-                        levelObject.gradientObject.SetColor(
+                        var colors = solidObject.GetColors();
+                        solidObject.SetColor(
                             string.IsNullOrEmpty(modifier.GetValue(0)) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), colors.startColor.a),
                             string.IsNullOrEmpty(modifier.GetValue(2)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(2)), colors.endColor.a));
                     }
@@ -6878,26 +6878,29 @@ namespace BetterLegacy.Core.Helpers
 
         static void CopyColor(LevelObject applyTo, LevelObject takeFrom, bool applyColor1, bool applyColor2)
         {
-            if (applyTo.isGradient && takeFrom.isGradient) // both are gradients
+            var applyToSolidObject = applyTo.visualObject as SolidObject;
+            var takeFromSolidObject = takeFrom.visualObject as SolidObject;
+
+            if (applyTo.visualObject.isGradient && applyToSolidObject && takeFrom.visualObject.isGradient && takeFromSolidObject) // both are gradients
             {
-                var colors = takeFrom.gradientObject.GetColors();
-                applyTo.gradientObject.SetColor(colors.startColor, colors.endColor);
+                var colors = takeFromSolidObject.GetColors();
+                applyToSolidObject.SetColor(colors.startColor, colors.endColor);
             }
 
-            if (applyTo.isGradient && !takeFrom.isGradient) // only main object is a gradient
+            if (applyTo.visualObject.isGradient && !takeFrom.visualObject.isGradient) // only main object is a gradient
             {
                 var color = takeFrom.visualObject.GetPrimaryColor();
-                var colors = applyTo.gradientObject.GetColors();
-                applyTo.gradientObject.SetColor(applyColor1 ? color : colors.startColor, applyColor2 ? color : colors.endColor);
+                var colors = applyToSolidObject.GetColors();
+                applyToSolidObject.SetColor(applyColor1 ? color : colors.startColor, applyColor2 ? color : colors.endColor);
             }
 
-            if (!applyTo.isGradient && takeFrom.isGradient) // only copying object is a gradient
+            if (!applyTo.visualObject.isGradient && takeFrom.visualObject.isGradient) // only copying object is a gradient
             {
-                var colors = takeFrom.gradientObject.GetColors();
-                applyTo.visualObject.SetColor(applyColor1 ? colors.startColor : applyColor2 ? colors.endColor : takeFrom.gradientObject.GetPrimaryColor());
+                var colors = takeFromSolidObject.GetColors();
+                applyTo.visualObject.SetColor(applyColor1 ? colors.startColor : applyColor2 ? colors.endColor : takeFromSolidObject.GetPrimaryColor());
             }
 
-            if (!applyTo.isGradient && !takeFrom.isGradient) // neither are gradients
+            if (!applyTo.visualObject.isGradient && !takeFrom.visualObject.isGradient) // neither are gradients
                 applyTo.visualObject.SetColor(takeFrom.visualObject.GetPrimaryColor());
         }
 

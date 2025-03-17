@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
+using LSFunctions;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
@@ -39,6 +40,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public Sequence<Color> secondaryColorSequence;
 
+        public bool isGradient;
+
         /// <summary>
         /// Interpolates the visual objects' colors.
         /// </summary>
@@ -56,6 +59,12 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         /// <returns>Returns the primary color of the visual object.</returns>
         public abstract Color GetPrimaryColor();
+
+        /// <summary>
+        /// Gets the gradient objects' secondary color.
+        /// </summary>
+        /// <returns>Returns the secondary color of the gradient object.</returns>
+        public virtual Color GetSecondaryColor() => LSColors.pink500;
 
         /// <summary>
         /// Sets the origin of the visual object.

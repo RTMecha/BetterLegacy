@@ -233,9 +233,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), isBackground),
                 ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
                 ShapeType.Player => new PlayerObject(visualObject),
-                _ => beatmapObject.gradientType != BeatmapObject.GradientType.Normal ?
-                    new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) :
-                    new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision),
+                _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType),
             };
 
             if (CoreHelper.InEditor && shapeType != ShapeType.Player)
