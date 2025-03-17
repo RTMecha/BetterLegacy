@@ -141,15 +141,6 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : ObjectManager.inst.objectParent.transform);
             
-            if (shapeType == ShapeType.Player)
-            {
-                var rtPlayer = baseObject.GetComponent<RTPlayer>();
-                rtPlayer.Model = ObjectManager.inst.objectPrefabs[shape].options[shapeOption].GetComponent<RTPlayer>().Model;
-                rtPlayer.playerIndex = beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].values.Length > 0 ? (int)beatmapObject.events[3][0].values[0] : 0;
-                if (beatmapObject.tags != null && beatmapObject.tags.Has(x => x == "DontRotate"))
-                    rtPlayer.CanRotate = false;
-            }
-
             baseObject.transform.localScale = Vector3.one;
 
             var visualObject = baseObject.transform.GetChild(shapeType == ShapeType.Player ? 1 : 0).gameObject;
@@ -227,12 +218,15 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             bool isSolid = beatmapObject.objectType == ObjectType.Solid;
             bool isBackground = beatmapObject.background;
+            bool dontRotate = shapeType == ShapeType.Player && beatmapObject.tags != null && beatmapObject.tags.Has(x => x == "DontRotate");
+            int playerIndex = shapeType == ShapeType.Player && beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].values.Length > 0 ? (int)beatmapObject.events[3][0].values[0] : 0;
 
             VisualObject visual = shapeType switch
             {
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), isBackground),
                 ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
-                ShapeType.Player => new PlayerObject(visualObject),
+                ShapeType.Player => new PlayerObject(visualObject, playerIndex, dontRotate, shapeOption),
+                ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.polygonShapeSettings),
                 _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType),
             };
 
