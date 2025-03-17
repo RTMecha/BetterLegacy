@@ -559,7 +559,7 @@ namespace BetterLegacy.Core.Optimization
             }
 
             // If the object should be reinserted and it is not null then we reinsert the object.
-            if (reinsert && beatmapObject != null)
+            if (reinsert && beatmapObject)
             {
                 // It's important that the beatmapObjects Dictionary has a reference to the object.
                 converter.beatmapObjects[beatmapObject.id] = beatmapObject;
@@ -1014,12 +1014,7 @@ namespace BetterLegacy.Core.Optimization
 
             foreach (var beatmapObject in GameData.Current.beatmapObjects)
             {
-                beatmapObject.reactivePositionOffset = Vector3.zero;
-                beatmapObject.reactiveScaleOffset = Vector3.zero;
-                beatmapObject.reactiveRotationOffset = 0f;
-                beatmapObject.positionOffset = Vector3.zero;
-                beatmapObject.scaleOffset = Vector3.zero;
-                beatmapObject.rotationOffset = Vector3.zero;
+                beatmapObject.ResetOffsets();
 
                 beatmapObject.customParent = null;
             }
