@@ -25,6 +25,7 @@
 - Added currentEpoch to math parser variables.
 - Reworked the way modifier functions are assigned to fix game freeze on first modifier running.
 - Now supports text origin alignment from alpha.
+- Fixed song pitch not resetting when the user exits to main menu.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
