@@ -521,6 +521,16 @@ namespace BetterLegacy
         Set,
     }
 
+    /// <summary>
+    /// Represents the type of transform value.
+    /// </summary>
+    public enum TransformType
+    {
+        Position,
+        Scale,
+        Rotation
+    }
+
     #endregion
 
     #region Arcade / Game
