@@ -11,8 +11,42 @@ using BetterLegacy.Arcade.Managers;
 
 namespace BetterLegacy.Core
 {
+    /// <summary>
+    /// Math helper class.
+    /// </summary>
     public static class RTMath
     {
+        #region Parse
+
+        /// <summary>
+        /// Tries to parse a math expression.
+        /// </summary>
+        /// <param name="input">Input expression.</param>
+        /// <param name="defaultValue">Default value to output if the evaluation failed.</param>
+        /// <param name="result">Output value.</param>
+        /// <returns>Returns true if the math evaluation was successful, otherwise returns false.</returns>
+        public static bool TryParse(string input, float defaultValue, out float result)
+        {
+            try
+            {
+                result = Parse(input);
+                return true;
+            }
+            catch
+            {
+                result = defaultValue;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tries to parse a math expression.
+        /// </summary>
+        /// <param name="input">Input expression.</param>
+        /// <param name="defaultValue">Default value to output if the evaluation failed.</param>
+        /// <param name="variables">Custom variables to register.</param>
+        /// <param name="result">Output value.</param>
+        /// <returns>Returns true if the math evaluation was successful, otherwise returns false.</returns>
         public static bool TryParse(string input, float defaultValue, Dictionary<string, float> variables, out float result)
         {
             try
@@ -27,8 +61,38 @@ namespace BetterLegacy.Core
             }
         }
 
+        /// <summary>
+        /// Tries to parse a math expression.
+        /// </summary>
+        /// <param name="input">Input expression.</param>
+        /// <param name="defaultValue">Default value to output if the evaluation failed.</param>
+        /// <param name="variables">Custom variables to register.</param>
+        /// <param name="functions">Custom functions to register.</param>
+        /// <param name="result">Output value.</param>
+        /// <returns>Returns true if the math evaluation was successful, otherwise returns false.</returns>
+        public static bool TryParse(string input, float defaultValue, Dictionary<string, float> variables, Dictionary<string, MathFunction> functions, out float result)
+        {
+            try
+            {
+                result = Parse(input, variables, functions);
+                return true;
+            }
+            catch
+            {
+                result = defaultValue;
+                return false;
+            }
+        }
+
         // RTMath.Parse("pitch + clamp(pitch, 0, 1) * pitch");
 
+        /// <summary>
+        /// Parses a math expression.
+        /// </summary>
+        /// <param name="input">Input expression.</param>
+        /// <param name="variables">Custom variables to register.</param>
+        /// <param name="functions">Custom functions to register.</param>
+        /// <returns>Returns evaluated expression.</returns>
         public static float Parse(string input, Dictionary<string, float> variables = null, Dictionary<string, MathFunction> functions = null)
         {
             try
@@ -199,32 +263,187 @@ namespace BetterLegacy.Core
             }
         }
 
-        public static double Lerp(double x, double y, double t) => x + (y - x) * t;
-        public static float Lerp(float x, float y, float t) => x + (y - x) * t;
-        public static Vector2 Lerp(Vector2 x, Vector2 y, float t) => x + (y - x) * t;
-        public static Vector3 Lerp(Vector3 x, Vector3 y, float t) => x + (y - x) * t;
-        public static Color Lerp(Color x, Color y, float t) => x + (y - x) * t;
+        #endregion
 
-        public static bool IsNaNInfinity(float f) => float.IsNaN(f) || float.IsInfinity(f);
+        #region Lerp
 
+        /// <summary>
+        /// Lerps between two values.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static double Lerp(double start, double end, double t) => start + (end - start) * t;
+
+        /// <summary>
+        /// Lerps between two values.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static float Lerp(float start, float end, float t) => start + (end - start) * t;
+
+        /// <summary>
+        /// Lerps between two values.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static Vector2 Lerp(Vector2 start, Vector2 end, float t) => start + (end - start) * t;
+
+        /// <summary>
+        /// Lerps between two values.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static Vector3 Lerp(Vector3 start, Vector3 end, float t) => start + (end - start) * t;
+
+        /// <summary>
+        /// Lerps between two values.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static Color Lerp(Color start, Color end, float t) => start + (end - start) * t;
+
+        /// <summary>
+        /// Lerps between two ranges of values.
+        /// </summary>
+        /// <param name="oldMin">Old min value.</param>
+        /// <param name="oldMax">Old max value.</param>
+        /// <param name="newMin">New min value.</param>
+        /// <param name="newMax">New max value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static float SuperLerp(float oldMin, float oldMax, float newMin, float newMax, float t) => (t - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
+
+        /// <summary>
+        /// Lerps between two values from the starting value.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static double InverseLerp(double start, double end, double t) => (t - start) / (end - start);
+
+        /// <summary>
+        /// Lerps between two values from the starting value.
+        /// </summary>
+        /// <param name="start">Start value.</param>
+        /// <param name="end">End value.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns interpolated value.</returns>
+        public static float InverseLerp(float start, float end, float t) => (t - start) / (end - start);
+
+        #endregion
+
+        #region Clamp
+
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static double Clamp(double value, double min, double max) => value < min ? min : value > max ? max : value;
 
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static float Clamp(float value, float min, float max) => Mathf.Clamp(value, min, max);
+
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static int Clamp(int value, int min, int max) => Mathf.Clamp(value, min, max);
+
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static Vector2 Clamp(Vector2 value, Vector2 min, Vector2 max) => new Vector2(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y));
+
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static Vector2Int Clamp(Vector2Int value, Vector2Int min, Vector2Int max) => new Vector2Int(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y));
+
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max) => new Vector3(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
+
+        /// <summary>
+        /// Clamps a value.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Returns a clamped value.</returns>
         public static Vector3Int Clamp(Vector3Int value, Vector3Int min, Vector3Int max) => new Vector3Int(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
 
-        public static double ClampZero(double value, double min, double max)
-            => min != 0.0 || max != 0.0 ? Clamp(value, min, max) : value;
+        /// <summary>
+        /// Clamps a value if neither min nor max are zero.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Reutrns a clamped value if min nor max are zero, otherwise returns the value.</returns>
+        public static double ClampZero(double value, double min, double max) => min != 0.0 || max != 0.0 ? Clamp(value, min, max) : value;
 
-        public static float ClampZero(float value, float min, float max)
-            => min != 0f || max != 0f ? Clamp(value, min, max) : value;
-        
-        public static int ClampZero(int value, int min, int max)
-            => min != 0 || max != 0 ? Clamp(value, min, max) : value;
+        /// <summary>
+        /// Clamps a value if neither min nor max are zero.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Reutrns a clamped value if min nor max are zero, otherwise returns the value.</returns>
+        public static float ClampZero(float value, float min, float max) => min != 0f || max != 0f ? Clamp(value, min, max) : value;
 
+        /// <summary>
+        /// Clamps a value if neither min nor max are zero.
+        /// </summary>
+        /// <param name="value">Value to clamp.</param>
+        /// <param name="min">Minimum the value can be.</param>
+        /// <param name="max">Maximum the value can be.</param>
+        /// <returns>Reutrns a clamped value if min nor max are zero, otherwise returns the value.</returns>
+        public static int ClampZero(int value, int min, int max) => min != 0 || max != 0 ? Clamp(value, min, max) : value;
+
+        #endregion
+
+        #region Vectors
+
+        /// <summary>
+        /// Gets the center of a collection of vectors.
+        /// </summary>
+        /// <param name="vectors">Collection of vectors to find the center of.</param>
+        /// <returns>Returns the collections' center.</returns>
         public static Vector3 CenterOfVectors(IEnumerable<Vector3> vectors)
         {
             var vector = Vector3.zero;
@@ -235,48 +454,53 @@ namespace BetterLegacy.Core
             return vector / vectors.Count();
         }
 
-        public static Vector3 NearestVector(Vector3 a, IEnumerable<Vector3> vectors)
+        /// <summary>
+        /// Gets the nearest vector to <paramref name="vector"/>.
+        /// </summary>
+        /// <param name="vector">Vector reference.</param>
+        /// <param name="vectors">Collection of vectors.</param>
+        /// <returns>Returns the vector nearest to the provided vector.</returns>
+        public static Vector3 NearestVector(Vector3 vector, IEnumerable<Vector3> vectors)
         {
             if (vectors == null || vectors.Count() == 0)
-                return a;
+                return vector;
 
-            return OrderByClosest(a, vectors).ElementAt(0);
+            return OrderByClosest(vector, vectors).ElementAt(0);
         }
 
-        public static Vector3 FurthestVector(Vector3 a, IEnumerable<Vector3> vectors)
+        /// <summary>
+        /// Gets the furthest vector to <paramref name="vector"/>.
+        /// </summary>
+        /// <param name="vector">Vector reference.</param>
+        /// <param name="vectors">Collection of vectors.</param>
+        /// <returns>Returns the vector furthest to the provided vector.</returns>
+        public static Vector3 FurthestVector(Vector3 vector, IEnumerable<Vector3> vectors)
         {
             if (vectors == null || vectors.Count() == 0)
-                return a;
+                return vector;
 
-            return OrderByFurthest(a, vectors).ElementAt(0);
+            return OrderByFurthest(vector, vectors).ElementAt(0);
         }
 
-        public static IEnumerable<Vector3> OrderByClosest(Vector3 a, IEnumerable<Vector3> vectors) => vectors.OrderBy(x => Vector3.Distance(a, x));
-        public static IEnumerable<Vector3> OrderByFurthest(Vector3 a, IEnumerable<Vector3> vectors) => vectors.OrderByDescending(x => Vector3.Distance(a, x));
+        /// <summary>
+        /// Orders a collection of vectors closest to a vector.
+        /// </summary>
+        /// <param name="vector">Vector reference.</param>
+        /// <param name="vectors">Collection of vectors.</param>
+        /// <returns>Returns an ordered collection of vectors by closeness.</returns>
+        public static IEnumerable<Vector3> OrderByClosest(Vector3 vector, IEnumerable<Vector3> vectors) => vectors.OrderBy(x => Vector3.Distance(vector, x));
 
-        public static Rect RectTransformToScreenSpace(RectTransform transform)
-        {
-            Vector2 vector = Vector2.Scale(transform.rect.size, transform.lossyScale);
-            Rect result = new Rect(transform.position.x, (float)Screen.height - transform.position.y, vector.x, vector.y);
-            result.x -= transform.pivot.x * vector.x;
-            result.y -= (1f - transform.pivot.y) * vector.y;
-            return result;
-        }
+        /// <summary>
+        /// Orders a collection of vectors furthest to a vector.
+        /// </summary>
+        /// <param name="vector">Vector reference.</param>
+        /// <param name="vectors">Collection of vectors.</param>
+        /// <returns>Returns an ordered collection of vectors by furthness.</returns>
+        public static IEnumerable<Vector3> OrderByFurthest(Vector3 vector, IEnumerable<Vector3> vectors) => vectors.OrderByDescending(x => Vector3.Distance(vector, x));
 
-        public static Rect RectTransformToScreenSpace2(RectTransform transform)
-        {
-            Vector2 vector = Vector2.Scale(transform.rect.size, transform.lossyScale);
-            float x = transform.position.x + transform.anchoredPosition.x;
-            float y = (float)Screen.height - transform.position.y - transform.anchoredPosition.y;
-            return new Rect(x, y, vector.x, vector.y);
-        }
+        #endregion
 
-        public static float SuperLerp(float oldMin, float oldMax, float newMin, float newMax, float oldValue)
-        {
-            float oldResult = oldMax - oldMin;
-            float newResult = newMax - newMin;
-            return (oldValue - oldMin) * newResult / oldResult + newMin;
-        }
+        #region Rounding
 
         /// <summary>
         /// Snaps the value to a multiple of a specific number. For example, if 'value' is 4 and multipleOf is 5, it will round to 5.
@@ -304,34 +528,151 @@ namespace BetterLegacy.Core
             return Mathf.Round(value * num) / num;
         }
 
+        /// <summary>
+        /// Rounds a double to int.
+        /// </summary>
+        /// <param name="num">Value to round.</param>
+        /// <returns>Returns the value rounded to an integer.</returns>
         public static int Round(double num) => (int)Math.Round(num);
 
+        #endregion
+
+        #region Translate
+
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
         public static double Distance(double a, double b) => a > b ? -(-a + b) : (-a + b);
+
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
         public static float Distance(float a, float b) => a > b ? -(-a + b) : (-a + b);
 
-        public static double InverseLerp(double x, double y, double t) => (t - x) / (y - x);
-        public static float InverseLerp(float x, float y, float t) => (t - x) / (y - x);
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
+        public static float Distance(int a, int b) => a > b ? -(-a + b) : (-a + b);
+        
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
+        public static float Distance(Vector2 a, Vector2 b) => Vector2.Distance(a, b);
+        
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
+        public static float Distance(Vector2Int a, Vector2Int b) => Vector2Int.Distance(a, b);
+        
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
+        public static float Distance(Vector3 a, Vector3 b) => Vector3.Distance(a, b);
+        
+        /// <summary>
+        /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">First value.</param>
+        /// <param name="b">Second value.</param>
+        /// <returns>Returns the distance between the two values.</returns>
+        public static float Distance(Vector3Int a, Vector3Int b) => Vector3Int.Distance(a, b);
 
-        public static float Percentage(float t, float length) => t / length * 100f;
+        /// <summary>
+        /// Moves a provided position value.
+        /// </summary>
+        /// <param name="pos">Original position.</param>
+        /// <param name="move">Move amount to add.</param>
+        /// <returns>Returns a moved vector.</returns>
+        public static Vector3 Move(Vector3 pos, Vector2 move) => new Vector3(pos.x + move.x, pos.y + move.y, pos.z);
 
-        public static Vector2 Multiply(Vector2 a, Vector2 b) => new Vector2(a.x * b.x, a.y * b.y);
+        /// <summary>
+        /// Moves a provided position value.
+        /// </summary>
+        /// <param name="pos">Original position.</param>
+        /// <param name="move">Move amount to add.</param>
+        /// <returns>Returns a moved vector.</returns>
+        public static Vector3 Move(Vector3 pos, Vector3 move) => new Vector3(pos.x + move.x, pos.y + move.y, pos.z + move.z);
 
-        public static Vector3 Multiply(Vector3 a, Vector3 b) => new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+        /// <summary>
+        /// Scales a provided scale value.
+        /// </summary>
+        /// <param name="sca">Original scale.</param>
+        /// <param name="scale">Scale to scale to.</param>
+        /// <returns>Returns a scaled vector.</returns>
+        public static Vector3 Scale(Vector3 sca, Vector2 scale) => new Vector3(sca.x * scale.x, sca.y * scale.y, sca.z);
 
-        public static float Recursive(float t, int count)
+        /// <summary>
+        /// Scales a provided scale value.
+        /// </summary>
+        /// <param name="sca">Original scale.</param>
+        /// <param name="scale">Scale to scale to.</param>
+        /// <returns>Returns a scaled vector.</returns>
+        public static Vector3 Scale(Vector3 sca, Vector3 scale) => new Vector3(sca.x * scale.x, sca.y * scale.y, sca.z * scale.z);
+
+        /// <summary>
+        /// Rotates a provided rotation.
+        /// </summary>
+        /// <param name="rot">Original rotation.</param>
+        /// <param name="rotate">Rotation to rotate to.</param>
+        /// <returns>Returns a rotated vector.</returns>
+        public static Vector3 Rotate(Vector3 rot, float rotate) => Quaternion.Euler(0, 0, rotate) * rot;
+
+        /// <summary>
+        /// Calculates the angle from the one vector to another vector.
+        /// </summary>
+        /// <param name="from">Vector that will look at the target..</param>
+        /// <param name="to">Target vector.</param>
+        /// <returns>Returns a angle that is looking at the target.</returns>
+        public static float VectorAngle(Vector3 from, Vector3 to) => VectorAngle(new Vector3((-from.x + to.x), (-from.y + to.y)));
+
+        /// <summary>
+        /// Calculates the angle from the center vector to a target vector.
+        /// </summary>
+        /// <param name="targetVector">Target to angle.</param>
+        /// <returns>Returns a angle that is looking at the target.</returns>
+        public static float VectorAngle(Vector3 targetVector)
         {
-            float result = t;
-            int num = count;
-            while (num > 1)
-            {
-                result *= t;
+            float x = targetVector.x;
+            float y = targetVector.y;
 
-                num--;
-            }
+            bool downRight = x >= 0f && y <= 0f;
+            bool downLeft = x <= 0f && y <= 0f;
+            bool upLeft = x <= 0f && y >= 0f;
+            bool upRight = x >= 0f && y >= 0f;
 
-            return result;
+            var vector = upRight ? targetVector : downRight ? Rotate(targetVector, 90f) : downLeft ? Rotate(targetVector, 180f) : upLeft ? Rotate(targetVector, 270f) : targetVector;
+
+            return targetVector == Vector3.zero ? 0f : ((vector.normalized.x - vector.normalized.y) + 1f) * 45f + (upRight ? 0f : downRight ? 90f : downLeft ? 180f : upLeft ? 270f : 0f);
         }
 
+        #endregion
+
+        #region Operations
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
         public static void Operation(ref double num, double value, MathOperation operation)
         {
             switch (operation)
@@ -363,28 +704,258 @@ namespace BetterLegacy.Core
             }
         }
 
-        public static Vector3 Move(Vector3 a, Vector2 b) => new Vector3(a.x + b.x, a.y + b.y, a.z);
-        public static Vector3 Move(Vector3 a, Vector3 b) => new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
-        public static Vector3 Scale(Vector3 a, Vector2 b) => new Vector3(a.x * b.x, a.y * b.y, a.z);
-        public static Vector3 Rotate(Vector3 a, float b) => Quaternion.Euler(0, 0, b) * a;
-
-        public static float VectorAngle(float x, float y) => VectorAngle(new Vector3(x, y));
-
-        public static float VectorAngle(Vector3 from, Vector3 to) => VectorAngle(new Vector3((-from.x + to.x), (-from.y + to.y)));
-
-        public static float VectorAngle(Vector3 targetVector)
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        public static void Operation(ref float num, float value, MathOperation operation)
         {
-            float x = targetVector.x;
-            float y = targetVector.y;
-
-            bool downRight = x >= 0f && y <= 0f;
-            bool downLeft = x <= 0f && y <= 0f;
-            bool upLeft = x <= 0f && y >= 0f;
-            bool upRight = x >= 0f && y >= 0f;
-
-            var vector = upRight ? targetVector : downRight ? Rotate(targetVector, 90f) : downLeft ? Rotate(targetVector, 180f) : upLeft ? Rotate(targetVector, 270f) : targetVector;
-
-            return targetVector == Vector3.zero ? 0f : ((vector.normalized.x - vector.normalized.y) + 1f) * 45f + (upRight ? 0f : downRight ? 90f : downLeft ? 180f : upLeft ? 270f : 0f);
+            switch (operation)
+            {
+                case MathOperation.Addition: {
+                        num += value;
+                        break;
+                    }
+                case MathOperation.Subtract: {
+                        num -= value;
+                        break;
+                    }
+                case MathOperation.Multiply: {
+                        num *= value;
+                        break;
+                    }
+                case MathOperation.Divide: {
+                        num /= value;
+                        break;
+                    }
+                case MathOperation.Modulo: {
+                        num %= value;
+                        break;
+                    }
+                case MathOperation.Set: {
+                        num = value;
+                        break;
+                    }
+            }
         }
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        public static void Operation(ref int num, int value, MathOperation operation)
+        {
+            switch (operation)
+            {
+                case MathOperation.Addition: {
+                        num += value;
+                        break;
+                    }
+                case MathOperation.Subtract: {
+                        num -= value;
+                        break;
+                    }
+                case MathOperation.Multiply: {
+                        num *= value;
+                        break;
+                    }
+                case MathOperation.Divide: {
+                        num /= value;
+                        break;
+                    }
+                case MathOperation.Modulo: {
+                        num %= value;
+                        break;
+                    }
+                case MathOperation.Set: {
+                        num = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        public static void Operation(ref Vector2 num, Vector2 value, MathOperation operation)
+        {
+            switch (operation)
+            {
+                case MathOperation.Addition: {
+                        num += value;
+                        break;
+                    }
+                case MathOperation.Subtract: {
+                        num -= value;
+                        break;
+                    }
+                case MathOperation.Multiply: {
+                        num *= value;
+                        break;
+                    }
+                case MathOperation.Divide: {
+                        num /= value;
+                        break;
+                    }
+                case MathOperation.Modulo: {
+                        num.x %= value.x;
+                        num.y %= value.y;
+                        break;
+                    }
+                case MathOperation.Set: {
+                        num = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        public static void Operation(ref Vector3 num, Vector3 value, MathOperation operation)
+        {
+            switch (operation)
+            {
+                case MathOperation.Addition: {
+                        num += value;
+                        break;
+                    }
+                case MathOperation.Subtract: {
+                        num -= value;
+                        break;
+                    }
+                case MathOperation.Multiply: {
+                        num.x *= value.x;
+                        num.y *= value.y;
+                        break;
+                    }
+                case MathOperation.Divide: {
+                        num.x /= value.x;
+                        num.y /= value.y;
+                        break;
+                    }
+                case MathOperation.Modulo: {
+                        num.x %= value.x;
+                        num.y %= value.y;
+                        break;
+                    }
+                case MathOperation.Set: {
+                        num = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        public static void Operation(ref Color num, Color value, MathOperation operation)
+        {
+            switch (operation)
+            {
+                case MathOperation.Addition: {
+                        num += value;
+                        break;
+                    }
+                case MathOperation.Subtract: {
+                        num -= value;
+                        break;
+                    }
+                case MathOperation.Multiply: {
+                        num *= value;
+                        break;
+                    }
+                case MathOperation.Divide: {
+                        if (value.r != 0f)
+                            num.r /= value.r;
+                        if (value.g != 0f)
+                            num.g /= value.g;
+                        if (value.b != 0f)
+                            num.b /= value.b;
+                        if (value.a != 0f)
+                            num.a /= value.a;
+                        break;
+                    }
+                case MathOperation.Modulo: {
+                        num.r %= value.r;
+                        num.g %= value.g;
+                        num.b %= value.b;
+                        num.a %= value.a;
+                        break;
+                    }
+                case MathOperation.Set: {
+                        num = value;
+                        break;
+                    }
+            }
+        }
+
+        #endregion
+
+        #region Misc
+
+        /// <summary>
+        /// Checks if the number is an incompatible number.
+        /// </summary>
+        /// <param name="f">Number to check.</param>
+        /// <returns>Returns true if the number is incompatible, otherwise returns false.</returns>
+        public static bool IsNaNInfinity(float f) => float.IsNaN(f) || float.IsInfinity(f);
+
+        /// <summary>
+        /// Gets the screen space rect of a <see cref="RectTransform"/>.
+        /// </summary>
+        /// <param name="transform">RectTransform to get the screen space area of.</param>
+        /// <returns>Returns a <see cref="Rect"/> based on the <paramref name="transform"/>.</returns>
+        public static Rect RectTransformToScreenSpace(RectTransform transform)
+        {
+            Vector2 vector = Vector2.Scale(transform.rect.size, transform.lossyScale);
+            Rect result = new Rect(transform.position.x, (float)Screen.height - transform.position.y, vector.x, vector.y);
+            result.x -= transform.pivot.x * vector.x;
+            result.y -= (1f - transform.pivot.y) * vector.y;
+            return result;
+        }
+
+        /// <summary>
+        /// Converts two values into a percentage.
+        /// </summary>
+        /// <param name="t">The percentage value.</param>
+        /// <param name="length">Total percent.</param>
+        /// <returns>Returns a calculated percentage.</returns>
+        public static float Percentage(float t, float length) => t / length * 100f;
+
+        /// <summary>
+        /// Recursively multiplies.
+        /// </summary>
+        /// <param name="t">Amount to multiply each count.</param>
+        /// <param name="count">Amount of times to multiply.</param>
+        /// <returns>Returns a multiplied recursive calculation.</returns>
+        public static float Recursive(float t, int count)
+        {
+            float result = t;
+            int num = count;
+            while (num > 1)
+            {
+                result *= t;
+
+                num--;
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

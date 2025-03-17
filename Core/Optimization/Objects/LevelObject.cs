@@ -255,7 +255,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                         var value = parentObject.scaleSequence.Interpolate(time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
                         var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
                         parentObject.transform.localScale = scale;
-                        totalScale = RTMath.Multiply(totalScale, scale);
+                        totalScale = RTMath.Scale(totalScale, scale);
                     }
 
                     // If last parent is rotation parented, animate rotation
