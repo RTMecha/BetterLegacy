@@ -111,24 +111,21 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 string layoutType = jnLayout["type"];
                 switch (layoutType.ToLower())
                 {
-                    case "grid":
-                        {
+                    case "grid": {
                             var gridLayout = MenuGridLayout.Parse(jnLayout);
                             gridLayout.name = keyValuePair.Key;
                             layouts.Add(keyValuePair.Key, gridLayout);
 
                             break;
                         }
-                    case "horizontal":
-                        {
+                    case "horizontal": {
                             var horizontalLayout = MenuHorizontalLayout.Parse(jnLayout);
                             horizontalLayout.name = keyValuePair.Key;
                             layouts.Add(keyValuePair.Key, horizontalLayout);
 
                             break;
                         }
-                    case "vertical":
-                        {
+                    case "vertical": {
                             var verticalLayout = MenuVerticalLayout.Parse(jnLayout);
                             verticalLayout.name = keyValuePair.Key;
                             layouts.Add(keyValuePair.Key, verticalLayout);
@@ -160,8 +157,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 for (int j = 0; j < loop; j++)
                     switch (elementType.ToLower())
                     {
-                        case "auto":
-                            {
+                        case "auto": {
                                 if (jnElement["name"] == null)
                                     break;
 
@@ -169,13 +165,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 IEnumerable<MenuImage> collection = null;
                                 switch (name)
                                 {
-                                    case "TopBar":
-                                        {
+                                    case "TopBar": {
                                             collection = GenerateTopBar(jnElement["title"] == null ? "Custom Menu" : Lang.Parse(jnElement["title"]), jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
                                             break;
                                         }
-                                    case "BottomBar":
-                                        {
+                                    case "BottomBar": {
                                             collection = GenerateBottomBar(jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
                                             break;
                                         }
@@ -189,8 +183,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 break;
                             }
-                        case "prefab":
-                            {
+                        case "prefab": {
                                 if (prefabs == null || jnElement["id"] == null || !prefabs.TryFind(x => x.id == jnElement["id"], out MenuPrefab prefab))
                                     break;
 
@@ -199,8 +192,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     var from = jnElement["from"];
                                     switch (from["type"].Value.ToLower())
                                     {
-                                        case "json":
-                                            {
+                                        case "json": {
                                                 if (from["array"] == null)
                                                     break;
 
@@ -271,13 +263,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 break;
                             }
-                        case "for":
-                            {
+                        case "for": {
                                 string from = jnElement["from"];
                                 switch (from.ToLower().Replace(" ", "").Replace("_", ""))
                                 {
-                                    case "json":
-                                        {
+                                    case "json": {
                                             var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
 
                                             for (int k = 0; k < jnElement["to"].Count; k++)
@@ -300,8 +290,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                             break;
                                         }
-                                    case "storyjson":
-                                        {
+                                    case "storyjson": {
                                             var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
 
                                             var storyJN = Story.StoryManager.inst.LoadJSON(jnElement["to"]);
@@ -325,8 +314,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                             break;
                                         }
-                                    case "text":
-                                        {
+                                    case "text": {
                                             var element = MenuText.Parse(jnElement["default"], j, loop, spriteAssets);
 
                                             for (int k = 0; k < jnElement["to"].Count; k++)
@@ -341,8 +329,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 break;
                             }
-                        case "event":
-                            {
+                        case "event": {
                                 var element = MenuEvent.Parse(jnElement, j, loop, spriteAssets);
 
                                 if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
@@ -350,8 +337,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 break;
                             }
-                        case "image":
-                            {
+                        case "image": {
                                 var element = MenuImage.Parse(jnElement, j, loop, spriteAssets);
 
                                 if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
@@ -359,16 +345,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 break;
                             }
-                        case "text":
-                            {
+                        case "text": {
                                 var element = MenuText.Parse(jnElement, j, loop, spriteAssets);
                                 if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
                                     yield return element;
 
                                 break;
                             }
-                        case "button":
-                            {
+                        case "button": {
                                 var element = MenuButton.Parse(jnElement, j, loop, spriteAssets);
 
                                 if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
