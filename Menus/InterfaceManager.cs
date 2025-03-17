@@ -451,6 +451,7 @@ namespace BetterLegacy.Menus
 
                 SetCurrentInterface(MAIN_MENU_ID);
                 PlayMusic();
+                AudioManager.inst.SetPitch(1f);
 
                 SceneHelper.LoadedGame = true;
                 return;
@@ -505,6 +506,7 @@ namespace BetterLegacy.Menus
 
                     SetCurrentInterface(changeLogMenu);
                     PlayMusic();
+                    AudioManager.inst.SetPitch(1f);
 
                     ChangeLogMenu.Seen = true;
                 }
@@ -513,6 +515,7 @@ namespace BetterLegacy.Menus
                     CoreHelper.LogError($"Couldn't read changelog file, continuing...");
                     SetCurrentInterface(MAIN_MENU_ID);
                     PlayMusic();
+                    AudioManager.inst.SetPitch(1f);
                 }
             }
             catch (Exception ex)
