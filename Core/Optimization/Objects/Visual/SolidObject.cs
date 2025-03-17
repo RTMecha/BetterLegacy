@@ -9,12 +9,19 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class SolidObject : VisualObject
     {
+        /// <summary>
+        /// Material of the solid object.
+        /// </summary>
         public Material material;
 
         readonly bool opacityCollision;
         readonly float opacity;
 
         int gradientType;
+
+        /// <summary>
+        /// If the gradient is flipped.
+        /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
 
         public SolidObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType)
@@ -48,6 +55,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             this.opacityCollision = opacityCollision;
         }
 
+        /// <summary>
+        /// Updates the objects' materials based on specific values.
+        /// </summary>
+        /// <param name="gradientType">Type of gradient to render.</param>
         public void UpdateMaterial(int gradientType)
         {
             isGradient = gradientType != 0;

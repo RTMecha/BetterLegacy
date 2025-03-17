@@ -61,6 +61,11 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                 gameObject.transform.localPosition = origin;
         }
 
+        /// <summary>
+        /// Gets the automatic alignment of the text object based on the origin.
+        /// </summary>
+        /// <param name="origin">Origin to align to.</param>
+        /// <returns>Returns a <see cref="TextAlignmentOptions"/> from the origin.</returns>
         public static TextAlignmentOptions GetAlignment(Vector2 origin) => origin.x switch
         {
             -0.5f => origin.y == 0.5f ? TextAlignmentOptions.TopRight : origin.y == -0.5f ? TextAlignmentOptions.BottomRight : TextAlignmentOptions.Left,
