@@ -279,7 +279,7 @@ namespace BetterLegacy.Editor.Managers
                     SetText("FPS", LegacyPlugin.FPSCounter.Text);
                     SetText("Time in Editor", RTString.SecondsToTime(RTEditor.inst.editorInfo.timer.time));
                     SetText("Song Progress", $"{RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
-                    SetText("Level opened amount", RTEditor.inst.editorInfo.bpmSnapActive.ToString());
+                    SetText("Level opened amount", RTEditor.inst.editorInfo.openAmount.ToString());
 
                     SetText("Object Count", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
                     SetText("Total Object Count", GameData.Current.beatmapObjects.Count.ToString());
