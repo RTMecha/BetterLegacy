@@ -6887,14 +6887,14 @@ namespace BetterLegacy.Core.Helpers
                 applyToSolidObject.SetColor(colors.startColor, colors.endColor);
             }
 
-            if (applyTo.visualObject.isGradient && !takeFrom.visualObject.isGradient) // only main object is a gradient
+            if (applyTo.visualObject.isGradient && applyToSolidObject && !takeFrom.visualObject.isGradient) // only main object is a gradient
             {
                 var color = takeFrom.visualObject.GetPrimaryColor();
                 var colors = applyToSolidObject.GetColors();
                 applyToSolidObject.SetColor(applyColor1 ? color : colors.startColor, applyColor2 ? color : colors.endColor);
             }
 
-            if (!applyTo.visualObject.isGradient && takeFrom.visualObject.isGradient) // only copying object is a gradient
+            if (!applyTo.visualObject.isGradient && takeFrom.visualObject.isGradient && takeFromSolidObject) // only copying object is a gradient
             {
                 var colors = takeFromSolidObject.GetColors();
                 applyTo.visualObject.SetColor(applyColor1 ? colors.startColor : applyColor2 ? colors.endColor : takeFromSolidObject.GetPrimaryColor());
