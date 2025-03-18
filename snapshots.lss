@@ -26,6 +26,7 @@
 - Reworked the way modifier functions are assigned to fix game freeze on first modifier running.
 - Now supports text origin alignment from alpha.
 - Fixed song pitch not resetting when the user exits to main menu.
+- Fixed some Prefab Object Editor stuff being broken.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
