@@ -330,10 +330,12 @@ namespace BetterLegacy.Editor.Managers
                 var locker = settingEditorDialog.Find("snap/toggle/toggle").gameObject.Duplicate(timeParent, "lock", 0);
 
                 locker.transform.Find("Background/Checkmark").GetComponent<Image>().sprite = ObjEditor.inst.timelineObjectPrefabLock.transform.Find("lock (1)").GetComponent<Image>().sprite;
+                locker.gameObject.GetOrAddComponent<LayoutElement>().minWidth = 32f;
 
                 EditorThemeManager.AddToggle(locker.GetComponent<Toggle>());
 
                 var collapser = objectEditorDialog.Find("data/left/Scroll View/Viewport/Content/autokill/collapse").gameObject.Duplicate(timeParent, "collapse", 1);
+                collapser.gameObject.GetOrAddComponent<LayoutElement>().minWidth = 32f;
 
                 EditorThemeManager.AddToggle(collapser.GetComponent<Toggle>(), ThemeGroup.Background_1);
 
@@ -1089,8 +1091,9 @@ namespace BetterLegacy.Editor.Managers
                 {
                     n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     prefabObject.StartTime = n;
-                    Updater.UpdatePrefab(prefabObject, "starttime");
+                    Updater.UpdatePrefab(prefabObject, "Drag");
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+                    Updater.RecalculateObjectStates();
                 }
                 else
                     EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
@@ -1129,8 +1132,6 @@ namespace BetterLegacy.Editor.Managers
 
             //Layer
             {
-                int currentLayer = prefabObject.editorData.Layer;
-
                 var layers = prefabSelectorLeft.Find("editor/layers").GetComponent<InputField>();
 
                 layers.image.color = EditorTimeline.GetLayerColor(prefabObject.editorData.Layer);
@@ -1140,14 +1141,13 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (int.TryParse(_val, out int n))
                     {
-                        currentLayer = prefabObject.editorData.Layer;
-                        int a = n - 1;
-                        if (a < 0)
+                        n = n - 1;
+                        if (n < 0)
                             layers.text = "1";
 
-                        prefabObject.editorData.Layer = EditorTimeline.GetLayer(a);
-                        layers.image.color = EditorTimeline.GetLayerColor(EditorTimeline.GetLayer(a));
+                        prefabObject.editorData.Layer = EditorTimeline.GetLayer(n);
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+                        RenderPrefabObjectDialog(prefabObject);
                     }
                     else
                         EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
