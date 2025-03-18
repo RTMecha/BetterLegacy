@@ -40,6 +40,9 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public Sequence<Color> secondaryColorSequence;
 
+        /// <summary>
+        /// If the object renders as a gradient.
+        /// </summary>
         public bool isGradient;
 
         /// <summary>
