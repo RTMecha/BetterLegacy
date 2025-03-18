@@ -4235,8 +4235,9 @@ namespace BetterLegacy.Editor.Managers
                         continue;
 
                     levelPanel.Init(path);
+                    LevelPanels.Add(levelPanel);
 
-                    list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}", LevelPanels.Add));
+                    list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
 
                     continue;
                 }
@@ -5013,7 +5014,7 @@ namespace BetterLegacy.Editor.Managers
                 _ => LevelPanels,
             };
 
-            levelPanels = levelPanels.Order(x => x.IconImage.sprite != EditorSprites.OpenSprite, true); // sort folders without icons at the bottom
+            //levelPanels = levelPanels.Order(x => x.IconImage.sprite != EditorSprites.OpenSprite, true); // sort folders without icons at the bottom
             levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
 
             int num = 0;
