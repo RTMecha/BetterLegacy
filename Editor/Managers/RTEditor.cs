@@ -5013,7 +5013,8 @@ namespace BetterLegacy.Editor.Managers
                 _ => LevelPanels,
             };
 
-            levelPanels = levelPanels.Order(x => x.isFolder && x.IconImage.sprite != EditorSprites.OpenSprite, true); // folders should always be at the top.
+            levelPanels = levelPanels.Order(x => x.IconImage.sprite != EditorSprites.OpenSprite, true); // sort folders without icons at the bottom
+            levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
 
             int num = 0;
             foreach (var editorWrapper in levelPanels)
