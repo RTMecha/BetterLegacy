@@ -4235,7 +4235,8 @@ namespace BetterLegacy.Editor.Managers
                         continue;
 
                     levelPanel.Init(path);
-                    LevelPanels.Add(levelPanel);
+
+                    list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}", LevelPanels.Add));
 
                     continue;
                 }
@@ -5001,18 +5002,18 @@ namespace BetterLegacy.Editor.Managers
             var levelPanels = levelSort switch
             {
                 LevelSort.Cover => LevelPanels.Order(x => x.Level && x.Level.icon != SteamWorkshop.inst.defaultSteamImageSprite, !levelAscend),
-                LevelSort.Artist => LevelPanels.Order(x => x.Level?.metadata?.artist?.Name, !levelAscend),
-                LevelSort.Creator => LevelPanels.Order(x => x.Level?.metadata?.creator?.steam_name, !levelAscend),
+                LevelSort.Artist => LevelPanels.Order(x => x.Level?.metadata?.artist?.Name ?? string.Empty, !levelAscend),
+                LevelSort.Creator => LevelPanels.Order(x => x.Level?.metadata?.creator?.steam_name ?? string.Empty, !levelAscend),
                 LevelSort.File => LevelPanels.Order(x => x.FolderPath, !levelAscend),
-                LevelSort.Title => LevelPanels.Order(x => x.Level?.metadata?.song?.title, !levelAscend),
-                LevelSort.Difficulty => LevelPanels.Order(x => x.Level?.metadata?.song?.difficulty, !levelAscend),
-                LevelSort.DateEdited => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_edited, !levelAscend),
-                LevelSort.DateCreated => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_created, !levelAscend),
-                LevelSort.DatePublished => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_published, !levelAscend),
+                LevelSort.Title => LevelPanels.Order(x => x.Level?.metadata?.song?.title ?? string.Empty, !levelAscend),
+                LevelSort.Difficulty => LevelPanels.Order(x => x.Level?.metadata?.song?.difficulty ?? 0, !levelAscend),
+                LevelSort.DateEdited => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_edited ?? string.Empty, !levelAscend),
+                LevelSort.DateCreated => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_created ?? string.Empty, !levelAscend),
+                LevelSort.DatePublished => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_published ?? string.Empty, !levelAscend),
                 _ => LevelPanels,
             };
 
-            levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+            levelPanels = levelPanels.Order(x => x.isFolder && x.IconImage.sprite != EditorSprites.OpenSprite, true); // folders should always be at the top.
 
             int num = 0;
             foreach (var editorWrapper in levelPanels)

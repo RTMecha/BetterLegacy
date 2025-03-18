@@ -327,13 +327,7 @@ namespace BetterLegacy.Editor.Data
         public void RenderIcon()
         {
             if (isFolder)
-            {
-                RenderIcon(RTFile.FileExists(RTFile.CombinePaths(FolderPath, $"folder_icon{FileFormat.PNG.Dot()}")) ?
-                        SpriteHelper.LoadSprite(RTFile.CombinePaths(FolderPath, $"folder_icon{FileFormat.PNG.Dot()}")) :
-                        EditorSprites.OpenSprite);
-
                 return;
-            }
 
             RenderIcon(Level?.icon);
         }
@@ -749,7 +743,7 @@ namespace BetterLegacy.Editor.Data
             onLoad?.Invoke(this);
         }));
 
-        public void SetDefaultIcon() => SetIcon(SteamWorkshop.inst.defaultSteamImageSprite);
+        public void SetDefaultIcon() => SetIcon(isFolder ? EditorSprites.OpenSprite : SteamWorkshop.inst.defaultSteamImageSprite);
 
         void EndFolderCreation()
         {
