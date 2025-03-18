@@ -14,6 +14,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public Material material;
 
+        static Material origMaterial;
+
         readonly bool opacityCollision;
         readonly float opacity;
 
@@ -32,13 +34,10 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             renderer = gameObject.GetComponent<Renderer>();
             renderer.enabled = true;
-            if (background)
-            {
-                this.gameObject.layer = 9;
-                renderer.material = ObjectManager.inst.norm; // todo: replace with a material that supports perspective and doesn't have issues with opacity
-            }
+            if (!origMaterial)
+                origMaterial = renderer.material;
 
-            UpdateMaterial(gradientType);
+            UpdateMaterial(gradientType, background);
             material = renderer.material;
 
             collider = gameObject.GetComponent<Collider2D>();
@@ -59,13 +58,24 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// Updates the objects' materials based on specific values.
         /// </summary>
         /// <param name="gradientType">Type of gradient to render.</param>
-        public void UpdateMaterial(int gradientType)
+        public void UpdateMaterial(int gradientType, bool background)
         {
+            if (background)
+            {
+                gameObject.layer = 9;
+                renderer.material = ObjectManager.inst.norm; // todo: replace with a material that supports perspective and doesn't have issues with opacity
+            }
+
             isGradient = gradientType != 0;
             this.gradientType = gradientType;
 
             if (isGradient)
                 renderer.material = gradientType <= 2 ? LegacyPlugin.gradientMaterial : LegacyPlugin.radialGradientMaterial;
+            else if (origMaterial)
+            {
+                gameObject.layer = 8;
+                renderer.material = origMaterial;
+            }
 
             material = renderer.material;
         }
