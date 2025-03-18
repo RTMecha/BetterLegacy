@@ -224,7 +224,7 @@ namespace BetterLegacy.Companion.Entity
         public virtual void RegisterChecks()
         {
             checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
-            checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.FileExists(RTFile.GetAsset("Example Companion"))));
+            checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.DirectoryExists(RTFile.GetAsset("Example Companion"))));
             checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && !RTEditor.inst.LevelPanels.IsEmpty()));
             checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel));
             checks.Add(new ExampleCheck(Checks.BEING_DRAGGED, () => reference && reference.dragging));
