@@ -217,7 +217,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                                beatmapObject.objectType == ObjectType.Decoration;
 
             bool isSolid = beatmapObject.objectType == ObjectType.Solid;
-            bool isBackground = beatmapObject.background;
+            bool isBackground = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background;
             bool dontRotate = shapeType == ShapeType.Player && beatmapObject.tags != null && beatmapObject.tags.Has(x => x == "DontRotate");
             int playerIndex = shapeType == ShapeType.Player && beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].values.Length > 0 ? (int)beatmapObject.events[3][0].values[0] : 0;
 

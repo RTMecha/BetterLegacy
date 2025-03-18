@@ -171,11 +171,11 @@ namespace BetterLegacy.Core.Optimization.Objects
                 var y = EventManager.inst.cam.transform.position.y;
 
                 top.localPosition = (new Vector3(x, y, 0f) * positionParentOffset)
-                    + new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.background ? 20f : 0f)
+                    + new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 20f : 0f)
                     + topPositionOffset;
             }
             else
-                top.localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.background ? 20f : 0f)
+                top.localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 20f : 0f)
                     + topPositionOffset;
 
             if (scaleParent && cameraParent)

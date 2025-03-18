@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         bool BeatmapObjectsModded => beatmapObjects.Any(x => x.modifiers.Count > 0
                     || x.objectType == BeatmapObject.ObjectType.Solid
                     || x.desync
-                    || x.background
+                    || x.renderLayerType != BeatmapObject.RenderLayerType.Foreground
                     || x.LDM
                     || x.parallaxSettings.Any(y => y != 1f)
                     || x.parentAdditive != "000"

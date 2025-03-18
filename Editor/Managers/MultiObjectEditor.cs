@@ -1301,27 +1301,33 @@ namespace BetterLegacy.Editor.Managers
                     {
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
-                            beatmapObject.background = true;
-                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
-                                levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
+
+                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
+                                levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
                         }
                     }),
                     new ButtonFunction("Foreground", () =>
                     {
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
-                            beatmapObject.background = false;
-                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
-                                levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
+
+                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
+                                levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
                         }
                     }));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
-                        beatmapObject.background = !beatmapObject.background;
-                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
-                            levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
+                        if (beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Foreground)
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
+                        else if (beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background)
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
+
+                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
+                            levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
                     }
                 }));
 
@@ -1581,7 +1587,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     SyncObjectData("Render Type", eventData, (timelineObject, beatmapObject) =>
                     {
-                        timelineObject.GetData<BeatmapObject>().background = beatmapObject.background;
+                        timelineObject.GetData<BeatmapObject>().renderLayerType = beatmapObject.renderLayerType;
                     }, false, true);
                 })); // Render Type
                 GenerateButton(syncLayout.transform, new ButtonFunction("PR", eventData =>

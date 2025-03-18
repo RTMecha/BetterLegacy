@@ -4662,12 +4662,12 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max, Dialog.DepthParent);
 
             Dialog.RenderTypeDropdown.onValueChanged.ClearAll();
-            Dialog.RenderTypeDropdown.value = beatmapObject.background ? 1 : 0;
+            Dialog.RenderTypeDropdown.value = (int)beatmapObject.renderLayerType;
             Dialog.RenderTypeDropdown.onValueChanged.AddListener(_val =>
             {
-                beatmapObject.background = _val == 1;
-                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
-                    levelObject.visualObject.gameObject.layer = beatmapObject.background ? 9 : 8;
+                beatmapObject.renderLayerType = (BeatmapObject.RenderLayerType)_val;
+                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
+                    levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
             });
         }
 

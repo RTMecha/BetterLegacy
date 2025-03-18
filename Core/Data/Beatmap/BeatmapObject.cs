@@ -171,11 +171,33 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
-        /// If true the object should render on the background layer (perspective), otherwise render on the foreground layer (orthographic)
+        /// Origin offset of the visual object.
         /// </summary>
-        public bool background;
-
         public Vector2 origin;
+
+        /// <summary>
+        /// The render layer of the object.
+        /// </summary>
+        public RenderLayerType renderLayerType;
+
+        /// <summary>
+        /// What layer an object renders on.
+        /// </summary>
+        public enum RenderLayerType
+        {
+            /// <summary>
+            /// Renders in the orthographic foreground.
+            /// </summary>
+            Foreground,
+            /// <summary>
+            /// Renders in the perspective background.
+            /// </summary>
+            Background,
+            /// <summary>
+            /// Renders as UI.
+            /// </summary>
+            UI,
+        }
 
         #endregion
 
@@ -429,7 +451,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 floatVariable = copyVariables ? orig.floatVariable : 0f,
                 stringVariable = copyVariables ? orig.stringVariable : "",
                 tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>(),
-                background = orig.background,
+                renderLayerType = orig.renderLayerType,
                 ignoreLifespan = orig.ignoreLifespan,
                 orderModifiers = orig.orderModifiers,
                 opacityCollision = orig.opacityCollision,
@@ -878,7 +900,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.Depth = jn["d"].AsInt;
 
             if (jn["rdt"] != null)
-                beatmapObject.background = jn["rdt"].AsInt == 1;
+                beatmapObject.renderLayerType = (RenderLayerType)jn["rdt"].AsInt;
 
             if (jn["opcol"] != null)
                 beatmapObject.opacityCollision = jn["opcol"].AsBool;
@@ -1127,8 +1149,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (Depth != 15)
                 jn["d"] = Depth;
-            if (background)
-                jn["rdt"] = "1";
+            if (renderLayerType != RenderLayerType.Foreground)
+                jn["rdt"] = (int)renderLayerType;
             if (opacityCollision)
                 jn["opcol"] = opacityCollision;
             if (ignoreLifespan)

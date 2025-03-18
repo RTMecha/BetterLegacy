@@ -325,7 +325,7 @@ namespace BetterLegacy.Core.Optimization
                     case "gradienttype":
                         {
                             if (levelObject.visualObject is SolidObject solidObject)
-                                solidObject.UpdateMaterial((int)beatmapObject.gradientType);
+                                solidObject.UpdateMaterial((int)beatmapObject.gradientType, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background);
 
                             break;
                         }
