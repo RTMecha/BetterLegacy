@@ -2409,8 +2409,8 @@ namespace BetterLegacy.Editor.Managers
             DocumentFullViewActive = true;
             documentFullView.SetActive(true);
             documentTitle.text = document.Name;
-            documentInputField.onValueChanged.RemoveAllListeners();
-            documentInputField.onEndEdit.RemoveAllListeners();
+            documentInputField.onValueChanged.ClearAll();
+            documentInputField.onEndEdit.ClearAll();
             documentInputField.text = document.Text;
             documentInputField.onValueChanged.AddListener(_val =>
             {

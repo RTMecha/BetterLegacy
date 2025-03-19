@@ -114,7 +114,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(depth.GetComponent<EventInfo>());
 
                 var depthif = depth.GetComponent<InputField>();
-                depthif.onValueChanged.RemoveAllListeners();
+                depthif.onValueChanged.ClearAll();
 
                 var sliderObject = objectView.Find("depth/depth").gameObject;
 
@@ -251,7 +251,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(xo.GetComponent<EventInfo>());
 
                 var xoif = xo.GetComponent<InputField>();
-                xoif.onValueChanged.RemoveAllListeners();
+                xoif.onValueChanged.ClearAll();
 
                 var yo = singleInput.Duplicate(contentOriginTF, "y");
                 yo.transform.localScale = Vector3.one;
@@ -260,7 +260,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(yo.GetComponent<EventInfo>());
 
                 var yoif = yo.GetComponent<InputField>();
-                yoif.onValueChanged.RemoveAllListeners();
+                yoif.onValueChanged.ClearAll();
 
                 EditorThemeManager.AddInputField(xoif);
                 var xLeftButton = xo.transform.Find(">").GetComponent<Button>();
@@ -1625,7 +1625,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(idRight.GetChild(i).GetComponent<Image>(), EditorThemeManager.EditorTheme.GetGroup($"Object Keyframe Color {i + 1}"));
             }
 
-            ObjEditor.inst.objTimelineSlider.onValueChanged.RemoveAllListeners();
+            ObjEditor.inst.objTimelineSlider.onValueChanged.ClearAll();
             ObjEditor.inst.objTimelineSlider.onValueChanged.AddListener(_val =>
             {
                 if (!ObjEditor.inst.changingTime)
@@ -5765,7 +5765,7 @@ namespace BetterLegacy.Editor.Managers
 
                         var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
 
-                        opacity.onValueChanged.RemoveAllListeners();
+                        opacity.onValueChanged.ClearAll();
                         opacity.text = (-firstKF.eventKeyframe.values[1] + 1).ToString();
                         opacity.onValueChanged.AddListener(_val =>
                         {
@@ -5842,7 +5842,7 @@ namespace BetterLegacy.Editor.Managers
 
                         var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
 
-                        gradientOpacity.onValueChanged.RemoveAllListeners();
+                        gradientOpacity.onValueChanged.ClearAll();
                         gradientOpacity.text = (-firstKF.eventKeyframe.values[6] + 1).ToString();
                         gradientOpacity.onValueChanged.AddListener(_val =>
                         {
@@ -5865,7 +5865,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
 
-                            hue.onValueChanged.RemoveAllListeners();
+                            hue.onValueChanged.ClearAll();
                             hue.text = firstKF.eventKeyframe.values[2].ToString();
                             hue.onValueChanged.AddListener(_val =>
                             {
@@ -5886,7 +5886,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
 
-                            sat.onValueChanged.RemoveAllListeners();
+                            sat.onValueChanged.ClearAll();
                             sat.text = firstKF.eventKeyframe.values[3].ToString();
                             sat.onValueChanged.AddListener(_val =>
                             {
@@ -5905,7 +5905,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
 
-                            val.onValueChanged.RemoveAllListeners();
+                            val.onValueChanged.ClearAll();
                             val.text = firstKF.eventKeyframe.values[4].ToString();
                             val.onValueChanged.AddListener(_val =>
                             {
@@ -5927,7 +5927,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var hue = kfdialog.Find("gradient_huesatval/x").GetComponent<InputField>();
 
-                            hue.onValueChanged.RemoveAllListeners();
+                            hue.onValueChanged.ClearAll();
                             hue.text = firstKF.eventKeyframe.values[7].ToString();
                             hue.onValueChanged.AddListener(_val =>
                             {
@@ -5948,7 +5948,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var sat = kfdialog.Find("gradient_huesatval/y").GetComponent<InputField>();
 
-                            sat.onValueChanged.RemoveAllListeners();
+                            sat.onValueChanged.ClearAll();
                             sat.text = firstKF.eventKeyframe.values[8].ToString();
                             sat.onValueChanged.AddListener(_val =>
                             {
@@ -5967,7 +5967,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var val = kfdialog.Find("gradient_huesatval/z").GetComponent<InputField>();
 
-                            val.onValueChanged.RemoveAllListeners();
+                            val.onValueChanged.ClearAll();
                             val.text = firstKF.eventKeyframe.values[9].ToString();
                             val.onValueChanged.AddListener(_val =>
                             {

@@ -1597,7 +1597,7 @@ namespace BetterLegacy.Editor.Managers
                 int buttonTmp = i;
                 var shoggle = shapeSettings.GetChild(backgroundObject.shape.type).GetChild(i).GetComponent<Toggle>();
 
-                shoggle.onValueChanged.RemoveAllListeners();
+                shoggle.onValueChanged.ClearAll();
                 shoggle.isOn = backgroundObject.shape.option == i;
                 shoggle.onValueChanged.AddListener(_val =>
                 {

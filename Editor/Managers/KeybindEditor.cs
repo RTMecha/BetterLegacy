@@ -716,7 +716,7 @@ namespace BetterLegacy.Editor.Managers
                             var x = EditorPrefabHolder.Instance.Toggle.Duplicate(bar.transform);
 
                             var xt = x.GetComponent<Toggle>();
-                            xt.onValueChanged.RemoveAllListeners();
+                            xt.onValueChanged.ClearAll();
                             xt.isOn = Parser.TryParse(setting.Value, false);
                             xt.onValueChanged.AddListener(_val =>
                             {
@@ -861,7 +861,7 @@ namespace BetterLegacy.Editor.Managers
                             var input = x.transform.Find("input");
 
                             var xif = input.gameObject.AddComponent<InputField>();
-                            xif.onValueChanged.RemoveAllListeners();
+                            xif.onValueChanged.ClearAll();
                             xif.onEndEdit.ClearAll();
                             xif.textComponent = input.Find("Text").GetComponent<Text>();
                             xif.placeholder = input.Find("Placeholder").GetComponent<Text>();

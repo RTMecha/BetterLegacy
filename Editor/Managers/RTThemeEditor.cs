@@ -1043,10 +1043,10 @@ namespace BetterLegacy.Editor.Managers
             var update = actions.Find("update").GetComponent<Button>();
             var saveUse = actions.Find("save-use").GetComponent<Button>();
 
-            name.onValueChanged.RemoveAllListeners();
+            name.onValueChanged.ClearAll();
             name.text = PreviewTheme.name;
             name.onValueChanged.AddListener(_val => PreviewTheme.name = _val);
-            cancel.onClick.RemoveAllListeners();
+            cancel.onClick.ClearAll();
             cancel.onClick.AddListener(() =>
             {
                 EventEditor.inst.showTheme = false;
@@ -1247,7 +1247,7 @@ namespace BetterLegacy.Editor.Managers
                 var dropper = p.Find("preview").GetChild(0).GetComponent<Image>();
 
                 int indexTmp = i;
-                hex.onValueChanged.RemoveAllListeners();
+                hex.onValueChanged.ClearAll();
                 hex.characterLimit = allowAlpha ? 8 : 6;
                 hex.characterValidation = InputField.CharacterValidation.None;
                 hex.contentType = InputField.ContentType.Standard;

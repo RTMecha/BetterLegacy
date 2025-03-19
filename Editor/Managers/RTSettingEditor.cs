@@ -381,7 +381,7 @@ namespace BetterLegacy.Editor.Managers
             loadingDoggoRect.sizeDelta = new Vector2(sizeRandom, sizeRandom);
 
             var toggle = transform.Find("snap/toggle/toggle").GetComponent<Toggle>();
-            toggle.onValueChanged.RemoveAllListeners();
+            toggle.onValueChanged.ClearAll();
             toggle.isOn = RTEditor.inst.editorInfo.bpmSnapActive;
             toggle.onValueChanged.AddListener(_val => RTEditor.inst.editorInfo.bpmSnapActive = _val);
 
