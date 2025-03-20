@@ -1,10 +1,12 @@
-﻿using BetterLegacy.Core;
+﻿using System;
+using System.Collections.Generic;
+
+using SimpleJSON;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using SimpleJSON;
-using System;
-using System.Collections.Generic;
 
 namespace BetterLegacy.Story
 {

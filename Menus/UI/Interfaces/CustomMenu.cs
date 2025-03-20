@@ -1,12 +1,15 @@
-﻿using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
+
+using LSFunctions;
 
 using SimpleJSON;
+
 using BetterLegacy.Core;
-using UnityEngine;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using LSFunctions;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 

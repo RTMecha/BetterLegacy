@@ -1,6 +1,7 @@
-﻿using LSFunctions;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+
+using LSFunctions;
 
 namespace BetterLegacy.Core.Components
 {

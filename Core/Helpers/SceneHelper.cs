@@ -1,13 +1,14 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Companion;
-using BetterLegacy.Menus;
-using System;
+﻿using System;
 using System.Collections;
+
 using UnityEngine;
 using UnityEngine.UI;
+
 using BetterLegacy.Companion.Entity;
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus;
 
 namespace BetterLegacy.Core.Helpers
 {

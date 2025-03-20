@@ -1,7 +1,8 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Components.Player
 {

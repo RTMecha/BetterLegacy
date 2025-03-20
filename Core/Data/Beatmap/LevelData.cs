@@ -1,5 +1,6 @@
-﻿using SimpleJSON;
-using UnityEngine;
+﻿using UnityEngine;
+
+using SimpleJSON;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -9,6 +10,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             modVersion = LegacyPlugin.ModVersion.ToString();
         }
+
+        #region Values
 
         public string levelVersion = "4.1.16";
         public string modVersion;
@@ -46,6 +49,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool followPlayer;
 
         public bool showIntro;
+
+        #endregion
+
+        #region Methods
 
         public static LevelData Parse(JSONNode jn)
         {
@@ -182,5 +189,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return jn;
         }
+
+        #endregion
     }
 }

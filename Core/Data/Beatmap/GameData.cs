@@ -1,18 +1,22 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

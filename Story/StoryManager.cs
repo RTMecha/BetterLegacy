@@ -1,20 +1,22 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
+using SimpleJSON;
+
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Managers;
-using SimpleJSON;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Data.Player;
-using System;
-using BetterLegacy.Menus;
 using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Companion.Entity;
+using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization;
+using BetterLegacy.Menus;
 
 namespace BetterLegacy.Story
 {

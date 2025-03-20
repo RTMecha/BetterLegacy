@@ -1,4 +1,16 @@
-﻿using BetterLegacy.Configs;
+﻿using System.IO;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -7,14 +19,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
-using Crosstales.FB;
-using LSFunctions;
-using SimpleJSON;
-using System.IO;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 using TextEditor = BetterLegacy.Editor.Managers.TextEditor;
 
@@ -23,7 +27,7 @@ namespace BetterLegacy.Editor.Data
     /// <summary>
     /// Object for storing prefab panel data.
     /// </summary>
-    public class PrefabPanel
+    public class PrefabPanel : Exists
     {
         public PrefabPanel() { }
 

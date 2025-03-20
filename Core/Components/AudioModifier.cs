@@ -1,8 +1,7 @@
-﻿using BetterLegacy.Core.Data;
+﻿using UnityEngine;
+
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Optimization;
-
-using UnityEngine;
 
 namespace BetterLegacy.Core.Components
 {
@@ -56,16 +55,19 @@ namespace BetterLegacy.Core.Components
         /// The main audio source to base the time off of.
         /// </summary>
         public AudioSource CurrentAudioSource => AudioManager.inst.CurrentAudioSource;
+
         /// <summary>
         /// The current audio source.
         /// </summary>
         public AudioSource AudioSource { get; set; }
+
         /// <summary>
         /// The current audio clip.
         /// </summary>
         public AudioClip AudioClip { get; set; }
 
         public BeatmapObject BeatmapObject { get; set; }
+
         public Modifier<BeatmapObject> Modifier { get; set; }
     }
 }

@@ -1,13 +1,13 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace BetterLegacy.Companion.Entity
 {

@@ -1,7 +1,23 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using HarmonyLib;
+
+using TMPro;
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
@@ -9,24 +25,9 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Companion;
 using BetterLegacy.Menus;
-using Crosstales.FB;
-using HarmonyLib;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Patchers
 {

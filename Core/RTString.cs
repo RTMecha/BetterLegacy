@@ -1,15 +1,17 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using LSFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine;
 
 namespace BetterLegacy.Core
 {

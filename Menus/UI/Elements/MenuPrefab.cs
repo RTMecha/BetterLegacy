@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+
+using SimpleJSON;
+
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Menus.UI.Layouts;
-using SimpleJSON;
 
 namespace BetterLegacy.Menus.UI.Elements
 {

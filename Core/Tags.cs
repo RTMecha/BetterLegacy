@@ -1,7 +1,7 @@
 ﻿namespace BetterLegacy.Core
 {
     /// <summary>
-    /// A list of tags used by PA.
+    /// Library of tags used by PA.
     /// </summary>
     public static class Tags
     {

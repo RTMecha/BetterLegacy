@@ -1,9 +1,12 @@
-﻿using BetterLegacy.Companion.Entity;
+﻿using System.Linq;
+
+using UnityEngine;
+
+using HarmonyLib;
+
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
-using HarmonyLib;
-using System.Linq;
-using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {

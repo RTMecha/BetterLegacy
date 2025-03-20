@@ -1,8 +1,8 @@
-﻿
-using BetterLegacy.Core.Helpers;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Components
 {

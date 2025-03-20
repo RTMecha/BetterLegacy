@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+
+using SimpleJSON;
+
+using BetterLegacy.Core;
 
 namespace BetterLegacy.Companion.Data
 {

@@ -1,24 +1,24 @@
-﻿using BetterLegacy.Companion.Entity;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using CielaSpike;
+
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
-using CielaSpike;
-using LSFunctions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using UnityEngine;
-using UnityEngine.UI;
 
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 

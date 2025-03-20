@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core.Helpers;
-using BetterLegacy.Editor.Managers;
-using HarmonyLib;
-using System;
+﻿using System;
 using UnityEngine;
+
+using HarmonyLib;
+
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
 {

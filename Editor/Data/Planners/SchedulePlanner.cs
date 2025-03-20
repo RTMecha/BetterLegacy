@@ -1,15 +1,14 @@
-﻿using BetterLegacy.Core;
+﻿using System;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using TMPro;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
@@ -31,7 +30,6 @@ namespace BetterLegacy.Editor.Data.Planners
 
         public bool IsActive => DateTime.Day == DateTime.Now.Day && DateTime.Month == DateTime.Now.Month && DateTime.Year == DateTime.Now.Year;
         public bool hasBeenChecked;
-
 
         public override void Init()
         {

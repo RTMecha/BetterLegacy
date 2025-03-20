@@ -1,14 +1,4 @@
-﻿using BetterLegacy.Arcade.Interfaces;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Data.Dialogs;
-using LSFunctions;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -16,6 +6,18 @@ using System.IO.Compression;
 
 using UnityEngine;
 using UnityEngine.UI;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {

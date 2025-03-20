@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Editor.Managers;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Components
 {

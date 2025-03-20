@@ -1,26 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.UI;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Helpers;
-using SimpleJSON;
-using BetterLegacy.Core;
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Managers;
+
 using LSFunctions;
-using System.IO;
-using BetterLegacy.Menus.UI.Interfaces;
+
+using SimpleJSON;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Story;
-using BetterLegacy.Menus.UI.Layouts;
-using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Menus.UI.Elements
 {

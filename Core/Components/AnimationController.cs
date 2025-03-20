@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
+
 using BetterLegacy.Core.Animation;
-using System;
 
 namespace BetterLegacy.Core.Components
 {

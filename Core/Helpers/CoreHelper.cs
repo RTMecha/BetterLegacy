@@ -1,4 +1,18 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using CielaSpike;
+using InControl;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
@@ -6,20 +20,8 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
-using CielaSpike;
-using InControl;
-using LSFunctions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Helpers
 {

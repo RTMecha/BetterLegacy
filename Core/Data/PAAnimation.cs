@@ -2,17 +2,15 @@
 using System.Linq;
 
 using UnityEngine;
+
 using LSFunctions;
 
 using SimpleJSON;
 
-using BetterLegacy.Editor.Managers;
 using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data
 {
@@ -64,19 +62,23 @@ namespace BetterLegacy.Core.Data
         /// ID of the animation.
         /// </summary>
         public string id;
+
         /// <summary>
         /// Name of the animation.
         /// </summary>
         public string name = "Anim";
+
         /// <summary>
         /// Description of the animation.
         /// </summary>
         public string desc = "This is the default description!";
+
         float startTime;
         /// <summary>
         /// Time the animation starts at.
         /// </summary>
         public float StartTime { get => Mathf.Clamp(startTime, 0f, float.MaxValue); set => startTime = Mathf.Clamp(value, 0f, float.MaxValue); }
+
         /// <summary>
         /// Markers to render in the <see cref="AnimationEditor"/>
         /// </summary>

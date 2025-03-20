@@ -2,15 +2,14 @@
 using System.Collections;
 
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Popups;
-using UnityEngine.Events;
 
 namespace BetterLegacy.Editor.Managers
 {

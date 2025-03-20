@@ -1,5 +1,6 @@
-﻿using BetterLegacy.Core.Components.Player;
-using UnityEngine;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Components.Player;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
 {

@@ -1,6 +1,6 @@
-﻿using BetterLegacy.Editor.Managers;
+﻿using UnityEngine;
+
 using SimpleJSON;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

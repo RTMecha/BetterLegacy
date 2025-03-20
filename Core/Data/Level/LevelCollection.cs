@@ -1,18 +1,22 @@
-﻿using BetterLegacy.Arcade.Interfaces;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+using SteamworksFacepunch.Ugc;
+
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
-using LSFunctions;
-using SimpleJSON;
-using SteamworksFacepunch.Ugc;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Data.Level
 {

@@ -1,7 +1,10 @@
-﻿using LSFunctions;
-using SimpleJSON;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
 
 namespace BetterLegacy.Menus.UI.Elements
 {

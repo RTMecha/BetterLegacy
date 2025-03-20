@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core.Data.Player;
-using BetterLegacy.Core.Helpers;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using SimpleJSON;
+
+using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

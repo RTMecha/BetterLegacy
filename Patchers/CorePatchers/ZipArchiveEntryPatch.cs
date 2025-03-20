@@ -1,7 +1,8 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
+
+using HarmonyLib;
 
 namespace BetterLegacy.Patchers
 {

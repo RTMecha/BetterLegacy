@@ -1,18 +1,19 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+
+using UnityEngine;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using BetterLegacy.Editor.Components;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
 
 using Object = UnityEngine.Object;
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
@@ -23,7 +24,7 @@ namespace BetterLegacy.Core.Optimization.Objects
     /// <summary>
     /// Converts GameData to LevelObjects to be used by the mod
     /// </summary>
-    public class ObjectConverter
+    public class ObjectConverter : Exists
     {
         public class CachedSequences
         {

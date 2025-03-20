@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
-using System;
 
 namespace BetterLegacy.Core.Helpers
 {

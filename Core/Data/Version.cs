@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
 using VersionComparison = DataManager.VersionComparison;
 
 namespace BetterLegacy.Core.Data
@@ -39,14 +40,17 @@ namespace BetterLegacy.Core.Data
         /// Prefix build. What this version is used for. (e.g. snapshot, etc)
         /// </summary>
         public string Prefix { get; set; }
+
         /// <summary>
         /// Major build number. Represents a big milestone or huge backwards compatibility breaking changes.
         /// </summary>
         public int Major { get; set; }
+
         /// <summary>
         /// Minor build number. Represents a few additions and fixes.
         /// </summary>
         public int Minor { get; set; }
+
         /// <summary>
         /// Patch build number. Represents a few fixes.
         /// </summary>
@@ -56,6 +60,7 @@ namespace BetterLegacy.Core.Data
         /// Iteration letter. Represents a very small change from the last build.
         /// </summary>
         public string Iteration { get; set; }
+
         public int IterationIndex
         {
             get => string.IsNullOrEmpty(Iteration) ? 0 : RTString.alphabetLower.Select(x => x.ToString()).ToList().IndexOf(Iteration.ToLower());

@@ -1,8 +1,9 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using UnityEngine;
+
+using HarmonyLib;
 
 namespace BetterLegacy.Core.Managers
 {

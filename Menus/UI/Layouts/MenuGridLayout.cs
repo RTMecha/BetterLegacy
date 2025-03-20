@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using SimpleJSON;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+
+using SimpleJSON;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Menus.UI.Layouts
 {

@@ -1,5 +1,4 @@
-﻿
-using HarmonyLib;
+﻿using HarmonyLib;
 
 namespace BetterLegacy.Patchers
 {

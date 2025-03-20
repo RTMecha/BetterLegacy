@@ -1,22 +1,18 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.UI;
 
+using LSFunctions;
+
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Editor;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Components;
-using System.Collections;
-using LSFunctions;
-using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Dialogs;
 

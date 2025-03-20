@@ -1,9 +1,9 @@
-﻿namespace BetterLegacy.Core.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
+namespace BetterLegacy.Core.Components
+{
     /// <summary>
     /// FPS Counter component from https://forum.unity.com/threads/fps-counter.505495/
     /// </summary>

@@ -1,11 +1,12 @@
-﻿using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
-using LSFunctions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SimpleJSON;
+
+using LSFunctions;
+
+using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Core.Animation
 {

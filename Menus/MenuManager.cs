@@ -1,19 +1,24 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using DG.Tweening;
-using LSFunctions;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using TMPro;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using LSFunctions;
+
+using DG.Tweening;
+using TMPro;
+using SimpleJSON;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+
 using Branch = InterfaceController.InterfaceBranch;
 using ButtonSetting = InterfaceController.ButtonSetting;
 using ButtonType = InterfaceController.ButtonSetting.Type;

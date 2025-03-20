@@ -1,8 +1,8 @@
-﻿using BetterLegacy.Core.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Companion.Entity
 {

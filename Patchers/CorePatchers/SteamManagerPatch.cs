@@ -1,7 +1,8 @@
-﻿using BetterLegacy.Core.Managers.Networking;
+﻿using UnityEngine;
+
 using HarmonyLib;
 
-using UnityEngine;
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Patchers
 {

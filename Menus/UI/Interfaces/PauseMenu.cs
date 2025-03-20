@@ -1,13 +1,15 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using System;
+﻿using System;
 using System.Collections;
 
 using UnityEngine;
-using BetterLegacy.Core.Data;
+
 using LSFunctions;
+
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 

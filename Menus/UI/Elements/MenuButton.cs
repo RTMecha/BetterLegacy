@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 
 using UnityEngine;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Menus.UI.Interfaces;
+
+using LSFunctions;
 
 using TMPro;
 using SimpleJSON;
-using LSFunctions;
-using BetterLegacy.Core.Data;
+
 using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Menus.UI.Elements
 {

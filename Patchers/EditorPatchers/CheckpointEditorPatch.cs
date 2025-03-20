@@ -1,16 +1,17 @@
-﻿using BetterLegacy.Arcade.Managers;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Managers;
-using HarmonyLib;
-using LSFunctions;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
 {

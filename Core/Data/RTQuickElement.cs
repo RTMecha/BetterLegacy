@@ -1,10 +1,9 @@
-﻿using BetterLegacy.Menus;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using SimpleJSON;
+
+using BetterLegacy.Menus;
 
 namespace BetterLegacy.Core.Data
 {

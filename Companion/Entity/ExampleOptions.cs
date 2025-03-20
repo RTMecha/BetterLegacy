@@ -1,13 +1,15 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Editor.Managers;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Companion.Entity
 {

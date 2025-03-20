@@ -1,9 +1,11 @@
-﻿using BetterLegacy.Core.Data;
+﻿using System;
+using System.Collections.Generic;
+
+using UnityEngine;
+
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Optimization.Objects;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Level
 {

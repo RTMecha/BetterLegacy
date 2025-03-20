@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
 
+using LSFunctions;
+
+using SteamworksFacepunch.Ugc;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Data;
-using LSFunctions;
-using BetterLegacy.Core.Managers.Networking;
-using System.Collections;
-using SteamworksFacepunch.Ugc;
-using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Arcade.Interfaces
 {

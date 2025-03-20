@@ -1,11 +1,12 @@
-﻿using BetterLegacy.Editor.Managers;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using UnityEngine;
+
+using SimpleJSON;
+
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {

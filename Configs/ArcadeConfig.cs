@@ -1,7 +1,8 @@
-﻿using BetterLegacy.Arcade.Interfaces;
+﻿using UnityEngine;
+
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
-using UnityEngine;
 
 namespace BetterLegacy.Configs
 {

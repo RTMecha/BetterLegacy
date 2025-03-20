@@ -1,19 +1,17 @@
-﻿using BetterLegacy.Core;
+﻿using UnityEngine;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using TMPro;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data.Planners
 {

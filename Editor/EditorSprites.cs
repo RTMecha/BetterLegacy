@@ -1,11 +1,9 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+
 using UnityEngine;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Editor
 {

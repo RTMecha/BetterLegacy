@@ -1,18 +1,20 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using TMPro;
+using SimpleJSON;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data.Popups
 {

@@ -1,8 +1,8 @@
-﻿
-using DG.Tweening;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using DG.Tweening;
 
 namespace BetterLegacy.Core.Components
 {

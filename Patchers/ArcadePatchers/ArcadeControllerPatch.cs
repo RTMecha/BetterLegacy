@@ -1,5 +1,6 @@
-﻿using BetterLegacy.Core.Helpers;
-using HarmonyLib;
+﻿using HarmonyLib;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {

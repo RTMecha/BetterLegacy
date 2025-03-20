@@ -1,20 +1,22 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+
 using SimpleJSON;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Configs;
-using BetterLegacy.Editor.Managers;
-using BetterLegacy.Core.Animation.Keyframe;
+
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Data.Parameters;
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Companion.Entity
 {

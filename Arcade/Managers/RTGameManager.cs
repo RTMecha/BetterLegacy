@@ -1,20 +1,22 @@
-﻿using BetterLegacy.Configs;
+﻿using System.Collections;
+using System.Collections.Generic;
+
+using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
-using UnityEngine.UI;
 
 using Axis = BetterLegacy.Editor.Components.SelectObject.Axis;
 

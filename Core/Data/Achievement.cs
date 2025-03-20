@@ -1,8 +1,12 @@
-﻿using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using SimpleJSON;
-using System.Linq;
+﻿using System.Linq;
+
 using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data
 {

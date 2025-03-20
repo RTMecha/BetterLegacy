@@ -1,6 +1,8 @@
-﻿using BetterLegacy.Core.Managers;
-using LSFunctions;
+﻿using LSFunctions;
+
 using SimpleJSON;
+
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Level
 {

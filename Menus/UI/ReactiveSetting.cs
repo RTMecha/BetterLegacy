@@ -1,5 +1,4 @@
-﻿
-using SimpleJSON;
+﻿using SimpleJSON;
 
 namespace BetterLegacy.Menus.UI
 {

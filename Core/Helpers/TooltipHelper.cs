@@ -1,7 +1,10 @@
-﻿using BetterLegacy.Editor.Components;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
+
 using SimpleJSON;
+
+using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Core.Helpers
 {

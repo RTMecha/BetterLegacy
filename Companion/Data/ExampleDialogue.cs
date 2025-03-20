@@ -1,10 +1,11 @@
-﻿using BetterLegacy.Companion.Data.Parameters;
+﻿using System;
+
+using SimpleJSON;
+
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
-using SimpleJSON;
-using System;
-using System.Collections.Generic;
 
 namespace BetterLegacy.Companion.Data
 {

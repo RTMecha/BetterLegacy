@@ -5,13 +5,15 @@ This software is released under the MIT License.
 http://opensource.org/licenses/mit-license.php
 */
 
-using CielaSpike;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using UnityEngine;
+
+using CielaSpike;
 
 namespace BetterLegacy.Core
 {

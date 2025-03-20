@@ -1,18 +1,19 @@
-﻿using BetterLegacy.Core;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using BetterLegacy.Companion.Data;
+using BetterLegacy.Companion.Data.Parameters;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using SimpleJSON;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-
-using BetterLegacy.Companion.Data;
-using BetterLegacy.Companion.Data.Parameters;
 
 namespace BetterLegacy.Companion.Entity
 {

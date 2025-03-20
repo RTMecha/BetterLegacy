@@ -1,15 +1,19 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
+﻿using System;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
-using HarmonyLib;
-using LSFunctions;
-using System;
-using UnityEngine;
-using UnityEngine.UI;
+
 using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
 
 namespace BetterLegacy.Patchers

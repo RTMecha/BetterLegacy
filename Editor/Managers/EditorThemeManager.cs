@@ -1,14 +1,18 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Editor.Components;
-using LSFunctions;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
+
+using LSFunctions;
+
+using TMPro;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

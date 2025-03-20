@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core.Components.Player;
+﻿using UnityEngine;
+
+using InControl;
+
+using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
-using InControl;
-using UnityEngine;
 
 namespace BetterLegacy.Configs
 {

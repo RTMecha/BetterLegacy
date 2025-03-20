@@ -3,10 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -14,10 +20,6 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Planners;
-using LSFunctions;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Managers
 {

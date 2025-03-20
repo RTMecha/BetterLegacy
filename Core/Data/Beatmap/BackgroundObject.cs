@@ -1,9 +1,13 @@
-﻿using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
+
+using SimpleJSON;
+
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+
 using BaseBackground = DataManager.GameData.BackgroundObject;
 
 namespace BetterLegacy.Core.Data.Beatmap

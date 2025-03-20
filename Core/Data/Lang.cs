@@ -1,6 +1,7 @@
-﻿using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using SimpleJSON;
 
 namespace BetterLegacy.Core.Data
 {

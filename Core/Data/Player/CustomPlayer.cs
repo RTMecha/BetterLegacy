@@ -1,10 +1,13 @@
-﻿using BetterLegacy.Configs;
+﻿using UnityEngine;
+
+using XInputDotNetPure;
+using InControl;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using InControl;
-using UnityEngine;
-using XInputDotNetPure;
+
 using BaseCustomPlayer = InputDataManager.CustomPlayer;
 
 namespace BetterLegacy.Core.Data.Player

@@ -1,4 +1,19 @@
-﻿using BetterLegacy.Arcade.Interfaces;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+using LSFunctions;
+
+using SimpleJSON;
+using InControl;
+
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
@@ -8,17 +23,6 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
-using InControl;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Core.Helpers
 {

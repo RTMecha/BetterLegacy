@@ -1,17 +1,19 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Helpers
 {

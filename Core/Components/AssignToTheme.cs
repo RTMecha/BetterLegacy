@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Core.Helpers;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Components
 {
@@ -37,44 +38,17 @@ namespace BetterLegacy.Core.Components
             if (!gameObject.activeInHierarchy || !Graphic.isActiveAndEnabled)
                 return;
 
-            switch (ThemeType)
+            Graphic.color = ThemeType switch
             {
-                case Type.GUI:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.guiColor;
-                        break;
-                    }
-                case Type.PlayerTail:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.guiAccentColor;
-                        break;
-                    }
-                case Type.Background:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.backgroundColor;
-                        break;
-                    }
-                case Type.Player:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.GetPlayerColor(Index);
-                        break;
-                    }
-                case Type.Objects:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(Index);
-                        break;
-                    }
-                case Type.BackgroundObjects:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.GetBGColor(Index);
-                        break;
-                    }
-                case Type.Effects:
-                    {
-                        Graphic.color = CoreHelper.CurrentBeatmapTheme.GetFXColor(Index);
-                        break;
-                    }
-            }
+                Type.GUI => CoreHelper.CurrentBeatmapTheme.guiColor,
+                Type.PlayerTail => CoreHelper.CurrentBeatmapTheme.guiAccentColor,
+                Type.Background => CoreHelper.CurrentBeatmapTheme.backgroundColor,
+                Type.Player => CoreHelper.CurrentBeatmapTheme.GetPlayerColor(Index),
+                Type.Objects => CoreHelper.CurrentBeatmapTheme.GetObjColor(Index),
+                Type.BackgroundObjects => CoreHelper.CurrentBeatmapTheme.GetBGColor(Index),
+                Type.Effects => CoreHelper.CurrentBeatmapTheme.GetFXColor(Index),
+                _ => Color.white,
+            };
         }
     }
 }

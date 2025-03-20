@@ -1,13 +1,16 @@
-﻿using BetterLegacy.Core.Helpers;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
+
+using TMPro;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Managers
 {

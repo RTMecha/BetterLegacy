@@ -1,17 +1,20 @@
 ﻿using System;
 
+using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
-using UnityEngine;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
-using LSFunctions;
-using SimpleJSON;
-using BetterLegacy.Core.Data.Level;
 
 namespace BetterLegacy.Arcade.Interfaces
 {

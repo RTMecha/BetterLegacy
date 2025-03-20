@@ -1,8 +1,9 @@
-﻿using BetterLegacy.Core.Data;
+﻿using System;
+
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
-using System;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {

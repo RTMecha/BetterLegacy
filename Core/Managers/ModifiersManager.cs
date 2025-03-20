@@ -1,16 +1,13 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
+
+using SimpleJSON;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-using BasePrefab = DataManager.GameData.Prefab;
 
 namespace BetterLegacy.Core.Managers
 {

@@ -1,8 +1,9 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Companion;
+﻿using UnityEngine;
+
 using HarmonyLib;
-using UnityEngine;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {
@@ -11,13 +12,7 @@ namespace BetterLegacy.Patchers
     {
         [HarmonyPatch(nameof(SystemManager.Awake))]
         [HarmonyPostfix]
-        static void AwakePostfix()
-        {
-            Debug.unityLogger.logEnabled = CoreConfig.Instance.DebugsOn.Value;
-
-            //if (!ExampleManager.inst) // Don't call Init due to SystemManager.inst.Awake() being called every time a scene is loaded. This prevents Example from saying he's already here.
-            //    ExampleManager.Init();
-        }
+        static void AwakePostfix() => Debug.unityLogger.logEnabled = CoreConfig.Instance.DebugsOn.Value;
 
         [HarmonyPatch(nameof(SystemManager.Update))]
         [HarmonyPrefix]

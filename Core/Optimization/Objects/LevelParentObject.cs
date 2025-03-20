@@ -1,7 +1,8 @@
-﻿using BetterLegacy.Core.Animation;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects
 {

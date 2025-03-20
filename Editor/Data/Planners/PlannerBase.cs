@@ -1,11 +1,8 @@
-﻿using BetterLegacy.Core.Data;
+﻿using UnityEngine;
+
 using LSFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Editor.Data.Planners
 {

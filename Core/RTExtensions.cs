@@ -1,17 +1,22 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using LSFunctions;
-using SimpleJSON;
-using SteamworksFacepunch.Ugc;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+
+using LSFunctions;
+
+using SimpleJSON;
+using SteamworksFacepunch.Ugc;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+
 using Object = UnityEngine.Object;
 
 namespace BetterLegacy.Core

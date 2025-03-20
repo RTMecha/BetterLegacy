@@ -1,17 +1,21 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using HarmonyLib;
-using MP3Sharp;
-using MP3Sharp.Decoding.Decoders;
-using MP3Sharp.Decoding.Decoders.LayerIII;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using HarmonyLib;
+
+using MP3Sharp;
+using MP3Sharp.Decoding.Decoders;
+using MP3Sharp.Decoding.Decoders.LayerIII;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {

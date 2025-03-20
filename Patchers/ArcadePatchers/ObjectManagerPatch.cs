@@ -1,11 +1,16 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using System;
+
+using UnityEngine;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using TMPro;
+
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
-using HarmonyLib;
-using LSFunctions;
-using System;
-using TMPro;
-using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {

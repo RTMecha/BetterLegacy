@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using SimpleJSON;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Data.Player
 {
@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Player
             AssignDefaultModels();
         }
 
-        public static bool AllowCustomModels => GameData.Current && GameData.Current.data != null && GameData.Current.data.level.allowCustomPlayerModels;
+        public static bool AllowCustomModels => GameData.Current && GameData.Current.data && GameData.Current.data.level.allowCustomPlayerModels;
 
         /// <summary>
         /// If custom models should be used instead of the loaded ones.

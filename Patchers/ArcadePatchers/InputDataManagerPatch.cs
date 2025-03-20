@@ -1,9 +1,13 @@
-﻿using BetterLegacy.Core.Data.Player;
-using BetterLegacy.Core.Helpers;
-using HarmonyLib;
-using InControl;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
+
+using HarmonyLib;
+
+using InControl;
+
+using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {

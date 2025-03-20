@@ -1,6 +1,9 @@
-﻿using HarmonyLib;
-using System.Linq;
+﻿using System.Linq;
+
 using UnityEngine;
+
+using HarmonyLib;
+
 using BetterLegacy.Core.Helpers;
 
 using SoundGroup = SoundLibrary.SoundGroup;

@@ -1,10 +1,14 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Configs
 {

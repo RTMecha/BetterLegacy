@@ -1,5 +1,6 @@
-﻿using HarmonyLib;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using HarmonyLib;
 
 namespace BetterLegacy.Patchers
 {

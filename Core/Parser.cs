@@ -1,7 +1,9 @@
-﻿using SimpleJSON;
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
+
 using UnityEngine;
+
+using SimpleJSON;
 
 namespace BetterLegacy.Core
 {

@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Core;
+﻿using SimpleJSON;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
-using SimpleJSON;
 
 namespace BetterLegacy.Companion.Data
 {

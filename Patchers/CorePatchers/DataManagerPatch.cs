@@ -1,4 +1,15 @@
-﻿using BetterLegacy.Companion;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Companion;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
@@ -8,15 +19,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Story;
-using HarmonyLib;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-
-using BasePrefab = DataManager.GameData.Prefab;
 
 namespace BetterLegacy.Patchers
 {
@@ -296,7 +298,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(DataManager.GeneratePrefabJSON))]
         [HarmonyPrefix]
-        static bool GeneratePrefabJSONPrefix(ref JSONNode __result, BasePrefab __0)
+        static bool GeneratePrefabJSONPrefix(ref JSONNode __result)
         {
             __result = JSON.Parse("{}");
             return false;

@@ -1,10 +1,12 @@
-﻿using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Editor.Managers;
-using HarmonyLib;
-using System.Collections;
+﻿using System.Collections;
+
 using UnityEngine;
 using UnityEngine.UI;
+
+using HarmonyLib;
+
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
 {

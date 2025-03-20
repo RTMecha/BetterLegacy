@@ -1,4 +1,15 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
@@ -7,13 +18,6 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Story;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 using Version = BetterLegacy.Core.Data.Version;
 

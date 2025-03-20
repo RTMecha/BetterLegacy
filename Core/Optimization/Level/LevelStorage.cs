@@ -1,8 +1,9 @@
-﻿using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Optimization.Objects;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Optimization.Objects;
 
 namespace BetterLegacy.Core.Optimization.Level
 {

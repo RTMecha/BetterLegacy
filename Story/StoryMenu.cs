@@ -1,4 +1,6 @@
-﻿using BetterLegacy.Core;
+﻿using UnityEngine;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -6,7 +8,6 @@ using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Menus.UI.Layouts;
-using UnityEngine;
 
 namespace BetterLegacy.Story
 {

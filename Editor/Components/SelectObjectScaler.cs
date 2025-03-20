@@ -1,10 +1,10 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
+﻿using UnityEngine;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
-using UnityEngine;
 
 namespace BetterLegacy.Editor.Components
 {

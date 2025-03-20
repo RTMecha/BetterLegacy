@@ -1,13 +1,9 @@
-﻿using BetterLegacy.Configs;
+﻿using UnityEngine;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Editor.Data.Popups;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace BetterLegacy.Editor.Data
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BetterLegacy.Companion.Data
+﻿namespace BetterLegacy.Companion.Data
 {
     /// <summary>
     /// How not found attributes should be handled.

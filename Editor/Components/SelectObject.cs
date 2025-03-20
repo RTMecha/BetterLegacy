@@ -1,16 +1,18 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+using LSFunctions;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Editor.Components
 {

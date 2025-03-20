@@ -1,12 +1,14 @@
-﻿using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
+﻿using System.Collections;
+using System.Collections.Generic;
+
+using UnityEngine;
+
+using SimpleJSON;
+
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
-using SimpleJSON;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Managers
 {

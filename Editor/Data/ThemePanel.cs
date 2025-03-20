@@ -1,4 +1,16 @@
-﻿using BetterLegacy.Configs;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -8,16 +20,6 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
-using Crosstales.FB;
-using LSFunctions;
-using SimpleJSON;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 using TextEditor = BetterLegacy.Editor.Managers.TextEditor;
 

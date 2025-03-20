@@ -7,13 +7,15 @@ using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
-using SteamworksFacepunch.Ugc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using UnityEngine;
+
+using SteamworksFacepunch.Ugc;
 
 namespace BetterLegacy.Core.Managers.Networking
 {

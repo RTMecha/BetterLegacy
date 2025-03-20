@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data
 {

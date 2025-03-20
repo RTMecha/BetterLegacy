@@ -1,6 +1,8 @@
-﻿using BetterLegacy.Editor.Data;
-using LSFunctions;
+﻿using LSFunctions;
+
 using SimpleJSON;
+
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using SimpleJSON;
-using UnityEngine;
 
 namespace BetterLegacy.Editor.Data
 {

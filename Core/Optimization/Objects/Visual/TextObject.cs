@@ -1,5 +1,6 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
+
+using TMPro;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
 {

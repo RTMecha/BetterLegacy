@@ -1,9 +1,12 @@
-﻿using BetterLegacy.Core.Components;
-using System.Collections.Generic;
-using TMPro;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using TMPro;
+
+using BetterLegacy.Core.Components;
 
 namespace BetterLegacy.Core.Prefabs
 {

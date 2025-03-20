@@ -1,8 +1,9 @@
-﻿using BetterLegacy.Core.Data.Beatmap;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
-using UnityEngine;
 
 namespace BetterLegacy.Configs
 {

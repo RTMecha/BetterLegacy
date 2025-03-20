@@ -1,7 +1,7 @@
-﻿using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
+﻿using UnityEngine;
 
-using UnityEngine;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {

@@ -1,5 +1,28 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using TMPro;
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Companion.Entity;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -8,27 +31,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
-using BetterLegacy.Companion;
-using Crosstales.FB;
-using HarmonyLib;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-using BetterLegacy.Core.Components;
-using TMPro;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Editor.Data.Dialogs;
-using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
 {

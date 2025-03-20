@@ -1,15 +1,18 @@
-﻿using BetterLegacy.Configs;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
-using LSFunctions;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization
 {

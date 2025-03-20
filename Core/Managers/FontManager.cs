@@ -1,17 +1,19 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using TMPro;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Managers
 {

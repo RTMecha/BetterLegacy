@@ -1,7 +1,9 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Helpers;
+﻿using UnityEngine;
+
 using HarmonyLib;
-using UnityEngine;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {

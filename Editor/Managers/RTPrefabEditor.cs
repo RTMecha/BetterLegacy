@@ -1,4 +1,20 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -11,20 +27,6 @@ using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
-using BetterLegacy.Companion;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using BasePrefab = DataManager.GameData.Prefab;
-using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
 {

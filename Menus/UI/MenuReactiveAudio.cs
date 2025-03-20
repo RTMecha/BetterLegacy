@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 using BetterLegacy.Core;
 
@@ -16,8 +15,7 @@ namespace BetterLegacy.Menus.UI
         {
             switch (reactiveSetting.controls)
             {
-                case ReactiveSetting.ControlType.Position:
-                    {
+                case ReactiveSetting.ControlType.Position: {
                         float x = InterfaceManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
                         float y = InterfaceManager.inst.samples[reactiveSetting.channels[1]] * reactiveSetting.intensity[1];
 
@@ -25,8 +23,7 @@ namespace BetterLegacy.Menus.UI
 
                         break;
                     }
-                case ReactiveSetting.ControlType.Scale:
-                    {
+                case ReactiveSetting.ControlType.Scale: {
                         float x = InterfaceManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
                         float y = InterfaceManager.inst.samples[reactiveSetting.channels[1]] * reactiveSetting.intensity[1];
 
@@ -34,8 +31,7 @@ namespace BetterLegacy.Menus.UI
 
                         break;
                     }
-                case ReactiveSetting.ControlType.Rotation:
-                    {
+                case ReactiveSetting.ControlType.Rotation: {
                         float x = InterfaceManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
 
                         gameObject.transform.SetLocalRotationEulerZ(x);

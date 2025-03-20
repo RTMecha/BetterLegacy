@@ -1,10 +1,14 @@
-﻿using BetterLegacy.Configs;
+﻿using System.Collections;
+
+using UnityEngine;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using HarmonyLib;
-using LSFunctions;
-using System.Collections;
-using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {
@@ -91,7 +95,6 @@ namespace BetterLegacy.Patchers
 
             return false;
         }
-
 
         [HarmonyPatch(nameof(InputSelectManager.loadStrings))]
         [HarmonyPrefix]

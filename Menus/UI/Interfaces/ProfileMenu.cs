@@ -1,10 +1,12 @@
-﻿using BetterLegacy.Core.Data;
+﻿using UnityEngine;
+
+using LSFunctions;
+
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
-using LSFunctions;
-using UnityEngine;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {

@@ -1,8 +1,9 @@
-﻿using BetterLegacy.Core.Data;
-using System;
+﻿using System;
+
+using UnityEngine;
 
 using BetterLegacy.Companion.Entity;
-using UnityEngine;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Companion.Data.Parameters
 {

@@ -1,4 +1,17 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using DG.Tweening;
+using SimpleJSON;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
@@ -16,15 +29,7 @@ using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
-using DG.Tweening;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine;
+
 using Ease = BetterLegacy.Core.Animation.Ease;
 
 namespace BetterLegacy.Core.Helpers

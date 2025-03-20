@@ -1,34 +1,37 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using BetterLegacy.Core;
+
 using LSFunctions;
-using BetterLegacy.Core.Helpers;
+
+using Crosstales.FB;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
-using Crosstales.FB;
-using System.IO;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Core.Components.Player;
-using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// The new Player editor.
+    /// The Player editor.
     /// </summary>
     public class PlayerEditor : MonoBehaviour
     {

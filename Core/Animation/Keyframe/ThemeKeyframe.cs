@@ -1,7 +1,10 @@
-﻿using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
+
+using LSFunctions;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {

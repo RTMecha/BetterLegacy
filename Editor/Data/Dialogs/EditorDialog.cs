@@ -1,13 +1,9 @@
-﻿using BetterLegacy.Core.Components;
+﻿using UnityEngine;
+using UnityEngine.UI;
+
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Editor.Managers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {

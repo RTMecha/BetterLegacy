@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Optimization;
 using ILMath;
+
 using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization;
 
 namespace BetterLegacy.Core
 {

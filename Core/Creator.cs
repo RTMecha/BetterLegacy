@@ -1,5 +1,6 @@
-﻿using BetterLegacy.Core.Data;
-using UnityEngine;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Core
 {
@@ -19,7 +20,7 @@ namespace BetterLegacy.Core
         public static GameObject NewPersistentGameObject(string name)
         {
             var gameObject = new GameObject(name);
-            UnityEngine.Object.DontDestroyOnLoad(gameObject);
+            Object.DontDestroyOnLoad(gameObject);
             return gameObject;
         }
 

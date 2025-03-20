@@ -1,10 +1,11 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using System;
+﻿using System;
 
 using UnityEngine;
 using UnityEngine.Video;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Components
 {

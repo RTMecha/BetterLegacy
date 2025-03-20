@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Components
 {
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Components
         bool InHorizontalBounds => tracker.position.x > limitRight && tracker.position.x < limitLeft;
         bool InVerticalBounds => tracker.position.y > limitDown && tracker.position.y < limitUp;
 
-        void Awake() => this.tracker = Creator.NewGameObject("camera track", EventManager.inst.transform).transform;
+        void Awake() => tracker = Creator.NewGameObject("camera track", EventManager.inst.transform).transform;
 
         void LateUpdate()
         {

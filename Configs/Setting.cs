@@ -1,6 +1,8 @@
-﻿using BetterLegacy.Core;
-using System;
+﻿using System;
+
 using UnityEngine;
+
+using BetterLegacy.Core;
 
 namespace BetterLegacy.Configs
 {

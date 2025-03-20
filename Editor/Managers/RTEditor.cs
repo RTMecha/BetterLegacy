@@ -1,4 +1,23 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using CielaSpike;
+using TMPro;
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Companion;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
@@ -18,25 +37,6 @@ using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
-using BetterLegacy.Companion;
-using CielaSpike;
-using Crosstales.FB;
-using HarmonyLib;
-using LSFunctions;
-using SimpleJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using TMPro;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Managers
 {

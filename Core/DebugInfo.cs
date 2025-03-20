@@ -1,11 +1,13 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+
+using UnityEngine;
+
+using TMPro;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using System;
-using TMPro;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Managers
 {

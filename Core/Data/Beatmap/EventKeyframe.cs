@@ -1,9 +1,13 @@
-﻿using BetterLegacy.Editor.Data;
-using LSFunctions;
-using SimpleJSON;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

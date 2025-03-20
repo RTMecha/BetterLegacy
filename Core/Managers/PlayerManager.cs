@@ -1,19 +1,15 @@
-﻿using BetterLegacy.Arcade.Managers;
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Components.Player;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Core.Data.Player;
-using BetterLegacy.Core.Helpers;
-using LSFunctions;
-using SimpleJSON;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 using UnityEngine.UI;
+
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Managers
 {

@@ -76,7 +76,7 @@
         #endregion
 
         /// <summary>
-        /// A list of updates.
+        /// Library of PA updates.
         /// </summary>
         public class Versions
         {

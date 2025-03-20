@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+
+using LSFunctions;
 
 using BetterLegacy.Core.Data.Beatmap;
-using UnityEngine.UI;
-using LSFunctions;
 
 namespace BetterLegacy.Editor.Components
 {

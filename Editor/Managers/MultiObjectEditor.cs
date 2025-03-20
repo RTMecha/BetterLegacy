@@ -1,4 +1,17 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using Crosstales.FB;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -10,16 +23,6 @@ using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
-using Crosstales.FB;
-using LSFunctions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Managers
 {

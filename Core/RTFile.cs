@@ -1,12 +1,14 @@
-﻿using BetterLegacy.Core.Helpers;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
+
 using UnityEngine;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core
 {

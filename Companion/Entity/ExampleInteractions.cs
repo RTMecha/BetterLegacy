@@ -1,4 +1,10 @@
-﻿using BetterLegacy.Companion.Data;
+﻿using System;
+using System.Collections.Generic;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -6,10 +12,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Companion.Entity
 {

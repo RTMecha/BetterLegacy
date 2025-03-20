@@ -1,26 +1,19 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Managers;
-using HarmonyLib;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
+
+using HarmonyLib;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
 {

@@ -1,7 +1,9 @@
-﻿using BetterLegacy.Core.Managers;
-using System;
+﻿using System;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
+
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Components
 {

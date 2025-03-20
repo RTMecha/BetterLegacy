@@ -1,11 +1,8 @@
-﻿using BetterLegacy.Core.Data;
+﻿using System;
+
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterLegacy.Companion.Data.Parameters
 {

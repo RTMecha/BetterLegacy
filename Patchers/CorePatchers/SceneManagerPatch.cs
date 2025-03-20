@@ -1,13 +1,15 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using HarmonyLib;
-using System.Collections;
+﻿using System.Collections;
+
 using UnityEngine;
 using UnityEngine.UI;
 
-#pragma warning disable Harmony003 // Harmony non-ref patch parameters modified
+using HarmonyLib;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+
 namespace BetterLegacy.Patchers
 {
     [HarmonyPatch(typeof(SceneManager))]
@@ -85,5 +87,3 @@ namespace BetterLegacy.Patchers
         }
     }
 }
-
-#pragma warning restore Harmony003 // Harmony non-ref patch parameters modified

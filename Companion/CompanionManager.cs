@@ -1,10 +1,10 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using UnityEngine;
+﻿using UnityEngine;
 
 using BetterLegacy.Companion.Entity;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Companion
 {

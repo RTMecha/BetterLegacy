@@ -1,27 +1,24 @@
-﻿using BetterLegacy.Arcade.Managers;
-using BetterLegacy.Configs;
+﻿using System.Collections;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using HarmonyLib;
+
+using LSFunctions;
+
+using TMPro;
+
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Companion;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
-using HarmonyLib;
-using LSFunctions;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
-using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Patchers
 {

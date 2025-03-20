@@ -1,17 +1,21 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.IO;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using TMPro;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
-using LSFunctions;
-using System;
-using System.IO;
-using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Managers
 {

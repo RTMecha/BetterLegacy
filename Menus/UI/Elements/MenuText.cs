@@ -5,16 +5,18 @@ using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.UI;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
+
+using LSFunctions;
 
 using TMPro;
 using SimpleJSON;
+
 using BetterLegacy.Core;
-using LSFunctions;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Menus.UI.Elements
 {

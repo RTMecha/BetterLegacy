@@ -1,6 +1,9 @@
-﻿using SimpleJSON;
-using System;
+﻿using System;
+
 using UnityEngine;
+
+using SimpleJSON;
+
 using BaseArtist = DataManager.MetaData.Artist;
 using BaseBeatmap = DataManager.MetaData.Beatmap;
 using BaseCreator = DataManager.MetaData.Creator;

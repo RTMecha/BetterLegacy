@@ -1,13 +1,16 @@
-﻿using BetterLegacy.Configs;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+
 using UnityEngine;
+
+using SimpleJSON;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Level
 {

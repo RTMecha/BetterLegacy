@@ -1,7 +1,8 @@
-﻿
+﻿using UnityEngine;
+
 using HarmonyLib;
+
 using InControl;
-using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {

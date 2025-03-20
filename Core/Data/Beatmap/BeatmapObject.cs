@@ -1,4 +1,16 @@
-﻿using BetterLegacy.Core.Animation;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using ILMath;
+
+using SimpleJSON;
+
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -6,13 +18,6 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
-using ILMath;
-using LSFunctions;
-using SimpleJSON;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using SimpleJSON;
+
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Level
 {

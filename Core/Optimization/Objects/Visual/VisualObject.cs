@@ -1,7 +1,9 @@
-﻿using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Data;
+﻿using UnityEngine;
+
 using LSFunctions;
-using UnityEngine;
+
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
 {

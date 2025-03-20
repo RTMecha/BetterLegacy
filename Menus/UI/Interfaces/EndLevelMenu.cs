@@ -1,18 +1,17 @@
-﻿using BetterLegacy.Arcade.Managers;
-using BetterLegacy.Companion.Data;
+﻿using System.Linq;
+using UnityEngine;
+
+using LSFunctions;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
-using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
-using LSFunctions;
-using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {

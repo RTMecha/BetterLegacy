@@ -1,18 +1,15 @@
-﻿using BetterLegacy.Core;
+﻿using System.IO;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data
 {

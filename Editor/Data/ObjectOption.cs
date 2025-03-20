@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using System;
+
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
-using System;
 
 namespace BetterLegacy.Editor.Data
 {

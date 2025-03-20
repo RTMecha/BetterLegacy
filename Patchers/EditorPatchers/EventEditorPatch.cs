@@ -1,17 +1,17 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+
+using HarmonyLib;
+
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
-using HarmonyLib;
-using LSFunctions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using EventKeyframeSelection = EventEditor.KeyframeSelection;
 
 namespace BetterLegacy.Patchers
 {
@@ -207,7 +207,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch(nameof(EventEditor.DeleteEvent), new Type[] { typeof(List<EventKeyframeSelection>) })]
+        [HarmonyPatch(nameof(EventEditor.DeleteEvent), new Type[] { typeof(List<EventEditor.KeyframeSelection>) })]
         [HarmonyPrefix]
         static bool DeleteEventPrefix(ref IEnumerator __result)
         {

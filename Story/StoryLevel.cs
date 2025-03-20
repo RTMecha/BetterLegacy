@@ -1,15 +1,16 @@
-﻿using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections;
 
 using UnityEngine;
 using UnityEngine.Video;
+
+using SimpleJSON;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Story
 {

@@ -1,6 +1,6 @@
-﻿
+﻿using UnityEngine;
+
 using DG.Tweening;
-using UnityEngine;
 
 namespace BetterLegacy.Core.Components.Player
 {

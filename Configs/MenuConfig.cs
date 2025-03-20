@@ -1,8 +1,10 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using System;
+
+using UnityEngine;
+
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
-using System;
-using UnityEngine;
 
 namespace BetterLegacy.Configs
 {

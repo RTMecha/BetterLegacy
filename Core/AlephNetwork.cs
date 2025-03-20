@@ -1,10 +1,4 @@
-﻿using BetterLegacy.Arcade.Interfaces;
-using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Menus.UI.Interfaces;
-using SimpleJSON;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +9,14 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.Networking;
+
+using SimpleJSON;
+
+using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core
 {

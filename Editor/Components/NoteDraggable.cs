@@ -1,9 +1,10 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using UnityEngine;
+using UnityEngine.EventSystems;
+
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Managers;
-using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Editor.Components
 {

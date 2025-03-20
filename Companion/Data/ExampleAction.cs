@@ -1,7 +1,8 @@
 ﻿using System;
 
-using BetterLegacy.Core.Data;
 using LSFunctions;
+
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Companion.Data
 {

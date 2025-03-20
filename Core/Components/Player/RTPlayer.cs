@@ -1,4 +1,17 @@
-﻿using BetterLegacy.Companion.Data;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using DG.Tweening;
+using TMPro;
+using XInputDotNetPure;
+
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
@@ -11,16 +24,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor.Components;
-using DG.Tweening;
-using LSFunctions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
-using XInputDotNetPure;
 
 using Ease = BetterLegacy.Core.Animation.Ease;
 

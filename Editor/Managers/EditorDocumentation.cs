@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 using UnityEngine;
 using UnityEngine.UI;
 
+using LSFunctions;
+
+using TMPro;
+
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Editor.Data;
-using LSFunctions;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using UnityEngine.EventSystems;
-using TMPro;
-using System.IO;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
-using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Editor.Managers
 {

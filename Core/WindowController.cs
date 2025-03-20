@@ -1,9 +1,10 @@
-﻿using BetterLegacy.Arcade.Managers;
+﻿using System;
+using System.Runtime.InteropServices;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using System;
-using System.Runtime.InteropServices;
 
 namespace BetterLegacy.Core
 {

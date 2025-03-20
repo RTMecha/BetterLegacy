@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BetterLegacy.Core.Optimization.Objects
+using BetterLegacy.Core.Data;
 
-/// <summary>
-/// Handles object spawning and despawning.
-/// </summary>
+namespace BetterLegacy.Core.Optimization.Objects
 {
-    public class ObjectSpawner
+    /// <summary>
+    /// Handles object spawning and despawning.
+    /// </summary>
+    public class ObjectSpawner : Exists
     {
         public IEnumerable<ILevelObject> ActiveObjects => activeObjects;
 
@@ -35,16 +36,10 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public void Update(float time)
         {
-            //((Action<float>)(time >= currentTime ? UpdateObjectsForward : UpdateObjectsBackward)).Invoke(time);
-
             if (time >= currentTime)
-            {
                 UpdateObjectsForward(time);
-            }
             else
-            {
                 UpdateObjectsBackward(time);
-            }
 
             currentTime = time;
         }
@@ -63,9 +58,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
 
             if (recalculate)
-            {
                 RecalculateObjectStates();
-            }
         }
 
         /// <summary>
@@ -79,9 +72,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             deactivateList.Remove(levelObject);
 
             if (recalculate)
-            {
                 RecalculateObjectStates();
-            }
         }
 
         /// <summary>
@@ -98,9 +89,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
 
             if (recalculate)
-            {
                 RecalculateObjectStates();
-            }
         }
 
         /// <summary>
@@ -114,9 +103,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             deactivateList.RemoveAll(predicate);
 
             if (recalculate)
-            {
                 RecalculateObjectStates();
-            }
         }
 
         /// <summary>

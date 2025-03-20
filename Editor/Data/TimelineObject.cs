@@ -1,4 +1,12 @@
-﻿using BetterLegacy.Configs;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using TMPro;
+
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -6,11 +14,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
-using LSFunctions;
-using System.Collections.Generic;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Data
 {

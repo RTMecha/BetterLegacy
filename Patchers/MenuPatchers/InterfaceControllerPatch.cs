@@ -1,16 +1,21 @@
-﻿using BetterLegacy.Configs;
+﻿using System;
+using System.Collections;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using HarmonyLib;
+
+using TMPro;
+using InControl;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
-using HarmonyLib;
-using InControl;
-using System;
-using System.Collections;
-using TMPro;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
+
 using BranchType = InterfaceController.InterfaceBranch.Type;
 using ButtonType = InterfaceController.ButtonSetting.Type;
 using Element = InterfaceController.InterfaceElement;

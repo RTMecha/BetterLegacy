@@ -1,6 +1,7 @@
-﻿using BetterLegacy.Core.Data;
+﻿using System;
+
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization.Objects;
-using System;
 
 namespace BetterLegacy.Core.Optimization.Level
 {

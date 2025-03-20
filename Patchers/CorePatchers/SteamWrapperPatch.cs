@@ -1,5 +1,6 @@
-﻿using BetterLegacy.Core.Managers.Networking;
-using HarmonyLib;
+﻿using HarmonyLib;
+
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Patchers
 {

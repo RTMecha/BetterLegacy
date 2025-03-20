@@ -1,5 +1,6 @@
-﻿using BetterLegacy.Core.Helpers;
-using UnityEngine;
+﻿using UnityEngine;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Components.Player
 {

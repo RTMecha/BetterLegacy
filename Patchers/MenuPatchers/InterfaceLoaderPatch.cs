@@ -1,9 +1,14 @@
-﻿using BetterLegacy.Core.Helpers;
-using HarmonyLib;
-using LSFunctions;
-using System.IO;
+﻿using System.IO;
+
 using UnityEngine;
+
+using HarmonyLib;
+
+using LSFunctions;
+
 using YamlDotNet.Serialization;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {

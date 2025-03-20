@@ -3,11 +3,12 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+
 using SCPE;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Configs;
 
 namespace BetterLegacy.Menus
 {
