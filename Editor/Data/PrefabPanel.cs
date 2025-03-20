@@ -483,8 +483,7 @@ namespace BetterLegacy.Editor.Data
             var prefab = Prefab;
             switch (Dialog)
             {
-                case PrefabDialog.Internal:
-                    {
+                case PrefabDialog.Internal: {
                         var clickable = GameObject.AddComponent<ContextClickable>();
                         clickable.onClick = eventData =>
                         {
@@ -520,7 +519,7 @@ namespace BetterLegacy.Editor.Data
                             if (updateCurrentPrefab)
                             {
                                 RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                PrefabEditor.inst.ReloadInternalPrefabsInPopup();
+                                CoreHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
                                 return;
                             }
 
@@ -540,7 +539,7 @@ namespace BetterLegacy.Editor.Data
                                     new ButtonFunction("Assign to Quick Prefab", () =>
                                     {
                                         RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                        PrefabEditor.inst.ReloadInternalPrefabsInPopup();
+                                        CoreHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
                                     }),
                                     new ButtonFunction(true),
                                     new ButtonFunction("Edit", () =>
@@ -550,7 +549,7 @@ namespace BetterLegacy.Editor.Data
                                     }),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
-                                        RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.id);
+                                        RTPrefabEditor.inst.DeleteInternalPrefab(Prefab);
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup))
                                     );
@@ -562,8 +561,7 @@ namespace BetterLegacy.Editor.Data
                         };
                         break;
                     }
-                case PrefabDialog.External:
-                    {
+                case PrefabDialog.External: {
                         var clickable = GameObject.AddComponent<ContextClickable>();
                         clickable.onClick = eventData =>
                         {
@@ -670,13 +668,11 @@ namespace BetterLegacy.Editor.Data
             {
                 switch (Dialog)
                 {
-                    case PrefabDialog.Internal:
-                        {
-                            RTPrefabEditor.inst.DeleteInternalPrefab(Prefab.id);
+                    case PrefabDialog.Internal: {
+                            RTPrefabEditor.inst.DeleteInternalPrefab(Prefab);
                             break;
                         }
-                    case PrefabDialog.External:
-                        {
+                    case PrefabDialog.External: {
                             RTPrefabEditor.inst.DeleteExternalPrefab(this);
                             break;
                         }

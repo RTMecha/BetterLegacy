@@ -484,7 +484,7 @@ namespace BetterLegacy.Editor.Components
             if (!beatmapObject.fromPrefab)
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
             else if (beatmapObject.fromPrefab && prefabObjectToDrag != null)
-                RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObjectToDrag);
+                RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObjectToDrag);
         }
 
         void SetColor(LevelObject levelObject, Renderer renderer, int layer)

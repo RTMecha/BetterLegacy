@@ -2154,7 +2154,7 @@ namespace BetterLegacy.Editor.Managers
                 if (timelineObject.isPrefabObject)
                 {
                     var prefabObject = timelineObject.GetData<PrefabObject>();
-                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                    RTPrefabEditor.inst.RenderPrefabObjectStartTime(prefabObject);
                     Updater.UpdatePrefab(prefabObject, "Drag");
                     continue;
                 }

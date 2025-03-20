@@ -155,49 +155,6 @@ namespace BetterLegacy.Patchers
         }
 
         [HarmonyPatch(nameof(PrefabEditor.ReloadExternalPrefabsInPopup))]
-        [HarmonyPostfix]
-        static void ReloadExternalPrefabsInPopupPostfix()
-        {
-            CoreHelper.Log($"Run patch: {nameof(ReloadExternalPrefabsInPopupPostfix)}");
-
-            //Internal Config
-            {
-                var internalPrefab = PrefabEditor.inst.internalPrefabDialog;
-
-                var internalPrefabGLG = internalPrefab.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                internalPrefabGLG.spacing = EditorConfig.Instance.PrefabInternalSpacing.Value;
-                internalPrefabGLG.cellSize = EditorConfig.Instance.PrefabInternalCellSize.Value;
-                internalPrefabGLG.constraint = EditorConfig.Instance.PrefabInternalConstraintMode.Value;
-                internalPrefabGLG.constraintCount = EditorConfig.Instance.PrefabInternalConstraint.Value;
-                internalPrefabGLG.startAxis = EditorConfig.Instance.PrefabInternalStartAxis.Value;
-
-                internalPrefab.AsRT().anchoredPosition = EditorConfig.Instance.PrefabInternalPopupPos.Value;
-                internalPrefab.AsRT().sizeDelta = EditorConfig.Instance.PrefabInternalPopupSize.Value;
-
-                internalPrefab.GetComponent<ScrollRect>().horizontal = EditorConfig.Instance.PrefabInternalHorizontalScroll.Value;
-            }
-
-            //External Config
-            {
-                var externalPrefab = PrefabEditor.inst.externalPrefabDialog;
-
-                var externalPrefabGLG = externalPrefab.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                externalPrefabGLG.spacing = EditorConfig.Instance.PrefabExternalSpacing.Value;
-                externalPrefabGLG.cellSize = EditorConfig.Instance.PrefabExternalCellSize.Value;
-                externalPrefabGLG.constraint = EditorConfig.Instance.PrefabExternalConstraintMode.Value;
-                externalPrefabGLG.constraintCount = EditorConfig.Instance.PrefabExternalConstraint.Value;
-                externalPrefabGLG.startAxis = EditorConfig.Instance.PrefabExternalStartAxis.Value;
-
-                externalPrefab.AsRT().anchoredPosition = EditorConfig.Instance.PrefabExternalPopupPos.Value;
-                externalPrefab.AsRT().sizeDelta = EditorConfig.Instance.PrefabExternalPopupSize.Value;
-
-                externalPrefab.GetComponent<ScrollRect>().horizontal = EditorConfig.Instance.PrefabExternalHorizontalScroll.Value;
-            }
-        }
-
-        [HarmonyPatch(nameof(PrefabEditor.ReloadExternalPrefabsInPopup))]
         [HarmonyPrefix]
         static bool ReloadExternalPrefabsInPopupPrefix(bool __0)
         {

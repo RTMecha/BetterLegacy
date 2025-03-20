@@ -2756,25 +2756,24 @@ namespace BetterLegacy.Configs
         void PrefabPopupsItemsChanged()
         {
             if (PrefabEditor.inst.internalPrefabDialog.gameObject.activeInHierarchy)
-            {
-                PrefabEditor.inst.ReloadInternalPrefabsInPopup();
-            }
-            if (PrefabEditor.inst.externalPrefabDialog.gameObject.activeInHierarchy)
-            {
-                for (int i = 0; i < RTPrefabEditor.inst.PrefabPanels.Count; i++)
-                {
-                    var prefabPanel = RTPrefabEditor.inst.PrefabPanels[i];
-                    prefabPanel.DeleteButton.transform.AsRT().anchoredPosition = PrefabExternalDeleteButtonPos.Value;
-                    prefabPanel.DeleteButton.transform.AsRT().sizeDelta = PrefabExternalDeleteButtonSca.Value;
+                CoreHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
 
-                    prefabPanel.Name.fontSize = PrefabExternalNameFontSize.Value;
-                    prefabPanel.Name.horizontalOverflow = PrefabExternalNameHorizontalWrap.Value;
-                    prefabPanel.Name.verticalOverflow = PrefabExternalNameVerticalWrap.Value;
+            if (!PrefabEditor.inst.externalPrefabDialog.gameObject.activeInHierarchy)
+                return;
 
-                    prefabPanel.TypeText.fontSize = PrefabExternalTypeFontSize.Value;
-                    prefabPanel.TypeText.horizontalOverflow = PrefabExternalTypeHorizontalWrap.Value;
-                    prefabPanel.TypeText.verticalOverflow = PrefabExternalTypeVerticalWrap.Value;
-                }
+            for (int i = 0; i < RTPrefabEditor.inst.PrefabPanels.Count; i++)
+            {
+                var prefabPanel = RTPrefabEditor.inst.PrefabPanels[i];
+                prefabPanel.DeleteButton.transform.AsRT().anchoredPosition = PrefabExternalDeleteButtonPos.Value;
+                prefabPanel.DeleteButton.transform.AsRT().sizeDelta = PrefabExternalDeleteButtonSca.Value;
+
+                prefabPanel.Name.fontSize = PrefabExternalNameFontSize.Value;
+                prefabPanel.Name.horizontalOverflow = PrefabExternalNameHorizontalWrap.Value;
+                prefabPanel.Name.verticalOverflow = PrefabExternalNameVerticalWrap.Value;
+
+                prefabPanel.TypeText.fontSize = PrefabExternalTypeFontSize.Value;
+                prefabPanel.TypeText.horizontalOverflow = PrefabExternalTypeHorizontalWrap.Value;
+                prefabPanel.TypeText.verticalOverflow = PrefabExternalTypeVerticalWrap.Value;
             }
         }
 
@@ -2901,11 +2900,7 @@ namespace BetterLegacy.Configs
             if (!RTPrefabEditor.inst)
                 return;
 
-            var prefabSelectorLeft = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/left");
-
-            if (!prefabSelectorLeft.gameObject.activeInHierarchy)
-                RTPrefabEditor.inst.UpdateModdedVisbility();
-            else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
+            if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
                 RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
         }
 

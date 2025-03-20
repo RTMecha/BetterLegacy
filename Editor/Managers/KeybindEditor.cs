@@ -106,7 +106,7 @@ namespace BetterLegacy.Editor.Managers
                 if (selectionType == SelectionType.Prefab)
                 {
                     Updater.UpdatePrefab(prefabObject, "Offset");
-                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                    RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
                 }
             }
 
@@ -118,7 +118,7 @@ namespace BetterLegacy.Editor.Managers
             if (selectionType == SelectionType.Object)
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
             if (selectionType == SelectionType.Prefab)
-                RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
         }
 
         public void FirstInit()
