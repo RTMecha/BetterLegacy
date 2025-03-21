@@ -51,6 +51,7 @@ Toolkit mechanics:
 - particleSystemColored > 1.8.0
 
 ### Misc
+- Prefab On Object implementation (select an object to use for spawning a prefab)
 - Color picker rework. > 1.8.0
 - Multi language support.
 - Rework the level combiner into just a selection system.
@@ -80,7 +81,6 @@ Toolkit mechanics:
 - Documentation & tooltips.
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
-- PrefabOnObject implementation?
 - Think about maybe replacing the Editor Popup Animation system with a fully customizable one where animations can be more in-depth.
 - Change the Settings menu to a dropdown to be more consistent with the other title bar buttons.
 - ApplyElement function that parses a JSON from the parameters and applies it to an element.
