@@ -639,6 +639,23 @@ namespace BetterLegacy.Editor.Managers
                     {
                         currentQuickPrefab = null;
                         RenderPopup();
+                    }),
+                    new ButtonFunction("Select Target", () =>
+                    {
+                        EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                        {
+                            if (!timelineObject.isBeatmapObject)
+                            {
+                                quickPrefabTarget = null;
+                                return;
+                            }
+
+                            quickPrefabTarget = timelineObject.GetData<BeatmapObject>();
+                        };
+                    }),
+                    new ButtonFunction("Remove Target", () =>
+                    {
+                        quickPrefabTarget = null;
                     })
                     );
             };
@@ -1392,6 +1409,9 @@ namespace BetterLegacy.Editor.Managers
                 if (beatmapObject.prefabInstanceID != prefabInstanceID || beatmapObject.fromPrefab)
                     return;
 
+                if (quickPrefabTarget && quickPrefabTarget.id == beatmapObject.id)
+                    quickPrefabTarget = null;
+
                 Updater.UpdateObject(beatmapObject, reinsert: false, recalculate: false);
                 gameData.beatmapObjects.RemoveAt(index);
             });
@@ -1455,6 +1475,9 @@ namespace BetterLegacy.Editor.Managers
                 if (beatmapObject.prefabInstanceID != prefabInstanceID || beatmapObject.fromPrefab)
                     return;
 
+                if (quickPrefabTarget && quickPrefabTarget.id == beatmapObject.id)
+                    quickPrefabTarget = null;
+
                 Updater.UpdateObject(beatmapObject, reinsert: false, recalculate: false);
                 gameData.beatmapObjects.RemoveAt(index);
             });
@@ -1491,7 +1514,7 @@ namespace BetterLegacy.Editor.Managers
             prefabObject = null;
         }
 
-        public void AddPrefabObjectToLevel(Prefab prefab)
+        public void AddPrefabObjectToLevel(Prefab prefab, BeatmapObject target = null)
         {
             var prefabObject = new PrefabObject
             {
@@ -1515,6 +1538,16 @@ namespace BetterLegacy.Editor.Managers
             // Set default scale
             prefabObject.events[1].values[0] = 1f;
             prefabObject.events[1].values[1] = 1f;
+
+            if (target)
+            {
+                var anim = target.InterpolateChain();
+                prefabObject.events[0].values[0] = anim.position.x;
+                prefabObject.events[0].values[1] = anim.position.y;
+                prefabObject.events[1].values[0] = anim.scale.x;
+                prefabObject.events[1].values[1] = anim.scale.y;
+                prefabObject.events[2].values[0] = anim.rotation;
+            }
 
             GameData.Current.prefabObjects.Add(prefabObject);
 
@@ -2021,6 +2054,8 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Prefabs
+
+        public BeatmapObject quickPrefabTarget;
 
         public Prefab currentQuickPrefab;
 

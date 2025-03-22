@@ -2282,6 +2282,9 @@ namespace BetterLegacy.Editor.Managers
 
             gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x =>
                 {
+                    if (RTPrefabEditor.inst.quickPrefabTarget && RTPrefabEditor.inst.quickPrefabTarget.id == x.id)
+                        RTPrefabEditor.inst.quickPrefabTarget = null;
+
                     for (int i = 0; i < x.modifiers.Count; i++)
                     {
                         var modifier = x.modifiers[i];
