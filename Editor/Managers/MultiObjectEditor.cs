@@ -2906,6 +2906,9 @@ namespace BetterLegacy.Editor.Managers
                     {
                         EditorTimeline.inst.onSelectTimelineObject = to =>
                         {
+                            if (!to.isBeatmapObject)
+                                return;
+
                             var beatmapObject = to.GetData<BeatmapObject>();
                             SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
                         };
