@@ -26,7 +26,7 @@
 - Collab sharing via server
 - Editor online backups
 - Sprites list popup that show images in the game data and level folder.
-- Versus Mode (Players can attack other players)
+- Versus Mode (Players can attack other players via boosting through them, shooting them, etc)
 - Player shooting aiming
 - Player toolkit inventory system. Includes customizable tools and weapons that can be used with triggers and specific object tags.
 Toolkit mechanics:
