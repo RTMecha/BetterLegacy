@@ -23,6 +23,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform IDBase { get; set; }
         public Text IDText { get; set; }
+        public Text LDMLabel { get; set; }
         public Toggle LDMToggle { get; set; }
 
         #endregion
@@ -31,6 +32,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public InputField NameField { get; set; }
         public Dropdown ObjectTypeDropdown { get; set; }
+        public RectTransform TagsScrollView { get; set; }
         public RectTransform TagsContent { get; set; }
 
         #endregion
@@ -74,8 +76,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Gradient / Shape
 
+        public Text GradientShapesLabel { get; set; }
+
         public RectTransform GradientParent { get; set; }
         public List<Toggle> GradientToggles { get; set; } = new List<Toggle>();
+        public InputFieldStorage GradientScale { get; set; }
+        public InputFieldStorage GradientRotation { get; set; }
+
         public RectTransform ShapeTypesParent { get; set; }
         public RectTransform ShapeOptionsParent { get; set; }
 
@@ -139,6 +146,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             IDBase = Content.Find("id").AsRT();
             IDText = IDBase.Find("text").GetComponent<Text>();
+            LDMLabel = IDBase.Find("title").GetComponent<Text>();
             LDMToggle = IDBase.Find("ldm").GetComponent<Toggle>();
 
             #endregion
@@ -147,6 +155,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             NameField = Content.Find("name/name").GetComponent<InputField>();
             ObjectTypeDropdown = Content.Find("name/object-type").GetComponent<Dropdown>();
+            TagsScrollView = Content.Find("Tags Scroll View").AsRT();
             TagsContent = Content.Find("Tags Scroll View/Viewport/Content").AsRT();
 
             #endregion
@@ -221,8 +230,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Gradient / Shape
 
             GradientParent = Content.Find("gradienttype").AsRT();
+            GradientShapesLabel = Content.GetChild(GradientParent.GetSiblingIndex() - 1).GetChild(0).GetComponent<Text>();
             for (int i = 0; i < GradientParent.childCount; i++)
                 GradientToggles.Add(GradientParent.GetChild(i).GetComponent<Toggle>());
+            GradientScale = Content.Find("gradientscale").GetComponent<InputFieldStorage>();
+            GradientRotation = Content.Find("gradientrotation").GetComponent<InputFieldStorage>();
+
             ShapeTypesParent = Content.Find("shape").AsRT();
             ShapeOptionsParent = Content.Find("shapesettings").AsRT();
 

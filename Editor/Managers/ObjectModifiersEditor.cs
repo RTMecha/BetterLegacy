@@ -142,15 +142,6 @@ namespace BetterLegacy.Editor.Managers
                 showModifiersToggleButton.label.text = "Show Modifiers";
 
                 activeToggle = showModifiersToggleButton.toggle;
-                activeToggle.onValueChanged.ClearAll();
-                activeToggle.isOn = this.showModifiers;
-                activeToggle.onValueChanged.AddListener(_val =>
-                {
-                    this.showModifiers = _val;
-                    scrollView.gameObject.SetActive(this.showModifiers);
-                    if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                        RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
-                });
 
                 EditorThemeManager.AddToggle(activeToggle, graphic: showModifiersToggleButton.label);
                 TooltipHelper.AssignTooltip(showModifiers, "Show Modifiers");
@@ -256,6 +247,28 @@ namespace BetterLegacy.Editor.Managers
         public static Modifier<BeatmapObject> copiedModifier;
         public IEnumerator RenderModifiers(BeatmapObject beatmapObject)
         {
+            modifiersLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
+            intVariable.gameObject.SetActive(RTEditor.ShowModdedUI);
+            ignoreToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+            orderToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+
+            if (!RTEditor.ShowModdedUI)
+                showModifiers = false;
+
+            activeToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+            activeToggle.onValueChanged.ClearAll();
+            activeToggle.isOn = showModifiers;
+            activeToggle.onValueChanged.AddListener(_val =>
+            {
+                showModifiers = _val;
+                scrollView.gameObject.SetActive(showModifiers);
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                    RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
+            });
+
+            if (!RTEditor.ShowModdedUI)
+                yield break;
+
             ignoreToggle.onValueChanged.ClearAll();
             ignoreToggle.isOn = beatmapObject.ignoreLifespan;
             ignoreToggle.onValueChanged.AddListener(_val => beatmapObject.ignoreLifespan = _val);
