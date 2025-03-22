@@ -325,10 +325,11 @@ namespace BetterLegacy.Core.Optimization
             {
                 switch (context)
                 {
+                    case "gradient":
                     case "gradienttype":
                         {
                             if (levelObject.visualObject is SolidObject solidObject)
-                                solidObject.UpdateMaterial((int)beatmapObject.gradientType, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background);
+                                solidObject.UpdateRendering((int)beatmapObject.gradientType, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background, false, beatmapObject.gradientScale, beatmapObject.gradientRotation);
 
                             break;
                         }
@@ -1057,6 +1058,9 @@ namespace BetterLegacy.Core.Optimization
             gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
             gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
+            var renderer = gameObject.GetComponent<Renderer>();
+            renderer.material = LegacyResources.objectMaterial;
+
             Object.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
             Object.Destroy(gameObject.GetComponent<BoxCollider>());
 
@@ -1066,7 +1070,7 @@ namespace BetterLegacy.Core.Optimization
 
             backgroundObject.gameObjects.Add(gameObject);
             backgroundObject.transforms.Add(gameObject.transform);
-            backgroundObject.renderers.Add(gameObject.GetComponent<Renderer>());
+            backgroundObject.renderers.Add(renderer);
 
             if (backgroundObject.drawFade)
             {
@@ -1081,9 +1085,12 @@ namespace BetterLegacy.Core.Optimization
                     gameObject2.transform.localRotation = Quaternion.Euler(Vector3.zero);
                     gameObject2.layer = 9;
 
+                    var renderer2 = gameObject2.GetComponent<Renderer>();
+                    renderer2.material = LegacyResources.objectMaterial;
+
                     backgroundObject.gameObjects.Add(gameObject2);
                     backgroundObject.transforms.Add(gameObject2.transform);
-                    backgroundObject.renderers.Add(gameObject2.GetComponent<Renderer>());
+                    backgroundObject.renderers.Add(renderer2);
                 }
             }
 

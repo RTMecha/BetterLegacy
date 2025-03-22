@@ -16,19 +16,22 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public Material material;
 
-        static Material origMaterial;
-
         readonly bool opacityCollision;
         readonly float opacity;
 
         int gradientType;
 
         /// <summary>
+        /// If the gradient is linear.
+        /// </summary>
+        public bool IsLinear => gradientType <= 2;
+
+        /// <summary>
         /// If the gradient is flipped.
         /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
 
-        public SolidObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType)
+        public SolidObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation)
         {
             this.gameObject = gameObject;
 
@@ -36,11 +39,8 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             renderer = gameObject.GetComponent<Renderer>();
             renderer.enabled = true;
-            if (!origMaterial)
-                origMaterial = renderer.material;
 
-            UpdateMaterial(gradientType, background);
-            material = renderer.material;
+            UpdateRendering(gradientType, background, false, gradientScale, gradientRotation);
 
             collider = gameObject.GetComponent<Collider2D>();
 
@@ -60,26 +60,25 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// Updates the objects' materials based on specific values.
         /// </summary>
         /// <param name="gradientType">Type of gradient to render.</param>
-        public void UpdateMaterial(int gradientType, bool background)
+        public void UpdateRendering(int gradientType, bool background, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f)
         {
-            if (background)
-            {
-                gameObject.layer = 9;
-                renderer.material = ObjectManager.inst.norm; // todo: replace with a material that supports perspective and doesn't have issues with opacity
-            }
+            gameObject.layer = background ? 9 : 8;
 
             isGradient = gradientType != 0;
             this.gradientType = gradientType;
 
             if (isGradient)
-                renderer.material = gradientType <= 2 ? LegacyPlugin.gradientMaterial : LegacyPlugin.radialGradientMaterial;
-            else if (origMaterial)
-            {
-                gameObject.layer = 8;
-                renderer.material = origMaterial;
-            }
+                renderer.material = IsLinear ?
+                    (doubleSided ? LegacyResources.gradientDoubleSidedMaterial : LegacyResources.gradientMaterial) :
+                    (doubleSided ? LegacyResources.radialGradientDoubleSidedMaterial : LegacyResources.radialGradientMaterial);
+
+            else
+                renderer.material = doubleSided ? LegacyResources.objectDoubleSidedMaterial : LegacyResources.objectMaterial;
 
             material = renderer.material;
+
+            if (isGradient)
+                TranslateGradient(gradientScale, gradientRotation);
         }
 
         public override void InterpolateColor(float time)
@@ -157,6 +156,21 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         /// <returns>Returns the gradient colors.</returns>
         public GradientColors GetColors() => new GradientColors(GetColor(true), GetColor(false));
+
+        /// <summary>
+        /// Changes the scale and rotation of the gradient.
+        /// </summary>
+        /// <param name="scale">Scale of the gradient.</param>
+        /// <param name="rotation">Rotation of the gradient.</param>
+        public void TranslateGradient(float scale = 1f, float rotation = 0f)
+        {
+            if (!isGradient)
+                return;
+
+            material.SetFloat("_Scale", scale);
+            if (IsLinear)
+                material.SetFloat("_Rotation", rotation);
+        }
 
         public override void Clear()
         {
