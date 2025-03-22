@@ -1066,6 +1066,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         #endregion
 
         /// <summary>
+        /// Runs a function per tick.
+        /// </summary>
+        public virtual void OnTick() { }
+
+        /// <summary>
         /// Clears the menu.
         /// </summary>
         public virtual void Clear()
