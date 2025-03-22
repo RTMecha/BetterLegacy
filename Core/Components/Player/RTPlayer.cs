@@ -976,7 +976,7 @@ namespace BetterLegacy.Core.Components.Player
             polygonCollider2D = polygonCollider;
 
             if (CoreHelper.InEditor)
-                rb.AddComponent<PlayerSelector>();
+                rb.AddComponent<PlayerSelector>().player = this;
 
             var head = transform.Find("Player/Player").gameObject;
 
