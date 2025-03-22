@@ -49,7 +49,7 @@ namespace BetterLegacy
         public static Sprite AtanPlaceholder { get; set; }
 
         public static JSONObject authData;
-        public static string SplashText { get; set; } = "";
+        public static Lang SplashText { get; set; }
 
         public static FPSCounter FPSCounter { get; set; }
 
@@ -195,8 +195,10 @@ namespace BetterLegacy
                 {
                     var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
                     var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
-                    SplashText = splashes[splashIndex];
+                    SplashText = Lang.Parse(splashes[splashIndex].StartsWith("{") && splashes[splashIndex].EndsWith("}") ? JSON.Parse(splashes[splashIndex]) : splashes[splashIndex]);
                 }
+                else
+                    SplashText = string.Empty;
             }
             catch (Exception ex)
             {
