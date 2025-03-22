@@ -60,7 +60,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     textColor = 6,
                     allowOriginalHoverMethods = true,
                 };
-                elementBase.enterFunc = () => { MenuEffectsManager.inst.MoveCameraY(elementBase.gameObject.transform.position.y); };
+                elementBase.enterFunc = () => MenuEffectsManager.inst.MoveCameraY(elementBase.gameObject.transform.position.y);
 
                 var delete = new MenuButton
                 {
@@ -85,13 +85,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     },
                     allowOriginalHoverMethods = true,
                 };
-                delete.enterFunc = () => { MenuEffectsManager.inst.MoveCameraY(elementBase.gameObject.transform.position.y); };
+                delete.enterFunc = () => MenuEffectsManager.inst.MoveCameraY(elementBase.gameObject.transform.position.y);
 
                 elements.Add(elementBase);
                 elements.Add(delete);
             }
 
-            exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID);
+            exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.EXTRAS_MENU_ID);
             StartGeneration();
         }
     }
