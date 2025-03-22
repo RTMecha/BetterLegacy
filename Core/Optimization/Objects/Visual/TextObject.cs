@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         readonly bool autoTextAlign;
         public string text;
 
-        public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, bool background)
+        public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, int renderType)
         {
             this.gameObject = gameObject;
             this.opacity = opacity;
@@ -23,8 +23,12 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             if (this.gameObject.TryGetComponent(out Renderer renderer))
                 this.renderer = renderer;
 
-            if (background)
-                this.gameObject.layer = 9;
+            this.gameObject.layer = renderType switch
+            {
+                1 => 9,
+                2 => 11,
+                _ => 8
+            };
 
             textMeshPro = gameObject.GetComponent<TextMeshPro>();
             textMeshPro.enabled = true;

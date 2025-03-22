@@ -910,7 +910,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(objectView, "rendertype", index + 1);
                 var renderTypeDD = renderType.GetComponent<Dropdown>();
-                renderTypeDD.options = CoreHelper.StringToOptionData("Foreground", "Background");
+                renderTypeDD.options = CoreHelper.StringToOptionData("Foreground", "Background", "UI");
 
                 EditorThemeManager.AddDropdown(renderTypeDD);
             }
@@ -4945,8 +4945,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.RenderTypeDropdown.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.renderLayerType = (BeatmapObject.RenderLayerType)_val;
-                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
-                    levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
+                Updater.UpdateObject(beatmapObject, "RenderType");
             });
         }
 

@@ -9,7 +9,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     /// </summary>
     public class PolygonObject : SolidObject
     {
-        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, background, opacityCollision, gradientType, gradientScale, gradientRotation)
+        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation)
         {
 
         }

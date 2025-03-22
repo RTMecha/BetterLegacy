@@ -1891,7 +1891,7 @@ namespace BetterLegacy.Core.Helpers
             "doubleSided" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.gameObject)
-                    solidObject.UpdateRendering((int)modifier.reference.gradientType, modifier.reference.renderLayerType == BeatmapObject.RenderLayerType.Background, true, modifier.reference.gradientScale, modifier.reference.gradientRotation);
+                    solidObject.UpdateRendering((int)modifier.reference.gradientType, (int)modifier.reference.renderLayerType, true, modifier.reference.gradientScale, modifier.reference.gradientRotation);
             },
             "particleSystem" => modifier =>
             {

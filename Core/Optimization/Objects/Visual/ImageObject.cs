@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public string path;
 
-        public ImageObject(GameObject gameObject, float opacity, string text, bool background, Sprite imageData)
+        public ImageObject(GameObject gameObject, float opacity, string text, int renderType, Sprite imageData)
         {
             this.gameObject = gameObject;
             this.opacity = opacity;
@@ -26,8 +26,12 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             spriteRenderer = this.renderer as SpriteRenderer;
 
-            if (background)
-                this.gameObject.layer = 9;
+            this.gameObject.layer = renderType switch
+            {
+                1 => 9,
+                2 => 11,
+                _ => 8
+            };
 
             if (this.renderer)
                 material = this.renderer.material;

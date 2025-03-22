@@ -115,6 +115,9 @@ namespace BetterLegacy.Arcade.Managers
         {
             EventManager.inst.cam.rect = rect;
             EventManager.inst.camPer.rect = rect;
+
+            if (RTEventManager.inst && RTEventManager.inst.uiCam)
+                RTEventManager.inst.uiCam.rect = rect;
         }
 
         #region Checkpoints

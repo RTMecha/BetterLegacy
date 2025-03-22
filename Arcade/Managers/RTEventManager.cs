@@ -39,6 +39,8 @@ namespace BetterLegacy.Arcade.Managers
         public AnalogGlitch analogGlitch;
         public DigitalGlitch digitalGlitch;
 
+        public Camera uiCam;
+
         public static bool windowPositionResolutionChanged = false;
 
         void Awake()
@@ -74,6 +76,20 @@ namespace BetterLegacy.Arcade.Managers
 
             analogGlitch = glitchCamera.AddComponent<AnalogGlitch>();
             analogGlitch._shader = LegacyResources.analogGlitchShader;
+
+            var uiCamera = new GameObject("UI Camera");
+            uiCamera.transform.SetParent(EventManager.inst.cam.transform.parent);
+            uiCamera.transform.localPosition = Vector3.zero;
+            uiCamera.transform.localScale = Vector3.one;
+
+            uiCam = uiCamera.AddComponent<Camera>();
+            uiCam.allowMSAA = forceWindow;
+            uiCam.clearFlags = CameraClearFlags.Depth;
+            uiCam.cullingMask = 2080; // 2080 = layer 11
+            uiCam.depth = 2;
+            uiCam.orthographic = true;
+            uiCam.farClipPlane = 10000f;
+            uiCam.nearClipPlane = -10000f;
         }
 
         public void SetResetOffsets() => offsets = ResetOffsets();
@@ -482,6 +498,9 @@ namespace BetterLegacy.Arcade.Managers
                     EventManager.inst.cam.orthographicSize = EventManager.inst.camZoom;
                 else if (inst.EditorSpeed != 0f)
                     EventManager.inst.cam.orthographicSize = inst.editorZoom;
+
+                if (inst.uiCam)
+                    inst.uiCam.orthographicSize = EventManager.inst.cam.orthographicSize;
 
                 if (!float.IsNaN(EventManager.inst.camRot) && !editorCam)
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.camRotOffset.x, inst.camRotOffset.y, EventManager.inst.camRot));

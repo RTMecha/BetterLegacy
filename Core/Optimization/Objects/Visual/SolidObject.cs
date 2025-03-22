@@ -31,7 +31,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
 
-        public SolidObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation)
+        public SolidObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation)
         {
             this.gameObject = gameObject;
 
@@ -40,7 +40,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             renderer = gameObject.GetComponent<Renderer>();
             renderer.enabled = true;
 
-            UpdateRendering(gradientType, background, false, gradientScale, gradientRotation);
+            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation);
 
             collider = gameObject.GetComponent<Collider2D>();
 
@@ -60,9 +60,14 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// Updates the objects' materials based on specific values.
         /// </summary>
         /// <param name="gradientType">Type of gradient to render.</param>
-        public void UpdateRendering(int gradientType, bool background, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f)
+        public void UpdateRendering(int gradientType, int renderType, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f)
         {
-            gameObject.layer = background ? 9 : 8;
+            gameObject.layer = renderType switch
+            {
+                1 => 9,
+                2 => 11,
+                _ => 8
+            };
 
             isGradient = gradientType != 0;
             this.gradientType = gradientType;
