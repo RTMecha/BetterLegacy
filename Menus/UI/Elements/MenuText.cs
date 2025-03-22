@@ -332,7 +332,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     textSpeeds.Add(new Speed(jnElement["speeds"][i]["position"].AsInt, jnElement["speeds"][i]["speed"].AsFloat));
             }
 
-            if (!string.IsNullOrEmpty(jnElement["text"]))
+            if (jnElement["text"] != null)
                 text = InterfaceManager.inst.ParseText(Lang.Parse(jnElement["text"]));
             if (!string.IsNullOrEmpty(jnElement["icon"]))
                 icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
