@@ -477,6 +477,9 @@ namespace BetterLegacy.Menus.UI.Elements
                     cachedQuickElements.Add(new Tuple<float, Match, QuickElement>(-1f, match, quickElement));
             }
 
+            if (!interpolateText)
+                return;
+
             isSpawning = true;
             textInterpolation = new RTAnimation("Text Interpolation");
             textInterpolation.animationHandlers = new List<AnimationHandlerBase>
@@ -515,6 +518,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <param name="x"></param>
         void Interpolate(float x)
         {
+            if (!interpolateText)
+                return;
+
             var val = (int)x;
 
             if (playSound && textUI.maxVisibleCharacters != val && (textSoundRepeat == 0 || val % textSoundRepeat == textSoundRepeat - 1) && textWithoutFormatting[Mathf.Clamp(val, 0, textWithoutFormatting.Length - 1)] != ' ')
