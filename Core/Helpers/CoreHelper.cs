@@ -362,6 +362,12 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a generated Coroutine.</returns>
         public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
 
+        /// <summary>
+        /// Stops a coroutine from running.
+        /// </summary>
+        /// <param name="coroutine">Generated coroutine.</param>
+        public static void StopCoroutine(Coroutine coroutine) => LegacyPlugin.inst.StopCoroutine(coroutine);
+
         public static void PerformActionAfterSeconds(float t, Action action) => StartCoroutine(IPerformActionAfterSeconds(t, action));
         
         public static IEnumerator IPerformActionAfterSeconds(float t, Action action)
