@@ -332,6 +332,7 @@ namespace BetterLegacy.Menus
             LevelListMenu.Current = null;
             InputSelectMenu.Current = null;
             LoadLevelsMenu.Current = null;
+            ControllerDisconnectedMenu.Current = null;
 
             StopGenerating();
         }

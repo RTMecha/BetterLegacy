@@ -7,6 +7,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
 
 using BaseCustomPlayer = InputDataManager.CustomPlayer;
 
@@ -14,9 +15,31 @@ namespace BetterLegacy.Core.Data.Player
 {
     public class CustomPlayer : BaseCustomPlayer
     {
-        public CustomPlayer(bool _active, int _index, InputDevice _device) : base(_active, _index, _device) { }
+        public CustomPlayer(bool active, int index, InputDevice device) : base(active, index)
+        {
+            this.active = active;
+            this.index = index;
+            this.device = device;
 
-        public CustomPlayer(bool _active, int _index) : base(_active, _index) { }
+            playerIndex = GetPlayerIndex(index);
+
+            if (device != null)
+            {
+                deviceName = device.Name;
+                controllerConnected = true;
+                SortOrder = device.SortOrder;
+            }
+            else
+                deviceName = "keyboard";
+
+            deviceType = GetDeviceType(deviceName);
+            deviceModel = GetDeviceModel(deviceName);
+            InputManager.OnDeviceAttached += ControllerConnected;
+            InputManager.OnDeviceDetached += ControllerDisconnected;
+            Debug.LogFormat("{0}Created new Custom Player [{1}]", new object[] { "[<color=#4CAF50>InputDataManager</color>] \n", this.index });
+        }
+
+        public CustomPlayer(bool active, int index) : base(active, index) { }
 
         public static CustomPlayer Main => InputDataManager.inst.players[0] as CustomPlayer;
 
@@ -75,24 +98,28 @@ namespace BetterLegacy.Core.Data.Player
             base.device = null;
             if (Player)
                 Player.Actions = null;
-            HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerDisconnectedEvent").SetValue(InputDataManager.inst, this);
+
+            InputDataManager.inst.SetAllControllerRumble(0f);
+            ControllerDisconnectedMenu.Init(index);
             Debug.LogFormat("{0}Disconnected Controler was attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
         }
 
         public new void ControllerConnected(InputDevice device)
         {
-            if (device.SortOrder == SortOrder && GetDeviceModel(device.Name) == deviceModel)
-            {
-                InputDataManager.inst.ThereIsNoPlayerUsingJoystick(device);
-                controllerConnected = true;
-                base.device = device;
-                HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerReconnectedEvent").SetValue(InputDataManager.inst, this);
-                var myGameActions = MyGameActions.CreateWithJoystickBindings();
-                myGameActions.Device = device;
-                if (Player)
-                    Player.Actions = myGameActions;
-                Debug.LogFormat("{0}Connected Controller exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
-            }
+            if (device.SortOrder != SortOrder || GetDeviceModel(device.Name) != deviceModel)
+                return;
+
+            InputDataManager.inst.ThereIsNoPlayerUsingJoystick(device);
+            controllerConnected = true;
+            base.device = device;
+
+            var myGameActions = MyGameActions.CreateWithJoystickBindings();
+            myGameActions.Device = device;
+            if (Player)
+                Player.Actions = myGameActions;
+
+            ControllerDisconnectedMenu.Current?.Reconnected();
+            Debug.LogFormat("{0}Connected Controller exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
         }
 
         public new void ReconnectController(InputDevice __0)
