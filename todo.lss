@@ -85,7 +85,6 @@ Toolkit mechanics:
 - Custom Polygon Shape type
 - color math modifiers
 - Ignore opacity toggle for color modifiers
-- Require Version field / toggle for metadata.
 - Variable Modifier that registers an object variable based on what the modifier takes.
 - Prefab reference name in object editor
 - Player float gamemode?
@@ -94,10 +93,9 @@ Toolkit mechanics:
 - Make Editor Documentation read from a json file. > 1.8.0
 - Rework shapes to read from a singular json file. > 1.8.0
 - Update the file browser UI to include more info / functions.
-- Make Example's animations read from a file.
 - Change how modifiers are saved for better consistency.
 - Clean up UIManager.
-- Move interface JSON functions to InterfaceManager and add a way to parse a function to text, color, etc.
+- Add a way to parse a interface function to text, color, etc.
 - Summary and note as much as I can (or need to).
 
 ### Bugs
@@ -105,7 +103,6 @@ Toolkit mechanics:
 - Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
 - Fix parent desync not working for specific parent chains.
 - Fix some issues with Player Models and extra tail parts.
-- Investigate pasting prefabs breaking the timeline object.
 
 ### Examples
 - Homing objects using animateObjectMath.
