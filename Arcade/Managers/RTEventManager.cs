@@ -70,10 +70,10 @@ namespace BetterLegacy.Arcade.Managers
             glitchCam.rect = new Rect(0.001f, 0.001f, 0.999f, 0.999f);
 
             digitalGlitch = glitchCamera.AddComponent<DigitalGlitch>();
-            digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
+            digitalGlitch._shader = LegacyResources.digitalGlitchShader;
 
             analogGlitch = glitchCamera.AddComponent<AnalogGlitch>();
-            analogGlitch._shader = LegacyPlugin.analogGlitchShader;
+            analogGlitch._shader = LegacyResources.analogGlitchShader;
         }
 
         public void SetResetOffsets() => offsets = ResetOffsets();

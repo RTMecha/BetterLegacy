@@ -53,47 +53,6 @@ namespace BetterLegacy
 
         public static FPSCounter FPSCounter { get; set; }
 
-        public static Material blur;
-        public static Material GetBlur()
-        {
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}objectmaterials.asset"); // Get AssetBundle from assets folder.
-            var assetToLoad = assetBundle.LoadAsset<Material>("blur.mat"); // Load asset
-            var blurMat = Instantiate(assetToLoad); // Instantiate so we can keep the material
-            assetBundle.Unload(false); // Unloads AssetBundle
-
-            return blurMat;
-        }
-
-        public static Shader blurColored;
-
-        public static Shader analogGlitchShader;
-        public static Material analogGlitchMaterial;
-        public static Shader digitalGlitchShader;
-        public static Material digitalGlitchMaterial;
-     
-        public static void GetKinoGlitch()
-        {
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}effects.asset"); // Get AssetBundle from assets folder.
-            analogGlitchMaterial = assetBundle.LoadAsset<Material>("analogglitchmaterial.mat"); // Load asset
-            digitalGlitchMaterial = assetBundle.LoadAsset<Material>("digitalglitchmaterial.mat"); // Load asset
-            analogGlitchShader = assetBundle.LoadAsset<Shader>("analogglitch.shader"); // Load asset
-            digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
-        }
-        
-        public static Shader gradientShader;
-        public static Material gradientMaterial;
-        public static Shader radialGradientShader;
-        public static Material radialGradientMaterial;
-
-        public static void GetGradients()
-        {
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}gradients.asset"); // Get AssetBundle from assets folder.
-            gradientMaterial = assetBundle.LoadAsset<Material>("assets/gradientmaterial.mat"); // Load asset
-            radialGradientMaterial = assetBundle.LoadAsset<Material>("assets/radialgradientmaterial.mat"); // Load asset
-            gradientShader = assetBundle.LoadAsset<Shader>("assets/gradientshader.shader"); // Load asset
-            radialGradientShader = assetBundle.LoadAsset<Shader>("assets/radialshader.shader"); // Load asset
-        }
-
         public static Prefab ExamplePrefab { get; set; }
 
         void Awake()
@@ -129,12 +88,8 @@ namespace BetterLegacy
             {
                 CoreHelper.Log("Loading assets...");
 
-                blur = GetBlur();
-                var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}shadercolored.asset");
-                blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
-                assetBundle.Unload(false);
-                GetKinoGlitch();
-                GetGradients();
+                LegacyResources.GetKinoGlitch();
+                LegacyResources.GetObjectMaterials();
                 
                 LockSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
                 EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");

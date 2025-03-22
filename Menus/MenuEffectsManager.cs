@@ -48,15 +48,15 @@ namespace BetterLegacy.Menus
             glitchCam.rect = new Rect(0.001f, 0.001f, 0.999f, 0.999f);
 
             digitalGlitch = glitchCamera.AddComponent<DigitalGlitch>();
-            digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
+            digitalGlitch._shader = LegacyResources.digitalGlitchShader;
 
             analogGlitch = glitchCamera.AddComponent<AnalogGlitch>();
-            analogGlitch._shader = LegacyPlugin.analogGlitchShader;
+            analogGlitch._shader = LegacyResources.analogGlitchShader;
 
             analogGlitch = glitchCamera.GetComponent<AnalogGlitch>() ?? glitchCamera.AddComponent<AnalogGlitch>();
-			analogGlitch._shader = LegacyPlugin.analogGlitchShader;
+			analogGlitch._shader = LegacyResources.analogGlitchShader;
 			digitalGlitch = glitchCamera.GetComponent<DigitalGlitch>() ?? glitchCamera.AddComponent<DigitalGlitch>();
-			digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
+			digitalGlitch._shader = LegacyResources.digitalGlitchShader;
             analogGlitch.enabled = false; // disabled by default due to there still being a slight effect when it is enabled.
 
             RegisterFunction(UpdateAnalogGlitchEnabled);

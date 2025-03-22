@@ -1768,7 +1768,7 @@ namespace BetterLegacy.Core.Helpers
                         var onDestroy = levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                         onDestroy.Modifier = modifier;
                         modifier.Result = levelObject.visualObject.gameObject;
-                        rend.material = LegacyPlugin.blur;
+                        rend.material = LegacyResources.blur;
                     }
                     if (modifier.commands.Count > 1 && modifier.GetBool(1, false))
                         rend.material.SetFloat("_blurSizeXY", -(modifier.reference.Interpolate(3, 1) - 1f) * num);
@@ -1795,7 +1795,7 @@ namespace BetterLegacy.Core.Helpers
                         var onDestroy = levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                         onDestroy.Modifier = modifier;
                         modifier.Result = levelObject.visualObject.gameObject;
-                        rend.material = LegacyPlugin.blur;
+                        rend.material = LegacyResources.blur;
                     }
                     rend.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
                 }
@@ -1813,7 +1813,7 @@ namespace BetterLegacy.Core.Helpers
                         var onDestroy = levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                         onDestroy.Modifier = modifier;
                         modifier.Result = levelObject.visualObject.gameObject;
-                        rend.material = LegacyPlugin.blur;
+                        rend.material = LegacyResources.blur;
                     }
                     rend.material.SetFloat("_blurSizeXY", modifier.reference.integerVariable * num);
                 }
@@ -1837,7 +1837,7 @@ namespace BetterLegacy.Core.Helpers
                         var onDestroy = levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                         onDestroy.Modifier = modifier;
                         modifier.Result = levelObject.visualObject.gameObject;
-                        rend.material = LegacyPlugin.blur;
+                        rend.material = LegacyResources.blur;
                     }
                     rend.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * num);
                 }
@@ -1855,7 +1855,7 @@ namespace BetterLegacy.Core.Helpers
                         var onDestroy = levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                         onDestroy.Modifier = modifier;
                         modifier.Result = levelObject.visualObject.gameObject;
-                        rend.material.shader = LegacyPlugin.blurColored;
+                        rend.material.shader = LegacyResources.blurColored;
                     }
 
                     if (modifier.commands.Count > 1 && modifier.GetBool(1, false))
@@ -1883,7 +1883,7 @@ namespace BetterLegacy.Core.Helpers
                         var onDestroy = levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                         onDestroy.Modifier = modifier;
                         modifier.Result = levelObject.visualObject.gameObject;
-                        rend.material.shader = LegacyPlugin.blurColored;
+                        rend.material.shader = LegacyResources.blurColored;
                     }
                     rend.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
                 }
@@ -1891,11 +1891,8 @@ namespace BetterLegacy.Core.Helpers
             "doubleSided" => modifier =>
             {
                 if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.gameObject)
-                {
-                    solidObject.renderer.material = ObjectManager.inst.norm;
-                    solidObject.material = solidObject.renderer.material;
-                }
-            }, // todo: implement gradient double sided somehow
+                    solidObject.UpdateRendering((int)modifier.reference.gradientType, modifier.reference.renderLayerType == BeatmapObject.RenderLayerType.Background, true, modifier.reference.gradientScale, modifier.reference.gradientRotation);
+            },
             "particleSystem" => modifier =>
             {
                 if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.gameObject)
