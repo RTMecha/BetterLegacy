@@ -1,5 +1,9 @@
 ﻿snapshot-2025.3.1 - (pre-1.7.0) > [???]
 - Completely overhauled Example. He is now a whole lot more advanced, customizable and a (hopefully) better assistant. He's grown up so much :3
+- Moved the Profile menu and Tests menu to a new "Extras" menu on the main menu.
+- Reworked Input Select and Load Level menus to use the current interface system.
+- Entering the Arcade / Story with players already registered will now skip the Input Select menu.
+- Entering the Arcade no longer automatically loads the levels, meaning you can go straight from the main menu to the Arcade menu.
 - Reworked beatmap data to not depend on base vanilla data as much. (so many nests and odd names wtf)
 - Trying to rework how themes are loaded.
 - Shortened file sizes by trimming quotation marks when necessary.
@@ -19,6 +23,7 @@
 - Themes now display info about their colors.
 - Folders in the level, theme and prefab lists now have a "folder" icon. This can be customized by adding a "folder_icon.png" file to the folder or by using the context menu to set it. You can also give the folder a short description by creating a "folder_info.json" file.
 - Added New Prefab Instance button to Multi Object Editor.
+- Added a "Quick Prefab Target" (Alpha's PrefabOnObject port).
 - Prefab objects now display a line showing where their offset is at.
 - Fixed Discord status timestamp being used incorrectly.
 - Added "Timestamp Updates Per Level" setting to Config Manager > Core > Discord. With this on, the Discord status timestamp updates every time you load a level.
