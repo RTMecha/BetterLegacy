@@ -33,7 +33,6 @@ namespace BetterLegacy.Patchers
 
             DataManager.inst.UpdateSettingBool("FullScreen", CoreConfig.Instance.Fullscreen.Value);
             DataManager.inst.UpdateSettingInt("Resolution_i", (int)CoreConfig.Instance.Resolution.Value);
-            DataManager.inst.UpdateSettingInt("UITheme", MenuConfig.Instance.Theme.Value);
             DataManager.inst.UpdateSettingInt("MasterVolume", CoreConfig.Instance.MasterVol.Value);
             DataManager.inst.UpdateSettingInt("MusicVolume", CoreConfig.Instance.MusicVol.Value);
             DataManager.inst.UpdateSettingInt("EffectsVolume", CoreConfig.Instance.SFXVol.Value);

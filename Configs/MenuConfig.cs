@@ -49,11 +49,6 @@ namespace BetterLegacy.Configs
         public Setting<KeyCode> SelectFirstButton { get; set; }
 
         /// <summary>
-        /// The theme of the interface.
-        /// </summary>
-        public Setting<int> Theme { get; set; }
-
-        /// <summary>
         /// The theme of the new interface.
         /// </summary>
         public Setting<string> InterfaceThemeID { get; set; }
@@ -120,8 +115,7 @@ namespace BetterLegacy.Configs
             ReloadMainMenu = BindEnum(this, GENERAL, "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
             LoadPageEditor = BindEnum(this, GENERAL, "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
             SelectFirstButton = BindEnum(this, GENERAL, "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
-            Theme = Bind(this, GENERAL, "Theme", 0, "The theme of the interface.");
-            InterfaceThemeID = Bind(this, GENERAL, "Interface Theme ID", "-1", "The theme of the new interface.");
+            InterfaceThemeID = Bind(this, GENERAL, "Interface Theme ID", "-1", "The theme of the interface.");
             RoundedUI = Bind(this, GENERAL, "Rounded", false, "If most elements in the interface should have a rounded corner.");
             ShowChangelog = Bind(this, GENERAL, "Show Changelog", true, "If the changelog screen should show on game startup.");
             ShowFX = Bind(this, GENERAL, "Show Effects", true, "If menu effects should be enabled.");
@@ -147,32 +141,11 @@ namespace BetterLegacy.Configs
 
         public override void SetupSettingChanged()
         {
-            Theme.SettingChanged += ThemeChanged;
             PlayCustomMusic.SettingChanged += MusicChanged;
             MusicLoadMode.SettingChanged += MusicChanged;
             MusicIndex.SettingChanged += MusicChanged;
             MusicGlobalPath.SettingChanged += MusicChanged;
             PlayInputSelectMusic.SettingChanged += InputSelectMusicChanged;
-        }
-
-        void ThemeChanged()
-        {
-            var value = Mathf.Clamp(Theme.Value, 0, DataManager.inst.interfaceSettings["UITheme"].Count - 1);
-
-            DataManager.inst.UpdateSettingEnum("UITheme", value);
-            SaveManager.inst.UpdateSettingsFile(false);
-
-            if (MenuManager.inst && MenuManager.inst.ic)
-            {
-                try
-                {
-                    MenuManager.inst.ApplyInterfaceTheme();
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Could not update menu theme.\nException: {ex}");
-                }
-            }
         }
 
         void MusicChanged()

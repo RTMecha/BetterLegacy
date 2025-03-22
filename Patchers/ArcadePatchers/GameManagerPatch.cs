@@ -266,7 +266,6 @@ namespace BetterLegacy.Patchers
             if (!CoreHelper.Playing)
                 return false;
 
-            MenuManager.inst.ic.SwitchBranch("main");
             Instance.menuUI.GetComponentInChildren<Image>().enabled = true;
             AudioManager.inst.CurrentAudioSource.Pause();
             InputDataManager.inst.SetAllControllerRumble(0f);
@@ -283,7 +282,7 @@ namespace BetterLegacy.Patchers
             if (!CoreHelper.Paused)
                 return false;
             CursorManager.inst.HideCursor();
-            MenuManager.inst.ic.SwitchBranch("empty");
+
             Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
             AudioManager.inst.CurrentAudioSource.UnPause();
             Instance.gameState = GameManager.State.Playing;

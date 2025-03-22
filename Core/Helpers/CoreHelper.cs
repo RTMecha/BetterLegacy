@@ -62,7 +62,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// If InterfaceController exists.
         /// </summary>
-        public static bool InMenu => MenuManager.inst.ic || InterfaceManager.inst.CurrentInterface;
+        public static bool InMenu => InterfaceManager.inst.CurrentInterface;
 
         /// <summary>
         /// If the player is in the Classic Arrhythmia story mode.

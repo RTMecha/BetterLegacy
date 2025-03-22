@@ -257,7 +257,6 @@ namespace BetterLegacy.Patchers
             }
 
             InterfaceManager.Init();
-            MenuManager.Init();
 
             try
             {
