@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Editor.Components
 {
@@ -21,17 +22,27 @@ namespace BetterLegacy.Editor.Components
             if (!EditorConfig.Instance.MouseTooltipDisplay.Value || !EditorManager.inst.showHelp && EditorConfig.Instance.MouseTooltipRequiresHelp.Value)
                 return;
 
+            if (desc && hint)
+            {
+                Show(keys, desc, hint);
+                return;
+            }
+
             int index = tooltips.FindIndex(x => (int)((Tooltip)x).language == (int)CoreConfig.Instance.Language.Value);
 
             if (index < 0)
                 return;
+            Show(tooltips[index].keys, tooltips[index].desc, tooltips[index].hint);
+        }
 
+        void Show(List<string> keys, string desc, string hint)
+        {
             RTEditor.inst.tooltipTimeOffset = Time.time;
-            RTEditor.inst.maxTooltipTime = time * EditorConfig.Instance.MouseTooltipDisplayTime.Value * (tooltips[index].hint.Length / 70f);
+            RTEditor.inst.maxTooltipTime = time * EditorConfig.Instance.MouseTooltipDisplayTime.Value * (hint.Length / 70f);
             RTEditor.inst.showTootip = true;
 
             if (RTEditor.inst.mouseTooltipText)
-                RTEditor.inst.mouseTooltipText.text = EditorManager.inst.TooltipConverter(tooltips[index].keys, tooltips[index].desc, tooltips[index].hint);
+                RTEditor.inst.mouseTooltipText.text = EditorManager.inst.TooltipConverter(keys, desc, hint);
 
             if (RTEditor.inst.mouseTooltipText)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(RTEditor.inst.mouseTooltipText.rectTransform);
@@ -56,6 +67,10 @@ namespace BetterLegacy.Editor.Components
         /// Amount of time to display the mouse tooltip for.
         /// </summary>
         public float time = 2f;
+
+        public List<string> keys;
+        public Lang desc;
+        public Lang hint;
 
         [NonSerialized]
         public List<HoverTooltip.Tooltip> tooltips = new List<HoverTooltip.Tooltip>();
