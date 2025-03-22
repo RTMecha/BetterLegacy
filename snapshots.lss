@@ -8,6 +8,7 @@
 - Trying to rework how themes are loaded.
 - Shortened file sizes by trimming quotation marks when necessary.
 - Due to the beatmap data rework, new "setParent" and "setParentOther" modifiers was added. This temporarily sets the parent of the beatmap object to another, until you update the object or reload the level.
+- Added new UI render type.
 - spawnPrefab modifiers can now find a prefab via different ways: Index, ID and Name.
 - Renamed Timeline Waveform type names to better describe what they are. This is done since what was the "Modern" waveform is no longer modern due to modern PA now using the "Beta" waveform.
 - Unclamped the timeline. You can now drag the timeline to before the level starts and see any objects that spawn there. You can also move objects to before the level starts by turning the config "Config Manager > Editor > Timeline > Clamped Timeline Drag" off.
@@ -34,6 +35,7 @@
 - Fixed some Prefab Object Editor stuff being broken.
 - Ported gradient scale & rotation from alpha.
 - Ported polygon shape from alpha. (still waiting on the mesh generator)
+- doubleSided modifier now supports gradients and opacity above 0.9.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
