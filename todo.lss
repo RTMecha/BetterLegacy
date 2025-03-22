@@ -51,7 +51,6 @@ Toolkit mechanics:
 - particleSystemColored > 1.8.0
 
 ### Misc
-- Prefab On Object implementation (select an object to use for spawning a prefab)
 - Color picker rework. > 1.8.0
 - Multi language support.
 - Rework the level combiner into just a selection system.
@@ -63,9 +62,6 @@ Toolkit mechanics:
 - Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level) > 1.8.0
 - List for pinned editor layers. > 1.8.0
 - Add difficulty and artist name to the level creator popup.
-> Extras menu with Input Select, Load Levels and Profile.
-- Update input select scene to use new interface system > 1.8.0
-- Update LoadLevelsManager to interface system > 1.8.0
 - Improve profile menu. > 1.8.0
 - Improve changelog menu.
 - Sort Levels Menu?
