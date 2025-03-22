@@ -181,7 +181,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             parentLayout = "local settings",
                             selectionPosition = new Vector2Int(0, 1),
                             rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = LoadLevelsManager.Init,
+                            func = LoadLevelsMenu.Init,
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -984,7 +984,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(0, 1),
                                 rect = RectValues.Default.SizeDelta(200f, 64f),
-                                func = LoadLevelsManager.Init,
+                                func = LoadLevelsMenu.Init,
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -2551,7 +2551,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public void Exit()
         {
             InterfaceManager.inst.CloseMenus();
-            SceneHelper.LoadInputSelect();
+            SceneHelper.LoadScene(SceneName.Main_Menu, false);
         }
 
         public override void UpdateControls()

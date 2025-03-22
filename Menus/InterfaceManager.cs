@@ -71,6 +71,7 @@ namespace BetterLegacy.Menus
             if (!CurrentInterface)
                 return;
 
+            CurrentInterface.OnTick();
             CurrentInterface.UpdateControls();
             CurrentInterface.UpdateTheme();
         }
@@ -87,6 +88,7 @@ namespace BetterLegacy.Menus
         public const string STORY_SAVES_MENU_ID = "1";
         public const string CHAPTER_SELECT_MENU_ID = "2";
         public const string PROFILE_MENU_ID = "3";
+        public const string EXTRAS_MENU_ID = "4";
 
         #endregion
 
@@ -328,6 +330,8 @@ namespace BetterLegacy.Menus
             ProgressMenu.Current = null;
             LevelCollectionMenu.Current = null;
             LevelListMenu.Current = null;
+            InputSelectMenu.Current = null;
+            LoadLevelsMenu.Current = null;
 
             StopGenerating();
         }
@@ -460,6 +464,12 @@ namespace BetterLegacy.Menus
                 return;
             }
 
+            OpenChangelog();
+            SceneHelper.LoadedGame = true;
+        }
+
+        void OpenChangelog()
+        {
             try
             {
                 CoreHelper.Log($"Loading changelog...\nIs loading scene: {SceneHelper.Loading}");
@@ -525,8 +535,6 @@ namespace BetterLegacy.Menus
             {
                 CoreHelper.LogError($"Error: {ex}");
             }
-
-            SceneHelper.LoadedGame = true;
         }
 
         #endregion
@@ -782,6 +790,54 @@ namespace BetterLegacy.Menus
                         var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == (parameters.IsArray ? parameters[0] : parameters["scene"]);
                         return !not ? value : !value;
                     }
+
+                #region Player
+
+                case "PlayerCountEquals":
+                    {
+                        if (parameters == null)
+                            break;
+
+                        var value = InputDataManager.inst.players.Count == (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "PlayerCountLesserEquals":
+                    {
+                        if (parameters == null)
+                            break;
+
+                        var value = InputDataManager.inst.players.Count <= (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "PlayerCountGreaterEquals":
+                    {
+                        if (parameters == null)
+                            break;
+
+                        var value = InputDataManager.inst.players.Count >= (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "PlayerCountLesser":
+                    {
+                        if (parameters == null)
+                            break;
+
+                        var value = InputDataManager.inst.players.Count < (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "PlayerCountGreater":
+                    {
+                        if (parameters == null)
+                            break;
+
+                        var value = InputDataManager.inst.players.Count > (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+
+                #endregion
+
+                #region Story Chapter
+
                 case "StoryChapterEquals":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
@@ -884,6 +940,9 @@ namespace BetterLegacy.Menus
                         return !not ? value : !value;
                     }
 
+                #endregion
+
+                #region Layout
 
                 case "LayoutChildCountEquals":
                     {
@@ -1037,6 +1096,8 @@ namespace BetterLegacy.Menus
                         var value = menuLayout.content.anchoredPosition.y > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
+
+                #endregion
 
                 #region LevelRanks
 
@@ -3414,6 +3475,40 @@ namespace BetterLegacy.Menus
                 #endregion
 
                 #region Specific Functions
+
+                case "OpenChangelog":
+                    {
+                        OpenChangelog();
+                        break;
+                    }
+
+                #region LoadLevels
+
+                case "LoadLevels":
+                    {
+                        LoadLevelsMenu.Init(() =>
+                        {
+                            if (parameters["on_loading_end"] != null)
+                                ParseFunction(parameters["on_loading_end"], thisElement);
+                        });
+                        break;
+                    }
+
+                #endregion
+
+                #region OnInputsSelected
+
+                case "OnInputsSelected":
+                    {
+                        InputSelectMenu.OnInputsSelected = () =>
+                        {
+                            if (parameters["continue"] != null)
+                                ParseFunction(parameters["continue"], thisElement);
+                        };
+                        break;
+                    }
+
+                #endregion
 
                 #region Profile
 

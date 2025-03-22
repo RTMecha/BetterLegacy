@@ -163,10 +163,10 @@ namespace BetterLegacy.Core.Managers.Networking
             {
                 var publishedFileID = subscribedFiles[i];
 
-                if (LoadLevelsManager.inst && LoadLevelsManager.inst.cancelled)
+                if (LoadLevelsMenu.Current && LoadLevelsMenu.Current.cancelled)
                 {
-                    SceneHelper.LoadInputSelect();
-                    ArcadeHelper.currentlyLoading = false;
+                    SceneHelper.LoadScene(SceneName.Main_Menu, false);
+                    LoadLevelsMenu.currentlyLoading = false;
                     Levels.Clear();
                     loading = false;
                     hasLoaded = false;
@@ -194,14 +194,14 @@ namespace BetterLegacy.Core.Managers.Networking
                         if (item.Result == Result.AccessDenied)
                         {
                             CoreHelper.Log($"Item {publishedFileID} could not be accessed..");
-                            if (LoadLevelsManager.inst)
-                                LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} could not be accessed.", i);
+                            if (LoadLevelsMenu.Current)
+                                LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} could not be accessed.", i);
                             continue;
                         }
 
                         CoreHelper.Log($"Attempting to download item: {publishedFileID} Result: {item.Result}.");
-                        if (LoadLevelsManager.inst)
-                            LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Downloading item: {publishedFileID}", i);
+                        if (LoadLevelsMenu.Current)
+                            LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Downloading item: {publishedFileID}", i);
                         yield return item.DownloadAsync();
                         installInfo = TryGetItemPath(publishedFileID, out folder);
 
@@ -209,8 +209,8 @@ namespace BetterLegacy.Core.Managers.Networking
                         if (!installInfo)
                         {
                             CoreHelper.Log($"Item {publishedFileID} no longer exists. {item.Result}");
-                            if (LoadLevelsManager.inst)
-                                LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
+                            if (LoadLevelsMenu.Current)
+                                LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
 
                             continue;
                         }
@@ -218,8 +218,8 @@ namespace BetterLegacy.Core.Managers.Networking
                     else
                     {
                         CoreHelper.Log($"Item {publishedFileID} no longer exists.");
-                        if (LoadLevelsManager.inst)
-                            LoadLevelsManager.inst.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
+                        if (LoadLevelsMenu.Current)
+                            LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
 
                         continue;
                     }

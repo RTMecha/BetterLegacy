@@ -282,8 +282,11 @@ namespace BetterLegacy.Patchers
 
             Instance.SetDialogStatus("Timeline", true, true);
 
-            InputDataManager.inst.players.Clear();
-            InputDataManager.inst.players.Add(PlayerManager.CreateDefaultPlayer());
+            if (InputDataManager.inst.players.Count == 0 || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
+            {
+                InputDataManager.inst.players.Clear();
+                InputDataManager.inst.players.Add(PlayerManager.CreateDefaultPlayer());
+            }
 
             Instance.GUI.SetActive(false);
             Instance.canEdit = DataManager.inst.GetSettingBool("CanEdit", false);

@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+
+using UnityEngine;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
@@ -119,7 +122,10 @@ namespace BetterLegacy.Story
                         StoryManager.inst.SaveSlot = index;
                         LevelManager.IsArcade = false;
                         StoryManager.inst.SaveString("LastPlayedModVersion", LegacyPlugin.ModVersion.ToString());
-                        SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
+                        if (InputDataManager.inst.players.Count == 0 || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
+                            SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
+                        else
+                            SceneHelper.LoadInterfaceScene();
                     },
                 });
 

@@ -10,6 +10,7 @@ using HarmonyLib;
 using TMPro;
 using InControl;
 
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
@@ -83,6 +84,15 @@ namespace BetterLegacy.Patchers
             if (__instance.gameObject.scene.name == SceneName.Interface.ToName())
             {
                 InterfaceManager.inst.StartupStoryInterface();
+
+                Destroy(__instance.gameObject);
+
+                return false;
+            }
+            
+            if (__instance.gameObject.scene.name == SceneName.Input_Select.ToName())
+            {
+                InputSelectMenu.Init();
 
                 Destroy(__instance.gameObject);
 

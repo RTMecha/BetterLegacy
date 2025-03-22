@@ -17,25 +17,17 @@ namespace BetterLegacy.Patchers
     {
         [HarmonyPatch(nameof(InputSelectManager.Start))]
         [HarmonyPrefix]
-        static void StartPrefix()
+        static bool StartPrefix()
         {
-            if (Menus.InterfaceManager.inst)
-                Menus.InterfaceManager.inst.CurrentInterface = null; // clear menu for now until Input Select scene is reworked to use the new menu system.
-
-            InputDataManager.inst.ClearInputs();
-            ArcadeHelper.fromLevel = false;
-
-            if (MenuConfig.Instance.PlayInputSelectMusic.Value)
-            {
-                SoundManager.inst.PlayMusic(DefaultMusic.loading);
-                CoreHelper.Notify($"Now playing: Creo - Staring Down the Barrels", Menus.InterfaceManager.inst.CurrentTheme.guiColor);
-            }
+            return false;
         }
 
         [HarmonyPatch(nameof(InputSelectManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix(InputSelectManager __instance)
         {
+            return false;
+
             if (!__instance.ic.screenGlitch)
             {
                 string[] array = new string[8];
@@ -134,25 +126,6 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(InputSelectManager.LoadLevel))]
         [HarmonyPrefix]
-        static bool LoadLevelPrefix()
-        {
-            InputDataManager.inst.playersCanJoin = false;
-
-            LevelManager.OnInputsSelected?.Invoke();
-
-            if (LevelManager.OnInputsSelected != null) // if we want to run a custom function instead of doing the normal methods.
-            {
-                LevelManager.OnInputsSelected = null;
-                return false;
-            }
-
-            if (LevelManager.IsArcade)
-            {
-                SceneHelper.LoadScene(SceneName.Arcade_Select, false);
-                return false;
-            }
-            SaveManager.inst.LoadCurrentStoryLevel();
-            return false;
-        }
+        static bool LoadLevelPrefix() => false;
     }
 }

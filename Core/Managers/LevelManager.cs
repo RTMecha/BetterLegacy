@@ -91,11 +91,6 @@ namespace BetterLegacy.Core.Managers
         public static int CurrentMusicVolume { get; set; }
 
         /// <summary>
-        /// Action that occurs when a player selects all controller inputs in the Input Select screen and loads the next scene.
-        /// </summary>
-        public static Action OnInputsSelected { get; set; }
-
-        /// <summary>
         /// Whether the scene after Input Select should be the Arcade scene or the Interface scene.
         /// </summary>
         public static bool IsArcade { get; set; } = true;

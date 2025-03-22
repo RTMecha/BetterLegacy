@@ -9,6 +9,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
+using BetterLegacy.Arcade.Interfaces;
 
 namespace BetterLegacy.Core.Helpers
 {
@@ -74,7 +75,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="onInputsSelected">Function to run when the user wants to continue past the Input Select menu.</param>
         public static void LoadInputSelect(Action onInputsSelected)
         {
-            LevelManager.OnInputsSelected = onInputsSelected;
+            InputSelectMenu.OnInputsSelected = onInputsSelected;
             LoadInputSelect();
         }
 

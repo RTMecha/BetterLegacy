@@ -59,11 +59,6 @@ namespace BetterLegacy.Core.Helpers
         public static bool fromLevel;
 
         /// <summary>
-        /// If the Arcade & Steam levels are loading.
-        /// </summary>
-        public static bool currentlyLoading;
-
-        /// <summary>
         /// If the song has reached the end.
         /// </summary>
         public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - 0.1f;
@@ -444,12 +439,6 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void ReloadMenu()
         {
-            if (!fromLevel)
-            {
-                LoadLevelsManager.Init();
-                return;
-            }
-
             DeleteComponents();
 
             var currentCollection = LevelManager.CurrentLevelCollection;
@@ -461,172 +450,6 @@ namespace BetterLegacy.Core.Helpers
 
             LevelListMenu.close = () => LevelCollectionMenu.Init(currentCollection);
             LevelListMenu.Init(currentCollection.levels);
-        }
-
-        /// <summary>
-        /// Loads the Arcade & Steam levels.
-        /// </summary>
-        /// <param name="onLoadingEnd">Function to run when loading ends.</param>
-        public static IEnumerator GetLevelList(Action onLoadingEnd = null)
-        {
-            float delay = 0f;
-            if (currentlyLoading)
-            {
-                onLoadingEnd?.Invoke();
-                yield break;
-            }
-
-            var sw = CoreHelper.StartNewStopwatch();
-            currentlyLoading = true;
-            fromLevel = false;
-            ArcadeManager.inst.skippedLoad = false;
-            ArcadeManager.inst.forcedSkip = false;
-            LevelManager.IsArcade = true;
-
-            var levelsDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath);
-
-            RTFile.CreateDirectory(levelsDirectory);
-
-            var directories = Directory.GetDirectories(levelsDirectory, "*", SearchOption.TopDirectoryOnly);
-
-            if (LoadLevelsManager.inst)
-                LoadLevelsManager.totalLevelCount = directories.Length;
-
-            LevelManager.Levels.Clear();
-            LevelManager.ArcadeQueue.Clear();
-            LevelManager.LevelCollections.Clear();
-            LevelManager.CurrentLevel = null;
-            LevelManager.CurrentLevelCollection = null;
-            LevelManager.LoadProgress();
-
-            var levelCollections = new Queue<string>();
-
-            var loadYieldMode = ArcadeConfig.Instance.LoadYieldMode.Value;
-
-            for (int i = 0; i < directories.Length; i++)
-            {
-                var folder = directories[i];
-
-                if (LoadLevelsManager.inst && LoadLevelsManager.inst.cancelled)
-                {
-                    SceneHelper.LoadInputSelect();
-                    currentlyLoading = false;
-                    LevelManager.ClearData();
-                    yield break;
-                }
-
-                var path = RTFile.ReplaceSlash(folder);
-                var name = Path.GetFileName(path);
-
-                if (loadYieldMode != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(loadYieldMode, ref delay);
-
-                if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
-                {
-                    levelCollections.Enqueue(path);
-                    continue;
-                }
-
-                MetaData metadata = null;
-
-                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)))
-                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM))));
-                else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
-                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))), false);
-
-                if (!metadata)
-                {
-                    if (LoadLevelsManager.inst)
-                        LoadLevelsManager.inst.UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No metadata in {name}</color>", i, true);
-
-                    continue;
-                }
-
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3))
-                    && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
-                {
-                    if (LoadLevelsManager.inst)
-                        LoadLevelsManager.inst.UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No song in {name}</color>", i, true);
-
-                    continue;
-                }
-
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_VGD)))
-                {
-                    if (LoadLevelsManager.inst)
-                        LoadLevelsManager.inst.UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No song in {name}</color>", i, true);
-
-                    continue;
-                }
-
-                if ((string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "-1")
-                    && (string.IsNullOrEmpty(metadata.beatmap.beatmap_id) && metadata.beatmap.beatmap_id == "-1" || metadata.beatmap.beatmap_id == "0")
-                    && (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID.Contains("-") /* < don't want negative IDs */ || metadata.arcadeID == "0"))
-                {
-                    metadata.arcadeID = LSText.randomNumString(16);
-                    var metadataJN = metadata.ToJSON();
-                    RTFile.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_LSB), metadataJN.ToString(3));
-                }
-
-                var level = new Level(path, metadata);
-
-                LevelManager.AssignPlayerData(level);
-
-                if (LoadLevelsManager.inst)
-                    LoadLevelsManager.inst.UpdateInfo(level.icon, $"Loading {name}", i);
-
-                LevelManager.Levels.Add(level);
-            }
-
-            CoreHelper.Log($"Finished loading Arcade levels at {sw.Elapsed}");
-
-            if (ArcadeConfig.Instance.LoadSteamLevels.Value)
-            {
-                yield return CoreHelper.StartCoroutine(SteamWorkshopManager.inst.GetSubscribedItems((Level level, int i) =>
-                {
-                    if (!LoadLevelsManager.inst)
-                        return;
-
-                    LoadLevelsManager.totalLevelCount = (int)SteamWorkshopManager.inst.LevelCount;
-                    LoadLevelsManager.inst.UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);
-                }));
-
-                if (!currentlyLoading)
-                {
-                    onLoadingEnd?.Invoke();
-                    yield break;
-                }
-
-                CoreHelper.Log($"Finished loading Steam levels at {sw.Elapsed}");
-            }
-
-            LevelManager.Sort(ArcadeConfig.Instance.LocalLevelOrderby.Value, ArcadeConfig.Instance.LocalLevelAscend.Value);
-
-            SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
-
-            int collectionIndex = 0;
-            LoadLevelsManager.totalLevelCount = levelCollections.Count;
-            while (levelCollections.Count > 0)
-            {
-                var path = levelCollections.Dequeue();
-                var name = Path.GetFileName(path);
-
-                var levelCollection = LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
-                LevelManager.LevelCollections.Add(levelCollection);
-                if (LoadLevelsManager.inst)
-                    LoadLevelsManager.inst.UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
-                collectionIndex++;
-            }
-            
-            sw.Stop();
-            CoreHelper.Log($"Total levels: {LevelManager.Levels.Union(SteamWorkshopManager.inst.Levels).Count()}\nTime taken: {sw.Elapsed}");
-            sw = null;
-
-            currentlyLoading = false;
-
-            onLoadingEnd?.Invoke();
-
-            yield break;
         }
 
         /// <summary>
