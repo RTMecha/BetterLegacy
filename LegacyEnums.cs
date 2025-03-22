@@ -281,6 +281,7 @@ namespace BetterLegacy
         Dutch,
         German,
         Chinese,
+        Polish,
         AncientAutobot,
         Matoran
     }
