@@ -59,10 +59,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Fields
 
-        int sides;
+        int sides = 3;
         float roundness;
-        float thickness;
-        int slices;
+        float thickness = 1f;
+        int slices = 3;
 
         #endregion
 
@@ -73,7 +73,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed polygon shape.</returns>
-        public static PolygonShape Parse(JSONNode jn) => new PolygonShape(jn[0].AsInt, jn[1].AsFloat, jn[2].AsFloat, jn[3].AsInt);
+        public static PolygonShape Parse(JSONNode jn)
+        {
+            try
+            {
+                return new PolygonShape(jn[0].AsInt, jn[1].AsFloat, jn[2].AsFloat, jn[3].AsInt);
+            }
+            catch
+            {
+                return new PolygonShape();
+            }
+        }
 
         /// <summary>
         /// Writes the <see cref="PolygonShape"/> to a JSON.
@@ -81,7 +91,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a JSON object representing the <see cref="PolygonShape"/>.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = JSON.Parse("[]");
             jn[0] = sides;
             jn[1] = roundness;
             jn[2] = thickness;

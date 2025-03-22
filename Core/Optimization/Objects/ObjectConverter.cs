@@ -227,8 +227,8 @@ namespace BetterLegacy.Core.Optimization.Objects
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), isBackground),
                 ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
                 ShapeType.Player => new PlayerObject(visualObject, playerIndex, dontRotate, shapeOption),
-                ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.polygonShapeSettings),
-                _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType),
+                ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShapeSettings),
+                _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
             };
 
             if (CoreHelper.InEditor && shapeType != ShapeType.Player)

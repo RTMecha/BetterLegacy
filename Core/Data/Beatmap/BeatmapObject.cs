@@ -266,6 +266,16 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Scale of the gradient.
+        /// </summary>
+        public float gradientScale = 1f;
+
+        /// <summary>
+        /// Rotation of the gradient.
+        /// </summary>
+        public float gradientRotation;
+
+        /// <summary>
         /// Type of the shape.
         /// </summary>
         public ShapeType ShapeType => (ShapeType)shape;
@@ -433,6 +443,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 id = newID ? LSText.randomString(16) : orig.id,
                 parent = orig.parent,
                 name = orig.name,
+                StartTime = orig.StartTime,
                 autoKillOffset = orig.autoKillOffset,
                 autoKillType = orig.autoKillType,
                 Depth = orig.Depth,
@@ -443,9 +454,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 prefabID = orig.prefabID,
                 prefabInstanceID = orig.prefabInstanceID,
                 gradientType = orig.gradientType,
+                gradientScale = orig.gradientScale,
+                gradientRotation = orig.gradientRotation,
                 shape = orig.shape,
                 shapeOption = orig.shapeOption,
-                StartTime = orig.StartTime,
+                polygonShapeSettings = new PolygonShape(orig.polygonShapeSettings.Sides, orig.polygonShapeSettings.Roundness, orig.polygonShapeSettings.Thickness, orig.polygonShapeSettings.Slices),
+                autoTextAlign = orig.autoTextAlign,
                 text = orig.text,
                 LDM = orig.LDM,
                 parentType = orig.parentType,
@@ -690,6 +704,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["gt"] != null)
                 beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
+
+            if (jn["gs"] != null)
+                beatmapObject.gradientScale = jn["gs"].AsFloat;
+            
+            if (jn["gr"] != null)
+                beatmapObject.gradientRotation = jn["gr"].AsFloat;
 
             if (jn["text"] != null)
                 beatmapObject.text = jn["text"];
@@ -954,6 +974,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["gt"] != null)
                 beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
 
+            if (jn["gs"] != null)
+                beatmapObject.gradientScale = jn["gs"].AsFloat;
+            
+            if (jn["gr"] != null)
+                beatmapObject.gradientRotation = jn["gr"].AsFloat;
+
             if (jn["text"] != null)
                 beatmapObject.text = ((string)jn["text"]).Replace("{{colon}}", ":");
 
@@ -1030,7 +1056,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["csp"] = polygonShapeSettings.ToJSON();
 
             if (gradientType != GradientType.Normal)
-                jn["gt"] = ((int)gradientType).ToString();
+            {
+                jn["gt"] = (int)gradientType;
+                if (gradientScale != 1f)
+                    jn["gs"] = gradientScale;
+                if (gradientRotation != 0f)
+                    jn["gr"] = gradientRotation;
+            }
 
             if (!string.IsNullOrEmpty(text))
                 jn["text"] = text;
@@ -1178,7 +1210,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["ako"] = autoKillOffset;
 
             if (gradientType != GradientType.Normal)
+            {
                 jn["gt"] = (int)gradientType;
+                if (gradientScale != 1f)
+                    jn["gs"] = gradientScale;
+                if (gradientRotation != 0f)
+                    jn["gr"] = gradientRotation;
+            }
 
             if (shape != 0)
                 jn["shape"] = shape;

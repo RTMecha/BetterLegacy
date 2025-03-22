@@ -276,23 +276,34 @@ namespace BetterLegacy.Core.Managers
                 yield break;
             }
 
-            var objectPrefab = new ObjectManager.ObjectPrefabHolder();
-            objectPrefab.options = new List<GameObject>();
-
-            while (!GameManager.inst || GameManager.inst.PlayerPrefabs == null || GameManager.inst.PlayerPrefabs.Length < 1 || GameManager.inst.PlayerPrefabs[0] == null)
-                yield return null;
-
-            var parent = new GameObject("Player Prefabs");
-            parent.SetActive(false);
-
-            for (int i = 0; i < PlayerModel.DefaultModels.Count; i++)
+            // Player
             {
-                var gameObject = PlayerManager.SpawnPlayer(PlayerModel.DefaultModels[i], parent.transform, 0, Vector3.zero);
-                gameObject.SetActive(false);
-                objectPrefab.options.Add(gameObject);
+                var objectPrefab = new ObjectManager.ObjectPrefabHolder();
+                objectPrefab.options = new List<GameObject>();
+
+                while (!GameManager.inst || GameManager.inst.PlayerPrefabs == null || GameManager.inst.PlayerPrefabs.Length < 1 || GameManager.inst.PlayerPrefabs[0] == null)
+                    yield return null;
+
+                var parent = new GameObject("Player Prefabs");
+                parent.SetActive(false);
+
+                for (int i = 0; i < PlayerModel.DefaultModels.Count; i++)
+                {
+                    var gameObject = PlayerManager.SpawnPlayer(PlayerModel.DefaultModels[i], parent.transform, 0, Vector3.zero);
+                    gameObject.SetActive(false);
+                    objectPrefab.options.Add(gameObject);
+                }
+
+                ObjectManager.inst.objectPrefabs.Add(objectPrefab);
             }
 
-            ObjectManager.inst.objectPrefabs.Add(objectPrefab);
+            // Polygon
+            {
+                var objectPrefab = new ObjectManager.ObjectPrefabHolder();
+                objectPrefab.options = new List<GameObject>();
+                objectPrefab.options.Add(ObjectManager.inst.objectPrefabs[0].options[0]);
+                ObjectManager.inst.objectPrefabs.Add(objectPrefab);
+            }
 
             loadedShapes = true;
             yield break;
