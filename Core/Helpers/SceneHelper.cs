@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Arcade.Interfaces;
 

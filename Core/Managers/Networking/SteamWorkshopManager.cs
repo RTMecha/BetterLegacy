@@ -1,13 +1,4 @@
-﻿using BetterLegacy.Arcade.Interfaces;
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Menus;
-using BetterLegacy.Menus.UI.Interfaces;
-using SteamworksFacepunch;
-using SteamworksFacepunch.Data;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +6,17 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
+using SteamworksFacepunch;
+using SteamworksFacepunch.Data;
 using SteamworksFacepunch.Ugc;
+
+using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Managers.Networking
 {

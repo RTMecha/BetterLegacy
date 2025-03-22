@@ -5,27 +5,20 @@ using System.IO;
 using System.Linq;
 
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 using LSFunctions;
 
 using SimpleJSON;
-using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
-using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
