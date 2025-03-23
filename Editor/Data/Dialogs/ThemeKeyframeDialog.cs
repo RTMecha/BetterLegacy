@@ -265,6 +265,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Editor.transform.Find("theme").AsRT().sizeDelta = new Vector2(366f, 570f);
             EditorNameField = Editor.transform.Find("name").GetComponent<InputField>();
 
+            // fixes theme name not allowing non-alphabetical characters
+            EditorNameField.characterValidation = InputField.CharacterValidation.None;
+
             EditorThemeManager.AddInputField(EditorNameField);
 
             for (int i = 0; i < EditorActions.childCount; i++)

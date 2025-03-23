@@ -853,7 +853,6 @@ namespace BetterLegacy.Editor.Managers
 
             // Color
             {
-                //var colorButtons = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color");
                 var colorButtons = ObjEditor.inst.KeyframeDialogs[3].transform.Find("color").gameObject;
                 var colors = Instantiate(colorButtons);
                 colors.transform.SetParent(eventCopies);

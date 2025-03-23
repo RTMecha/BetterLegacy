@@ -116,7 +116,7 @@ namespace BetterLegacy.Editor.Managers
 
             // List handlers
             {
-                var searchBase = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups/Open File Popup/search-box").Duplicate(contentBase.Find("Image"), "search base");
+                var searchBase = RTEditor.inst.OpenLevelPopup.SearchField.transform.parent.gameObject.Duplicate(contentBase.Find("Image"), "search base");
                 searchBase.transform.localScale = Vector3.one;
                 searchBase.transform.AsRT().anchoredPosition = Vector2.zero;
                 searchBase.transform.AsRT().sizeDelta = new Vector2(0f, 48f);
@@ -473,7 +473,7 @@ namespace BetterLegacy.Editor.Managers
                     prefabScrollRect.viewport = prefabViewport.transform.AsRT();
                     prefabScrollRect.vertical = false;
 
-                    var scrollBar = GameObject.Find("Editor Systems/Editor GUI/sizer/main/whole-timeline/Scrollbar").Duplicate(prefab.transform, "Scrollbar");
+                    var scrollBar = EditorTimeline.inst.wholeTimeline.Find("Scrollbar").gameObject.Duplicate(prefab.transform, "Scrollbar");
                     scrollBar.transform.AsRT().anchoredPosition = Vector2.zero;
                     scrollBar.transform.AsRT().pivot = new Vector2(0.5f, 0f);
                     scrollBar.transform.AsRT().sizeDelta = new Vector2(0f, 25f);

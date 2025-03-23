@@ -109,7 +109,6 @@ namespace BetterLegacy.Editor.Managers
 
             // Here we fix the naming issues with unmodded Legacy. (e.g. naming a theme doesn't allow for symbols and naming a prefab doesn't allow for spaces)
             EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/level-name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
-            GameObject.Find("Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
             GameObject.Find("Editor GUI/sizer/main/EditorDialogs/PrefabDialog/data/name/input").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
         }
 
