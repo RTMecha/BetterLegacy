@@ -1158,6 +1158,55 @@ namespace BetterLegacy.Editor.Managers
                 RectValues.FullAnchored.AssignToRectTransform(markers.transform.AsRT());
             }
 
+            // Unity Explorer
+            try
+            {
+                if (ModCompatibility.UnityExplorerInstalled)
+                {
+                    var index = objectView.Find("editor").GetSiblingIndex() + 1;
+
+                    // Setup label
+                    var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "unity explorer label", index);
+                    var labelText = label.transform.GetChild(0).GetComponent<Text>();
+                    labelText.text = "Unity Explorer";
+                    EditorThemeManager.AddLightText(labelText);
+
+                    // Inspect Beatmap Object
+                    var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectbeatmapobject", index + 1);
+                    var inspectBeatmapObjectButton = inspectBeatmapObject.GetComponent<FunctionButtonStorage>();
+                    inspectBeatmapObjectButton.text.text = "Inspect BeatmapObject";
+
+                    Destroy(inspectBeatmapObject.GetComponent<Animator>());
+                    inspectBeatmapObjectButton.button.transition = Selectable.Transition.ColorTint;
+                    EditorThemeManager.AddSelectable(inspectBeatmapObjectButton.button, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(inspectBeatmapObjectButton.text, ThemeGroup.Function_2_Text);
+
+                    // Inspect Level Object
+                    var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectlevelobject", index + 2);
+                    var inspectLevelObjectButton = inspectLevelObject.GetComponent<FunctionButtonStorage>();
+                    inspectLevelObjectButton.text.text = "Inspect LevelObject";
+
+                    Destroy(inspectLevelObject.GetComponent<Animator>());
+                    inspectLevelObjectButton.button.transition = Selectable.Transition.ColorTint;
+                    EditorThemeManager.AddSelectable(inspectLevelObjectButton.button, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(inspectLevelObjectButton.text, ThemeGroup.Function_2_Text);
+
+                    // Inspect Timeline Object
+                    var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspecttimelineobject", index + 3);
+                    var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
+                    inspectTimelineObjectButton.text.text = "Inspect TimelineObject";
+
+                    Destroy(inspectTimelineObject.GetComponent<Animator>());
+                    inspectTimelineObjectButton.button.transition = Selectable.Transition.ColorTint;
+                    EditorThemeManager.AddSelectable(inspectTimelineObjectButton.button, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(inspectTimelineObjectButton.text, ThemeGroup.Function_2_Text);
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error in trying to setup Unity Explorer. Exception: {ex}");
+            }
+
             // Editor Themes
             {
                 EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
@@ -3443,18 +3492,17 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
                     LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i], true);
 
-            StartCoroutine(RefreshObjectGUI(beatmapObject));
+            RenderDialog(beatmapObject);
         }
 
         /// <summary>
         /// Refreshes the Object Editor to the specified BeatmapObject, allowing for any object to be edited from anywhere.
         /// </summary>
-        /// <param name="beatmapObject">The BeatmapObject to set.</param>
-        /// <returns></returns>
-        public IEnumerator RefreshObjectGUI(BeatmapObject beatmapObject)
+        /// <param name="beatmapObject">The BeatmapObject to render the editor for.</param>
+        public void RenderDialog(BeatmapObject beatmapObject)
         {
             if (!EditorManager.inst.hasLoadedLevel || string.IsNullOrEmpty(beatmapObject.id))
-                yield break;
+                return;
 
             EditorTimeline.inst.CurrentSelection = EditorTimeline.inst.GetTimelineObject(beatmapObject);
             EditorTimeline.inst.CurrentSelection.Selected = true;
@@ -3479,23 +3527,7 @@ namespace BetterLegacy.Editor.Managers
             RenderBin(beatmapObject);
 
             RenderGameObjectInspector(beatmapObject);
-
-            bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
-            Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
-
-            var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
-            collapsePrefabContextMenu.onClick = null;
-            collapsePrefabContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Apply This", () => RTPrefabEditor.inst.Collapse(beatmapObject)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(beatmapObject))
-                    );
-            };
+            RenderPrefabReference(beatmapObject);
 
             SetTimeline(EditorTimeline.inst.CurrentSelection.Zoom, EditorTimeline.inst.CurrentSelection.TimelinePosition);
 
@@ -3512,8 +3544,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (ObjectModifiersEditor.inst)
                 StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
-
-            yield break;
         }
 
         /// <summary>
@@ -3675,7 +3705,7 @@ namespace BetterLegacy.Editor.Managers
                 if (UpdateObjects)
                     Updater.UpdateObject(beatmapObject);
 
-                CoreHelper.StartCoroutine(RefreshObjectGUI(beatmapObject));
+                RenderDialog(beatmapObject);
             });
         }
 
@@ -4468,8 +4498,8 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.IncreaseDecreaseButtons(Dialog.GradientRotation);
-                TriggerHelper.AddEventTriggers(Dialog.GradientRotation.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.GradientRotation.inputField));
+                TriggerHelper.IncreaseDecreaseButtons(Dialog.GradientRotation, 15f, 3f);
+                TriggerHelper.AddEventTriggers(Dialog.GradientRotation.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.GradientRotation.inputField, 15f, 3f));
             }
         }
 
@@ -4958,89 +4988,32 @@ namespace BetterLegacy.Editor.Managers
             if (!ModCompatibility.UnityExplorerInstalled)
                 return;
 
-            var tfv = ObjEditor.inst.ObjectView.transform;
+            if (Dialog.UnityExplorerLabel)
+                Dialog.UnityExplorerLabel.transform.parent.gameObject.SetActive(RTEditor.ShowModdedUI);
 
-            var inspector = AccessTools.TypeByName("UnityExplorer.InspectorManager");
-            var uiManager = AccessTools.TypeByName("UnityExplorer.UI.UIManager");
-
-            if (inspector != null && !tfv.Find("inspect"))
+            if (Dialog.InspectBeatmapObjectButton)
             {
-                var label = tfv.ChildList().First(x => x.name == "label").gameObject.Duplicate(tfv, "unity explorer label");
-                var index = tfv.Find("editor").GetSiblingIndex() + 1;
-                label.transform.SetSiblingIndex(index);
-
-                Destroy(label.transform.GetChild(1).gameObject);
-                var labelText = label.transform.GetChild(0).GetComponent<Text>();
-                labelText.text = "Unity Explorer";
-                EditorThemeManager.AddLightText(labelText);
-
-                var inspect = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv, "inspectbeatmapobject", index + 1);
-                inspect.SetActive(true);
-
-                var inspectText = inspect.transform.GetChild(0).GetComponent<Text>();
-                inspectText.text = "Inspect BeatmapObject";
-
-                var inspectGameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv, "inspect", index + 2);
-                inspectGameObject.SetActive(true);
-
-                var inspectGameObjectText = inspectGameObject.transform.GetChild(0).GetComponent<Text>();
-                inspectGameObjectText.text = "Inspect LevelObject";
-                
-                var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv, "inspecttimelineobject", index + 3);
-                inspectTimelineObject.SetActive(true);
-
-                var inspectTimelineObjectText = inspectTimelineObject.transform.GetChild(0).GetComponent<Text>();
-                inspectTimelineObjectText.text = "Inspect TimelineObject";
-
-                var inspectButton = inspect.GetComponent<Button>();
-                var inspectGameObjectButton = inspectGameObject.GetComponent<Button>();
-                var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<Button>();
-
-                Destroy(inspect.GetComponent<Animator>());
-                inspectButton.transition = Selectable.Transition.ColorTint;
-                EditorThemeManager.AddSelectable(inspectButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(inspectText, ThemeGroup.Function_2_Text);
-
-                Destroy(inspectGameObject.GetComponent<Animator>());
-                inspectGameObjectButton.transition = Selectable.Transition.ColorTint;
-                EditorThemeManager.AddSelectable(inspectGameObjectButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(inspectGameObjectText, ThemeGroup.Function_2_Text);
-
-                Destroy(inspectTimelineObject.GetComponent<Animator>());
-                inspectTimelineObjectButton.transition = Selectable.Transition.ColorTint;
-                EditorThemeManager.AddSelectable(inspectTimelineObjectButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(inspectTimelineObjectText, ThemeGroup.Function_2_Text);
+                Dialog.InspectBeatmapObjectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
+                Dialog.InspectBeatmapObjectButton.button.onClick.ClearAll();
+                if (RTEditor.ShowModdedUI)
+                    Dialog.InspectBeatmapObjectButton.button.onClick.AddListener(() => ModCompatibility.Inspect(beatmapObject));
             }
 
-            if (tfv.TryFind("unity explorer label", out Transform unityExplorerLabel))
-                unityExplorerLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (tfv.Find("inspect"))
+            if (Dialog.InspectLevelObjectButton)
             {
-                bool active = Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && RTEditor.ShowModdedUI;
-                tfv.Find("inspect").gameObject.SetActive(active);
-                var inspectButton = tfv.Find("inspect").GetComponent<Button>();
-                inspectButton.onClick.ClearAll();
+                bool active = beatmapObject.levelObject && RTEditor.ShowModdedUI;
+                Dialog.InspectLevelObjectButton.gameObject.SetActive(active);
+                Dialog.InspectLevelObjectButton.button.onClick.ClearAll();
                 if (active)
-                    inspectButton.onClick.AddListener(() => ModCompatibility.Inspect(levelObject));
+                    Dialog.InspectLevelObjectButton.button.onClick.AddListener(() => ModCompatibility.Inspect(beatmapObject.levelObject));
             }
 
-            if (tfv.Find("inspectbeatmapobject"))
+            if (Dialog.InspectTimelineObjectButton)
             {
-                var inspectButton = tfv.Find("inspectbeatmapobject").GetComponent<Button>();
-                inspectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
-                inspectButton.onClick.ClearAll();
+                Dialog.InspectTimelineObjectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
+                Dialog.InspectTimelineObjectButton.button.onClick.ClearAll();
                 if (RTEditor.ShowModdedUI)
-                    inspectButton.onClick.AddListener(() => ModCompatibility.Inspect(beatmapObject));
-            }
-
-            if (tfv.Find("inspecttimelineobject"))
-            {
-                var inspectButton = tfv.Find("inspecttimelineobject").GetComponent<Button>();
-                inspectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
-                inspectButton.onClick.ClearAll();
-                if (RTEditor.ShowModdedUI)
-                    inspectButton.onClick.AddListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(beatmapObject)));
+                    Dialog.InspectTimelineObjectButton.button.onClick.AddListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(beatmapObject)));
             }
         }
 
@@ -5099,6 +5072,34 @@ namespace BetterLegacy.Editor.Managers
                 // Since bin has no effect on the physical object, we will only need to update the timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
             });
+        }
+
+        /// <summary>
+        /// Renders the Prefab references.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
+        public void RenderPrefabReference(BeatmapObject beatmapObject)
+        {
+            bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
+            Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
+            Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
+            Dialog.CollapsePrefabButton.button.onClick.ClearAll();
+
+            var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
+            collapsePrefabContextMenu.onClick = null;
+            collapsePrefabContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                {
+                    RTPrefabEditor.inst.Collapse(beatmapObject);
+                    return;
+                }
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(beatmapObject)),
+                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(beatmapObject))
+                    );
+            };
         }
 
         void KeyframeHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
@@ -6655,7 +6656,7 @@ namespace BetterLegacy.Editor.Managers
                 Updater.RecalculateObjectStates();
                 RTEditor.inst.ParentSelectorPopup.Close();
                 if (list.Count == 1 && timelineObject.isBeatmapObject)
-                    StartCoroutine(RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                    RenderDialog(timelineObject.GetData<BeatmapObject>());
                 if (list.Count == 1 && timelineObject.isPrefabObject)
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
             });
@@ -6693,7 +6694,7 @@ namespace BetterLegacy.Editor.Managers
                     Updater.RecalculateObjectStates();
                     RTEditor.inst.ParentSelectorPopup.Close();
                     if (list.Count == 1 && timelineObject.isBeatmapObject)
-                        StartCoroutine(RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                        RenderDialog(timelineObject.GetData<BeatmapObject>());
                     if (list.Count == 1 && timelineObject.isPrefabObject)
                         RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
                 });

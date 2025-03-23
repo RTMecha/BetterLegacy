@@ -199,7 +199,7 @@ namespace BetterLegacy.Editor.Components
                     currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
 
                     EditorTimeline.inst.RenderTimelineObject(currentSelection);
-                    CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(currentBeatmapObject));
+                    ObjectEditor.inst.RenderDialog(currentBeatmapObject);
                 }
 
                 RTEditor.inst.prefabPickerEnabled = false;

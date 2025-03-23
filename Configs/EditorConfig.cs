@@ -2890,7 +2890,7 @@ namespace BetterLegacy.Configs
             AdjustPositionInputsChanged?.Invoke();
 
             if (EditorTimeline.inst && EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
+                ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
 
             if (RTEditor.inst && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
@@ -2938,7 +2938,7 @@ namespace BetterLegacy.Configs
             ObjEditor.inst.SelectedColor = ObjectSelectionColor.Value;
 
             if (EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                CoreHelper.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
+                ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
         }
 
         void TimelineGridChanged()

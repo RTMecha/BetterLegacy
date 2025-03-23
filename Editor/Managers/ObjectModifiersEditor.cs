@@ -263,7 +263,7 @@ namespace BetterLegacy.Editor.Managers
                 showModifiers = _val;
                 scrollView.gameObject.SetActive(showModifiers);
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                    RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
+                    ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             });
 
             if (!RTEditor.ShowModdedUI)
@@ -3031,7 +3031,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.modifiers.Add(modifier);
                     else
                         beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
-                    RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(beatmapObject));
+                    ObjectEditor.inst.RenderDialog(beatmapObject);
                     DefaultModifiersPopup.Close();
                 });
 

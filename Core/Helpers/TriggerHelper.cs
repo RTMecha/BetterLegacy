@@ -614,7 +614,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (EditorTimeline.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
-                RTEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
+                ObjectEditor.inst.RenderDialog(timelineObject.GetData<BeatmapObject>());
         });
 
         public static EventTrigger.Entry CreateBeatmapObjectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerUp, eventData =>

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy.Editor.Data.Dialogs
@@ -114,6 +115,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public GameObject AssignPrefabLabel { get; set; }
         public FunctionButtonStorage AssignPrefabButton { get; set; }
         public FunctionButtonStorage RemovePrefabButton { get; set; }
+
+        #endregion
+
+        #region Unity Explorer
+
+        public Text UnityExplorerLabel { get; set; }
+
+        public FunctionButtonStorage InspectBeatmapObjectButton { get; set; }
+        public FunctionButtonStorage InspectLevelObjectButton { get; set; }
+        public FunctionButtonStorage InspectTimelineObjectButton { get; set; }
 
         #endregion
 
@@ -277,6 +288,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RemovePrefabButton = Content.Find("remove prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
             RemovePrefabButton.text = RemovePrefabButton.transform.Find("Text").GetComponent<Text>();
             RemovePrefabButton.button = RemovePrefabButton.GetComponent<Button>();
+
+            #endregion
+
+            #region Unity Explorer
+
+            if (ModCompatibility.UnityExplorerInstalled)
+            {
+                UnityExplorerLabel = Content.Find("unity explorer label").GetChild(0).GetComponent<Text>();
+                InspectBeatmapObjectButton = Content.Find("inspectbeatmapobject").GetComponent<FunctionButtonStorage>();
+                InspectLevelObjectButton = Content.Find("inspectlevelobject").GetComponent<FunctionButtonStorage>();
+                InspectTimelineObjectButton = Content.Find("inspecttimelineobject").GetComponent<FunctionButtonStorage>();
+            }
 
             #endregion
 

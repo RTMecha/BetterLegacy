@@ -380,12 +380,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(ObjEditor.RefreshKeyframeGUI))]
         [HarmonyPrefix]
-        static bool RefreshKeyframeGUIPrefix()
-        {
-            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.StartCoroutine(ObjectEditor.inst.RefreshObjectGUI(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>()));
-            return false;
-        }
+        static bool RefreshKeyframeGUIPrefix() => false;
 
         [HarmonyPatch(nameof(ObjEditor.CreateNewNormalObject))]
         [HarmonyPrefix]
