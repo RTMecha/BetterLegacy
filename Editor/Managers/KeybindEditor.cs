@@ -674,9 +674,6 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(settingsContent);
 
-            var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
-            var vector2Input = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position");
-
             num = 0;
             foreach (var setting in keybind.settings)
             {
@@ -692,15 +689,17 @@ namespace BetterLegacy.Editor.Managers
                     case "use nearest":
                     case "use previous":
                         {
-                            var bar = Instantiate(singleInput);
-                            Destroy(bar.GetComponent<InputField>());
-                            Destroy(bar.GetComponent<EventInfo>());
-                            Destroy(bar.GetComponent<EventTrigger>());
+                            var bar = Creator.NewUIObject("input [BOOL]", settingsContent);
+                            bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                            var layout = bar.AddComponent<HorizontalLayoutGroup>();
+                            layout.childControlHeight = false;
+                            layout.childControlWidth = false;
+                            layout.childForceExpandHeight = true;
+                            layout.childForceExpandWidth = false;
+                            layout.spacing = 8f;
 
-                            LSHelpers.DeleteChildren(bar.transform);
-                            bar.transform.SetParent(settingsContent);
-                            bar.transform.localScale = Vector3.one;
-                            bar.name = "input [BOOL]";
+                            var image = bar.AddComponent<Image>();
+                            image.color = new Color(1f, 1f, 1f, 0.03f);
 
                             TooltipHelper.AddHoverTooltip(bar, setting.Key, "");
 
@@ -708,12 +707,6 @@ namespace BetterLegacy.Editor.Managers
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
-
-                            l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-
-                            var image = bar.GetComponent<Image>();
-                            image.enabled = true;
-                            image.color = new Color(1f, 1f, 1f, 0.03f);
 
                             var x = EditorPrefabHolder.Instance.Toggle.Duplicate(bar.transform);
 
@@ -730,21 +723,22 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+
                     case "dialog":
                     case "id":
                     case "code":
                         {
-                            var bar = Instantiate(singleInput);
+                            var bar = Creator.NewUIObject("input [BOOL]", settingsContent);
+                            bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                            var layout = bar.AddComponent<HorizontalLayoutGroup>();
+                            layout.childControlHeight = false;
+                            layout.childControlWidth = false;
+                            layout.childForceExpandHeight = true;
+                            layout.childForceExpandWidth = false;
+                            layout.spacing = 8f;
 
-                            Destroy(bar.GetComponent<EventInfo>());
-                            Destroy(bar.GetComponent<EventTrigger>());
-                            Destroy(bar.GetComponent<InputField>());
-                            Destroy(bar.GetComponent<InputFieldSwapper>());
-
-                            LSHelpers.DeleteChildren(bar.transform);
-                            bar.transform.SetParent(settingsContent);
-                            bar.transform.localScale = Vector3.one;
-                            bar.name = "input [STRING]";
+                            var image = bar.AddComponent<Image>();
+                            image.color = new Color(1f, 1f, 1f, 0.03f);
 
                             TooltipHelper.AddHoverTooltip(bar, setting.Key, "");
 
@@ -753,16 +747,10 @@ namespace BetterLegacy.Editor.Managers
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(354f, 20f);
 
-                            l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-
-                            var image = bar.GetComponent<Image>();
-                            image.enabled = true;
-                            image.color = new Color(1f, 1f, 1f, 0.03f);
-
                             var x = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(bar.transform);
                             Destroy(x.GetComponent<HoverTooltip>());
 
-                            x.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(366f, 32f);
+                            x.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
 
                             var xif = x.GetComponent<InputField>();
                             xif.onValueChanged.ClearAll();
@@ -778,6 +766,7 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+
                     case "eventtype":
                     case "eventindex":
                     case "eventvalue":
@@ -785,107 +774,84 @@ namespace BetterLegacy.Editor.Managers
                     case "index":
                     case "count":
                         {
-                            var x = singleInput.Duplicate(settingsContent, "input [INT]");
-
-                            Destroy(x.GetComponent<EventInfo>());
-                            Destroy(x.GetComponent<EventTrigger>());
-                            Destroy(x.GetComponent<InputField>());
-
-                            x.transform.localScale = Vector3.one;
-                            x.transform.GetChild(0).localScale = Vector3.one;
+                            var x = EditorPrefabHolder.Instance.NumberInputField.Duplicate(settingsContent, "input [INT]");
+                            var inputFieldStorage = x.GetComponent<InputFieldStorage>();
 
                             var l = EditorPrefabHolder.Instance.Labels.Duplicate(x.transform, "", 0);
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
                             l.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
 
-                            l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-
-                            var image = x.GetComponent<Image>();
-                            image.enabled = true;
+                            var image = x.AddComponent<Image>();
                             image.color = new Color(1f, 1f, 1f, 0.03f);
 
                             TooltipHelper.AddHoverTooltip(x, setting.Key, "");
 
-                            var input = x.transform.Find("input");
-
-                            var xif = input.gameObject.AddComponent<InputField>();
-                            xif.onValueChanged.ClearAll();
-                            xif.onEndEdit.ClearAll();
-                            xif.textComponent = input.Find("Text").GetComponent<Text>();
-                            xif.placeholder = input.Find("Placeholder").GetComponent<Text>();
-                            xif.characterValidation = InputField.CharacterValidation.None;
-                            xif.text = Parser.TryParse(setting.Value, 0).ToString();
-                            xif.onValueChanged.AddListener(_val =>
+                            inputFieldStorage.inputField.onValueChanged.ClearAll();
+                            inputFieldStorage.inputField.onEndEdit.ClearAll();
+                            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                            inputFieldStorage.inputField.text = Parser.TryParse(setting.Value, 0).ToString();
+                            inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                             {
                                 if (int.TryParse(_val, out int result) && keybind.settings.ContainsKey(setting.Key))
                                     keybind.settings[setting.Key] = result.ToString();
                             });
-                            xif.onEndEdit.AddListener(_val => Save());
+                            inputFieldStorage.inputField.onEndEdit.AddListener(_val => Save());
 
-                            TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDeltaInt(xif));
+                            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
-                            TriggerHelper.IncreaseDecreaseButtonsInt(xif, t: x.transform);
+                            TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
 
-                            EditorThemeManager.ApplyInputField(xif, ThemeGroup.Input_Field);
+                            EditorThemeManager.ApplyInputField(inputFieldStorage.inputField, ThemeGroup.Input_Field);
 
-                            Destroy(x.transform.Find("<").GetComponent<Animator>());
-                            EditorThemeManager.ApplySelectable(x.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
-                            Destroy(x.transform.Find(">").GetComponent<Animator>());
-                            EditorThemeManager.ApplySelectable(x.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
+                            Destroy(inputFieldStorage.rightGreaterButton.gameObject);
+                            Destroy(inputFieldStorage.middleButton.gameObject);
+                            Destroy(inputFieldStorage.leftGreaterButton.gameObject);
+
+                            EditorThemeManager.ApplySelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
 
                             break;
                         }
+
                     case "eventamount":
                         {
-                            var x = singleInput.Duplicate(settingsContent, "input [FLOAT]");
-
-                            Destroy(x.GetComponent<EventInfo>());
-                            Destroy(x.GetComponent<EventTrigger>());
-                            Destroy(x.GetComponent<InputField>());
-
-                            x.transform.localScale = Vector3.one;
-                            x.transform.GetChild(0).localScale = Vector3.one;
+                            var x = EditorPrefabHolder.Instance.NumberInputField.Duplicate(settingsContent, "input [FLOAT]");
+                            var inputFieldStorage = x.GetComponent<InputFieldStorage>();
 
                             var l = EditorPrefabHolder.Instance.Labels.Duplicate(x.transform, "", 0);
                             var labelText = l.transform.GetChild(0).GetComponent<Text>();
                             labelText.text = setting.Key;
-                            l.transform.AsRT().sizeDelta = new Vector2(541f, 20f);
+                            l.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
 
-                            l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-
-                            var image = x.GetComponent<Image>();
-                            image.enabled = true;
+                            var image = x.AddComponent<Image>();
                             image.color = new Color(1f, 1f, 1f, 0.03f);
 
                             TooltipHelper.AddHoverTooltip(x, setting.Key, "");
 
-                            var input = x.transform.Find("input");
-
-                            var xif = input.gameObject.AddComponent<InputField>();
-                            xif.onValueChanged.ClearAll();
-                            xif.onEndEdit.ClearAll();
-                            xif.textComponent = input.Find("Text").GetComponent<Text>();
-                            xif.placeholder = input.Find("Placeholder").GetComponent<Text>();
-                            xif.characterValidation = InputField.CharacterValidation.None;
-                            xif.text = Parser.TryParse(setting.Value, 0f).ToString();
-                            xif.onValueChanged.AddListener(_val =>
+                            inputFieldStorage.inputField.onValueChanged.ClearAll();
+                            inputFieldStorage.inputField.onEndEdit.ClearAll();
+                            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                            inputFieldStorage.inputField.text = Parser.TryParse(setting.Value, 0f).ToString();
+                            inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float result) && keybind.settings.ContainsKey(setting.Key))
                                     keybind.settings[setting.Key] = result.ToString();
                             });
-                            xif.onEndEdit.AddListener(_val => Save());
+                            inputFieldStorage.inputField.onEndEdit.AddListener(_val => Save());
 
-                            TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDelta(xif));
+                            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
-                            TriggerHelper.IncreaseDecreaseButtons(xif, t: x.transform);
+                            TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
 
-                            EditorThemeManager.ApplyInputField(xif, ThemeGroup.Input_Field);
+                            EditorThemeManager.ApplyInputField(inputFieldStorage.inputField, ThemeGroup.Input_Field);
 
-                            Destroy(x.transform.Find("<").GetComponent<Animator>());
-                            EditorThemeManager.ApplySelectable(x.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
-                            Destroy(x.transform.Find(">").GetComponent<Animator>());
-                            EditorThemeManager.ApplySelectable(x.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
+                            Destroy(inputFieldStorage.rightGreaterButton.gameObject);
+                            Destroy(inputFieldStorage.middleButton.gameObject);
+                            Destroy(inputFieldStorage.leftGreaterButton.gameObject);
+
+                            EditorThemeManager.ApplySelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
 
                             break;
                         }

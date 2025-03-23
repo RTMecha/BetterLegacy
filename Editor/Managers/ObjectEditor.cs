@@ -99,8 +99,6 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
-
             // Depth
             {
                 var spacer = Creator.NewUIObject("depth input", objectView, 15);
@@ -108,16 +106,21 @@ namespace BetterLegacy.Editor.Managers
                 var spHLG = spacer.AddComponent<HorizontalLayoutGroup>();
 
                 spacer.transform.AsRT().sizeDelta = new Vector2(30f, 30f);
+                spHLG.childControlWidth = false;
+                spHLG.childForceExpandWidth = false;
                 spHLG.spacing = 8;
 
-                var depth = singleInput.Duplicate(spacer.transform, "depth");
+                var depth = EditorPrefabHolder.Instance.NumberInputField.Duplicate(spacer.transform, "depth");
+                var depthInputFieldStorage = depth.GetComponent<InputFieldStorage>();
                 depth.transform.localScale = Vector3.one;
-                depth.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
+                depthInputFieldStorage.transform.AsRT().sizeDelta = new Vector2(170f, 32f);
+                depthInputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(110f, 32f);
 
-                Destroy(depth.GetComponent<EventInfo>());
+                depthInputFieldStorage.inputField.onValueChanged.ClearAll();
 
-                var depthif = depth.GetComponent<InputField>();
-                depthif.onValueChanged.ClearAll();
+                Destroy(depthInputFieldStorage.leftGreaterButton.gameObject);
+                Destroy(depthInputFieldStorage.middleButton.gameObject);
+                Destroy(depthInputFieldStorage.rightGreaterButton.gameObject);
 
                 var sliderObject = objectView.Find("depth/depth").gameObject;
 
@@ -131,16 +134,9 @@ namespace BetterLegacy.Editor.Managers
                 sliderObject.transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
                 objectView.Find("depth").AsRT().sizeDelta = new Vector2(261f, 32f);
 
-                EditorThemeManager.AddInputField(depthif);
-                var leftButton = depth.transform.Find(">").GetComponent<Button>();
-                var rightButton = depth.transform.Find("<").GetComponent<Button>();
-                Destroy(leftButton.GetComponent<Animator>());
-                Destroy(rightButton.GetComponent<Animator>());
-                leftButton.transition = Selectable.Transition.ColorTint;
-                rightButton.transition = Selectable.Transition.ColorTint;
-
-                EditorThemeManager.AddSelectable(leftButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.AddSelectable(rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddInputField(depthInputFieldStorage.inputField);
+                EditorThemeManager.AddSelectable(depthInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(depthInputFieldStorage.rightButton, ThemeGroup.Function_2, false);
 
                 var depthSlider = sliderObject.GetComponent<Slider>();
                 var depthSliderImage = sliderObject.transform.Find("Image").GetComponent<Image>();
@@ -247,48 +243,40 @@ namespace BetterLegacy.Editor.Managers
                     CoreHelper.LogException(ex);
                 }
 
-                var xo = singleInput.Duplicate(contentOriginTF.transform, "x");
-                xo.transform.localScale = Vector3.one;
-                xo.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
+                var originX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(contentOriginTF, "x");
+                var originXInputFieldStorage = originX.GetComponent<InputFieldStorage>();
+                originX.transform.localScale = Vector3.one;
+                originXInputFieldStorage.transform.AsRT().sizeDelta = new Vector2(170f, 32f);
+                originXInputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(110f, 32f);
 
-                Destroy(xo.GetComponent<EventInfo>());
+                originXInputFieldStorage.inputField.onValueChanged.ClearAll();
 
-                var xoif = xo.GetComponent<InputField>();
-                xoif.onValueChanged.ClearAll();
+                var originY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(contentOriginTF, "y");
+                var originYInputFieldStorage = originY.GetComponent<InputFieldStorage>();
+                originY.transform.localScale = Vector3.one;
+                originYInputFieldStorage.transform.AsRT().sizeDelta = new Vector2(170f, 32f);
+                originYInputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(110f, 32f);
 
-                var yo = singleInput.Duplicate(contentOriginTF, "y");
-                yo.transform.localScale = Vector3.one;
-                yo.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
+                originYInputFieldStorage.inputField.onValueChanged.ClearAll();
 
-                Destroy(yo.GetComponent<EventInfo>());
+                Destroy(originXInputFieldStorage.leftGreaterButton.gameObject);
+                Destroy(originXInputFieldStorage.middleButton.gameObject);
+                Destroy(originXInputFieldStorage.rightGreaterButton.gameObject);
+                
+                Destroy(originYInputFieldStorage.leftGreaterButton.gameObject);
+                Destroy(originYInputFieldStorage.middleButton.gameObject);
+                Destroy(originYInputFieldStorage.rightGreaterButton.gameObject);
 
-                var yoif = yo.GetComponent<InputField>();
-                yoif.onValueChanged.ClearAll();
+                EditorThemeManager.AddInputField(originXInputFieldStorage.inputField);
+                EditorThemeManager.AddSelectable(originXInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(originXInputFieldStorage.rightButton, ThemeGroup.Function_2, false);
 
-                EditorThemeManager.AddInputField(xoif);
-                var xLeftButton = xo.transform.Find(">").GetComponent<Button>();
-                var xRightButton = xo.transform.Find("<").GetComponent<Button>();
-                Destroy(xLeftButton.GetComponent<Animator>());
-                Destroy(xRightButton.GetComponent<Animator>());
-                xLeftButton.transition = Selectable.Transition.ColorTint;
-                xRightButton.transition = Selectable.Transition.ColorTint;
+                EditorThemeManager.AddInputField(originYInputFieldStorage.inputField);
+                EditorThemeManager.AddSelectable(originYInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(originYInputFieldStorage.rightButton, ThemeGroup.Function_2, false);
 
-                EditorThemeManager.AddSelectable(xLeftButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.AddSelectable(xRightButton, ThemeGroup.Function_2, false);
-
-                EditorThemeManager.AddInputField(yoif);
-                var yLeftButton = yo.transform.Find(">").GetComponent<Button>();
-                var yRightButton = yo.transform.Find("<").GetComponent<Button>();
-                Destroy(yLeftButton.GetComponent<Animator>());
-                Destroy(yRightButton.GetComponent<Animator>());
-                yLeftButton.transition = Selectable.Transition.ColorTint;
-                yRightButton.transition = Selectable.Transition.ColorTint;
-
-                EditorThemeManager.AddSelectable(yLeftButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.AddSelectable(yRightButton, ThemeGroup.Function_2, false);
-
-                EditorHelper.SetComplexity(xo, Complexity.Normal);
-                EditorHelper.SetComplexity(yo, Complexity.Normal);
+                EditorHelper.SetComplexity(originX, Complexity.Normal);
+                EditorHelper.SetComplexity(originY, Complexity.Normal);
             }
 
             // Opacity
@@ -2474,7 +2462,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Deleting
 
-        public IEnumerator DeleteObjects(bool _set = true)
+        public IEnumerator DeleteObjects()
         {
             var list = EditorTimeline.inst.SelectedObjects;
             int count = EditorTimeline.inst.SelectedObjectCount;
@@ -2504,25 +2492,25 @@ namespace BetterLegacy.Editor.Managers
                         .Select(c => c.id)));
 
             gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x =>
+            {
+                if (RTPrefabEditor.inst.quickPrefabTarget && RTPrefabEditor.inst.quickPrefabTarget.id == x.id)
+                    RTPrefabEditor.inst.quickPrefabTarget = null;
+
+                for (int i = 0; i < x.modifiers.Count; i++)
                 {
-                    if (RTPrefabEditor.inst.quickPrefabTarget && RTPrefabEditor.inst.quickPrefabTarget.id == x.id)
-                        RTPrefabEditor.inst.quickPrefabTarget = null;
-
-                    for (int i = 0; i < x.modifiers.Count; i++)
+                    var modifier = x.modifiers[i];
+                    try
                     {
-                        var modifier = x.modifiers[i];
-                        try
-                        {
-                            modifier.Inactive?.Invoke(modifier); // for cases where we want to clear data.
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreHelper.LogException(ex);
-                        } // allow further objects to be deleted if a modifiers' inactive state throws an error
+                        modifier.Inactive?.Invoke(modifier); // for cases where we want to clear data.
                     }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    } // allow further objects to be deleted if a modifiers' inactive state throws an error
+                }
 
-                    Updater.UpdateObject(x, reinsert: false, recalculate: false);
-                });
+                Updater.UpdateObject(x, reinsert: false, recalculate: false);
+            });
             gameData.beatmapObjects.FindAll(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => Updater.UpdateObject(x, reinsert: false, recalculate: false));
 
             gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
@@ -2687,7 +2675,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 var jn = JSON.Parse(RTFile.ReadFromFile(prefabFilePath));
-                ObjectEditor.inst.copy = Prefab.Parse(jn);
+                copy = Prefab.Parse(jn);
                 ObjEditor.inst.hasCopiedObject = true;
             }
             catch (Exception ex)
@@ -3454,7 +3442,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region RefreshObjectGUI
+        #region Render Dialog
 
         public static bool UpdateObjects => true;
 
@@ -4277,12 +4265,6 @@ namespace BetterLegacy.Editor.Managers
                 };
             }
 
-            if (!Dialog.OriginXField.inputField.gameObject.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = Dialog.OriginXField.inputField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(Dialog.OriginXField.inputField, InputFieldSwapper.Type.Num);
-            }
-
             Dialog.OriginXField.inputField.onValueChanged.ClearAll();
             Dialog.OriginXField.inputField.text = beatmapObject.origin.x.ToString();
             Dialog.OriginXField.inputField.onValueChanged.AddListener(_val =>
@@ -4296,12 +4278,6 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject, "Origin");
                 }
             });
-
-            if (!Dialog.OriginYField.inputField.gameObject.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = Dialog.OriginYField.inputField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(Dialog.OriginYField.inputField, InputFieldSwapper.Type.Num);
-            }
 
             Dialog.OriginYField.inputField.onValueChanged.ClearAll();
             Dialog.OriginYField.inputField.text = beatmapObject.origin.y.ToString();
@@ -4872,7 +4848,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void SetDepthSlider(BeatmapObject beatmapObject, int value, InputField inputField, Slider slider)
+        void SetDepthSlider(BeatmapObject beatmapObject, int value, InputField inputField, Slider slider)
         {
             if (!RTEditor.ShowModdedUI)
                 value = Mathf.Clamp(value, EditorConfig.Instance.RenderDepthRange.Value.y, EditorConfig.Instance.RenderDepthRange.Value.x);
@@ -4888,7 +4864,7 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(beatmapObject, "Depth");
         }
 
-        public void SetDepthInputField(BeatmapObject beatmapObject, string value, InputField inputField, Slider slider)
+        void SetDepthInputField(BeatmapObject beatmapObject, string value, InputField inputField, Slider slider)
         {
             if (!int.TryParse(value, out int num))
                 return;
@@ -4933,15 +4909,6 @@ namespace BetterLegacy.Editor.Managers
             if (!active)
                 return;
 
-            var depthSlider = Dialog.DepthSlider;
-            var depthText = Dialog.DepthField.inputField;
-
-            if (!Dialog.DepthField.inputField.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = Dialog.DepthField.inputField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(Dialog.DepthField.inputField, InputFieldSwapper.Type.Num);
-            }
-
             Dialog.DepthField.inputField.onValueChanged.ClearAll();
             Dialog.DepthField.inputField.text = beatmapObject.Depth.ToString();
             Dialog.DepthField.inputField.onValueChanged.AddListener(_val =>
@@ -4966,7 +4933,7 @@ namespace BetterLegacy.Editor.Managers
                 min = 0;
             }
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max);
+            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField, -1, min, max);
             TriggerHelper.AddEventTriggers(Dialog.DepthField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.DepthField.inputField, 1, min, max));
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max, Dialog.DepthParent);
 
