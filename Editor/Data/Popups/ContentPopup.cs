@@ -14,7 +14,7 @@ namespace BetterLegacy.Editor.Data.Popups
     /// <summary>
     /// Represents a popup that can contain items.
     /// </summary>
-    public class ContentPopup : EditorPopup
+    public class ContentPopup : EditorPopup, IContentUI
     {
         public ContentPopup(string name) : base(name) { }
 
