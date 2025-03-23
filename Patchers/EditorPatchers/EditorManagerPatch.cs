@@ -228,13 +228,13 @@ namespace BetterLegacy.Patchers
             var levelButtonPrefab = __instance.folderButtonPrefab.Duplicate(__instance.transform, __instance.folderButtonPrefab.name);
             var levelButtonPrefabStorage = levelButtonPrefab.AddComponent<FunctionButtonStorage>();
             levelButtonPrefabStorage.button = levelButtonPrefab.GetComponent<Button>();
-            levelButtonPrefabStorage.text = levelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
+            levelButtonPrefabStorage.label = levelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
             __instance.folderButtonPrefab = levelButtonPrefab;
 
             var spriteLevelButtonPrefab = __instance.spriteFolderButtonPrefab.Duplicate(__instance.transform, __instance.spriteFolderButtonPrefab.name);
             var spriteLevelButtonPrefabStorage = spriteLevelButtonPrefab.AddComponent<SpriteFunctionButtonStorage>();
             spriteLevelButtonPrefabStorage.button = spriteLevelButtonPrefab.GetComponent<Button>();
-            spriteLevelButtonPrefabStorage.text = spriteLevelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
+            spriteLevelButtonPrefabStorage.label = spriteLevelButtonPrefab.transform.GetChild(0).GetComponent<Text>();
             spriteLevelButtonPrefabStorage.image = spriteLevelButtonPrefab.transform.GetChild(1).GetComponent<Image>();
             __instance.spriteFolderButtonPrefab = spriteLevelButtonPrefab;
 

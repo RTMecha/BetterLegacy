@@ -131,15 +131,15 @@ namespace BetterLegacy.Editor.Managers
                     contextMenu.SetActive(false);
                     buttonFunction.Action?.Invoke();
                 });
-                buttonStorage.text.alignment = TextAnchor.MiddleLeft;
-                buttonStorage.text.text = buttonFunction.Name;
-                buttonStorage.text.rectTransform.sizeDelta = new Vector2(-12f, 0f);
+                buttonStorage.label.alignment = TextAnchor.MiddleLeft;
+                buttonStorage.label.text = buttonFunction.Name;
+                buttonStorage.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
 
                 if (!string.IsNullOrEmpty(buttonFunction.TooltipGroup))
                     TooltipHelper.AssignTooltip(gameObject, buttonFunction.TooltipGroup);
 
                 EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplyGraphic(buttonStorage.label, ThemeGroup.Function_2_Text);
                 height += 37f;
             }
 

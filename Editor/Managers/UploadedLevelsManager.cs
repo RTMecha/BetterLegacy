@@ -107,7 +107,7 @@ namespace BetterLegacy.Editor.Managers
             var searchButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(editorDialogObject.transform.Find("spacer"), "search button");
             RectValues.Default.AnchoredPosition(310f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(searchButton.transform.AsRT());
             var searchButtonStorage = searchButton.GetComponent<FunctionButtonStorage>();
-            searchButtonStorage.text.text = "Search";
+            searchButtonStorage.label.text = "Search";
             searchButtonStorage.button.onClick.ClearAll();
             searchButtonStorage.button.onClick.AddListener(Search);
 
@@ -118,7 +118,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(searchButtonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(searchButtonStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(searchButtonStorage.label, ThemeGroup.Function_2_Text);
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             content = scrollView.transform.Find("Viewport/Content");
@@ -221,11 +221,11 @@ namespace BetterLegacy.Editor.Managers
                             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
-                            folderButtonStorage.text.text =
+                            folderButtonStorage.label.text =
                                 $"<b>Level Name</b>: {LSText.ClampString(name, 42)}\n" +
                                 $"<b>Song Title</b>: {LSText.ClampString(title, 42)}\n" +
                                 $"<b>Song Artist</b>: {LSText.ClampString(artist, 42)}";
-                            RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.text.rectTransform);
+                            RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
                             gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 132f);
 
@@ -247,7 +247,7 @@ namespace BetterLegacy.Editor.Managers
                             };
 
                             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                            EditorThemeManager.ApplyLightText(folderButtonStorage.text);
+                            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
                             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
                             var iconBaseImage = iconBase.AddComponent<Image>();

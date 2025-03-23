@@ -141,7 +141,7 @@ namespace BetterLegacy.Editor.Managers
                 var addNewItemStorage = addNewItem.GetComponent<FunctionButtonStorage>();
                 addNewItem.transform.AsRT().anchoredPosition = new Vector2(120f, 970f);
                 addNewItem.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                var addNewItemText = addNewItemStorage.text;
+                var addNewItemText = addNewItemStorage.label;
                 addNewItemText.text = "Add New Item";
                 addNewItemStorage.button.onClick.ClearAll();
                 addNewItemStorage.button.onClick.AddListener(() =>
@@ -299,7 +299,7 @@ namespace BetterLegacy.Editor.Managers
                 var reloadStorage = reload.GetComponent<FunctionButtonStorage>();
                 reload.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                 reload.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                var reloadText = reloadStorage.text;
+                var reloadText = reloadStorage.label;
                 reloadText.text = "Reload";
                 reloadStorage.button.onClick.ClearAll();
                 reloadStorage.button.onClick.AddListener(() => { Load(); });
@@ -864,10 +864,10 @@ namespace BetterLegacy.Editor.Managers
                     moveUp.name = "move up";
                     moveUp.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     moveUp.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    moveUpStorage.text.text = "Move Up";
+                    moveUpStorage.label.text = "Move Up";
                     todoEditorMoveUpButton = moveUpStorage.button;
                     EditorThemeManager.AddSelectable(todoEditorMoveUpButton, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(moveUpStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(moveUpStorage.label, ThemeGroup.Function_2_Text);
 
                     var moveDown = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var moveDownStorage = moveDown.GetComponent<FunctionButtonStorage>();
@@ -875,10 +875,10 @@ namespace BetterLegacy.Editor.Managers
                     moveDown.name = "move down";
                     moveDown.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     moveDown.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    moveDownStorage.text.text = "Move Down";
+                    moveDownStorage.label.text = "Move Down";
                     todoEditorMoveDownButton = moveDownStorage.button;
                     EditorThemeManager.AddSelectable(todoEditorMoveDownButton, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(moveDownStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(moveDownStorage.label, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -980,10 +980,10 @@ namespace BetterLegacy.Editor.Managers
                     reload.name = "pick profile";
                     reload.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     reload.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    pickProfileStorage.text.text = "Select";
+                    pickProfileStorage.label.text = "Select";
                     characterEditorProfileSelector = pickProfileStorage.button;
                     EditorThemeManager.AddSelectable(characterEditorProfileSelector, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(pickProfileStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(pickProfileStorage.label, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
@@ -1539,10 +1539,10 @@ namespace BetterLegacy.Editor.Managers
                     reset.name = "reset";
                     reset.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     reset.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    resetStorage.text.text = "Reset";
+                    resetStorage.label.text = "Reset";
                     noteEditorReset = resetStorage.button;
                     EditorThemeManager.AddSelectable(noteEditorReset, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(resetStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(resetStorage.label, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1620,10 +1620,10 @@ namespace BetterLegacy.Editor.Managers
                     play.name = "play";
                     play.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     play.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    playStorage.text.text = "Play";
+                    playStorage.label.text = "Play";
                     ostEditorPlay = playStorage.button;
                     EditorThemeManager.AddSelectable(ostEditorPlay, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(playStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(playStorage.label, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
@@ -1645,10 +1645,10 @@ namespace BetterLegacy.Editor.Managers
                     stop.name = "stop";
                     stop.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     stop.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    stopStorage.text.text = "Stop";
+                    stopStorage.label.text = "Stop";
                     ostEditorStop = stopStorage.button;
                     EditorThemeManager.ApplySelectable(ostEditorStop, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(stopStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(stopStorage.label, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
@@ -1672,7 +1672,7 @@ namespace BetterLegacy.Editor.Managers
                     global.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
 
                     ostEditorUseGlobal = globalStorage.button;
-                    ostEditorUseGlobalText = globalStorage.text;
+                    ostEditorUseGlobalText = globalStorage.label;
                     ostEditorUseGlobalText.text = "False";
                     EditorThemeManager.AddSelectable(ostEditorUseGlobal, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(ostEditorUseGlobalText, ThemeGroup.Function_2_Text);

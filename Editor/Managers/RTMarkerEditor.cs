@@ -144,21 +144,21 @@ namespace BetterLegacy.Editor.Managers
 
             var makeNote = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "convert to note", 8);
             var makeNoteStorage = makeNote.GetComponent<FunctionButtonStorage>();
-            makeNoteStorage.text.text = "Convert to Planner Note";
+            makeNoteStorage.label.text = "Convert to Planner Note";
             makeNoteStorage.button.onClick.ClearAll();
 
             EditorThemeManager.AddSelectable(makeNoteStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(makeNoteStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(makeNoteStorage.label, ThemeGroup.Function_2_Text);
 
             EditorHelper.SetComplexity(makeNote, Complexity.Advanced);
 
             var snapToBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "snap bpm", 5);
             var snapToBPMStorage = snapToBPM.GetComponent<FunctionButtonStorage>();
-            snapToBPMStorage.text.text = "Snap BPM";
+            snapToBPMStorage.label.text = "Snap BPM";
             snapToBPMStorage.button.onClick.ClearAll();
 
             EditorThemeManager.AddSelectable(snapToBPMStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(snapToBPMStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(snapToBPMStorage.label, ThemeGroup.Function_2_Text);
 
             EditorHelper.SetComplexity(snapToBPM, Complexity.Normal);
 
@@ -458,7 +458,7 @@ namespace BetterLegacy.Editor.Managers
                 var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "delete markers");
                 var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
 
-                var deleteText = deleteStorage.text;
+                var deleteText = deleteStorage.label;
                 deleteText.text = "Delete Markers";
 
                 var deleteButton = deleteStorage.button;

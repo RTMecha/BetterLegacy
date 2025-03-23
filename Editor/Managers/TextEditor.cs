@@ -89,10 +89,10 @@ namespace BetterLegacy.Editor.Managers
                 autoUpdateToggle.onValueChanged.AddListener(_val => autoUpdate = _val);
 
                 var update = EditorPrefabHolder.Instance.Function2Button.Duplicate(updateLayout.transform, "update").GetComponent<FunctionButtonStorage>();
-                update.text.text = "Update";
+                update.label.text = "Update";
                 RectValues.Default.AnchoredPosition(-192f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(update.transform.AsRT());
 
-                updateText = update.text;
+                updateText = update.label;
                 updateButton = update.button;
                 updateButton.onClick.NewListener(UpdateText);
 
@@ -106,7 +106,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddInputField(editor);
 
                 EditorThemeManager.AddSelectable(update.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(update.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(update.label, ThemeGroup.Function_2_Text);
 
                 EditorThemeManager.AddToggle(toggle);
                 EditorThemeManager.AddLightText(label);

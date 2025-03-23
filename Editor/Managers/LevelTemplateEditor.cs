@@ -118,7 +118,7 @@ namespace BetterLegacy.Editor.Managers
             var createLevelTemplateButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(gameObject.transform, "create");
             UIManager.SetRectTransform(createLevelTemplateButton.transform.AsRT(), new Vector2(200f, 42f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(322f, 32f));
             var createLevelTemplateButtonStorage = createLevelTemplateButton.GetComponent<FunctionButtonStorage>();
-            createLevelTemplateButtonStorage.text.text = "Create a new template";
+            createLevelTemplateButtonStorage.label.text = "Create a new template";
             createLevelTemplateButtonStorage.button.onClick.ClearAll();
             createLevelTemplateButtonStorage.button.onClick.AddListener(() =>
             {
@@ -129,7 +129,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Choose a level to create a template from.", 4f, EditorManager.NotificationType.Info);
             });
             EditorThemeManager.AddSelectable(createLevelTemplateButtonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(createLevelTemplateButtonStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(createLevelTemplateButtonStorage.label, ThemeGroup.Function_2_Text);
 
             var gameObject2 = Creator.NewUIObject("name", editorDialogObject.transform, 3);
             gameObject2.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
@@ -150,7 +150,7 @@ namespace BetterLegacy.Editor.Managers
             var choosePreviewButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(gameObject3.transform, "choose");
             UIManager.SetRectTransform(choosePreviewButton.transform.AsRT(), new Vector2(200f, 42f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(322f, 32f));
             var choosePreviewButtonStorage = choosePreviewButton.GetComponent<FunctionButtonStorage>();
-            choosePreviewButtonStorage.text.text = "Select a preview";
+            choosePreviewButtonStorage.label.text = "Select a preview";
             choosePreviewButtonStorage.button.onClick.ClearAll();
             choosePreviewButtonStorage.button.onClick.AddListener(() =>
             {
@@ -196,7 +196,7 @@ namespace BetterLegacy.Editor.Managers
                 }, "System Browser", "Editor Browser");
             });
             EditorThemeManager.AddSelectable(choosePreviewButtonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(choosePreviewButtonStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(choosePreviewButtonStorage.label, ThemeGroup.Function_2_Text);
         }
 
         #endregion

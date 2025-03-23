@@ -2965,7 +2965,7 @@ namespace BetterLegacy.Editor.Managers
             pasteModifier = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
             pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
             var buttonStorage = pasteModifier.GetComponent<FunctionButtonStorage>();
-            buttonStorage.text.text = "Paste";
+            buttonStorage.label.text = "Paste";
             buttonStorage.button.onClick.ClearAll();
             buttonStorage.button.onClick.AddListener(() =>
             {
@@ -2976,7 +2976,7 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AssignTooltip(pasteModifier, "Paste Modifier");
             EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Paste, true);
-            EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Paste_Text);
+            EditorThemeManager.ApplyGraphic(buttonStorage.label, ThemeGroup.Paste_Text);
         }
 
         #endregion

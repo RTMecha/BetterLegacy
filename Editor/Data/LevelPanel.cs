@@ -168,13 +168,13 @@ namespace BetterLegacy.Editor.Data
             Hover.animateSca = true;
 
             var folderButtonStorage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-            LevelTitle = folderButtonStorage.text;
+            LevelTitle = folderButtonStorage.label;
             LevelTitle.enabled = true;
             folderButtonStorage.button.onClick.ClearAll();
             IconImage = folderButtonStorage.image;
 
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.text);
+            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
             Render();
         }
@@ -202,12 +202,12 @@ namespace BetterLegacy.Editor.Data
             Hover.animateSca = true;
 
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-            LevelTitle = folderButtonStorage.text;
+            LevelTitle = folderButtonStorage.label;
             LevelTitle.enabled = true;
             folderButtonStorage.button.onClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.text);
+            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
@@ -270,11 +270,11 @@ namespace BetterLegacy.Editor.Data
             hoverUI.animatePos = false;
             hoverUI.animateSca = true;
 
-            folderButtonStorage.text.text = NameFormat;
+            folderButtonStorage.label.text = NameFormat;
 
-            folderButtonStorage.text.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
-            folderButtonStorage.text.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
-            folderButtonStorage.text.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
+            folderButtonStorage.label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
+            folderButtonStorage.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
+            folderButtonStorage.label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
 
             var difficultyColor = metadata.song.difficulty >= 0 && metadata.song.difficulty < DataManager.inst.difficulties.Count ?
                 DataManager.inst.difficulties[metadata.song.difficulty].color : LSColors.themeColors["none"].color;
@@ -304,7 +304,7 @@ namespace BetterLegacy.Editor.Data
             iconImage.sprite = Level.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
 
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.text);
+            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
             string difficultyName = difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)];
 

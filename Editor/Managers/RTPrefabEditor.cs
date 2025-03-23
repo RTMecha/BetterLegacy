@@ -440,7 +440,7 @@ namespace BetterLegacy.Editor.Managers
                 var typeButton = type.GetComponent<FunctionButtonStorage>();
 
                 type.transform.AsRT().sizeDelta = new Vector2(371f, 32f);
-                type.gameObject.AddComponent<ContrastColors>().Init(typeButton.text, typeButton.button.image);
+                type.gameObject.AddComponent<ContrastColors>().Init(typeButton.label, typeButton.button.image);
 
                 EditorThemeManager.AddGraphic(typeButton.button.image, ThemeGroup.Null, true);
                 try
@@ -1318,7 +1318,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var prefabType = prefab.GetPrefabType();
             PrefabObjectEditor.PrefabTypeSelectorButton.button.image.color = prefabType.color;
-            PrefabObjectEditor.PrefabTypeSelectorButton.text.text = prefabType.name;
+            PrefabObjectEditor.PrefabTypeSelectorButton.label.text = prefabType.name;
 
             PrefabObjectEditor.PrefabTypeSelectorButton.button.onClick.NewListener(() =>
             {
@@ -2040,10 +2040,10 @@ namespace BetterLegacy.Editor.Managers
                         });
                     });
 
-                setImageStorage.text.text = "Set Icon";
+                setImageStorage.label.text = "Set Icon";
 
                 EditorThemeManager.ApplyGraphic(setImageStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.ApplyGraphic(setImageStorage.text, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(setImageStorage.label, ThemeGroup.Function_1_Text);
 
                 num++;
             }
@@ -2164,7 +2164,7 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.text.text = "< Up a folder";
+                folderButtonStorageFolder.label.text = "< Up a folder";
 
                 folderButtonStorageFolder.button.onClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
@@ -2186,7 +2186,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
             prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.prefabListPath) != RTFile.ApplicationDirectory + "beatmaps");
@@ -2354,21 +2354,21 @@ namespace BetterLegacy.Editor.Managers
             var importPrefabStorage = importPrefab.GetComponent<FunctionButtonStorage>();
             importPrefab.SetActive(true);
             this.importPrefab = importPrefabStorage.button;
-            importPrefabStorage.text.text = "Import Prefab";
+            importPrefabStorage.label.text = "Import Prefab";
 
             var exportToVG = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "export");
             var exportToVGStorage = exportToVG.GetComponent<FunctionButtonStorage>();
             exportToVG.SetActive(true);
             this.exportToVG = exportToVGStorage.button;
-            exportToVGStorage.text.text = "Convert to VG Format";
+            exportToVGStorage.label.text = "Convert to VG Format";
 
             EditorHelper.AddEditorDialog(EditorDialog.PREFAB_EXTERNAL_EDITOR, editorDialog);
 
             EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddSelectable(importPrefabStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddSelectable(exportToVGStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(importPrefabStorage.text, ThemeGroup.Function_2_Text);
-            EditorThemeManager.AddGraphic(exportToVGStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(importPrefabStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(exportToVGStorage.label, ThemeGroup.Function_2_Text);
         }
 
         /// <summary>

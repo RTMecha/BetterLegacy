@@ -169,12 +169,12 @@ namespace BetterLegacy.Editor.Managers
 
                     UIManager.SetRectTransform(button.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 50f));
 
-                    buttonStorage.text.text = "Combine & Save";
+                    buttonStorage.label.text = "Combine & Save";
                     buttonStorage.button.onClick.ClearAll();
                     buttonStorage.button.onClick.AddListener(Combine);
 
                     EditorThemeManager.AddSelectable(buttonStorage.button, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(buttonStorage.label, ThemeGroup.Function_2_Text);
                 }
             }
 

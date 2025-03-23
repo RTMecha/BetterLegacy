@@ -213,7 +213,7 @@ namespace BetterLegacy.Editor.Managers
             var analyzeBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(dialog.Find("snap/toggle"), "analyze");
             analyzeBPM.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
             var analyzeBPMStorage = analyzeBPM.GetComponent<FunctionButtonStorage>();
-            analyzeBPMStorage.text.text = "Analyze BPM";
+            analyzeBPMStorage.label.text = "Analyze BPM";
             analyzeBPMStorage.button.onClick.ClearAll();
             analyzeBPMStorage.button.onClick.AddListener(() =>
             {
@@ -226,7 +226,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             EditorThemeManager.AddSelectable(analyzeBPMStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(analyzeBPMStorage.text, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddGraphic(analyzeBPMStorage.label, ThemeGroup.Function_2_Text);
 
             yield break;
         }

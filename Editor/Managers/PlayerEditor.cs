@@ -135,8 +135,8 @@ namespace BetterLegacy.Editor.Managers
                     var tab = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, e);
                     tab.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                     var functionButtonStorage = tab.GetComponent<FunctionButtonStorage>();
-                    functionButtonStorage.text.fontSize = 16;
-                    functionButtonStorage.text.text = e;
+                    functionButtonStorage.label.fontSize = 16;
+                    functionButtonStorage.label.text = e;
                     functionButtonStorage.button.onClick.ClearAll();
                     functionButtonStorage.button.onClick.AddListener(() =>
                     {
@@ -145,7 +145,7 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     EditorThemeManager.AddSelectable(functionButtonStorage.button, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {i + 1}"));
-                    tab.AddComponent<ContrastColors>().Init(functionButtonStorage.text, tab.GetComponent<Image>());
+                    tab.AddComponent<ContrastColors>().Init(functionButtonStorage.label, tab.GetComponent<Image>());
                 }
             }
 
@@ -1174,8 +1174,8 @@ namespace BetterLegacy.Editor.Managers
                 var select = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
                 select.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var selectStorage = select.GetComponent<FunctionButtonStorage>();
-                selectStorage.text.fontSize = 16;
-                selectStorage.text.text = "Select";
+                selectStorage.label.fontSize = 16;
+                selectStorage.label.text = "Select";
                 selectStorage.button.onClick.ClearAll();
                 selectStorage.button.onClick.AddListener(() =>
                 {
@@ -1184,7 +1184,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 EditorThemeManager.AddSelectable(selectStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(selectStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(selectStorage.label, ThemeGroup.Function_2_Text);
 
                 var playerIndexObject = EditorPrefabHolder.Instance.Dropdown.Duplicate(layout.transform, "dropdown");
                 playerIndexObject.transform.AsRT().sizeDelta = new Vector2(200f, 43.2f);
@@ -1205,46 +1205,46 @@ namespace BetterLegacy.Editor.Managers
                 var create = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
                 create.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var createStorage = create.GetComponent<FunctionButtonStorage>();
-                createStorage.text.fontSize = 16;
-                createStorage.text.text = "Create";
+                createStorage.label.fontSize = 16;
+                createStorage.label.text = "Create";
                 createStorage.button.onClick.ClearAll();
                 createStorage.button.onClick.AddListener(CreateNewModel);
 
                 EditorThemeManager.AddSelectable(createStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(createStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(createStorage.label, ThemeGroup.Function_2_Text);
 
                 var save = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
                 save.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var saveStorage = save.GetComponent<FunctionButtonStorage>();
-                saveStorage.text.fontSize = 16;
-                saveStorage.text.text = "Save";
+                saveStorage.label.fontSize = 16;
+                saveStorage.label.text = "Save";
                 saveStorage.button.onClick.ClearAll();
                 saveStorage.button.onClick.AddListener(Save);
 
                 EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(saveStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(saveStorage.label, ThemeGroup.Function_2_Text);
 
                 var load = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
                 load.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var loadStorage = load.GetComponent<FunctionButtonStorage>();
-                loadStorage.text.fontSize = 16;
-                loadStorage.text.text = "Reload";
+                loadStorage.label.fontSize = 16;
+                loadStorage.label.text = "Reload";
                 loadStorage.button.onClick.ClearAll();
                 loadStorage.button.onClick.AddListener(Reload);
 
                 EditorThemeManager.AddSelectable(loadStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(loadStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(loadStorage.label, ThemeGroup.Function_2_Text);
 
                 var setToGlobal = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
                 setToGlobal.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var setToGlobalStorage = setToGlobal.GetComponent<FunctionButtonStorage>();
-                setToGlobalStorage.text.fontSize = 16;
-                setToGlobalStorage.text.text = "Set to Global";
+                setToGlobalStorage.label.fontSize = 16;
+                setToGlobalStorage.label.text = "Set to Global";
                 setToGlobalStorage.button.onClick.ClearAll();
                 setToGlobalStorage.button.onClick.AddListener(() => PlayerManager.PlayerIndexes[playerModelIndex].Value = PlayersData.Current.playerModelsIndex[playerModelIndex]);
 
                 EditorThemeManager.AddSelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(setToGlobalStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(setToGlobalStorage.label, ThemeGroup.Function_2_Text);
             }
 
             LSHelpers.SetActiveChildren(content, false);
@@ -1964,14 +1964,14 @@ namespace BetterLegacy.Editor.Managers
                                     var toggle = EditorPrefabHolder.Instance.Function2Button.Duplicate(bar.transform, "not").GetComponent<FunctionButtonStorage>();
 
                                     toggle.button.onClick.ClearAll();
-                                    toggle.text.text = $"Not: {(visibility.not ? "Yes" : "No")}";
+                                    toggle.label.text = $"Not: {(visibility.not ? "Yes" : "No")}";
                                     toggle.button.onClick.AddListener(() =>
                                     {
                                         visibility.not = !visibility.not;
-                                        toggle.text.text = $"Not: {(visibility.not ? "Yes" : "No")}";
+                                        toggle.label.text = $"Not: {(visibility.not ? "Yes" : "No")}";
                                     });
                                     EditorThemeManager.ApplySelectable(toggle.button, ThemeGroup.Function_2);
-                                    EditorThemeManager.ApplyGraphic(toggle.text, ThemeGroup.Function_2_Text);
+                                    EditorThemeManager.ApplyGraphic(toggle.label, ThemeGroup.Function_2_Text);
 
                                     var x = EditorPrefabHolder.Instance.Dropdown.Duplicate(bar.transform);
                                     x.transform.SetParent(bar.transform);
@@ -2429,9 +2429,9 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, customObject.name);
                 var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderButtonStorage.text.text = customObject.name;
+                folderButtonStorage.label.text = customObject.name;
                 EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorage.text);
+                EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
@@ -2545,10 +2545,10 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.UpdatePlayerModels();
                 });
 
-                duplicateStorage.text.text = "Duplicate";
+                duplicateStorage.label.text = "Duplicate";
 
                 EditorThemeManager.ApplyGraphic(duplicateStorage.button.image, ThemeGroup.Paste, true);
-                EditorThemeManager.ApplyGraphic(duplicateStorage.text, ThemeGroup.Paste_Text);
+                EditorThemeManager.ApplyGraphic(duplicateStorage.label, ThemeGroup.Paste_Text);
 
                 num++;
             }

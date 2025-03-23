@@ -1687,7 +1687,7 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(snap.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(404f, 32f));
 
-            snapStorage.text.text = "Snap";
+            snapStorage.label.text = "Snap";
 
             var button = snapStorage.button;
             button.onClick.ClearAll();
@@ -1706,7 +1706,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             EditorThemeManager.AddGraphic(snapStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(snapStorage.text, ThemeGroup.Function_1_Text);
+            EditorThemeManager.AddGraphic(snapStorage.label, ThemeGroup.Function_1_Text);
 
             // Label
             {
@@ -1736,7 +1736,7 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(alignToFirstObject.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(404f, 32f));
 
-            alignToFirstStorage.text.text = "Align";
+            alignToFirstStorage.label.text = "Align";
 
             var alignToFirst = alignToFirstStorage.button;
             alignToFirst.onClick.ClearAll();
@@ -1758,7 +1758,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             EditorThemeManager.AddGraphic(alignToFirstStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(alignToFirstStorage.text, ThemeGroup.Function_1_Text);
+            EditorThemeManager.AddGraphic(alignToFirstStorage.label, ThemeGroup.Function_1_Text);
 
             // Label
             {
@@ -1788,7 +1788,7 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(pasteAllObject.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(404f, 32f));
 
-            pasteAllStorage.text.text = "Paste";
+            pasteAllStorage.label.text = "Paste";
 
             var pasteAll = pasteAllStorage.button;
             pasteAll.onClick.ClearAll();
@@ -1814,7 +1814,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             EditorThemeManager.AddGraphic(pasteAllStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(pasteAllStorage.text, ThemeGroup.Function_1_Text);
+            EditorThemeManager.AddGraphic(pasteAllStorage.label, ThemeGroup.Function_1_Text);
 
             #endregion
 
@@ -1828,21 +1828,21 @@ namespace BetterLegacy.Editor.Managers
 
                 var copy = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "copy", 5);
                 var copyStorage = copy.GetComponent<FunctionButtonStorage>();
-                var copyText = copyStorage.text;
+                var copyText = copyStorage.label;
                 copyText.text = "Copy";
                 copy.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                 var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "paste", 6);
                 var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
-                var pasteText = pasteStorage.text;
+                var pasteText = pasteStorage.label;
                 pasteText.text = "Paste";
                 paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                 EditorThemeManager.AddGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
-                EditorThemeManager.AddGraphic(copyStorage.text, ThemeGroup.Copy_Text);
+                EditorThemeManager.AddGraphic(copyStorage.label, ThemeGroup.Copy_Text);
 
                 EditorThemeManager.AddGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
-                EditorThemeManager.AddGraphic(pasteStorage.text, ThemeGroup.Paste_Text);
+                EditorThemeManager.AddGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
 
                 EditorHelper.SetComplexity(copy, Complexity.Normal);
                 EditorHelper.SetComplexity(paste, Complexity.Normal);

@@ -265,10 +265,10 @@ namespace BetterLegacy.Editor.Data
             };
 
             EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+            EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
 
             GameObject = gameObjectFolder;
-            Name = folderButtonStorageFolder.text;
+            Name = folderButtonStorageFolder.label;
             HoverUI = hover;
             FilePath = directory;
             Dialog = PrefabDialog.External;

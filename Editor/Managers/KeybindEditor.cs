@@ -640,7 +640,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 EditorThemeManager.ApplyGraphic(watch.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.ApplyGraphic(watch.text, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(watch.label, ThemeGroup.Function_1_Text);
 
                 code.onValueChanged.ClearAll();
                 code.value = (int)key.KeyCode;

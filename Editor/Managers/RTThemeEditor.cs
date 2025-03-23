@@ -278,7 +278,7 @@ namespace BetterLegacy.Editor.Managers
                     hoverUIFolder.animatePos = false;
                     hoverUIFolder.animateSca = true;
 
-                    folderButtonStorageFolder.text.text = "< Up a folder";
+                    folderButtonStorageFolder.label.text = "< Up a folder";
 
                     folderButtonStorageFolder.button.onClick.ClearAll();
                     folderButtonFunctionFolder.onClick = eventData =>
@@ -301,7 +301,7 @@ namespace BetterLegacy.Editor.Managers
                     };
 
                     EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
-                    EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.text, ThemeGroup.List_Button_2_Text);
+                    EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.label, ThemeGroup.List_Button_2_Text);
                 }
 
                 themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.themeListPath) != RTFile.ApplicationDirectory + "beatmaps");
@@ -685,7 +685,7 @@ namespace BetterLegacy.Editor.Managers
                     var useTheme = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "use");
                     var useThemeStorage = useTheme.GetComponent<FunctionButtonStorage>();
                     useTheme.SetActive(false);
-                    var useThemeText = useThemeStorage.text;
+                    var useThemeText = useThemeStorage.label;
                     useThemeText.fontSize = 16;
                     useThemeText.text = "Use Theme";
 
@@ -696,7 +696,7 @@ namespace BetterLegacy.Editor.Managers
                     var exportToVG = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "convert");
                     var exportToVGStorage = exportToVG.GetComponent<FunctionButtonStorage>();
                     exportToVG.SetActive(false);
-                    var exportToVGText = exportToVGStorage.text;
+                    var exportToVGText = exportToVGStorage.label;
                     exportToVGText.fontSize = 16;
                     exportToVGText.text = "Convert to VG Format";
 
@@ -820,9 +820,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(viewThemeStorage.baseImage, ThemeGroup.List_Button_1_Normal, true);
                 EditorThemeManager.ApplyLightText(viewThemeStorage.text);
                 EditorThemeManager.ApplySelectable(use, ThemeGroup.Function_2);
-                EditorThemeManager.ApplyGraphic(useStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplyGraphic(useStorage.label, ThemeGroup.Function_2_Text);
                 EditorThemeManager.ApplySelectable(convert, ThemeGroup.Function_2);
-                EditorThemeManager.ApplyGraphic(convertStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplyGraphic(convertStorage.label, ThemeGroup.Function_2_Text);
 
                 use.gameObject.SetActive(true);
                 convert.gameObject.SetActive(true);

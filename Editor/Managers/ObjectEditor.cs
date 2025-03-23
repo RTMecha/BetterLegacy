@@ -1174,32 +1174,32 @@ namespace BetterLegacy.Editor.Managers
                     // Inspect Beatmap Object
                     var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectbeatmapobject", index + 1);
                     var inspectBeatmapObjectButton = inspectBeatmapObject.GetComponent<FunctionButtonStorage>();
-                    inspectBeatmapObjectButton.text.text = "Inspect BeatmapObject";
+                    inspectBeatmapObjectButton.label.text = "Inspect BeatmapObject";
 
                     Destroy(inspectBeatmapObject.GetComponent<Animator>());
                     inspectBeatmapObjectButton.button.transition = Selectable.Transition.ColorTint;
                     EditorThemeManager.AddSelectable(inspectBeatmapObjectButton.button, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(inspectBeatmapObjectButton.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(inspectBeatmapObjectButton.label, ThemeGroup.Function_2_Text);
 
                     // Inspect Level Object
                     var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectlevelobject", index + 2);
                     var inspectLevelObjectButton = inspectLevelObject.GetComponent<FunctionButtonStorage>();
-                    inspectLevelObjectButton.text.text = "Inspect LevelObject";
+                    inspectLevelObjectButton.label.text = "Inspect LevelObject";
 
                     Destroy(inspectLevelObject.GetComponent<Animator>());
                     inspectLevelObjectButton.button.transition = Selectable.Transition.ColorTint;
                     EditorThemeManager.AddSelectable(inspectLevelObjectButton.button, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(inspectLevelObjectButton.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(inspectLevelObjectButton.label, ThemeGroup.Function_2_Text);
 
                     // Inspect Timeline Object
                     var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspecttimelineobject", index + 3);
                     var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
-                    inspectTimelineObjectButton.text.text = "Inspect TimelineObject";
+                    inspectTimelineObjectButton.label.text = "Inspect TimelineObject";
 
                     Destroy(inspectTimelineObject.GetComponent<Animator>());
                     inspectTimelineObjectButton.button.transition = Selectable.Transition.ColorTint;
                     EditorThemeManager.AddSelectable(inspectTimelineObjectButton.button, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(inspectTimelineObjectButton.text, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.AddGraphic(inspectTimelineObjectButton.label, ThemeGroup.Function_2_Text);
                 }
             }
             catch (Exception ex)
@@ -1415,9 +1415,9 @@ namespace BetterLegacy.Editor.Managers
                 var curvesApply = EditorPrefabHolder.Instance.Function1Button.Duplicate(curveBase.transform, "apply");
                 curvesApply.transform.AsRT().sizeDelta = new Vector2(132f, 38f);
                 var curvesApplyFunctionButton = curvesApply.GetComponent<FunctionButtonStorage>();
-                curvesApplyFunctionButton.text.text = "Apply Curves";
+                curvesApplyFunctionButton.label.text = "Apply Curves";
                 EditorThemeManager.AddGraphic(curvesApplyFunctionButton.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(curvesApplyFunctionButton.text, ThemeGroup.Function_1_Text);
+                EditorThemeManager.AddGraphic(curvesApplyFunctionButton.label, ThemeGroup.Function_1_Text);
 
                 RTEditor.GenerateLabels("value index_label", multiKeyframeEditor, new LabelSettings("Value Index / Value"));
 
@@ -3996,7 +3996,7 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.ParentButton.button.interactable = false;
                 Dialog.ParentMoreButton.interactable = false;
                 Dialog.ParentSettingsParent.gameObject.SetActive(false);
-                Dialog.ParentButton.text.text = "No Parent Object";
+                Dialog.ParentButton.label.text = "No Parent Object";
 
                 Dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
                 Dialog.ParentButton.button.onClick.ClearAll();
@@ -4042,7 +4042,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (p == null)
             {
-                Dialog.ParentButton.text.text = "No Parent Object";
+                Dialog.ParentButton.label.text = "No Parent Object";
                 Dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
                 Dialog.ParentButton.button.onClick.ClearAll();
                 Dialog.ParentMoreButton.onClick.ClearAll();
@@ -4050,7 +4050,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            Dialog.ParentButton.text.text = p;
+            Dialog.ParentButton.label.text = p;
 
             Dialog.ParentButton.button.onClick.ClearAll();
             Dialog.ParentButton.button.onClick.AddListener(() =>

@@ -191,7 +191,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             ParentButton = Content.Find("parent/text").gameObject.AddComponent<FunctionButtonStorage>();
             ParentButton.button = ParentButton.GetComponent<Button>();
-            ParentButton.text = ParentButton.transform.Find("text").GetComponent<Text>();
+            ParentButton.label = ParentButton.transform.Find("text").GetComponent<Text>();
             ParentInfo = ParentButton.GetComponent<HoverTooltip>();
             ParentMoreButton = Content.Find("parent/more").GetComponent<Button>();
             ParentSettingsParent = Content.Find("parent_more").gameObject;
@@ -277,16 +277,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             CollapsePrefabLabel = Content.Find("collapselabel").gameObject;
             CollapsePrefabButton = Content.Find("applyprefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
-            CollapsePrefabButton.text = CollapsePrefabButton.transform.Find("Text").GetComponent<Text>();
+            CollapsePrefabButton.label = CollapsePrefabButton.transform.Find("Text").GetComponent<Text>();
             CollapsePrefabButton.button = CollapsePrefabButton.GetComponent<Button>();
 
             AssignPrefabLabel = Content.Find("assignlabel").gameObject;
             AssignPrefabButton = Content.Find("assign prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
-            AssignPrefabButton.text = AssignPrefabButton.transform.Find("Text").GetComponent<Text>();
+            AssignPrefabButton.label = AssignPrefabButton.transform.Find("Text").GetComponent<Text>();
             AssignPrefabButton.button = AssignPrefabButton.GetComponent<Button>();
 
             RemovePrefabButton = Content.Find("remove prefab").gameObject.GetOrAddComponent<FunctionButtonStorage>();
-            RemovePrefabButton.text = RemovePrefabButton.transform.Find("Text").GetComponent<Text>();
+            RemovePrefabButton.label = RemovePrefabButton.transform.Find("Text").GetComponent<Text>();
             RemovePrefabButton.button = RemovePrefabButton.GetComponent<Button>();
 
             #endregion

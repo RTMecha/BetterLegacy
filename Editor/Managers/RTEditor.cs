@@ -249,7 +249,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var functionButtonStorage = prefabHolder.Function2Button.AddComponent<FunctionButtonStorage>();
                 functionButtonStorage.button = prefabHolder.Function2Button.GetComponent<Button>();
-                functionButtonStorage.text = prefabHolder.Function2Button.transform.GetChild(0).GetComponent<Text>();
+                functionButtonStorage.label = prefabHolder.Function2Button.transform.GetChild(0).GetComponent<Text>();
                 Destroy(prefabHolder.Function2Button.GetComponent<Animator>());
                 functionButtonStorage.button.transition = Selectable.Transition.ColorTint;
 
@@ -334,7 +334,7 @@ namespace BetterLegacy.Editor.Managers
             var functionButton1Storage = prefabHolder.Function1Button.AddComponent<FunctionButtonStorage>();
             functionButton1Storage.button = prefabHolder.Function1Button.GetComponent<Button>();
             functionButton1Storage.button.onClick.ClearAll();
-            functionButton1Storage.text = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
+            functionButton1Storage.label = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
 
             prefabHolder.ToggleButton = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/grain/colored").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle button");
             var toggleButtonStorage = prefabHolder.ToggleButton.AddComponent<ToggleButtonStorage>();
@@ -3220,14 +3220,14 @@ namespace BetterLegacy.Editor.Managers
             rtfb.folderPrefab = fileBrowserBase.folderPrefab.Duplicate(EditorPrefabHolder.Instance.PrefabParent, fileBrowserBase.folderPrefab.name);
             var folderPrefabStorage = rtfb.folderPrefab.AddComponent<FunctionButtonStorage>();
             folderPrefabStorage.button = rtfb.folderPrefab.GetComponent<Button>();
-            folderPrefabStorage.text = rtfb.folderPrefab.transform.GetChild(0).GetComponent<Text>();
+            folderPrefabStorage.label = rtfb.folderPrefab.transform.GetChild(0).GetComponent<Text>();
 
             rtfb.folderBar = fileBrowserBase.folderBar;
             rtfb.oggFileInput = fileBrowserBase.oggFileInput;
             rtfb.filePrefab = fileBrowserBase.filePrefab.Duplicate(EditorPrefabHolder.Instance.PrefabParent, fileBrowserBase.filePrefab.name);
             var filePrefabStorage = rtfb.filePrefab.AddComponent<FunctionButtonStorage>();
             filePrefabStorage.button = rtfb.filePrefab.GetComponent<Button>();
-            filePrefabStorage.text = rtfb.filePrefab.transform.GetChild(0).GetComponent<Text>();
+            filePrefabStorage.label = rtfb.filePrefab.transform.GetChild(0).GetComponent<Text>();
 
             Destroy(fileBrowserBase);
 
@@ -4192,11 +4192,11 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.text.text = "< Up a folder";
+                folderButtonStorageFolder.label.text = "< Up a folder";
 
-                folderButtonStorageFolder.text.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
-                folderButtonStorageFolder.text.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
-                folderButtonStorageFolder.text.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
+                folderButtonStorageFolder.label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
+                folderButtonStorageFolder.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
+                folderButtonStorageFolder.label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
 
                 folderButtonStorageFolder.button.onClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
@@ -4220,7 +4220,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
             foreach (var file in files)
@@ -5141,13 +5141,13 @@ namespace BetterLegacy.Editor.Managers
                 hoverUI.animatePos = false;
                 hoverUI.animateSca = true;
 
-                folderButtonStorage.text.text = Path.GetFileName(file);
+                folderButtonStorage.label.text = Path.GetFileName(file);
 
                 var backup = EditorPrefabHolder.Instance.Function1Button.Duplicate(gameObject.transform, "backup");
                 var backupHolder = backup.GetComponent<FunctionButtonStorage>();
                 backup.transform.localScale = Vector3.one;
                 UIManager.SetRectTransform(backup.transform.AsRT(), new Vector2(450f, 0f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(80f, 28f));
-                backupHolder.text.text = "Backup";
+                backupHolder.label.text = "Backup";
                 backupHolder.button.onClick.ClearAll();
                 backupHolder.button.onClick.AddListener(() =>
                 {
@@ -5165,7 +5165,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyGraphic(backupHolder.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.ApplyGraphic(backupHolder.text, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(backupHolder.label, ThemeGroup.Function_1_Text);
             }
         }
 

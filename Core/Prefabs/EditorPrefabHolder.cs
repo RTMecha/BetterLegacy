@@ -119,7 +119,7 @@ namespace BetterLegacy.Core.Prefabs
         public Button button;
 
         [SerializeField]
-        public Text text;
+        public Text label;
     }
 
     public class SpriteFunctionButtonStorage : FunctionButtonStorage

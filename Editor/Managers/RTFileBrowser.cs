@@ -99,7 +99,7 @@ namespace BetterLegacy.Editor.Managers
                 string name = new DirectoryInfo(folder).Name;
                 var gameObject = folderPrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.text.text = name;
+                folderPrefabStorage.label.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => { UpdateBrowserFile(folder, fileExtensions, onSelectFile); });
 
@@ -120,7 +120,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.Folder_Button, true);
-                EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.Folder_Button_Text);
+                EditorThemeManager.ApplyGraphic(folderPrefabStorage.label, ThemeGroup.Folder_Button_Text);
             }
 
             array = files;
@@ -134,7 +134,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var gameObject = filePrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.text.text = name;
+                folderPrefabStorage.label.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
 
@@ -162,7 +162,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.File_Button, true);
-                EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.File_Button_Text);
+                EditorThemeManager.ApplyGraphic(folderPrefabStorage.label, ThemeGroup.File_Button_Text);
             }
 
             folderBar.text = defaultDir;
@@ -223,7 +223,7 @@ namespace BetterLegacy.Editor.Managers
                 string name = new DirectoryInfo(folder).Name;
                 var gameObject = folderPrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.text.text = name;
+                folderPrefabStorage.label.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile));
 
@@ -244,7 +244,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.Folder_Button, true);
-                EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.Folder_Button_Text);
+                EditorThemeManager.ApplyGraphic(folderPrefabStorage.label, ThemeGroup.Folder_Button_Text);
             }
 
             array = files;
@@ -258,7 +258,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var gameObject = filePrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.text.text = name;
+                folderPrefabStorage.label.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
 
@@ -287,7 +287,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.File_Button, true);
-                EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.File_Button_Text);
+                EditorThemeManager.ApplyGraphic(folderPrefabStorage.label, ThemeGroup.File_Button_Text);
             }
 
             folderBar.text = defaultDir;
@@ -347,7 +347,7 @@ namespace BetterLegacy.Editor.Managers
                 string name = new DirectoryInfo(folder).Name;
                 var gameObject = folderPrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.text.text = name;
+                folderPrefabStorage.label.text = name;
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => UpdateBrowserFolder(folder, specificName, onSelectFolder));
 
@@ -369,7 +369,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.Folder_Button, true);
-                EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.Folder_Button_Text, true);
+                EditorThemeManager.ApplyGraphic(folderPrefabStorage.label, ThemeGroup.Folder_Button_Text, true);
             }
 
             folderBar.text = defaultDir;

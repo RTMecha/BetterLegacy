@@ -165,12 +165,12 @@ namespace BetterLegacy.Editor.Data
             GameObject = gameObjectFolder;
             FilePath = directory;
             isFolder = true;
-            Name = folderButtonStorageFolder.text;
+            Name = folderButtonStorageFolder.label;
             FolderButton = folderButtonFunctionFolder;
             IconImage = folderButtonStorageFolder.image;
 
             EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
-            EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.text, ThemeGroup.List_Button_2_Text);
+            EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.label, ThemeGroup.List_Button_2_Text);
 
             Render();
             SetActive(false);

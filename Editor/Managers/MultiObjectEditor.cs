@@ -1683,9 +1683,9 @@ namespace BetterLegacy.Editor.Managers
                     currentMultiColorSelection = -1;
                     UpdateMultiColorButtons();
                 });
-                disableButtonStorage.text.text = "Don't set color";
+                disableButtonStorage.label.text = "Don't set color";
                 EditorThemeManager.AddGraphic(disableXImage, ThemeGroup.Function_2_Text);
-                EditorThemeManager.AddGraphic(disableButtonStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(disableButtonStorage.label, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddSelectable(disableButtonStorage.button, ThemeGroup.Function_2);
 
                 var colorLayout = Creator.NewUIObject("color layout", parent);
@@ -1758,9 +1758,9 @@ namespace BetterLegacy.Editor.Managers
                     currentMultiGradientColorSelection = -1;
                     UpdateMultiColorButtons();
                 });
-                disableGradientButtonStorage.text.text = "Don't set color";
+                disableGradientButtonStorage.label.text = "Don't set color";
                 EditorThemeManager.AddGraphic(disableGradientXImage, ThemeGroup.Function_2_Text);
-                EditorThemeManager.AddGraphic(disableGradientButtonStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(disableGradientButtonStorage.label, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddSelectable(disableGradientButtonStorage.button, ThemeGroup.Function_2);
 
                 var colorGradientLayout = Creator.NewUIObject("color layout", parent);
@@ -3137,11 +3137,11 @@ namespace BetterLegacy.Editor.Managers
                 buttonStorage.button.onClick.ClearAll();
                 buttonStorage.button.onClick.AddListener(() => { buttonFunction.Action?.Invoke(); });
             }
-            buttonStorage.text.fontSize = buttonFunction.FontSize;
-            buttonStorage.text.text = buttonFunction.Name;
+            buttonStorage.label.fontSize = buttonFunction.FontSize;
+            buttonStorage.label.text = buttonFunction.Name;
 
             EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
+            EditorThemeManager.AddGraphic(buttonStorage.label, ThemeGroup.Function_1_Text);
 
             return button;
         }
