@@ -1275,8 +1275,8 @@ namespace BetterLegacy.Patchers
             var sprite = inst.loadingSprites[inst.currentLoadingSprite];
             if (RTEditor.inst.InfoPopup && RTEditor.inst.InfoPopup.Doggo)
                 RTEditor.inst.InfoPopup.Doggo.sprite = sprite;
-            if (RTSettingEditor.inst && RTSettingEditor.inst.doggo)
-                RTSettingEditor.inst.doggo.sprite = sprite;
+            if (RTSettingEditor.inst && RTSettingEditor.inst.Dialog.Doggo)
+                RTSettingEditor.inst.Dialog.Doggo.sprite = sprite;
             inst.loadingImage.sprite = sprite;
 
             inst.currentLoadingSprite++;
