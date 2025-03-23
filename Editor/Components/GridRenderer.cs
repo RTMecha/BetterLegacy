@@ -10,8 +10,6 @@ namespace BetterLegacy.Editor.Components
     /// </summary>
     public class GridRenderer : Graphic
     {
-        public bool isTimeline;
-
         public Vector2 gridCellSpacing = new Vector2(1f, 1f);
         public Vector2Int gridCellSize = new Vector2Int(1, 1);
         public Vector2 gridSize = new Vector2(1f, 1f);
@@ -50,10 +48,9 @@ namespace BetterLegacy.Editor.Components
             }
         }
 
-        public static float multi = 154f;
         void DrawCell(int x, int y, int index, VertexHelper vh)
         {
-            float posX = (cellWidth * x) + (isTimeline ? (RTEditor.inst.editorInfo.bpmOffset * multi) : 0f);
+            float posX = cellWidth * x;
             float posY = cellHeight * y;
 
             var simpleVert = UIVertex.simpleVert;

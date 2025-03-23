@@ -249,7 +249,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!timelineMarkers[i].dragging)
                     continue;
 
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
                 timelineMarkers[i].RenderPosition();
             }
 
@@ -638,7 +638,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     var marker = Marker.DeepCopy(markerCopy);
-                    marker.time = RTEditor.inst.editorInfo.bpmSnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                    marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
                     GameData.Current.data.markers.Add(marker);
                     CreateMarker(GameData.Current.data.markers.Count - 1);
                     OrderMarkers();

@@ -84,6 +84,8 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public float bpmOffset = 0f;
 
+        public float timeSignature = 4f;
+
         #endregion
 
         /// <summary>
@@ -179,25 +181,21 @@ namespace BetterLegacy.Editor.Data
                 if (jn["misc"]["bpm_snap_active"] != null)
                     editorInfo.bpmSnapActive = jn["misc"]["bpm_snap_active"].AsBool;
 
-                var bpm = 140f;
                 if (jn["misc"]["bpm"] != null)
-                    bpm = jn["misc"]["bpm"].AsFloat;
-                editorInfo.bpm = bpm;
+                    editorInfo.bpm = jn["misc"]["bpm"].AsFloat;
                 
-                var bpmOffset = 0f;
                 if (jn["misc"]["so"] != null)
-                    bpmOffset = jn["misc"]["so"].AsFloat;
+                    editorInfo.bpmOffset = jn["misc"]["so"].AsFloat;
                 if (jn["misc"]["bpm_offset"] != null)
-                    bpmOffset = jn["misc"]["bpm_offset"].AsFloat;
-                editorInfo.bpmOffset = bpmOffset;
+                    editorInfo.bpmOffset = jn["misc"]["bpm_offset"].AsFloat;
+                
+                if (jn["misc"]["bpm_signature"] != null)
+                    editorInfo.timeSignature = jn["misc"]["bpm_signature"].AsFloat;
 
-                float time = -1f;
                 if (jn["misc"]["t"] != null)
-                    time = jn["misc"]["t"].AsFloat;
+                    editorInfo.time = jn["misc"]["t"].AsFloat;
                 if (jn["misc"]["time"] != null)
-                    time = jn["misc"]["time"].AsFloat;
-
-                editorInfo.time = time;
+                    editorInfo.time = jn["misc"]["time"].AsFloat;
             }
 
             return editorInfo;
@@ -218,20 +216,22 @@ namespace BetterLegacy.Editor.Data
 
             jn["timeline"]["zoom"] = EditorManager.inst.zoomFloat.ToString("f3");
             jn["timeline"]["position"] = EditorManager.inst.timelineScrollRectBar.value.ToString("f2");
-            jn["timeline"]["layer_type"] = ((int)EditorTimeline.inst.layerType).ToString();
-            jn["timeline"]["layer"] = EditorTimeline.inst.Layer.ToString();
-            jn["timeline"]["bin_count"] = EditorTimeline.inst.BinCount.ToString();
-            jn["timeline"]["bin_position"] = EditorTimeline.inst.binSlider.value.ToString();
+
+            jn["timeline"]["layer_type"] = (int)EditorTimeline.inst.layerType;
+            jn["timeline"]["layer"] = EditorTimeline.inst.Layer;
+            jn["timeline"]["bin_count"] = EditorTimeline.inst.BinCount;
+            jn["timeline"]["bin_position"] = EditorTimeline.inst.binSlider.value;
 
             for (int i = 0; i < EditorTimeline.inst.pinnedEditorLayers.Count; i++)
                 jn["timeline"]["pinned_layers"][i] = EditorTimeline.inst.pinnedEditorLayers[i].ToJSON();
 
-            jn["editor"]["editing_time"] = timer.time.ToString();
-            jn["editor"]["open_amount"] = openAmount.ToString();
-            jn["misc"]["bpm_snap_active"] = bpmSnapActive.ToString();
-            jn["misc"]["bpm"] = bpm.ToString();
-            jn["misc"]["bpm_offset"] = bpmOffset.ToString();
-            jn["misc"]["time"] = AudioManager.inst.CurrentAudioSource.time.ToString();
+            jn["editor"]["editing_time"] = timer.time;
+            jn["editor"]["open_amount"] = openAmount;
+            jn["misc"]["bpm_snap_active"] = bpmSnapActive;
+            jn["misc"]["bpm"] = bpm;
+            jn["misc"]["bpm_offset"] = bpmOffset;
+            jn["misc"]["bpm_signature"] = timeSignature;
+            jn["misc"]["time"] = AudioManager.inst.CurrentAudioSource.time;
 
             return jn;
         }
@@ -250,7 +250,6 @@ namespace BetterLegacy.Editor.Data
             EditorTimeline.inst.pinnedEditorLayers.Clear();
             EditorTimeline.inst.pinnedEditorLayers.AddRange(pinnedEditorLayers.Select(x => PinnedEditorLayer.DeepCopy(x)));
 
-            SettingEditor.inst.SnapActive = bpmSnapActive;
             SettingEditor.inst.SnapBPM = bpm;
 
             if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length && EditorConfig.Instance.LevelLoadsLastTime.Value)
@@ -283,7 +282,6 @@ namespace BetterLegacy.Editor.Data
             pinnedEditorLayers.Clear();
             pinnedEditorLayers.AddRange(EditorTimeline.inst.pinnedEditorLayers.Select(x => PinnedEditorLayer.DeepCopy(x)));
 
-            bpmSnapActive = SettingEditor.inst.SnapActive;
             bpm = MetaData.Current.song.BPM;
 
             time = AudioManager.inst.CurrentAudioSource.time;

@@ -7,6 +7,7 @@ using UnityEngine;
 
 using HarmonyLib;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -68,7 +69,7 @@ namespace BetterLegacy.Patchers
 
             if (Instance.eventDrag)
             {
-                var timelineTime = EditorTimeline.inst.GetTimelineTime();
+                var timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value);
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                 {
                     if (timelineObject.Index == 0 || timelineObject.Locked)

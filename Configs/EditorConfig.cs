@@ -59,8 +59,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> Debug { get; set; }
         public Setting<bool> EditorZenMode { get; set; }
         public Setting<bool> ResetHealthInEditor { get; set; }
-        public Setting<bool> BPMSnapsKeyframes { get; set; }
-        public Setting<float> BPMSnapDivisions { get; set; }
         public Setting<bool> DraggingPlaysSound { get; set; }
         public Setting<bool> DraggingPlaysSoundOnlyWithBPM { get; set; }
         public Setting<bool> ShowCollapsePrefabWarning { get; set; }
@@ -274,6 +272,18 @@ namespace BetterLegacy.Configs
         public Setting<float> ObjectMarkerLineWidth { get; set; }
         public Setting<float> ObjectMarkerTextWidth { get; set; }
         public Setting<bool> ObjectMarkerLineDotted { get; set; }
+
+        #endregion
+
+        #region BPM
+
+        public Setting<bool> BPMSnapsObjects { get; set; }
+        public Setting<bool> BPMSnapsObjectKeyframes { get; set; }
+        public Setting<bool> BPMSnapsKeyframes { get; set; }
+        public Setting<bool> BPMSnapsCheckpoints { get; set; }
+        public Setting<bool> BPMSnapsMarkers { get; set; }
+        public Setting<bool> BPMSnapsPasted { get; set; }
+        public Setting<bool> BPMSnapsPrefabImport { get; set; }
 
         #endregion
 
@@ -1324,8 +1334,6 @@ namespace BetterLegacy.Configs
             Debug = Bind(this, GENERAL, "Debug", false, "If enabled, specific debugging functions for the editor will be enabled.");
             EditorZenMode = Bind(this, GENERAL, "Editor Zen Mode", false, "If on, the player will not take damage in Preview Mode.");
             ResetHealthInEditor = Bind(this, GENERAL, "Reset Health In Editor View", true, "If on, the player's health will reset when the creator exits Preview Mode.");
-            BPMSnapsKeyframes = Bind(this, GENERAL, "BPM Snaps Keyframes", false, "Makes object's keyframes snap if Snap BPM is enabled.");
-            BPMSnapDivisions = Bind(this, GENERAL, "BPM Snap Divisions", 4f, "How many times the snap is divided into. Can be good for songs that don't do 4 divisions.");
             DraggingPlaysSound = Bind(this, GENERAL, "Dragging Plays Sound", true, "If dragging an object plays a sound.");
             DraggingPlaysSoundOnlyWithBPM = Bind(this, GENERAL, "Dragging Plays Sound Only With BPM", true, "If dragging an object plays a sound ONLY when BPM Snap is active.");
             ShowCollapsePrefabWarning = Bind(this, GENERAL, "Show Collapse Prefab Warning", true, "If a warning should popup when the user is trying to apply a prefab. Can be good for accidental Apply Prefab button clicks.");
@@ -1538,6 +1546,18 @@ namespace BetterLegacy.Configs
             ObjectMarkerLineWidth = Bind(this, MARKERS, "Object Marker Line Width", 4f, "The width of the marker lines.");
             ObjectMarkerTextWidth = Bind(this, MARKERS, "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
             ObjectMarkerLineDotted = Bind(this, MARKERS, "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
+
+            #endregion
+
+            #region BPM
+
+            BPMSnapsObjects = Bind(this, BPM, "Snap Objects", true, "Makes the start time of objects snap to the BPM.");
+            BPMSnapsObjectKeyframes = Bind(this, BPM, "Snap Object Keyframes", false, "Makes the time of object keyframes snap to the BPM.");
+            BPMSnapsKeyframes = Bind(this, BPM, "Snap Keyframes", true, "Makes the time of event keyframes snap to the BPM.");
+            BPMSnapsCheckpoints = Bind(this, BPM, "Snap Checkpoints", true, "Makes the time of checkpoints snap to the BPM.");
+            BPMSnapsMarkers = Bind(this, BPM, "Snap Markers", true, "Makes the time of markers snap to the BPM.");
+            BPMSnapsPasted = Bind(this, BPM, "Snaps Pasted", true, "Makes pasted objects snap to the BPM at an offset from the first object, so any objects that spawn after don't get snapped.");
+            BPMSnapsPrefabImport = Bind(this, BPM, "Snaps Prefab Import", true, "Makes prefabs imported to the level snap to the BPM.");
 
             #endregion
 
@@ -2582,7 +2602,6 @@ namespace BetterLegacy.Configs
             TimelineGridThickness.SettingChanged += TimelineGridChanged;
             TimelineGridColor.SettingChanged += TimelineGridChanged;
 
-            BPMSnapDivisions.SettingChanged += TimelineGridChanged;
             DragUI.SettingChanged += DragUIChanged;
 
             HideVisualElementsWhenObjectIsEmpty.SettingChanged += ObjectEditorChanged;
@@ -3081,6 +3100,7 @@ namespace BetterLegacy.Configs
         public const string DATA = "Data";
         public const string EDITOR_GUI = "Editor GUI";
         public const string MARKERS = "Markers";
+        public const string BPM = "BPM";
         public const string FIELDS = "Fields";
         public const string ANIMATIONS = "Animations";
         public const string PREVIEW = "Preview";

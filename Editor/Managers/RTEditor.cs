@@ -2417,7 +2417,7 @@ namespace BetterLegacy.Editor.Managers
                                     RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
                                 break;
                         case PointerEventData.InputButton.Middle:
-                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(), out int index))
+                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
                                 RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
                             break;
                     }
@@ -3317,10 +3317,9 @@ namespace BetterLegacy.Editor.Managers
             var gridLayout = grid.AddComponent<LayoutElement>();
             gridLayout.ignoreLayout = true;
 
-            UIManager.SetRectTransform(grid.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, Vector2.zero);
+            UIManager.SetRectTransform(grid.transform.AsRT(), Vector2.zero, new Vector2(0f, 1f), Vector2.zero, Vector2.zero, Vector2.zero);
 
             EditorTimeline.inst.timelineGridRenderer = grid.AddComponent<GridRenderer>();
-            EditorTimeline.inst.timelineGridRenderer.isTimeline = true;
 
             var config = EditorConfig.Instance;
 
@@ -6502,7 +6501,11 @@ namespace BetterLegacy.Editor.Managers
             RTFile.MoveDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash, level), RTFile.CombinePaths(recyclingPath, level));
         }
 
-        public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.editorInfo.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value) - inst.editorInfo.bpmOffset;
+        public static float SnapToBPM(float time)
+        {
+            var signature = RTSettingEditor.inst.BPMMulti / inst.editorInfo.timeSignature;
+            return (Mathf.RoundToInt((time - inst.editorInfo.bpmOffset) / signature) * signature) + inst.editorInfo.bpmOffset;
+        }
 
         public static float SnapToBPM(float time, float offset, float divisions, float bpm) => Mathf.RoundToInt((time + offset) / (60f / bpm / divisions)) * (60f / bpm / divisions) - offset;
 

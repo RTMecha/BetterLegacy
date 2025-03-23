@@ -583,7 +583,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.timelineKeyframes.ForEach(x => x.Selected = false);
 
             var time = EditorManager.inst.CurrentAudioPos;
-            if (RTEditor.inst.editorInfo.bpmSnapActive)
+            if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value)
                 time = RTEditor.SnapToBPM(time);
 
             foreach (var keyframeSelection in kfs)
@@ -688,7 +688,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CreateNewEventObject(EditorTimeline.inst.GetTimelineTime(), type);
+            CreateNewEventObject(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value), type);
         }
 
         public void AddSelectedEvent(int type, int index)

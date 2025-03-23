@@ -422,7 +422,7 @@ namespace BetterLegacy.Core.Helpers
                 else
                     EventEditor.inst.SetCurrentEvent(timelineKeyframe.Type, timelineKeyframe.Index);
 
-                float timelineTime = EditorTimeline.inst.GetTimelineTime();
+                float timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value);
                 EventEditor.inst.mouseOffsetXForDrag = timelineKeyframe.eventKeyframe.time - timelineTime;
                 EventEditor.inst.eventDrag = true;
             }
@@ -582,7 +582,7 @@ namespace BetterLegacy.Core.Helpers
             timelineObject.timeOffset = 0f;
             timelineObject.binOffset = 0;
 
-            float timelineTime = EditorTimeline.inst.GetTimelineTime();
+            float timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value);
             int num = 14 - Mathf.RoundToInt((Input.mousePosition.y - 25f) * EditorManager.inst.ScreenScaleInverse / 20f);
             ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
             ObjEditor.inst.mouseOffsetYForDrag = bin - num;
@@ -811,7 +811,7 @@ namespace BetterLegacy.Core.Helpers
                 else
                     EditorTimeline.inst.SetCurrentObject(timelineObject);
 
-                float timelineTime = EditorTimeline.inst.GetTimelineTime();
+                float timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value);
                 ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
                 return;
             }

@@ -3,6 +3,7 @@ using UnityEngine;
 
 using HarmonyLib;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 
@@ -73,7 +74,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewMarkerPrefix()
         {
-            Instance.CreateNewMarker(RTEditor.inst.editorInfo.bpmSnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos);
+            Instance.CreateNewMarker(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos);
             return false;
         }
 

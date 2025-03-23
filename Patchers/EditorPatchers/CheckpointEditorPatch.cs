@@ -8,6 +8,7 @@ using HarmonyLib;
 using LSFunctions;
 
 using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -67,7 +68,7 @@ namespace BetterLegacy.Patchers
             {
                 if (Instance.checkpointsDrag[j])
                 {
-                    GameData.Current.data.checkpoints[j].time = Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    GameData.Current.data.checkpoints[j].time = Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCheckpoints.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     Instance.left.Find("time/time").GetComponent<InputField>().text = GameData.Current.data.checkpoints[j].time.ToString("f3");
                     Instance.RenderCheckpoint(j);
                 }

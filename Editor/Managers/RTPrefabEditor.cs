@@ -322,8 +322,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var timeParent = time.transform;
 
-                var settingEditorDialog = EditorManager.inst.GetDialog("Settings Editor").Dialog;
-                var locker = settingEditorDialog.Find("snap/toggle/toggle").gameObject.Duplicate(timeParent, "lock", 0);
+                var locker = EditorPrefabHolder.Instance.Toggle.Duplicate(timeParent, "lock", 0);
 
                 locker.transform.Find("Background/Checkmark").GetComponent<Image>().sprite = ObjEditor.inst.timelineObjectPrefabLock.transform.Find("lock (1)").GetComponent<Image>().sprite;
                 locker.gameObject.GetOrAddComponent<LayoutElement>().minWidth = 32f;
@@ -1520,7 +1519,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 id = LSText.randomString(16),
                 prefabID = prefab.id,
-                StartTime = EditorManager.inst.CurrentAudioPos,
+                StartTime = EditorConfig.Instance.BPMSnapsPrefabImport.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos,
             };
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)

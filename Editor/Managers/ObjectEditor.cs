@@ -2334,7 +2334,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            float timeOffset = EditorTimeline.inst.GetTimelineTime() + ObjEditor.inst.mouseOffsetXForDrag;
+            float timeOffset = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value) + ObjEditor.inst.mouseOffsetXForDrag;
             if (EditorConfig.Instance.ClampedTimelineDrag.Value)
                 timeOffset = Mathf.Clamp(timeOffset, 0f, musicLength);
             timeOffset = Mathf.Round(timeOffset * 1000f) / 1000f;
@@ -2412,7 +2412,7 @@ namespace BetterLegacy.Editor.Managers
 
             var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
-            var snap = EditorConfig.Instance.BPMSnapsKeyframes.Value;
+            var snap = EditorConfig.Instance.BPMSnapsObjectKeyframes.Value;
             var timelineCalc = MouseTimelineCalc();
             var selected = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
             var startTime = beatmapObject.StartTime;
@@ -2750,7 +2750,7 @@ namespace BetterLegacy.Editor.Managers
             var eventKeyframe = EventKeyframe.DeepCopy(timelineKeyframe.eventKeyframe);
 
             var time = EditorManager.inst.CurrentAudioPos;
-            if (RTEditor.inst.editorInfo.bpmSnapActive)
+            if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value)
                 time = RTEditor.SnapToBPM(time);
 
             if (!setTime)
@@ -2864,6 +2864,9 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.ienumRunning = true;
             float delay = 0f;
             float audioTime = EditorManager.inst.CurrentAudioPos;
+            if (EditorConfig.Instance.BPMSnapsPasted.Value)
+                audioTime = RTEditor.SnapToBPM(audioTime);
+
             CoreHelper.Log($"Placing prefab with {prefab.beatmapObjects.Count} objects and {prefab.prefabObjects.Count} prefabs");
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)

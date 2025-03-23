@@ -79,7 +79,7 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the main timeline zoom.
         /// </summary>
         /// <param name="zoom">The zoom to set to the timeline.</param>
-        public void SetTimelineZoom(float zoom) => SetTimeline(zoom, AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? GetTimelineTime() : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length);
+        public void SetTimelineZoom(float zoom) => SetTimeline(zoom, AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? GetTimelineTime(false) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length);
 
         /// <summary>
         /// Sets the main timeline zoom and position.
@@ -87,7 +87,6 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="zoom">The amount to zoom in.</param>
         /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
         /// <param name="render">If the timeline should render.</param>
-        /// <param name="log">If the zoom amount should be logged.</param>
         public void SetTimeline(float zoom, float position, bool render = true)
         {
             try
@@ -117,6 +116,21 @@ namespace BetterLegacy.Editor.Managers
         {
             yield return new WaitForFixedUpdate();
             EditorManager.inst.timelineScrollRectBar.value = position;
+        }
+
+        /// <summary>
+        /// Calculates the timeline time the mouse cursor is at.
+        /// </summary>
+        /// <param name="snap">If the return value should be snapped to the BPM.</param>
+        /// <returns>Returns a calculated timeline time.</returns>
+        public float GetTimelineTime(bool snap)
+        {
+            float num = Input.mousePosition.x;
+            num += Mathf.Abs(EditorManager.inst.timeline.transform.AsRT().position.x);
+
+            return snap && !Input.GetKey(KeyCode.LeftAlt) ?
+                RTEditor.SnapToBPM(num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom) :
+                num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom;
         }
 
         /// <summary>
@@ -893,33 +907,50 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SetTimelineGridSize()
         {
-            if (!AudioManager.inst || !AudioManager.inst.CurrentAudioSource || !AudioManager.inst.CurrentAudioSource.clip)
+            if (!AudioManager.inst || !AudioManager.inst.CurrentAudioSource || !AudioManager.inst.CurrentAudioSource.clip || !EditorConfig.Instance.TimelineGridEnabled.Value)
             {
                 if (timelineGridRenderer)
                     timelineGridRenderer.enabled = false;
+
                 return;
             }
 
-            var clipLength = AudioManager.inst.CurrentAudioSource.clip.length;
+            //var clipLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
-            float x = RTEditor.inst.editorInfo.bpm / 60f;
+            //float x = RTEditor.inst.editorInfo.bpm / 60f;
 
-            var closer = 40f * x;
-            var close = 20f * x;
-            var unrender = 6f * x;
+            //var closer = 40f * x;
+            //var close = 20f * x;
+            //var unrender = 6f * x;
 
-            var bpm = EditorManager.inst.Zoom > closer ? RTEditor.inst.editorInfo.bpm : EditorManager.inst.Zoom > close ? RTEditor.inst.editorInfo.bpm / 2f : RTEditor.inst.editorInfo.bpm / 4f;
-            var snapDivisions = EditorConfig.Instance.BPMSnapDivisions.Value * 2f;
-            if (timelineGridRenderer && EditorManager.inst.Zoom > unrender && EditorConfig.Instance.TimelineGridEnabled.Value)
+            //var bpm = EditorManager.inst.Zoom > closer ? RTEditor.inst.editorInfo.bpm : EditorManager.inst.Zoom > close ? RTEditor.inst.editorInfo.bpm / 2f : RTEditor.inst.editorInfo.bpm / 4f;
+            //var snapDivisions = RTEditor.inst.editorInfo.timeSignature * 2f;
+            //if (timelineGridRenderer && EditorManager.inst.Zoom > unrender)
+            //{
+            //    timelineGridRenderer.enabled = false;
+            //    timelineGridRenderer.gridCellSize.x = ((int)bpm / (int)snapDivisions) * (int)clipLength;
+            //    timelineGridRenderer.gridSize.x = clipLength * bpm / (snapDivisions * 1.875f);
+            //    timelineGridRenderer.enabled = true;
+            //}
+            //else if (timelineGridRenderer)
+            //    timelineGridRenderer.enabled = false;
+
+            if (timelineGridRenderer)
             {
-                timelineGridRenderer.enabled = false;
-                timelineGridRenderer.gridCellSize.x = ((int)bpm / (int)snapDivisions) * (int)clipLength;
-                timelineGridRenderer.gridSize.x = clipLength * bpm / (snapDivisions * 1.875f);
-                timelineGridRenderer.enabled = true;
+                var zoom = SoundManager.inst.MusicLength * EditorManager.inst.Zoom;
+                timelineGridRenderer.enabled = (zoom / (RTEditor.inst.editorInfo.bpm / RTEditor.inst.editorInfo.timeSignature)) > disappearAtZoom;
+                if (!timelineGridRenderer.enabled)
+                    return;
+
+                timelineGridRenderer.gridCellSize.x = 4000;
+                timelineGridRenderer.gridSize.x = (RTEditor.inst.editorInfo.bpm) * (SoundManager.inst.MusicLength / (60f / RTEditor.inst.editorInfo.timeSignature));
+                timelineGridRenderer.rectTransform.anchoredPosition = new Vector2(RTEditor.inst.editorInfo.bpmOffset * EditorManager.inst.Zoom, 0f);
+                timelineGridRenderer.rectTransform.sizeDelta = new Vector2(zoom, 0f);
+                timelineGridRenderer.SetAllDirty();
             }
-            else if (timelineGridRenderer)
-                timelineGridRenderer.enabled = false;
         }
+
+        public float disappearAtZoom = 700f;
 
         #endregion
 

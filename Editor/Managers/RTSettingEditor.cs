@@ -70,6 +70,8 @@ namespace BetterLegacy.Editor.Managers
 
         public SettingEditorDialog Dialog { get; set; }
 
+        public float BPMMulti => 60f / (RTEditor.inst.editorInfo?.bpm ?? 140f);
+
         GameObject colorPrefab;
 
         #endregion
@@ -148,6 +150,33 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        void SetBPMTimingSlider(Slider slider, InputField input)
+        {
+            slider.onValueChanged.ClearAll();
+            slider.value = RTEditor.inst.editorInfo.timeSignature;
+            slider.onValueChanged.AddListener(_val =>
+            {
+                RTEditor.inst.editorInfo.timeSignature = _val;
+                SetBPMTimingInputField(slider, input);
+                EditorTimeline.inst.SetTimelineGridSize();
+                RTEditor.inst.SaveSettings();
+            });
+        }
+
+        void SetBPMTimingInputField(Slider slider, InputField input)
+        {
+            input.onValueChanged.ClearAll();
+            input.text = RTEditor.inst.editorInfo.timeSignature.ToString();
+            input.onValueChanged.AddListener(_val =>
+            {
+                var bpm = Parser.TryParse(_val, 0f);
+                RTEditor.inst.editorInfo.timeSignature = bpm;
+                SetBPMTimingSlider(slider, input);
+                EditorTimeline.inst.SetTimelineGridSize();
+                RTEditor.inst.SaveSettings();
+            });
+        }
+
         public void OpenDialog()
         {
             Dialog.Open();
@@ -181,6 +210,12 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(Dialog.BPMOffsetInput.gameObject,
                 TriggerHelper.ScrollDelta(Dialog.BPMOffsetInput));
+
+            SetBPMTimingSlider(Dialog.BPMTimingSlider, Dialog.BPMTimingInput);
+            SetBPMTimingInputField(Dialog.BPMTimingSlider, Dialog.BPMTimingInput);
+
+            TriggerHelper.AddEventTriggers(Dialog.BPMTimingInput.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.BPMTimingInput));
 
             RenderMarkerColors();
             RenderLayerColors();
