@@ -21,6 +21,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Properties
 
+        public Transform Content { get; set; }
+
         #region Snap Settings
 
         public Slider BPMSlider { get; set; }
@@ -29,12 +31,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
         
         public Slider BPMOffsetSlider { get; set; }
         public InputField BPMOffsetInput { get; set; }
+        
+        public Slider BPMTimingSlider { get; set; }
+        public InputField BPMTimingInput { get; set; }
 
         public FunctionButtonStorage AnalyzeBPMButton { get; set; }
 
         #endregion
 
-        public Image Doggo { get; set; }
+        #region Info
+
+        public GameObject InfoScrollView { get; set; }
+        public Transform InfoContent { get; set; }
+
+        #endregion
 
         #region Colors
 
@@ -42,6 +52,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Transform LayerColorsContent { get; set; }
 
         #endregion
+
+        public Image Doggo { get; set; }
 
         #endregion
 
@@ -88,7 +100,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
             base.Init();
 
             EditorThemeManager.AddGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
+
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(GameObject.transform, "Scroll View");
+            scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 600f);
+            Content = scrollView.transform.Find("Viewport/Content");
+            EditorThemeManager.AddScrollbar(scrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
+
             var snap = GameObject.transform.Find("snap");
+
+            snap.SetParent(Content);
 
             BPMSlider = snap.Find("bpm/slider").GetComponent<Slider>();
             BPMSlider.maxValue = 999f;
@@ -126,23 +146,38 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BPMOffsetInput = snapOffset.transform.Find("input").GetComponent<InputField>();
             EditorThemeManager.AddInputField(BPMOffsetInput);
 
-            snap.AsRT().sizeDelta = new Vector2(765f, 140f);
+            var snapSignature = snap.Find("bpm").gameObject.Duplicate(snap, "bpm signature");
+            var snapSignatureText = snapSignature.transform.Find("title").GetComponent<Text>();
+            snapSignatureText.text = "Signature";
+            snapSignatureText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+            EditorThemeManager.AddLightText(snapSignatureText);
 
-            var title1 = snap.GetChild(0).gameObject.Duplicate(GameObject.transform, "info title");
+            BPMTimingSlider = snapSignature.transform.Find("slider").GetComponent<Slider>();
+            EditorThemeManager.AddGraphic(BPMTimingSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.AddGraphic(BPMTimingSlider.image, ThemeGroup.Slider_2_Handle, true);
+
+            BPMTimingSlider.wholeNumbers = true;
+
+            BPMTimingInput = snapSignature.transform.Find("input").GetComponent<InputField>();
+            EditorThemeManager.AddInputField(BPMTimingInput);
+
+            snap.AsRT().sizeDelta = new Vector2(765f, 180f);
+
+            var title1 = snap.GetChild(0).gameObject.Duplicate(Content, "info title");
             var editorInformationText = title1.transform.Find("title").GetComponent<Text>();
             editorInformationText.text = "Editor Information";
 
             EditorThemeManager.AddGraphic(title1.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(editorInformationText);
 
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(GameObject.transform, "Scroll View");
-            scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 120f);
-            var content = scrollView.transform.Find("Viewport/Content");
+            InfoScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(Content, "Scroll View");
+            InfoScrollView.transform.AsRT().sizeDelta = new Vector2(765f, 120f);
+            InfoContent = InfoScrollView.transform.Find("Viewport/Content");
 
             for (int i = 0; i < infos.Count; i++)
             {
                 var info = infos[i];
-                var baseInfo = Creator.NewUIObject("Info", content);
+                var baseInfo = Creator.NewUIObject("Info", InfoContent);
                 baseInfo.transform.AsRT().sizeDelta = new Vector2(750f, 32f);
                 var iImage = baseInfo.AddComponent<Image>();
 
@@ -186,7 +221,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             loadingDoggoLE.ignoreLayout = true;
 
-            var title2 = GameObject.transform.Find("snap").GetChild(0).gameObject.Duplicate(GameObject.transform, "marker colors title");
+            var title2 = snap.GetChild(0).gameObject.Duplicate(Content, "marker colors title");
             var markerColorsText = title2.transform.Find("title").GetComponent<Text>();
             markerColorsText.text = "Marker Colors / Editor Layer Colors";
 
@@ -194,19 +229,24 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.AddLightText(markerColorsText);
 
-            var colorEditors = Creator.NewUIObject("Color Editors", GameObject.transform);
+            var colorEditors = Creator.NewUIObject("Color Editors", Content);
             var colorEditorsLayout = colorEditors.AddComponent<HorizontalLayoutGroup>();
             colorEditors.transform.AsRT().sizeDelta = new Vector2(765f, 240f);
             colorEditorsLayout.spacing = 16f;
 
             // Marker Colors
-            MarkerColorsContent = EditorPrefabHolder.Instance.ScrollView.Duplicate(colorEditors.transform, "Scroll View").transform.Find("Viewport/Content");
+            var markerColorsScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(colorEditors.transform, "Scroll View");
+            MarkerColorsContent = markerColorsScrollView.transform.Find("Viewport/Content");
+            EditorThemeManager.AddScrollbar(markerColorsScrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
 
             // Layer Colors
-            LayerColorsContent = EditorPrefabHolder.Instance.ScrollView.Duplicate(colorEditors.transform, "Scroll View").transform.Find("Viewport/Content");
+            var layerColorsScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(colorEditors.transform, "Scroll View");
+            LayerColorsContent = layerColorsScrollView.transform.Find("Viewport/Content");
+            EditorThemeManager.AddScrollbar(layerColorsScrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
 
-            var analyzeBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(GameObject.transform.Find("snap/toggle"), "analyze");
+            var analyzeBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(snap.Find("toggle"), "analyze");
             analyzeBPM.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
+
             AnalyzeBPMButton = analyzeBPM.GetComponent<FunctionButtonStorage>();
             AnalyzeBPMButton.label.text = "Analyze BPM";
             AnalyzeBPMButton.button.onClick.NewListener(() =>
