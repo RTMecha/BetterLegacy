@@ -272,7 +272,7 @@ namespace BetterLegacy.Editor.Managers
                                     {
                                         RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
                                     }),
-                                    new ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
+                                    new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                                     new ButtonFunction(true),
                                     new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
                             };
@@ -2198,9 +2198,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 case 4: // Theme
                     {
-                        var theme = dialogTmp.Find("theme-search").GetComponent<InputField>();
-
-                        var themeSearchContextMenu = theme.gameObject.GetOrAddComponent<ContextClickable>();
+                        var themeSearchContextMenu = RTThemeEditor.inst.Dialog.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
                         themeSearchContextMenu.onClick = null;
                         themeSearchContextMenu.onClick = pointerEventData =>
                         {
@@ -2211,19 +2209,19 @@ namespace BetterLegacy.Editor.Managers
                                 new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
                                 {
                                     RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
-                                    RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
+                                    CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                                 }),
                                 new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
                                 {
                                     EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
-                                    RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
+                                    CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                                 })
                                 );
                         };
 
-                        theme.onValueChanged.ClearAll();
-                        theme.onValueChanged.AddListener(_val => RTThemeEditor.inst.RenderThemeContent(dialogTmp, _val));
-                        RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
+                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.ClearAll();
+                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.AddListener(_val => CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(_val)));
+                        CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                         RTThemeEditor.inst.RenderThemePreview();
 
                         break;

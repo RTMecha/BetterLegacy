@@ -151,7 +151,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.themeKeyframeContent, $"Folder [{Path.GetFileName(directory)}]", index + 2);
+            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.Dialog.Content, $"Folder [{Path.GetFileName(directory)}]", index + 2);
             var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -188,7 +188,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EventEditor.inst.ThemePanel.Duplicate(RTThemeEditor.inst.themeKeyframeContent, "theme-panel", index + 2);
+            gameObject = EventEditor.inst.ThemePanel.Duplicate(RTThemeEditor.inst.Dialog.Content, "theme-panel", index + 2);
 
             var storage = gameObject.GetComponent<ThemePanelStorage>();
 
@@ -251,7 +251,7 @@ namespace BetterLegacy.Editor.Data
                                 RTEditor.inst.UpdateThemePath(false);
                             }),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
+                            new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                             new ButtonFunction(true),
                             new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
                             new ButtonFunction("Delete", () =>
@@ -387,7 +387,7 @@ namespace BetterLegacy.Editor.Data
                     new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
                     new ButtonFunction(true),
                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                    new ButtonFunction("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
+                    new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                     new ButtonFunction(true),
                     new ButtonFunction("Cut", () =>
                     {
@@ -419,7 +419,7 @@ namespace BetterLegacy.Editor.Data
                     new ButtonFunction("Delete", () =>
                     {
                         if (!isDuplicate)
-                            RTThemeEditor.inst.DeleteThemeDelegate(Theme);
+                            RTThemeEditor.inst.DeleteTheme(Theme);
                         else
                             EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
                     }),
@@ -434,7 +434,7 @@ namespace BetterLegacy.Editor.Data
             DeleteButton.onClick.ClearAll();
             DeleteButton.interactable = !isDefault;
             if (!isDefault)
-                DeleteButton.onClick.AddListener(() => RTThemeEditor.inst.DeleteThemeDelegate(Theme));
+                DeleteButton.onClick.AddListener(() => RTThemeEditor.inst.DeleteTheme(Theme));
         }
 
         /// <summary>

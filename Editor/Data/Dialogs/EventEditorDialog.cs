@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core.Helpers;
+
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     /// <summary>
@@ -29,9 +31,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
             for (int i = 0; i < EventEditor.inst.dialogRight.childCount; i++)
             {
                 var dialog = EventEditor.inst.dialogRight.GetChild(i);
-                var keyframeDialog = new KeyframeDialog(i);
+                KeyframeDialog keyframeDialog = i switch
+                {
+                    4 => new ThemeKeyframeDialog(),
+                    _ => new KeyframeDialog(i),
+                };
                 keyframeDialog.GameObject = dialog.gameObject;
-                keyframeDialog.Init();
+                try
+                {
+                    keyframeDialog.Init();
+                }
+                catch (System.Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 keyframeDialogs.Add(keyframeDialog);
             }
         }

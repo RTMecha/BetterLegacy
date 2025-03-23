@@ -1653,7 +1653,7 @@ namespace BetterLegacy.Editor.Managers
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log($"------- [UPDATING THEME FILEWATCHER] -------");
-            StartCoroutine(RTThemeEditor.inst.LoadThemes(EventEditor.inst.dialogRight.GetChild(4).gameObject.activeInHierarchy));
+            StartCoroutine(RTThemeEditor.inst.LoadThemes(RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy));
             yield break;
         }
 
@@ -3083,8 +3083,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTThemeEditor.inst.eventThemePage = Mathf.Clamp(p, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage);
 
-                    StartCoroutine(RTThemeEditor.inst.RenderThemeList(
-                        EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme/theme-search").GetComponent<InputField>().text));
+                    StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                 }
             });
 

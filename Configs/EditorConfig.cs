@@ -2862,10 +2862,8 @@ namespace BetterLegacy.Configs
             }
 
 
-            var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
-            if (dialogTmp.gameObject.activeInHierarchy)
-                CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(
-                    dialogTmp.Find("theme-search").GetComponent<InputField>().text));
+            if (RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy)
+                CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
         }
 
         void AutosaveChanged()

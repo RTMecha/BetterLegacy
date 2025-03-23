@@ -169,11 +169,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(EventEditor.RenderThemeContent))]
         [HarmonyPrefix]
-        static bool RenderThemeContentPrefix(Transform __0, string __1)
-        {
-            RTThemeEditor.inst.RenderThemeContent(__0, __1);
-            return false;
-        }
+        static bool RenderThemeContentPrefix(Transform __0, string __1) => false;
 
         [HarmonyPatch(nameof(EventEditor.RenderThemeEditor))]
         [HarmonyPrefix]

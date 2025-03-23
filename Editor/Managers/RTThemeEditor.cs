@@ -21,116 +21,27 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
     public class RTThemeEditor : MonoBehaviour
     {
+        #region Init
+
         public static RTThemeEditor inst;
 
-        public bool loadingThemes = false;
-
         public static void Init() => ThemeEditor.inst?.gameObject?.AddComponent<RTThemeEditor>();
-
-        public List<BeatmapTheme> AllThemes => ThemeManager.inst.AllThemes;
-
-        public BeatmapTheme PreviewTheme { get; set; }
 
         void Awake()
         {
             inst = this;
 
-            var dialog = EditorManager.inst.GetDialog("Event Editor").Dialog;
-            var themeParent = dialog.Find("data/left/theme/theme/viewport/content");
+            Dialog = RTEventEditor.inst.Dialog.keyframeDialogs[4] as ThemeKeyframeDialog;
+
             try
             {
-                for (int i = 10; i < 19; i++)
-                {
-                    var col = themeParent.Find("object8").gameObject.Duplicate(themeParent, "object" + (i - 1).ToString(), 8 + i);
-                    col.transform.Find("text").GetComponent<Text>().text = i.ToString();
-                }
-
-                var guiAccent = themeParent.Find("gui").gameObject.Duplicate(themeParent, "guiaccent", 3);
-                guiAccent.transform.Find("text").GetComponent<Text>().text = "Tail";
-                themeParent.Find("gui/text").GetComponent<Text>().text = "GUI";
-
-                var label = themeParent.GetChild(0).gameObject.Duplicate(themeParent, "effect_label");
-                label.transform.Find("text").GetComponent<Text>().text = "Effects";
-
-                for (int i = 0; i < 18; i++)
-                {
-                    var col = themeParent.Find("object8").gameObject.Duplicate(themeParent, "effect" + i.ToString());
-                    col.transform.Find("text").GetComponent<Text>().text = (i + 1).ToString();
-                }
-
-                var actions = dialog.Find("data/left/theme/actions");
-                var createNew = actions.Find("create-new");
-                createNew.AsRT().sizeDelta = new Vector2(100f, 32f);
-                createNew.GetChild(0).gameObject.GetComponent<Text>().fontSize = 18;
-                var update = actions.Find("update");
-                update.AsRT().sizeDelta = new Vector2(70f, 32f);
-                update.GetChild(0).gameObject.GetComponent<Text>().fontSize = 18;
-                var cancel = actions.Find("cancel");
-                cancel.AsRT().sizeDelta = new Vector2(70f, 32f);
-                cancel.GetChild(0).gameObject.GetComponent<Text>().fontSize = 18;
-
-                // Save & Use
-                {
-                    var saveUse = createNew.gameObject.Duplicate(actions, "save-use", 1);
-                    saveUse.transform.GetChild(0).GetComponent<Text>().text = "Save & Use";
-                }
-
-                // Shuffle ID
-                {
-                    var shuffleID = createNew.gameObject.Duplicate(actions.parent, "shuffle", 3);
-                    var shuffleIDText = shuffleID.transform.GetChild(0).GetComponent<Text>();
-                    shuffleIDText.text = "Shuffle ID";
-
-                    var button = shuffleID.GetComponent<Button>();
-
-                    EditorThemeManager.AddSelectable(button, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(shuffleIDText, ThemeGroup.Function_2_Text);
-                }
-
-                dialog.Find("data/left/theme/theme").AsRT().sizeDelta = new Vector2(366f, 570f);
-
-                var themeContent = dialog.Find("data/right/theme/themes/viewport/content");
-
-                LSHelpers.DeleteChildren(themeContent);
-
-                EditorThemeManager.AddInputField(dialog.Find("data/left/theme/name").GetComponent<InputField>());
-
-                for (int i = 0; i < actions.childCount; i++)
-                {
-                    var child = actions.GetChild(i);
-                    var button = child.GetComponent<Button>();
-
-                    EditorThemeManager.AddSelectable(button, child.name == "cancel" ? ThemeGroup.Close : ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Text>(), child.name == "cancel" ? ThemeGroup.Close_X : ThemeGroup.Function_2_Text);
-                }
-
-                for (int i = 0; i < themeParent.childCount; i++)
-                {
-                    var child = themeParent.GetChild(i);
-
-                    if (child.name == "label" || child.name == "effect_label")
-                    {
-                        EditorThemeManager.AddLightText(child.GetChild(0).GetComponent<Text>());
-                        continue;
-                    }
-
-                    var hex = child.Find("hex");
-                    var pound = hex.Find("pound");
-
-                    EditorThemeManager.AddLightText(child.Find("text").GetComponent<Text>());
-                    EditorThemeManager.AddGraphic(child.Find("preview").GetComponent<Image>(), ThemeGroup.Null, true);
-                    EditorThemeManager.AddInputField(hex.GetComponent<InputField>());
-                    EditorThemeManager.AddGraphic(pound.GetComponent<Text>(), ThemeGroup.Input_Field_Text);
-                }
-
-                EditorThemeManager.AddScrollbar(dialog.Find("data/left/theme/theme/Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
-
                 CreateThemePopup();
 
                 // Prefab
@@ -147,31 +58,23 @@ namespace BetterLegacy.Editor.Managers
 
                     for (int i = 0; i < ThemePreviewColorCount; i++)
                     {
-                        var col = new GameObject($"Col{i + 1}");
-                        col.transform.SetParent(image);
-                        col.transform.localScale = Vector3.one;
-
-                        col.AddComponent<RectTransform>();
+                        var col = Creator.NewUIObject($"Col{i + 1}", image);
 
                         switch (i)
                         {
-                            case 0:
-                                {
+                            case 0: {
                                     storage.color1 = col.AddComponent<Image>();
                                     break;
                                 }
-                            case 1:
-                                {
+                            case 1: {
                                     storage.color2 = col.AddComponent<Image>();
                                     break;
                                 }
-                            case 2:
-                                {
+                            case 2: {
                                     storage.color3 = col.AddComponent<Image>();
                                     break;
                                 }
-                            case 3:
-                                {
+                            case 3: {
                                     storage.color4 = col.AddComponent<Image>();
                                     break;
                                 }
@@ -192,14 +95,53 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"{ex}");
             }
 
-            themeKeyframe = dialog.Find("data/right/theme");
-            themeKeyframeContent = themeKeyframe.Find("themes/viewport/content");
-
-            dialog.Find("data/left/theme").gameObject.AddComponent<ActiveState>().onStateChanged = OnDialog;
+            Dialog.Editor.AddComponent<ActiveState>().onStateChanged = OnDialog;
 
             PreviewTheme = ThemeManager.inst.DefaultThemes[0];
             StartCoroutine(LoadThemes());
         }
+
+        #endregion
+
+        #region Values
+
+        public BeatmapTheme PreviewTheme { get; set; }
+
+        public ThemeKeyframeDialog Dialog { get; set; }
+
+        public bool loadingThemes = false;
+
+        public bool shouldCutTheme;
+        public string copiedThemePath;
+
+        public bool themesLoading = false;
+
+        public GameObject themePopupPanelPrefab;
+
+        public string themeSearch;
+        public int themePage;
+        public InputFieldStorage pageStorage;
+
+        public static int themesPerPage = 10;
+
+        public static int ThemePreviewColorCount => 4;
+
+        public List<ThemePanel> ThemePanels { get; set; } = new List<ThemePanel>();
+
+        public static InputFieldStorage eventPageStorage;
+        public int eventThemePage;
+        public static int eventThemesPerPage = 30;
+        public string searchTerm;
+        public int CurrentEventThemePage => eventThemePage + 1;
+        public int MinEventTheme => MaxEventTheme - eventThemesPerPage;
+        public int MaxEventTheme => CurrentEventThemePage * eventThemesPerPage;
+        public int ThemesCount => ThemePanels.FindAll(x => RTString.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.FilePath) : x.Theme.name)).Count;
+
+        public bool filterUsed;
+
+        #endregion
+
+        #region Methods
 
         public void OnDialog(bool enabled)
         {
@@ -207,14 +149,6 @@ namespace BetterLegacy.Editor.Managers
                 EventEditor.inst.showTheme = false;
         }
 
-        public bool shouldCutTheme;
-        public string copiedThemePath;
-
-        public bool themesLoading = false;
-
-        public GameObject themeAddButton;
-
-        GameObject themeUpFolderButton;
         public IEnumerator LoadThemes(bool refreshGUI = false)
         {
             if (themesLoading)
@@ -222,96 +156,22 @@ namespace BetterLegacy.Editor.Managers
 
             themesLoading = true;
 
-            while (!EventEditor.inst || !EventEditor.inst.dialogRight || !GameData.Current)
-                yield return null;
-
             ThemeManager.inst.Clear();
-
-            var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
-            var parent = dialogTmp.Find("themes/viewport/content");
 
             if (ThemePanels.Count > 0)
                 ThemePanels.ForEach(x => Destroy(x.GameObject));
             ThemePanels.Clear();
 
-            if (!themeAddButton)
-            {
-                themeAddButton = EventEditor.inst.ThemeAdd.Duplicate(parent, "Create New");
-                var tf = themeAddButton.transform;
-                themeAddButton.SetActive(true);
-                tf.localScale = Vector2.one;
-                var button = themeAddButton.GetComponent<Button>();
-                button.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor());
-
-                var contextClickable = themeAddButton.AddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                        new ButtonFunction("Create theme", () => RenderThemeEditor()),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Paste", PasteTheme));
-                };
-
-                EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
-                EditorThemeManager.AddGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);
-                EditorThemeManager.AddGraphic(themeAddButton.transform.Find("text").GetComponent<Text>(), ThemeGroup.List_Button_2_Text);
-            }
-
             int themePanelIndex = 0;
             try
             {
-                var hoverSize = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
-
-                // Back
-                if (!themeUpFolderButton)
-                {
-                    themeUpFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(themeKeyframeContent, "back");
-                    var folderButtonStorageFolder = themeUpFolderButton.GetComponent<FunctionButtonStorage>();
-                    var folderButtonFunctionFolder = themeUpFolderButton.AddComponent<FolderButtonFunction>();
-
-                    var hoverUIFolder = themeUpFolderButton.AddComponent<HoverUI>();
-                    hoverUIFolder.size = hoverSize;
-                    hoverUIFolder.animatePos = false;
-                    hoverUIFolder.animateSca = true;
-
-                    folderButtonStorageFolder.label.text = "< Up a folder";
-
-                    folderButtonStorageFolder.button.onClick.ClearAll();
-                    folderButtonFunctionFolder.onClick = eventData =>
-                    {
-                        if (eventData.button == PointerEventData.InputButton.Right)
-                        {
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                                new ButtonFunction("Create theme", () => RenderThemeEditor()),
-                                new ButtonFunction("Paste", PasteTheme));
-
-                            return;
-                        }
-
-                        if (RTEditor.inst.themePathField.text == RTEditor.ThemePath)
-                        {
-                            RTEditor.inst.themePathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.themeListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
-                            RTEditor.inst.UpdateThemePath(false);
-                        }
-                    };
-
-                    EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
-                    EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.label, ThemeGroup.List_Button_2_Text);
-                }
-
-                themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.themeListPath) != RTFile.ApplicationDirectory + "beatmaps");
+                Dialog.themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.themeListPath) != RTFile.ApplicationDirectory + "beatmaps");
 
                 foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + RTEditor.themeListPath, "*", SearchOption.TopDirectoryOnly))
                 {
                     SetupThemePanel(directory, true, themePanelIndex);
                     themePanelIndex++;
                 }
-
             }
             catch (Exception ex)
             {
@@ -325,7 +185,6 @@ namespace BetterLegacy.Editor.Managers
                 themePanelIndex++;
             }
 
-            var search = EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text;
             var files = Directory.GetFiles(RTFile.ApplicationDirectory + RTEditor.themeListPath, FileFormat.LST.ToPattern());
             foreach (var file in files)
             {
@@ -341,15 +200,12 @@ namespace BetterLegacy.Editor.Managers
             }
 
             ThemeManager.inst.UpdateAllThemes();
-            GameData.Current.UpdateUsedThemes();
+            GameData.Current?.UpdateUsedThemes();
 
             themesLoading = false;
 
             if (refreshGUI)
-            {
-                var themeSearch = dialogTmp.Find("theme-search").GetComponent<InputField>();
-                yield return StartCoroutine(RTThemeEditor.inst.RenderThemeList(themeSearch.text));
-            }
+                yield return StartCoroutine(RenderThemeList(Dialog.SearchTerm));
 
             yield break;
         }
@@ -399,14 +255,6 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.UpdateThemePath(true);
         }
 
-        public Transform themeKeyframe;
-        public Transform themeKeyframeContent;
-
-        public GameObject themePopupPanelPrefab;
-
-        public string themeSearch;
-        public int themePage;
-        public InputFieldStorage pageStorage;
         public void CreateThemePopup()
         {
             try
@@ -713,7 +561,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public static int themesPerPage = 10;
         public void RefreshThemeSearch()
         {
             RTEditor.inst.ThemesPopup.ClearContent();
@@ -831,66 +678,21 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public static int ThemePreviewColorCount => 4;
-
-        public List<ThemePanel> ThemePanels { get; set; } = new List<ThemePanel>();
-
-        bool setupLayout;
-        public void RenderThemeContent(Transform p, string search)
-        {
-            var parent = p.Find("themes/viewport/content");
-
-            if (!setupLayout)
-            {
-                setupLayout = true;
-
-                p.Find("themes").GetComponent<ScrollRect>().horizontal = false;
-                var gridLayoutGroup = parent.GetComponent<GridLayoutGroup>() ?? parent.gameObject.AddComponent<GridLayoutGroup>();
-
-                gridLayoutGroup.cellSize = new Vector2(344f, 30f);
-                gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                gridLayoutGroup.constraintCount = 1;
-                gridLayoutGroup.spacing = new Vector2(4f, 4f);
-                gridLayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
-
-                parent.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.MinSize;
-            }
-
-            RTEditor.inst.themePathField.text = RTEditor.ThemePath;
-            StartCoroutine(RenderThemeList(search));
-        }
-
-        public static InputFieldStorage eventPageStorage;
-        public int eventThemePage;
-        public static int eventThemesPerPage = 30;
-        public string searchTerm;
-        public int CurrentEventThemePage => eventThemePage + 1;
-        public int MinEventTheme => MaxEventTheme - eventThemesPerPage;
-        public int MaxEventTheme => CurrentEventThemePage * eventThemesPerPage;
-        public int ThemesCount => ThemePanels.FindAll(x => RTString.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.FilePath) : x.Theme.name)).Count;
-
-        public bool filterUsed;
-
-        // temp
         public void RenderThemePreview()
         {
-            var dialog = RTEventEditor.inst.Dialog.keyframeDialogs[EventEditor.inst.currentEventType].GameObject.transform;
+            if (EventEditor.inst.currentEventType != 4)
+                return;
 
             var beatmapTheme = ThemeManager.inst.GetTheme((int)RTEventEditor.inst.CurrentSelectedKeyframe.values[0]);
 
-            dialog.Find("current_title/current_title").GetComponent<Text>().text = beatmapTheme.name;
+            Dialog.CurrentTitle.text = beatmapTheme.name;
 
-            for (int k = 0; k <= 3; k++)
-                dialog.Find("player_cols/" + k).GetComponent<Image>().color = beatmapTheme.GetPlayerColor(k);
+            Dialog.BGColor.color = beatmapTheme.backgroundColor;
+            Dialog.GUIColor.color = beatmapTheme.guiColor;
 
-            dialog.Find("player_cols/4").GetComponent<Image>().color = beatmapTheme.backgroundColor;
-            dialog.Find("player_cols/5").GetComponent<Image>().color = beatmapTheme.guiColor;
-
-            for (int i = 0; i <= 8; i++)
-                dialog.Find("object_cols/" + i).GetComponent<Image>().color = beatmapTheme.GetObjColor(i);
-
-            for (int i = 0; i <= 8; i++)
-                dialog.Find("bg_cols/" + i).GetComponent<Image>().color = beatmapTheme.GetBGColor(i);
+            Dialog.PlayerColors.ForLoop((img, index) => img.color = beatmapTheme.GetPlayerColor(index));
+            Dialog.ObjectColors.ForLoop((img, index) => img.color = beatmapTheme.GetObjColor(index));
+            Dialog.BGColors.ForLoop((img, index) => img.color = beatmapTheme.GetBGColor(index));
         }
 
         public IEnumerator RenderThemeList(string search)
@@ -954,6 +756,10 @@ namespace BetterLegacy.Editor.Managers
             return themePanel;
         }
 
+        /// <summary>
+        /// Converts a theme to the VG format.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to convert.</param>
         public void ConvertTheme(BeatmapTheme beatmapTheme)
         {
             var exportPath = EditorConfig.Instance.ConvertThemeLSToVGExportPath.Value;
@@ -982,86 +788,128 @@ namespace BetterLegacy.Editor.Managers
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
-        public void DeleteThemeDelegate(BeatmapTheme themeTmp) => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", () =>
+        /// <summary>
+        /// Saves a theme.
+        /// </summary>
+        /// <param name="theme">Theme to save.</param>
+        public void SaveTheme(BeatmapTheme theme)
         {
-            DeleteTheme(themeTmp);
+            Debug.Log($"{EventEditor.inst.className}Saving {theme.id} ({theme.name}) to File System!");
+
+            RTEditor.inst.DisableThemeWatcher();
+
+            if (string.IsNullOrEmpty(theme.id))
+                theme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
+
+            var config = EditorConfig.Instance;
+
+            GameData.SaveOpacityToThemes = config.SavingSavesThemeOpacity.Value;
+
+            var str = config.ThemeSavesIndents.Value ? theme.ToJSON().ToString(3) : theme.ToJSON().ToString();
+
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.themeListSlash, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
+
+            theme.filePath = path;
+
+            RTFile.WriteToFile(path, str);
+
+            EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
+
+            RTEditor.inst.EnableThemeWatcher();
+        }
+
+        /// <summary>
+        /// Deletes a theme.
+        /// </summary>
+        /// <param name="theme">Theme to delete.</param>
+        public void DeleteTheme(BeatmapTheme theme) => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", () =>
+        {
+            RTEditor.inst.DisableThemeWatcher();
+
+            RTFile.DeleteFile(theme.filePath);
+
+            if (ThemePanels.TryFindIndex(x => x.Theme != null && x.Theme.id == theme.id, out int themePanelIndex))
+            {
+                var themePanel = ThemePanels[themePanelIndex];
+                Destroy(themePanel.GameObject);
+                ThemePanels.RemoveAt(themePanelIndex);
+            }
+
+            RTEditor.inst.EnableThemeWatcher();
+
             EventEditor.inst.previewTheme.id = null;
             //EventEditor.inst.StartCoroutine(ThemeEditor.inst.LoadThemes());
-            Transform child = EventEditor.inst.dialogRight.GetChild(EventEditor.inst.currentEventType);
-            EventEditor.inst.RenderThemeContent(child, child.Find("theme-search").GetComponent<InputField>().text);
+
+            CoreHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
             RenderThemePreview();
             EventEditor.inst.showTheme = false;
-            EventEditor.inst.dialogLeft.Find("theme").gameObject.SetActive(false);
+            Dialog.Editor.SetActive(false);
             GameData.Current.UpdateUsedThemes();
 
             RTEditor.inst.HideWarningPopup();
         }, RTEditor.inst.HideWarningPopup);
 
+        /// <summary>
+        /// Shuffles a theme's ID.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to shuffle the ID of.</param>
         public void ShuffleThemeID(BeatmapTheme beatmapTheme) => RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", () =>
         {
             beatmapTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
             RTEditor.inst.HideWarningPopup();
         }, RTEditor.inst.HideWarningPopup);
 
-        public void RenderThemeEditor(BeatmapTheme beatmapThemeEdit = null)
+        /// <summary>
+        /// Renders the theme editor to create a new theme.
+        /// </summary>
+        public void RenderThemeEditor() => RenderThemeEditor(null);
+
+        /// <summary>
+        /// Renders the theme editor.
+        /// </summary>
+        /// <param name="beatmapThemeEdit">Theme to edit. If null, creates a new theme.</param>
+        public void RenderThemeEditor(BeatmapTheme beatmapThemeEdit)
         {
             CoreHelper.Log($"Editing Theme: {beatmapThemeEdit}");
 
             var newTheme = !beatmapThemeEdit;
-            var previewTheme = !newTheme ? BeatmapTheme.DeepCopy(beatmapThemeEdit, true) : new BeatmapTheme();
-
-            PreviewTheme = previewTheme;
+            PreviewTheme = !newTheme ? BeatmapTheme.DeepCopy(beatmapThemeEdit, true) : new BeatmapTheme();
             if (newTheme)
-                previewTheme.ClearBeatmap();
+                PreviewTheme.ClearBeatmap();
 
-            var theme = EventEditor.inst.dialogLeft.Find("theme");
-            theme.gameObject.SetActive(true);
+            var theme = Dialog.Editor.transform;
+            Dialog.Editor.SetActive(true);
             EventEditor.inst.showTheme = true;
-            var themeContent = theme.Find("theme/viewport/content");
-            var actions = theme.Find("actions");
 
             if (!CoreHelper.AprilFools)
             {
                 theme.Find("theme").localRotation = Quaternion.Euler(Vector3.zero);
-                foreach (var child in themeContent)
-                {
-                    var obj = (Transform)child;
-                    obj.localRotation = Quaternion.Euler(Vector3.zero);
-                }
+                foreach (Transform child in Dialog.EditorContent)
+                    child.localRotation = Quaternion.Euler(Vector3.zero);
             }
 
             theme.Find("theme_title/Text").GetComponent<Text>().text = !newTheme ? $"- Theme Editor (ID: {beatmapThemeEdit.id}) -" : "- Theme Editor -";
 
             var isDefaultTheme = beatmapThemeEdit && beatmapThemeEdit.isDefault;
 
-            var shuffle = theme.Find("shuffle").GetComponent<Button>();
-            shuffle.onClick.ClearAll();
-            shuffle.gameObject.SetActive(!newTheme && !isDefaultTheme);
+            Dialog.EditorShuffleID.onClick.ClearAll();
+            Dialog.EditorShuffleID.gameObject.SetActive(!newTheme && !isDefaultTheme);
             if (!newTheme && !isDefaultTheme)
-                shuffle.onClick.AddListener(() => ShuffleThemeID(PreviewTheme));
+                Dialog.EditorShuffleID.onClick.AddListener(() => ShuffleThemeID(PreviewTheme));
 
-            var name = theme.Find("name").GetComponent<InputField>();
-            var cancel = actions.Find("cancel").GetComponent<Button>();
-            var createNew = actions.Find("create-new").GetComponent<Button>();
-            var update = actions.Find("update").GetComponent<Button>();
-            var saveUse = actions.Find("save-use").GetComponent<Button>();
-
-            name.onValueChanged.ClearAll();
-            name.text = PreviewTheme.name;
-            name.onValueChanged.AddListener(_val => PreviewTheme.name = _val);
-            cancel.onClick.ClearAll();
-            cancel.onClick.AddListener(() =>
+            Dialog.EditorNameField.onValueChanged.ClearAll();
+            Dialog.EditorNameField.text = PreviewTheme.name;
+            Dialog.EditorNameField.onValueChanged.AddListener(_val => PreviewTheme.name = _val);
+            Dialog.EditorCancel.onClick.ClearAll();
+            Dialog.EditorCancel.onClick.AddListener(() =>
             {
                 EventEditor.inst.showTheme = false;
                 theme.gameObject.SetActive(false);
             });
-            createNew.onClick.ClearAll();
-            update.onClick.ClearAll();
 
-            createNew.gameObject.SetActive(true);
-            update.gameObject.SetActive(!isDefaultTheme);
-
-            createNew.onClick.AddListener(() =>
+            Dialog.EditorCreateNew.onClick.ClearAll();
+            Dialog.EditorCreateNew.gameObject.SetActive(true);
+            Dialog.EditorCreateNew.onClick.AddListener(() =>
             {
                 PreviewTheme.id = null;
                 SaveTheme(BeatmapTheme.DeepCopy(PreviewTheme));
@@ -1072,7 +920,9 @@ namespace BetterLegacy.Editor.Managers
                 theme.gameObject.SetActive(false);
             });
 
-            update.onClick.AddListener(() =>
+            Dialog.EditorUpdate.onClick.ClearAll();
+            Dialog.EditorUpdate.gameObject.SetActive(!isDefaultTheme);
+            Dialog.EditorUpdate.onClick.AddListener(() =>
             {
                 var beatmapTheme = BeatmapTheme.DeepCopy(PreviewTheme, true);
 
@@ -1091,7 +941,7 @@ namespace BetterLegacy.Editor.Managers
                     themePanel.Theme = beatmapTheme;
                     themePanel.Render();
 
-                    CoreHelper.StartCoroutine(RenderThemeList(themeKeyframe.Find("theme-search").GetComponent<InputField>().text));
+                    CoreHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
                 }
 
                 RenderThemePreview();
@@ -1099,8 +949,8 @@ namespace BetterLegacy.Editor.Managers
                 theme.gameObject.SetActive(false);
             });
 
-            saveUse.onClick.ClearAll();
-            saveUse.onClick.AddListener(() =>
+            Dialog.EditorSaveUse.onClick.ClearAll();
+            Dialog.EditorSaveUse.onClick.AddListener(() =>
             {
                 BeatmapTheme beatmapTheme;
                 if (beatmapThemeEdit && beatmapThemeEdit.isDefault)
@@ -1132,7 +982,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         themePanel.Theme = beatmapTheme;
                         themePanel.Render();
-                        CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
+                        CoreHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
                     }
 
                     themePanel.Use();
@@ -1143,10 +993,10 @@ namespace BetterLegacy.Editor.Managers
                 theme.gameObject.SetActive(false);
             });
 
-            var bgHex = themeContent.Find("bg/hex").GetComponent<InputField>();
-            var bgPreview = themeContent.Find("bg/preview").GetComponent<Image>();
-            var bgPreviewET = themeContent.Find("bg/preview").GetComponent<EventTrigger>();
-            var bgDropper = themeContent.Find("bg/preview/dropper").GetComponent<Image>();
+            var bgHex = Dialog.EditorContent.Find("bg/hex").GetComponent<InputField>();
+            var bgPreview = Dialog.EditorContent.Find("bg/preview").GetComponent<Image>();
+            var bgPreviewET = Dialog.EditorContent.Find("bg/preview").GetComponent<EventTrigger>();
+            var bgDropper = Dialog.EditorContent.Find("bg/preview/dropper").GetComponent<Image>();
 
             bgHex.onValueChanged.ClearAll();
             bgHex.text = LSColors.ColorToHex(PreviewTheme.backgroundColor);
@@ -1165,10 +1015,10 @@ namespace BetterLegacy.Editor.Managers
             bgPreviewET.triggers.Clear();
             bgPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(bgPreview, bgDropper, bgHex, PreviewTheme.backgroundColor));
 
-            var guiHex = themeContent.Find("gui/hex").GetComponent<InputField>();
-            var guiPreview = themeContent.Find("gui/preview").GetComponent<Image>();
-            var guiPreviewET = themeContent.Find("gui/preview").GetComponent<EventTrigger>();
-            var guiDropper = themeContent.Find("gui/preview/dropper").GetComponent<Image>();
+            var guiHex = Dialog.EditorContent.Find("gui/hex").GetComponent<InputField>();
+            var guiPreview = Dialog.EditorContent.Find("gui/preview").GetComponent<Image>();
+            var guiPreviewET = Dialog.EditorContent.Find("gui/preview").GetComponent<EventTrigger>();
+            var guiDropper = Dialog.EditorContent.Find("gui/preview/dropper").GetComponent<Image>();
 
             guiHex.onValueChanged.ClearAll();
             guiHex.characterLimit = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? 8 : 6;
@@ -1190,10 +1040,10 @@ namespace BetterLegacy.Editor.Managers
             guiPreviewET.triggers.Clear();
             guiPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(guiPreview, guiDropper, guiHex, PreviewTheme.guiColor));
 
-            var guiaccentHex = themeContent.Find("guiaccent/hex").GetComponent<InputField>();
-            var guiaccentPreview = themeContent.Find("guiaccent/preview").GetComponent<Image>();
-            var guiaccentPreviewET = themeContent.Find("guiaccent/preview").GetComponent<EventTrigger>();
-            var guiaccentDropper = themeContent.Find("guiaccent/preview/dropper").GetComponent<Image>();
+            var guiaccentHex = Dialog.EditorContent.Find("guiaccent/hex").GetComponent<InputField>();
+            var guiaccentPreview = Dialog.EditorContent.Find("guiaccent/preview").GetComponent<Image>();
+            var guiaccentPreviewET = Dialog.EditorContent.Find("guiaccent/preview").GetComponent<EventTrigger>();
+            var guiaccentDropper = Dialog.EditorContent.Find("guiaccent/preview/dropper").GetComponent<Image>();
 
             guiaccentHex.onValueChanged.ClearAll();
             guiaccentHex.characterLimit = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? 8 : 6;
@@ -1215,17 +1065,17 @@ namespace BetterLegacy.Editor.Managers
             guiaccentPreviewET.triggers.Clear();
             guiaccentPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(guiaccentPreview, guiaccentDropper, guiaccentHex, PreviewTheme.guiAccentColor));
 
-            RenderColorList(themeContent, "player", 4, PreviewTheme.playerColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
+            RenderColorList(Dialog.EditorContent, "player", 4, PreviewTheme.playerColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
 
-            RenderColorList(themeContent, "object", 18, PreviewTheme.objectColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
+            RenderColorList(Dialog.EditorContent, "object", 18, PreviewTheme.objectColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
 
-            RenderColorList(themeContent, "background", 9, PreviewTheme.backgroundColors, false);
+            RenderColorList(Dialog.EditorContent, "background", 9, PreviewTheme.backgroundColors, false);
 
-            themeContent.Find("effect_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            RenderColorList(themeContent, "effect", 18, PreviewTheme.effectColors);
+            Dialog.EditorContent.Find("effect_label").gameObject.SetActive(RTEditor.ShowModdedUI);
+            RenderColorList(Dialog.EditorContent, "effect", 18, PreviewTheme.effectColors);
         }
 
-        public void RenderColorList(Transform themeContent, string name, int count, List<Color> colors, bool allowAlpha = true)
+        void RenderColorList(Transform themeContent, string name, int count, List<Color> colors, bool allowAlpha = true)
         {
             for (int i = 0; i < count; i++)
             {
@@ -1269,53 +1119,13 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void SetDropper(Image dropper, Image preview, InputField hex, EventTrigger previewET, Color color)
+        void SetDropper(Image dropper, Image preview, InputField hex, EventTrigger previewET, Color color)
         {
             dropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(color));
             previewET.triggers.Clear();
             previewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(preview, dropper, hex, color));
         }
 
-        public void DeleteTheme(BeatmapTheme theme)
-        {
-            RTEditor.inst.DisableThemeWatcher();
-
-            RTFile.DeleteFile(theme.filePath);
-
-            if (ThemePanels.TryFindIndex(x => x.Theme != null && x.Theme.id == theme.id, out int themePanelIndex))
-            {
-                var themePanel = ThemePanels[themePanelIndex];
-                Destroy(themePanel.GameObject);
-                ThemePanels.RemoveAt(themePanelIndex);
-            }
-
-            RTEditor.inst.EnableThemeWatcher();
-        }
-
-        public void SaveTheme(BeatmapTheme theme)
-        {
-            Debug.Log($"{EventEditor.inst.className}Saving {theme.id} ({theme.name}) to File System!");
-
-            RTEditor.inst.DisableThemeWatcher();
-
-            if (string.IsNullOrEmpty(theme.id))
-                theme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
-
-            var config = EditorConfig.Instance;
-
-            GameData.SaveOpacityToThemes = config.SavingSavesThemeOpacity.Value;
-
-            var str = config.ThemeSavesIndents.Value ? theme.ToJSON().ToString(3) : theme.ToJSON().ToString();
-
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.themeListSlash, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
-
-            theme.filePath = path;
-
-            RTFile.WriteToFile(path, str);
-
-            EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
-
-            RTEditor.inst.EnableThemeWatcher();
-        }
+        #endregion
     }
 }

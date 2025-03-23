@@ -31,8 +31,6 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.LogInit(className);
 
-            Destroy(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/theme/themes/viewport/content").GetComponent<VerticalLayoutGroup>());
-
             return false;
         }
 
