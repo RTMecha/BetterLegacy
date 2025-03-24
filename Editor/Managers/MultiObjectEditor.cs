@@ -960,6 +960,40 @@ namespace BetterLegacy.Editor.Managers
                 RenderMultiShape();
             }
 
+            // Render Type
+            {
+                var labels = GenerateLabels(parent, 32f, "Render Type");
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Background", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
+                            Updater.UpdateObject(beatmapObject, "Render Type");
+                        }
+                    }),
+                    new ButtonFunction("Foreground", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
+                            Updater.UpdateObject(beatmapObject, "Render Type");
+                        }
+                    }),
+                    new ButtonFunction("UI", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
+                            Updater.UpdateObject(beatmapObject, "Render Type");
+                        }
+                    }));
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+            }
+
             GeneratePad(parent);
             GenerateLabels(parent, 32f, new LabelSettings("- Prefab -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
@@ -1293,50 +1327,6 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
                 }));
-            }
-
-            // Render Type
-            {
-                var labels = GenerateLabels(parent, 32f, "Modify Object Render Type");
-
-                var buttons1 = GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("Background", () =>
-                    {
-                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
-
-                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
-                                levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
-                        }
-                    }),
-                    new ButtonFunction("Foreground", () =>
-                    {
-                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
-
-                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
-                                levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
-                        }
-                    }));
-                var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                {
-                    foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                    {
-                        if (beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Foreground)
-                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
-                        else if (beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background)
-                            beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
-
-                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject && levelObject.visualObject.gameObject)
-                            levelObject.visualObject.gameObject.layer = beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 9 : 8;
-                    }
-                }));
-
-                EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
             }
 
             // LDM
