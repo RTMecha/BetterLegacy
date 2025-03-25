@@ -25,23 +25,20 @@ namespace BetterLegacy.Companion.Entity
     /// </summary>
     public class ExampleModel : ExampleModule
     {
-        public ExampleModel() { }
-
         #region Default Instance
+
+        public ExampleModel() { }
 
         /// <summary>
         /// The default Example model.
         /// </summary>
-        public static ExampleModel Default
+        public static Func<ExampleModel> getDefault = () =>
         {
-            get
-            {
-                var model = new ExampleModel();
-                model.InitDefault();
+            var brain = new ExampleModel();
+            brain.InitDefault();
 
-                return model;
-            }
-        }
+            return brain;
+        };
 
         public override void InitDefault()
         {

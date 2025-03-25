@@ -20,18 +20,18 @@ namespace BetterLegacy.Companion.Entity
     {
         #region Default Instance
 
+        public ExampleOptions() { }
+
         /// <summary>
         /// The default options.
         /// </summary>
-        public static ExampleOptions Default
+        public static Func<ExampleOptions> getDefault = () =>
         {
-            get
-            {
-                var options = new ExampleOptions();
-                options.InitDefault();
-                return options;
-            }
-        }
+            var brain = new ExampleOptions();
+            brain.InitDefault();
+
+            return brain;
+        };
 
         public override void InitDefault()
         {

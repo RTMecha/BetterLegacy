@@ -23,23 +23,20 @@ namespace BetterLegacy.Companion.Entity
     /// </summary>
     public class ExampleBrain : ExampleModule
     {
-        public ExampleBrain() { }
-
         #region Default Instance
+
+        public ExampleBrain() { }
 
         /// <summary>
         /// The default brain.
         /// </summary>
-        public static ExampleBrain Default
+        public static Func<ExampleBrain> getDefault = () =>
         {
-            get
-            {
-                var brain = new ExampleBrain();
-                brain.InitDefault();
+            var brain = new ExampleBrain();
+            brain.InitDefault();
 
-                return brain;
-            }
-        }
+            return brain;
+        };
 
         public override void InitDefault()
         {

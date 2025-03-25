@@ -37,6 +37,7 @@ namespace BetterLegacy.Companion.Entity
 
         // TODO:
         /*
+            - Figure out how custom / override modules can be registered.
             - Add more poses and expressions
             - Add more parts
             - Expand on interaction module (more editor interactions)
@@ -190,32 +191,22 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Custom initialization function.
         /// </summary>
-        public static Action onInit;
+        public static Action<Example> onInit;
+
+        /// <summary>
+        /// Gets the default Example.
+        /// </summary>
+        public static Func<Example> getDefault = () => new Example(ExampleBrain.getDefault(), ExampleModel.getDefault(), ExampleChatBubble.getDefault(), ExampleOptions.getDefault(), ExampleCommands.getDefault(), ExampleInteractions.getDefault());
 
         /// <summary>
         /// Initializes Example.
         /// </summary>
         public static void Init()
         {
-            if (onInit != null)
-            {
-                onInit();
-                return;
-            }
-
-            Init(ExampleBrain.Default, ExampleModel.Default, ExampleChatBubble.Default, ExampleOptions.Default, ExampleCommands.Default, ExampleInteractions.Default);
-        }
-
-        /// <summary>
-        /// Initializes Example with a set brain and model.
-        /// </summary>
-        /// <param name="brain">Brain to set.</param>
-        /// <param name="model">Model to set.</param>
-        public static void Init(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands discussion, ExampleInteractions interactions)
-        {
             Current?.Kill();
-            Current = new Example(brain, model, chatBubble, options, discussion, interactions);
+            Current = getDefault();
             Current.Build();
+            onInit?.Invoke(Current);
         }
 
         /// <summary>
@@ -242,11 +233,11 @@ namespace BetterLegacy.Companion.Entity
             model.Build();
             LogStartup("Building the chat bubble...");
             chatBubble.Build();
-            LogStartup("Building the chat options...");
+            LogStartup("Building the options...");
             options.Build();
-            LogStartup("Building the chat commands...");
+            LogStartup("Building the commands...");
             commands.Build();
-            LogStartup("Building the chat interactions...");
+            LogStartup("Building the interactions...");
             interactions.Build();
 
             LogStartup($"Done! Took {sw.Elapsed} to build. Now Example should enter the scene");

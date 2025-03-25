@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,19 +25,18 @@ namespace BetterLegacy.Companion.Entity
     {
         #region Default Instance
 
-        /// <summary>
-        /// The default discussion.
-        /// </summary>
-        public static ExampleCommands Default
-        {
-            get
-            {
-                var discussion = new ExampleCommands();
-                discussion.InitDefault();
-                return discussion;
-            }
-        }
+        public ExampleCommands() { }
 
+        /// <summary>
+        /// The default commands.
+        /// </summary>
+        public static Func<ExampleCommands> getDefault = () =>
+        {
+            var brain = new ExampleCommands();
+            brain.InitDefault();
+
+            return brain;
+        };
         public override void InitDefault()
         {
             RegisterCommands();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
@@ -23,18 +24,18 @@ namespace BetterLegacy.Companion.Entity
     {
         #region Default Instance
 
+        public ExampleChatBubble() { }
+
         /// <summary>
         /// The default chat bubble.
         /// </summary>
-        public static ExampleChatBubble Default
+        public static Func<ExampleChatBubble> getDefault = () =>
         {
-            get
-            {
-                var chatBubble = new ExampleChatBubble();
-                chatBubble.InitDefault();
-                return chatBubble;
-            }
-        }
+            var brain = new ExampleChatBubble();
+            brain.InitDefault();
+
+            return brain;
+        };
 
         public override void InitDefault()
         {
@@ -193,9 +194,9 @@ namespace BetterLegacy.Companion.Entity
                     parameters => reference.interactions.Check(ExampleInteractions.Checks.NO_ASSETS)),
                 new ExampleDialogue((companion, parameters) =>
                 {
-                    var index = Random.Range(0, ProjectPlanner.inst.todos.Count);
+                    var index = UnityEngine.Random.Range(0, ProjectPlanner.inst.todos.Count);
                     while (ProjectPlanner.inst.todos[index].Checked)
-                        index = Random.Range(0, ProjectPlanner.inst.todos.Count);
+                        index = UnityEngine.Random.Range(0, ProjectPlanner.inst.todos.Count);
 
                     var todo = ProjectPlanner.inst.todos[index];
 

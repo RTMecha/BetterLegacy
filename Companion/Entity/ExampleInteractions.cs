@@ -22,18 +22,18 @@ namespace BetterLegacy.Companion.Entity
     {
         #region Default Instance
 
+        public ExampleInteractions() { }
+
         /// <summary>
         /// The default interactions.
         /// </summary>
-        public static ExampleInteractions Default
+        public static Func<ExampleInteractions> getDefault = () =>
         {
-            get
-            {
-                var interactions = new ExampleInteractions();
-                interactions.InitDefault();
-                return interactions;
-            }
-        }
+            var brain = new ExampleInteractions();
+            brain.InitDefault();
+
+            return brain;
+        };
 
         public override void InitDefault()
         {
