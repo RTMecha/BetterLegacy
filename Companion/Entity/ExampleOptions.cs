@@ -61,10 +61,7 @@ namespace BetterLegacy.Companion.Entity
 
         #region Core
 
-        public override void Build()
-        {
-            CoreHelper.StartCoroutine(IBuild());
-        }
+        public override void Build() => CoreHelper.StartCoroutine(IBuild());
 
         // wait until fonts have loaded
         IEnumerator IBuild()
@@ -124,7 +121,11 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Clear()
         {
-            attributes.Clear();
+            base.Clear();
+            options.Clear();
+
+            optionsLayout = null;
+            optionsBase = null;
         }
 
         #endregion

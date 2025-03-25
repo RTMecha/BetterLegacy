@@ -46,7 +46,11 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Clears the module.
         /// </summary>
-        public abstract void Clear();
+        public virtual void Clear()
+        {
+            attributes.Clear();
+            reference = null;
+        }
 
         #endregion
 

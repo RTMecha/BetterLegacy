@@ -208,7 +208,9 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Clear()
         {
-            attributes.Clear();
+            base.Clear();
+            checks.Clear();
+            onInteract = null;
         }
 
         #endregion

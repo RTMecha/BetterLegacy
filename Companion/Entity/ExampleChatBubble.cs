@@ -87,7 +87,14 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Clear()
         {
-            attributes.Clear();
+            base.Clear();
+            dialogues.Clear();
+            if (currentChatAnimation)
+                CompanionManager.inst.animationController.Remove(currentChatAnimation.id);
+            currentChatAnimation = null;
+            dialogueBase = null;
+            dialogueImage = null;
+            dialogueText = null;
         }
 
         #endregion

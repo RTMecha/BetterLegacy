@@ -369,7 +369,9 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Clear()
         {
-            attributes.Clear();
+            base.Clear();
+            CurrentAction = null;
+            actions.Clear();
         }
 
         #endregion

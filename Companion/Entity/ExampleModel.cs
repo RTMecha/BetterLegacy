@@ -180,15 +180,24 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public override void Clear()
         {
+            base.Clear();
             CoreHelper.Destroy(baseCanvas);
             parts.Clear();
-            attributes.Clear();
+
+            canvas = null;
+            baseCanvas = null;
+            canvasGroup = null;
+            blocker = null;
+            baseParent = null;
+
+            poses.Clear();
 
             if (danceLoopAnimation)
-            {
                 CompanionManager.inst.animationController.Remove(danceLoopAnimation.id);
-                danceLoopAnimation = null;
-            }
+            danceLoopAnimation = null;
+
+            startDancing = null;
+            stopDancing = null;
         }
 
         #endregion
