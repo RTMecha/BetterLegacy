@@ -815,6 +815,25 @@ namespace BetterLegacy.Core
         public static bool InRange<T>(this T[] array, int index) => index >= 0 && index < array.Length;
 
         /// <summary>
+        /// Removes an item matching the predicate.
+        /// </summary>
+        /// <typeparam name="T">Type of the list.</typeparam>
+        /// <param name="predicate">Predicate to match.</param>
+        /// <returns>Returns true if an item was successfully removed, otherwise returns false.</returns>
+        public static bool Remove<T>(this List<T> list, Predicate<T> predicate)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (predicate(list[i]))
+                {
+                    list.RemoveAt(i);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Removes a specified string from the input string.
         /// </summary>
         /// <param name="remove">String to remove.</param>
