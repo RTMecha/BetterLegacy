@@ -37,6 +37,7 @@
 - Ported polygon shape from alpha. (still waiting on the mesh generator)
 - doubleSided modifier now supports gradients and opacity above 0.9.
 - Players in the editor now display info on their current state.
+- Improved BPM Snap settings and added a BPM sub-tab to Config Manager > Editor.
 - New Context Menu stuffs:
 > Search field filters (default themes, used themes, used prefabs)
 > Default prefab / theme paths for level
