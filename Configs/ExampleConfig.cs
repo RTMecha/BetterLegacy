@@ -109,6 +109,8 @@ namespace BetterLegacy.Configs
         public Setting<int> PlayerHitNoticeChance { get; set; }
         public Setting<int> PlayerDeathNoticeChance { get; set; }
 
+        public Setting<KeyCode> RandomResponseKeyCode { get; set; }
+
         #endregion
 
         #endregion
@@ -155,6 +157,8 @@ namespace BetterLegacy.Configs
             AutosaveNoticeChance = Bind(this, BEHAVIOR, "Autosave Notice Chance", 40, "The percent chance Example says something about autosave happening.", 0, 100);
             PlayerHitNoticeChance = Bind(this, BEHAVIOR, "Player Hit Notice Chance", 15, "The percent chance Example notices a player getting hit.", 0, 100);
             PlayerDeathNoticeChance = Bind(this, BEHAVIOR, "Player Death Notice Chance", 50, "The percent chance Example notices a player dying.", 0, 100);
+
+            RandomResponseKeyCode = Bind(this, BEHAVIOR, "Random Response Key Code", KeyCode.None, "Key to press to have Example say something random.");
 
             #endregion
 
