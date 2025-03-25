@@ -29,6 +29,11 @@ namespace BetterLegacy.Companion.Entity
         #region Core
 
         /// <summary>
+        /// Key for custom modules registered to Example.
+        /// </summary>
+        public string key;
+
+        /// <summary>
         /// Sets the default values pre-build.
         /// </summary>
         public abstract void InitDefault();

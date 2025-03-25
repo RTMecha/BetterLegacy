@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 
 using LSFunctions;
 
+using BetterLegacy.Companion.Data;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -16,16 +18,17 @@ namespace BetterLegacy.Companion.Entity
     /// </summary>
     public class Example : Exists
     {
-        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, ExampleInteractions interactions)
-        {
-            internalID = LSText.randomNumString(8);
+        public Example() => internalID = LSText.randomNumString(8);
 
+        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, ExampleInteractions interactions, List<ExampleModule> modules = null) : this()
+        {
             this.brain = brain;
             this.model = model;
             this.chatBubble = chatBubble;
             this.options = options;
             this.commands = commands;
             this.interactions = interactions;
+            this.modules = modules;
 
             this.brain.SetReference(this);
             this.model.SetReference(this);
@@ -33,11 +36,11 @@ namespace BetterLegacy.Companion.Entity
             this.options.SetReference(this);
             this.commands.SetReference(this);
             this.interactions.SetReference(this);
+            this.modules?.ForLoop(module => module?.SetReference(this));
         }
 
         // TODO:
         /*
-            - Figure out how custom / override modules can be registered.
             - Add more poses and expressions
             - Add more parts
             - Expand on interaction module (more editor interactions)
@@ -55,26 +58,56 @@ namespace BetterLegacy.Companion.Entity
         /// Example's brain.
         /// </summary>
         public ExampleBrain brain;
+
         /// <summary>
         /// Example's body.
         /// </summary>
         public ExampleModel model;
+
         /// <summary>
         /// Example's speech.
         /// </summary>
         public ExampleChatBubble chatBubble;
+
         /// <summary>
         /// Example's options.
         /// </summary>
         public ExampleOptions options;
+
         /// <summary>
         /// Example's chat window.
         /// </summary>
         public ExampleCommands commands;
+
         /// <summary>
         /// How Example interacts with the rest of the mod.
         /// </summary>
         public ExampleInteractions interactions;
+
+        /// <summary>
+        /// List of custom modules.
+        /// </summary>
+        public List<ExampleModule> modules;
+
+        /// <summary>
+        /// Gets a custom module.
+        /// </summary>
+        /// <typeparam name="T">Type of the module that implements <see cref="ExampleModule"/>.</typeparam>
+        /// <param name="key">Key of the module to find.</param>
+        /// <returns>Returns a found module.</returns>
+        public T GetModule<T>(string key) where T : ExampleModule => modules?.Find(x => x.key == key) as T;
+
+        /// <summary>
+        /// Registers a module to Example.
+        /// </summary>
+        /// <param name="key">Key of the module to register.</param>
+        /// <param name="module">Module to register.</param>
+        public void RegisterModule(string key, ExampleModule module)
+        {
+            module.key = key;
+            module.SetReference(this);
+            modules.Add(module);
+        }
 
         #endregion
 
@@ -239,6 +272,11 @@ namespace BetterLegacy.Companion.Entity
             commands.Build();
             LogStartup("Building the interactions...");
             interactions.Build();
+            if (modules != null)
+            {
+                LogStartup("Building the custom modules...");
+                modules.ForLoop(module => module?.Build());
+            }
 
             LogStartup($"Done! Took {sw.Elapsed} to build. Now Example should enter the scene");
             Enter();
@@ -259,13 +297,16 @@ namespace BetterLegacy.Companion.Entity
             commands?.Tick();
             interactions?.Tick();
 
+            modules?.ForLoop(module => module?.Tick());
+
             tickCount++;
         }
 
+        ulong tickCount;
         /// <summary>
         /// Tick count since start.
         /// </summary>
-        public ulong tickCount;
+        public ulong TickCount => tickCount;
 
         /// <summary>
         /// Kills Example.
@@ -287,6 +328,10 @@ namespace BetterLegacy.Companion.Entity
             commands = null;
             interactions?.Clear();
             interactions = null;
+
+            modules?.ForLoop(module => module?.Clear());
+            modules?.Clear();
+            modules = null;
         }
 
         void LogStartup(string message)
