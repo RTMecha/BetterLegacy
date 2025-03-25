@@ -347,6 +347,9 @@ namespace BetterLegacy.Companion.Entity
             if (reference.leaving) // stop Example from doing anything while he is leaving.
                 return;
 
+            if (Input.GetKeyDown(KeyCode.F8))
+                reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.RANDOM_RESPONSE);
+
             for (int i = 0; i < actions.Count; i++)
             {
                 var action = actions[i];

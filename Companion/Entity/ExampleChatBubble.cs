@@ -11,6 +11,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
@@ -145,6 +146,8 @@ namespace BetterLegacy.Companion.Entity
             {
                 new ExampleDialogue((companion, parameters) => "..."),
                 new ExampleDialogue((companion, parameters) => "man"),
+                new ExampleDialogue((companion, parameters) => "bro what",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.LOADED_NEW_LEVEL, new ExampleDialogue[]
             {
@@ -306,6 +309,47 @@ namespace BetterLegacy.Companion.Entity
                     parameters => parameters is IdeaDialogueParameters ideaParameters && ideaParameters.ideaContext == IdeaDialogueParameters.IdeaContext.Character),
                 new ExampleDialogue((companion, parameters) => "Make a square character!",
                     parameters => parameters is IdeaDialogueParameters ideaParameters && ideaParameters.ideaContext == IdeaDialogueParameters.IdeaContext.Character),
+                new ExampleDialogue((companion, parameters) =>
+                {
+                    var shape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes2D.Count);
+                    var shapeOption = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes2D[shape].Count);
+
+                    return $"Try adding a {ShapeManager.inst.Shapes2D[shape][shapeOption].name} to a prefab.";
+                }, parameters => parameters is IdeaDialogueParameters ideaParameters && ideaParameters.ideaContext == IdeaDialogueParameters.IdeaContext.Prefab),
+            }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.RANDOM_RESPONSE, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "h"),
+                new ExampleDialogue((companion, parameters) => "lolislikejsab"),
+                new ExampleDialogue((companion, parameters) => "Peer Gynt reference"),
+                new ExampleDialogue((companion, parameters) => "Implemented Pluey."),
+                new ExampleDialogue((companion, parameters) => "Mods, throw an exception.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
+                new ExampleDialogue((companion, parameters) => "Squarify him.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
+                new ExampleDialogue((companion, parameters) => "Welp, that's not great.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
+                new ExampleDialogue((companion, parameters) => "Ayo what.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "IDEAS?!?!",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "A for effort, wait no that doesn't start with an A-"),
+                new ExampleDialogue((companion, parameters) => "man"),
+                new ExampleDialogue((companion, parameters) => "YAYAYAYAYAYAYAYYAYAYAYAYAYAYTAYYAYAYA."),
+                new ExampleDialogue((companion, parameters) => "YUH."),
+                new ExampleDialogue((companion, parameters) => "CHAT LOOK AT THIS.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
+                new ExampleDialogue((companion, parameters) => "oh gosh I'm scared.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
+                new ExampleDialogue((companion, parameters) =>
+                {
+                    if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
+                        ObjectEditor.inst.CreateNewObject(timelineObject => timelineObject.GetData<BeatmapObject>().name = "Object");
+
+                    return "OLORD GIVE OBJECT.";
+                },
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
+                new ExampleDialogue((companion, parameters) => "man i'm dead :skull:"),
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.END_LEVEL_SCREEN, new ExampleDialogue[]
             {
@@ -591,6 +635,11 @@ namespace BetterLegacy.Companion.Entity
             /// Example gives a random idea.
             /// </summary>
             public const string RANDOM_IDEA = "Random Idea";
+
+            /// <summary>
+            /// Example says a random response.
+            /// </summary>
+            public const string RANDOM_RESPONSE = "Random Response";
 
             /// <summary>
             /// Example comments on your end level result.
