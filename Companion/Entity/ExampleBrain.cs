@@ -313,7 +313,7 @@ namespace BetterLegacy.Companion.Entity
 
         void RepeatDialogues()
         {
-            if (reference.brain.talking)
+            if (reference.brain.talking || !reference.model.Visible)
                 return;
 
             float t = reference.timer.time % dialogueRepeatRate;
@@ -419,6 +419,23 @@ namespace BetterLegacy.Companion.Entity
                     SetAttribute("HAPPINESS", 1.0, MathOperation.Subtract);
                 } // stop dancing
                 ));
+            actions.Add(new ExampleAction(Actions.IDLE,
+                () =>
+                {
+                    var happinessAttribute = GetAttribute("HAPPINESS");
+                    if (happinessAttribute.Value > 1.0)
+                    {
+                        happinessAttribute.Value -= 1.0;
+                        SaveMemory();
+                    }
+                })
+            {
+                canDo = () => !reference.Dragging && !reference.brain.talking &&
+                        !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.1f),
+                interruptCheck = () => false,
+                interruptible = false,
+                setAsCurrent = false,
+            });
         }
 
         /// <summary>
@@ -457,6 +474,11 @@ namespace BetterLegacy.Companion.Entity
             /// Example is dancing!
             /// </summary>
             public const string DANCING = "Dancing";
+
+            /// <summary>
+            /// Example is slowly getting bored.
+            /// </summary>
+            public const string IDLE = "Idle";
 
             // todo: implement these
 
