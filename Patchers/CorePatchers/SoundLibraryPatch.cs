@@ -78,6 +78,12 @@ namespace BetterLegacy.Patchers
             AddSound($"{SFXPath}shoot{ogg}", DefaultSounds.shoot);
             AddSound($"{SFXPath}pop{ogg}", DefaultSounds.pop);
 
+            var menuMusic = __instance.musicGroups[1];
+            var audioClips = menuMusic.music;
+            menuMusic.music = new AudioClip[audioClips.Length - 1];
+            for (int i = 1; i < audioClips.Length; i++)
+                menuMusic.music[i - 1] = audioClips[i];
+
             foreach (var musicGroup in __instance.musicGroups)
             {
                 if (musicGroup.music.Length > 1 && !musicGroup.alwaysRandom) // not alwaysRandom is apparently ACTUALLY RANDOM???
