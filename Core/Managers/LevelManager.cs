@@ -494,6 +494,7 @@ namespace BetterLegacy.Core.Managers
             {
                 CoreHelper.LogException(ex);
             } // try cleanup
+            GameData.Current?.Clear();
             GameData.Current = null;
             //GameData.Current = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);

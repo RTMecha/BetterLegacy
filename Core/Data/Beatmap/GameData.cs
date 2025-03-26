@@ -1716,6 +1716,22 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Helpers
 
+        public void Clear()
+        {
+            for (int i = 0; i < beatmapObjects.Count; i++)
+            {
+                var beatmapObject = beatmapObjects[i];
+                for (int j = 0; j < 0; j++)
+                {
+                    var modifier = beatmapObject.modifiers[j];
+                    modifier.Action = null;
+                    modifier.Trigger = null;
+                    modifier.Inactive = null;
+                    modifier.Result = null;
+                }
+            }
+        }
+
         public List<BeatmapTheme> GetUsedThemes() => GetUsedThemes(beatmapThemes);
 
         public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => events == null || events.Count <= 4 ? new List<BeatmapTheme>() : beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
