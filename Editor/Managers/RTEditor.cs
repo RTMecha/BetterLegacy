@@ -75,13 +75,21 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"There was an error with loading the shapes in the editor: {ex}");
             }
 
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(CacheEditor)}");
             CacheEditor();
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(CacheSprites)}");
             CacheSprites();
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(RegisterPopups)}");
             RegisterPopups();
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(InitPrefabs)}");
             InitPrefabs();
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(InitUI)}");
             InitUI();
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(InitEditors)}");
             InitEditors();
+            CoreHelper.Log($"RTEDITOR INIT -> {nameof(FinalSetup)}");
             FinalSetup();
+            CoreHelper.Log($"RTEDITOR INIT -> DONE!");
         }
 
         void OnDestroy()
@@ -4256,6 +4264,8 @@ namespace BetterLegacy.Editor.Managers
                 yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, OpenLevelPopupOnFinish));
             else
                 OpenLevelPopupOnFinish();
+
+            CoreHelper.Log($"Finished loading editor levels.");
 
             yield break;
         }

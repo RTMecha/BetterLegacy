@@ -67,6 +67,7 @@ namespace BetterLegacy.Patchers
 
             FontManager.inst.ChangeAllFontsInEditor();
 
+            LevelManager.Clear();
             LevelManager.ClearData();
 
             InputDataManager.inst.BindMenuKeys();
@@ -276,33 +277,42 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix()
         {
+            CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.GetLevelList)}");
             Instance.GetLevelList();
 
+            CoreHelper.Log($"EDITOR START -> {nameof(CoreHelper.UpdateDiscordStatus)}");
             CoreHelper.UpdateDiscordStatus("", "In Editor (Selecting level)", "editor");
 
+            CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.SetDialogStatus)} (Timeline)");
             Instance.SetDialogStatus("Timeline", true, true);
 
+            CoreHelper.Log($"EDITOR START -> Check players");
             if (InputDataManager.inst.players.Count == 0 || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
             {
                 InputDataManager.inst.players.Clear();
                 InputDataManager.inst.players.Add(PlayerManager.CreateDefaultPlayer());
             }
 
+            CoreHelper.Log($"EDITOR START -> Can Edit?");
             Instance.GUI.SetActive(false);
             Instance.canEdit = DataManager.inst.GetSettingBool("CanEdit", false);
-
             Instance.isEditing = true;
+
+            CoreHelper.Log($"EDITOR START -> Update Display name");
             SteamWrapper.inst.user.displayName = CoreConfig.Instance.DisplayName.Value;
             Instance.SetCreatorName(SteamWrapper.inst.user.displayName);
             Instance.SetShowHelp(EditorConfig.Instance.ShowHelpOnStartup.Value);
 
+            CoreHelper.Log($"EDITOR START -> Update mouse tooltip");
             RTEditor.inst.mouseTooltip?.SetActive(false);
 
+            CoreHelper.Log($"EDITOR START -> Load base level");
             LoadBaseLevelPrefix();
             Instance.Zoom = 0.05f;
             Instance.SetLayer(0);
             Instance.DisplayNotification("Base Level Loaded", 2f, EditorManager.NotificationType.Info);
 
+            CoreHelper.Log($"EDITOR START -> Clear vanilla keybinds");
             InputDataManager.inst.editorActions.Cut.ClearBindings();
             InputDataManager.inst.editorActions.Copy.ClearBindings();
             InputDataManager.inst.editorActions.Paste.ClearBindings();
@@ -312,25 +322,34 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.editorActions.Redo.ClearBindings();
             InputDataManager.inst.editorActions.CreateMarker.ClearBindings();
 
+            CoreHelper.Log($"EDITOR START -> Rendering editor");
             //Set Editor Zoom cap
             Instance.zoomBounds = EditorConfig.Instance.MainZoomBounds.Value;
 
             try
             {
+                CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.AssignTimelineTexture)}");
                 CoreHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
+                CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.UpdateTimelineSizes)}");
                 Instance.UpdateTimelineSizes();
                 Instance.firstOpened = true;
 
+                CoreHelper.Log($"EDITOR START -> {nameof(RTEventEditor.CreateEventObjects)}");
                 RTEventEditor.inst.CreateEventObjects();
+                CoreHelper.Log($"EDITOR START -> {nameof(CheckpointEditor.CreateGhostCheckpoints)}");
                 CheckpointEditor.inst.CreateGhostCheckpoints();
+                CoreHelper.Log($"EDITOR START -> {nameof(GameManager.UpdateTimeline)}");
                 GameManager.inst.UpdateTimeline();
+                CoreHelper.Log($"EDITOR START -> {nameof(CheckpointEditor.SetCurrentCheckpoint)}");
                 CheckpointEditor.inst.SetCurrentCheckpoint(0);
                 if (!April)
                     Instance.TogglePlayingSong();
                 else
                     Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
+                CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.ClearDialogs)}");
                 Instance.ClearDialogs();
 
+                CoreHelper.Log($"EDITOR START -> Achievement");
                 AchievementManager.inst.UnlockAchievement("editor");
             }
             catch (Exception ex)
@@ -338,6 +357,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogError($"{Instance.className}First opened error!{ex}");
             }
 
+            CoreHelper.Log($"EDITOR START -> {nameof(ArcadeHelper.ResetModifiedStates)}");
             ArcadeHelper.ResetModifiedStates();
             return false;
         }

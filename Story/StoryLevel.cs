@@ -75,6 +75,7 @@ namespace BetterLegacy.Story
             if (!storyLevel)
             {
                 assets.Unload(true);
+                assets = null;
                 yield break;
             }
 

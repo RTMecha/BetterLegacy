@@ -256,11 +256,14 @@ namespace BetterLegacy.Core.Managers
 
             RandomHelper.UpdateSeed();
 
-            Debug.Log($"{className}Switching to Game scene");
+            Debug.Log($"{className}Updating scene.");
 
             bool inGame = CoreHelper.InGame;
             if (!inGame || CoreHelper.InEditor)
+            {
+                Debug.Log($"{className}Switching to Game scene.");
                 SceneHelper.LoadGameWithProgress();
+            }
 
             bool logged = false;
             while (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
@@ -492,7 +495,7 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.LogException(ex);
             } // try cleanup
             GameData.Current = null;
-            GameData.Current = new GameData();
+            //GameData.Current = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);
         }
 
@@ -559,6 +562,9 @@ namespace BetterLegacy.Core.Managers
                     Levels[i] = null;
                 }
                 Levels.Clear();
+
+                OnLevelStart = null;
+                OnLevelEnd = null;
             }
             catch (Exception ex)
             {
