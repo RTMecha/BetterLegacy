@@ -5089,22 +5089,46 @@ namespace BetterLegacy.Editor.Managers
 
             inputFieldStorage.eventTrigger.triggers.Clear();
 
+            var contextMenu = inputFieldStorage.inputField.gameObject.GetOrAddComponent<ContextClickable>();
+            contextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        switch (type)
+                        {
+                            case 0: {
+                                    inputFieldStorage.inputField.text = "0";
+                                    break;
+                                }
+                            case 1: {
+                                    inputFieldStorage.inputField.text = "1";
+                                    break;
+                                }
+                            case 2: {
+                                    inputFieldStorage.inputField.text = "0";
+                                    break;
+                                }
+                        }
+                    }));
+            };
+
             switch (type)
             {
-                case 0:
-                    {
+                case 0: {
                         inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value, multi: true));
                         inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(dialog.EventValueFields[0].inputField, dialog.EventValueFields[1].inputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value));
                         break;
                     }
-                case 1:
-                    {
+                case 1: {
                         inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value, multi: true));
                         inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(dialog.EventValueFields[0].inputField, dialog.EventValueFields[1].inputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value));
                         break;
                     }
-                case 2:
-                    {
+                case 2: {
                         inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectRotationScroll.Value, EditorConfig.Instance.ObjectRotationScrollMultiply.Value));
                         break;
                     }
