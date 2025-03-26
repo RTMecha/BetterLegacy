@@ -1718,7 +1718,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<BeatmapTheme> GetUsedThemes() => GetUsedThemes(beatmapThemes);
 
-        public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
+        public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => events == null || events.Count <= 4 ? new List<BeatmapTheme>() : beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
 
         public void UpdateUsedThemes() => beatmapThemes = GetUsedThemes(ThemeManager.inst.CustomThemes);
 
