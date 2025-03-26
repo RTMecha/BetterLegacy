@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -21,7 +18,7 @@ namespace BetterLegacy.Companion.Data
 
             registry.RegisterItem("TEST_PARAMS", new ExampleRegistryGetter<string, int>(num => $"This is a test: {num}."));
 
-            registry.GetItem<ExampleRegistryGetter<string, int>>("TEST_PARAMS").get(0);
+            var result = registry.GetItem<ExampleRegistryGetter<string, int>>("TEST_PARAMS").get(0);
         }
     }
 
@@ -36,6 +33,12 @@ namespace BetterLegacy.Companion.Data
 
         List<ExampleRegistryItem> items = new List<ExampleRegistryItem>();
 
+        public ExampleRegistryItem this[string key]
+        {
+            get => GetItem(key);
+            set => OverrideItem(key, value);
+        }
+
         /// <summary>
         /// Gets the number of items in the registry.
         /// </summary>
@@ -47,6 +50,14 @@ namespace BetterLegacy.Companion.Data
         /// <param name="key">Key to find.</param>
         /// <returns>Returns a found item.</returns>
         public ExampleRegistryItem GetItem(string key) => items.Find(x => x.key == key);
+
+        /// <summary>
+        /// Gets an item from the registry.
+        /// </summary>
+        /// <param name="key">Key to find.</param>
+        /// <param name="defaultItem">Default item to return if none is found.</param>
+        /// <returns>Returns a found item.</returns>
+        public ExampleRegistryItem GetItem(string key, ExampleRegistryItem defaultItem) => items.Find(x => x.key == key) ?? defaultItem;
 
         /// <summary>
         /// Gets an item from the registry at an index.
@@ -72,6 +83,15 @@ namespace BetterLegacy.Companion.Data
         public T GetItem<T>(string key) where T : ExampleRegistryItem => items.Find(x => x.key == key) as T;
 
         /// <summary>
+        /// Gets an item from the registry.
+        /// </summary>
+        /// <typeparam name="T">Type of the item.</typeparam>
+        /// <param name="key">Key to find.</param>
+        /// <param name="defaultItem">Default item to return if none is found.</param>
+        /// <returns>Returns a found item.</returns>
+        public T GetItem<T>(string key, T defaultItem) where T : ExampleRegistryItem => items.Find(x => x.key == key) is T result ? result : defaultItem;
+
+        /// <summary>
         /// Gets an item from the registry at an index.
         /// </summary>
         /// <typeparam name="T">Type of the item.</typeparam>
@@ -86,7 +106,24 @@ namespace BetterLegacy.Companion.Data
         /// <param name="index">Index of the item.</param>
         /// <param name="defaultItem">Default item to return if none is found.</param>
         /// <returns>Returns a found item.</returns>
-        public T GetItem<T>(int index, T defaultItem) where T : ExampleRegistryItem => items.TryGetAt(index, out ExampleRegistryItem item) ? (item as T) : defaultItem;
+        public T GetItem<T>(int index, T defaultItem) where T : ExampleRegistryItem => items.TryGetAt(index, out ExampleRegistryItem item) && item is T result ? result : defaultItem;
+
+        /// <summary>
+        /// Gets an item from the registry at an index.
+        /// </summary>
+        /// <typeparam name="T">Type of the item.</typeparam>
+        /// <param name="predicate">Predicate to match.</param>
+        /// <returns>Returns a found item.</returns>
+        public T GetItem<T>(Predicate<ExampleRegistryItem> predicate) where T : ExampleRegistryItem => items.Find(predicate) as T;
+
+        /// <summary>
+        /// Gets an item from the registry at an index.
+        /// </summary>
+        /// <typeparam name="T">Type of the item.</typeparam>
+        /// <param name="predicate">Predicate to match.</param>
+        /// <param name="defaultItem">Default item to return if none is found.</param>
+        /// <returns>Returns a found item.</returns>
+        public T GetItem<T>(Predicate<ExampleRegistryItem> predicate, T defaultItem) where T : ExampleRegistryItem => items.Find(predicate) is T result ? result : defaultItem;
 
         /// <summary>
         /// Registers an item to the registry.
@@ -147,9 +184,12 @@ namespace BetterLegacy.Companion.Data
         /// <summary>
         /// Clears the registry.
         /// </summary>
-        public void Clear() => items.Count();
+        public void Clear() => items.Clear();
     }
 
+    /// <summary>
+    /// Represents an item in a registry.
+    /// </summary>
     public class ExampleRegistryItem : Exists
     {
         public ExampleRegistryItem() { }
@@ -160,6 +200,23 @@ namespace BetterLegacy.Companion.Data
         /// Key of the item.
         /// </summary>
         public string key;
+    }
+
+    /// <summary>
+    /// Represents an item in a registry.
+    /// </summary>
+    /// <typeparam name="T">Type of the object in the item.</typeparam>
+    public class ExampleRegistryItem<T> : ExampleRegistryItem
+    {
+        public ExampleRegistryItem() { }
+
+        public ExampleRegistryItem(string key) : base(key) { }
+
+        public ExampleRegistryItem(string key, T obj) : base(key) => this.obj = obj;
+
+        public ExampleRegistryItem(T obj) => this.obj = obj;
+
+        public T obj;
     }
 
     /// <summary>
@@ -201,5 +258,27 @@ namespace BetterLegacy.Companion.Data
         /// Item to get.
         /// </summary>
         public Func<T, TGet> get;
+    }
+
+    /// <summary>
+    /// Represents an item in a registry.
+    /// </summary>
+    /// <typeparam name="TGet">Type to get from the item.</typeparam>
+    /// <typeparam name="T1">First parameter.</typeparam>
+    /// <typeparam name="T2">Second parameter.</typeparam>
+    public class ExampleRegistryGetter<TGet, T1, T2> : ExampleRegistryItem
+    {
+        public ExampleRegistryGetter() : base() { }
+
+        public ExampleRegistryGetter(string key) : base(key) { }
+
+        public ExampleRegistryGetter(string key, Func<T1, T2, TGet> get) : this(key) => this.get = get;
+
+        public ExampleRegistryGetter(Func<T1, T2, TGet> get) => this.get = get;
+
+        /// <summary>
+        /// Item to get.
+        /// </summary>
+        public Func<T1, T2, TGet> get;
     }
 }
