@@ -490,6 +490,11 @@ namespace BetterLegacy.Companion.Entity
         #region Memory
 
         /// <summary>
+        /// Example's memory.
+        /// </summary>
+        public ExampleRegistry memory = new ExampleRegistry();
+
+        /// <summary>
         /// Parses memories from JSON and remembers it.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
@@ -500,6 +505,31 @@ namespace BetterLegacy.Companion.Entity
                 var jnAttribute = jn["attributes"][i];
                 var value = jnAttribute["val"].AsDouble;
                 GetAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble).Value = value;
+            }
+
+            memory.Clear();
+            for (int i = 0; i < jn["memory"].Count; i++)
+            {
+                var jnMemory = jn["memory"][i];
+                var type = jnMemory["type"].AsInt;
+                var key = jnMemory["key"].Value;
+
+                if (string.IsNullOrEmpty(key))
+                    continue;
+
+                switch (type)
+                {
+                    case 0: {
+                            memory.RegisterItem(key, new ExampleRegistryItem<string>(obj: jnMemory["obj"]));
+
+                            break;
+                        } // string
+                    case 1: {
+                            memory.RegisterItem(key, new ExampleRegistryItem<JSONNode>(obj: jnMemory["obj"]));
+
+                            break;
+                        } // JSON
+                }
             }
         }
 
@@ -513,6 +543,25 @@ namespace BetterLegacy.Companion.Entity
 
             for (int i = 0; i < attributes.Count; i++)
                 jn["attributes"][i] = attributes[i].ToJSON();
+
+            try
+            {
+                memory.ForLoop((registryItem, index) =>
+                {
+                    if (string.IsNullOrEmpty(registryItem.key))
+                        return;
+
+                    jn["memory"][index]["key"] = registryItem.key;
+                    if (registryItem is ExampleRegistryItem<string> registryItemStr && !string.IsNullOrEmpty(registryItemStr.obj))
+                        jn["memory"][index]["obj"] = registryItemStr.obj;
+                    if (registryItem is ExampleRegistryItem<JSONNode> registryItemJSON && registryItemJSON.obj != null)
+                        jn["memory"][index]["obj"] = registryItemJSON.obj;
+                });
+            }
+            catch (Exception ex)
+            {
+                LogAmnesia(ex);
+            }
 
             return jn;
         }
@@ -528,11 +577,9 @@ namespace BetterLegacy.Companion.Entity
         /// <param name="id">ID of the attribute.</param>
         /// <param name="value">Value to set.</param>
         /// <param name="operation">Operation to use.</param>
-        public void SetAttribute(string id, double value, MathOperation operation)
+        public override void SetAttribute(string id, double value, MathOperation operation)
         {
-            double num = GetAttribute(id).Value;
-            RTMath.Operation(ref num, value, operation);
-            GetAttribute(id).Value = num;
+            base.SetAttribute(id, value, operation);
             SaveMemory();
         }
 
@@ -547,7 +594,7 @@ namespace BetterLegacy.Companion.Entity
             }
             catch (Exception ex)
             {
-                CompanionManager.LogError($"Example failed to remember something. Exception: {ex}");
+                LogAmnesia(ex);
             }
         }
 
@@ -562,10 +609,15 @@ namespace BetterLegacy.Companion.Entity
                 CompanionManager.Log($"Loaded memory");
             }
             else
-            {
-                CompanionManager.LogError($"Example failed to remember something.");
-            }
+                LogAmnesia();
         }
+
+        /// <summary>
+        /// Logs Example having amnesia.
+        /// </summary>
+        /// <param name="ex">Exception that caused Example to have amnesia.</param>
+        public static void LogAmnesia(Exception ex = null)
+            => CompanionManager.LogError($"Example failed to remember something. Seems like he's suffering amnesia." + (ex == null ? string.Empty : $"\nException: {ex}"));
 
         #endregion
     }
