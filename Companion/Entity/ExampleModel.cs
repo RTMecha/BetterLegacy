@@ -1491,71 +1491,151 @@ namespace BetterLegacy.Companion.Entity
             }));
             poses.Add(new ExamplePose(Poses.ENTER, (model, parameters) =>
             {
-                var arm = model.GetPart(Parts.HAND_LEFT);
+                var handLeft = model.GetPart(Parts.HAND_LEFT);
+                var handRight = model.GetPart(Parts.HAND_RIGHT);
+
+                var pose = parameters is RandomPoseParameters randomPose && randomPose.poseSelection != null ?
+                    randomPose.poseSelection() :
+                    UnityEngine.Random.Range(0, 2);
 
                 var animation = new RTAnimation("Hiii");
-                animation.animationHandlers = new List<AnimationHandlerBase>
+                switch (pose)
                 {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.5f, 800f, Ease.SineOut),
-                        new FloatKeyframe(0.8f, 750f, Ease.SineInOut),
-                    }, x => model.position.x = x, interpolateOnComplete: true),
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, -1200f, Ease.Linear),
-                        new FloatKeyframe(0.3f, -380f, Ease.SineOut),
-                        new FloatKeyframe(0.6f, -410f, Ease.SineInOut),
-                    }, x => model.position.y = x, interpolateOnComplete: true),
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.5f, 150f, Ease.SineOut),
-                        new FloatKeyframe(0.8f, 130f, Ease.SineInOut),
-                        new FloatKeyframe(1.2f, 150f, Ease.SineInOut),
-                        new FloatKeyframe(1.7f, 130f, Ease.SineInOut),
-                        new FloatKeyframe(2f, 0f, Ease.SineInOut),
-                    }, x => arm.rotation = x, interpolateOnComplete: true),
-                };
+                    case 1: {
+                            ExceptionHelper.NullReference(handLeft, "Example Hand Left");
+                            ExceptionHelper.NullReference(handRight, "Example Hand Right");
+
+                            animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                                    new FloatKeyframe(0.6f, 800f, Ease.SineOut),
+                                    new FloatKeyframe(1f, 750f, Ease.SineInOut),
+                                }, x => model.position.x = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, -1200f, Ease.Linear),
+                                    new FloatKeyframe(0.45f, -380f, Ease.SineOut),
+                                    new FloatKeyframe(0.8f, -410f, Ease.SineInOut),
+                                }, x => model.position.y = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                                    new FloatKeyframe(0.5f, 150f, Ease.SineOut),
+                                    new FloatKeyframe(0.8f, 130f, Ease.SineInOut),
+                                    new FloatKeyframe(1.2f, 150f, Ease.SineInOut),
+                                    new FloatKeyframe(1.7f, 130f, Ease.SineInOut),
+                                    new FloatKeyframe(2f, 0f, Ease.SineInOut),
+                                }, x => handLeft.rotation = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                                    new FloatKeyframe(0.5f, -150f, Ease.SineOut),
+                                    new FloatKeyframe(0.8f, -130f, Ease.SineInOut),
+                                    new FloatKeyframe(1.2f, -150f, Ease.SineInOut),
+                                    new FloatKeyframe(1.7f, -130f, Ease.SineInOut),
+                                    new FloatKeyframe(2f, 0f, Ease.SineInOut),
+                                }, x => handRight.rotation = x, interpolateOnComplete: true),
+                            };
+
+                            break;
+                        }
+                    default: {
+                            ExceptionHelper.NullReference(handLeft, "Example Hand Left");
+
+                            animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                                    new FloatKeyframe(0.5f, 800f, Ease.SineOut),
+                                    new FloatKeyframe(0.8f, 750f, Ease.SineInOut),
+                                }, x => model.position.x = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, -1200f, Ease.Linear),
+                                    new FloatKeyframe(0.3f, -380f, Ease.SineOut),
+                                    new FloatKeyframe(0.6f, -410f, Ease.SineInOut),
+                                }, x => model.position.y = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                                    new FloatKeyframe(0.5f, 150f, Ease.SineOut),
+                                    new FloatKeyframe(0.8f, 130f, Ease.SineInOut),
+                                    new FloatKeyframe(1.2f, 150f, Ease.SineInOut),
+                                    new FloatKeyframe(1.7f, 130f, Ease.SineInOut),
+                                    new FloatKeyframe(2f, 0f, Ease.SineInOut),
+                                }, x => handLeft.rotation = x, interpolateOnComplete: true),
+                            };
+
+                            break;
+                        }
+                }
 
                 return animation;
             }));
-            poses.Add(new ExamplePose(Poses.LEAVE, (model, parameters) => new RTAnimation("Cya")
+            poses.Add(new ExamplePose(Poses.LEAVE, (model, parameters) =>
             {
-                animationHandlers = new List<AnimationHandlerBase>
-                {
-                    // Base
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, model.position.x, Ease.Linear),
-                        new FloatKeyframe(0.5f, model.position.x, Ease.Linear),
-                        new FloatKeyframe(1.5f, model.position.x + -400f, Ease.SineOut),
-                    }, x => model.position.x = x, interpolateOnComplete: true),
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, model.position.y, Ease.Linear),
-                        new FloatKeyframe(0.5f, model.position.y - 10f, Ease.Linear),
-                        new FloatKeyframe(0.8f, model.position.y + 80f, Ease.SineOut),
-                        new FloatKeyframe(1.5f, model.position.y + -1200f, Ease.CircIn),
-                    }, x => model.position.y = x, interpolateOnComplete: true),
-                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                    {
-                        new Vector2Keyframe(0f, model.scale, Ease.Linear),
-                        new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
-                        new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
-                        new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
-                        new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
-                    }, vector2 => model.scale = vector2, interpolateOnComplete: true),
+                var pose = parameters is RandomPoseParameters randomPose && randomPose.poseSelection != null ?
+                    randomPose.poseSelection() :
+                    UnityEngine.Random.Range(0, 2);
 
-                    // Face
-                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                    {
-                        new Vector2Keyframe(0f, model.facePosition, Ease.Linear),
-                        new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
-                        new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
-                    }, vector2 => model.facePosition = vector2, interpolateOnComplete: true),
-                },
+                var animation = new RTAnimation("Cya");
+                switch (pose)
+                {
+                    case 1: {
+                            animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                                {
+                                    new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
+                                    new Vector2Keyframe(1.5f, Vector2.zero, Ease.BackIn),
+                                }, vector2 => model.scale = vector2, interpolateOnComplete: true),
+                            };
+
+                            break;
+                        }
+                    default: {
+                            animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                // Base
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, model.position.x, Ease.Linear),
+                                    new FloatKeyframe(0.5f, model.position.x, Ease.Linear),
+                                    new FloatKeyframe(1.5f, model.position.x + -400f, Ease.SineOut),
+                                }, x => model.position.x = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, model.position.y, Ease.Linear),
+                                    new FloatKeyframe(0.5f, model.position.y - 10f, Ease.Linear),
+                                    new FloatKeyframe(0.8f, model.position.y + 80f, Ease.SineOut),
+                                    new FloatKeyframe(1.5f, model.position.y + -1200f, Ease.CircIn),
+                                }, x => model.position.y = x, interpolateOnComplete: true),
+                                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                                {
+                                    new Vector2Keyframe(0f, model.scale, Ease.Linear),
+                                    new Vector2Keyframe(0.5f, new Vector2(0.99f, 1.01f), Ease.Linear),
+                                    new Vector2Keyframe(0.7f, new Vector2(1.15f, 0.95f), Ease.SineOut),
+                                    new Vector2Keyframe(0.9f, new Vector2(1f, 1f), Ease.SineInOut),
+                                    new Vector2Keyframe(1.5f, new Vector2(0.7f, 1.3f), Ease.SineIn),
+                                }, vector2 => model.scale = vector2, interpolateOnComplete: true),
+
+                                // Face
+                                new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                                {
+                                    new Vector2Keyframe(0f, model.facePosition, Ease.Linear),
+                                    new Vector2Keyframe(0.7f, new Vector2(0f, 2f), Ease.SineInOut),
+                                    new Vector2Keyframe(1.3f, new Vector2(0f, -3f), Ease.SineInOut),
+                                }, vector2 => model.facePosition = vector2, interpolateOnComplete: true),
+                            };
+
+                            break;
+                        }
+                }
+
+                return animation;
             }));
             poses.Add(new ExamplePose(Poses.WORRY, (model, parameters) =>
             {

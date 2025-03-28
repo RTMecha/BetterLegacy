@@ -63,4 +63,17 @@ namespace BetterLegacy.Companion.Data.Parameters
         public bool disablePupilsAuto = true;
         public Vector2 pupilsLookAt;
     }
+
+    public class RandomPoseParameters : PoseParameters
+    {
+        public RandomPoseParameters() : base() { }
+
+        public RandomPoseParameters(int poseSelection) : base() => this.poseSelection = () => poseSelection;
+
+        public RandomPoseParameters(Func<int> poseSelection) : base() => this.poseSelection = poseSelection;
+
+        public RandomPoseParameters(int min, int max) : this(UnityEngine.Random.Range(min, max)) { }
+
+        public Func<int> poseSelection;
+    }
 }
