@@ -221,6 +221,8 @@ namespace BetterLegacy.Companion.Entity
                     parameters => reference.interactions.Check(ExampleInteractions.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
                 new ExampleDialogue((companion, parameters) => "Hmmm...",
                     parameters => reference.brain.interactedTimer.time > 600f),
+                new ExampleDialogue((companion, parameters) => "Boredom...",
+                    parameters => reference.brain.interactedTimer.time > 600f),
                 new ExampleDialogue((companion, parameters) => "What's up?"),
                 new ExampleDialogue((companion, parameters) => "You got this!",
                     parameters => reference.interactions.Check(ExampleInteractions.Checks.IS_HAPPY)),
@@ -290,6 +292,20 @@ namespace BetterLegacy.Companion.Entity
                         }
                         return false;
                     }),
+                new ExampleDialogue((companion, parameters) => "DIALOGUE.",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
+                new ExampleDialogue((companion, parameters) => "Look at the date :)",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
+                new ExampleDialogue((companion, parameters) => "Look at the date!",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
+                new ExampleDialogue((companion, parameters) => ":)))))))))))",
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
+                new ExampleDialogue((companion, parameters) =>
+                {
+                    if (CoreHelper.InEditor)
+                        EditorManager.inst.DisplayNotification("the cursed day is here", 3f, EditorManager.NotificationType.Error);
+                    return "the cursed day is here";
+                }, parameters => reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.RANDOM_IDEA, new ExampleDialogue[]
             {
@@ -425,9 +441,9 @@ namespace BetterLegacy.Companion.Entity
             dialogues.Add(new ExampleDialogueGroup(Dialogues.PLAYER_DEATH, new ExampleDialogue[]
             {
                 new ExampleDialogue((companion, parameters) => "lol you died",
-                    parameters => RandomHelper.PercentChance(1) && reference.interactions.Check(ExampleInteractions.Checks.IS_SAD)),
+                    parameters => RandomHelper.PercentChance(1) && reference.interactions.Check(ExampleInteractions.Checks.IS_SAD) || reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
                 new ExampleDialogue((companion, parameters) => "death hd",
-                    parameters => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY)),
+                    parameters => reference.interactions.Check(ExampleInteractions.Checks.USER_IS_DIGGY) || reference.interactions.Check(ExampleInteractions.Checks.APRIL_FOOLS)),
                 new ExampleDialogue((companion, parameters) =>
                 {
                     if (parameters is PlayerDialogueParameters playerParameters && playerParameters.player)

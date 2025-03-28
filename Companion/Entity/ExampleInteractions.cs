@@ -228,6 +228,7 @@ namespace BetterLegacy.Companion.Entity
         public virtual void RegisterChecks()
         {
             checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
+            checks.Add(new ExampleCheck(Checks.APRIL_FOOLS, () => CoreHelper.AprilFools));
             checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.DirectoryExists(RTFile.GetAsset("Example Companion"))));
             checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && !RTEditor.inst.LevelPanels.IsEmpty()));
             checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel));
@@ -278,6 +279,8 @@ namespace BetterLegacy.Companion.Entity
         public static class Checks
         {
             public const string APPLICATION_FOCUSED = "Application Focused";
+
+            public const string APRIL_FOOLS = "April Fools";
 
             public const string NO_ASSETS = "No Assets";
 
