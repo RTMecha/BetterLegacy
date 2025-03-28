@@ -104,8 +104,18 @@ namespace BetterLegacy.Companion.Entity
         /// <param name="module">Module to register.</param>
         public void RegisterModule(string key, ExampleModule module)
         {
+            if (!module)
+            {
+                CoreHelper.LogError($"Module: [key: {key}, module: {module}] was null, so cannot be registered.");
+                return;
+            }
+
             module.key = key;
             module.SetReference(this);
+
+            if (modules == null)
+                modules = new List<ExampleModule>();
+
             modules.Add(module);
         }
 
@@ -313,6 +323,8 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void Kill()
         {
+            CompanionManager.inst.animationController.animations.Clear();
+
             if (Current && Current.internalID == internalID)
                 Current = null;
 
@@ -368,13 +380,12 @@ namespace BetterLegacy.Companion.Entity
 
             chatBubble?.Say("Okay, I'll get out of your way.");
 
-            model.GetAttribute("FACE_CAN_LOOK").Value = 0.0;
+            model?.SetAttribute("FACE_CAN_LOOK", 0.0, MathOperation.Set);
 
-            model.SetPose(ExampleModel.Poses.LEAVE, onCompleteAnim: animation =>
-            {
-                CompanionManager.inst.animationController.animations.Clear();
+            model?.SetPose(ExampleModel.Poses.LEAVE, onCompleteAnim: animation => Kill());
+
+            if (!model)
                 Kill();
-            });
         }
 
         #endregion
