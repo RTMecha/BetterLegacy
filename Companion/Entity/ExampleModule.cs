@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Companion.Entity
@@ -154,6 +155,20 @@ namespace BetterLegacy.Companion.Entity
             }
 
             return attribute;
+        }
+
+        /// <summary>
+        /// Updates an attribute.
+        /// </summary>
+        /// <param name="id">ID of the attribute.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="operation">Operation to use.</param>
+        public virtual void SetAttribute(string id, double value, MathOperation operation)
+        {
+            var attribute = GetAttribute(id);
+            double num = attribute.Value;
+            RTMath.Operation(ref num, value, operation);
+            attribute.Value = num;
         }
 
         #endregion
