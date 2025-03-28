@@ -1972,11 +1972,11 @@ namespace BetterLegacy.Companion.Entity
         /// Overrides an existing pose.
         /// </summary>
         /// <param name="key">Key of the pose to override.</param>
-        /// <param name="pose">Pose to ovrride.</param>
+        /// <param name="pose">Pose to override.</param>
         public void OverridePose(string key, ExamplePose pose)
         {
-            var poseIndex = poses.FindIndex(x => x.key == key);
-            poses[poseIndex] = pose;
+            if (poses.TryFindIndex(x => x.key == key, out int index))
+                poses[index] = pose;
         }
 
         /// <summary>
