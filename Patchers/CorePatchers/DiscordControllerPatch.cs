@@ -24,6 +24,9 @@ namespace BetterLegacy.Patchers
         {
             __instance.presence.largeImageText = "Using the BetterLegacy mod";
             __instance.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
+            if (CoreHelper.AprilFools)
+                __instance.presence.startTimestamp = 1;
+
             DiscordRpc.UpdatePresence(__instance.presence);
         }
 
