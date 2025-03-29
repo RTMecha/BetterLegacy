@@ -44,7 +44,7 @@
 > Apply This & Create New for the Apply Prefab button in the Object Editor.
 > Edit for internal prefabs.
 > Prefab offset context menus.
-- Object keyframe value context menus.
+> Object keyframe value context menus.
 snapshot-2025.2.3 - (pre-1.7.0) > [Feb 13, 2025]
 - Added support for Shake X & Y from alpha / default branch.
 - Preparing for polygon shape and particle shape port.
