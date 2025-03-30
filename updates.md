@@ -1,0 +1,813 @@
+﻿# 1.6.9 > [Sep 29, 2024]
+
+## Fixes
+- Fixed player spawn issues.
+- Fixed theme not updating properly in some cases.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.8 > [Sep 28, 2024]
+
+## Fixes
+- Fixed copyAxis not updating in the previous update.
+- Did some more fixes for pasting / expanding objects.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.7 > [Sep 28, 2024]
+
+## Features
+- Added unlock complete to metadata.
+- Implemented level collections. You currently can't make them in the editor, however.
+
+## Fixes
+- Fixed Gradient toggles showing in Simple editor complexity type.
+- Fixed some bugs with pasting / expanding prefabs introduced in the previous patch.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.6 > [Sep 26, 2024]
+
+## Features
+- Added context menus to name, tag and some modifier input fields.
+
+## Changes
+- Prefab object expanding and object pasting is now a LOT faster. (around 1000 objects per second)
+- Reworked some saving / loading code.
+
+## Fixes
+- Fixed editor layer changing for objects being broken.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.5 > [Sep 25, 2024]
+
+## Changes
+- Reworked marker looping to be set via context menus instead of the config.
+- Changed marker dragging to left click.
+- Attempting more editor optimizations.
+
+## Fixes
+- Fixed some zen mode stuff being done incorrectly in the arcade.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.4 > [Sep 24, 2024]
+
+## Features
+- Added some context menus to the built-in file browser.
+- Included with the above feature is the ability to preview audio files.
+- Modifiers now have a context menu.
+- Added Paste Modifier and Paste Keyframes to Multi Object editor.
+- Multi Object editor now finally has shape editing.
+- Added Update Object button to Timeline Object context menu.
+- You can now properly greet Example.
+
+## Changes
+- Organized the Mutli Object editor UI.
+- Reworked Example chatting internal code a tiny bit.
+
+## Fixes
+- Fixed some modifiers not having the correct parameters, breaking the UI.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.3 > [Sep 23, 2024]
+
+## Features
+- Added theme folder navigation.
+- Re-implemented online Steam level viewing and the rest of the functions to the arcade menus.
+
+## Changes
+- Removed old arcade menus.
+- Online Steam search, subscribing and unsubscribing now has better functionality.
+
+## Fixes
+- Fixed image objects having their origin break when they appear.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.2 > [Sep 23, 2024]
+
+## Features
+- Added an identifier for level format in the Play Level menu. LS / Legacy levels show a Legacy PA heart, VG / Alpha levels show a modern PA heart.
+
+## Fixes
+- Alpha layer hotfix.
+- Fixed Input select screen text not displaying correctly.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.1 > [Sep 23, 2024]
+
+## Features
+- Added context menus to timeline objects.
+- You can now rename levels and folders via the level context menu.
+- Added animation config for the Folder Creator (aka File Popup).
+
+## Changes
+- Changed level button text formatting, replaced song title with level name.
+- Made dev player model the default on alpha levels.
+- Changed dev player model boost cooldown to 0.
+
+## Fixes
+- Fixed themes on some older levels breaking the game.
+- Fixed some layer issues with alpha levels.
+- Fixed Arcade Browser next page button not allowing itself to be pressed.
+- Folder creator now disappears when you create a folder.
+
+------------------------------------------------------------------------------------------
+
+# 1.6.0 > [Sep 22, 2024]
+
+## Features
+- Finally implemented Background Object tags. This includes two new modifiers for BG objects: setActiveOther and animateObjectOther. Also includes a new regular object modifier: setBGActive.
+- Added BG Global Position toggle to Camera Depth event keyframes. This is to support vanilla Legacy levels that rely on the BG camera being at a specific position. If you made any levels before this change, please do turn the toggle off.
+- Added Allow Custom Player Models to the Global tab of the Player Editor. Having it off will force the player to use the player model you set in the editor.
+- Added a button that sets the global player model config to the currently selected player model. This is so you can a bit more easily play as a custom player model in whatever level you choose (as long as the feature above is on)
+- Added Context Menus to specific areas of the editor (such as the level list, prefab list, etc). Right click something to open the menu.
+- Sub-folders in the prefabs folder can now be navigated via the External Prefabs popup.
+
+## Changes
+- GAME OPTIMIZATIONS!
+  - Optimized a ton of level data code.
+  - Modifiers are a lot more optimized now (1.7x-ish FPS boost).
+  - Timeline Object rendering is also now more optimized. Which basically means switching between layers shouldn't freeze the game as hard as it did before.
+  - Creating an event keyframe should no longer freeze the game.
+- Reworked the arcade menus to be more consistent with other interfaces in the mod. Still missing a few features but I'll be adding them throughout the next few patches.
+- Changed REPL Editor animation to Text Editor animation. (Completely forgot there was animation configs for a REPL Editor... what)
+- Player boost can now be queued while boost cooldown is on. Includes a config located Config Manager > Player > General.
+
+## Fixes
+- Fixed Background Object shape toggles not being selected.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.8 > [Sep 19, 2024]
+
+## Changes
+- Clear object data when returning to the arcade.
+- Removed Page Editor since it is no longer needed. (Will eventually add an interface editor if I can figure out how to do one)
+
+## Fixes
+- Fixed prefabs not spawning in arcade levels.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.7 > [Sep 18, 2024]
+
+## Fixes
+- Ease Type dropdown not updating keyframe hotfix.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.6 > [Sep 18, 2024]
+
+## Changes
+- Trim the ends of evaluated text.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.5 > [Sep 18, 2024]
+
+## Features
+- Added some config based modifiers (configLDM, usernameEquals, languageEquals, etc)
+- Added formatText action modifier. This does what Allow Custom Text Formatting config does.
+- Added playerCount trigger modifier. (apparently code for this already existed, I just never fully implemented it...)
+- Added a ton of functionality to the math evaluators (copyAxisMath, copyAxisGroup, etc). Considering how much it can do, I might add it to some modifiers later if I have any ideas on what ones to do. (also, you can type math into some input fields if you really must)
+- Added a QOL text editor for editing an input field's text at a larger scale.
+
+## Changes
+- Updated the way most items are obtained from dictionaries. (This should hopefully mean a slight improvement in performance)
+
+## Fixes
+- Fixed death_hd being achieved when you exit the editor. (hopefully)
+
+------------------------------------------------------------------------------------------
+
+# 1.5.4 > [Sep 16, 2024]
+
+## Fixes
+- Fixed editor levels not loading.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.3 > [Sep 16, 2024]
+
+## Features
+- Added achievements: no_fps.
+- Object modifiers now have a Prefab Group Only toggle. This is for when you want an objects' modifier to only check for objects within the prefab that contains the object.
+
+## Changes
+- Achievements now stack.
+
+## Fixes
+- Fixed achievement "editor_zoom_break" having the wrong description.
+- Fixed player model not saving correctly if custom object name is left empty.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.2 > [Sep 15, 2024]
+
+## Features
+- Implemented Rotate Reset for player models.
+- Added achievements: player_select, example_touch, time_machine and time_traveler.
+
+## Changes
+- Reverted player tail position change from last patch. I have no idea how to properly fix the tail problem...
+- Custom Player objects parented to the boost now scale with it.
+
+## Fixes
+- Fixed Flip X face rotation being weird.
+- Fixed Player Editor lagging on first open.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.1 > [Sep 15, 2024]
+
+## Features
+- Added death_hd achievement.
+- Replaced Switch to Arcade Mode button in File dropdown with Copy Level to Arcade button. This now copies the current levels' folder into the arcade folder, allowing you to load it from there.
+- Added a button under the Edit dropdown for re-rendering the timeline waveform.
+
+## Changes
+- Uploading a level to the arcade server will no longer include VG files (level.vgd & metadata.vgm).
+- Set pasting objects notification to 5 seconds.
+- Made Beatmap Objects only save Gradient Color keyframe values if the object is a gradient.
+
+## Fixes
+- Fixed game timeline not clearing previous checkpoint images properly.
+- Tried fixing player tail positions on player spawn.
+
+------------------------------------------------------------------------------------------
+
+# 1.5.0 > [Sep 14, 2024]
+
+## Featrues
+- Implemented internal achievements!
+  You'll unlock some of the internal ones as you play the game.
+  Custom achievements will come later once I figure out how to do them.
+  Do note achievements do not *currently* stack, so if you get multiple at once, you will only see one of them.
+  You also can't currently view achievements anywhere. Eventually it'll be added to the profile menu.
+  Here's a list of the current achievements (some names are more obvious than others, so you will need to search around for what these are for)
+    - welcome
+    - editor
+    - no_boost
+    - complete_animation
+    - costume_party
+    - f_rank
+    - expert_plus_ss_rank
+    - master_ss_rank
+    - editor_reverse_speed
+    - editor_layer_lol
+    - editor_layer_funny
+    - example_chat
+    - editor_zoom_break
+    - no_volume
+    - queue_ten
+    - friendship
+    - holy_keyframes
+    - serious_dedication
+    - true_dedication
+    - upload_level
+    - youve_been_trolled
+    - ten_levels
+    - fifty_levels
+    - one_hundred_levels
+- Ported gradient objects from default branch.
+- Added translateShape modifier. This can move, scale and rotate the mesh (shape) of the object. Good for offsetting gradient rendering or modifying the dimensions of a shape without needing to make another parent.
+- You can now specify multiple keyframe indexes in the Multi Object editor Assign Color section by separating numbers with ",".
+
+## Changes
+- Settings Info time in level now displays days editing.
+
+## Fixes
+- Fixed cases where the menu music would continue playing in the editor.
+- Editor camera should now only toggle on / off when you're in the editor.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.9 > [Sep 11, 2024]
+
+## Changes
+- Removed homing color as it can just be done using modifiers. Additionally, the UI needs room for gradient objects if it were ever implemented.
+- Levels should run a tiny bit smoother since opacity, hue, saturation and value are now in one animation sequence instead of multiple.
+- Removed the Reactive Color Lerp setting and made it the default.
+- Cleaned up BG Object color code.
+
+## Fixes
+- Fixed Config Manager UI not applying theme colors when rounded is on.
+- Fixed an error with enable / disableObject modifiers not working.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.8 > [Sep 11, 2024]
+
+## Features
+- Added a setting for running custom text formatting. This is off by default as having it on can lag levels with a few text objects. Until a more optimized way of getting the custom formatting to work is found, this setting will exist.
+
+## Changes
+- Levels with a ton of text objects should now run a LOT smoother!
+- Updated uploading info text (now it's a bit more clear on what you should do when you want to upload your level).
+
+------------------------------------------------------------------------------------------
+
+# 1.4.7 > [Sep 10, 2024]
+
+## Fixes
+- Fixed a major bug with the level folder name change in 1.4.5.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.6 > [Sep 10, 2024]
+
+## Features
+- Added a "Reset" toggle to enable / disableObject modifiers.
+- Added applyColorGroup modifier. This applies the objects' own color to a group of objects.
+
+## Changes
+- Shorted multi object editors' "Clear animations" to "Clear anims" so the entire label is visible in specific resolutions.
+
+## Fixes
+- Fixed an error log spam that is caused by no players being active if the level has a copyAxisGroup modifier.
+- Fixed object type not updating sometimes.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.5 > [Sep 9, 2024]
+
+## Changes
+- Downloaded level folder now contains level name for clarity.
+
+## Fixes
+- Fixed updating a level creating duplicated levels in local arcade.
+- Timeline objects no longer spawn on the first frame.
+- Fixed mouse tooltip UI bugging out.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.4 > [Sep 8, 2024]
+
+## Features
+- Added tag displaying to arcade.
+
+## Changes
+- Resized Play & Download Level menus.
+
+## Fixes
+- Attempting video BG fix.
+- Fixed search button only being interactable with a mouse.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.3 > [Sep 7, 2024]
+
+## Fixes
+- Fixed boost recover sound not playing last update whoops
+
+------------------------------------------------------------------------------------------
+
+# 1.4.2 > [Sep 7, 2024]
+
+## Features
+- Added Boost Recover only with Boost Tail to Config Manager > Players > General.
+
+## Fixes
+- Actually fixed the download level crash. (The crash was due to no audio being loaded)
+
+------------------------------------------------------------------------------------------
+
+# 1.4.1 > [Sep 6, 2024]
+
+## Changes
+- Audio volume keyframe now only changes music volume.
+
+## Fixes
+- Fixed a crash when going from Download Level menu to Play Level menu and playing the level.
+
+------------------------------------------------------------------------------------------
+
+# 1.4.0 > [Sep 5, 2024]
+
+## Features
+- Continuing work on the BetterLegacy story mode.
+- Arcade server is finally up and running! Which now means you can now upload and download modded levels.
+- Added "activateModifier". This acts like the signalModifier, except it forces a specific or all actions to run, making them ignore triggers.
+- Discord status now displays a timer.
+- Added a splash text to the main menu.
+- Added some settings for mouse tooltips.
+- Added song title to New Level Creator popup.
+
+## Changes
+- Spaced the multi object editor UI out a bit to fix some text rendering issues and to make it feel less cramped.
+- Moved the "Open Config Key" setting to the "Settings" sub tab in the Config Manager UI. You will need to set the value again.
+
+## Fixes
+- Fixed copyAxisGroup modifier.
+- Fixed an old bug with theme editing where it wouldn't always stop using the theme preview.
+- Fixed debugger refresh breaking the editor.
+- You can now select the player in preview to open the Player Editor. (you could technically previously, but it was broken)
+- Fixed default menu music not playing.
+- Fixed metadata links... again.
+- Fixed metadata cover not showing.
+- Fixed some issues with debug info and added a setting for displaying only FPS.
+- Fixed parent desync being on even if the object doesn't have a parent.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.11 > [Aug 30, 2024]
+
+## Features
+- Added tooltips for modifiers so what they do is finally explained in-editor.
+- Added mouse tooltip and notification display multiplier settings. They can be found under Config > Editor > Editor GUI.
+- Added onPlayerDeath modifier.
+
+## Changes
+- Mouse tooltips now display longer based on how long the text is. If the text is really short, then it will disappear really quickly, otherwise it will stay longer.
+- Decreased the max wait time Example could potentially have to speak from 16:40:00 (wtf) to 0:10:00.
+- Tried cleaning up / optimizing modifier code. Please let me know if there's a decrease in performance!
+
+## Fixes
+- Fixed death and hit count not using the correct counter in some cases.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.10 > [Aug 29, 2024]
+
+## Fixes
+- Scene loading error hot fix.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.9 > [Aug 29, 2024]
+
+## Changes
+- Reloading main menu now randomizes the song index.
+
+## Fixes
+- Fixed interfaces not resetting their positions when loaded.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.8 > [Aug 28, 2024]
+
+## Changes
+- Removed player custom code. (Been meaning to for a while since there's a security concern with such a feature.)
+- Decreased Example dance chance to 0.7% per frame.
+
+## Fixes
+- Fixed upload and delete buttons being usable while the arcade server isn't up yet.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.7 > [Aug 27, 2024]
+
+## Features
+- Implemented Editor Complexity.
+  - Render depth slider and origin offset returns to their original forms in the Simple Complexity setting.
+  - Any feature that only shows with the now removed "Show Modded Features in Editor" toggle now only show in Advanced complexity.
+  - Solid object type only now show in Advanced complexity.
+
+## Changes
+- Removed Editor Preferences as the Config Manager serves the same purpose, but better.
+
+## Fixes
+- Fixed timeline zoom not zooming in on the correct area. (I have no idea why it wouldn't before but ok)
+
+------------------------------------------------------------------------------------------
+
+# 1.3.6 > [Aug 26, 2024]
+
+## Features
+- Multi object color editing now has Add and Sub buttons.
+
+## Fixes
+- Fixed multi object editor color slots being incorrect.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.5 > [Aug 26, 2024]
+
+## Features
+- Added a "Don't set color" toggle to the multi object editor, for cases where you want to change any other color value other than the color slot.
+
+## Changes
+- Cleaned up the mutli object editor.
+- Optimized object render type updating.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.4 > [Aug 25, 2024]
+
+## Fixes
+- Shake smoothness (interpolation) now works as intended. Shake speed works, but breaks if you try animating it.
+- Fixed homing keyframes breaking when children despawn.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.3 > [Aug 25, 2024]
+
+## Features
+- Added preferred player count to metadata.
+
+## Changes
+- Removed unused scale homing keyframe code.
+
+## Fixes
+- Fixed folders appearing at the bottom instead of the top of the level list.
+- Fixed homing keyframes sending an error log when there is no player.
+- Examples' dialogue should now always disappear even in cases of lag or low FPS.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.2 > [Aug 25, 2024]
+
+## Changes
+- Only update homing keyframes once every time the object becomes inactive.
+- Optimized pasting into an input field (it should no longer freeze, unless it's a larger text then it probably will)
+
+## Fixes
+- Started investigating memory leaks.
+- Stop interface from loading if the EditorOnStartup mod is installed.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.1 > [Aug 24, 2024]
+
+## Fixes
+- Fixed the metadata.lsb file not saving in some cases.
+- Homing keyframe behavior should now be more consistent across all homing types.
+ - Fixed dynamic homing rotation keyframe resetting after a regular rotation keyframe starts.
+ - Homing keyframes now properly re-target when the object respawns. (Plus there is now a setting in Config Manager > Editor > General for updating homing keyframes when time is changed)
+ - Going from dynamic to static homing should now be more consistent, however going the other way around isn't yet.
+
+------------------------------------------------------------------------------------------
+
+# 1.3.0 > [Aug 24, 2024]
+
+## Features
+- Added Unlock Required and Is Hub Level toggles to MetaData. This is used for collections that require unlocking or have a hub level respectively.
+- New modifiers include:
+  - playDefaultSound
+  - levelRankOtherEquals (+ comparison variants)
+  - levelRankCurrentEquals (+ comparison variants)
+  - levelUnlocked
+  - levelCompleted
+  - levelCompletedOther
+  - loadLevelPrevious
+  - loadLevelHub
+  - endLevel
+- Added some new formatting for text objects to use:
+  - <levelRankCurrent>
+  - <levelRankCurrentName>
+  - <levelRankCurrentColor>
+  - <levelRankOther=id>
+  - <levelRankOtherName=id>
+  - <levelRankOtherColor=id>.
+- The editor config now has a "Editor Rank" setting located in Config Manager > Editor > Data. This is used for the above text formatting and modifiers, or anything related to level ranks while you're in the editor.
+- Editor Config now has an Editor Complexity setting. This will eventually replace the Show Modded Features setting and will be used for people who prefer a simpler or an advanced editor.
+- Added a few "Yield Mode" settings. This is used for the time between each iteration in certain functions. Yield Modes' Null, Delay, EndOfFrame takes longer but doesn't freeze the game, FixedUpdate is quicker but has a chance to lag the game and None is often quicker but will freeze the game for the amount of time it takes to run.
+- You can now copy and paste every levels' Background Objects into another.
+- Level collections now work, though currently there isn't any way to create / edit them. (They're also missing their own selection menu so yeah)
+
+## Changes
+- Completely reworked the menus to use a new & improved system that is far more capable compared to the original.
+- Updated play level menu to use the new system. The main arcade system will remain the same as it is for the time being.
+- Changed Props and Static Prefab Type icons.
+- Removed blur bg from pause menu. Didn't work how I wanted it to unfortunately.
+- Homing keyframes now properly re-target when the object respawns.
+
+## Fixes
+- Fixed Steam levels not having their IDs' remembered in player saves.
+- Fixed dynamic homing rotation keyframe resetting after a regular rotation keyframe starts.
+
+------------------------------------------------------------------------------------------
+
+# 1.2.3 > [Aug 13, 2024]
+
+## Changes
+- Changing the Prefab Type in the Prefab Object Editor now update the timeline objects associated with the Prefab.
+- Made default Prefab Popup sizes larger.
+
+## Fixes
+- Fixed Prefab Popup settings not updating when the values are changed.
+- Reloading Prefab types should now refresh the UI.
+
+------------------------------------------------------------------------------------------
+
+# 1.2.2 > [Aug 12, 2024]
+
+## Changes
+- Finally removed all indirectly reference objects since the mods are now one.
+
+## Fixes
+- Fixed timelines in the Project Planner looking off.
+- Fixed some fonts present in the customfonts.asset file not appearing in the docs nor having their names converted.
+
+------------------------------------------------------------------------------------------
+
+# 1.2.1 > [Aug 12, 2024]
+
+## Features
+- Added a reload button to the Prefab Type editor.
+
+## Changes
+- Reworked Prefab Types to be ID (string) based instead of index (ordered number) based.
+- Show Prefab Type editor buttons now have text to make it more clear what to do and what Prefab Type it has selected.
+
+------------------------------------------------------------------------------------------
+
+# 1.2.0 > [Aug 11, 2024]
+
+## Features
+- Continued work on the arcade server. It's not quite ready for release but hopefully it'll be in the next few updates, so stay tuned!
+- Started working on a custom story mode.
+- Added data for Background Object tags.
+- Added copyAxisGroup modifier. Allows for multiple object groups and custom expressions.
+- Markers are now draggable via clicking and holding the scrollwheel over a marker and moving the mouse around.
+- Added preview grid.
+- Markers can now show in the object editor timeline.
+- Added a Restart Editor button to the File dropdown in the editor.
+- Added some new Rotate Modes to the Player Editor and fixed rotation being weird with platformer mode.
+- Added jump boost count to Player Editor.
+- Added Angle value to particleSystem modifier.
+- Example now dances occasionally if the music is playing.
+- Added Reset buttons to each config setting.
+- Added a way to edit a prefabs' name in the External Prefab Editor.
+
+## Changes
+- Reworked Example's chat box to be bigger and have an autocomplete.
+- Did a ton of internal code cleanup.
+- Object keyframe timeline zoom and position is now properly remembered for when you reselect the associated object.
+- Reworked editor tooltips to store them better and have more languages.
+
+## Fixes
+- Fixed Only Objects on Current Layer Visible setting.
+- Finally fixed dropdown values in the Config Manager UI.
+- Fixed Prefab & Theme File Watchers being broken.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.6 > [Jul 7, 2024]
+
+## Features
+- Added Hide Timeline config in the Events > Game tab.
+- Custom player objects can now be deleted and duplicated via the custom object selector window.
+- Level folder can now be set directly in the level list.
+- Added delay values to followMousePosition modifier.
+- Added the rest of the global player editor values.
+
+## Changes
+- Renamed "Steam" to "Upload" in the editor.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.5 > [Jul 1, 2024]
+
+## Features
+- Added custom scroll values for object keyframe editor.
+- Started working on an animation editor. It's going to look similar to the regular object editor, but instead it'll be exclusively used to edit animations of the player and anything else that will need custom animations.
+- Added copyAxisMath modifier. This modifier allows for custom expressions, in case the way the regular copyAxis modifier isn't the way you'd like it to be.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.4 > [Jun 26, 2024]
+
+## Features
+- Added shape dropdowns to particleSystem modifier because I forgot to do that before.
+
+## Changes
+- Reworked Example's dialogue a tiny bit.
+- Optimized dragging.
+
+## Fixes
+- Fixed themes not being saved to VG converted levels.
+- Fixed sprite data not being saved correctly.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.3 > [Jun 16, 2024]
+
+## Features
+- Added Save Async config.
+- Added Timeline Collapse Length config.
+
+## Changes
+- Moved the shapes folder to the BepInEx/plugins/Assets folder. Feel free to delete the shapes folder in the beatmaps folder.
+
+## Fixes
+- Fixed thin triangle collision. (Heart outline shapes are still broken)
+- Fixed saving being broken.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.2 > [Jun 16, 2024]
+
+## Features
+- Continuing to lay groundwork for future features such as level collections, player modifiers, etc.
+
+## Fixes
+- Fixed VG level converting not working properly.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.1 > [Jun 13, 2024]
+
+## Features
+- Added a config setting for PA filetype output for Level Combiner. You can output either VG or LS level types.
+
+## Fixes
+- Fixed an issue with Pulse and Bullet shapes not rendering correctly.
+
+------------------------------------------------------------------------------------------
+
+# 1.1.0 > [Jun 12, 2024]
+
+## Features
+- Added data for timeline object indexing. This will eventually make each timeline object render above or below other objects depending on what you set the index to.
+- Added player hit cooldown. (This currently does not affect the hit cooldown animation)
+- Started working on a custom achievement system.
+- Added setCollision and setCollisionOther modifiers. These can enable / disable the collision of an object or multiple.
+- Added game modes! This currently includes two modes: Regular and Platformer. Platformer forces the player to have proper gravity and the only way they can navigate is left / right and jumping. The player can jump multiple times before they can boost.
+- Player models now have a can boost value.
+- Added a config setting for automatically attempting to parse level data in a more optimized way. Objects alive after they've been scaled down to zero by zero will have their autokill times set to song time.
+
+## Changes
+- Levels load a lot faster now.
+- Reworked the Player Editor.
+
+## Fixes
+- Fixed some config values not saving correctly.
+
+------------------------------------------------------------------------------------------
+
+# 1.0.4 > [May 31, 2024]
+
+## Features
+- Added searching to config manager.
+- Added interface theme to the Menu Config.
+
+## Changes
+- Fully replaced [CONFIG] menu in the interface with Config Manager. Download the Beatmaps.zip file from the Github releases and delete the beatmaps/menus folder and replace it with the one in the zip file.
+
+## Fixes
+- Fixed some values not being limited in the configs.
+
+------------------------------------------------------------------------------------------
+
+# 1.0.3 > [May 31, 2024]
+
+## Features
+- Added FPS related settings to the Core config for better GPU handling.
+- Added a config for global copied objects / events for cases where it breaks.
+
+## Fixes
+- Fixed profile folder not being created before config creation.
+
+------------------------------------------------------------------------------------------
+
+# 1.0.2 > [May 26, 2024]
+
+## Fixes
+- Fixed modifiers inactive state not being run when the modifier is constant.
+- Background Objects now copy & paste the Z Position value.
+- Fixed Debug Info and Config Managers' scale being broken.
+
+------------------------------------------------------------------------------------------
+
+# 1.0.1 > [May 23, 2024]
+
+## Changes
+- Moved default settings to the top of the Core config.
+
+## Fixes
+- Fixed some issues with tooltips internally.
+- Fixed an uncommon editor break if the PA application lags.
+
+------------------------------------------------------------------------------------------
+
+# 1.0.0 > [May 22, 2024]
+Merged all the PA Legacy mods into one new mod called Better Legacy! This merge should make it clear that this version of the game is now a fully different version of PA.
+
+## Features
+- Configs now use a custom system with a brand new config menu, which decreases the load times and halving the file size.
+- Background Objects now has Z position. They also have hue, saturation and value for both the base color and the fade color. (RTFunctions)
+- Added some new fonts (Pixellet, File Deletion, Sans Sans, Monomaniac One and RocknRoll One).
+- All keyframes can now have their times locked. (EditorManagement)
+- Added the glitch effects Analog Glitch and Digital Glitch. While this was added to EventsCore, I added it to BetterLegacy first. (EventsCore)
+- Added setMousePosition modifier. (Moves the mouse to the center of the screen at an offset)
+- Added followMousePosition modifier. (Makes the object track the mouse)
+- Added textSequence modifier. (Works like the interface text but more advanced and customizable)
+
+## Changes
+- Optimized a ton of stuff compared to the unmerged versions of the mods. (I.E. a level with quite a few modifiers in objects goes from 30 FPS to 100+ FPS)
+- Modifier updating now occurs before event updating and object updating.
+- Reworked a TON of code to be more readable for anyone interested in helping the modding effort.
+- Decreased level.lsb file sizes by comparing default values and only saving values when a default value does not equal the current one. (RTFunctions)
+- Newly created markers now have their times snapped to BPM if BPM snap is active. (EditorManagement)
+- Made the editor.lse file more readable on the user end.
+- Example is now more integrated with the mods than before the merge. (ExampleCompanion)
+
+## Fixes
+- Fixed Background Objects and players not properly clearing and respawning when loading from one level to another. (RTFunctions)
+- Fixed up loadlevel command and added listlevels::path to interface. (PageCreator)
