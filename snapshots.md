@@ -1,6 +1,8 @@
-﻿# 1.7.0-pre.1 > [???]
+﻿# 1.7.0-pre.1 > [Apr ??, 2025]
 
 ## Features
+## Story
+- Every story level now has a pre-cutscene, post-cutscene, a staff log and PA chat menus. Getting really close to the finish line, hopefully.
 
 ### Configs
 - Custom configs can kinda be registered now.
@@ -33,7 +35,10 @@
 
 
 ## Changes
+## Example Companion
 - Completely overhauled Example. He is now a whole lot more advanced, customizable and a (hopefully) better assistant. He's grown up so much :3
+- Example now has a "module" system. This way each main section of Example can interact with each other and should work fine if a module was changed / customized.
+- Example remembers things now.
 
 ### Interfaces
 - Moved the Profile menu and Tests menu to a new "Extras" menu on the main menu.
