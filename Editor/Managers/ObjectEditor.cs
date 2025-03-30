@@ -4722,7 +4722,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
                                 else
                                 {
-                                    var imageData = ArcadeManager.inst.defaultImage.texture.EncodeToPNG();
+                                    var imageData = LegacyPlugin.PALogoSprite.texture.EncodeToPNG();
 
                                     var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
                                     texture2d.LoadImage(imageData);

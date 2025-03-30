@@ -359,7 +359,7 @@ namespace BetterLegacy.Core.Managers
                     _image.sprite = cover;
                 }, delegate (string errorFile)
                 {
-                    _image.sprite = ArcadeManager.inst.defaultImage;
+                    _image.sprite = LegacyPlugin.PALogoSprite;
                 }));
             }
         }

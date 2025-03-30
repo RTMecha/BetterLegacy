@@ -3131,7 +3131,7 @@ namespace BetterLegacy.Core.Components.Player
 
                     if (!RTFile.FileExists(path))
                     {
-                        spriteRenderer.sprite = ArcadeManager.inst.defaultImage;
+                        spriteRenderer.sprite = LegacyPlugin.PALogoSprite;
                         continue;
                     }
 
