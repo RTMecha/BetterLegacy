@@ -937,15 +937,14 @@ namespace BetterLegacy.Editor.Managers
 
             if (timelineGridRenderer)
             {
-                var zoom = SoundManager.inst.MusicLength * EditorManager.inst.Zoom;
-                timelineGridRenderer.enabled = (zoom / (RTEditor.inst.editorInfo.bpm / RTEditor.inst.editorInfo.timeSignature)) > disappearAtZoom;
-                if (!timelineGridRenderer.enabled)
-                    return;
+                timelineGridRenderer.enabled = true;
+                var col = EditorConfig.Instance.TimelineGridColor.Value;
+                timelineGridRenderer.color = LSColors.fadeColor(col, col.a * RTMath.Clamp(RTMath.InverseLerp(4f, 128f, EditorManager.inst.Zoom), 0f, 1f));
 
                 timelineGridRenderer.gridCellSize.x = 4000;
                 timelineGridRenderer.gridSize.x = (RTEditor.inst.editorInfo.bpm) * (SoundManager.inst.MusicLength / (60f / RTEditor.inst.editorInfo.timeSignature));
                 timelineGridRenderer.rectTransform.anchoredPosition = new Vector2(RTEditor.inst.editorInfo.bpmOffset * EditorManager.inst.Zoom, 0f);
-                timelineGridRenderer.rectTransform.sizeDelta = new Vector2(zoom, 0f);
+                timelineGridRenderer.rectTransform.sizeDelta = new Vector2(SoundManager.inst.MusicLength * EditorManager.inst.Zoom, 0f);
                 timelineGridRenderer.SetAllDirty();
             }
         }
