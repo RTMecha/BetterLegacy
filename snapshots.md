@@ -1,8 +1,9 @@
-﻿# 1.7.0-pre.1 > [Apr ??, 2025]
+﻿# 1.7.0-pre.1 > [Mar 31, 2025]
+New changelog format!
 
 ## Features
 ## Story
-- Every story level now has a pre-cutscene, post-cutscene, a staff log and PA chat menus. Getting really close to the finish line, hopefully.
+- Most story levels now have a pre-cutscene, post-cutscene, a staff log and PA chat menus, however most of the new stuff remains very unfinished. Getting really close to the finish line, hopefully.
 
 ### Configs
 - Custom configs can kinda be registered now.
@@ -15,7 +16,7 @@
 - Added currentEpoch to math parser variables.
 - Now supports text origin alignment from alpha.
 - Ported gradient scale & rotation from alpha.
-- Ported polygon shape from alpha. (still waiting on the mesh generator)
+- Ported polygon shape from alpha. (still waiting on the mesh generator, so it doesn't fully work yet)
 
 ### Editor
 - Themes now display info about their colors.
@@ -25,17 +26,22 @@
 - Prefab objects now display a line showing where their offset is at.
 - Players in the editor now display info on their current state.
 - Improved BPM Snap settings and added a BPM sub-tab to Config Manager > Editor.
+- Changed Upload Acknowledgements text to use text linking instead.
 - New Context Menu stuffs:
   - Search field filters (default themes, used themes, used prefabs)
   - Default prefab / theme paths for level
-  - Apply This & Create New for the Apply Prefab button in the Object Editor.
+  - Apply & Create New for the Apply Prefab button in the Object Editor.
   - Edit for internal prefabs.
   - Prefab offset context menus.
   - Object keyframe value context menus.
 
 
 ## Changes
-## Example Companion
+### Core
+- Reworked beatmap data to not depend on base vanilla data as much. (so many nests and odd names wtf)
+- Shortened file sizes by trimming quotation marks when necessary.
+
+### Example Companion
 - Completely overhauled Example. He is now a whole lot more advanced, customizable and a (hopefully) better assistant. He's grown up so much :3
 - Example now has a "module" system. This way each main section of Example can interact with each other and should work fine if a module was changed / customized.
 - Example remembers things now.
@@ -48,9 +54,7 @@
 - Changelog interface now only applies from a "changelog" file as to prevent any issues with online changelog files changing.
 
 ### Game
-- Reworked beatmap data to not depend on base vanilla data as much. (so many nests and odd names wtf)
 - Trying to rework how themes are loaded.
-- Shortened file sizes by trimming quotation marks when necessary.
 - spawnPrefab modifiers can now find a prefab via different ways: Index, ID and Name.
 - Reverted the fix that changed modifier groups to only check objects spawned from a prefab. I realized it's more useful to have it also search for expanded prefab objects.
 - Reverted BG camera near clip plane not changing with the zoom. This means the negative zoom frame bleeding effect is back.
