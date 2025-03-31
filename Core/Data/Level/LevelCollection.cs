@@ -240,13 +240,7 @@ namespace BetterLegacy.Core.Data.Level
                     if (!metadata)
                         continue;
 
-                    if ((string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID.Contains("-") /* < don't want negative IDs */ || metadata.arcadeID == "0"))
-                    {
-                        metadata.arcadeID = LSText.randomNumString(16);
-                        var metadataJN = metadata.ToJSON();
-                        RTFile.WriteToFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB), metadataJN.ToString(3));
-                    }
-
+                    metadata.VerifyID(levelFolder);
                     levelInfo.level = NewCollectionLevel(levelFolder);
                 }
 
