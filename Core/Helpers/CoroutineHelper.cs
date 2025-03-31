@@ -76,13 +76,7 @@ namespace BetterLegacy.Core.Helpers
             yield break;
         }
 
-        public static void ReturnToUnity(Action action) => StartCoroutine(IReturnToUnity(action));
-
-        public static IEnumerator IReturnToUnity(Action action)
-        {
-            yield return Ninja.JumpToUnity;
-            action?.Invoke();
-        }
+        public static void ReturnToUnity(Action action) => LegacyPlugin.mainTickRunner.tickQueue.Enqueue(action);
 
         public static void LogOnMainThread(string message) => ReturnToUnity(() => CoreHelper.Log(message));
 
