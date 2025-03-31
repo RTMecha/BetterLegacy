@@ -4564,6 +4564,69 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        public void SaveLevel()
+        {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Beatmap can't be saved until you load a level.", 5f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (EditorManager.inst.savingBeatmap)
+            {
+                EditorManager.inst.DisplayNotification("Attempting to save beatmap already, please wait!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            _ = RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, $"level-previous{FileFormat.LSB.Dot()}"));
+
+            DataManager.inst.SaveMetadata(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
+            CoreHelper.StartCoroutine(SaveData(GameManager.inst.path));
+            CoreHelper.StartCoroutine(SavePlayers());
+            SaveSettings();
+
+            return;
+        }
+
+        public IEnumerator SaveData(string path)
+        {
+            EditorManager.inst.DisplayNotification("Saving Beatmap!", 1f, EditorManager.NotificationType.Warning);
+            EditorManager.inst.savingBeatmap = true;
+
+            var gameData = GameData.Current;
+            if (gameData.data is LevelBeatmapData levelBeatmapData && levelBeatmapData.level is LevelData levelData)
+                levelData.modVersion = LegacyPlugin.ModVersion.ToString();
+
+            if (EditorConfig.Instance.SaveAsync.Value)
+                yield return CoreHelper.StartCoroutineAsync(gameData.ISaveData(path));
+            else
+                yield return CoreHelper.StartCoroutine(gameData.ISaveData(path));
+
+            yield return new WaitForSeconds(0.5f);
+
+            EditorManager.inst.DisplayNotification("Saved Beatmap!", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.savingBeatmap = false;
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_SAVED_LEVEL);
+
+            yield break;
+        }
+
+        public IEnumerator SavePlayers()
+        {
+            EditorManager.inst.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
+
+            if (EditorConfig.Instance.SaveAsync.Value)
+                yield return CoreHelper.StartCoroutineAsync(CoreHelper.DoAction(() => RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString())));
+            else
+                RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString());
+
+            PlayersData.Save();
+
+            yield return new WaitForSeconds(0.5f);
+            EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
+        }
+
         /// <summary>
         /// Sets the current audio the editor should use.
         /// </summary>
@@ -6803,7 +6866,28 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        const string STORY_LEVELS_COMPILER_PATH = "C:/Users/Mecha/Documents/Project Arrhythmia/Unity/BetterLegacyEditor/Assets/Story Levels";
+        string storyLevelsCompilerPath = "C:/Users/Mecha/Documents/Project Arrhythmia/Unity/BetterLegacyEditor/Assets/Story Levels";
+
+        public void ToStoryLevel() => ToStoryLevel(editorInfo);
+
+        public void ToStoryLevel(EditorInfo editorInfo)
+        {
+            try
+            {
+                if (!editorInfo.isStory)
+                    return;
+
+                string cutsceneDestination = string.Empty;
+                if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
+                    cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower();
+                int cutscene = 0;
+                if (editorInfo.cutscene >= 0)
+                    cutscene = editorInfo.cutscene;
+
+                ToStoryLevel(editorInfo.storyChapter, editorInfo.storyLevel, cutsceneDestination, cutscene);
+            }
+            catch { }
+        }
 
         /// <summary>
         /// Debug only.
@@ -6812,7 +6896,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var path = RTFile.BasePath;
             var doc = $"doc{RTString.ToStoryNumber(chapter)}";
-            var saveTo = RTFile.CombinePaths(STORY_LEVELS_COMPILER_PATH, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? "" : "_" + type + RTString.ToStoryNumber(cutscene))}");
+            var saveTo = RTFile.CombinePaths(storyLevelsCompilerPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? "" : "_" + type + RTString.ToStoryNumber(cutscene))}");
 
             RTFile.CreateDirectory(saveTo);
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_LSB), RTFile.CombinePaths(saveTo, $"level{FileFormat.JSON.Dot()}"));

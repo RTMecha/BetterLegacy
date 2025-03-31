@@ -5,6 +5,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
@@ -85,6 +86,20 @@ namespace BetterLegacy.Editor.Data
         public float bpmOffset = 0f;
 
         public float timeSignature = 4f;
+
+        #endregion
+
+        #region Story
+
+        public bool isStory;
+
+        public int storyChapter;
+
+        public int storyLevel;
+
+        public int cutscene = -1;
+
+        public Story.CutsceneDestination cutsceneDestination = Story.CutsceneDestination.Level;
 
         #endregion
 
@@ -174,6 +189,26 @@ namespace BetterLegacy.Editor.Data
                     editorInfo.openAmount = jn["editor"]["open_amount"].AsInt + 1;
             }
 
+            try
+            {
+                if (jn["story"] != null)
+                {
+                    editorInfo.isStory = true;
+                    if (jn["story"]["chapter"] != null)
+                        editorInfo.storyChapter = jn["story"]["chapter"].AsInt;
+                    if (jn["story"]["level"] != null)
+                        editorInfo.storyLevel = jn["story"]["level"].AsInt;
+                    if (jn["story"]["cutscene"] != null)
+                        editorInfo.cutscene = jn["story"]["cutscene"].AsInt;
+                    if (jn["story"]["cutscene_destination"] != null && System.Enum.TryParse(jn["story"]["cutscene_destination"], true, out Story.CutsceneDestination cutsceneDestination))
+                        editorInfo.cutsceneDestination = cutsceneDestination;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
             if (jn["misc"] != null)
             {
                 if (jn["misc"]["sn"] != null)
@@ -227,6 +262,19 @@ namespace BetterLegacy.Editor.Data
 
             jn["editor"]["editing_time"] = timer.time;
             jn["editor"]["open_amount"] = openAmount;
+
+            if (isStory)
+            {
+                jn["story"]["chapter"] = storyChapter;
+                jn["story"]["level"] = storyLevel;
+                if (cutscene >= 0)
+                {
+                    jn["story"]["cutscene"] = cutscene;
+                    if (cutsceneDestination != Story.CutsceneDestination.Level)
+                        jn["story"]["cutscene_destination"] = cutsceneDestination.ToString().ToLower();
+                }
+            }
+
             jn["misc"]["bpm_snap_active"] = bpmSnapActive;
             jn["misc"]["bpm"] = bpm;
             jn["misc"]["bpm_offset"] = bpmOffset;
