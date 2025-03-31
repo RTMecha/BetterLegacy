@@ -36,6 +36,11 @@ namespace BetterLegacy.Core.Threading
         public Queue<Action> tickQueue = new Queue<Action>();
 
         /// <summary>
+        /// Single tick function to run.
+        /// </summary>
+        public Action onTick;
+
+        /// <summary>
         /// True if the runner is busy, otherwise false.
         /// </summary>
         public bool IsBusy { get; private set; }
@@ -44,6 +49,11 @@ namespace BetterLegacy.Core.Threading
         /// If the runner is runs itself on a different thread.
         /// </summary>
         public bool selfRun;
+
+        /// <summary>
+        /// If <see cref="onTick"/> should clear when it's finished running.
+        /// </summary>
+        public bool clearTick;
 
         /// <summary>
         /// How exceptions should be handled per-tick.
@@ -94,11 +104,31 @@ namespace BetterLegacy.Core.Threading
                         throw;
                 }
             }
+
+            try
+            {
+                onTick?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                if (logException)
+                    Console.WriteLine(ex);
+
+                if (handleException == HandleException.Throw)
+                {
+                    if (clearTick)
+                        onTick = null;
+                    throw;
+                }
+            }
+            if (clearTick)
+                onTick = null;
         }
 
         public void Dispose()
         {
             tickQueue.Clear();
+            onTick = null;
             isRunning = false;
 
             if (selfRun)
