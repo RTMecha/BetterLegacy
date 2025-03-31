@@ -1,5 +1,5 @@
 ﻿# 1.7.0-pre.1 > [Mar 31, 2025]
-New changelog format!
+New changelog format and the first pre-release for 1.7.0!
 
 ## Features
 ## Story
