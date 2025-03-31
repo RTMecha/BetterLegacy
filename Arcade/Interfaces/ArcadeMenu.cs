@@ -1238,26 +1238,20 @@ namespace BetterLegacy.Arcade.Interfaces
                         if (attributes.HasFlag(FileAttributes.Directory))
                         {
                             if (Level.TryVerify(dropInfo.filePath, true, out Level level))
-                                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
-                                {
-                                    AudioManager.inst.StopMusic();
-                                    AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-                                    AudioManager.inst.SetPitch(CoreHelper.Pitch);
-                                    LevelManager.Play(level, ArcadeHelper.EndOfLevel);
-                                }));
+                            {
+                                SoundManager.inst.PlaySound(DefaultSounds.blip);
+                                PlayLevelMenu.Init(level);
+                            }
                             break;
                         }
 
                         if (dropInfo.filePath.EndsWith(Level.LEVEL_LSB) || dropInfo.filePath.EndsWith(Level.LEVEL_VGD))
                         {
                             if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
-                                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
-                                {
-                                    AudioManager.inst.StopMusic();
-                                    AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-                                    AudioManager.inst.SetPitch(CoreHelper.Pitch);
-                                    LevelManager.Play(level, ArcadeHelper.EndOfLevel);
-                                }));
+                            {
+                                SoundManager.inst.PlaySound(DefaultSounds.blip);
+                                PlayLevelMenu.Init(level);
+                            }
                             break;
                         }
                     }
