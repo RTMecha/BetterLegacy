@@ -2,7 +2,7 @@
 New changelog format and the first pre-release for 1.7.0!
 
 ## Features
-## Story
+### Story
 - Most story levels now have a pre-cutscene, post-cutscene, a staff log and PA chat menus, however most of the new stuff remains very unfinished. Getting really close to the finish line, hopefully.
 
 ### Configs
