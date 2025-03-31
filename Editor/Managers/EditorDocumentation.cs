@@ -93,10 +93,17 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<EditorDocument.Element>
             {
+                // sources
                 HyperLinkElement("Reimnop's Catalyst (PA object and animation optimization)\n<b>Source Code</b>", "https://github.com/Reimnop/Catalyst"),
                 HyperLinkElement("Reimnop's ILMath (fast math parser / evaluator)\n<b>Source Code</b>", "https://github.com/Reimnop/ILMath"),
+
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                HyperLinkElement("Bunny83's SimpleJSON.\n<b>Source code</b>", "https://github.com/Bunny83/SimpleJSON"),
+                HyperLinkElement("Bunny83's File Drag & Drop Unity support.\n<b>Source code</b>", "https://github.com/Bunny83/UnityWindowsFileDrag-Drop"),
+
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 HyperLinkElement("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)\n<b>Source code</b>", "https://github.com/keijiro/KinoGlitch"),
+
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 HyperLinkElement("WestHillApps' UniBpmAnalyzer\n<b>Source code</b>", "https://github.com/WestHillApps/UniBpmAnalyzer"),
 
@@ -105,6 +112,10 @@ namespace BetterLegacy.Editor.Managers
                     $"<b>Website</b>:\n {LinkFormat("https://www.h3xed.com/\n")}" +
                     $"<b>Source code</b>:\n {LinkFormat("https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity")}", true),
 
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                HyperLinkElement("seedov's AsyncAwaitUtil.\n<b>Source code</b>", "https://github.com/seedov/AsyncAwaitUtil"),
+
+                // font
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 HyperLinkElement("Crafty Font for the Pixellet font.\n<b>Website</b>", "https://craftyfont.gumroad.com/"),
 
@@ -120,10 +131,7 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 HyperLinkElement("ManiackersDesign for the Monomaniac One font.\n<b>Website</b>", "https://github.com/ManiackersDesign/monomaniac"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
-                HyperLinkElement("Bunny83's File Drag & Drop Unity support.\n<b>Source code</b>", "https://github.com/Bunny83/UnityWindowsFileDrag-Drop"),
-                HyperLinkElement("Bunny83's SimpleJSON.\n<b>Source code</b>", "https://github.com/Bunny83/SimpleJSON"),
-
+                // special thanks
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>SPECIAL THANKS</b>", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", EditorDocument.Element.Type.Text),
