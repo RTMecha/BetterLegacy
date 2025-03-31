@@ -1047,7 +1047,7 @@ namespace BetterLegacy.Editor.Managers
             if (keybind.settings.TryGetValue("External", out string setting) && bool.TryParse(setting, out bool external))
                 RTPrefabEditor.inst.createInternal = !external;
 
-            PrefabEditor.inst.OpenDialog();
+            RTPrefabEditor.inst.OpenDialog();
         }
 
         public static void CollapsePrefab(Keybind keybind)
@@ -1055,13 +1055,13 @@ namespace BetterLegacy.Editor.Managers
             if (EditorTimeline.inst.SelectedBeatmapObjects.Count == 1 &&
                 EditorTimeline.inst.CurrentSelection.isBeatmapObject &&
                 !string.IsNullOrEmpty(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().prefabInstanceID))
-                PrefabEditor.inst.CollapseCurrentPrefab();
+                RTPrefabEditor.inst.CollapseCurrentPrefab();
         }
 
         public static void ExpandPrefab(Keybind keybind)
         {
             if (EditorTimeline.inst.SelectedPrefabObjects.Count == 1 && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                PrefabEditor.inst.ExpandCurrentPrefab();
+                RTPrefabEditor.inst.ExpandCurrentPrefab();
         }
 
         public static void SetSongTimeAutokill(Keybind keybind)
