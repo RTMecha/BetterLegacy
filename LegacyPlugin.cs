@@ -229,6 +229,16 @@ namespace BetterLegacy
 
             try
             {
+                var gameObject = Creator.NewPersistentGameObject("DragDrop");
+                gameObject.AddComponent<FileDragAndDrop>();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to setup drag drop controller. {ex}");
+            }
+
+            try
+            {
                 if (AccessTools.TypeByName("EditorOnStartup.Plugin") != null)
                 {
                     ModCompatibility.EditorOnStartupInstalled = true;

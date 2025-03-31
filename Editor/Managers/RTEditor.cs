@@ -90,6 +90,157 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(FinalSetup)}");
             FinalSetup();
             CoreHelper.Log($"RTEDITOR INIT -> DONE!");
+
+            FileDragAndDrop.onFilesDropped = dropInfos =>
+            {
+                for (int i = 0; i < dropInfos.Count; i++)
+                {
+                    var dropInfo = dropInfos[i];
+
+                    CoreHelper.Log($"Dropped file: {dropInfo}");
+
+                    dropInfo.filePath = RTFile.ReplaceSlash(dropInfo.filePath);
+
+                    var attributes = File.GetAttributes(dropInfo.filePath);
+                    if (attributes.HasFlag(FileAttributes.Directory))
+                    {
+                        if (Level.TryVerify(dropInfo.filePath, true, out Level level))
+                            CoreHelper.StartCoroutine(LoadLevel(level));
+                        else if (OpenLevelPopup.IsOpen && dropInfo.filePath.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                        {
+                            editorPathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
+                            UpdateEditorPath(false);
+                        }
+                        break;
+                    }
+
+                    if (dropInfo.filePath.EndsWith("level.lsb") || dropInfo.filePath.EndsWith("level.vgd"))
+                    {
+                        if (Level.TryVerify(dropInfo.filePath.Remove("/level.lsb").Remove("/level.vgd"), true, out Level level))
+                            CoreHelper.StartCoroutine(LoadLevel(level));
+                        break;
+                    }
+
+                    if (NewLevelPopup.IsOpen)
+                    {
+                        if (RTFile.FileIsAudio(dropInfo.filePath) && NewLevelPopup.SongPath)
+                            NewLevelPopup.SongPath.text = dropInfo.filePath;
+                        break;
+                    }
+
+                    if (RTFile.FileIsAudio(dropInfo.filePath))
+                    {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Replace song", () =>
+                            {
+                                EditorManager.inst.DisplayNotification("Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
+                            }),
+                            new ButtonFunction("Create audio object", () =>
+                            {
+                                if (!ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "playSound", out Modifier<BeatmapObject> modifier))
+                                    return;
+
+                                var editorPath = RTFile.RemoveEndSlash(CurrentLevel.path);
+                                string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
+
+                                var levelPath = dropInfo.filePath.Remove(editorPath + "/");
+
+                                if (!RTFile.FileExists(jpgFileLocation) && !dropInfo.filePath.Contains(editorPath))
+                                    RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
+                                else
+                                    jpgFileLocation = editorPath + "/" + levelPath;
+
+                                ObjectEditor.inst.CreateNewObject(timelineObject =>
+                                {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                                    beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
+                                    modifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
+                                    modifier.SetValue(0, jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1)));
+                                    beatmapObject.modifiers.Add(modifier);
+                                });
+                            }));
+                    }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.LSP))
+                    {
+                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                        var prefab = Prefab.Parse(jn);
+
+                        prefab = RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+
+                        if (EditorTimeline.inst.isOverMainTimeline)
+                            RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
+
+                        break;
+                    }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.VGP))
+                    {
+                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                        var prefab = Prefab.ParseVG(jn);
+
+                        RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+                        break;
+                    }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.PNG, FileFormat.JPG))
+                    {
+                        var editorPath = RTFile.RemoveEndSlash(CurrentLevel.path);
+                        CoreHelper.Log($"Selected file: {dropInfo.filePath}");
+                        if (string.IsNullOrEmpty(dropInfo.filePath))
+                            break;
+
+                        string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
+
+                        var levelPath = dropInfo.filePath.Remove(editorPath + "/");
+
+                        if (!RTFile.FileExists(jpgFileLocation) && !dropInfo.filePath.Contains(editorPath))
+                            RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
+                        else
+                            jpgFileLocation = editorPath + "/" + levelPath;
+
+                        ObjectEditor.inst.CreateNewObject(timelineObject =>
+                        {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                            beatmapObject.shape = (int)ShapeType.Image;
+                            beatmapObject.text = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
+                        });
+                        break;
+                    }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.TXT))
+                    {
+                        if (!RTFile.TryReadFromFile(dropInfo.filePath, out string text))
+                            break;
+
+                        ObjectEditor.inst.CreateNewObject(timelineObject =>
+                        {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                            beatmapObject.shape = (int)ShapeType.Text;
+                            beatmapObject.text = text;
+                        });
+                        break;
+                    }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.MP4, FileFormat.MOV))
+                    {
+                        var copyTo = dropInfo.filePath.Replace(RTFile.AppendEndSlash(RTFile.GetDirectory(dropInfo.filePath)), RTFile.AppendEndSlash(RTFile.BasePath)).Replace(Path.GetFileName(dropInfo.filePath),
+                            RTFile.FileIsFormat(dropInfo.filePath, FileFormat.MP4) ? $"bg{FileFormat.MP4.Dot()}" : $"bg{FileFormat.MOV.Dot()}");
+
+                        if (RTFile.CopyFile(dropInfo.filePath, copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
+                        {
+                            RTVideoManager.inst.Play(copyTo, 1f);
+                            EditorManager.inst.DisplayNotification($"Copied file {Path.GetFileName(dropInfo.filePath)} and started Video BG!", 2f, EditorManager.NotificationType.Success);
+                        }
+                        else
+                            RTVideoManager.inst.Stop();
+                        break;
+                    }
+                }
+            };
         }
 
         void OnDestroy()
@@ -97,6 +248,8 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.LogError($"RTEditor was destroyed!");
             EditorConfig.UpdateEditorComplexity = null;
             EditorConfig.AdjustPositionInputsChanged = null;
+
+            FileDragAndDrop.onFilesDropped = null;
         }
 
         #region Full Init
@@ -133,7 +286,7 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                NewLevelPopup = new EditorPopup(EditorPopup.NEW_FILE_POPUP);
+                NewLevelPopup = new NewLevelPopup();
                 NewLevelPopup.Assign(NewLevelPopup.GetLegacyDialog().Dialog.gameObject);
                 NewLevelPopup.title = NewLevelPopup.TMPTitle.text;
                 NewLevelPopup.size = NewLevelPopup.GameObject.transform.GetChild(0).AsRT().sizeDelta;
@@ -765,7 +918,7 @@ namespace BetterLegacy.Editor.Managers
 
         public List<EditorPopup> editorPopups = new List<EditorPopup>();
 
-        public EditorPopup NewLevelPopup { get; set; }
+        public NewLevelPopup NewLevelPopup { get; set; }
 
         public ContentPopup OpenLevelPopup { get; set; }
 
@@ -3501,6 +3654,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(create.image, ThemeGroup.Add, true);
 
             EditorThemeManager.AddGraphic(create.transform.Find("text").GetComponent<Text>(), ThemeGroup.Add_Text);
+
+            NewLevelPopup.SongPath = path;
 
             LevelTemplateEditor.Init();
         }
