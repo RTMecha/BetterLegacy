@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace BetterLegacy.Core
+namespace BetterLegacy.Core.Threading
 {
     /// <summary>
     /// Runs a block of code on a self-contained thread.

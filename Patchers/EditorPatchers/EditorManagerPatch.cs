@@ -329,7 +329,7 @@ namespace BetterLegacy.Patchers
             try
             {
                 CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.AssignTimelineTexture)}");
-                CoreHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
+                CoroutineHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
                 CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.UpdateTimelineSizes)}");
                 Instance.UpdateTimelineSizes();
                 Instance.firstOpened = true;
@@ -540,7 +540,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetLevelListPrefix()
         {
-            CoreHelper.StartCoroutine(RTEditor.inst.LoadLevels());
+            CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevels());
             return false;
         }
 
@@ -555,16 +555,16 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
             {
                 GameData.Current = GameData.Parse(JSON.Parse(json));
 
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
                 {
                     AudioManager.inst.PlayMusic(null, audioClip, true, 0f);
                     GameManager.inst.gameState = GameManager.State.Playing;
 
-                    CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
+                    CoroutineHelper.StartCoroutine(Updater.IUpdateObjects(true));
                 }, onError => AssignGameData()));
             }, onError => AssignGameData()));
 
@@ -889,7 +889,7 @@ namespace BetterLegacy.Patchers
             if (!string.IsNullOrEmpty(jpgFile))
             {
                 string jpgFileLocation = RTFile.ApplicationDirectory + RTEditor.editorListSlash + Instance.currentLoadedLevel + "/level.jpg";
-                CoreHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
+                CoroutineHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
                 {
                     RTFile.CopyFile(jpgFile, jpgFileLocation);
                     RTMetaDataEditor.inst.SetLevelCover(cover);
@@ -1186,7 +1186,7 @@ namespace BetterLegacy.Patchers
 
         public static IEnumerator GetSprite(string _path, EditorManager.SpriteLimits _limits, Action<Sprite> callback, Action<string> onError)
         {
-            yield return CoreHelper.StartCoroutine(FileManager.inst.LoadImageFileRaw(_path, _texture =>
+            yield return CoroutineHelper.StartCoroutine(FileManager.inst.LoadImageFileRaw(_path, _texture =>
             {
                 if ((_texture.texture.width > _limits.size.x && _limits.size.x > 0f) || (_texture.texture.height > _limits.size.y && _limits.size.y > 0f))
                 {

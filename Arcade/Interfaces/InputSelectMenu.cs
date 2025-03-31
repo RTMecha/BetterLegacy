@@ -109,7 +109,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             elements.AddRange(GenerateBottomBar(6, 0f, false));
 
-            changeTextCoroutine = CoreHelper.StartCoroutine(ChangeText());
+            changeTextCoroutine = CoroutineHelper.StartCoroutine(ChangeText());
             exitFunc = Exit;
             UpdateText(false);
             StartGeneration();
@@ -145,7 +145,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 }
             }
             yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 0.4f));
-            changeTextCoroutine = CoreHelper.StartCoroutine(ChangeText());
+            changeTextCoroutine = CoroutineHelper.StartCoroutine(ChangeText());
             yield break;
         }
 
@@ -238,7 +238,7 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             base.Clear();
             if (changeTextCoroutine != null)
-                CoreHelper.StopCoroutine(changeTextCoroutine);
+                CoroutineHelper.StopCoroutine(changeTextCoroutine);
         }
     }
 }

@@ -1594,7 +1594,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var beatmapObject = prefab.beatmapObjects[i];
                 if (i > 0 && expandObjectsYieldType != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(expandObjectsYieldType, ref delay);
+                    yield return CoroutineHelper.GetYieldInstruction(expandObjectsYieldType, ref delay);
 
                 var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
@@ -1636,7 +1636,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < notParented.Count; i++)
             {
                 if (i > 0 && updateExpandedObjectsYieldType != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(updateExpandedObjectsYieldType, ref delay);
+                    yield return CoroutineHelper.GetYieldInstruction(updateExpandedObjectsYieldType, ref delay);
                 Updater.UpdateObject(notParented[i], recalculate: false);
             }
 

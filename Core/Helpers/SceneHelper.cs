@@ -115,7 +115,7 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator ILoadScene(SceneName sceneName, bool showLoading = true)
         {
             SceneManager.inst.currentLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            yield return CoreHelper.StartCoroutine(ILoadScene(sceneName.ToName(), showLoading));
+            yield return CoroutineHelper.StartCoroutine(ILoadScene(sceneName.ToName(), showLoading));
         }
 
         #endregion
@@ -199,7 +199,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 try
                 {
-                    CoreHelper.StartCoroutine(LoopSprite(0.1f));
+                    CoroutineHelper.StartCoroutine(LoopSprite(0.1f));
                     if (SceneManager.inst.background.TryGetComponent(out Image image) && InterfaceManager.inst && InterfaceManager.inst.CurrentTheme is BeatmapTheme beatmapTheme)
                         image.color = beatmapTheme.backgroundColor;
                 }

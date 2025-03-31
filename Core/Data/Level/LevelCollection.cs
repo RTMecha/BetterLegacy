@@ -311,12 +311,12 @@ namespace BetterLegacy.Core.Data.Level
 
                 ConfirmMenu.Init("Level does not exist in your subscribed Steam items. Do you want to subscribe to the level?", () =>
                 {
-                    CoreHelper.StartCoroutine(SubscribeToSteamLevel(collection, levelInfo, onDownload, ArcadeHelper.QuitToArcade));
+                    CoroutineHelper.StartCoroutine(SubscribeToSteamLevel(collection, levelInfo, onDownload, ArcadeHelper.QuitToArcade));
                 }, ArcadeHelper.QuitToArcade);
             }
             else if (!string.IsNullOrEmpty(levelInfo.serverID))
             {
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{levelInfo.serverID}", json =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{levelInfo.serverID}", json =>
                 {
                     ConfirmMenu.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", () =>
                     {
@@ -338,7 +338,7 @@ namespace BetterLegacy.Core.Data.Level
                             }
 
                             InterfaceManager.inst.CloseMenus();
-                            CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}", bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}", bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 ArcadeMenu.OnlineLevelIcons[levelInfo.serverID] = sprite;
@@ -407,9 +407,9 @@ namespace BetterLegacy.Core.Data.Level
             yield return SteamWorkshopManager.GetItem(workshopID, item =>
             {
                 CoreHelper.Log($"Got item: {item}");
-                CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
+                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                 {
-                    CoreHelper.ReturnToUnity(() =>
+                    CoroutineHelper.ReturnToUnity(() =>
                     {
                         var sprite = SpriteHelper.LoadSprite(bytes);
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
@@ -417,7 +417,7 @@ namespace BetterLegacy.Core.Data.Level
                     });
                 }, onError =>
                 {
-                    CoreHelper.ReturnToUnity(() =>
+                    CoroutineHelper.ReturnToUnity(() =>
                     {
                         var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
@@ -433,7 +433,7 @@ namespace BetterLegacy.Core.Data.Level
             CoreHelper.Log($"Init Steam Item: {item}");
             if (CoreHelper.InGame)
             {
-                CoreHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(item, level =>
+                CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(item, level =>
                 {
                     level = NewCollectionLevel(level.path);
                     levelInfo.Overwrite(level);

@@ -299,15 +299,15 @@ namespace BetterLegacy.Core.Data.Level
                 return;
 
             if (RTFile.FileExists(GetFile(LEVEL_OGG)))
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(LEVEL_WAV)))
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, audioClip => music = audioClip));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(LEVEL_MP3)))
                 music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(LEVEL_MP3));
             else if (RTFile.FileExists(GetFile(AUDIO_OGG)))
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(AUDIO_WAV)))
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, audioClip => music = audioClip));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(AUDIO_MP3)))
                 music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
         }
@@ -325,15 +325,15 @@ namespace BetterLegacy.Core.Data.Level
             }
 
             if (RTFile.FileExists(GetFile(LEVEL_OGG)))
-                yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
+                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(LEVEL_WAV)))
-                yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, audioClip => music = audioClip));
+                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(LEVEL_MP3)))
                 yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(LEVEL_MP3));
             else if (RTFile.FileExists(GetFile(AUDIO_OGG)))
-                yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
+                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(AUDIO_WAV)))
-                yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, audioClip => music = audioClip));
+                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, audioClip => music = audioClip));
             else if (RTFile.FileExists(GetFile(AUDIO_MP3)))
                 yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
 

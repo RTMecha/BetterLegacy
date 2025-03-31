@@ -592,7 +592,7 @@ namespace BetterLegacy.Core.Helpers
                         if (modifier.reference.detector.hovered && !list.IsEmpty())
                         {
                             foreach (var bm in list)
-                                CoreHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(0, 0f)));
+                                CoroutineHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(0, 0f)));
                         }
 
                         if (modifier.reference.detector.hovered)
@@ -1505,7 +1505,7 @@ namespace BetterLegacy.Core.Helpers
                     x = -x;
 
                 if (!loop)
-                    CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
+                    CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
                 else if (!ModifiersManager.audioSources.ContainsKey(modifier.reference.id))
                     ModifiersManager.audioSources.Add(modifier.reference.id, audioSource);
             },
@@ -1541,7 +1541,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                CoreHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip =>
+                CoroutineHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip =>
                 {
                     if (!audioClip)
                     {
@@ -1585,7 +1585,7 @@ namespace BetterLegacy.Core.Helpers
                             });
                         }
 
-                        CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level($"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{modifier.GetValue(0)}")));
+                        CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level($"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{modifier.GetValue(0)}")));
                     }, RTEditor.inst.HideWarningPopup);
 
                     return;
@@ -1637,7 +1637,7 @@ namespace BetterLegacy.Core.Helpers
                             });
                         }
 
-                        CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(editorWrapper.Level));
+                        CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(editorWrapper.Level));
                     }, RTEditor.inst.HideWarningPopup);
                 }
                 else
@@ -1672,7 +1672,7 @@ namespace BetterLegacy.Core.Helpers
                             });
                         }
 
-                        CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, modifier.GetValue(0)))));
+                        CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, modifier.GetValue(0)))));
                     }, RTEditor.inst.HideWarningPopup);
                 }
             },
@@ -3737,7 +3737,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
             },
             "setImageOther" => modifier =>
             {
@@ -3764,7 +3764,7 @@ namespace BetterLegacy.Core.Helpers
                         continue;
                     }
 
-                    CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
                 }
             },
 
@@ -4185,7 +4185,7 @@ namespace BetterLegacy.Core.Helpers
                         var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(7)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(7));
 
                         foreach (var bm in list)
-                            CoreHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(8, 0f)));
+                            CoroutineHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(8, 0f)));
                     };
                     AnimationManager.inst.Play(animation);
                     return;
@@ -4250,7 +4250,7 @@ namespace BetterLegacy.Core.Helpers
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(8)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(8));
 
                             foreach (var bm in list)
-                                CoreHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(9, 0f)));
+                                CoroutineHelper.StartCoroutine(ActivateModifier(bm, modifier.GetFloat(9, 0f)));
                         };
                         AnimationManager.inst.Play(animation);
                         break;
@@ -4400,7 +4400,7 @@ namespace BetterLegacy.Core.Helpers
                         var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[7]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                         foreach (var bm in list)
-                            CoreHelper.StartCoroutine(ActivateModifier(bm, signalTime));
+                            CoroutineHelper.StartCoroutine(ActivateModifier(bm, signalTime));
                     };
                     AnimationManager.inst.Play(animation);
                     return;
@@ -4465,7 +4465,7 @@ namespace BetterLegacy.Core.Helpers
                             var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[8]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                             foreach (var bm in list)
-                                CoreHelper.StartCoroutine(ActivateModifier(bm, signalTime));
+                                CoroutineHelper.StartCoroutine(ActivateModifier(bm, signalTime));
                         };
                         AnimationManager.inst.Play(animation);
                         continue;
@@ -5454,7 +5454,7 @@ namespace BetterLegacy.Core.Helpers
             "updateObjects" => modifier =>
             {
                 if (!modifier.constant)
-                    CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
+                    CoroutineHelper.StartCoroutine(Updater.IUpdateObjects(true));
             },
             "updateObject" => modifier =>
             {
@@ -5625,7 +5625,7 @@ namespace BetterLegacy.Core.Helpers
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.commands[1]) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                 foreach (var bm in list)
-                    CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+                    CoroutineHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
             },
             "activateModifier" => modifier =>
             {
@@ -6558,7 +6558,7 @@ namespace BetterLegacy.Core.Helpers
                         var list = GameData.Current.FindObjectsWithTag(modifier.commands[1]);
 
                         foreach (var bm in list)
-                            CoreHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+                            CoroutineHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
 
                         break;
                     }
@@ -6597,7 +6597,7 @@ namespace BetterLegacy.Core.Helpers
                         if (x < 0f)
                             x = -x;
 
-                        CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
+                        CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
 
                         break;
                     }
@@ -6688,7 +6688,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             if (!fullPath.EndsWith(FileFormat.MP3.Dot()))
-                CoreHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop)));
+                CoroutineHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop)));
             else
                 PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop);
         }
@@ -6700,7 +6700,7 @@ namespace BetterLegacy.Core.Helpers
                 var audioType = RTFile.GetAudioType(path);
 
                 if (audioType != AudioType.UNKNOWN)
-                    CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
             }
             catch
             {

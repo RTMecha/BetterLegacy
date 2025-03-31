@@ -90,7 +90,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool handleEventPrefix(ref IEnumerator __result)
         {
-            __result = CoreHelper.DoAction(() => CoreHelper.Log($"Ran {nameof(InterfaceController.AddElement)}"));
+            __result = CoroutineHelper.DoAction(() => CoreHelper.Log($"Ran {nameof(InterfaceController.handleEvent)}"));
             return false;
         }
 
@@ -98,7 +98,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddElementPrefix(ref IEnumerator __result)
         {
-            __result = CoreHelper.DoAction(() => CoreHelper.Log($"Ran {nameof(InterfaceController.AddElement)}"));
+            __result = CoroutineHelper.DoAction(() => CoreHelper.Log($"Ran {nameof(InterfaceController.AddElement)}"));
             return false;
         }
 

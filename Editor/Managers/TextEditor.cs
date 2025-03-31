@@ -22,7 +22,7 @@ namespace BetterLegacy.Editor.Managers
         void Awake()
         {
             inst = this;
-            CoreHelper.StartCoroutine(SetupUI());
+            CoroutineHelper.StartCoroutine(SetupUI());
         }
 
         IEnumerator SetupUI()

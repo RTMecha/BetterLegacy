@@ -55,6 +55,8 @@ namespace BetterLegacy
 
         public static Prefab ExamplePrefab { get; set; }
 
+        public static Core.Threading.TickRunner mainTickRunner = new Core.Threading.TickRunner();
+
         void Awake()
         {
             inst = this;
@@ -265,6 +267,8 @@ namespace BetterLegacy
             {
 
             }
+
+            mainTickRunner?.OnTick();
 
             if (CoreHelper.IsUsingInputField)
                 return;

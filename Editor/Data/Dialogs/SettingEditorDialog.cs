@@ -251,7 +251,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             AnalyzeBPMButton.label.text = "Analyze BPM";
             AnalyzeBPMButton.button.onClick.NewListener(() =>
             {
-                CoreHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
+                CoroutineHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
                 {
                     EditorManager.inst.DisplayNotification($"Detected a BPM of {bpm}! Applied it to editor settings.", 2f, EditorManager.NotificationType.Success);
 

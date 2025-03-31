@@ -82,7 +82,7 @@ namespace BetterLegacy.Core.Managers
             //BaseManager.StartCoroutine(BaseManager.DestroyWithDelay(audioSource, length));
 
             if (!loop)
-                CoreHelper.PerformActionAfterSeconds(length, () =>
+                CoroutineHelper.PerformActionAfterSeconds(length, () =>
                 {
                     CoreHelper.Destroy(audioSource);
                     onSoundComplete?.Invoke();

@@ -64,7 +64,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip =>
             {
                 ProjectPlanner.inst.StopOST();
 

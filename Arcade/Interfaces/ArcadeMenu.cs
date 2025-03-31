@@ -1209,7 +1209,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         });
 
                         if (ViewOnline)
-                            CoreHelper.StartCoroutine(RefreshOnlineSteamLevels());
+                            CoroutineHelper.StartCoroutine(RefreshOnlineSteamLevels());
                         else
                             RefreshSubscribedSteamLevels(false);
 
@@ -1607,7 +1607,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public void SetOnlineLevelsPage(int page)
         {
             Pages[1] = page;
-            CoreHelper.StartCoroutine(RefreshOnlineLevels());
+            CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
         public void SearchOnlineLevels(string search)
@@ -1652,7 +1652,7 @@ namespace BetterLegacy.Arcade.Interfaces
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
+            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
             {
                 try
                 {
@@ -1721,7 +1721,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 button.icon = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
@@ -2506,7 +2506,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public void SetOnlineSteamLevelsPage(int page)
         {
             Pages[4] = Mathf.Clamp(page, 0, int.MaxValue);
-            CoreHelper.StartCoroutine(RefreshOnlineSteamLevels());
+            CoroutineHelper.StartCoroutine(RefreshOnlineSteamLevels());
         }
 
         public IEnumerator RefreshOnlineSteamLevels()
@@ -2555,9 +2555,9 @@ namespace BetterLegacy.Arcade.Interfaces
                     button.icon = sprite;
                 else
                 {
-                    CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
+                    CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
-                        CoreHelper.ReturnToUnity(() =>
+                        CoroutineHelper.ReturnToUnity(() =>
                         {
                             var sprite = SpriteHelper.LoadSprite(bytes);
                             OnlineSteamLevelIcons[id] = sprite;
@@ -2567,7 +2567,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         });
                     }, onError =>
                     {
-                        CoreHelper.ReturnToUnity(() =>
+                        CoroutineHelper.ReturnToUnity(() =>
                         {
                             var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                             OnlineSteamLevelIcons[id] = sprite;

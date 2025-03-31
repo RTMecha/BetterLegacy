@@ -2224,7 +2224,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkerPositions(beatmapObject);
             }
 
-            CoreHelper.StartCoroutine(SetTimelinePosition(beatmapObject, position));
+            CoroutineHelper.StartCoroutine(SetTimelinePosition(beatmapObject, position));
 
             ObjEditor.inst.zoomSlider.onValueChanged.ClearAll();
             ObjEditor.inst.zoomSlider.value = ObjEditor.inst.zoomFloat;
@@ -2895,7 +2895,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var beatmapObject = prefab.beatmapObjects[i];
                     if (i > 0 && pasteObjectsYieldType != YieldType.None)
-                        yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
+                        yield return CoroutineHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
                     var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
@@ -2946,7 +2946,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < list.Count; i++)
                 {
                     if (i > 0 && updatePastedObjectsYieldType != YieldType.None)
-                        yield return CoreHelper.GetYieldInstruction(updatePastedObjectsYieldType, ref delay);
+                        yield return CoroutineHelper.GetYieldInstruction(updatePastedObjectsYieldType, ref delay);
                     Updater.UpdateObject(list[i], recalculate: false);
                 }
 
@@ -2967,7 +2967,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var prefabObject = prefab.prefabObjects[i];
                     if (i > 0 && pasteObjectsYieldType != YieldType.None)
-                        yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
+                        yield return CoroutineHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
                     var prefabObjectCopy = PrefabObject.DeepCopy((PrefabObject)prefabObject, false);
                     prefabObjectCopy.id = ids[i];

@@ -1405,10 +1405,10 @@ namespace BetterLegacy.Configs
             SettingPathReloads = Bind(this, "Data", "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
             EditorRank = BindEnum(this, "Data", "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
             CopyPasteGlobal = Bind(this, "Data", "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
-            ExpandObjectsYieldMode = BindEnum(this, "Data", "Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out expanding objects from a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
-            UpdateExpandedObjectsYieldMode = BindEnum(this, "Data", "Update Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating the expanded objects of a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
-            PasteObjectsYieldMode = BindEnum(this, "Data", "Paste Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out pasting objects. {CoreHelper.DefaultYieldInstructionDescription}");
-            UpdatePastedObjectsYieldMode = BindEnum(this, "Data", "Update Pasted Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating pasted objects. {CoreHelper.DefaultYieldInstructionDescription}");
+            ExpandObjectsYieldMode = BindEnum(this, "Data", "Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out expanding objects from a Prefab Object. {CoroutineHelper.DefaultYieldInstructionDescription}");
+            UpdateExpandedObjectsYieldMode = BindEnum(this, "Data", "Update Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating the expanded objects of a Prefab Object. {CoroutineHelper.DefaultYieldInstructionDescription}");
+            PasteObjectsYieldMode = BindEnum(this, "Data", "Paste Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out pasting objects. {CoroutineHelper.DefaultYieldInstructionDescription}");
+            UpdatePastedObjectsYieldMode = BindEnum(this, "Data", "Update Pasted Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating pasted objects. {CoroutineHelper.DefaultYieldInstructionDescription}");
             CombinerOutputFormat = BindEnum(this, "Data", "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
             SavingSavesThemeOpacity = Bind(this, "Data", "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
             UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
@@ -2777,7 +2777,7 @@ namespace BetterLegacy.Configs
         void PrefabPopupsItemsChanged()
         {
             if (PrefabEditor.inst.internalPrefabDialog.gameObject.activeInHierarchy)
-                CoreHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
 
             if (!PrefabEditor.inst.externalPrefabDialog.gameObject.activeInHierarchy)
                 return;
@@ -2882,7 +2882,7 @@ namespace BetterLegacy.Configs
 
 
             if (RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy)
-                CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
         }
 
         void AutosaveChanged()
@@ -2894,7 +2894,7 @@ namespace BetterLegacy.Configs
         void EditorThemeChanged()
         {
             EditorThemeManager.currentTheme = (int)EditorTheme.Value;
-            CoreHelper.StartCoroutine(EditorThemeManager.RenderElements());
+            CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
         }
 
         void MarkerChanged() => RTMarkerEditor.inst?.RenderMarkers();

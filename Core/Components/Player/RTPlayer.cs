@@ -3135,7 +3135,7 @@ namespace BetterLegacy.Core.Components.Player
                         continue;
                     }
 
-                    CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", texture2D =>
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", texture2D =>
                     {
                         if (!spriteRenderer)
                             return;

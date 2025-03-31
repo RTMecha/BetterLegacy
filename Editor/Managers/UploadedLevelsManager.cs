@@ -165,7 +165,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
-        public void Search() => CoreHelper.StartCoroutine(GetLevels());
+        public void Search() => CoroutineHelper.StartCoroutine(GetLevels());
 
 		IEnumerator GetLevels()
         {
@@ -193,7 +193,7 @@ namespace BetterLegacy.Editor.Managers
 			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
 				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-			yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/uploads", json =>
+			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/uploads", json =>
 			{
 				try
 				{
@@ -266,7 +266,7 @@ namespace BetterLegacy.Editor.Managers
                                 iconImage.sprite = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
@@ -302,7 +302,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                             {
-                                CoreHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(Search));
+                                CoroutineHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(Search));
                                 return;
                             }
                             RTMetaDataEditor.inst.ShowLoginPopup(Search);
@@ -328,7 +328,7 @@ namespace BetterLegacy.Editor.Managers
             name = RTFile.ValidateDirectory(name);
             var directory = $"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{name} [{jn["id"].Value}]";
 
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
             {
                 if (RTFile.DirectoryExists(directory))
                     Directory.Delete(directory, true);
@@ -341,7 +341,7 @@ namespace BetterLegacy.Editor.Managers
 
                 File.Delete($"{directory}.zip");
 
-                CoreHelper.StartCoroutine(RTEditor.inst.LoadLevels());
+                CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevels());
                 EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
             }, onError =>
             {

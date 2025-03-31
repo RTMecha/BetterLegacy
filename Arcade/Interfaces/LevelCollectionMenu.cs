@@ -278,7 +278,7 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             if (!collection.previewAudio && RTFile.FileExists(RTFile.CombinePaths(collection.path, LevelCollection.PREVIEW_OGG)))
             {
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + RTFile.CombinePaths(collection.path, LevelCollection.PREVIEW_OGG), AudioType.OGGVORBIS, audioClip =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + RTFile.CombinePaths(collection.path, LevelCollection.PREVIEW_OGG), AudioType.OGGVORBIS, audioClip =>
                 {
                     collection.previewAudio = audioClip;
                     InternalInit(collection);

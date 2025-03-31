@@ -211,7 +211,7 @@ namespace BetterLegacy.Arcade.Managers
         /// <summary>
         /// Reverses to the active checkpoint.
         /// </summary>
-        public void ReverseToCheckpoint() => CoreHelper.StartCoroutine(IReverseToCheckpoint());
+        public void ReverseToCheckpoint() => CoroutineHelper.StartCoroutine(IReverseToCheckpoint());
 
         /// <summary>
         /// Plays the checkpoint sound and animation.

@@ -46,7 +46,7 @@ namespace BetterLegacy.Companion.Entity
 
         #region Core
 
-        public override void Build() => CoreHelper.StartCoroutine(IBuild());
+        public override void Build() => CoroutineHelper.StartCoroutine(IBuild());
 
         // wait until fonts have loaded
         IEnumerator IBuild()
@@ -158,7 +158,7 @@ namespace BetterLegacy.Companion.Entity
             var commandAutocompletePrefabDesc = UIManager.GenerateUIText("Desc", commandAutocompletePrefab.transform);
             UIManager.SetRectTransform((RectTransform)commandAutocompletePrefabDesc["RectTransform"], new Vector2(0f, -16f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
 
-            CoreHelper.StartCoroutine(SetupCommandsAutocomplete());
+            CoroutineHelper.StartCoroutine(SetupCommandsAutocomplete());
 
             chatterBase.gameObject.SetActive(false);
 

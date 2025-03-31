@@ -925,7 +925,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
             {
                 EditorManager.inst.DisplayNotification($"Level is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
             }, (string onError, long responseCode, string errorMsg) =>
@@ -947,7 +947,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                             {
-                                CoreHelper.StartCoroutine(RefreshTokens(VerifyLevelIsOnServer));
+                                CoroutineHelper.StartCoroutine(RefreshTokens(VerifyLevelIsOnServer));
                                 return;
                             }
                             ShowLoginPopup(UploadLevel);
@@ -1098,7 +1098,7 @@ namespace BetterLegacy.Editor.Managers
                 if (authData != null && authData["access_token"] != null)
                     headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                CoreHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ARCADE_SERVER_URL}api/level", File.ReadAllBytes(path), id =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ARCADE_SERVER_URL}api/level", File.ReadAllBytes(path), id =>
                 {
                     uploading = false;
                     MetaData.Current.serverID = id;
@@ -1135,7 +1135,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                                 {
-                                    CoreHelper.StartCoroutine(RefreshTokens(UploadLevel));
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(UploadLevel));
                                     return;
                                 }
                                 ShowLoginPopup(UploadLevel);
@@ -1179,7 +1179,7 @@ namespace BetterLegacy.Editor.Managers
                     if (authData != null && authData["access_token"] != null)
                         headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                    CoreHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{id}", () =>
+                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{id}", () =>
                     {
                         uploading = false;
                         MetaData.Current.beatmap.date_published = "";
@@ -1203,7 +1203,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                                     {
-                                        CoreHelper.StartCoroutine(RefreshTokens(DeleteLevel));
+                                        CoroutineHelper.StartCoroutine(RefreshTokens(DeleteLevel));
                                         return;
                                     }
                                     ShowLoginPopup(DeleteLevel);
@@ -1287,7 +1287,7 @@ namespace BetterLegacy.Editor.Managers
                 _listener.Start();
             }
 
-            CoreHelper.StartCoroutine(StartListenerCoroutine(onLogin));
+            CoroutineHelper.StartCoroutine(StartListenerCoroutine(onLogin));
         }
 
         IEnumerator StartListenerCoroutine(Action onLogin)

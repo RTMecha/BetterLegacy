@@ -35,7 +35,7 @@ namespace BetterLegacy.Arcade.Interfaces
             Current = new LoadLevelsMenu();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
-            CoreHelper.StartCoroutine(Current.GetLevelList(onLoadingEnd));
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(onLoadingEnd));
         }
 
         public LoadLevelsMenu()
@@ -173,7 +173,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 var name = Path.GetFileName(path);
 
                 if (loadYieldMode != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(loadYieldMode, ref delay);
+                    yield return CoroutineHelper.GetYieldInstruction(loadYieldMode, ref delay);
 
                 if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
                 {
@@ -221,7 +221,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (ArcadeConfig.Instance.LoadSteamLevels.Value)
             {
-                yield return CoreHelper.StartCoroutine(SteamWorkshopManager.inst.GetSubscribedItems((Level level, int i) =>
+                yield return CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.GetSubscribedItems((Level level, int i) =>
                 {
                     totalLevelCount = (int)SteamWorkshopManager.inst.LevelCount;
                     UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);

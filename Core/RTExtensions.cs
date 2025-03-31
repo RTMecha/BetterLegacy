@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.Events;
@@ -321,28 +323,46 @@ namespace BetterLegacy.Core
         /// Starts an <see cref="IEnumerator"/> as a <see cref="Coroutine"/> without returning the coroutine.
         /// </summary>
         /// <param name="routine">Routine to start.</param>
-        public static void Start(this IEnumerator routine) => CoreHelper.StartCoroutine(routine);
+        public static void Start(this IEnumerator routine) => CoroutineHelper.StartCoroutine(routine);
         /// <summary>
         /// Starts an <see cref="IEnumerator"/> as a <see cref="Coroutine"/>.
         /// </summary>
         /// <param name="routine">Routine to start.</param>
         /// <returns>Returns a generated coroutine.</returns>
-        public static Coroutine StartCoroutine(this IEnumerator routine) => CoreHelper.StartCoroutine(routine);
+        public static Coroutine StartCoroutine(this IEnumerator routine) => CoroutineHelper.StartCoroutine(routine);
         /// <summary>
         /// Starts an <see cref="IEnumerator"/> asynchronously as a <see cref="Coroutine"/> without returning the coroutine.
         /// </summary>
         /// <param name="routine">Routine to start.</param>
-        public static void StartAsync(this IEnumerator routine) => CoreHelper.StartCoroutineAsync(routine);
+        public static void StartAsync(this IEnumerator routine) => CoroutineHelper.StartCoroutineAsync(routine);
         /// <summary>
         /// Starts an <see cref="IEnumerator"/> asynchronously as a <see cref="Coroutine"/>.
         /// </summary>
         /// <param name="routine">Routine to start.</param>
         /// <returns>Returns a generated coroutine.</returns>
-        public static Coroutine StartCoroutineAsync(this IEnumerator routine) => CoreHelper.StartCoroutineAsync(routine);
+        public static Coroutine StartCoroutineAsync(this IEnumerator routine) => CoroutineHelper.StartCoroutineAsync(routine);
 
         #endregion
 
         #region Data
+
+        /// <summary>
+        /// Removes a specified string from the input string.
+        /// </summary>
+        /// <param name="remove">String to remove.</param>
+        /// <returns>Returns a string with the specified string removed.</returns>
+        public static string Remove(this string input, string remove) => input.Replace(remove, "");
+
+        public static float At(this Vector2 vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
+        public static float At(this Vector3 vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
+        public static float At(this Vector4 vector4, int index) => vector4[Mathf.Clamp(index, 0, 3)];
+        
+        public static float At(this Vector2Int vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
+        public static float At(this Vector3Int vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
+
+        #endregion
+
+        #region Collection
 
         /// <summary>
         /// Creates a new list with all the same element instances as the parent list.
@@ -790,7 +810,7 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <returns>Returns true if the list contains elements.</returns>
         public static bool IsEmpty<T>(this List<T> list) => list.Count < 1;
-        
+
         /// <summary>
         /// Checks if an array contains no elements.
         /// </summary>
@@ -815,6 +835,22 @@ namespace BetterLegacy.Core
         public static bool InRange<T>(this T[] array, int index) => index >= 0 && index < array.Length;
 
         /// <summary>
+        /// Runs a for loop where iterations may run parallel.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="action">Function to run for each item in the list.</param>
+        /// <returns>Returns a result of the loop.</returns>
+        public static ParallelLoopResult ParallelFor<T>(this List<T> list, Action<int> action) => Parallel.For(0, list.Count, action);
+
+        /// <summary>
+        /// Runs a for loop where iterations may run parallel.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="IEnumerable{T}"/>.</typeparam>
+        /// <param name="action">Function to run for each item in the collection.</param>
+        /// <returns>Returns a result of the loop.</returns>
+        public static ParallelLoopResult ParallelForEach<T>(this IEnumerable<T> enumerable, Action<T> action) => Parallel.ForEach(enumerable, action);
+
+        /// <summary>
         /// Removes an item matching the predicate.
         /// </summary>
         /// <typeparam name="T">Type of the list.</typeparam>
@@ -832,20 +868,6 @@ namespace BetterLegacy.Core
             }
             return false;
         }
-
-        /// <summary>
-        /// Removes a specified string from the input string.
-        /// </summary>
-        /// <param name="remove">String to remove.</param>
-        /// <returns>Returns a string with the specified string removed.</returns>
-        public static string Remove(this string input, string remove) => input.Replace(remove, "");
-
-        public static float At(this Vector2 vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
-        public static float At(this Vector3 vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
-        public static float At(this Vector4 vector4, int index) => vector4[Mathf.Clamp(index, 0, 3)];
-        
-        public static float At(this Vector2Int vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
-        public static float At(this Vector3Int vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
 
         #endregion
 

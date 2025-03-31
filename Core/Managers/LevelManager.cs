@@ -215,7 +215,7 @@ namespace BetterLegacy.Core.Managers
         public static void Play(Level level)
         {
             if (level)
-                CoreHelper.StartCoroutine(IPlay(level));
+                CoroutineHelper.StartCoroutine(IPlay(level));
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace BetterLegacy.Core.Managers
             if (level)
             {
                 OnLevelEnd = onLevelEnd;
-                CoreHelper.StartCoroutine(IPlay(level));
+                CoroutineHelper.StartCoroutine(IPlay(level));
             }
         }
 
@@ -360,7 +360,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Loading music...\nMusic is null: {!level.music}");
 
             if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine());
+                yield return CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
             Debug.Log($"{className}Playing music... music state: {level.music}");
 
@@ -464,7 +464,7 @@ namespace BetterLegacy.Core.Managers
 
             if (path.EndsWith(FileFormat.ASSET.Dot()))
             {
-                CoreHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, Play));
+                CoroutineHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, Play));
                 return;
             }
 

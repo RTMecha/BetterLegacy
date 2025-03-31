@@ -315,7 +315,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             else if (RTFile.FileExists(RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")))
             {
                 CoreHelper.Log($"Playing from music ogg file");
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
                 {
                     CoreHelper.Log($"Attempting to play music: {musicName}");
                     music = audioClip;
@@ -333,7 +333,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Starts the interface generation sequence.
         /// </summary>
-        public void StartGeneration() => InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+        public void StartGeneration() => InterfaceManager.inst.CurrentGenerateUICoroutine = CoroutineHelper.StartCoroutine(GenerateUI());
 
         /// <summary>
         /// IEnumerator Coroutine used to Generate all the menus' elements. Can be overridden if needed.

@@ -293,7 +293,7 @@ namespace BetterLegacy.Patchers
         {
             if (___m_ReadOnly)
                 return false;
-            CoreHelper.StartCoroutine(IAppend(__instance, ___m_ReadOnly, ___m_TouchKeyboardAllowsInPlaceEditing, __0));
+            CoroutineHelper.StartCoroutine(IAppend(__instance, ___m_ReadOnly, ___m_TouchKeyboardAllowsInPlaceEditing, __0));
             return false;
         }
 

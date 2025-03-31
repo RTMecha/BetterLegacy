@@ -107,7 +107,7 @@ namespace BetterLegacy.Editor.Managers
                     if (attributes.HasFlag(FileAttributes.Directory))
                     {
                         if (Level.TryVerify(dropInfo.filePath, true, out Level level))
-                            CoreHelper.StartCoroutine(LoadLevel(level));
+                            CoroutineHelper.StartCoroutine(LoadLevel(level));
                         else if (OpenLevelPopup.IsOpen && dropInfo.filePath.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                         {
                             editorPathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
@@ -119,7 +119,7 @@ namespace BetterLegacy.Editor.Managers
                     if (dropInfo.filePath.EndsWith(Level.LEVEL_LSB) || dropInfo.filePath.EndsWith(Level.LEVEL_VGD))
                     {
                         if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
-                            CoreHelper.StartCoroutine(LoadLevel(level));
+                            CoroutineHelper.StartCoroutine(LoadLevel(level));
                         break;
                     }
 
@@ -1867,7 +1867,7 @@ namespace BetterLegacy.Editor.Managers
         void OnPrefabPathChanged(object sender, FileSystemEventArgs e)
         {
             if (canUpdatePrefabs && EditorConfig.Instance.UpdatePrefabListOnFilesChanged.Value)
-                CoreHelper.StartCoroutineAsync(UpdatePrefabPath());
+                CoroutineHelper.StartCoroutineAsync(UpdatePrefabPath());
             canUpdatePrefabs = true;
         }
 
@@ -2596,7 +2596,7 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Cut", () =>
                         {
                             ObjEditor.inst.CopyObject();
-                            CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
                         }),
                         new ButtonFunction("Copy", ObjEditor.inst.CopyObject),
                         new ButtonFunction("Paste", () => ObjectEditor.inst.PasteObject()),
@@ -3042,7 +3042,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                 {
-                    CoreHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(null));
+                    CoroutineHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(null));
                     return;
                 }
                 RTMetaDataEditor.inst.ShowLoginPopup(null);
@@ -4620,7 +4620,7 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.levelName = name;
             InfoPopup.SetInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
 
-            yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine());
+            yield return CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
@@ -4805,8 +4805,8 @@ namespace BetterLegacy.Editor.Managers
             _ = RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, $"level-previous{FileFormat.LSB.Dot()}"));
 
             DataManager.inst.SaveMetadata(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
-            CoreHelper.StartCoroutine(SaveData(GameManager.inst.path));
-            CoreHelper.StartCoroutine(SavePlayers());
+            CoroutineHelper.StartCoroutine(SaveData(GameManager.inst.path));
+            CoroutineHelper.StartCoroutine(SavePlayers());
             SaveSettings();
 
             return;
@@ -4822,9 +4822,9 @@ namespace BetterLegacy.Editor.Managers
                 levelData.modVersion = LegacyPlugin.ModVersion.ToString();
 
             if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(gameData.ISaveData(path));
+                yield return CoroutineHelper.StartCoroutineAsync(gameData.ISaveData(path));
             else
-                yield return CoreHelper.StartCoroutine(gameData.ISaveData(path));
+                yield return CoroutineHelper.StartCoroutine(gameData.ISaveData(path));
 
             yield return new WaitForSeconds(0.5f);
 
@@ -4841,9 +4841,9 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
 
             if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(CoreHelper.DoAction(() => RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString())));
+                yield return CoroutineHelper.StartCoroutineAsync(CoroutineHelper.DoAction(() => RTFile.WriteToFile(CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString())));
             else
-                RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString());
+                RTFile.WriteToFile(CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString());
 
             PlayersData.Save();
 

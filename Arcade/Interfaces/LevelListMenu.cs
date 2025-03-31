@@ -732,7 +732,7 @@ namespace BetterLegacy.Arcade.Interfaces
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            yield return CoreHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
+            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
             {
                 try
                 {
@@ -801,7 +801,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 button.icon = sprite;
                             else
                             {
-                                CoreHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}.jpg", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}.jpg", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);

@@ -644,7 +644,7 @@ namespace BetterLegacy.Core.Helpers
                         new ButtonFunction("Cut", () =>
                         {
                             ObjEditor.inst.CopyObject();
-                            CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
                         }),
                         new ButtonFunction("Copy", ObjEditor.inst.CopyObject),
                         new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),

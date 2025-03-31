@@ -434,7 +434,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!CoreHelper.Paused || !Current)
                 return;
 
-            CoreHelper.StartCoroutine(CoreConfig.Instance.PlayPauseCountdown.Value ? Current.StartCountdown(onCooldownEnd) : Current.SkipCountdown(onCooldownEnd));
+            CoroutineHelper.StartCoroutine(CoreConfig.Instance.PlayPauseCountdown.Value ? Current.StartCountdown(onCooldownEnd) : Current.SkipCountdown(onCooldownEnd));
         }
 
         #endregion

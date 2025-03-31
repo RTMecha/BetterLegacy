@@ -1233,7 +1233,7 @@ namespace BetterLegacy.Companion.Entity
                 rect.AssignToRectTransform(transform.AsRT());
                 imageRect.AssignToRectTransform(image.rectTransform);
 
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(imagePath, image.AssignTexture));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(imagePath, image.AssignTexture));
 
                 SetTickFunction(onTickCS);
 

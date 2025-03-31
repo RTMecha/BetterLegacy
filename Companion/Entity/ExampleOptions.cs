@@ -61,7 +61,7 @@ namespace BetterLegacy.Companion.Entity
 
         #region Core
 
-        public override void Build() => CoreHelper.StartCoroutine(IBuild());
+        public override void Build() => CoroutineHelper.StartCoroutine(IBuild());
 
         // wait until fonts have loaded
         IEnumerator IBuild()

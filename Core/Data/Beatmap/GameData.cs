@@ -1596,9 +1596,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void SaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
-                CoreHelper.StartCoroutineAsync(ISaveData(path, onSave, saveGameDataThemes));
+                CoroutineHelper.StartCoroutineAsync(ISaveData(path, onSave, saveGameDataThemes));
             else
-                CoreHelper.StartCoroutine(ISaveData(path, onSave, saveGameDataThemes));
+                CoroutineHelper.StartCoroutine(ISaveData(path, onSave, saveGameDataThemes));
         }
 
         /// <summary>
@@ -1609,9 +1609,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void SaveDataVG(string path, Action onSave = null)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
-                CoreHelper.StartCoroutineAsync(ISaveDataVG(path, onSave));
+                CoroutineHelper.StartCoroutineAsync(ISaveDataVG(path, onSave));
             else
-                CoreHelper.StartCoroutine(ISaveDataVG(path, onSave));
+                CoroutineHelper.StartCoroutine(ISaveDataVG(path, onSave));
         }
 
         /// <summary>

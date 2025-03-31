@@ -532,6 +532,29 @@ namespace BetterLegacy
         Rotation
     }
 
+    /// <summary>
+    /// Represents how an exception is handled when it's caught.
+    /// </summary>
+    public enum HandleException
+    {
+        /// <summary>
+        /// Throws the exception.
+        /// </summary>
+        Throw,
+        /// <summary>
+        /// Breaks the sequence.
+        /// </summary>
+        Break,
+        /// <summary>
+        /// Continues the sequences.
+        /// </summary>
+        Continue,
+        /// <summary>
+        /// Does nothing.
+        /// </summary>
+        Nothing,
+    }
+
     #endregion
 
     #region Arcade / Game

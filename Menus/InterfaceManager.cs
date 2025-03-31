@@ -247,7 +247,7 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
             {
                 if (CoreHelper.InEditor)
                     return;
@@ -1422,7 +1422,7 @@ namespace BetterLegacy.Menus
                         var t = isArray ? parameters[0].AsFloat : parameters["t"].AsFloat;
                         JSONNode func = isArray ? parameters[1] : parameters["func"];
 
-                        CoreHelper.PerformActionAfterSeconds(t, () =>
+                        CoroutineHelper.PerformActionAfterSeconds(t, () =>
                         {
                             try
                             {
@@ -1736,7 +1736,7 @@ namespace BetterLegacy.Menus
                         if (audioType == AudioType.MPEG)
                             AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
                         else
-                            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
 
                         break;
                     }
@@ -1795,7 +1795,7 @@ namespace BetterLegacy.Menus
                         if (audioType == AudioType.MPEG)
                             PlayMusic(LSAudio.CreateAudioClipUsingMP3File(filePath), fadeDuration: fadeDuration, loop: loop);
                         else
-                            CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
 
                         break;
                     }

@@ -523,7 +523,7 @@ namespace BetterLegacy.Editor.Data
                             if (updateCurrentPrefab)
                             {
                                 RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                CoreHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
                                 return;
                             }
 
@@ -543,7 +543,7 @@ namespace BetterLegacy.Editor.Data
                                     new ButtonFunction("Assign to Quick Prefab", () =>
                                     {
                                         RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                        CoreHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
                                     }),
                                     new ButtonFunction(true),
                                     new ButtonFunction("Edit", () =>

@@ -65,7 +65,7 @@ namespace BetterLegacy.Patchers
                     __instance.DragEndPos = pointerEventData.position;
                     __instance.SelectionBoxImage.gameObject.SetActive(false);
 
-                    CoreHelper.StartCoroutine(ObjectEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)));
+                    CoroutineHelper.StartCoroutine(ObjectEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)));
                 });
 
                 foreach (var gameObject in __instance.SelectionArea)

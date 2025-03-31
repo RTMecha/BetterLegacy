@@ -377,9 +377,9 @@ namespace BetterLegacy.Editor.Managers
 
         void PreviewAudio(string file)
         {
-            CoreHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip =>
+            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip =>
             {
-                CoreHelper.ReturnToUnity(() =>
+                CoroutineHelper.ReturnToUnity(() =>
                 {
                     var length = EditorConfig.Instance.FileBrowserAudioPreviewLength.Value;
                     DestroyAudioPreview();
@@ -398,7 +398,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoreHelper.StartCoroutine(CoreHelper.IPerformActionAfterSeconds(t, DestroyAudioPreview));
+        void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoroutineHelper.StartCoroutine(CoroutineHelper.IPerformActionAfterSeconds(t, DestroyAudioPreview));
 
         void DestroyAudioPreview()
         {

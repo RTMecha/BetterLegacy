@@ -574,7 +574,7 @@ namespace BetterLegacy.Editor.Data
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Open", () =>
                         {
-                            CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
+                            CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
                             RTEditor.inst.OpenLevelPopup.Close();
                         }, "Level Panel Open"),
                         new ButtonFunction("Show Autosaves", () =>
@@ -659,7 +659,7 @@ namespace BetterLegacy.Editor.Data
                     return;
                 }
 
-                CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
+                CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
                 RTEditor.inst.OpenLevelPopup.Close();
             };
         }
@@ -729,7 +729,7 @@ namespace BetterLegacy.Editor.Data
         /// <param name="file">Image file to load.</param>
         /// <param name="onLoad">Action to run when the image is loaded.</param>
         /// <returns>Returns a generated coroutine.</returns>
-        public Coroutine LoadImageCoroutine(string file, Action<LevelPanel> onLoad = null) => CoreHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(FolderPath, file)}", cover =>
+        public Coroutine LoadImageCoroutine(string file, Action<LevelPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(FolderPath, file)}", cover =>
         {
             if (!cover)
             {

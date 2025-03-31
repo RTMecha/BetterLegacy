@@ -2208,19 +2208,19 @@ namespace BetterLegacy.Editor.Managers
                                 new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
                                 {
                                     RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
-                                    CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                                 }),
                                 new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
                                 {
                                     EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
-                                    CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                                 })
                                 );
                         };
 
                         RTThemeEditor.inst.Dialog.SearchField.onValueChanged.ClearAll();
-                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.AddListener(_val => CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(_val)));
-                        CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.AddListener(_val => CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(_val)));
+                        CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
                         RTThemeEditor.inst.RenderThemePreview();
 
                         break;

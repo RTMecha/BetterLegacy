@@ -112,7 +112,7 @@ namespace BetterLegacy.Patchers
             var id = defaultSound.ToString();
             CoreHelper.Log($"Adding sound: {id} {path}");
             if (RTFile.FileExists(path))
-                CoreHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
                 {
                     audioClip.name = id;
                     var soundGroup = new SoundLibrary.SoundGroup { group = new AudioClip[] { audioClip }, soundID = id };

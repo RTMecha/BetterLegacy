@@ -840,7 +840,7 @@ namespace BetterLegacy.Editor.Managers
             EventEditor.inst.previewTheme.id = null;
             //EventEditor.inst.StartCoroutine(ThemeEditor.inst.LoadThemes());
 
-            CoreHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
+            CoroutineHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
             RenderThemePreview();
             EventEditor.inst.showTheme = false;
             Dialog.Editor.SetActive(false);
@@ -941,7 +941,7 @@ namespace BetterLegacy.Editor.Managers
                     themePanel.Theme = beatmapTheme;
                     themePanel.Render();
 
-                    CoreHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
+                    CoroutineHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
                 }
 
                 RenderThemePreview();
@@ -982,7 +982,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         themePanel.Theme = beatmapTheme;
                         themePanel.Render();
-                        CoreHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
+                        CoroutineHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
                     }
 
                     themePanel.Use();

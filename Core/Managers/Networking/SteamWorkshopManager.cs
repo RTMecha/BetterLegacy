@@ -175,7 +175,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 }
 
                 if (loadYieldMode != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(loadYieldMode, ref delay);
+                    yield return CoroutineHelper.GetYieldInstruction(loadYieldMode, ref delay);
 
                 string folder;
                 var installInfo = TryGetItemPath(publishedFileID, out folder);

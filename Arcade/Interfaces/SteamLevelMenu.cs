@@ -188,7 +188,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = () => { CoreHelper.StartCoroutine(DownloadLevel()); },
+                func = DownloadLevel().Start,
             });
 
             int pos = 2;
@@ -244,7 +244,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public IEnumerator DownloadLevel()
         {
             downloading = true;
-            yield return CoreHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(CurrentSteamItem, onSubscribedLevel));
+            yield return CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(CurrentSteamItem, onSubscribedLevel));
             downloading = false;
             CurrentSteamItem = default;
         }

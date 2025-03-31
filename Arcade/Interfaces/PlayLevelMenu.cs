@@ -640,7 +640,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void Init(Level level)
         {
             if (!level.music)
-                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => InternalInit(level)));
+                CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() => InternalInit(level)));
             else
                 InternalInit(level);
         }
