@@ -768,73 +768,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SaveBeatmapPrefix()
         {
-            if (!Instance.hasLoadedLevel)
-            {
-                Instance.DisplayNotification("Beatmap can't be saved until you load a level.", 5f, EditorManager.NotificationType.Error);
-                return false;
-            }
-            if (Instance.savingBeatmap)
-            {
-                Instance.DisplayNotification("Attempting to save beatmap already, please wait!", 2f, EditorManager.NotificationType.Error);
-                return false;
-            }
-
-            _ = RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, $"level-previous{FileFormat.LSB.Dot()}"));
-
-            DataManager.inst.SaveMetadata(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
-            CoreHelper.StartCoroutine(SaveData(GameManager.inst.path));
-            CoreHelper.StartCoroutine(SavePlayers());
-            RTEditor.inst.SaveSettings();
-
+            RTEditor.inst.SaveLevel();
             return false;
-        }
-
-        public static IEnumerator SaveData(string _path)
-        {
-            if (Instance)
-            {
-                Instance.DisplayNotification("Saving Beatmap!", 1f, EditorManager.NotificationType.Warning);
-                Instance.savingBeatmap = true;
-            }
-
-            var gameData = GameData.Current;
-            if (gameData.data is LevelBeatmapData levelBeatmapData && levelBeatmapData.level is LevelData levelData)
-                levelData.modVersion = LegacyPlugin.ModVersion.ToString();
-
-            if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(gameData.ISaveData(_path));
-            else
-                yield return CoreHelper.StartCoroutine(gameData.ISaveData(_path));
-
-            yield return new WaitForSeconds(0.5f);
-            if (Instance)
-            {
-                Instance.DisplayNotification("Saved Beatmap!", 2f, EditorManager.NotificationType.Success);
-                Instance.savingBeatmap = false;
-            }
-
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_SAVED_LEVEL);
-
-            yield break;
-        }
-
-        public static IEnumerator SavePlayers()
-        {
-            if (Instance)
-                Instance.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
-
-            if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(CoreHelper.DoAction(() => RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString())));
-            else
-                RTFile.WriteToFile(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB), PlayersData.Current.ToJSON().ToString());
-
-            PlayersData.Save();
-
-            yield return new WaitForSeconds(0.5f);
-            if (Instance)
-            {
-                EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
-            }
         }
 
         [HarmonyPatch(nameof(EditorManager.OpenSaveAs))]
