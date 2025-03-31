@@ -239,6 +239,74 @@ namespace BetterLegacy.Editor.Managers
                             RTVideoManager.inst.Stop();
                         break;
                     }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.JSON))
+                    {
+                        if (!RTFile.TryReadFromFile(dropInfo.filePath, out string file))
+                            break;
+
+                        var jn = JSON.Parse(file);
+                        if (jn["file_type"] == null)
+                            break;
+
+                        switch (jn["file_type"].Value)
+                        {
+                            case "modifier": {
+                                    if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                        break;
+
+                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                                    beatmapObject.modifiers.Add(Modifier<BeatmapObject>.Parse(jn["data"], beatmapObject));
+
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderDialog(beatmapObject);
+
+                                    break;
+                                }
+                            case "modifiers": {
+                                    if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                        break;
+
+                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                                    for (int j = 0; j < jn["data"].Count; j++)
+                                        beatmapObject.modifiers.Add(Modifier<BeatmapObject>.Parse(jn["data"][j], beatmapObject));
+
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderDialog(beatmapObject);
+
+                                    break;
+                                }
+                            case "beatmap_object": {
+                                    if (!EditorManager.inst.hasLoadedLevel)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Can't add objects to level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
+                                        break;
+                                    }
+
+                                    var beatmapObject = BeatmapObject.Parse(jn["data"]);
+                                    beatmapObject.StartTime = AudioManager.inst.CurrentAudioSource.time;
+
+                                    if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+                                        EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
+
+                                    GameData.Current.beatmapObjects.Add(beatmapObject);
+
+                                    var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
+
+                                    AudioManager.inst.SetMusicTime(ObjectEditor.AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
+
+                                    EditorTimeline.inst.SetCurrentObject(timelineObject);
+
+                                    Updater.UpdateObject(beatmapObject);
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                    ObjectEditor.inst.OpenDialog(beatmapObject);
+
+                                    break;
+                                }
+                        }
+
+                        break;
+                    }
                 }
             };
         }
