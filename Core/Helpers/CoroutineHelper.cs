@@ -14,7 +14,7 @@ using BetterLegacy.Core.Helpers;
 namespace BetterLegacy.Core.Helpers
 {
     /// <summary>
-    /// Awaiters helper class based on https://github.com/modesttree/Unity3dAsyncAwaitUtil
+    /// Awaiters helper class based on https://github.com/seedov/AsyncAwaitUtil
     /// </summary>
     public static class CoroutineHelper
     {
