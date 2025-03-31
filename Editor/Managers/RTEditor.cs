@@ -114,9 +114,9 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
 
-                    if (dropInfo.filePath.EndsWith("level.lsb") || dropInfo.filePath.EndsWith("level.vgd"))
+                    if (dropInfo.filePath.EndsWith(Level.LEVEL_LSB) || dropInfo.filePath.EndsWith(Level.LEVEL_VGD))
                     {
-                        if (Level.TryVerify(dropInfo.filePath.Remove("/level.lsb").Remove("/level.vgd"), true, out Level level))
+                        if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
                             CoreHelper.StartCoroutine(LoadLevel(level));
                         break;
                     }
