@@ -1,4 +1,20 @@
-﻿# 1.7.0-pre.1 > [Mar 31, 2025]
+﻿# 1.7.0-pre.2 > [???]
+
+## Features
+- You can now drag and drop files into the game, both in the editor and the arcade.
+  - Dragging a level into the arcade / editor will load it.
+  - Dragging a txt file into a loaded editor level will create a text object.
+  - Dragging an image into a loaded editor level will create an image object.
+  - Dragging a prefab into a loaded editor level will import it. If the mouse is over the timeline, it will place it.
+  - Dragging an audio file while the New Level Creator popup is open will set the audio path for the new level.
+  - Dragging an audio file into a loaded editor level will create an object with a playSound modifier.
+  - Dragging a MP4 file into a loaded editor level will set it as the video BG.
+
+## Changes
+
+## Fixes
+
+# 1.7.0-pre.1 > [Mar 31, 2025]
 New changelog format and the first pre-release for 1.7.0!
 
 ## Features
