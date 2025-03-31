@@ -89,9 +89,11 @@ namespace BetterLegacy.Editor.Managers
             InitEditors();
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(FinalSetup)}");
             FinalSetup();
-            CoreHelper.Log($"RTEDITOR INIT -> DONE!");
+            CoreHelper.Log($"RTEDITOR INIT -> FILE DRAG DROP");
 
-            FileDragAndDrop.onFilesDropped = dropInfos =>
+            var fileDragAndDrop = gameObject.AddComponent<FileDragAndDrop>();
+
+            fileDragAndDrop.onFilesDropped = dropInfos =>
             {
                 for (int i = 0; i < dropInfos.Count; i++)
                 {
@@ -309,6 +311,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 }
             };
+            CoreHelper.Log($"RTEDITOR INIT -> DONE!");
         }
 
         void OnDestroy()
@@ -316,8 +319,6 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.LogError($"RTEditor was destroyed!");
             EditorConfig.UpdateEditorComplexity = null;
             EditorConfig.AdjustPositionInputsChanged = null;
-
-            FileDragAndDrop.onFilesDropped = null;
         }
 
         #region Full Init

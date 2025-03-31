@@ -7,17 +7,22 @@ using B83.Win32;
 
 public class FileDragAndDrop : MonoBehaviour
 {
-    void OnEnable ()
+    void Start ()
     {
         // must be installed on the main thread to get the right thread id.
         UnityDragAndDropHook.InstallHook();
         UnityDragAndDropHook.OnDroppedFiles += OnFiles;
     }
-    void OnDisable() => UnityDragAndDropHook.UninstallHook();
+
+    void OnDestroy()
+    {
+        UnityDragAndDropHook.UninstallHook();
+        UnityDragAndDropHook.OnDroppedFiles -= OnFiles;
+    }
 
     void OnFiles(List<string> aFiles, POINT aPos) => onFilesDropped?.Invoke(aFiles.Select(x => new DropInfo(x, new Vector2Int(aPos.x, aPos.y))).ToList());
 
-    public static System.Action<List<DropInfo>> onFilesDropped;
+    public System.Action<List<DropInfo>> onFilesDropped;
 
     public class DropInfo
     {

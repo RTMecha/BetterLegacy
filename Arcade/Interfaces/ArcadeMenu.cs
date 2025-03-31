@@ -1221,6 +1221,48 @@ namespace BetterLegacy.Arcade.Interfaces
             exitFunc = Exit;
             if (CurrentTab != Tab.Steam || !ViewOnline)
                 StartGeneration();
+            onGenerateUIFinish = () =>
+            {
+                var fileDragAndDrop = canvas.GameObject.AddComponent<FileDragAndDrop>();
+                fileDragAndDrop.onFilesDropped = dropInfos =>
+                {
+                    for (int i = 0; i < dropInfos.Count; i++)
+                    {
+                        var dropInfo = dropInfos[i];
+
+                        CoreHelper.Log($"Dropped file: {dropInfo}");
+
+                        dropInfo.filePath = RTFile.ReplaceSlash(dropInfo.filePath);
+
+                        var attributes = File.GetAttributes(dropInfo.filePath);
+                        if (attributes.HasFlag(FileAttributes.Directory))
+                        {
+                            if (Level.TryVerify(dropInfo.filePath, true, out Level level))
+                                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
+                                {
+                                    AudioManager.inst.StopMusic();
+                                    AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+                                    AudioManager.inst.SetPitch(CoreHelper.Pitch);
+                                    LevelManager.Play(level, ArcadeHelper.EndOfLevel);
+                                }));
+                            break;
+                        }
+
+                        if (dropInfo.filePath.EndsWith(Level.LEVEL_LSB) || dropInfo.filePath.EndsWith(Level.LEVEL_VGD))
+                        {
+                            if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
+                                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
+                                {
+                                    AudioManager.inst.StopMusic();
+                                    AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+                                    AudioManager.inst.SetPitch(CoreHelper.Pitch);
+                                    LevelManager.Play(level, ArcadeHelper.EndOfLevel);
+                                }));
+                            break;
+                        }
+                    }
+                };
+            };
             InterfaceManager.inst.PlayMusic();
         }
 
