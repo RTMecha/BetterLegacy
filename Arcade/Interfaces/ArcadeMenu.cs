@@ -1239,6 +1239,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         {
                             if (Level.TryVerify(dropInfo.filePath, true, out Level level))
                             {
+                                level.metadata.VerifyID(level.path);
+                                level.UpdateDefaults();
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
                                 PlayLevelMenu.Init(level);
                             }
@@ -1249,6 +1251,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         {
                             if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
                             {
+                                level.metadata.VerifyID(level.path);
+                                level.UpdateDefaults();
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
                                 PlayLevelMenu.Init(level);
                             }

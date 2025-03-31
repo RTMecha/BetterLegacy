@@ -635,6 +635,19 @@ namespace BetterLegacy.Core.Data
             _ => string.Empty,
         };
 
+        /// <summary>
+        /// Verifies the ID is usable in BetterLegacy.
+        /// </summary>
+        public void VerifyID(string path)
+        {
+            if (string.IsNullOrEmpty(arcadeID) || arcadeID.Contains("-") /* < don't want negative IDs */ || arcadeID == "0")
+            {
+                arcadeID = LSFunctions.LSText.randomNumString(16);
+                var jn = ToJSON();
+                RTFile.WriteToFile(RTFile.CombinePaths(path, Level.Level.METADATA_LSB), jn.ToString(3));
+            }
+        }
+
         #endregion
 
         #region Fields

@@ -207,15 +207,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     continue;
                 }
 
-                if ((string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "-1")
-                    && (string.IsNullOrEmpty(metadata.beatmap.beatmap_id) && metadata.beatmap.beatmap_id == "-1" || metadata.beatmap.beatmap_id == "0")
-                    && (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID.Contains("-") /* < don't want negative IDs */ || metadata.arcadeID == "0"))
-                {
-                    metadata.arcadeID = LSText.randomNumString(16);
-                    var metadataJN = metadata.ToJSON();
-                    RTFile.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_LSB), metadataJN.ToString(3));
-                }
-
+                metadata.VerifyID(path);
                 var level = new Level(path, metadata);
 
                 LevelManager.AssignPlayerData(level);
