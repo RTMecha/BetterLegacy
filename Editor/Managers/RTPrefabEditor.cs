@@ -1349,6 +1349,17 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
+            {
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
+                {
+                    Collapse(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup);
+
+                return;
+            }
+
             Collapse(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
         }
 
@@ -3059,7 +3070,7 @@ namespace BetterLegacy.Editor.Managers
         /// Imports a prefab into the internal prefabs list.
         /// </summary>
         /// <param name="prefab">Prefab to import.</param>
-        public void ImportPrefabIntoLevel(Prefab prefab)
+        public Prefab ImportPrefabIntoLevel(Prefab prefab)
         {
             Debug.Log($"{PrefabEditor.inst.className}Adding Prefab: [{prefab.name}]");
             var tmpPrefab = Prefab.DeepCopy(prefab);
@@ -3069,6 +3080,8 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.prefabs.Add(tmpPrefab);
             StartCoroutine(RefreshInternalPrefabs());
+
+            return tmpPrefab;
         }
 
         #endregion

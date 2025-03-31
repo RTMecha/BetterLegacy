@@ -5061,6 +5061,17 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                 {
+                    if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
+                    {
+                        RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
+                        {
+                            RTPrefabEditor.inst.Collapse(beatmapObject);
+                            RTEditor.inst.HideWarningPopup();
+                        }, RTEditor.inst.HideWarningPopup);
+
+                        return;
+                    }
+
                     RTPrefabEditor.inst.Collapse(beatmapObject);
                     return;
                 }
