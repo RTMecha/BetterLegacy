@@ -121,6 +121,10 @@ namespace BetterLegacy.Editor.Managers
                 HyperLinkElement("ManiackersDesign for the Monomaniac One font.\n<b>Website</b>", "https://github.com/ManiackersDesign/monomaniac"),
 
                 new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                HyperLinkElement("Bunny83's File Drag & Drop Unity support.\n<b>Source code</b>", "https://github.com/Bunny83/UnityWindowsFileDrag-Drop"),
+                HyperLinkElement("Bunny83's SimpleJSON.\n<b>Source code</b>", "https://github.com/Bunny83/SimpleJSON"),
+
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>SPECIAL THANKS</b>", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", EditorDocument.Element.Type.Text),
