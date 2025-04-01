@@ -2062,7 +2062,7 @@ namespace BetterLegacy.Core.Helpers
                 var velocityY = modifier.GetFloat(5, 0f);
                 var bodyType = modifier.GetInt(6, 0);
 
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || levelObject.visualObject.gameObject)
+                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return;
 
                 if (!modifier.reference.rigidbody)
@@ -2091,7 +2091,7 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                 {
-                    if (!Updater.TryGetObject(beatmapObject, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.gameObject)
+                    if (!Updater.TryGetObject(beatmapObject, out LevelObject levelObject) || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                         continue;
 
                     if (!beatmapObject.rigidbody)
