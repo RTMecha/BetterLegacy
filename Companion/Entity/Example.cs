@@ -42,7 +42,6 @@ namespace BetterLegacy.Companion.Entity
         // TODO:
         /*
             - Add more poses and expressions
-            - Add more parts
             - Expand on interaction module (more editor interactions)
             - Add more things for Example to remember
             - More random occurances that can be enabled / disabled (sleeping due to boredom, etc)

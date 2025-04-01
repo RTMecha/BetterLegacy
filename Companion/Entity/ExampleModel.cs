@@ -508,6 +508,16 @@ namespace BetterLegacy.Companion.Entity
             .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
             .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
 
+            parts.Add(ImagePart.Default.ID(Parts.TOP_EYELIDS).ParentID(Parts.EYES).Name("Top Eyelids").ImagePath(Example.GetFile("example eyelids.png"))
+            .Position(new Vector2(0f, 18f)).Scale(new Vector2(1f, 0f))
+            .Rect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(74f, 18f))
+            .ImageRect(RectValues.FullAnchored));
+            
+            parts.Add(ImagePart.Default.ID(Parts.BOTTOM_EYELIDS).ParentID(Parts.EYES).Name("Bottom Eyelids").ImagePath(Example.GetFile("example eyelids.png"))
+            .Position(new Vector2(0f, -18f)).Scale(new Vector2(1f, 0f))
+            .Rect(RectValues.Default.Pivot(0.5f, 0f).SizeDelta(74f, 18f))
+            .ImageRect(RectValues.FullAnchored));
+
             parts.Add(ImagePart.Default.ID(Parts.BLINK).ParentID(Parts.EYES).Name("Blink").ImagePath(Example.GetFile("example blink.png"))
             .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
             .OnTick(part =>
@@ -1360,6 +1370,16 @@ namespace BetterLegacy.Companion.Entity
             public const string PUPILS = "PUPILS";
 
             /// <summary>
+            /// Example's top eyelids.
+            /// </summary>
+            public const string TOP_EYELIDS = "TOP_EYELIDS";
+
+            /// <summary>
+            /// Example's bottom eyelids.
+            /// </summary>
+            public const string BOTTOM_EYELIDS = "BOTTOM_EYELIDS";
+
+            /// <summary>
             /// Example's blinking part.
             /// </summary>
             public const string BLINK = "BLINK";
@@ -1667,12 +1687,19 @@ namespace BetterLegacy.Companion.Entity
                 var browLeft = model.GetPart(Parts.BROW_LEFT);
                 var browRight = model.GetPart(Parts.BROW_RIGHT);
 
-                if (!browLeft || !browRight)
-                    throw new NullReferenceException("Brow Left or Right are null");
+                var topEyelids = model.GetPart(Parts.TOP_EYELIDS);
+                var bottomEyelids = model.GetPart(Parts.BOTTOM_EYELIDS);
+
+                ExceptionHelper.NullReference(browLeft, "Example Brow Left");
+                ExceptionHelper.NullReference(browRight, "Example Brow Right");
+
+                ExceptionHelper.NullReference(topEyelids, "Example Top Eyelids Image Part");
+                ExceptionHelper.NullReference(bottomEyelids, "Example Bottom Eyelids Image Part");
 
                 var animation = new RTAnimation("Angry");
                 animation.animationHandlers = new List<AnimationHandlerBase>
                 {
+                    // Brows
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, browLeft.rotation, Ease.Linear),
@@ -1683,6 +1710,18 @@ namespace BetterLegacy.Companion.Entity
                         new FloatKeyframe(0f, browRight.rotation, Ease.Linear),
                         new FloatKeyframe(0.3f, -15f, Ease.SineOut),
                     }, x => browRight.rotation = x, interpolateOnComplete: true),
+
+                    // Eyelids
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, topEyelids.scale.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0.5f, Ease.SineOut),
+                    }, x => topEyelids.scale.y = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, bottomEyelids.scale.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0.5f, Ease.SineOut),
+                    }, x => bottomEyelids.scale.y = x),
                 };
 
                 return animation;
@@ -1702,6 +1741,9 @@ namespace BetterLegacy.Companion.Entity
                 var handLeft = model.GetPart(Parts.HAND_LEFT).transform.GetChild(0);
                 var handRight = model.GetPart(Parts.HAND_RIGHT).transform.GetChild(0);
 
+                var topEyelids = model.GetPart(Parts.TOP_EYELIDS);
+                var bottomEyelids = model.GetPart(Parts.BOTTOM_EYELIDS);
+
                 ExceptionHelper.NullReference(lips, "Example Lips");
                 ExceptionHelper.NullReference(handLeft, "Example Hand Left");
                 ExceptionHelper.NullReference(handRight, "Example Hand Right");
@@ -1709,6 +1751,9 @@ namespace BetterLegacy.Companion.Entity
                 ExceptionHelper.NullReference(browRight, "Example Brow Right");
                 ExceptionHelper.NullReference(handsBase, "Example Hands Base");
                 ExceptionHelper.NullReference(head, "Example Head");
+
+                ExceptionHelper.NullReference(topEyelids, "Example Top Eyelids Image Part");
+                ExceptionHelper.NullReference(bottomEyelids, "Example Bottom Eyelids Image Part");
 
                 var animation = new RTAnimation("Drag Example");
                 animation.animationHandlers = new List<AnimationHandlerBase>
@@ -1772,6 +1817,18 @@ namespace BetterLegacy.Companion.Entity
                         new FloatKeyframe(0f, lips.position.y, Ease.Linear),
                         new FloatKeyframe(0.2f, 2f, Ease.SineOut),
                     }, x => lips.position.y = x, interpolateOnComplete: true),
+
+                    // Eye lids
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, topEyelids.scale.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0f, Ease.SineOut),
+                    }, x => topEyelids.scale.y = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, bottomEyelids.scale.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0f, Ease.SineOut),
+                    }, x => bottomEyelids.scale.y = x),
                 };
                 return animation;
             }));
@@ -1966,6 +2023,31 @@ namespace BetterLegacy.Companion.Entity
 
                 return animation;
             }));
+            poses.Add(new ExamplePose(Poses.TIRED, (model, parameters) =>
+            {
+                var topEyelids = model.GetPart(Parts.TOP_EYELIDS);
+                var bottomEyelids = model.GetPart(Parts.BOTTOM_EYELIDS);
+
+                ExceptionHelper.NullReference(topEyelids, "Example Top Eyelids Image Part");
+                ExceptionHelper.NullReference(bottomEyelids, "Example Bottom Eyelids Image Part");
+
+                var animation = new RTAnimation("Tired");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, topEyelids.scale.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0.5f, Ease.SineOut),
+                    }, x => topEyelids.scale.y = x),
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, bottomEyelids.scale.y, Ease.Linear),
+                        new FloatKeyframe(0.3f, 0.5f, Ease.SineOut),
+                    }, x => bottomEyelids.scale.y = x),
+                };
+
+                return animation;
+            }));
         }
 
         /// <summary>
@@ -2067,6 +2149,11 @@ namespace BetterLegacy.Companion.Entity
             /// Example's right ear flicks.
             /// </summary>
             public const string EAR_RIGHT_FLICK = "Ear Right Flick";
+
+            /// <summary>
+            /// Example is tired.
+            /// </summary>
+            public const string TIRED = "Tired";
 
             // todo:
             /*
