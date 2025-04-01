@@ -529,39 +529,22 @@ namespace BetterLegacy.Editor.Managers
             if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists(settingsPath) ||
                 !RTFile.FileExists(path)) && !config.WaveformRerender.Value || config.WaveformRerender.Value)
             {
-                int num = Mathf.Clamp((int)AudioManager.inst.CurrentAudioSource.clip.length * 48, 100, 15000);
+                var clip = AudioManager.inst.CurrentAudioSource.clip;
+                int num = Mathf.Clamp((int)clip.length * 48, 100, 15000);
                 Texture2D waveform = null;
 
-                switch (config.WaveformMode.Value)
+                yield return config.WaveformMode.Value switch
                 {
-                    case WaveformType.Split: {
-                            yield return CoroutineHelper.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.Centered: {
-                            yield return CoroutineHelper.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.Bottom: {
-                            yield return CoroutineHelper.StartCoroutineAsync(Modern(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.SplitDetailed: {
-                            yield return CoroutineHelper.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.CenteredDetailed: {
-                            yield return CoroutineHelper.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                    case WaveformType.BottomDetailed: {
-                            yield return CoroutineHelper.StartCoroutineAsync(ModernFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                            break;
-                        }
-                }
+                    WaveformType.Split => CoroutineHelper.StartCoroutineAsync(Legacy(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, _tex => waveform = _tex)),
+                    WaveformType.Centered => CoroutineHelper.StartCoroutineAsync(Beta(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, _tex => waveform = _tex)),
+                    WaveformType.Bottom => CoroutineHelper.StartCoroutineAsync(Modern(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, _tex => waveform = _tex)),
+                    WaveformType.SplitDetailed => CoroutineHelper.StartCoroutineAsync(LegacyFast(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, _tex => waveform = _tex)),
+                    WaveformType.CenteredDetailed => CoroutineHelper.StartCoroutineAsync(BetaFast(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, _tex => waveform = _tex)),
+                    WaveformType.BottomDetailed => CoroutineHelper.StartCoroutineAsync(ModernFast(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, _tex => waveform = _tex)),
+                    _ => null,
+                };
 
-                var waveSprite = Sprite.Create(waveform, new Rect(0f, 0f, num, 300f), new Vector2(0.5f, 0.5f), 100f);
-                SetTimelineSprite(waveSprite);
+                SetTimelineSprite(Sprite.Create(waveform, new Rect(0f, 0f, num, 300f), new Vector2(0.5f, 0.5f), 100f));
 
                 if (config.WaveformSaves.Value)
                     CoroutineHelper.StartCoroutineAsync(SaveWaveform());
@@ -606,44 +589,58 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Based on the pre-Legacy waveform where the waveform is in the center of the timeline instead of the edges.
         /// </summary>
-        public IEnumerator Beta(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
+        public IEnumerator Beta(AudioClip clip, int textureWidth, int textureHeight, Color background, Color center, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
+
             CoreHelper.Log("Generating Beta Waveform");
-            int num = 100;
+
+            #region Setup
+
+            int freq = clip.frequency / 100;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+
             yield return Ninja.JumpBack;
+            var backgroundColors = new Color[texture2D.width * texture2D.height];
+            for (int i = 0; i < backgroundColors.Length; i++)
+                backgroundColors[i] = background;
+            texture2D.SetPixels(backgroundColors);
 
-            var array = new Color[texture2D.width * texture2D.height];
-            for (int i = 0; i < array.Length; i++)
-                array[i] = background;
+            var samples = new float[clip.samples * clip.channels];
+            clip.GetData(samples, 0);
 
-            texture2D.SetPixels(array);
-            num = clip.frequency / num;
-            float[] array2 = new float[clip.samples * clip.channels];
-            clip.GetData(array2, 0);
-            float[] array3 = new float[array2.Length / num];
-            for (int j = 0; j < array3.Length; j++)
+            float[] waveform = new float[samples.Length / freq];
+
+            #endregion
+
+            #region Calculate
+
+            // calculate texture
+            for (int i = 0; i < waveform.Length; i++)
             {
-                array3[j] = 0f;
-                for (int k = 0; k < num; k++)
-                    array3[j] += Mathf.Abs(array2[j * num + k]);
-                array3[j] /= num;
+                waveform[i] = 0f;
+                for (int j = 0; j < freq; j++)
+                    waveform[i] += Mathf.Abs(samples[i * freq + j]);
+                waveform[i] /= freq;
             }
-            for (int l = 0; l < array3.Length - 1; l++)
-            {
-                int num2 = 0;
-                while (num2 < textureHeight * array3[l] + 1f)
-                {
-                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)(textureHeight * (array3[l] + 1f) / 2f) - num2, waveform);
-                    num2++;
-                }
-            }
+
+            // set pixels
+            for (int i = 0; i < waveform.Length - 1; i++)
+                for (int pos = 0; pos < textureHeight * waveform[i] + 1f; pos++)
+                    texture2D.SetPixel(textureWidth * i / waveform.Length, (int)(textureHeight * (waveform[i] + 1f) / 2f) - pos, center);
+
+            #endregion
+
+            #region Apply
+
             yield return Ninja.JumpToUnity;
             texture2D.wrapMode = TextureWrapMode.Clamp;
             texture2D.filterMode = FilterMode.Point;
             texture2D.Apply();
-            action(texture2D);
+            action?.Invoke(texture2D);
+
+            #endregion
+
             yield break;
         }
 
@@ -655,121 +652,139 @@ namespace BetterLegacy.Editor.Managers
             yield return Ninja.JumpToUnity;
 
             CoreHelper.Log("Generating Legacy Waveform");
-            int num = 160;
-            num = clip.frequency / num;
+
+            #region Setup
+
+            int freq = clip.frequency / 160;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
 
             yield return Ninja.JumpBack;
-            Color[] array = new Color[texture2D.width * texture2D.height];
-            for (int i = 0; i < array.Length; i++)
-                array[i] = background;
+            var backgroundColors = new Color[texture2D.width * texture2D.height];
+            for (int i = 0; i < backgroundColors.Length; i++)
+                backgroundColors[i] = background;
+            texture2D.SetPixels(backgroundColors);
 
-            texture2D.SetPixels(array);
-            float[] array3 = new float[clip.samples];
-            float[] array4 = new float[clip.samples];
-            float[] array5 = new float[clip.samples * clip.channels];
-            clip.GetData(array5, 0);
-            if (clip.channels > 1)
+            var samples = new float[clip.samples * clip.channels];
+            clip.GetData(samples, 0);
+
+            var oddSamples = clip.channels > 1 ? samples.Where((float value, int index) => index % 2 != 0).ToArray() : samples;
+            var evenSamples = clip.channels > 1 ? samples.Where((float value, int index) => index % 2 == 0).ToArray() : samples;
+
+            var waveform = new float[oddSamples.Length / freq];
+
+            #endregion
+
+            #region Calculate
+
+            // calculate top of texture
+            for (int i = 0; i < waveform.Length; i++)
             {
-                array3 = array5.Where((float value, int index) => index % 2 != 0).ToArray();
-                array4 = array5.Where((float value, int index) => index % 2 == 0).ToArray();
+                waveform[i] = 0f;
+                for (int j = 0; j < freq; j++)
+                    waveform[i] += Mathf.Abs(oddSamples[i * freq + j]);
+
+                waveform[i] /= freq;
+                waveform[i] *= 0.85f;
             }
-            else
+
+            // set top pixels
+            for (int i = 0; i < waveform.Length - 1; i++)
+                for (int pos = 0; pos < textureHeight * waveform[i]; pos++)
+                    texture2D.SetPixel(textureWidth * i / waveform.Length, (int)(textureHeight * waveform[i]) - pos, top);
+
+            // calculate bottom of texture
+            for (int i = 0; i < waveform.Length; i++)
             {
-                array3 = array5;
-                array4 = array5;
+                waveform[i] = 0f;
+                for (int n = 0; n < freq; n++)
+                    waveform[i] += Mathf.Abs(evenSamples[i * freq + n]);
+
+                waveform[i] /= freq;
+                waveform[i] *= 0.85f;
             }
-            float[] array6 = new float[array3.Length / num];
-            for (int j = 0; j < array6.Length; j++)
+
+            // set bottom pixels
+            for (int i = 0; i < waveform.Length - 1; i++)
             {
-                array6[j] = 0f;
-                for (int k = 0; k < num; k++)
+                for (int pos = 0; pos < textureHeight * waveform[i]; pos++)
                 {
-                    array6[j] += Mathf.Abs(array3[j * num + k]);
-                }
-                array6[j] /= num;
-                array6[j] *= 0.85f;
-            }
-            for (int l = 0; l < array6.Length - 1; l++)
-            {
-                int num2 = 0;
-                while (num2 < textureHeight * array6[l])
-                {
-                    texture2D.SetPixel(textureWidth * l / array6.Length, (int)(textureHeight * array6[l]) - num2, top);
-                    num2++;
-                }
-            }
-            array6 = new float[array4.Length / num];
-            for (int m = 0; m < array6.Length; m++)
-            {
-                array6[m] = 0f;
-                for (int n = 0; n < num; n++)
-                {
-                    array6[m] += Mathf.Abs(array4[m * num + n]);
-                }
-                array6[m] /= num;
-                array6[m] *= 0.85f;
-            }
-            for (int num3 = 0; num3 < array6.Length - 1; num3++)
-            {
-                int num4 = 0;
-                while (num4 < textureHeight * array6[num3])
-                {
-                    int x = textureWidth * num3 / array6.Length;
-                    int y = (int)array4[num3 * num + num4] - num4;
+                    int x = textureWidth * i / waveform.Length;
+                    int y = (int)evenSamples[i * freq + pos] - pos;
+
                     texture2D.SetPixel(x, y, texture2D.GetPixel(x, y) == top ? CoreHelper.MixColors(top, bottom) : bottom);
-                    num4++;
                 }
             }
+
+            #endregion
+
+            #region Apply
+
             yield return Ninja.JumpToUnity;
             texture2D.wrapMode = TextureWrapMode.Clamp;
             texture2D.filterMode = FilterMode.Point;
             texture2D.Apply();
             action?.Invoke(texture2D);
+
+            #endregion
+
             yield break;
         }
 
         /// <summary>
         /// Based on the modern VG / Alpha editor waveform where only one side of the waveform is at the bottom of the timeline.
         /// </summary>
-        public IEnumerator Modern(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
+        public IEnumerator Modern(AudioClip clip, int textureWidth, int textureHeight, Color background, Color center, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
+
             CoreHelper.Log("Generating Modern Waveform");
-            int num = 100;
+
+            #region Setup
+
+            int freq = clip.frequency / 100;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
             yield return Ninja.JumpBack;
 
-            var array = new Color[texture2D.width * texture2D.height];
-            for (int i = 0; i < array.Length; i++)
-                array[i] = background;
+            var backgroundColors = new Color[texture2D.width * texture2D.height];
+            for (int i = 0; i < backgroundColors.Length; i++)
+                backgroundColors[i] = background;
+            texture2D.SetPixels(backgroundColors);
 
-            texture2D.SetPixels(array);
-            num = clip.frequency / num;
-            float[] array2 = new float[clip.samples * clip.channels];
-            clip.GetData(array2, 0);
-            float[] array3 = new float[array2.Length / num];
-            for (int j = 0; j < array3.Length; j++)
+            float[] samples = new float[clip.samples * clip.channels];
+            clip.GetData(samples, 0);
+
+            float[] waveform = new float[samples.Length / freq];
+
+            #endregion
+
+            #region Calculate
+
+            // calculate texture
+            for (int i = 0; i < waveform.Length; i++)
             {
-                array3[j] = 0f;
-                for (int k = 0; k < num; k++)
-                    array3[j] += Mathf.Abs(array2[j * num + k]);
-                array3[j] /= (float)num;
+                waveform[i] = 0f;
+                for (int k = 0; k < freq; k++)
+                    waveform[i] += Mathf.Abs(samples[i * freq + k]);
+                waveform[i] /= freq;
             }
-            for (int l = 0; l < array3.Length - 1; l++)
-            {
-                int num2 = 0;
-                while (num2 < textureHeight * array3[l] + 1f)
-                {
-                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)(textureHeight * (array3[l] + 1f)) - num2, waveform);
-                    num2++;
-                }
-            }
+
+            // set pixels
+            for (int i = 0; i < waveform.Length - 1; i++)
+                for (int pos = 0; pos < textureHeight * waveform[i] + 1f; pos++)
+                    texture2D.SetPixel(textureWidth * i / waveform.Length, (int)(textureHeight * (waveform[i] + 1f)) - pos, center);
+
+            #endregion
+
+            #region Apply
+
             yield return Ninja.JumpToUnity;
             texture2D.wrapMode = TextureWrapMode.Clamp;
             texture2D.filterMode = FilterMode.Point;
             texture2D.Apply();
-            action(texture2D);
+            action?.Invoke(texture2D);
+
+            #endregion
+
             yield break;
         }
 
@@ -780,7 +795,11 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator BetaFast(AudioClip audio, int width, int height, Color background, Color col, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
+
             CoreHelper.Log("Generating Beta Waveform (Fast)");
+
+            #region Setup
+
             var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
             yield return Ninja.JumpBack;
 
@@ -788,6 +807,11 @@ namespace BetterLegacy.Editor.Managers
             float[] waveform = new float[width];
             audio.GetData(samples, 0);
             float packSize = ((float)samples.Length / (float)width);
+
+            #endregion
+
+            #region Calculate
+
             int s = 0;
             for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
             {
@@ -795,6 +819,7 @@ namespace BetterLegacy.Editor.Managers
                 s++;
             }
 
+            // set background colors
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
                     tex.SetPixel(x, y, background);
@@ -807,10 +832,17 @@ namespace BetterLegacy.Editor.Managers
                     tex.SetPixel(x, (height / 2) - y, col);
                 }
             }
+
+            #endregion
+
+            #region Apply
+
             yield return Ninja.JumpToUnity;
             tex.Apply();
-
             action?.Invoke(tex);
+
+            #endregion
+
             yield break;
         }
 
@@ -821,7 +853,11 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator LegacyFast(AudioClip audio, int width, int height, Color background, Color colTop, Color colBot, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
+
             CoreHelper.Log("Generating Legacy Waveform (Fast)");
+
+            #region Setup
+
             var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
             yield return Ninja.JumpBack;
 
@@ -829,6 +865,11 @@ namespace BetterLegacy.Editor.Managers
             float[] waveform = new float[width];
             audio.GetData(samples, 0);
             float packSize = ((float)samples.Length / (float)width);
+
+            #endregion
+
+            #region Calculate
+
             int s = 0;
             for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
             {
@@ -836,27 +877,30 @@ namespace BetterLegacy.Editor.Managers
                 s++;
             }
 
+            // set background colors
             for (int x = 0; x < width; x++)
-            {
                 for (int y = 0; y < height; y++)
-                {
                     tex.SetPixel(x, y, background);
-                }
-            }
 
             for (int x = 0; x < waveform.Length; x++)
             {
                 for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
                 {
                     tex.SetPixel(x, height - y, colTop);
-
                     tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? CoreHelper.MixColors(colTop, colBot) : colBot);
                 }
             }
+
+            #endregion
+
+            #region Apply
+
             yield return Ninja.JumpToUnity;
             tex.Apply();
-
             action?.Invoke(tex);
+
+            #endregion
+
             yield break;
         }
 
@@ -867,7 +911,11 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator ModernFast(AudioClip audio, int width, int height, Color background, Color col, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
+
             CoreHelper.Log("Generating Modern Waveform (Fast)");
+
+            #region Setup
+
             var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
             yield return Ninja.JumpBack;
 
@@ -875,6 +923,11 @@ namespace BetterLegacy.Editor.Managers
             float[] waveform = new float[width];
             audio.GetData(samples, 0);
             float packSize = ((float)samples.Length / (float)width);
+
+            #endregion
+
+            #region Calculate
+
             int s = 0;
             for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
             {
@@ -882,22 +935,25 @@ namespace BetterLegacy.Editor.Managers
                 s++;
             }
 
+            // set background colors
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
                     tex.SetPixel(x, y, background);
 
             for (int x = 0; x < waveform.Length; x++)
-            {
                 for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
-                {
                     tex.SetPixel(x, y, col);
-                    //tex.SetPixel(x, (height / 2) - y, col);
-                }
-            }
+
+            #endregion
+
+            #region Apply
+
             yield return Ninja.JumpToUnity;
             tex.Apply();
-
             action?.Invoke(tex);
+
+            #endregion
+
             yield break;
         }
 
@@ -948,8 +1004,6 @@ namespace BetterLegacy.Editor.Managers
                 timelineGridRenderer.SetAllDirty();
             }
         }
-
-        public float disappearAtZoom = 700f;
 
         #endregion
 
