@@ -3742,7 +3742,7 @@ namespace BetterLegacy.Editor.Managers
             PreviewCover = new EditorThemeManager.Element(ThemeGroup.Preview_Cover, gameObject, new List<Component> { image, });
             EditorThemeManager.AddElement(PreviewCover);
 
-            gameObject.SetActive(!CoreHelper.AprilFools);
+            gameObject.SetActive(!Seasons.AprilFools);
         }
 
         void CreateObjectSearch()
@@ -5087,7 +5087,7 @@ namespace BetterLegacy.Editor.Managers
             gameData.events.Clear();
             GameData.ClampEventListValues(gameData.events);
 
-            for (int i = 0; i < (CoreHelper.AprilFools ? 45 : 25); i++)
+            for (int i = 0; i < (Seasons.AprilFools ? 45 : 25); i++)
             {
                 var backgroundObject = new BackgroundObject();
                 backgroundObject.name = "bg - " + i;
@@ -5109,7 +5109,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 var randomShape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D.Count - 1);
-                if (CoreHelper.AprilFools)
+                if (Seasons.AprilFools)
                 {
                     if (randomShape != 4 && randomShape != 6)
                         backgroundObject.shape = ShapeManager.inst.Shapes3D[randomShape][0];
@@ -5120,10 +5120,10 @@ namespace BetterLegacy.Editor.Managers
 
             var beatmapObject = ObjectEditor.inst.CreateNewBeatmapObject(0.5f);
             beatmapObject.events[0].Add(new EventKeyframe(4f, new float[3] { 10f, 0f, 0f }, new float[3]));
-            if (CoreHelper.AprilFools)
+            if (Seasons.AprilFools)
                 beatmapObject.events[2].Add(new EventKeyframe(12f, new float[1] { 360000f }, new float[3]));
 
-            beatmapObject.name = CoreHelper.AprilFools ? "trololololo" : DEFAULT_OBJECT_NAME;
+            beatmapObject.name = Seasons.AprilFools ? "trololololo" : DEFAULT_OBJECT_NAME;
             beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 4f;
             beatmapObject.editorData.Layer = 0;

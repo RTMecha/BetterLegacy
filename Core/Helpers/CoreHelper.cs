@@ -140,16 +140,6 @@ namespace BetterLegacy.Core.Helpers
         public static BeatmapTheme CurrentBeatmapTheme => InEditor && EventEditor.inst.showTheme ? RTThemeEditor.inst.PreviewTheme : ThemeManager.inst.Current;
 
         /// <summary>
-        /// jokes on you, I FIXED THE BUG
-        /// </summary>
-        public static bool AprilFools => DateTime.Now.ToString("M") == "1 April" || DateTime.Now.ToString("M") == "April 1";
-        
-        /// <summary>
-        /// For the Project Arrhythmia (release) Anniversary.
-        /// </summary>
-        public static bool PAAnniversary => DateTime.Now.ToString("M") == "15 June" || DateTime.Now.ToString("M") == "June 15";
-
-        /// <summary>
         /// Gets the current resolution as a Vector2Int based on Core Config's resolution value.
         /// </summary>
         public static Vector2Int CurrentResolution => GetResolution((int)CoreConfig.Instance.Resolution.Value);

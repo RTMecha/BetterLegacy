@@ -994,7 +994,7 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", EditorDocument.Element.Type.Image),
             });
 
-            if (CoreHelper.AprilFools)
+            if (Seasons.AprilFools)
             {
                 var elements = new List<EditorDocument.Element>();
 
