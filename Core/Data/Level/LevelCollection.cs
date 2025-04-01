@@ -409,7 +409,7 @@ namespace BetterLegacy.Core.Data.Level
                 CoreHelper.Log($"Got item: {item}");
                 CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                 {
-                    CoroutineHelper.ReturnToUnity(() =>
+                    Threading.TickRunner.Main.Enqueue(() =>
                     {
                         var sprite = SpriteHelper.LoadSprite(bytes);
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
@@ -417,7 +417,7 @@ namespace BetterLegacy.Core.Data.Level
                     });
                 }, onError =>
                 {
-                    CoroutineHelper.ReturnToUnity(() =>
+                    Core.Threading.TickRunner.Main.Enqueue(() =>
                     {
                         var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;

@@ -603,7 +603,7 @@ namespace BetterLegacy.Core.Helpers
 
         static IEnumerator ScreenshotNotification()
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return CoroutineHelper.Seconds(0.1f);
 
             // In-Game Screenshot notification
 

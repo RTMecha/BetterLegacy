@@ -156,7 +156,7 @@ namespace BetterLegacy.Core.Helpers
                 yield return SceneHelper.ILoadScene(SceneName.Editor);
 
             if (delay != 0.0)
-                yield return new WaitForSeconds(delay);
+                yield return CoroutineHelper.Seconds(delay);
 
             CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(fullPath)));
         }

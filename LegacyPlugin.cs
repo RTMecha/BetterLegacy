@@ -55,8 +55,6 @@ namespace BetterLegacy
 
         public static Prefab ExamplePrefab { get; set; }
 
-        public static Core.Threading.TickRunner mainTickRunner = new Core.Threading.TickRunner();
-
         void Awake()
         {
             inst = this;
@@ -243,6 +241,8 @@ namespace BetterLegacy
                 CoreHelper.LogError($"Failed to update Current Scene. {ex}");
             }
 
+            BetterLegacy.Core.Threading.TickRunner.Main = new Core.Threading.TickRunner();
+
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
         }
 
@@ -268,7 +268,7 @@ namespace BetterLegacy
 
             }
 
-            mainTickRunner?.OnTick();
+            Core.Threading.TickRunner.Main?.OnTick();
 
             if (CoreHelper.IsUsingInputField)
                 return;

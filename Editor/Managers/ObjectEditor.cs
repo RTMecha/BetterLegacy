@@ -2244,7 +2244,7 @@ namespace BetterLegacy.Editor.Managers
 
         IEnumerator SetTimelinePosition(BeatmapObject beatmapObject, float position = 0f)
         {
-            yield return new WaitForFixedUpdate();
+            yield return CoroutineHelper.FixedUpdate;
             float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
             if (AudioManager.inst.CurrentAudioSource.clip != null)
             {

@@ -377,25 +377,22 @@ namespace BetterLegacy.Editor.Managers
 
         void PreviewAudio(string file)
         {
-            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip =>
+            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip => Core.Threading.TickRunner.Main.Enqueue(() =>
             {
-                CoroutineHelper.ReturnToUnity(() =>
-                {
-                    var length = EditorConfig.Instance.FileBrowserAudioPreviewLength.Value;
-                    DestroyAudioPreview();
-                    if (currentDestroyPreviewCoroutine != null)
-                        StopCoroutine(currentDestroyPreviewCoroutine);
-                    currentDestroyPreviewCoroutine = null;
-                    currentPreview = Camera.main.gameObject.AddComponent<AudioSource>();
-                    currentPreview.clip = audioClip;
-                    currentPreview.playOnAwake = true;
-                    currentPreview.loop = true;
-                    currentPreview.volume = AudioManager.inst.sfxVol;
-                    currentPreview.time = length < 0f || audioClip.length <= length ? 0f : UnityEngine.Random.Range(0f, audioClip.length);
-                    currentPreview.Play();
-                    DestroyAudioPreviewAfterSeconds(Mathf.Clamp(length, 0f, audioClip.length));
-                });
-            }));
+                var length = EditorConfig.Instance.FileBrowserAudioPreviewLength.Value;
+                DestroyAudioPreview();
+                if (currentDestroyPreviewCoroutine != null)
+                    StopCoroutine(currentDestroyPreviewCoroutine);
+                currentDestroyPreviewCoroutine = null;
+                currentPreview = Camera.main.gameObject.AddComponent<AudioSource>();
+                currentPreview.clip = audioClip;
+                currentPreview.playOnAwake = true;
+                currentPreview.loop = true;
+                currentPreview.volume = AudioManager.inst.sfxVol;
+                currentPreview.time = length < 0f || audioClip.length <= length ? 0f : UnityEngine.Random.Range(0f, audioClip.length);
+                currentPreview.Play();
+                DestroyAudioPreviewAfterSeconds(Mathf.Clamp(length, 0f, audioClip.length));
+            })));
         }
 
         void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoroutineHelper.StartCoroutine(CoroutineHelper.IPerformActionAfterSeconds(t, DestroyAudioPreview));

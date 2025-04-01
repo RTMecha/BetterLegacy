@@ -308,7 +308,7 @@ namespace BetterLegacy.Core.Managers.Networking
             }
             downloading = false;
 
-            yield return new WaitForSeconds(0.1f);
+            yield return CoroutineHelper.Seconds(0.1f);
             CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
 
             while (InterfaceManager.inst.CurrentInterface && InterfaceManager.inst.CurrentInterface.generating)
@@ -411,7 +411,7 @@ namespace BetterLegacy.Core.Managers.Networking
             }
             downloading = false;
 
-            yield return new WaitForSeconds(0.1f);
+            yield return CoroutineHelper.Seconds(0.1f);
             CoreHelper.Log($"{item.Id} Status: {(subscribed ? "Subscribed" : "Unsubscribed")}");
 
             while (InterfaceManager.inst.CurrentInterface && InterfaceManager.inst.CurrentInterface.generating)

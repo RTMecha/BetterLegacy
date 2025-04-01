@@ -372,7 +372,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 countdown.text = num;
                 countdown.textUI.text = num;
                 countdown.textUI.maxVisibleCharacters = 9999;
-                yield return new WaitForSeconds(speedUp ? 0.1f : 0.5f);
+                yield return CoroutineHelper.Seconds(speedUp ? 0.1f : 0.5f);
                 speedUp = InterfaceManager.SpeedUp;
                 pitch++;
             }
@@ -381,7 +381,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             countdown.text = "<align=center><size=120><b><font=Fredoka One>GO!";
             countdown.textUI.text = "<align=center><size=120><b><font=Fredoka One>GO!";
-            yield return new WaitForSeconds(InterfaceManager.SpeedUp ? 0.05f : 0.2f);
+            yield return CoroutineHelper.Seconds(InterfaceManager.SpeedUp ? 0.05f : 0.2f);
 
             CountdownEnd(onCooldownEnd);
 
@@ -390,7 +390,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         IEnumerator SkipCountdown(Action onCooldownEnd)
         {
-            yield return new WaitForSeconds(0.3f);
+            yield return CoroutineHelper.Seconds(0.3f);
             CountdownEnd(onCooldownEnd);
         }
 

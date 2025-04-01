@@ -2521,7 +2521,7 @@ namespace BetterLegacy.Arcade.Interfaces
             }
             elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
-            yield return new WaitUntil(() => SteamWorkshopManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
+            yield return CoroutineHelper.Until(() => SteamWorkshopManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
             {
                 int column = (index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) / 5) + 2;
@@ -2557,7 +2557,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 {
                     CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
-                        CoroutineHelper.ReturnToUnity(() =>
+                        Core.Threading.TickRunner.Main.Enqueue(() =>
                         {
                             var sprite = SpriteHelper.LoadSprite(bytes);
                             OnlineSteamLevelIcons[id] = sprite;
@@ -2567,7 +2567,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         });
                     }, onError =>
                     {
-                        CoroutineHelper.ReturnToUnity(() =>
+                        Core.Threading.TickRunner.Main.Enqueue(() =>
                         {
                             var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                             OnlineSteamLevelIcons[id] = sprite;

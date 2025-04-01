@@ -89,8 +89,8 @@ namespace BetterLegacy.Editor.Managers
             InitEditors();
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(FinalSetup)}");
             FinalSetup();
-            CoreHelper.Log($"RTEDITOR INIT -> FILE DRAG DROP");
 
+            CoreHelper.Log($"RTEDITOR INIT -> FILE DRAG DROP");
             var fileDragAndDrop = gameObject.AddComponent<FileDragAndDrop>();
 
             fileDragAndDrop.onFilesDropped = dropInfos =>
@@ -311,6 +311,16 @@ namespace BetterLegacy.Editor.Managers
                     }
                 }
             };
+
+            CoreHelper.Log($"RTEDITOR INIT -> EDITOR THREAD");
+            try
+            {
+                editorThread = new Core.Threading.TickRunner(true);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
             CoreHelper.Log($"RTEDITOR INIT -> DONE!");
         }
 
@@ -924,6 +934,11 @@ namespace BetterLegacy.Editor.Managers
         #region Misc
 
         /// <summary>
+        /// Custom editor thread for performing larger tasks.
+        /// </summary>
+        public Core.Threading.TickRunner editorThread;
+
+        /// <summary>
         /// A list of easing dropdowns.
         /// </summary>
         public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
@@ -1333,7 +1348,7 @@ namespace BetterLegacy.Editor.Managers
 
                 notifications.Add(name);
 
-                yield return new WaitForSeconds(time * EditorConfig.Instance.NotificationDisplayTime.Value);
+                yield return CoroutineHelper.Seconds(time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 notifications.Remove(name);
             }
             yield break;
@@ -1366,7 +1381,7 @@ namespace BetterLegacy.Editor.Managers
                 LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.Find("info").AsRT());
                 LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.AsRT());
 
-                yield return new WaitForSeconds(time * EditorConfig.Instance.NotificationDisplayTime.Value);
+                yield return CoroutineHelper.Seconds(time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 notifications.Remove(name);
             }
 
@@ -4826,7 +4841,7 @@ namespace BetterLegacy.Editor.Managers
             else
                 yield return CoroutineHelper.StartCoroutine(gameData.ISaveData(path));
 
-            yield return new WaitForSeconds(0.5f);
+            yield return CoroutineHelper.Seconds(0.5f);
 
             EditorManager.inst.DisplayNotification("Saved Beatmap!", 2f, EditorManager.NotificationType.Success);
             EditorManager.inst.savingBeatmap = false;
@@ -4847,7 +4862,7 @@ namespace BetterLegacy.Editor.Managers
 
             PlayersData.Save();
 
-            yield return new WaitForSeconds(0.5f);
+            yield return CoroutineHelper.Seconds(0.5f);
             EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
         }
 

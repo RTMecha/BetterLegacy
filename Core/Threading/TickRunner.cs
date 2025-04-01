@@ -14,6 +14,8 @@ namespace BetterLegacy.Core.Threading
     /// </summary>
     public class TickRunner : Exists, IDisposable
     {
+        public static TickRunner Main { get; set; }
+
         public TickRunner() { }
 
         public TickRunner(bool selfRun, HandleException handleException = HandleException.Continue, bool logException = false)
@@ -29,11 +31,6 @@ namespace BetterLegacy.Core.Threading
                 thread.Start();
             }
         }
-
-        /// <summary>
-        /// Tick queue to run.
-        /// </summary>
-        public Queue<Action> tickQueue = new Queue<Action>();
 
         /// <summary>
         /// Single tick function to run.
@@ -64,6 +61,8 @@ namespace BetterLegacy.Core.Threading
         /// If exceptions should be written to the console.
         /// </summary>
         public bool logException;
+
+        Queue<Action> tickQueue = new Queue<Action>();
 
         readonly Thread thread;
 
@@ -124,6 +123,18 @@ namespace BetterLegacy.Core.Threading
             if (clearTick)
                 onTick = null;
         }
+
+        /// <summary>
+        /// Queues an action.
+        /// </summary>
+        /// <param name="action">Action to queue.</param>
+        public void Enqueue(Action action) => tickQueue.Enqueue(action);
+
+        /// <summary>
+        /// Adds an action to the onTick function.
+        /// </summary>
+        /// <param name="action">Action to add.</param>
+        public void AddAction(Action action) => onTick += action;
 
         public void Dispose()
         {

@@ -6795,7 +6795,7 @@ namespace BetterLegacy.Core.Helpers
         static IEnumerator ActivateModifier(BeatmapObject beatmapObject, float delay)
         {
             if (delay != 0.0)
-                yield return new WaitForSeconds(delay);
+                yield return CoroutineHelper.Seconds(delay);
 
             if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> modifier))
                 modifier.Result = "death hd";

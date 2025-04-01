@@ -9,6 +9,7 @@ using TMPro;
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -302,7 +303,7 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < quickElement.keyframes.Count; i++)
             {
                 string newText = tmp.text;
-                yield return new WaitForSeconds(currentKeyframe.time);
+                yield return CoroutineHelper.Seconds(currentKeyframe.time);
 
                 currentKeyframe = quickElement.keyframes[i];
                 newText = newText.Replace(replaceStr, currentKeyframe.text);
@@ -324,11 +325,11 @@ namespace BetterLegacy.Core.Managers
             while (tmp.text.Contains(replaceStr))
             {
                 string newText = tmp.text;
-                yield return new WaitForSeconds(currentKeyframe.time);
+                yield return CoroutineHelper.Seconds(currentKeyframe.time);
                 int num;
                 for (int inst = 0; inst <= _instance; inst = num + 1)
                 {
-                    yield return new WaitForEndOfFrame();
+                    yield return CoroutineHelper.EndOfFrame;
                     num = inst;
                 }
                 num = i;

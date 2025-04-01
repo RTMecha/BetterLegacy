@@ -2666,7 +2666,7 @@ namespace BetterLegacy.Core.Components.Player
                 },
             });
 
-            yield return new WaitForSeconds(boostCooldown / CoreHelper.ForwardPitch);
+            yield return CoroutineHelper.Seconds(boostCooldown / CoreHelper.ForwardPitch);
             CanBoost = true;
             if (PlayBoostRecoverSound && (!PlayerConfig.Instance.PlaySoundRBoostTail.Value || showBoostTail))
                 SoundManager.inst.PlaySound(DefaultSounds.boost_recover);
@@ -2690,7 +2690,7 @@ namespace BetterLegacy.Core.Components.Player
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
             Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_DEATH, new PlayerNoticeParameters(CustomPlayer));
-            yield return new WaitForSecondsRealtime(0.2f);
+            yield return CoroutineHelper.SecondsRealtime(0.2f);
             InputDataManager.inst.StopControllerRumble(playerIndex);
             yield break;
         } // if you want to kill the player, just set health to zero.
@@ -2734,13 +2734,13 @@ namespace BetterLegacy.Core.Components.Player
         IEnumerator BoostCancel(float _offset)
         {
             isBoostCancelled = true;
-            yield return new WaitForSeconds(_offset);
+            yield return CoroutineHelper.Seconds(_offset);
             SetTriggerCollision(false);
             isBoosting = false;
             if (!isTakingHit)
                 CanTakeDamage = true;
 
-            yield return new WaitForSeconds(0.1f);
+            yield return CoroutineHelper.Seconds(0.1f);
             InitAfterBoost();
             CancelBoostAnim();
             yield break;
@@ -2791,7 +2791,7 @@ namespace BetterLegacy.Core.Components.Player
             if (currentModel)
             {
                 var delay = currentModel.bulletPart.delay;
-                yield return new WaitForSeconds(delay);
+                yield return CoroutineHelper.Seconds(delay);
             }
             canShoot = true;
 

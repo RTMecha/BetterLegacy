@@ -221,7 +221,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (async.progress >= 0.9f)
                 {
-                    yield return new WaitForSecondsRealtime(0.1f);
+                    yield return CoroutineHelper.SecondsRealtime(0.1f);
                     async.allowSceneActivation = true;
                 }
 
@@ -236,11 +236,11 @@ namespace BetterLegacy.Core.Helpers
                 yield break;
             }
 
-            yield return new WaitForSecondsRealtime(0.1f);
+            yield return CoroutineHelper.SecondsRealtime(0.1f);
             while (CoreHelper.InEditor && EditorManager.inst.loading || CoreHelper.Loading || CoreHelper.Parsing)
             {
                 SetActive(true);
-                yield return new WaitForEndOfFrame();
+                yield return CoroutineHelper.EndOfFrame;
             }
             SetActive(false);
 
@@ -258,7 +258,7 @@ namespace BetterLegacy.Core.Helpers
             while (Loading && (loadingDisplayType == LoadingDisplayType.Waveform || loadingDisplayType == LoadingDisplayType.Doggo) && loadingImage.isActiveAndEnabled)
             {
                 loadingImage.sprite = SceneManager.inst.loadingTextures[num];
-                yield return new WaitForSeconds(delay);
+                yield return CoroutineHelper.Seconds(delay);
                 num++;
                 if (num >= SceneManager.inst.loadingTextures.Length)
                     num = 0;

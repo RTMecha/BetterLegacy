@@ -1295,7 +1295,7 @@ namespace BetterLegacy.Editor.Managers
             while (_listener.IsListening)
             {
                 var task = _listener.GetContextAsync();
-                yield return new WaitUntil(() => task.IsCompleted);
+                yield return CoroutineHelper.Until(() => task.IsCompleted);
                 ProcessRequest(task.Result, onLogin);
             }
         }

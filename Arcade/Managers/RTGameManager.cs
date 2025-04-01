@@ -262,7 +262,7 @@ namespace BetterLegacy.Arcade.Managers
                 SoundManager.inst.PlaySound(DefaultSounds.rewind);
             }
 
-            yield return new WaitForSeconds(2f);
+            yield return CoroutineHelper.Seconds(2f);
 
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
             if (!CoreHelper.InEditor && (PlayerManager.Is1Life || PlayerManager.IsNoHit))
@@ -279,7 +279,7 @@ namespace BetterLegacy.Arcade.Managers
             GameManager.inst.UpdateEventSequenceTime();
             GameManager.inst.isReversing = false;
 
-            yield return new WaitForSeconds(0.1f);
+            yield return CoroutineHelper.Seconds(0.1f);
 
             PlayerManager.SpawnPlayers(checkpoint.pos);
 

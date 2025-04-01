@@ -114,7 +114,7 @@ namespace BetterLegacy.Editor.Managers
         // i have no idea why the timeline scrollbar doesn't like to be set in the frame the zoom is also set in.
         IEnumerator ISetTimelinePosition(float position)
         {
-            yield return new WaitForFixedUpdate();
+            yield return CoroutineHelper.FixedUpdate;
             EditorManager.inst.timelineScrollRectBar.value = position;
         }
 

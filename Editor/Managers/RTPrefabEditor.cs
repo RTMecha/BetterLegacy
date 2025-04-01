@@ -2958,7 +2958,7 @@ namespace BetterLegacy.Editor.Managers
             if (!GameData.Current.prefabs.Exists(x => x.id == LegacyPlugin.ExamplePrefab.id) && config.PrefabExampleTemplate.Value)
                 GameData.Current.prefabs.Add(Prefab.DeepCopy(LegacyPlugin.ExamplePrefab, false));
 
-            yield return new WaitForSeconds(0.03f);
+            yield return CoroutineHelper.Seconds(0.03f);
 
             var searchFieldContextMenu = RTEditor.inst.PrefabPopups.InternalPrefabs.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
             searchFieldContextMenu.onClick = null;
