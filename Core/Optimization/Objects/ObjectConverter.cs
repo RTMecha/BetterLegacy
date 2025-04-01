@@ -144,14 +144,10 @@ namespace BetterLegacy.Core.Optimization.Objects
             
             baseObject.transform.localScale = Vector3.one;
 
-            var visualObject = baseObject.transform.GetChild(shapeType == ShapeType.Player ? 1 : 0).gameObject;
+            var visualObject = baseObject.transform.GetChild(0).gameObject;
             if (beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.autoTextAlign)
                 visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
-            if (shapeType != ShapeType.Player)
-                visualObject.name = "Visual [ " + beatmapObject.name + " ]";
-
-            if (shapeType == ShapeType.Player)
-                baseObject.SetActive(true);
+            visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
             int num = parentObjects.Count;
 
@@ -218,19 +214,16 @@ namespace BetterLegacy.Core.Optimization.Objects
                                beatmapObject.objectType == ObjectType.Decoration;
 
             bool isSolid = beatmapObject.objectType == ObjectType.Solid;
-            bool dontRotate = shapeType == ShapeType.Player && beatmapObject.tags != null && beatmapObject.tags.Has(x => x == "DontRotate");
-            int playerIndex = shapeType == ShapeType.Player && beatmapObject.events.Count > 3 && beatmapObject.events[3].Count > 0 && beatmapObject.events[3][0].values.Length > 0 ? (int)beatmapObject.events[3][0].values[0] : 0;
 
             VisualObject visual = shapeType switch
             {
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), (int)beatmapObject.renderLayerType),
                 ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
-                ShapeType.Player => new PlayerObject(visualObject, playerIndex, dontRotate, shapeOption),
                 ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShapeSettings),
                 _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
             };
 
-            if (CoreHelper.InEditor && shapeType != ShapeType.Player)
+            if (CoreHelper.InEditor)
             {
                 var obj = visualObject.AddComponent<SelectObject>();
                 obj.SetObject(beatmapObject);

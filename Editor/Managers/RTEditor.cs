@@ -206,7 +206,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
-                            beatmapObject.shape = (int)ShapeType.Image;
+                            beatmapObject.ShapeType = ShapeType.Image;
                             beatmapObject.text = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
                         });
                         break;
@@ -221,7 +221,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
-                            beatmapObject.shape = (int)ShapeType.Text;
+                            beatmapObject.ShapeType = ShapeType.Text;
                             beatmapObject.text = text;
                         });
                         break;

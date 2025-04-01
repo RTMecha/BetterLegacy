@@ -278,9 +278,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Type of the shape.
         /// </summary>
-        public ShapeType ShapeType => (ShapeType)shape;
+        public ShapeType ShapeType
+        {
+            get => (ShapeType)shape;
+            set => shape = (int)value;
+        }
 
-        public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image || ShapeType == ShapeType.Player;
+        public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image;
 
         #endregion
 
@@ -698,7 +702,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapObject.shapeOption = jn["so"].AsInt;
 
             if (jn["csp"] != null)
+            {
+                beatmapObject.ShapeType = ShapeType.Polygon;
                 beatmapObject.polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
+            }
 
             beatmapObject.autoTextAlign = beatmapObject.ShapeType == ShapeType.Text;
 
@@ -1046,14 +1053,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["ak_t"] = (int)autoKillType;
             jn["ak_o"] = autoKillOffset;
 
-            if (shape != 0)
-                jn["s"] = shape;
+            if (ShapeType == ShapeType.Polygon)
+            {
+                jn["s"] = 3; // for some reason the polygon is under the arrow shape group???
+                jn["so"] = 2;
 
-            if (shapeOption != 0)
-                jn["so"] = shapeOption;
+                if (polygonShapeSettings != null)
+                    jn["csp"] = polygonShapeSettings.ToJSON();
+            }
+            else
+            {
+                if (shape != 0)
+                    jn["s"] = shape;
 
-            if (polygonShapeSettings != null)
-                jn["csp"] = polygonShapeSettings.ToJSON();
+                if (shapeOption != 0)
+                    jn["so"] = shapeOption;
+            }
 
             if (gradientType != GradientType.Normal)
             {

@@ -222,7 +222,7 @@ namespace BetterLegacy.Core.Managers
                     ObjectManager.inst.objectPrefabs.Add(new ObjectManager.ObjectPrefabHolder() { options = new List<GameObject>() });
 
                 // Creates new shape object
-                if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh != null)
+                if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh)
                 {
                     var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, shape.name);
 
@@ -265,38 +265,6 @@ namespace BetterLegacy.Core.Managers
                 ObjectManager.inst.objectPrefabs[6].options.Add(imageMesh);
             }
 
-            StartCoroutine(SetupPlayerShapes());
-        }
-
-        public IEnumerator SetupPlayerShapes()
-        {
-            if (ObjectManager.inst.objectPrefabs.Count == 10)
-            {
-                loadedShapes = true;
-                yield break;
-            }
-
-            // Player
-            {
-                var objectPrefab = new ObjectManager.ObjectPrefabHolder();
-                objectPrefab.options = new List<GameObject>();
-
-                while (!GameManager.inst || GameManager.inst.PlayerPrefabs == null || GameManager.inst.PlayerPrefabs.Length < 1 || GameManager.inst.PlayerPrefabs[0] == null)
-                    yield return null;
-
-                var parent = new GameObject("Player Prefabs");
-                parent.SetActive(false);
-
-                for (int i = 0; i < PlayerModel.DefaultModels.Count; i++)
-                {
-                    var gameObject = PlayerManager.SpawnPlayer(PlayerModel.DefaultModels[i], parent.transform, 0, Vector3.zero);
-                    gameObject.SetActive(false);
-                    objectPrefab.options.Add(gameObject);
-                }
-
-                ObjectManager.inst.objectPrefabs.Add(objectPrefab);
-            }
-
             // Polygon
             {
                 var objectPrefab = new ObjectManager.ObjectPrefabHolder();
@@ -306,7 +274,6 @@ namespace BetterLegacy.Core.Managers
             }
 
             loadedShapes = true;
-            yield break;
         }
 
         public Dictionary<Vector2Int, Shape> StoredShapes2D { get; set; }

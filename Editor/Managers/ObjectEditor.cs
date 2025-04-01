@@ -1889,78 +1889,6 @@ namespace BetterLegacy.Editor.Managers
                     }
                 }
 
-                CoreHelper.Log($"Checking player shapes...");
-                if (ObjectManager.inst.objectPrefabs.Count > 9)
-                {
-                    var playerSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_player{FileFormat.PNG.Dot()}"));
-                    int i = shape.childCount;
-                    var obj = shapeButtonPrefab.Duplicate(shape, (i + 1).ToString());
-                    if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
-                    {
-                        image.sprite = playerSprite;
-                        EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
-                    }
-
-                    var so = shapeSettings.Find((i + 1).ToString());
-
-                    if (!so)
-                    {
-                        so = shapeSettings.Find("6").gameObject.Duplicate(shapeSettings, (i + 1).ToString()).transform;
-                        CoreHelper.DestroyChildren(so);
-                    }
-
-                    var rect = so.AsRT();
-                    if (!so.GetComponent<ScrollRect>())
-                    {
-                        var scroll = so.gameObject.AddComponent<ScrollRect>();
-                        so.gameObject.AddComponent<Mask>();
-                        var ad = so.gameObject.AddComponent<Image>();
-
-                        scroll.horizontal = true;
-                        scroll.vertical = false;
-                        scroll.content = rect;
-                        scroll.viewport = rect;
-                        ad.color = new Color(1f, 1f, 1f, 0.01f);
-                    }
-
-                    var shapeToggle = obj.GetComponent<Toggle>();
-                    shapeToggles.Add(shapeToggle);
-                    EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
-
-                    shapeOptionToggles.Add(new List<Toggle>());
-
-                    for (int j = 0; j < ObjectManager.inst.objectPrefabs[9].options.Count; j++)
-                    {
-                        var opt = shapeButtonPrefab.Duplicate(shapeSettings.GetChild(i), (j + 1).ToString(), j);
-                        if (opt.transform.Find("Image") && opt.transform.Find("Image").gameObject.TryGetComponent(out Image image1))
-                        {
-                            image1.sprite = playerSprite;
-                            EditorThemeManager.ApplyGraphic(image1, ThemeGroup.Toggle_1_Check);
-                        }
-
-                        var shapeOptionToggle = opt.GetComponent<Toggle>();
-                        EditorThemeManager.ApplyToggle(shapeOptionToggle, ThemeGroup.Background_1);
-
-                        shapeOptionToggles[i].Add(shapeOptionToggle);
-
-                        var layoutElement = opt.AddComponent<LayoutElement>();
-                        layoutElement.layoutPriority = 1;
-                        layoutElement.minWidth = 32f;
-
-                        ((RectTransform)opt.transform).sizeDelta = new Vector2(32f, 32f);
-
-                        if (!opt.GetComponent<HoverUI>())
-                        {
-                            var he = opt.AddComponent<HoverUI>();
-                            he.animatePos = false;
-                            he.animateSca = true;
-                            he.size = 1.1f;
-                        }
-                    }
-
-                    LastGameObject(shapeSettings.GetChild(i));
-                }
-
                 // Polygon
                 {
                     var polygonSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"Shapes/polygon/icon{FileFormat.PNG.Dot()}"));
@@ -4424,8 +4352,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.gradientType = (BeatmapObject.GradientType)index;
 
-                    if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal &&
-                        (beatmapObject.ShapeType == ShapeType.Text || beatmapObject.ShapeType == ShapeType.Image || beatmapObject.ShapeType == ShapeType.Player))
+                    if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && beatmapObject.IsSpecialShape)
                     {
                         beatmapObject.shape = 0;
                         beatmapObject.shapeOption = 0;
@@ -4557,7 +4484,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.shape = index;
                         beatmapObject.shapeOption = 0;
 
-                        if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 9))
+                        if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6))
                             beatmapObject.shape = 0;
 
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
@@ -4753,7 +4680,7 @@ namespace BetterLegacy.Editor.Managers
                         shapeSettings.AsRT().sizeDelta = new Vector2(351f, 164f);
                         shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 164f);
 
-                        var sides = shapeSettings.Find("11/sides").gameObject.GetComponent<InputFieldStorage>();
+                        var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
                         sides.inputField.onValueChanged.ClearAll();
                         sides.inputField.text = beatmapObject.polygonShapeSettings.Sides.ToString();
                         sides.inputField.onValueChanged.AddListener(_val =>
@@ -4769,7 +4696,7 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.IncreaseDecreaseButtonsInt(sides, min: 3, max: 32);
                         TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
                         
-                        var roundness = shapeSettings.Find("11/roundness").gameObject.GetComponent<InputFieldStorage>();
+                        var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
                         roundness.inputField.onValueChanged.ClearAll();
                         roundness.inputField.text = beatmapObject.polygonShapeSettings.Roundness.ToString();
                         roundness.inputField.onValueChanged.AddListener(_val =>
@@ -4785,7 +4712,7 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.IncreaseDecreaseButtons(roundness, max: 1f);
                         TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
 
-                        var thickness = shapeSettings.Find("11/thickness").gameObject.GetComponent<InputFieldStorage>();
+                        var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
                         thickness.inputField.onValueChanged.ClearAll();
                         thickness.inputField.text = beatmapObject.polygonShapeSettings.Thickness.ToString();
                         thickness.inputField.onValueChanged.AddListener(_val =>
@@ -4801,7 +4728,7 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
                         TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
 
-                        var slices = shapeSettings.Find("11/slices").gameObject.GetComponent<InputFieldStorage>();
+                        var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
                         slices.inputField.onValueChanged.ClearAll();
                         slices.inputField.text = beatmapObject.polygonShapeSettings.Slices.ToString();
                         slices.inputField.onValueChanged.AddListener(_val =>

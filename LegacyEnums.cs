@@ -504,9 +504,8 @@ namespace BetterLegacy
         Image = 6,
         Pentagon = 7,
         Misc = 8,
-        Player = 9,
-        Polygon = 10,
-        Particles = 11,
+        Polygon = 9,
+        Particles = 10,
     }
 
     /// <summary>
