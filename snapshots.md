@@ -11,6 +11,8 @@
   - Dragging a MP4 file into a loaded editor level will set it as the video BG.
 
 ## Changes
+- Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
+- Example now has eyelids for more expressions.
 
 ## Fixes
 
