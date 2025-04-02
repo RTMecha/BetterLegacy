@@ -19,6 +19,7 @@
 
 ## Fixes
 - Fixed animateObject modifiers being inconsistent with different framerates.
+- Fixed default keybinds for First and Last Keyframe selectors being incorrect.
 
 ------------------------------------------------------------------------------------------
 
