@@ -29,7 +29,7 @@
 - Player shooting aiming  
   Update: 1.10.0
 - Player toolkit inventory system. Includes customizable tools and weapons that can be used with triggers and specific object tags.    
-  Update: 1.10.0
+  Update: 1.10.0  
   Toolkit mechanics:  
   - Damage (sends a damage signal to a damage modifier, can have a set damage amount)
   - Shoot (spawns a custom built bullet / missile with custom movement behavior)
