@@ -11,11 +11,14 @@
   - Dragging a MP4 file into a loaded editor level will set it as the video BG.
 
 ## Changes
+- Some JSON values have been changed. This means BetterLegacy is no longer compatible with vanilla Legacy. (why would you use that outdated version anyways)
 - Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
 - Example now has eyelids for more expressions.
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 
 ## Fixes
+
+------------------------------------------------------------------------------------------
 
 # 1.7.0-pre.1 > [Mar 31, 2025]
 New changelog format and the first pre-release for 1.7.0!
