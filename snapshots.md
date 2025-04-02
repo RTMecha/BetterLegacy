@@ -15,8 +15,10 @@
 - Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
 - Example now has eyelids for more expressions.
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
+- Shapes are now loaded from a shapes.json file in the Assets folder.
 
 ## Fixes
+- Fixed animateObject modifiers being inconsistent with different framerates.
 
 ------------------------------------------------------------------------------------------
 
