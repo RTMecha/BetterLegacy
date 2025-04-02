@@ -146,10 +146,10 @@ namespace BetterLegacy.Editor.Managers
             AddDefaultKeybind(ActionType.SwapLockSelection, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.L));
             AddDefaultKeybind(ActionType.UpdateObject, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R));
             AddDefaultKeybind(ActionType.UpdateEverything, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.T));
-            AddDefaultKeybind(ActionType.SetFirstKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
-            AddDefaultKeybind(ActionType.SetLastKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
-            AddDefaultKeybind(ActionType.SetNextKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
+            AddDefaultKeybind(ActionType.SetFirstKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
+            AddDefaultKeybind(ActionType.SetLastKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
             AddDefaultKeybind(ActionType.SetPreviousKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
+            AddDefaultKeybind(ActionType.SetNextKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
             AddDefaultKeybind(ActionType.AddPitch, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow));
             AddDefaultKeybind(ActionType.SubPitch, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow));
             AddDefaultKeybind(ActionType.ToggleShowHelp, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
