@@ -38,6 +38,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public Shape GetShape(int index) => shapes[Mathf.Clamp(index, 0, shapes.Count - 1)];
 
+        public bool TryGetShape(int index, out Shape shape) => shapes.TryGetAt(index, out shape);
+
         public ShapeType GetShapeType() => (ShapeType)type;
 
         public override string ToString() => $"{name} - {type}";

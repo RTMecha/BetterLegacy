@@ -56,9 +56,6 @@ namespace BetterLegacy.Core.Managers
         {
             inst = this;
 
-            StoredShapes2D = new Dictionary<Vector2Int, Shape>();
-            StoredShapes3D = new Dictionary<Vector2Int, Shape>();
-
             if (!RTFile.FileExists(RTFile.GetAsset($"shapes{FileFormat.JSON.Dot()}")))
             {
                 System.Windows.Forms.MessageBox.Show("Shapes Setup file does not exist.\nYou may run into issues with playing the game from here on, so it is recommended to\ndownload the proper assets from Github and place them into the appropriate folders.", "Error!");
@@ -72,9 +69,6 @@ namespace BetterLegacy.Core.Managers
         {
             Shapes2D.Clear();
             Shapes3D.Clear();
-
-            StoredShapes2D.Clear();
-            StoredShapes3D.Clear();
 
             var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"shapes{FileFormat.JSON.Dot()}")));
 
@@ -111,8 +105,6 @@ namespace BetterLegacy.Core.Managers
 
                     if (sjn["icon"] != null)
                         shape.icon = SpriteHelper.StringToSprite(sjn["icon"]);
-
-                    StoredShapes2D[shape.Vector] = shape;
 
                     shapeGroup.Add(shape);
                 }
@@ -155,8 +147,6 @@ namespace BetterLegacy.Core.Managers
 
                     if (sjn["icon"] != null)
                         shape.icon = SpriteHelper.StringToSprite(sjn["icon"]);
-
-                    StoredShapes3D[shape.Vector] = shape;
 
                     shapeGroup.Add(shape);
                 }
@@ -221,76 +211,75 @@ namespace BetterLegacy.Core.Managers
             var parent = new GameObject("Shape Parent");
             shapeParent = parent.transform;
 
-            foreach (var shapeKeyValue in StoredShapes2D)
+            for (int i = 0; i < Shapes2D.Count; i++)
             {
-                var type = shapeKeyValue.Key.x;
-                var option = shapeKeyValue.Key.y;
-                var shape = shapeKeyValue.Value;
-
-                // Adds new shape group
-                if (ObjectManager.inst.objectPrefabs.Count < type + 1)
-                    ObjectManager.inst.objectPrefabs.Add(new ObjectManager.ObjectPrefabHolder() { options = new List<GameObject>() });
-
-                // Creates new shape object
-                if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh)
+                var shapeGroup = Shapes2D[i];
+                for (int j = 0; j < shapeGroup.Count; j++)
                 {
-                    var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, shape.name);
+                    var shape = shapeGroup[j];
+                    var type = shape.type;
+                    var option = shape.option;
 
-                    gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = shape.mesh;
+                    // Adds new shape group
+                    if (ObjectManager.inst.objectPrefabs.Count < type + 1)
+                        ObjectManager.inst.objectPrefabs.Add(new ObjectManager.ObjectPrefabHolder() { options = new List<GameObject>() });
 
-                    if (shape.name == "triangle_outline_thin")
+                    // Creates new shape object
+                    if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh)
                     {
-                        var polygonCollider = gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>();
-                        polygonCollider.points = thinTrianglePoints.Copy();
-                        polygonCollider.pathCount = 1;
+                        var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, shape.name);
+
+                        gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = shape.mesh;
+
+                        if (shape.name == "triangle_outline_thin")
+                        {
+                            var polygonCollider = gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>();
+                            polygonCollider.points = thinTrianglePoints.Copy();
+                            polygonCollider.pathCount = 1;
+
+                            ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
+                            continue;
+                        }
+
+                        DestroyImmediate(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>());
+                        gameObject.transform.GetChild(0).gameObject.AddComponent<RTColliderCreator>();
 
                         ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
+                    }
+
+                    // Creates image shape object
+                    if (type != 6)
+                        continue;
+
+                    if (SceneHelper.CurrentSceneType == SceneType.Editor)
+                    {
+                        DestroyImmediate(ObjectManager.inst.objectPrefabs[6].options[0].transform.GetChild(0).GetComponent<Rigidbody2D>());
                         continue;
                     }
 
-                    DestroyImmediate(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>());
-                    gameObject.transform.GetChild(0).gameObject.AddComponent<RTColliderCreator>();
+                    var imageMesh = new GameObject("mesh");
+                    imageMesh.layer = 8;
+                    var imageObject = new GameObject("object");
+                    imageObject.layer = 8;
+                    imageObject.transform.SetParent(imageMesh.transform);
 
-                    ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
+                    imageObject.AddComponent<SpriteRenderer>();
+
+                    ObjectManager.inst.objectPrefabs[6].options.Add(imageMesh);
                 }
-
-                // Creates image shape object
-                if (type != 6)
-                    continue;
-
-                if (SceneHelper.CurrentSceneType == SceneType.Editor)
-                {
-                    DestroyImmediate(ObjectManager.inst.objectPrefabs[6].options[0].transform.GetChild(0).GetComponent<Rigidbody2D>());
-                    continue;
-                }
-
-                var imageMesh = new GameObject("mesh");
-                imageMesh.layer = 8;
-                var imageObject = new GameObject("object");
-                imageObject.layer = 8;
-                imageObject.transform.SetParent(imageMesh.transform);
-
-                imageObject.AddComponent<SpriteRenderer>();
-
-                ObjectManager.inst.objectPrefabs[6].options.Add(imageMesh);
-            }
-
-            // Polygon
-            {
-                var objectPrefab = new ObjectManager.ObjectPrefabHolder();
-                objectPrefab.options = new List<GameObject>();
-                objectPrefab.options.Add(ObjectManager.inst.objectPrefabs[0].options[0]);
-                ObjectManager.inst.objectPrefabs.Add(objectPrefab);
             }
 
             loadedShapes = true;
         }
 
-        public Dictionary<Vector2Int, Shape> StoredShapes2D { get; set; }
-        public Dictionary<Vector2Int, Shape> StoredShapes3D { get; set; }
-
+        /// <summary>
+        /// List of 2D shapes.
+        /// </summary>
         public List<ShapeGroup> Shapes2D { get; set; } = new List<ShapeGroup>();
 
+        /// <summary>
+        /// List of 3D shapes.
+        /// </summary>
         public List<ShapeGroup> Shapes3D { get; set; } = new List<ShapeGroup>();
 
         public Shape GetShape(int shape, int shapeOption) => Shapes2D[Mathf.Clamp(shape, 0, Shapes2D.Count - 1)].GetShape(shapeOption);

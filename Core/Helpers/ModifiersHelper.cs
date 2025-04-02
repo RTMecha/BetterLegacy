@@ -4009,10 +4009,9 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.HasResult() || modifier.reference.IsSpecialShape || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
                     return;
 
-                var shape = new Vector2Int(modifier.reference.shape, modifier.reference.shapeOption);
-                if (ShapeManager.inst.StoredShapes3D.TryGetValue(shape, out Shape value))
+                if (ShapeManager.inst.Shapes3D.TryGetAt(modifier.reference.shape, out ShapeGroup shapeGroup) && shapeGroup.TryGetShape(modifier.reference.shapeOption, out Shape shape))
                 {
-                    levelObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = value.mesh;
+                    levelObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = shape.mesh;
                     modifier.Result = "frick";
                     levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
                 }
