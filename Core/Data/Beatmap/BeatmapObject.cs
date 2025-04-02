@@ -1234,7 +1234,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             if (shape != 0)
-                jn["shape"] = shape;
+                jn["s"] = shape;
 
             if (shapeOption != 0)
                 jn["so"] = shapeOption;
