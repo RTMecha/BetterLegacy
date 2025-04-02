@@ -107,7 +107,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// The normalized time for relative animation consistency.
         /// </summary>
-        public static float TimeFrame => (UnityEngine.Time.deltaTime) * 300f;
+        public static float TimeFrame => Time.deltaTime * 300f;
 
         /// <summary>
         /// Takes the current pitch and always makes sure it's a valid value to be used for DelayTracker components.
