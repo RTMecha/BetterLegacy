@@ -170,5 +170,8 @@ namespace BetterLegacy.Core
             => jn == null ? defaultValue :
                             jn.IsArray ? new Vector3Int(jn.Count > 0 ? jn[0].AsInt : defaultValue.x, jn.Count > 1 ? jn[1].AsInt : defaultValue.y, jn.Count > 2 ? jn[2].AsInt : defaultValue.z) :
                             new Vector3Int(jn["x"] == null ? defaultValue.x : jn["x"].AsInt, jn["y"] == null ? defaultValue.y : jn["y"].AsInt, jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
+
+        public static JSONNode NewJSONObject() => JSON.Parse("{}");
+        public static JSONNode NewJSONArray() => JSON.Parse("[]");
     }
 }

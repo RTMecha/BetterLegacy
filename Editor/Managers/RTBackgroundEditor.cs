@@ -1462,10 +1462,12 @@ namespace BetterLegacy.Editor.Managers
             // Re-add everything
             for (int i = 0; i < ShapeManager.inst.Shapes3D.Count; i++)
             {
+                var st = (ShapeType)i;
+
                 var obj = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shape, (i + 1).ToString(), i);
                 if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
                 {
-                    image.sprite = ShapeManager.inst.Shapes3D[i][0].icon;
+                    image.sprite = ShapeManager.inst.Shapes3D[i].icon;
                     EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
                 }
 
@@ -1474,7 +1476,7 @@ namespace BetterLegacy.Editor.Managers
 
                 shapeToggle.group = null;
 
-                if (i != 4 && i != 6)
+                if (st != ShapeType.Text && st != ShapeType.Image && st != ShapeType.Polygon)
                 {
                     if (!shapeSettings.Find((i + 1).ToString()))
                     {
@@ -1588,7 +1590,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (shapeType == 4 || shapeType == 6)
+            if (shapeType == 4 || shapeType == 6 || shapeType == 9)
             {
                 EditorManager.inst.DisplayNotification($"{(shapeType == 4 ? "Text" : "Image")} background not supported.", 2f, EditorManager.NotificationType.Error);
                 backgroundObject.SetShape(0, 0);

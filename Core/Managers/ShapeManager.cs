@@ -59,99 +59,109 @@ namespace BetterLegacy.Core.Managers
             StoredShapes2D = new Dictionary<Vector2Int, Shape>();
             StoredShapes3D = new Dictionary<Vector2Int, Shape>();
 
-            if (!RTFile.FileExists(RTFile.ApplicationDirectory + ShapesSetup))
+            if (!RTFile.FileExists(RTFile.GetAsset($"shapes{FileFormat.JSON.Dot()}")))
             {
                 System.Windows.Forms.MessageBox.Show("Shapes Setup file does not exist.\nYou may run into issues with playing the game from here on, so it is recommended to\ndownload the proper assets from Github and place them into the appropriate folders.", "Error!");
                 return;
             }
 
-            Shapes2D = new List<List<Shape>>();
-            Shapes3D = new List<List<Shape>>();
+            Load();
+        }
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.ApplicationDirectory + ShapesSetup));
-            for (int i = 0; i < jn["type"].Count; i++)
+        public void Load()
+        {
+            Shapes2D.Clear();
+            Shapes3D.Clear();
+
+            StoredShapes2D.Clear();
+            StoredShapes3D.Clear();
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"shapes{FileFormat.JSON.Dot()}")));
+
+            for (int i = 0; i < jn["types"].Count; i++)
             {
-                Shapes2D.Add(new List<Shape>());
-                Shapes3D.Add(new List<Shape>());
-                for (int j = 0; j < jn["type"][i]["option"].Count; j++)
+                Sprite groupIcon = null;
+                if (jn["types"][i]["icon"] != null)
+                    groupIcon = SpriteHelper.StringToSprite(jn["types"][i]["icon"]);
+
+                var shapeGroup = new ShapeGroup(jn["types"][i]["name"], i, groupIcon);
+
+                for (int j = 0; j < jn["types"][i]["options"].Count; j++)
                 {
-                    var fullPath = RTFile.ApplicationDirectory + ShapesPath + jn["type"][i]["option"][j]["path"];
-                    var iconPath = RTFile.CombinePaths(fullPath, $"icon{FileFormat.PNG.Dot()}");
+                    var sjn = jn["types"][i]["options"][j];
 
-                    // 2D
+                    Mesh mesh = null;
+                    if (i != 4 && i != 6 && sjn["verts"] != null && sjn["tris"] != null)
                     {
-                        var sjn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, $"data{FileFormat.LSSH.Dot()}")));
+                        mesh = new Mesh();
+                        mesh.name = sjn["name"];
+                        Vector3[] vertices = new Vector3[sjn["verts"].Count];
+                        for (int k = 0; k < sjn["verts"].Count; k++)
+                            vertices[k] = new Vector3(sjn["verts"][k]["x"].AsFloat, sjn["verts"][k]["y"].AsFloat, sjn["verts"][k]["z"].AsFloat);
 
-                        Mesh mesh = null;
-                        if (i != 4 && i != 6 && sjn["verts"] != null && sjn["tris"] != null)
-                        {
-                            mesh = new Mesh();
-                            mesh.name = sjn["name"];
-                            Vector3[] vertices = new Vector3[sjn["verts"].Count];
-                            for (int k = 0; k < sjn["verts"].Count; k++)
-                                vertices[k] = new Vector3(sjn["verts"][k]["x"].AsFloat, sjn["verts"][k]["y"].AsFloat, sjn["verts"][k]["z"].AsFloat);
+                        int[] triangles = new int[sjn["tris"].Count];
+                        for (int k = 0; k < sjn["tris"].Count; k++)
+                            triangles[k] = sjn["tris"][k].AsInt;
 
-                            int[] triangles = new int[sjn["tris"].Count];
-                            for (int k = 0; k < sjn["tris"].Count; k++)
-                                triangles[k] = sjn["tris"][k].AsInt;
-
-                            mesh.vertices = vertices;
-                            mesh.triangles = triangles;
-                        }
-
-                        var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
-
-                        if (RTFile.FileExists(iconPath))
-                            shape.icon = SpriteHelper.LoadSprite(iconPath);
-
-                        StoredShapes2D[shape.Vector] = shape;
-
-                        Shapes2D[i].Add(shape);
+                        mesh.vertices = vertices;
+                        mesh.triangles = triangles;
                     }
 
-                    // 3D
-                    if (RTFile.FileExists(RTFile.CombinePaths(fullPath, $"bg_data{FileFormat.LSSH.Dot()}")))
-                    {
-                        var sjn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(fullPath, $"bg_data{FileFormat.LSSH.Dot()}")));
+                    var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
 
-                        Mesh mesh = null;
-                        if (i != 4 && i != 6 && sjn["verts"] != null && sjn["tris"] != null)
-                        {
-                            mesh = new Mesh();
-                            mesh.name = sjn["name"];
-                            Vector3[] vertices = new Vector3[sjn["verts"].Count];
-                            for (int k = 0; k < sjn["verts"].Count; k++)
-                                vertices[k] = new Vector3(sjn["verts"][k]["x"].AsFloat, sjn["verts"][k]["y"].AsFloat, sjn["verts"][k]["z"].AsFloat);
+                    if (sjn["icon"] != null)
+                        shape.icon = SpriteHelper.StringToSprite(sjn["icon"]);
 
-                            int[] triangles = new int[sjn["tris"].Count];
-                            for (int k = 0; k < sjn["tris"].Count; k++)
-                                triangles[k] = sjn["tris"][k].AsInt;
+                    StoredShapes2D[shape.Vector] = shape;
 
-                            mesh.vertices = vertices;
-                            mesh.triangles = triangles;
-                        }
-
-                        var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
-
-                        if (RTFile.FileExists(iconPath))
-                            shape.icon = SpriteHelper.LoadSprite(iconPath);
-
-                        StoredShapes3D[shape.Vector] = shape;
-
-                        Shapes3D[i].Add(shape);
-                    }
-                    else
-                    {
-                        var shape = new Shape("null", i, j, null, null, i == 4 ? Shape.Property.TextObject : i == 6 ? Shape.Property.ImageObject : Shape.Property.RegularObject);
-
-                        if (RTFile.FileExists(iconPath))
-                            shape.icon = SpriteHelper.LoadSprite(iconPath);
-
-                        StoredShapes3D[shape.Vector] = shape;
-
-                        Shapes3D[i].Add(shape);
-                    }
+                    shapeGroup.Add(shape);
                 }
+
+                Shapes2D.Add(shapeGroup);
+            }
+
+            jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"shapes_bg{FileFormat.JSON.Dot()}")));
+
+            for (int i = 0; i < jn["types"].Count; i++)
+            {
+                Sprite groupIcon = null;
+                if (jn["types"][i]["icon"] != null)
+                    groupIcon = SpriteHelper.StringToSprite(jn["types"][i]["icon"]);
+
+                var shapeGroup = new ShapeGroup(jn["types"][i]["name"], i, groupIcon);
+
+                for (int j = 0; j < jn["types"][i]["options"].Count; j++)
+                {
+                    var sjn = jn["types"][i]["options"][j];
+
+                    Mesh mesh = null;
+                    if (i != 4 && i != 6 && sjn["verts"] != null && sjn["tris"] != null)
+                    {
+                        mesh = new Mesh();
+                        mesh.name = sjn["name"];
+                        Vector3[] vertices = new Vector3[sjn["verts"].Count];
+                        for (int k = 0; k < sjn["verts"].Count; k++)
+                            vertices[k] = new Vector3(sjn["verts"][k]["x"].AsFloat, sjn["verts"][k]["y"].AsFloat, sjn["verts"][k]["z"].AsFloat);
+
+                        int[] triangles = new int[sjn["tris"].Count];
+                        for (int k = 0; k < sjn["tris"].Count; k++)
+                            triangles[k] = sjn["tris"][k].AsInt;
+
+                        mesh.vertices = vertices;
+                        mesh.triangles = triangles;
+                    }
+
+                    var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
+
+                    if (sjn["icon"] != null)
+                        shape.icon = SpriteHelper.StringToSprite(sjn["icon"]);
+
+                    StoredShapes3D[shape.Vector] = shape;
+
+                    shapeGroup.Add(shape);
+                }
+
+                Shapes3D.Add(shapeGroup);
             }
         }
 
@@ -279,24 +289,12 @@ namespace BetterLegacy.Core.Managers
         public Dictionary<Vector2Int, Shape> StoredShapes2D { get; set; }
         public Dictionary<Vector2Int, Shape> StoredShapes3D { get; set; }
 
-        public List<List<Shape>> Shapes2D { get; set; }
+        public List<ShapeGroup> Shapes2D { get; set; } = new List<ShapeGroup>();
 
-        public List<List<Shape>> Shapes3D { get; set; }
+        public List<ShapeGroup> Shapes3D { get; set; } = new List<ShapeGroup>();
 
-        public Shape GetShape(int shape, int shapeOption)
-        {
-            shape = Mathf.Clamp(shape, 0, Shapes2D.Count - 1);
-            shapeOption = Mathf.Clamp(shapeOption, 0, Shapes2D[shape].Count - 1);
+        public Shape GetShape(int shape, int shapeOption) => Shapes2D[Mathf.Clamp(shape, 0, Shapes2D.Count - 1)].GetShape(shapeOption);
 
-            return Shapes2D[shape][shapeOption];
-        }
-
-        public Shape GetShape3D(int shape, int shapeOption)
-        {
-            shape = Mathf.Clamp(shape, 0, Shapes3D.Count - 1);
-            shapeOption = Mathf.Clamp(shapeOption, 0, Shapes3D[shape].Count - 1);
-
-            return Shapes3D[shape][shapeOption];
-        }
+        public Shape GetShape3D(int shape, int shapeOption) => Shapes3D[Mathf.Clamp(shape, 0, Shapes3D.Count - 1)].GetShape(shapeOption);
     }
 }

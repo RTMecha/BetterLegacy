@@ -1803,10 +1803,12 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.Log($"Adding shapes...");
                 for (int i = 0; i < ShapeManager.inst.Shapes2D.Count; i++)
                 {
+                    var shapeType = (ShapeType)i;
+
                     var obj = shapeButtonPrefab.Duplicate(shape, (i + 1).ToString(), i);
                     if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
                     {
-                        image.sprite = ShapeManager.inst.Shapes2D[i][0].icon;
+                        image.sprite = ShapeManager.inst.Shapes2D[i].icon;
                         EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
                     }
 
@@ -1825,7 +1827,7 @@ namespace BetterLegacy.Editor.Managers
 
                     shapeOptionToggles.Add(new List<Toggle>());
 
-                    if (i != 4 && i != 6)
+                    if (shapeType != ShapeType.Text && shapeType != ShapeType.Image && shapeType != ShapeType.Polygon)
                     {
                         var so = shapeSettings.Find((i + 1).ToString());
                         if (!so)
@@ -1887,129 +1889,116 @@ namespace BetterLegacy.Editor.Managers
 
                         LastGameObject(shapeSettings.GetChild(i));
                     }
-                }
 
-                // Polygon
-                {
-                    var polygonSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"Shapes/polygon/icon{FileFormat.PNG.Dot()}"));
-                    int i = shape.childCount;
-                    var obj = shapeButtonPrefab.Duplicate(shape, (i + 1).ToString());
-                    if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
+                    if (shapeType == ShapeType.Polygon)
                     {
-                        image.sprite = polygonSprite;
-                        EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
-                    }
+                        var so = shapeSettings.Find((i + 1).ToString());
 
-                    var so = shapeSettings.Find((i + 1).ToString());
+                        if (!so)
+                        {
+                            so = shapeSettings.Find("6").gameObject.Duplicate(shapeSettings, (i + 1).ToString()).transform;
+                            CoreHelper.DestroyChildren(so);
+                        }
 
-                    if (!so)
-                    {
-                        so = shapeSettings.Find("6").gameObject.Duplicate(shapeSettings, (i + 1).ToString()).transform;
-                        CoreHelper.DestroyChildren(so);
-                    }
+                        var rect = so.AsRT();
+                        DestroyImmediate(so.GetComponent<ScrollRect>());
+                        DestroyImmediate(so.GetComponent<HorizontalLayoutGroup>());
 
-                    var rect = so.AsRT();
-                    DestroyImmediate(so.GetComponent<ScrollRect>());
-                    DestroyImmediate(so.GetComponent<HorizontalLayoutGroup>());
+                        so.gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.05f);
 
-                    so.gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.05f);
+                        var verticalLayoutGroup = so.gameObject.AddComponent<VerticalLayoutGroup>();
+                        verticalLayoutGroup.spacing = 4f;
 
-                    var verticalLayoutGroup = so.gameObject.AddComponent<VerticalLayoutGroup>();
-                    verticalLayoutGroup.spacing = 4f;
+                        // Polygon Settings
+                        {
+                            var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
+                            var sidesStorage = sides.GetComponent<InputFieldStorage>();
 
-                    var shapeToggle = obj.GetComponent<Toggle>();
-                    shapeToggles.Add(shapeToggle);
-                    EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
+                            Destroy(sidesStorage.addButton.gameObject);
+                            Destroy(sidesStorage.subButton.gameObject);
+                            Destroy(sidesStorage.leftGreaterButton.gameObject);
+                            Destroy(sidesStorage.middleButton.gameObject);
+                            Destroy(sidesStorage.rightGreaterButton.gameObject);
 
-                    // Polygon Settings
-                    {
-                        var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
-                        var sidesStorage = sides.GetComponent<InputFieldStorage>();
+                            EditorThemeManager.AddInputField(sidesStorage.inputField);
+                            EditorThemeManager.AddSelectable(sidesStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(sidesStorage.rightButton, ThemeGroup.Function_2, false);
 
-                        Destroy(sidesStorage.addButton.gameObject);
-                        Destroy(sidesStorage.subButton.gameObject);
-                        Destroy(sidesStorage.leftGreaterButton.gameObject);
-                        Destroy(sidesStorage.middleButton.gameObject);
-                        Destroy(sidesStorage.rightGreaterButton.gameObject);
+                            var sidesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(sides.transform, "label", 0);
+                            var sidesLabelText = sidesLabel.GetComponent<Text>();
+                            sidesLabelText.alignment = TextAnchor.MiddleLeft;
+                            sidesLabelText.text = "Sides";
+                            sidesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.AddLightText(sidesLabelText);
+                            var sidesLabelLayout = sidesLabel.AddComponent<LayoutElement>();
+                            sidesLabelLayout.minWidth = 100f;
 
-                        EditorThemeManager.AddInputField(sidesStorage.inputField);
-                        EditorThemeManager.AddSelectable(sidesStorage.leftButton, ThemeGroup.Function_2, false);
-                        EditorThemeManager.AddSelectable(sidesStorage.rightButton, ThemeGroup.Function_2, false);
+                            var roundness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "roundness");
+                            var roundnessStorage = roundness.GetComponent<InputFieldStorage>();
 
-                        var sidesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(sides.transform, "label", 0);
-                        var sidesLabelText = sidesLabel.GetComponent<Text>();
-                        sidesLabelText.alignment = TextAnchor.MiddleLeft;
-                        sidesLabelText.text = "Sides";
-                        sidesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.AddLightText(sidesLabelText);
-                        var sidesLabelLayout = sidesLabel.AddComponent<LayoutElement>();
-                        sidesLabelLayout.minWidth = 100f;
+                            Destroy(roundnessStorage.addButton.gameObject);
+                            Destroy(roundnessStorage.subButton.gameObject);
+                            Destroy(roundnessStorage.leftGreaterButton.gameObject);
+                            Destroy(roundnessStorage.middleButton.gameObject);
+                            Destroy(roundnessStorage.rightGreaterButton.gameObject);
 
-                        var roundness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "roundness");
-                        var roundnessStorage = roundness.GetComponent<InputFieldStorage>();
+                            EditorThemeManager.AddInputField(roundnessStorage.inputField);
+                            EditorThemeManager.AddSelectable(roundnessStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(roundnessStorage.rightButton, ThemeGroup.Function_2, false);
 
-                        Destroy(roundnessStorage.addButton.gameObject);
-                        Destroy(roundnessStorage.subButton.gameObject);
-                        Destroy(roundnessStorage.leftGreaterButton.gameObject);
-                        Destroy(roundnessStorage.middleButton.gameObject);
-                        Destroy(roundnessStorage.rightGreaterButton.gameObject);
+                            var roundnessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(roundness.transform, "label", 0);
+                            var roundnessLabelText = roundnessLabel.GetComponent<Text>();
+                            roundnessLabelText.alignment = TextAnchor.MiddleLeft;
+                            roundnessLabelText.text = "Roundness";
+                            roundnessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.AddLightText(roundnessLabelText);
+                            var roundnessLabelLayout = roundnessLabel.AddComponent<LayoutElement>();
+                            roundnessLabelLayout.minWidth = 100f;
 
-                        EditorThemeManager.AddInputField(roundnessStorage.inputField);
-                        EditorThemeManager.AddSelectable(roundnessStorage.leftButton, ThemeGroup.Function_2, false);
-                        EditorThemeManager.AddSelectable(roundnessStorage.rightButton, ThemeGroup.Function_2, false);
+                            var thickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness");
+                            var thicknessStorage = thickness.GetComponent<InputFieldStorage>();
 
-                        var roundnessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(roundness.transform, "label", 0);
-                        var roundnessLabelText = roundnessLabel.GetComponent<Text>();
-                        roundnessLabelText.alignment = TextAnchor.MiddleLeft;
-                        roundnessLabelText.text = "Roundness";
-                        roundnessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.AddLightText(roundnessLabelText);
-                        var roundnessLabelLayout = roundnessLabel.AddComponent<LayoutElement>();
-                        roundnessLabelLayout.minWidth = 100f;
+                            Destroy(thicknessStorage.addButton.gameObject);
+                            Destroy(thicknessStorage.subButton.gameObject);
+                            Destroy(thicknessStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessStorage.middleButton.gameObject);
+                            Destroy(thicknessStorage.rightGreaterButton.gameObject);
 
-                        var thickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness");
-                        var thicknessStorage = thickness.GetComponent<InputFieldStorage>();
+                            EditorThemeManager.AddInputField(thicknessStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessStorage.rightButton, ThemeGroup.Function_2, false);
 
-                        Destroy(thicknessStorage.addButton.gameObject);
-                        Destroy(thicknessStorage.subButton.gameObject);
-                        Destroy(thicknessStorage.leftGreaterButton.gameObject);
-                        Destroy(thicknessStorage.middleButton.gameObject);
-                        Destroy(thicknessStorage.rightGreaterButton.gameObject);
+                            var thicknessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thickness.transform, "label", 0);
+                            var thicknessLabelText = thicknessLabel.GetComponent<Text>();
+                            thicknessLabelText.alignment = TextAnchor.MiddleLeft;
+                            thicknessLabelText.text = "Thickness";
+                            thicknessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.AddLightText(thicknessLabelText);
+                            var thicknessLabelLayout = thicknessLabel.AddComponent<LayoutElement>();
+                            thicknessLabelLayout.minWidth = 100f;
 
-                        EditorThemeManager.AddInputField(thicknessStorage.inputField);
-                        EditorThemeManager.AddSelectable(thicknessStorage.leftButton, ThemeGroup.Function_2, false);
-                        EditorThemeManager.AddSelectable(thicknessStorage.rightButton, ThemeGroup.Function_2, false);
+                            var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
+                            var slicesStorage = slices.GetComponent<InputFieldStorage>();
 
-                        var thicknessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thickness.transform, "label", 0);
-                        var thicknessLabelText = thicknessLabel.GetComponent<Text>();
-                        thicknessLabelText.alignment = TextAnchor.MiddleLeft;
-                        thicknessLabelText.text = "Thickness";
-                        thicknessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.AddLightText(thicknessLabelText);
-                        var thicknessLabelLayout = thicknessLabel.AddComponent<LayoutElement>();
-                        thicknessLabelLayout.minWidth = 100f;
+                            Destroy(slicesStorage.addButton.gameObject);
+                            Destroy(slicesStorage.subButton.gameObject);
+                            Destroy(slicesStorage.leftGreaterButton.gameObject);
+                            Destroy(slicesStorage.middleButton.gameObject);
+                            Destroy(slicesStorage.rightGreaterButton.gameObject);
 
-                        var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
-                        var slicesStorage = slices.GetComponent<InputFieldStorage>();
+                            EditorThemeManager.AddInputField(slicesStorage.inputField);
+                            EditorThemeManager.AddSelectable(slicesStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(slicesStorage.rightButton, ThemeGroup.Function_2, false);
 
-                        Destroy(slicesStorage.addButton.gameObject);
-                        Destroy(slicesStorage.subButton.gameObject);
-                        Destroy(slicesStorage.leftGreaterButton.gameObject);
-                        Destroy(slicesStorage.middleButton.gameObject);
-                        Destroy(slicesStorage.rightGreaterButton.gameObject);
-
-                        EditorThemeManager.AddInputField(slicesStorage.inputField);
-                        EditorThemeManager.AddSelectable(slicesStorage.leftButton, ThemeGroup.Function_2, false);
-                        EditorThemeManager.AddSelectable(slicesStorage.rightButton, ThemeGroup.Function_2, false);
-
-                        var slicesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(slices.transform, "label", 0);
-                        var slicesLabelText = slicesLabel.GetComponent<Text>();
-                        slicesLabelText.alignment = TextAnchor.MiddleLeft;
-                        slicesLabelText.text = "Slices";
-                        slicesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.AddLightText(slicesLabelText);
-                        var slicesLabelLayout = slicesLabel.AddComponent<LayoutElement>();
-                        slicesLabelLayout.minWidth = 100f;
+                            var slicesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(slices.transform, "label", 0);
+                            var slicesLabelText = slicesLabel.GetComponent<Text>();
+                            slicesLabelText.alignment = TextAnchor.MiddleLeft;
+                            slicesLabelText.text = "Slices";
+                            slicesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.AddLightText(slicesLabelText);
+                            var slicesLabelLayout = slicesLabel.AddComponent<LayoutElement>();
+                            slicesLabelLayout.minWidth = 100f;
+                        }
                     }
                 }
 
