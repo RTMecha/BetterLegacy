@@ -105,6 +105,11 @@ namespace BetterLegacy.Core.Helpers
         public static bool Finished => GameManager.inst && GameManager.inst.gameState == GameManager.State.Finish;
 
         /// <summary>
+        /// The normalized time for relative animation consistency.
+        /// </summary>
+        public static float TimeFrame => (UnityEngine.Time.deltaTime) * 300f;
+
+        /// <summary>
         /// Takes the current pitch and always makes sure it's a valid value to be used for DelayTracker components.
         /// </summary>
         public static float ForwardPitch

@@ -4071,7 +4071,9 @@ namespace BetterLegacy.Core.Helpers
 
                 Vector3 vector = modifier.reference.GetTransformOffset(type);
 
-                var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+                var setVector = new Vector3(x, y, z) * (modifier.constant ? CoreHelper.TimeFrame : 1f);
+                if (relative)
+                    setVector += vector;
 
                 if (!modifier.constant)
                 {
@@ -4114,7 +4116,9 @@ namespace BetterLegacy.Core.Helpers
                 {
                     Vector3 vector = bm.GetTransformOffset(type);
 
-                    var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+                    var setVector = new Vector3(x, y, z) * (modifier.constant ? CoreHelper.TimeFrame : 1f);
+                    if (relative)
+                        setVector += vector;
 
                     if (!modifier.constant)
                     {
@@ -4163,7 +4167,9 @@ namespace BetterLegacy.Core.Helpers
 
                 Vector3 vector = modifier.reference.GetTransformOffset(type);
 
-                var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+                var setVector = new Vector3(x, y, z) * (modifier.constant ? CoreHelper.TimeFrame : 1f);
+                if (relative)
+                    setVector += vector;
 
                 if (!modifier.constant)
                 {
@@ -4228,7 +4234,9 @@ namespace BetterLegacy.Core.Helpers
                 {
                     Vector3 vector = bm.GetTransformOffset(type);
 
-                    var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+                    var setVector = new Vector3(x, y, z) * (modifier.constant ? CoreHelper.TimeFrame : 1f);
+                    if (relative)
+                        setVector += vector;
 
                     if (!modifier.constant)
                     {
@@ -4298,7 +4306,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                modifier.reference.SetTransform(type, setVector);
+                modifier.reference.SetTransform(type, setVector * CoreHelper.TimeFrame);
             },
             "animateObjectMathOther" => modifier =>
             {
@@ -4343,7 +4351,7 @@ namespace BetterLegacy.Core.Helpers
                         continue;
                     }
 
-                    bm.SetTransform(type, setVector);
+                    bm.SetTransform(type, setVector * CoreHelper.TimeFrame);
                 }
             },
             "animateSignalMath" => modifier =>
@@ -4405,7 +4413,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                modifier.reference.SetTransform(type, setVector);
+                modifier.reference.SetTransform(type, setVector * CoreHelper.TimeFrame);
             },
             "animateSignalMathOther" => modifier =>
             {
@@ -4470,7 +4478,7 @@ namespace BetterLegacy.Core.Helpers
                         continue;
                     }
 
-                    modifier.reference.SetTransform(type, setVector);
+                    modifier.reference.SetTransform(type, setVector * CoreHelper.TimeFrame);
                 }
             },
 
@@ -4487,7 +4495,7 @@ namespace BetterLegacy.Core.Helpers
                     modifier.ResultTimer = Time.time;
                 }
                 else
-                    modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), RTMath.Recursive(Time.time - modifier.ResultTimer, curve) * time);
+                    modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve) * time) * CoreHelper.TimeFrame);
 
                 var vector = (Vector2)modifier.Result;
 
@@ -4513,7 +4521,7 @@ namespace BetterLegacy.Core.Helpers
                     modifier.ResultTimer = Time.time;
                 }
                 else
-                    modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), RTMath.Recursive(Time.time - modifier.ResultTimer, curve) * time);
+                    modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve) * time) * CoreHelper.TimeFrame);
 
                 var vector = (Vector2)modifier.Result;
 
@@ -6229,7 +6237,9 @@ namespace BetterLegacy.Core.Helpers
                                 _ => modifier.reference.rotationOffset,
                             };
 
-                            var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+                            var setVector = new Vector3(x, y, z) * (modifier.constant ? CoreHelper.TimeFrame : 1f);
+                            if (relative)
+                                setVector += vector;
 
                             if (!modifier.constant)
                             {
@@ -6241,7 +6251,7 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         new Vector3Keyframe(0f, vector, Ease.Linear),
                                         new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                    }, vector3 => { modifier.reference.SetTransform(type, vector3); }),
+                                    }, vector3 => modifier.reference.SetTransform(type, vector3)),
                                 };
                                 animation.onComplete = () =>
                                 {
@@ -6281,7 +6291,9 @@ namespace BetterLegacy.Core.Helpers
                                     _ => bg.rotationOffset,
                                 };
 
-                                var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+                                var setVector = new Vector3(x, y, z) * (modifier.constant ? CoreHelper.TimeFrame : 1f);
+                                if (relative)
+                                    setVector += vector;
 
                                 if (!modifier.constant)
                                 {
@@ -6293,7 +6305,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             new Vector3Keyframe(0f, vector, Ease.Linear),
                                             new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                        }, vector3 => { bg.SetTransform(type, vector3); }),
+                                        }, vector3 => bg.SetTransform(type, vector3)),
                                     };
                                     animation.onComplete = () =>
                                     {
