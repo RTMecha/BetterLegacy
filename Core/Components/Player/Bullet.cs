@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 
+using BetterLegacy.Core.Helpers;
+
 namespace BetterLegacy.Core.Components.Player
 {
     /// <summary>
@@ -11,6 +13,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             if (!player)
                 return;
+
             if (player.lastMovement.x > 0f)
                 lastMove = true;
             if (player.lastMovement.x < 0f)
@@ -22,15 +25,10 @@ namespace BetterLegacy.Core.Components.Player
             if (!player)
                 return;
 
-            if (player.rotateMode != RTPlayer.RotateMode.FlipX)
-            {
-                transform.position += transform.right * speed * 0.1f * AudioManager.inst.pitch;
-                return;
-            }
-            if (lastMove)
-                transform.position += transform.right * speed * 0.1f * AudioManager.inst.pitch;
+            if (player.rotateMode != RTPlayer.RotateMode.FlipX || lastMove)
+                transform.position += transform.right * speed * 0.1f * AudioManager.inst.pitch * CoreHelper.TimeFrame;
             else
-                transform.position -= transform.right * speed * 0.1f * AudioManager.inst.pitch;
+                transform.position -= transform.right * speed * 0.1f * AudioManager.inst.pitch * CoreHelper.TimeFrame;
         }
 
         /// <summary>
