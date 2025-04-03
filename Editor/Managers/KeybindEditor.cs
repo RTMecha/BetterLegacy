@@ -1503,7 +1503,7 @@ namespace BetterLegacy.Editor.Managers
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
-                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
+                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
                 AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
             }
         }
@@ -1521,7 +1521,7 @@ namespace BetterLegacy.Editor.Managers
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
-                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
+                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
                 AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
             }
         }
