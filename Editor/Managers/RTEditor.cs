@@ -1523,9 +1523,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapsFolder">Beatmaps folder that contains the editor, prefab, etc folders.</param>
         public void SetBasePath(string basePath, string beatmapsFolder = "beatmaps")
         {
-            if (!string.IsNullOrEmpty(basePath))
-                BasePath = basePath;
-
+            BasePath = RTFile.DirectoryExists(basePath) ? basePath : RTFile.ApplicationDirectory;
             this.beatmapsFolder = beatmapsFolder;
 
             editorPathField.text = "editor";
@@ -1742,7 +1740,7 @@ namespace BetterLegacy.Editor.Managers
             UpdateOrderDropdown();
             UpdateAscendToggle();
 
-            BasePath = !string.IsNullOrEmpty(jn["paths"]["base"]) ? jn["paths"]["base"] : RTFile.ApplicationDirectory;
+            BasePath = RTFile.DirectoryExists(jn["paths"]["base"]) ? jn["paths"]["base"] : RTFile.ApplicationDirectory;
             beatmapsFolder = !string.IsNullOrEmpty(jn["paths"]["beatmaps"]) ? jn["paths"]["beatmaps"] : "beatmaps";
 
             if (!string.IsNullOrEmpty(jn["paths"]["editor"]))
