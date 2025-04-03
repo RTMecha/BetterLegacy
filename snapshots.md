@@ -9,6 +9,7 @@
   - Dragging an audio file while the New Level Creator popup is open will set the audio path for the new level.
   - Dragging an audio file into a loaded editor level will create an object with a playSound modifier.
   - Dragging a MP4 file into a loaded editor level will set it as the video BG.
+- Internally, a custom "base path" can be set in the editor. This means you can have Project Arrhythmia open on one harddrive, while another harddrive has the beatmaps folder. There is no UI to set this yet.
 
 ## Changes
 - Some JSON values have been changed. This means BetterLegacy is no longer compatible with vanilla Legacy. (why would you use that outdated version anyways)
