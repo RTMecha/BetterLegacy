@@ -12,6 +12,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Player
 {
@@ -89,7 +90,7 @@ namespace BetterLegacy.Core.Data.Player
             foreach (var playerModel in PlayerModel.DefaultModels)
                 externalPlayerModels[playerModel.basePart.id] = playerModel;
 
-            var fullPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH);
+            var fullPath = CoreHelper.InEditor ? RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath) : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH);
             RTFile.CreateDirectory(fullPath);
 
             var files = Directory.GetFiles(fullPath, FileFormat.LSPL.ToPattern());

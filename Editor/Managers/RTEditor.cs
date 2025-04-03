@@ -1477,6 +1477,36 @@ namespace BetterLegacy.Editor.Managers
         }
         string prefabPath = "prefabs";
 
+        /// <summary>
+        /// The path prefab types should load from.
+        /// </summary>
+        public string PrefabTypePath
+        {
+            get => prefabTypePath;
+            set => prefabTypePath = value;
+        }
+        string prefabTypePath = "prefabtypes";
+
+        /// <summary>
+        /// The path player models should load from.
+        /// </summary>
+        public string PlayersPath
+        {
+            get => playersPath;
+            set => playersPath = value;
+        }
+        string playersPath = "players";
+
+        /// <summary>
+        /// The path planners should load from.
+        /// </summary>
+        public string PlannersPath
+        {
+            get => plannersPath;
+            set => plannersPath = value;
+        }
+        string plannersPath = "planners";
+
         #endregion
 
         #region Functions
@@ -1504,6 +1534,10 @@ namespace BetterLegacy.Editor.Managers
             UpdateThemePath(false);
             prefabPathField.text = "prefabs";
             UpdatePrefabPath(false);
+
+            CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabTypes());
+            PlayerEditor.inst.Reload();
+            ProjectPlanner.inst.Load();
 
             SaveGlobalSettings();
         }
@@ -1717,6 +1751,12 @@ namespace BetterLegacy.Editor.Managers
                 ThemePath = jn["paths"]["themes"];
             if (!string.IsNullOrEmpty(jn["paths"]["prefabs"]))
                 PrefabPath = jn["paths"]["prefabs"];
+            if (!string.IsNullOrEmpty(jn["paths"]["prefab_types"]))
+                PrefabTypePath = jn["paths"]["prefab_types"];
+            if (!string.IsNullOrEmpty(jn["paths"]["players"]))
+                PlayersPath = jn["paths"]["players"];
+            if (!string.IsNullOrEmpty(jn["paths"]["planners"]))
+                PlannersPath = jn["paths"]["planners"];
 
             RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, EditorPath));
             RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, ThemePath));
@@ -1771,6 +1811,9 @@ namespace BetterLegacy.Editor.Managers
             jn["paths"]["editor"] = EditorPath;
             jn["paths"]["themes"] = ThemePath;
             jn["paths"]["prefabs"] = PrefabPath;
+            jn["paths"]["prefab_types"] = PrefabTypePath;
+            jn["paths"]["players"] = PlayersPath;
+            jn["paths"]["planners"] = PlannersPath;
 
             SetWatcherPaths();
 

@@ -1835,7 +1835,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SavePrefabTypes()
         {
-            var prefabTypesPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/prefabtypes");
+            var prefabTypesPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath);
             foreach (var prefabType in prefabTypes.Where(x => !x.isDefault))
             {
                 var jn = prefabType.ToJSON();
@@ -1858,7 +1858,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < defaultPrefabTypesJN["prefab_types"].Count; i++)
                 prefabTypes.Add(PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i], true));
 
-            var prefabTypesPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/prefabtypes");
+            var prefabTypesPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath);
             RTFile.CreateDirectory(prefabTypesPath);
 
             var files = Directory.GetFiles(prefabTypesPath, FileFormat.LSPT.ToPattern(), SearchOption.TopDirectoryOnly);

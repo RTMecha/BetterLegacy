@@ -147,11 +147,10 @@ namespace BetterLegacy.Editor.Managers
                 addNewItemStorage.button.onClick.AddListener(() =>
                 {
                     CoreHelper.Log($"Create new {tabNames[CurrentTab]}");
-                    var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+                    var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
                     switch (CurrentTab)
                     {
-                        case 0:
-                            {
+                        case 0: {
                                 var list = documents;
 
                                 var document = new DocumentPlanner();
@@ -163,8 +162,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // Document
-                        case 1:
-                            {
+                        case 1: {
                                 var list = todos;
 
                                 var todo = new TODOPlanner();
@@ -176,8 +174,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // TODO
-                        case 2:
-                            {
+                        case 2: {
                                 if (string.IsNullOrEmpty(Path.GetFileName(path)))
                                     return;
 
@@ -215,8 +212,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // Character
-                        case 3:
-                            {
+                        case 3: {
                                 var timeline = new TimelinePlanner();
                                 timeline.Name = "Classic Arrhythmia";
                                 timeline.Levels.Add(new TimelinePlanner.Event
@@ -239,8 +235,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // Timeline
-                        case 4:
-                            {
+                        case 4: {
                                 var schedule = new SchedulePlanner();
                                 schedule.Date = DateTime.Now.AddDays(1).ToString("g");
                                 schedule.Description = "Tomorrow!";
@@ -250,8 +245,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // Schedule
-                        case 5:
-                            {
+                        case 5: {
                                 var note = new NotePlanner();
                                 note.Active = true;
                                 note.Name = "New Note";
@@ -264,8 +258,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // Note
-                        case 6:
-                            {
+                        case 6: {
                                 var ost = new OSTPlanner();
                                 ost.Name = "Kaixo - Fragments";
                                 ost.Path = "Set this path to wherever you have a song located.";
@@ -280,8 +273,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             } // OST
-                        default:
-                            {
+                        default: {
                                 CoreHelper.LogWarning($"How did you do that...?");
                                 break;
                             }
@@ -1846,8 +1838,6 @@ namespace BetterLegacy.Editor.Managers
         public List<NotePlanner> notes = new List<NotePlanner>();
         public List<OSTPlanner> osts = new List<OSTPlanner>();
 
-        public string PlannersPath { get; set; } = "planners";
-
         public GameObject timelineButtonPrefab;
 
         public GameObject timelineAddPrefab;
@@ -1914,38 +1904,31 @@ namespace BetterLegacy.Editor.Managers
         {
             switch (item.PlannerType)
             {
-                case PlannerBase.Type.Document:
-                    {
+                case PlannerBase.Type.Document: {
                         documents.Add(item as DocumentPlanner);
                         break;
                     }
-                case PlannerBase.Type.TODO:
-                    {
+                case PlannerBase.Type.TODO: {
                         todos.Add(item as TODOPlanner);
                         break;
                     }
-                case PlannerBase.Type.Character:
-                    {
+                case PlannerBase.Type.Character: {
                         characters.Add(item as CharacterPlanner);
                         break;
                     }
-                case PlannerBase.Type.Timeline:
-                    {
+                case PlannerBase.Type.Timeline: {
                         timelines.Add(item as TimelinePlanner);
                         break;
                     }
-                case PlannerBase.Type.Schedule:
-                    {
+                case PlannerBase.Type.Schedule: {
                         schedules.Add(item as SchedulePlanner);
                         break;
                     }
-                case PlannerBase.Type.Note:
-                    {
+                case PlannerBase.Type.Note: {
                         notes.Add(item as NotePlanner);
                         break;
                     }
-                case PlannerBase.Type.OST:
-                    {
+                case PlannerBase.Type.OST: {
                         osts.Add(item as OSTPlanner);
                         break;
                     }
@@ -1969,7 +1952,7 @@ namespace BetterLegacy.Editor.Managers
             ClearPlanners();
             LSHelpers.DeleteChildren(content);
 
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)))
                 return;
 
@@ -1995,7 +1978,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveDocuments()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
@@ -2015,7 +1998,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void LoadDocuments()
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"documents{FileFormat.LSN.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"documents{FileFormat.LSN.Dot()}");
             if (!RTFile.FileExists(path))
                 return;
 
@@ -2033,7 +2016,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveTODO()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
@@ -2052,7 +2035,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void LoadTODO()
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"todo{FileFormat.LSN.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"todo{FileFormat.LSN.Dot()}");
             if (!RTFile.FileExists(path))
                 return;
 
@@ -2069,7 +2052,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveTimelines()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
@@ -2096,7 +2079,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void LoadTimelines()
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"timelines{FileFormat.LSN.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"timelines{FileFormat.LSN.Dot()}");
             if (!RTFile.FileExists(path))
                 return;
 
@@ -2125,7 +2108,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveSchedules()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
@@ -2147,7 +2130,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void LoadSchedules()
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"schedules{FileFormat.LSN.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"schedules{FileFormat.LSN.Dot()}");
             if (!RTFile.FileExists(path))
                 return;
 
@@ -2170,7 +2153,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveNotes()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
@@ -2199,7 +2182,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void LoadNotes()
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"notes{FileFormat.LSN.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"notes{FileFormat.LSN.Dot()}");
             if (!RTFile.FileExists(path))
                 return;
 
@@ -2228,7 +2211,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveOST()
         {
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
@@ -2252,7 +2235,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void LoadOST()
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"beatmaps/{PlannersPath}", $"ost{FileFormat.LSN.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"ost{FileFormat.LSN.Dot()}");
             if (!RTFile.FileExists(path))
                 return;
 
