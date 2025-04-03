@@ -70,6 +70,24 @@ namespace BetterLegacy.Editor.Managers
         public Vector2 cachedTimelinePos;
 
         /// <summary>
+        /// Renders the timeline.
+        /// </summary>
+        public void RenderTimeline()
+        {
+            if (layerType == LayerType.Events)
+                EventEditor.inst.RenderEventObjects();
+            else
+                RenderTimelineObjectsPositions();
+
+            CheckpointEditor.inst.RenderCheckpoints();
+            RTMarkerEditor.inst.RenderMarkers();
+
+            UpdateTimelineSizes();
+
+            SetTimelineGridSize();
+        }
+
+        /// <summary>
         /// Sets the main timeline position.
         /// </summary>
         /// <param name="position">The position to set the timeline scroll.</param>
@@ -97,7 +115,7 @@ namespace BetterLegacy.Editor.Managers
                     LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
 
                 if (render)
-                    EditorManager.inst.RenderTimeline();
+                    RenderTimeline();
 
                 CoroutineHelper.StartCoroutine(ISetTimelinePosition(position));
 
@@ -191,6 +209,26 @@ namespace BetterLegacy.Editor.Managers
                 scrollRects[i].movementType = movementType;
             EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>().movementType = movementType;
             EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>().movementType = movementType;
+        }
+
+        /// <summary>
+        /// Updates the timeline size.
+        /// </summary>
+        public void UpdateTimelineSizes()
+        {
+            if (AudioManager.inst.CurrentAudioSource.clip)
+                SetTimelineSizes(AudioManager.inst.CurrentAudioSource.clip.length * EditorManager.inst.Zoom);
+        }
+
+        /// <summary>
+        /// Sets the timeline size.
+        /// </summary>
+        /// <param name="size">Size to set.</param>
+        public void SetTimelineSizes(float size)
+        {
+            EditorManager.inst.markerTimeline.transform.AsRT().SetSizeDeltaX(size);
+            EditorManager.inst.timeline.transform.AsRT().SetSizeDeltaX(size);
+            EditorManager.inst.timelineWaveformOverlay.transform.AsRT().SetSizeDeltaX(size);
         }
 
         #endregion

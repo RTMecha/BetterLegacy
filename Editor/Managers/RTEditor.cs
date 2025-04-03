@@ -4736,7 +4736,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Updating timeline...");
             InfoPopup.SetInfo($"Updating Timeline for [ {name} ]");
-            EditorManager.inst.UpdateTimelineSizes();
+            EditorTimeline.inst.UpdateTimelineSizes();
             GameManager.inst.UpdateTimeline();
             RTMetaDataEditor.inst.RenderEditor();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
@@ -4807,7 +4807,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Load Settings like timeline position, editor layer, bpm active, etc
             LoadSettings();
-            EditorManager.inst.RenderTimeline();
+            EditorTimeline.inst.RenderTimeline();
             EditorTimeline.inst.RenderBins();
 
             if (EditorConfig.Instance.LevelPausesOnStart.Value)

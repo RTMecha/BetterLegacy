@@ -328,8 +328,8 @@ namespace BetterLegacy.Patchers
             {
                 CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.AssignTimelineTexture)}");
                 CoroutineHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
-                CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.UpdateTimelineSizes)}");
-                Instance.UpdateTimelineSizes();
+                CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.UpdateTimelineSizes)}");
+                EditorTimeline.inst.UpdateTimelineSizes();
                 Instance.firstOpened = true;
 
                 CoreHelper.Log($"EDITOR START -> {nameof(RTEventEditor.CreateEventObjects)}");
@@ -895,18 +895,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderTimelinePrefix()
         {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                EventEditor.inst.RenderEventObjects();
-            else
-                EditorTimeline.inst.RenderTimelineObjectsPositions();
-
-            CheckpointEditor.inst.RenderCheckpoints();
-            RTMarkerEditor.inst.RenderMarkers();
-
-            Instance.UpdateTimelineSizes();
-
-            EditorTimeline.inst.SetTimelineGridSize();
-
+            EditorTimeline.inst.RenderTimeline();
             return false;
         }
 
@@ -914,14 +903,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateTimelineSizesPrefix()
         {
-            if (!AudioManager.inst.CurrentAudioSource.clip)
-                return false;
-
-            var size = AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom;
-            Instance.markerTimeline.transform.AsRT().SetSizeDeltaX(size);
-            Instance.timeline.transform.AsRT().SetSizeDeltaX(size);
-            Instance.timelineWaveformOverlay.transform.AsRT().SetSizeDeltaX(size);
-
+            EditorTimeline.inst.UpdateTimelineSizes();
             return false;
         }
 
@@ -1205,7 +1187,7 @@ namespace BetterLegacy.Patchers
         static bool SetMainTimelineZoomPrefix(float __0, bool __1 = true)
         {
             if (__1)
-                Instance.RenderTimeline();
+                EditorTimeline.inst.RenderTimeline();
 
             Instance.timelineScrollRectBar.value = (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? EditorTimeline.inst.GetTimelineTime(false) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
             Debug.LogFormat("{0}Set Timeline Zoom -> [{1}]", new object[] { Instance.className, Instance.Zoom });
