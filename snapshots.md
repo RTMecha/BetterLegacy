@@ -19,7 +19,7 @@
 - Shapes are now loaded from a shapes.json file in the Assets folder.
 
 ## Fixes
-- Fixed animateObject modifiers being inconsistent with different framerates.
+- Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
 - Fixed default keybinds for First and Last Keyframe selectors being incorrect.
 
 ------------------------------------------------------------------------------------------
