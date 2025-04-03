@@ -165,9 +165,9 @@ namespace BetterLegacy.Editor.Managers
             int themePanelIndex = 0;
             try
             {
-                Dialog.themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.themeListPath) != RTFile.ApplicationDirectory + "beatmaps");
+                Dialog.themeUpFolderButton.SetActive(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath)) != RTEditor.inst.BeatmapsPath);
 
-                foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + RTEditor.themeListPath, "*", SearchOption.TopDirectoryOnly))
+                foreach (var directory in Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), "*", SearchOption.TopDirectoryOnly))
                 {
                     SetupThemePanel(directory, true, themePanelIndex);
                     themePanelIndex++;
@@ -185,7 +185,7 @@ namespace BetterLegacy.Editor.Managers
                 themePanelIndex++;
             }
 
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + RTEditor.themeListPath, FileFormat.LST.ToPattern());
+            var files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), FileFormat.LST.ToPattern());
             foreach (var file in files)
             {
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
@@ -227,13 +227,13 @@ namespace BetterLegacy.Editor.Managers
             var copiedThemesFolder = RTFile.GetDirectory(copiedThemePath);
             CoreHelper.Log($"Copied Folder: {copiedThemesFolder}");
 
-            if (copiedThemesFolder == $"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}")
+            if (copiedThemesFolder == RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath))
             {
                 EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);
                 return;
             }
 
-            var destination = copiedThemePath.Replace(copiedThemesFolder, $"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}");
+            var destination = copiedThemePath.Replace(copiedThemesFolder, RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath));
             CoreHelper.Log($"Destination: {destination}");
             if (RTFile.FileExists(destination))
             {
@@ -807,7 +807,7 @@ namespace BetterLegacy.Editor.Managers
 
             var str = config.ThemeSavesIndents.Value ? theme.ToJSON().ToString(3) : theme.ToJSON().ToString();
 
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.themeListSlash, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
 
             theme.filePath = path;
 

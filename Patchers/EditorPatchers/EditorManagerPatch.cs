@@ -588,7 +588,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadLevelPrefix(ref IEnumerator __result, string __0)
         {
-            __result = RTEditor.inst.LoadLevel(new Level($"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{__0}"));
+            __result = RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, __0)));
             return false;
         }
 
@@ -790,25 +790,20 @@ namespace BetterLegacy.Patchers
         {
             if (Instance.hasLoadedLevel)
             {
-                string str = RTFile.ApplicationDirectory + RTEditor.editorListSlash + __0;
-                if (!RTFile.DirectoryExists(str))
-                    Directory.CreateDirectory(str);
+                string str = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, __0);
+                RTFile.CreateDirectory(str);
 
-                var files = Directory.GetFiles(RTFile.ApplicationDirectory + RTEditor.editorListSlash + GameManager.inst.levelName);
+                var files = Directory.GetFiles(RTEditor.inst.CurrentLevel.path);
 
                 foreach (var file in files)
                 {
-                    if (!RTFile.DirectoryExists(Path.GetDirectoryName(file)))
-                        Directory.CreateDirectory(Path.GetDirectoryName(file));
+                    RTFile.CreateDirectory(Path.GetDirectoryName(file));
 
-                    string saveTo = file.Replace("\\", "/").Replace(RTFile.ApplicationDirectory + RTEditor.editorListSlash + GameManager.inst.levelName, str);
-                    File.Copy(file, saveTo, RTFile.FileExists(saveTo));
+                    string saveTo = file.Replace("\\", "/").Replace(RTEditor.inst.CurrentLevel.path, str);
+                    RTFile.CopyFile(file, saveTo);
                 }
 
-                GameData.Current.SaveData(str + "/level.lsb", () =>
-                {
-                    Instance.DisplayNotification($"Saved beatmap to {__0}", 3f, EditorManager.NotificationType.Success);
-                });
+                GameData.Current.SaveData(RTFile.CombinePaths(str, Level.LEVEL_LSB), () => Instance.DisplayNotification($"Saved beatmap to {__0}", 3f, EditorManager.NotificationType.Success));
                 return false;
             }
             Instance.DisplayNotification("Beatmap can't be saved as until you load a level.", 3f, EditorManager.NotificationType.Error);
@@ -886,7 +881,7 @@ namespace BetterLegacy.Patchers
             Debug.Log("Selected file: " + jpgFile);
             if (!string.IsNullOrEmpty(jpgFile))
             {
-                string jpgFileLocation = RTFile.ApplicationDirectory + RTEditor.editorListSlash + Instance.currentLoadedLevel + "/level.jpg";
+                string jpgFileLocation = RTEditor.inst.CurrentLevel.GetFile(Level.LEVEL_JPG);
                 CoroutineHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
                 {
                     RTFile.CopyFile(jpgFile, jpgFileLocation);
@@ -1002,12 +997,12 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenLevelFolder()
         {
-            if (RTFile.DirectoryExists(RTFile.BasePath))
+            if (RTEditor.inst.CurrentLevel && RTFile.DirectoryExists(RTEditor.inst.CurrentLevel.path))
             {
-                RTFile.OpenInFileBrowser.Open(RTFile.BasePath);
+                RTFile.OpenInFileBrowser.Open(RTEditor.inst.CurrentLevel.path);
                 return false;
             }
-            RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.editorListPath));
+            RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath));
             return false;
         }
 

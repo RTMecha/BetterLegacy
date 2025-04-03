@@ -2861,7 +2861,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var customObject = (PlayerModel.CustomObject)ui.Reference;
 
-            var editorPath = RTFile.ApplicationDirectory + RTEditor.editorListSlash + EditorManager.inst.currentLoadedLevel;
+            var editorPath = RTEditor.inst.CurrentLevel.path;
             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
             CoreHelper.Log($"Selected file: {jpgFile}");
             if (!string.IsNullOrEmpty(jpgFile))

@@ -161,7 +161,7 @@ namespace BetterLegacy.Editor.Data
                             RTEditor.inst.prefabPathField.text = path.Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
                             RTEditor.inst.UpdatePrefabPath(false);
                         }),
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                         new ButtonFunction(true),
                         new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
                         new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
@@ -612,7 +612,7 @@ namespace BetterLegacy.Editor.Data
                                         RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                                     }),
                                     new ButtonFunction(true),
-                                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                                     new ButtonFunction("Create Prefab", () =>
                                     {
                                         PrefabEditor.inst.OpenDialog();

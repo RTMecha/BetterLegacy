@@ -107,7 +107,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create folder", () =>
                         {
-                            RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
+                            RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
                         }),
                         new ButtonFunction("Create Prefab", () =>
                         {
@@ -2121,7 +2121,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Create prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
@@ -2182,15 +2182,15 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Paste Prefab", PastePrefab));
 
                         return;
                     }
 
-                    if (RTEditor.inst.prefabPathField.text == RTEditor.PrefabPath)
+                    if (RTEditor.inst.prefabPathField.text == RTEditor.inst.PrefabPath)
                     {
-                        RTEditor.inst.prefabPathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.prefabListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        RTEditor.inst.prefabPathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
                         RTEditor.inst.UpdatePrefabPath(false);
                     }
                 };
@@ -2199,9 +2199,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
-            prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.prefabListPath) != RTFile.ApplicationDirectory + "beatmaps");
+            prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)) != RTEditor.inst.BeatmapsPath);
 
-            var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + RTEditor.prefabListPath, "*", SearchOption.TopDirectoryOnly);
+            var directories = Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), "*", SearchOption.TopDirectoryOnly);
 
             for (int i = 0; i < directories.Length; i++)
             {
@@ -2211,7 +2211,7 @@ namespace BetterLegacy.Editor.Managers
                 PrefabPanels.Add(prefabPanel);
             }
 
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + RTEditor.prefabListPath, FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
 
             for (int i = 0; i < files.Length; i++)
             {
@@ -2502,7 +2502,7 @@ namespace BetterLegacy.Editor.Managers
 
                 RTFile.DeleteFile(prefab.filePath);
 
-                var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
+                var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
                 prefab.filePath = file;
                 RTFile.WriteToFile(file, prefab.ToJSON().ToString());
 
@@ -2571,7 +2571,7 @@ namespace BetterLegacy.Editor.Managers
 
             prefab.beatmapObjects.ForEach(x => x.RemovePrefabReference());
             int count = PrefabPanels.Count;
-            var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
+            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
             prefab.filePath = file;
 
             var prefabPanel = new PrefabPanel(PrefabDialog.External, count);
@@ -2917,7 +2917,7 @@ namespace BetterLegacy.Editor.Managers
             var copiedPrefabsFolder = RTFile.GetDirectory(copiedPrefabPath);
             CoreHelper.Log($"Copied Folder: {copiedPrefabsFolder}");
 
-            var prefabsPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.prefabListPath);
+            var prefabsPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath);
             if (copiedPrefabsFolder == prefabsPath)
             {
                 EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);

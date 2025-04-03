@@ -278,10 +278,12 @@ namespace BetterLegacy.Editor.Managers
             else if (!save.Contains("/" + levelFile))
                 save += "/" + levelFile;
 
-            if (!save.Contains(RTFile.ApplicationDirectory) && !save.Contains(RTEditor.editorListSlash))
-                save = RTFile.ApplicationDirectory + RTEditor.editorListSlash + save;
-            else if (!save.Contains(RTFile.ApplicationDirectory))
-                save = RTFile.ApplicationDirectory + save;
+            if (!save.Contains(RTEditor.inst.BeatmapsPath) && !save.Contains(RTEditor.inst.EditorPath))
+                save = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, save);
+            else if (!save.Contains(RTEditor.inst.BeatmapsPath))
+                save = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, save);
+            else if (!save.Contains(RTEditor.inst.BasePath))
+                save = RTFile.CombinePaths(RTEditor.inst.BasePath, save);
 
             foreach (var levelPanel in selected)
             {

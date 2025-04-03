@@ -303,13 +303,13 @@ namespace BetterLegacy.Editor.Data
             if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length && EditorConfig.Instance.LevelLoadsLastTime.Value)
                 AudioManager.inst.SetMusicTime(time);
 
-            if (!string.IsNullOrEmpty(prefabPath) && RTEditor.PrefabPath != prefabPath)
+            if (!string.IsNullOrEmpty(prefabPath) && RTEditor.inst.PrefabPath != prefabPath)
             {
                 RTEditor.inst.prefabPathField.text = prefabPath;
                 RTEditor.inst.UpdatePrefabPath(false);
             }
 
-            if (!string.IsNullOrEmpty(themePath) && RTEditor.ThemePath != themePath)
+            if (!string.IsNullOrEmpty(themePath) && RTEditor.inst.ThemePath != themePath)
             {
                 RTEditor.inst.themePathField.text = themePath;
                 RTEditor.inst.UpdateThemePath(false);

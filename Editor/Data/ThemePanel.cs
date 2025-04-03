@@ -250,7 +250,7 @@ namespace BetterLegacy.Editor.Data
                                 RTEditor.inst.themePathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                 RTEditor.inst.UpdateThemePath(false);
                             }),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                             new ButtonFunction(true),
                             new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
@@ -386,7 +386,7 @@ namespace BetterLegacy.Editor.Data
                     new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Theme)),
                     new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
                     new ButtonFunction(true),
-                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                     new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                     new ButtonFunction(true),
                     new ButtonFunction("Cut", () =>

@@ -270,7 +270,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Create folder", () =>
                                     {
-                                        RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
+                                        RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
                                     }),
                                     new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                                     new ButtonFunction(true),

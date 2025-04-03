@@ -326,20 +326,18 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Downloading {name}, please wait...", 3f, EditorManager.NotificationType.Success);
             name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
             name = RTFile.ValidateDirectory(name);
-            var directory = $"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{name} [{jn["id"].Value}]";
+            var directory = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, $"{name} [{jn["id"].Value}]");
 
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
             {
-                if (RTFile.DirectoryExists(directory))
-                    Directory.Delete(directory, true);
-
+                RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);
 
-                File.WriteAllBytes($"{directory}.zip", bytes);
+                File.WriteAllBytes($"{directory}{FileFormat.ZIP.Dot()}", bytes);
 
-                ZipFile.ExtractToDirectory($"{directory}.zip", directory);
+                ZipFile.ExtractToDirectory($"{directory}{FileFormat.ZIP.Dot()}", directory);
 
-                File.Delete($"{directory}.zip");
+                File.Delete($"{directory}{FileFormat.ZIP.Dot()}");
 
                 CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevels());
                 EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);

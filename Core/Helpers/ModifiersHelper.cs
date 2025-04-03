@@ -1585,7 +1585,7 @@ namespace BetterLegacy.Core.Helpers
                             });
                         }
 
-                        CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level($"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{modifier.GetValue(0)}")));
+                        CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, modifier.GetValue(0)))));
                     }, RTEditor.inst.HideWarningPopup);
 
                     return;

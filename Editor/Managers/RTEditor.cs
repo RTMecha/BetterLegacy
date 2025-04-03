@@ -1411,6 +1411,21 @@ namespace BetterLegacy.Editor.Managers
         public const string DEFAULT_EXPORTS_PATH = "beatmaps/exports";
 
         /// <summary>
+        /// Base path to the game.
+        /// </summary>
+        public string BasePath { get; set; } = RTFile.ApplicationDirectory;
+
+        /// <summary>
+        /// The beatmaps folder that contains all PA directories and files.
+        /// </summary>
+        public string beatmapsFolder = "beatmaps";
+
+        /// <summary>
+        /// The beatmaps path that contains all PA directories and files.
+        /// </summary>
+        public string BeatmapsPath => RTFile.CombinePaths(BasePath, beatmapsFolder);
+
+        /// <summary>
         /// Watches the current prefab folder for changes. If any changes are made, update the prefab list.
         /// </summary>
         public FileSystemWatcher PrefabWatcher { get; set; }
@@ -1430,65 +1445,68 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public bool levelAscend = true;
 
-        public static string EditorSettingsPath => $"{RTFile.ApplicationDirectory}settings/editor{FileFormat.LSS.Dot()}";
+        public string EditorSettingsPath => RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/editor{FileFormat.LSS.Dot()}");
 
         /// <summary>
         /// The path editor levels should load from.
         /// </summary>
-        public static string EditorPath
+        public string EditorPath
         {
             get => editorPath;
-            set
-            {
-                editorPath = value;
-                // Makes the editor path always in the beatmaps folder.
-                editorListPath = $"beatmaps/{editorPath}";
-                editorListSlash = $"beatmaps/{editorPath}/";
-            }
+            set => editorPath = value;
         }
-        static string editorPath = "editor";
-        public static string editorListPath = "beatmaps/editor";
-        public static string editorListSlash = "beatmaps/editor/";
+        string editorPath = "editor";
 
         /// <summary>
         /// The path themes should load from.
         /// </summary>
-        public static string ThemePath
+        public string ThemePath
         {
             get => themePath;
-            set
-            {
-                themePath = value;
-                // Makes the themes path always in the beatmaps folder.
-                themeListPath = $"beatmaps/{themePath}";
-                themeListSlash = $"beatmaps/{themePath}/";
-            }
+            set => themePath = value;
         }
-        static string themePath = "themes";
-        public static string themeListPath = "beatmaps/themes";
-        public static string themeListSlash = "beatmaps/themes/";
+        string themePath = "themes";
 
         /// <summary>
         /// The path prefabs should load from.
         /// </summary>
-        public static string PrefabPath
+        public string PrefabPath
         {
             get => prefabPath;
-            set
-            {
-                prefabPath = value;
-                // Makes the prefabs path always in the beatmaps folder.
-                prefabListPath = $"beatmaps/{prefabPath}";
-                prefabListSlash = $"beatmaps/{prefabPath}/";
-            }
+            set => prefabPath = value;
         }
-        static string prefabPath = "prefabs";
-        public static string prefabListPath = "beatmaps/prefabs";
-        public static string prefabListSlash = "beatmaps/prefabs/";
+        string prefabPath = "prefabs";
 
         #endregion
 
         #region Functions
+
+        /// <summary>
+        /// Resets the base path and reloads all files.
+        /// </summary>
+        public void ResetBasePath() => SetBasePath(RTFile.ApplicationDirectory);
+
+        /// <summary>
+        /// Sets the base path and reloads all files.
+        /// </summary>
+        /// <param name="basePath">Base path to load.</param>
+        /// <param name="beatmapsFolder">Beatmaps folder that contains the editor, prefab, etc folders.</param>
+        public void SetBasePath(string basePath, string beatmapsFolder = "beatmaps")
+        {
+            if (!string.IsNullOrEmpty(basePath))
+                BasePath = basePath;
+
+            this.beatmapsFolder = beatmapsFolder;
+
+            editorPathField.text = "editor";
+            UpdateEditorPath(false);
+            themePathField.text = "themes";
+            UpdateThemePath(false);
+            prefabPathField.text = "prefabs";
+            UpdatePrefabPath(false);
+
+            SaveGlobalSettings();
+        }
 
         /// <summary>
         /// Updates the editor list and path.
@@ -1496,10 +1514,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="forceReload">If function should be forced to run.</param>
         public void UpdateEditorPath(bool forceReload)
         {
-            if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || editorListPath[editorListPath.Length - 1] == '/')
+            if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || EditorPath[EditorPath.Length - 1] == '/')
                 return;
 
-            var editorPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath);
+            var editorPath = RTFile.CombinePaths(BeatmapsPath, EditorPath);
             if (!RTFile.DirectoryExists(editorPath))
             {
                 editorPathField.interactable = false;
@@ -1509,11 +1527,12 @@ namespace BetterLegacy.Editor.Managers
 
                     SaveGlobalSettings();
 
-                    EditorManager.inst.GetLevelList();
+                    CoroutineHelper.StartCoroutine(LoadLevels());
 
                     HideWarningPopup();
                     editorPathField.interactable = true;
-                }, () =>
+                },
+                () =>
                 {
                     HideWarningPopup();
                     editorPathField.interactable = true;
@@ -1524,7 +1543,7 @@ namespace BetterLegacy.Editor.Managers
 
             SaveGlobalSettings();
 
-            EditorManager.inst.GetLevelList();
+            CoroutineHelper.StartCoroutine(LoadLevels());
         }
 
         /// <summary>
@@ -1533,10 +1552,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="forceReload">If function should be forced to run.</param>
         public void UpdateThemePath(bool forceReload)
         {
-            if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || themeListPath[themeListPath.Length - 1] == '/')
+            if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || ThemePath[ThemePath.Length - 1] == '/')
                 return;
 
-            var themePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath);
+            var themePath = RTFile.CombinePaths(BeatmapsPath, ThemePath);
             if (!RTFile.DirectoryExists(themePath))
             {
                 themePathField.interactable = false;
@@ -1572,10 +1591,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="forceReload">If function should be forced to run.</param>
         public void UpdatePrefabPath(bool forceReload)
         {
-            if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || prefabListPath[prefabListPath.Length - 1] == '/')
+            if (!forceReload && !EditorConfig.Instance.SettingPathReloads.Value || PrefabPath[PrefabPath.Length - 1] == '/')
                 return;
 
-            var prefabPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath);
+            var prefabPath = RTFile.CombinePaths(BeatmapsPath, PrefabPath);
             if (!RTFile.DirectoryExists(prefabPath))
             {
                 prefabPathField.interactable = false;
@@ -1689,6 +1708,9 @@ namespace BetterLegacy.Editor.Managers
             UpdateOrderDropdown();
             UpdateAscendToggle();
 
+            BasePath = !string.IsNullOrEmpty(jn["paths"]["base"]) ? jn["paths"]["base"] : RTFile.ApplicationDirectory;
+            beatmapsFolder = !string.IsNullOrEmpty(jn["paths"]["beatmaps"]) ? jn["paths"]["beatmaps"] : "beatmaps";
+
             if (!string.IsNullOrEmpty(jn["paths"]["editor"]))
                 EditorPath = jn["paths"]["editor"];
             if (!string.IsNullOrEmpty(jn["paths"]["themes"]))
@@ -1696,9 +1718,9 @@ namespace BetterLegacy.Editor.Managers
             if (!string.IsNullOrEmpty(jn["paths"]["prefabs"]))
                 PrefabPath = jn["paths"]["prefabs"];
 
-            RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath));
-            RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
-            RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
+            RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, EditorPath));
+            RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, ThemePath));
+            RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
 
             SetWatcherPaths();
 
@@ -1740,6 +1762,11 @@ namespace BetterLegacy.Editor.Managers
 
             jn["sort"]["asc"] = levelAscend.ToString();
             jn["sort"]["order"] = ((int)levelSort).ToString();
+
+            if (!string.IsNullOrEmpty(BasePath) && BasePath != RTFile.ApplicationDirectory)
+                jn["paths"]["base"] = BasePath;
+            if (beatmapsFolder != "beatmaps")
+                jn["paths"]["beatmaps"] = beatmapsFolder;
 
             jn["paths"]["editor"] = EditorPath;
             jn["paths"]["themes"] = ThemePath;
@@ -1836,15 +1863,15 @@ namespace BetterLegacy.Editor.Managers
         public void SetWatcherPaths()
         {
             DisablePrefabWatcher();
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
+            if (RTFile.DirectoryExists(RTFile.CombinePaths(BeatmapsPath, PrefabPath)))
             {
-                PrefabWatcher.Path = RTFile.ApplicationDirectory + prefabListPath;
+                PrefabWatcher.Path = RTFile.CombinePaths(BeatmapsPath, PrefabPath);
                 EnablePrefabWatcher();
             }
             DisableThemeWatcher();
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
+            if (RTFile.DirectoryExists(RTFile.CombinePaths(BeatmapsPath, ThemePath)))
             {
-                ThemeWatcher.Path = RTFile.ApplicationDirectory + themeListPath;
+                ThemeWatcher.Path = RTFile.CombinePaths(BeatmapsPath, ThemePath);
                 EnableThemeWatcher();
             }
         }
@@ -1855,20 +1882,20 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                RTFile.CreateDirectory(RTFile.ApplicationDirectory + editorListPath);
-                RTFile.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
-                RTFile.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
+                RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, EditorPath));
+                RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
+                RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, ThemePath));
 
                 PrefabWatcher = new FileSystemWatcher
                 {
-                    Path = RTFile.ApplicationDirectory + prefabListPath,
+                    Path = RTFile.CombinePaths(BeatmapsPath, PrefabPath),
                     Filter = FileFormat.LSP.ToPattern(),
                 };
                 EnablePrefabWatcher();
 
                 ThemeWatcher = new FileSystemWatcher
                 {
-                    Path = RTFile.ApplicationDirectory + themeListPath,
+                    Path = RTFile.CombinePaths(BeatmapsPath, ThemePath),
                     Filter = FileFormat.LST.ToPattern()
                 };
                 EnableThemeWatcher();
@@ -3156,7 +3183,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Create folder", () =>
                     {
-                        ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
+                        ShowFolderCreator(RTFile.CombinePaths(BeatmapsPath, EditorPath), () => { UpdateEditorPath(true); HideNameEditor(); });
                     }),
                     new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                     new ButtonFunction("Paste", PasteLevel),
@@ -4372,7 +4399,7 @@ namespace BetterLegacy.Editor.Managers
 
             var folderName = Path.GetFileName(copiedLevelPath);
             var directory = RTFile.GetDirectory(copiedLevelPath);
-            var editorPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath);
+            var editorPath = RTFile.CombinePaths(BeatmapsPath, EditorPath);
 
             if (shouldCutLevel)
             {
@@ -4421,11 +4448,10 @@ namespace BetterLegacy.Editor.Managers
             OpenLevelPopup.ClearContent();
 
             var list = new List<Coroutine>();
-            var files = Directory.GetDirectories(RTFile.ApplicationDirectory + editorListPath);
-            var currentPath = editorPath;
+            var files = Directory.GetDirectories(RTFile.CombinePaths(BeatmapsPath, EditorPath));
 
             // Back
-            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(RTFile.ApplicationDirectory + editorListPath) != RTFile.ApplicationDirectory + "beatmaps")
+            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(RTFile.CombinePaths(BeatmapsPath, EditorPath)) != BeatmapsPath)
             {
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(OpenLevelPopup.Content, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
@@ -4448,7 +4474,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => ShowFolderCreator(RTFile.CombinePaths(BeatmapsPath, EditorPath), () => { UpdateEditorPath(true); HideNameEditor(); })),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction("Paste", PasteLevel),
                             new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
@@ -4456,9 +4482,9 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    if (editorPathField.text == currentPath)
+                    if (editorPathField.text == EditorPath)
                     {
-                        editorPathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + editorListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        editorPathField.text = RTFile.GetDirectory(RTFile.CombinePaths(BeatmapsPath, EditorPath)).Replace(BeatmapsPath + "/", "");
                         UpdateEditorPath(false);
                     }
                 };
@@ -5036,10 +5062,10 @@ namespace BetterLegacy.Editor.Managers
 
             bool setNew = false;
             int num = 0;
-            string p = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName;
+            string p = RTFile.CombinePaths(BeatmapsPath, EditorManager.inst.newLevelName);
             while (RTFile.DirectoryExists(p))
             {
-                p = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + " - " + num.ToString();
+                p = RTFile.CombinePaths(BeatmapsPath, EditorManager.inst.newLevelName) + " - " + num.ToString();
                 num += 1;
                 setNew = true;
 
@@ -5047,7 +5073,7 @@ namespace BetterLegacy.Editor.Managers
             if (setNew)
                 EditorManager.inst.newLevelName += " - " + num.ToString();
 
-            var path = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName;
+            var path = RTFile.CombinePaths(BeatmapsPath, EditorManager.inst.newLevelName);
 
             if (RTFile.DirectoryExists(path))
             {
@@ -6667,9 +6693,11 @@ namespace BetterLegacy.Editor.Managers
 
         #region Misc Functions
 
-        public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath));
-        public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
-        public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
+        public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));
+
+        public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, ThemePath));
+
+        public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
 
         public void ZIPLevel(string currentPath)
         {
@@ -6806,11 +6834,15 @@ namespace BetterLegacy.Editor.Managers
             return Color.white;
         }
 
-        public static void DeleteLevelFunction(string level)
+        /// <summary>
+        /// Moves the folder to a recycling folder.
+        /// </summary>
+        /// <param name="level">Level to remove.</param>
+        public void DeleteLevelFunction(string level)
         {
             var recyclingPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "recycling");
             RTFile.CreateDirectory(recyclingPath);
-            RTFile.MoveDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash, level), RTFile.CombinePaths(recyclingPath, level));
+            RTFile.MoveDirectory(level, RTFile.CombinePaths(recyclingPath, Path.GetFileName(level)));
         }
 
         public static float SnapToBPM(float time)
@@ -6838,21 +6870,19 @@ namespace BetterLegacy.Editor.Managers
                 var fileFormat = RTFile.GetFileFormat(selectedFile);
                 switch (fileFormat)
                 {
-                    case FileFormat.LSP:
-                        {
-                            var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListSlash, Path.GetFileName(selectedFile));
+                    case FileFormat.LSP: {
+                            var file = RTFile.CombinePaths(BeatmapsPath, PrefabPath, Path.GetFileName(selectedFile));
                             if (RTFile.CopyFile(selectedFile, file))
                             {
-                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to prefab ({prefabListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to prefab ({PrefabPath}) folder.", 2f, EditorManager.NotificationType.Success);
                                 StartCoroutine(UpdatePrefabPath());
                             }
                             else
-                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(selectedFile)} as it already exists in the prefab ({prefabListPath}) folder.", 3f, EditorManager.NotificationType.Error);
+                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(selectedFile)} as it already exists in the prefab ({PrefabPath}) folder.", 3f, EditorManager.NotificationType.Error);
 
                             break;
                         }
-                    case FileFormat.VGP:
-                        {
+                    case FileFormat.VGP: {
                             try
                             {
                                 var file = RTFile.ReadFromFile(selectedFile);
@@ -6863,17 +6893,17 @@ namespace BetterLegacy.Editor.Managers
 
                                 var jn = prefab.ToJSON();
 
-                                RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
+                                RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
 
                                 string fileName = $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}";
-                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListSlash, fileName), jn.ToString());
+                                RTFile.WriteToFile(RTFile.CombinePaths(BeatmapsPath, PrefabPath, fileName), jn.ToString());
 
                                 file = null;
                                 vgjn = null;
                                 prefab = null;
                                 jn = null;
 
-                                EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your prefab ({prefabListPath}) folder.", 2f,
+                                EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your prefab ({PrefabPath}) folder.", 2f,
                                     EditorManager.NotificationType.Success);
 
                                 AchievementManager.inst.UnlockAchievement("time_machine");
@@ -6887,21 +6917,19 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-                    case FileFormat.LST:
-                        {
-                            var file = RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListSlash, Path.GetFileName(selectedFile));
+                    case FileFormat.LST: {
+                            var file = RTFile.CombinePaths(BeatmapsPath, ThemePath, Path.GetFileName(selectedFile));
                             if (RTFile.CopyFile(selectedFile, file))
                             {
-                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to theme ({themeListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to theme ({ThemePath}) folder.", 2f, EditorManager.NotificationType.Success);
                                 StartCoroutine(UpdateThemePath());
                             }
                             else
-                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(selectedFile)} as it already exists in the theme ({themeListPath}) folder.", 3f, EditorManager.NotificationType.Error);
+                                EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(selectedFile)} as it already exists in the theme ({ThemePath}) folder.", 3f, EditorManager.NotificationType.Error);
 
                             break;
                         }
-                    case FileFormat.VGT:
-                        {
+                    case FileFormat.VGT: {
                             try
                             {
                                 var file = RTFile.ReadFromFile(selectedFile);
@@ -6912,17 +6940,17 @@ namespace BetterLegacy.Editor.Managers
 
                                 var jn = theme.ToJSON();
 
-                                RTFile.CreateDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
+                                RTFile.CreateDirectory(RTFile.CombinePaths(BeatmapsPath, ThemePath));
 
                                 var fileName = $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}";
-                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListSlash, fileName), jn.ToString());
+                                RTFile.WriteToFile(RTFile.CombinePaths(BeatmapsPath, ThemePath, fileName), jn.ToString());
 
                                 file = null;
                                 vgjn = null;
                                 theme = null;
                                 jn = null;
 
-                                EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your theme ({themeListPath}) folder.", 2f,
+                                EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your theme ({ThemePath}) folder.", 2f,
                                     EditorManager.NotificationType.Success);
 
                                 AchievementManager.inst.UnlockAchievement("time_machine");
@@ -6936,9 +6964,8 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-                    case FileFormat.LSB:
-                        {
-                            if (Path.GetFileName(selectedFile) != "level.lsb")
+                    case FileFormat.LSB: {
+                            if (Path.GetFileName(selectedFile) != Level.LEVEL_LSB)
                             {
                                 EditorManager.inst.DisplayNotification("Cannot select non-level.", 2f, EditorManager.NotificationType.Warning);
                                 failed = true;
@@ -6947,21 +6974,21 @@ namespace BetterLegacy.Editor.Managers
 
                             ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
                             {
-                                var path = selectedFile.Replace("/level.lsb", "");
+                                var path = selectedFile.Replace("/" + Level.LEVEL_LSB, "");
 
                                 var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
                                 bool copied = false;
                                 foreach (var file in files)
                                 {
-                                    var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath));
+                                    var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.CombinePaths(BeatmapsPath, EditorPath));
                                     if (RTFile.CopyFile(file, copyTo))
                                         copied = true;
                                 }
 
                                 if (copied)
                                 {
-                                    EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({editorListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                    EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({EditorPath}) folder.", 2f, EditorManager.NotificationType.Success);
                                     UpdateEditorPath(true);
                                 }
                                 else
@@ -6976,8 +7003,7 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-                    case FileFormat.VGD:
-                        {
+                    case FileFormat.VGD: {
                             if (selectedFile.Contains("/autosave_"))
                             {
                                 EditorManager.inst.DisplayNotification("Cannot select autosave.", 2f, EditorManager.NotificationType.Warning);
@@ -6991,7 +7017,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 if (Level.Verify(path))
                                 {
-                                    var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/"), RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListSlash)) + " Convert";
+                                    var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/"), RTFile.CombinePaths(BeatmapsPath, EditorPath + "/")) + " Convert";
 
                                     RTFile.CreateDirectory(copyTo);
 
@@ -7066,7 +7092,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     level.SaveData(RTFile.CombinePaths(copyTo, Level.LEVEL_LSB), () =>
                                     {
-                                        EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({editorListPath}) folder.", 2f,
+                                        EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({EditorPath}) folder.", 2f,
                                             EditorManager.NotificationType.Success);
 
                                         metadataVGJSON = null;

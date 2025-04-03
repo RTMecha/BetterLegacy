@@ -134,7 +134,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                         new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                         new ButtonFunction(true),
                         new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
@@ -164,16 +164,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                             new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
 
                         return;
                     }
 
-                    if (RTEditor.inst.themePathField.text == RTEditor.ThemePath)
+                    if (RTEditor.inst.themePathField.text == RTEditor.inst.ThemePath)
                     {
-                        RTEditor.inst.themePathField.text = RTFile.GetDirectory(RTFile.ApplicationDirectory + RTEditor.themeListPath).Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        RTEditor.inst.themePathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
                         RTEditor.inst.UpdateThemePath(false);
                     }
                 };

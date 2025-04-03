@@ -434,7 +434,7 @@ namespace BetterLegacy.Editor.Data
                                 RTEditor.inst.editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                                 RTEditor.inst.UpdateEditorPath(false);
                             }, "Level Panel Open Folder"),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", EndFolderCreation), "Level Panel Create Folder"),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction(true),
                             new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
@@ -584,7 +584,7 @@ namespace BetterLegacy.Editor.Data
                         }, "Level Panel Show Autosaves"),
                         new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName), "Convert Level VG"),
                         new ButtonFunction(true),
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.editorListPath}", EndFolderCreation), "Level Panel Create Folder"),
+                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
                         new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path), "Level Panel Create Template"),
                         new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
                         new ButtonFunction("Create backup", () => RTEditor.inst.SaveBackup(this), "Level Panel Create Backup"),
@@ -684,7 +684,7 @@ namespace BetterLegacy.Editor.Data
             {
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", () =>
                 {
-                    RTEditor.DeleteLevelFunction(FolderPath);
+                    RTEditor.inst.DeleteLevelFunction(FolderPath);
                     EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
                     EditorManager.inst.GetLevelList();
                     RTEditor.inst.HideWarningPopup();
