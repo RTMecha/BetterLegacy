@@ -1534,7 +1534,8 @@ namespace BetterLegacy.Editor.Managers
             UpdatePrefabPath(false);
 
             CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabTypes());
-            PlayerEditor.inst.Reload();
+            if (EditorManager.inst.hasLoadedLevel)
+                PlayerEditor.inst.Reload();
             ProjectPlanner.inst.Load();
 
             SaveGlobalSettings();
