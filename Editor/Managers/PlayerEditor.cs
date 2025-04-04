@@ -2941,9 +2941,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void Reload()
         {
-            PlayersData.Load(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
+            if (RTEditor.inst.CurrentLevel)
+                PlayersData.Load(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
             PlayerManager.RespawnPlayers();
-            StartCoroutine(RefreshEditor());
+            if (Dialog.IsCurrent)
+                StartCoroutine(RefreshEditor());
             RTEditor.inst.PlayerModelsPopup.Close();
 
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
