@@ -496,7 +496,28 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static BeatmapObject ParseVG(JSONNode jn, Version version = default)
         {
             var beatmapObject = new BeatmapObject();
+            beatmapObject.ReadVG(jn, version);
+            return beatmapObject;
+        }
 
+        /// <summary>
+        /// Parses a Beatmap Object from LS formatted JSON.
+        /// </summary>
+        /// <param name="jn">LS JSON.</param>
+        /// <returns>Returns a parsed Beatmap Object.</returns>
+        public static BeatmapObject Parse(JSONNode jn)
+        {
+            var beatmapObject = new BeatmapObject();
+            beatmapObject.Read(jn);
+            return beatmapObject;
+        }
+
+        /// <summary>
+        /// Parses and applies object values from VG to formatted JSON.
+        /// </summary>
+        /// <param name="jn">VG JSON.</param>
+        public void ReadVG(JSONNode jn, Version version = default)
+        {
             var events = new List<List<EventKeyframe>>();
             events.Add(new List<EventKeyframe>());
             events.Add(new List<EventKeyframe>());
@@ -650,101 +671,96 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
-            beatmapObject.events = events;
+            this.events = events;
 
-            beatmapObject.id = jn["id"] ?? LSText.randomString(16);
+            id = jn["id"] ?? LSText.randomString(16);
 
-            beatmapObject.opacityCollision = true;
+            opacityCollision = true;
 
             if (jn["pre_iid"] != null)
-                beatmapObject.prefabInstanceID = jn["pre_iid"];
+                prefabInstanceID = jn["pre_iid"];
 
             if (jn["pre_id"] != null)
-                beatmapObject.prefabID = jn["pre_id"];
+                prefabID = jn["pre_id"];
 
             if (jn["p_id"] != null)
-                beatmapObject.Parent = isCameraParented ? CAMERA_PARENT : jn["p_id"];
+                Parent = isCameraParented ? CAMERA_PARENT : jn["p_id"];
 
             if (!isCameraParented && jn["p_t"] != null)
-                beatmapObject.parentType = jn["p_t"];
+                parentType = jn["p_t"];
             if (isCameraParented)
-                beatmapObject.parentType = "111";
+                parentType = "111";
 
             if (jn["p_o"] != null && jn["p_id"] != "camera")
-                for (int i = 0; i < beatmapObject.parentOffsets.Length; i++)
+                for (int i = 0; i < parentOffsets.Length; i++)
                     if (jn["p_o"].Count > i && jn["p_o"][i] != null)
-                        beatmapObject.parentOffsets[i] = jn["p_o"][i].AsFloat;
-            else if (jn["p_id"] == "camera")
-                beatmapObject.parentOffsets = new float[3] { 0f, 0f, 0f };
+                        parentOffsets[i] = jn["p_o"][i].AsFloat;
+                    else if (jn["p_id"] == "camera")
+                        parentOffsets = new float[3] { 0f, 0f, 0f };
 
             if (jn["ot"] != null)
             {
                 var ot = jn["ot"].AsInt;
 
-                beatmapObject.objectType = ot == 4 ? ObjectType.Normal : ot == 5 ? ObjectType.Decoration : ot == 6 ? ObjectType.Empty : (ObjectType)ot;
+                objectType = ot == 4 ? ObjectType.Normal : ot == 5 ? ObjectType.Decoration : ot == 6 ? ObjectType.Empty : (ObjectType)ot;
             }
 
             if (jn["st"] != null)
-                beatmapObject.startTime = jn["st"].AsFloat;
+                startTime = jn["st"].AsFloat;
 
             if (jn["n"] != null)
-                beatmapObject.name = jn["n"];
+                name = jn["n"];
 
             if (jn["d"] != null)
-                beatmapObject.Depth = jn["d"].AsInt;
+                Depth = jn["d"].AsInt;
             else
-                beatmapObject.Depth = version == new Version(ProjectArrhythmia.Versions.DEPTH_DEFAULT_CHANGED) ? 0 : 20; // fixes default depth not being correct
+                Depth = version == new Version(ProjectArrhythmia.Versions.DEPTH_DEFAULT_CHANGED) ? 0 : 20; // fixes default depth not being correct
 
             if (jn["s"] != null)
-                beatmapObject.shape = jn["s"].AsInt;
+                shape = jn["s"].AsInt;
 
             if (jn["so"] != null)
-                beatmapObject.shapeOption = jn["so"].AsInt;
+                shapeOption = jn["so"].AsInt;
 
             if (jn["csp"] != null)
             {
-                beatmapObject.ShapeType = ShapeType.Polygon;
-                beatmapObject.polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
+                ShapeType = ShapeType.Polygon;
+                polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
             }
 
-            beatmapObject.autoTextAlign = beatmapObject.ShapeType == ShapeType.Text;
+            autoTextAlign = ShapeType == ShapeType.Text;
 
             if (jn["gt"] != null)
-                beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
+                gradientType = (GradientType)jn["gt"].AsInt;
 
             if (jn["gs"] != null)
-                beatmapObject.gradientScale = jn["gs"].AsFloat;
-            
+                gradientScale = jn["gs"].AsFloat;
+
             if (jn["gr"] != null)
-                beatmapObject.gradientRotation = jn["gr"].AsFloat;
+                gradientRotation = jn["gr"].AsFloat;
 
             if (jn["text"] != null)
-                beatmapObject.text = jn["text"];
+                text = jn["text"];
 
             if (jn["ak_t"] != null)
-                beatmapObject.autoKillType = (AutoKillType)jn["ak_t"].AsInt;
+                autoKillType = (AutoKillType)jn["ak_t"].AsInt;
 
             if (jn["ak_o"] != null)
-                beatmapObject.autoKillOffset = jn["ak_o"].AsFloat;
+                autoKillOffset = jn["ak_o"].AsFloat;
 
             if (jn["o"] != null)
-                beatmapObject.origin = new Vector2(jn["o"]["x"].AsFloat, jn["o"]["y"].AsFloat);
+                origin = new Vector2(jn["o"]["x"].AsFloat, jn["o"]["y"].AsFloat);
 
             if (jn["ed"] != null)
-                beatmapObject.editorData = ObjectEditorData.ParseVG(jn["ed"]);
-
-            return beatmapObject;
+                editorData = ObjectEditorData.ParseVG(jn["ed"]);
         }
 
         /// <summary>
-        /// Parses a Beatmap Object from LS formatted JSON.
+        /// Parses and applies object values from LS to formatted JSON.
         /// </summary>
         /// <param name="jn">LS JSON.</param>
-        /// <returns>Returns a parsed Beatmap Object.</returns>
-        public static BeatmapObject Parse(JSONNode jn)
+        public void Read(JSONNode jn)
         {
-            var beatmapObject = new BeatmapObject();
-
             var events = new List<List<EventKeyframe>>();
             events.Add(new List<EventKeyframe>());
             events.Add(new List<EventKeyframe>());
@@ -895,126 +911,124 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
-            beatmapObject.events = events;
+            this.events = events;
 
-            beatmapObject.id = jn["id"] ?? LSText.randomString(16);
+            id = jn["id"] ?? LSText.randomString(16);
 
             if (jn["piid"] != null)
-                beatmapObject.prefabInstanceID = jn["piid"];
+                prefabInstanceID = jn["piid"];
 
             if (jn["pid"] != null)
-                beatmapObject.prefabID = jn["pid"];
+                prefabID = jn["pid"];
 
             if (jn["p"] != null)
-                beatmapObject.Parent = jn["p"];
+                Parent = jn["p"];
 
             if (jn["pt"] != null)
-                beatmapObject.parentType = jn["pt"];
+                parentType = jn["pt"];
 
             if (jn["po"] != null)
-                for (int i = 0; i < beatmapObject.parentOffsets.Length; i++)
+                for (int i = 0; i < parentOffsets.Length; i++)
                     if (jn["po"].Count > i && jn["po"][i] != null)
-                        beatmapObject.parentOffsets[i] = jn["po"][i].AsFloat;
+                        parentOffsets[i] = jn["po"][i].AsFloat;
 
             if (jn["ps"] != null)
             {
-                for (int i = 0; i < beatmapObject.parallaxSettings.Length; i++)
+                for (int i = 0; i < parallaxSettings.Length; i++)
                 {
                     if (jn["ps"].Count > i && jn["ps"][i] != null)
-                        beatmapObject.parallaxSettings[i] = jn["ps"][i].AsFloat;
+                        parallaxSettings[i] = jn["ps"][i].AsFloat;
                 }
             }
 
             if (jn["pa"] != null)
-                beatmapObject.parentAdditive = jn["pa"];
+                parentAdditive = jn["pa"];
 
             if (jn["d"] != null)
-                beatmapObject.Depth = jn["d"].AsInt;
+                Depth = jn["d"].AsInt;
 
             if (jn["rdt"] != null)
-                beatmapObject.renderLayerType = (RenderLayerType)jn["rdt"].AsInt;
+                renderLayerType = (RenderLayerType)jn["rdt"].AsInt;
 
             if (jn["opcol"] != null)
-                beatmapObject.opacityCollision = jn["opcol"].AsBool;
+                opacityCollision = jn["opcol"].AsBool;
 
             if (jn["iglif"] != null)
-                beatmapObject.ignoreLifespan = jn["iglif"].AsBool;
+                ignoreLifespan = jn["iglif"].AsBool;
 
             if (jn["ordmod"] != null)
-                beatmapObject.orderModifiers = jn["ordmod"].AsBool;
+                orderModifiers = jn["ordmod"].AsBool;
 
-            if (jn["desync"] != null && !string.IsNullOrEmpty(beatmapObject.Parent))
-                beatmapObject.desync = jn["desync"].AsBool;
+            if (jn["desync"] != null && !string.IsNullOrEmpty(Parent))
+                desync = jn["desync"].AsBool;
 
             if (jn["empty"] != null)
-                beatmapObject.objectType = jn["empty"].AsBool ? ObjectType.Empty : ObjectType.Normal;
+                objectType = jn["empty"].AsBool ? ObjectType.Empty : ObjectType.Normal;
             else if (jn["h"] != null)
-                beatmapObject.objectType = jn["h"].AsBool ? ObjectType.Helper : ObjectType.Normal;
+                objectType = jn["h"].AsBool ? ObjectType.Helper : ObjectType.Normal;
             else if (jn["ot"] != null)
-                beatmapObject.objectType = (ObjectType)jn["ot"].AsInt;
+                objectType = (ObjectType)jn["ot"].AsInt;
 
             if (jn["ldm"] != null)
-                beatmapObject.LDM = jn["ldm"].AsBool;
+                LDM = jn["ldm"].AsBool;
 
             if (jn["st"] != null)
-                beatmapObject.startTime = jn["st"].AsFloat;
+                startTime = jn["st"].AsFloat;
 
             if (jn["name"] != null)
-                beatmapObject.name = ((string)jn["name"]).Replace("{{colon}}", ":");
+                name = ((string)jn["name"]).Replace("{{colon}}", ":");
 
             if (jn["tags"] != null)
                 for (int i = 0; i < jn["tags"].Count; i++)
-                    beatmapObject.tags.Add(((string)jn["tags"][i]).Replace("{{colon}}", ":"));
+                    tags.Add(((string)jn["tags"][i]).Replace("{{colon}}", ":"));
 
             if (jn["s"] != null)
-                beatmapObject.shape = jn["s"].AsInt;
+                shape = jn["s"].AsInt;
 
             if (jn["shape"] != null)
-                beatmapObject.shape = jn["shape"].AsInt;
+                shape = jn["shape"].AsInt;
 
             if (jn["so"] != null)
-                beatmapObject.shapeOption = jn["so"].AsInt;
+                shapeOption = jn["so"].AsInt;
 
             if (jn["csp"] != null)
-                beatmapObject.polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
+                polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
 
             if (jn["gt"] != null)
-                beatmapObject.gradientType = (GradientType)jn["gt"].AsInt;
+                gradientType = (GradientType)jn["gt"].AsInt;
 
             if (jn["gs"] != null)
-                beatmapObject.gradientScale = jn["gs"].AsFloat;
-            
+                gradientScale = jn["gs"].AsFloat;
+
             if (jn["gr"] != null)
-                beatmapObject.gradientRotation = jn["gr"].AsFloat;
+                gradientRotation = jn["gr"].AsFloat;
 
             if (jn["text"] != null)
-                beatmapObject.text = ((string)jn["text"]).Replace("{{colon}}", ":");
+                text = ((string)jn["text"]).Replace("{{colon}}", ":");
 
             if (jn["ata"] != null)
-                beatmapObject.autoTextAlign = jn["ata"];
+                autoTextAlign = jn["ata"];
 
             if (jn["ak"] != null)
-                beatmapObject.autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.OldStyleNoAutokill;
+                autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.OldStyleNoAutokill;
             else if (jn["akt"] != null)
-                beatmapObject.autoKillType = (AutoKillType)jn["akt"].AsInt;
+                autoKillType = (AutoKillType)jn["akt"].AsInt;
 
             if (jn["ako"] != null)
-                beatmapObject.autoKillOffset = jn["ako"].AsFloat;
+                autoKillOffset = jn["ako"].AsFloat;
 
             if (jn["o"] != null)
-                beatmapObject.origin = jn["o"].AsVector2();
+                origin = jn["o"].AsVector2();
 
             if (jn["ed"] != null)
-                beatmapObject.editorData = ObjectEditorData.Parse(jn["ed"]);
+                editorData = ObjectEditorData.Parse(jn["ed"]);
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
-                var modifier = Modifier<BeatmapObject>.Parse(jn["modifiers"][i], beatmapObject);
+                var modifier = Modifier<BeatmapObject>.Parse(jn["modifiers"][i], this);
                 if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBeatmapObjectModifiers))
-                    beatmapObject.modifiers.Add(modifier);
+                    modifiers.Add(modifier);
             }
-
-            return beatmapObject;
         }
 
         /// <summary>
