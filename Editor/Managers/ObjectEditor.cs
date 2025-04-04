@@ -1762,6 +1762,15 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
 
+            try
+            {
+                LoadObjectTemplates();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // load object templates
+
             LoadGlobalCopy();
         }
 
@@ -2047,74 +2056,6 @@ namespace BetterLegacy.Editor.Managers
         public static float TimelineObjectHoverSize { get; set; }
 
         public static float TimelineCollapseLength { get; set; }
-
-        // TODO: Make this data-driven via a "create_object.json" file.
-        /// <summary>
-        /// List of extra options used to create objects.
-        /// </summary>
-        public List<ObjectOption> objectOptions = new List<ObjectOption>()
-        {
-            new ObjectOption("Normal", "A regular square object that hits the player.", null),
-            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Helper;
-                bm.name = nameof(BeatmapObject.ObjectType.Helper);
-            }),
-            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
-            }),
-            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Solid;
-                bm.name = nameof(BeatmapObject.ObjectType.Solid);
-            }),
-            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = nameof(BeatmapObject.ObjectType.Helper);
-                bm.events[3][0].values[1] = 0.65f;
-            }),
-            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Normal;
-                bm.name = "Collision";
-                bm.events[3][0].values[1] = 1f;
-            }),
-            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Solid;
-                bm.name = "Collision";
-                bm.events[3][0].values[1] = 1f;
-            }),
-            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = "Text";
-                bm.text = "A text object that can be used for dialogue.";
-                bm.shape = 4;
-                bm.shapeOption = 0;
-            }),
-            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
-            {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = "Text";
-                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
-                bm.shape = 4;
-                bm.shapeOption = 0;
-                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
-                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
-            }),
-        };
 
         #endregion
 
@@ -2941,14 +2882,171 @@ namespace BetterLegacy.Editor.Managers
 
         #region Create New Objects
 
-        public static bool SetToCenterCam => EditorConfig.Instance.CreateObjectsatCameraCenter.Value;
+        /// <summary>
+        /// List of extra options used to create objects.
+        /// </summary>
+        public List<ObjectOption> objectOptions = new List<ObjectOption>()
+        {
+            new ObjectOption("Normal", "A regular square object that hits the player.", null),
+            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Helper;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+            }),
+            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
+            }),
+            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = nameof(BeatmapObject.ObjectType.Solid);
+            }),
+            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+                bm.events[3][0].values[1] = 0.65f;
+            }),
+            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Normal;
+                bm.name = "Collision";
+                bm.events[3][0].values[1] = 1f;
+            }),
+            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = "Collision";
+                bm.events[3][0].values[1] = 1f;
+            }),
+            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+            }),
+            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
+                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
+            }),
+        };
 
+        /// <summary>
+        /// List of custom object templates.
+        /// </summary>
+        public List<ObjectOption> customObjectOptions = new List<ObjectOption>();
+
+        /// <summary>
+        /// Loads the custom object templates list.
+        /// </summary>
+        public void LoadObjectTemplates()
+        {
+            var filePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"create_object_templates{FileFormat.JSON.Dot()}");
+            if (!RTFile.FileExists(filePath))
+                return;
+
+            customObjectOptions.Clear();
+            var jn = JSON.Parse(RTFile.ReadFromFile(filePath));
+
+            for (int i = 0; i < jn["objects"].Count; i++)
+            {
+                var data = jn["data"];
+                customObjectOptions.Add(new ObjectOption(jn["name"], jn["desc"], timelineObject => timelineObject.GetData<BeatmapObject>().Read(data)));
+            }
+        }
+
+        /// <summary>
+        /// Adds a Beatmap Object to the custom object templates.
+        /// </summary>
+        /// <param name="beatmapObject">Object to create a template of.</param>
+        /// <param name="name">Name of the template.</param>
+        /// <param name="desc">Description of the template.</param>
+        public void AddObjectTemplate(BeatmapObject beatmapObject, string name, string desc)
+        {
+            var filePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"create_object_templates{FileFormat.JSON.Dot()}");
+            var jn = !RTFile.FileExists(filePath) ? Parser.NewJSONObject() : JSON.Parse(RTFile.ReadFromFile(filePath));
+
+            var jnObject = Parser.NewJSONObject();
+            jnObject["name"] = name;
+            jnObject["desc"] = desc;
+            jnObject["data"] = beatmapObject.ToJSON();
+
+            jn["objects"][jn["objects"].Count] = jnObject;
+
+            RTFile.WriteToFile(filePath, jn.ToString());
+        }
+
+        /// <summary>
+        /// Shows extra object templates.
+        /// </summary>
+        public void ShowObjectTemplates()
+        {
+            RTEditor.inst.ObjectTemplatePopup.Open();
+            RTEditor.inst.ObjectTemplatePopup.UpdateSearchFunction(RefreshObjectTemplates);
+            RefreshObjectTemplates(RTEditor.inst.ObjectTemplatePopup.SearchField.text);
+        }
+
+        /// <summary>
+        /// Refreshes the list of extra object templates.
+        /// </summary>
+        /// <param name="search">The search term.</param>
+        public void RefreshObjectTemplates(string search)
+        {
+            RTEditor.inst.ObjectTemplatePopup.ClearContent();
+            var objectOptions = customObjectOptions.IsEmpty() ? this.objectOptions : this.objectOptions.Union(customObjectOptions).ToList();
+            for (int i = 0; i < objectOptions.Count; i++)
+            {
+                if (!RTString.SearchString(search, objectOptions[i].name))
+                    continue;
+
+                var name = objectOptions[i].name;
+                var hint = objectOptions[i].hint;
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ObjectTemplatePopup.Content, "Function");
+
+                gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(objectOptions[i].Create);
+
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
+                text.text = name;
+                EditorThemeManager.ApplyLightText(text);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new beatmap object.
+        /// </summary>
+        /// <param name="action">Action to apply to the timeline object.</param>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If undo / redo history should be set.</param>
         public void CreateNewObject(Action<TimelineObject> action = null, bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -2970,7 +3068,7 @@ namespace BetterLegacy.Editor.Managers
             var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -2997,7 +3095,7 @@ namespace BetterLegacy.Editor.Managers
             bm.shapeOption = 0;
             bm.name = Seasons.AprilFools ? "<font=Arrhythmia>bro" : "circle";
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3024,7 +3122,7 @@ namespace BetterLegacy.Editor.Managers
             bm.shapeOption = 0;
             bm.name = Seasons.AprilFools ? "baracuda <i>beat plays</i>" : "triangle";
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3060,7 +3158,7 @@ namespace BetterLegacy.Editor.Managers
             if (Seasons.AprilFools)
                 bm.StartTime += 1f;
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3089,7 +3187,7 @@ namespace BetterLegacy.Editor.Managers
             bm.shapeOption = 0;
             bm.name = Seasons.AprilFools ? "super" : "hexagon";
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3117,7 +3215,7 @@ namespace BetterLegacy.Editor.Managers
             if (Seasons.AprilFools)
                 bm.events[3][0].values[1] = 0.65f;
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3144,7 +3242,7 @@ namespace BetterLegacy.Editor.Managers
             if (!Seasons.AprilFools)
                 bm.objectType = BeatmapObject.ObjectType.Decoration;
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3171,7 +3269,7 @@ namespace BetterLegacy.Editor.Managers
             if (!Seasons.AprilFools)
                 bm.objectType = BeatmapObject.ObjectType.Empty;
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -3197,7 +3295,7 @@ namespace BetterLegacy.Editor.Managers
             bm.name = Seasons.AprilFools ? "dead" : "no autokill";
             bm.autoKillType = BeatmapObject.AutoKillType.OldStyleNoAutokill;
 
-            if (SetToCenterCam)
+            if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
                 var pos = EventManager.inst.cam.transform.position;
 
@@ -6486,46 +6584,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
-        /// Shows extra object templates.
-        /// </summary>
-        public void ShowObjectTemplates()
-        {
-            RTEditor.inst.ObjectTemplatePopup.Open();
-            RTEditor.inst.ObjectTemplatePopup.UpdateSearchFunction(RefreshObjectTemplates);
-            RefreshObjectTemplates(RTEditor.inst.ObjectTemplatePopup.SearchField.text);
-        }
-
-        /// <summary>
-        /// Refreshes the list of extra object templates.
-        /// </summary>
-        /// <param name="search">The search term.</param>
-        public void RefreshObjectTemplates(string search)
-        {
-            RTEditor.inst.ObjectTemplatePopup.ClearContent();
-            for (int i = 0; i < objectOptions.Count; i++)
-            {
-                if (!RTString.SearchString(search, objectOptions[i].name))
-                    continue;
-
-                var name = objectOptions[i].name;
-                var hint = objectOptions[i].hint;
-
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ObjectTemplatePopup.Content, "Function");
-
-                gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
-
-                var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(objectOptions[i].Create);
-
-                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-                text.text = name;
-                EditorThemeManager.ApplyLightText(text);
-            }
-        }
-
-        /// <summary>
         /// Shows the parent search.
         /// </summary>
         public void ShowParentSearch() => ShowParentSearch(EditorTimeline.inst.CurrentSelection);
@@ -6722,7 +6780,7 @@ namespace BetterLegacy.Editor.Managers
             var kf = bmTimelineObject.InternalTimelineObjects.Find(x => x.Type == type && x.Index == index);
 
             if (!kf)
-                kf = bmTimelineObject.InternalTimelineObjects.Find(x => x.ID == (beatmapObject.events[type][index] as EventKeyframe).id);
+                kf = bmTimelineObject.InternalTimelineObjects.Find(x => x.ID == beatmapObject.events[type][index].id);
 
             if (!kf)
             {
@@ -6768,7 +6826,7 @@ namespace BetterLegacy.Editor.Managers
 
         public TimelineKeyframe CreateKeyframe(BeatmapObject beatmapObject, int type, int index)
         {
-            var eventKeyframe = (EventKeyframe)beatmapObject.events[type][index];
+            var eventKeyframe = beatmapObject.events[type][index];
 
             var kf = new TimelineKeyframe(eventKeyframe, beatmapObject)
             {
@@ -6809,7 +6867,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderKeyframe(BeatmapObject beatmapObject, TimelineKeyframe timelineObject)
         {
-            if (beatmapObject.events[timelineObject.Type].TryFindIndex(x => (x as EventKeyframe).id == timelineObject.ID, out int kfIndex))
+            if (beatmapObject.events[timelineObject.Type].TryFindIndex(x => x.id == timelineObject.ID, out int kfIndex))
                 timelineObject.Index = kfIndex;
 
             var eventKeyframe = timelineObject.eventKeyframe;
