@@ -420,7 +420,7 @@ namespace BetterLegacy.Editor.Data
                 var path = FolderPath;
                 Button.onClick = eventData =>
                 {
-                    if (!path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                    if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
                     {
                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                         return;
@@ -431,7 +431,7 @@ namespace BetterLegacy.Editor.Data
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
-                                RTEditor.inst.editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                                RTEditor.inst.editorPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                                 RTEditor.inst.UpdateEditorPath(false);
                             }, "Level Panel Open Folder"),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
@@ -463,7 +463,7 @@ namespace BetterLegacy.Editor.Data
                             new ButtonFunction(true),
                             new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
                             {
-                                string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTFile.ApplicationDirectory, new string[] { "png" });
+                                string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                                 if (string.IsNullOrEmpty(imageFile))
                                     return;
 
@@ -554,7 +554,7 @@ namespace BetterLegacy.Editor.Data
                         return;
                     }
 
-                    RTEditor.inst.editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                    RTEditor.inst.editorPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                     RTEditor.inst.UpdateEditorPath(false);
                 };
                 return;

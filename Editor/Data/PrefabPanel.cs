@@ -147,7 +147,7 @@ namespace BetterLegacy.Editor.Data
             folderButtonStorageFolder.button.onClick.ClearAll();
             folderButtonFunctionFolder.onClick = eventData =>
             {
-                if (!path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
                 {
                     EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                     return;
@@ -158,7 +158,7 @@ namespace BetterLegacy.Editor.Data
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Open folder", () =>
                         {
-                            RTEditor.inst.prefabPathField.text = path.Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                            RTEditor.inst.prefabPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                             RTEditor.inst.UpdatePrefabPath(false);
                         }),
                         new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
@@ -174,7 +174,7 @@ namespace BetterLegacy.Editor.Data
                         new ButtonFunction(true),
                         new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
                         {
-                            string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTFile.ApplicationDirectory, new string[] { "png" });
+                            string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                             if (string.IsNullOrEmpty(imageFile))
                                 return;
 
@@ -260,7 +260,7 @@ namespace BetterLegacy.Editor.Data
                     return;
                 }
 
-                RTEditor.inst.prefabPathField.text = path.Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                RTEditor.inst.prefabPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                 RTEditor.inst.UpdatePrefabPath(false);
             };
 
