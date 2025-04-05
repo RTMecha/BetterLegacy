@@ -21,6 +21,8 @@
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
 - Fixed default keybinds for First and Last Keyframe selectors being incorrect.
+- Fixed non-shape objects not updating their render type when the dropdown value is changed.
+- Fixed Multi Object Keyframe Editor "Apply Curves" button re-rendering keyframes from previously selected objects.
 
 ------------------------------------------------------------------------------------------
 
