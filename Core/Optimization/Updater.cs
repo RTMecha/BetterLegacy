@@ -331,6 +331,8 @@ namespace BetterLegacy.Core.Optimization
                         {
                             if (levelObject.visualObject is SolidObject solidObject)
                                 solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, false, beatmapObject.gradientScale, beatmapObject.gradientRotation);
+                            else
+                                levelObject.visualObject.SetRenderType((int)beatmapObject.renderLayerType);
 
                             break;
                         }

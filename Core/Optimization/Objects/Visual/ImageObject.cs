@@ -26,12 +26,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             spriteRenderer = this.renderer as SpriteRenderer;
 
-            this.gameObject.layer = renderType switch
-            {
-                1 => 9,
-                2 => 11,
-                _ => 8
-            };
+            SetRenderType(renderType);
 
             if (this.renderer)
                 material = this.renderer.material;

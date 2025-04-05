@@ -23,12 +23,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             if (this.gameObject.TryGetComponent(out Renderer renderer))
                 this.renderer = renderer;
 
-            this.gameObject.layer = renderType switch
-            {
-                1 => 9,
-                2 => 11,
-                _ => 8
-            };
+            SetRenderType(renderType);
 
             textMeshPro = gameObject.GetComponent<TextMeshPro>();
             textMeshPro.enabled = true;

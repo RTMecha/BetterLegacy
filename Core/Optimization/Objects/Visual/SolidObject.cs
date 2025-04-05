@@ -62,12 +62,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// <param name="gradientType">Type of gradient to render.</param>
         public void UpdateRendering(int gradientType, int renderType, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f)
         {
-            gameObject.layer = renderType switch
-            {
-                1 => 9,
-                2 => 11,
-                _ => 8
-            };
+            SetRenderType(renderType);
 
             isGradient = gradientType != 0;
             this.gradientType = gradientType;
