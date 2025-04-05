@@ -104,6 +104,13 @@ namespace BetterLegacy.Companion.Entity
 
             switch (context)
             {
+                case Notices.SCENE_LOADED: {
+
+                        break;
+                    }
+
+                #region Editor
+
                 case Notices.MORE_BINS: {
                         if (GetAttribute("SEEN_MORE_BINS").Value == 1.0)
                             break;
@@ -116,6 +123,7 @@ namespace BetterLegacy.Companion.Entity
                 case Notices.LOADED_LEVEL: {
                         if (RandomHelper.PercentChance(ExampleConfig.Instance.LoadedLevelNoticeChance.Value))
                             reference?.chatBubble?.SayDialogue(RTEditor.inst.fromNewLevel ? ExampleChatBubble.Dialogues.LOADED_NEW_LEVEL : ExampleChatBubble.Dialogues.LOADED_LEVEL);
+
                         break;
                     }
                 case Notices.NEW_OBJECT: {
@@ -175,28 +183,6 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
-                case Notices.GAME_FILE_EASTER_EGG: {
-                        if (GetAttribute("SEEN_GAME_FILE_EASTER_EGG").Value == 1.0)
-                            break;
-
-                        SetAttribute("SEEN_GAME_FILE_EASTER_EGG", 1.0, MathOperation.Set);
-                        reference?.chatBubble?.Say("Woah, you found a secret!", new DialogueParameters()
-                        {
-                            onComplete = () =>
-                            {
-                                reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", new DialogueParameters(2f, 6f, 0.7f));
-                            }
-                        });
-
-                        break;
-                    }
-                case Notices.SCENE_LOADED: {
-                        break;
-                    }
-                case Notices.GAME_START: {
-
-                        break;
-                    }
                 case Notices.EDITOR_START: {
 
                         break;
@@ -217,6 +203,31 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+
+                #endregion
+
+                #region Game / Player
+
+                case Notices.GAME_START: {
+
+                        break;
+                    }
+                case Notices.GAME_FILE_EASTER_EGG: {
+                        if (GetAttribute("SEEN_GAME_FILE_EASTER_EGG").Value == 1.0)
+                            break;
+
+                        SetAttribute("SEEN_GAME_FILE_EASTER_EGG", 1.0, MathOperation.Set);
+                        reference?.chatBubble?.Say("Woah, you found a secret!", new DialogueParameters()
+                        {
+                            onComplete = () =>
+                            {
+                                reference?.chatBubble?.Say("The level you're playing right now is a level found in the vanilla game files.", new DialogueParameters(2f, 6f, 0.7f));
+                            }
+                        });
+
+                        break;
+                    }
+
                 case Notices.PLAYER_HIT: {
                         if (RandomHelper.PercentChance(ExampleConfig.Instance.PlayerHitNoticeChance.Value) && parameters is PlayerNoticeParameters playerParameters && playerParameters.player)
                         {
@@ -238,6 +249,8 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+
+                    #endregion
             }
         }
 
@@ -247,6 +260,13 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public static class Notices
         {
+            /// <summary>
+            /// Triggers when a scene is loaded.
+            /// </summary>
+            public const string SCENE_LOADED = "Scene Loaded";
+
+            #region Editor
+
             /// <summary>
             /// Triggers when the bin count is modified.
             /// </summary>
@@ -271,26 +291,11 @@ namespace BetterLegacy.Companion.Entity
             /// Triggers when a prefab is imported into the level.
             /// </summary>
             public const string IMPORT_PREFAB = "Import Prefab";
-            
+
             /// <summary>
             /// Triggers when a prefab is added to the level as a prefab object.
             /// </summary>
             public const string ADD_PREFAB_OBJECT = "Add Prefab Object";
-
-            /// <summary>
-            /// Triggers when the game file easter egg is discovered.
-            /// </summary>
-            public const string GAME_FILE_EASTER_EGG = "Game File Easter Egg";
-
-            /// <summary>
-            /// Triggers when a scene is loaded.
-            /// </summary>
-            public const string SCENE_LOADED = "Scene Loaded";
-
-            /// <summary>
-            /// Triggers when <see cref="GameManager"/> is loaded.
-            /// </summary>
-            public const string GAME_START = "Game Start";
 
             /// <summary>
             /// Triggers when <see cref="EditorManager"/> is loaded.
@@ -312,6 +317,20 @@ namespace BetterLegacy.Companion.Entity
             /// </summary>
             public const string EDITOR_AUTOSAVED = "Editor Autosaved";
 
+            #endregion
+
+            #region Game / Player
+
+            /// <summary>
+            /// Triggers when the game file easter egg is discovered.
+            /// </summary>
+            public const string GAME_FILE_EASTER_EGG = "Game File Easter Egg";
+
+            /// <summary>
+            /// Triggers when <see cref="GameManager"/> is loaded.
+            /// </summary>
+            public const string GAME_START = "Game Start";
+
             /// <summary>
             /// Triggers when a player was hit.
             /// </summary>
@@ -321,6 +340,8 @@ namespace BetterLegacy.Companion.Entity
             /// Triggers when a player died.
             /// </summary>
             public const string PLAYER_DEATH = "Player Death";
+
+            #endregion
         }
 
         #endregion
