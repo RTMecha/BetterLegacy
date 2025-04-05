@@ -17,6 +17,7 @@ using TMPro;
 using SimpleJSON;
 using Crosstales.FB;
 
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -3059,6 +3060,8 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm, true));
+
             if (setHistory)
                 EditorManager.inst.history.Add(new History.Command("Create New Object", () => CreateNewObject(action, select, false), DeleteObject(timelineObject).Start));
         }
@@ -3079,6 +3082,8 @@ namespace BetterLegacy.Editor.Managers
             Updater.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
                 return;
@@ -3107,6 +3112,8 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
+
             if (!setHistory)
                 return;
 
@@ -3133,6 +3140,8 @@ namespace BetterLegacy.Editor.Managers
             Updater.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
                 return;
@@ -3172,6 +3181,8 @@ namespace BetterLegacy.Editor.Managers
             if (!Seasons.AprilFools)
                 OpenDialog(bm);
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
+
             if (!setHistory)
                 return;
 
@@ -3198,6 +3209,8 @@ namespace BetterLegacy.Editor.Managers
             Updater.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
                 return;
@@ -3227,6 +3240,8 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
+
             if (!setHistory)
                 return;
 
@@ -3253,6 +3268,8 @@ namespace BetterLegacy.Editor.Managers
             Updater.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
                 return;
@@ -3281,6 +3298,8 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
+
             if (!setHistory)
                 return;
 
@@ -3306,6 +3325,8 @@ namespace BetterLegacy.Editor.Managers
             Updater.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             OpenDialog(bm);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
                 return;
@@ -3339,8 +3360,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (select)
                 EditorTimeline.inst.SetCurrentObject(timelineObject);
-
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT);
 
             return timelineObject;
         }

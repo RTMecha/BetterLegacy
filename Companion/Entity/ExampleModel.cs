@@ -375,7 +375,7 @@ namespace BetterLegacy.Companion.Entity
 
                 // start dragging
 
-                reference?.interactions?.Interact(ExampleInteractions.Interactions.PET);
+                reference?.brain?.Interact(ExampleBrain.Interactions.PET);
 
                 CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
 
@@ -390,7 +390,7 @@ namespace BetterLegacy.Companion.Entity
 
                 if (reference.brain.CurrentAction)
                 {
-                    reference.interactions?.Interact(ExampleInteractions.Interactions.INTERRUPT);
+                    reference.brain?.Interact(ExampleBrain.Interactions.INTERRUPT);
                     reference.brain.StopCurrentAction();
                 }
             })
@@ -478,7 +478,7 @@ namespace BetterLegacy.Companion.Entity
             .OnClick((part, pointerEventData) =>
             {
                 if (!reference.leaving)
-                    reference?.interactions?.Interact(ExampleInteractions.Interactions.TOUCHIE);
+                    reference?.brain?.Interact(ExampleBrain.Interactions.TOUCHIE);
             }));
 
             #region Eyes
@@ -608,7 +608,7 @@ namespace BetterLegacy.Companion.Entity
                 if (reference.leaving)
                     return;
 
-                reference?.interactions?.Interact(ExampleInteractions.Interactions.HOLD_HAND);
+                reference?.brain?.Interact(ExampleBrain.Interactions.HOLD_HAND);
                 if (!reference || !reference.canDragLeftHand || !part)
                     return;
 
@@ -628,7 +628,7 @@ namespace BetterLegacy.Companion.Entity
 
                 try
                 {
-                    reference.interactions.SelectObject(part.image);
+                    reference.brain.SelectObject(part.image);
                 }
                 catch (Exception ex)
                 {
@@ -667,7 +667,7 @@ namespace BetterLegacy.Companion.Entity
                 if (reference.leaving)
                     return;
 
-                reference?.interactions?.Interact(ExampleInteractions.Interactions.HOLD_HAND);
+                reference?.brain?.Interact(ExampleBrain.Interactions.HOLD_HAND);
                 if (!reference || !reference.canDragRightHand || !part)
                     return;
 
@@ -687,7 +687,7 @@ namespace BetterLegacy.Companion.Entity
 
                 try
                 {
-                    reference.interactions.SelectObject(part.image);
+                    reference.brain.SelectObject(part.image);
                 }
                 catch (Exception ex)
                 {
@@ -714,7 +714,6 @@ namespace BetterLegacy.Companion.Entity
             }));
 
             #endregion
-
         }
 
         /// <summary>

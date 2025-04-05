@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -20,14 +21,13 @@ namespace BetterLegacy.Companion.Entity
     {
         public Example() => internalID = LSText.randomNumString(8);
 
-        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, ExampleInteractions interactions, List<ExampleModule> modules = null) : this()
+        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, List<ExampleModule> modules = null) : this()
         {
             this.brain = brain;
             this.model = model;
             this.chatBubble = chatBubble;
             this.options = options;
             this.commands = commands;
-            this.interactions = interactions;
             this.modules = modules;
 
             this.brain.SetReference(this);
@@ -35,7 +35,6 @@ namespace BetterLegacy.Companion.Entity
             this.chatBubble.SetReference(this);
             this.options.SetReference(this);
             this.commands.SetReference(this);
-            this.interactions.SetReference(this);
             this.modules?.ForLoop(module => module?.SetReference(this));
         }
 
@@ -48,7 +47,7 @@ namespace BetterLegacy.Companion.Entity
             - Ensure Example has a lot of settings that can control his behavior if people want him to be a specific way. I don't want him to come off as annoying.
             - Figure out custom models / companions. Probably have it all in one package?
             - Random enter & leave sequences
-            - Implement tutorials module. This utilizes the model's screen blocker and has its own UI, similar to what was concepted by MoNsTeR.
+            - Implement tutorials module. This won't be another "documentation". Instead, it'll be a proper hands-on tutorial that guides you along a specific process.
          */
 
         #region Modules
@@ -77,11 +76,6 @@ namespace BetterLegacy.Companion.Entity
         /// Example's chat window.
         /// </summary>
         public ExampleCommands commands;
-
-        /// <summary>
-        /// How Example interacts with the rest of the mod.
-        /// </summary>
-        public ExampleInteractions interactions;
 
         /// <summary>
         /// List of custom modules.
@@ -238,7 +232,9 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Gets the default Example.
         /// </summary>
-        public static Func<Example> getDefault = () => new Example(ExampleBrain.getDefault(), ExampleModel.getDefault(), ExampleChatBubble.getDefault(), ExampleOptions.getDefault(), ExampleCommands.getDefault(), ExampleInteractions.getDefault());
+        public static Func<Example> getDefault = () => new Example(ExampleBrain.getDefault(), ExampleModel.getDefault(), ExampleChatBubble.getDefault(), ExampleOptions.getDefault(), ExampleCommands.getDefault(), getDefaultModules?.Select(x => x?.Invoke())?.ToList() ?? null);
+
+        public static List<Func<ExampleModule>> getDefaultModules;
 
         /// <summary>
         /// Initializes Example.
@@ -279,8 +275,6 @@ namespace BetterLegacy.Companion.Entity
             options.Build();
             LogStartup("Building the commands...");
             commands.Build();
-            LogStartup("Building the interactions...");
-            interactions.Build();
             if (modules != null)
             {
                 LogStartup("Building the custom modules...");
@@ -304,7 +298,6 @@ namespace BetterLegacy.Companion.Entity
             chatBubble?.Tick();
             options?.Tick();
             commands?.Tick();
-            interactions?.Tick();
 
             modules?.ForLoop(module => module?.Tick());
 
@@ -337,8 +330,6 @@ namespace BetterLegacy.Companion.Entity
             options = null;
             commands?.Clear();
             commands = null;
-            interactions?.Clear();
-            interactions = null;
 
             modules?.ForLoop(module => module?.Clear());
             modules?.Clear();

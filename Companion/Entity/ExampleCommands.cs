@@ -319,7 +319,7 @@ namespace BetterLegacy.Companion.Entity
         public void RegisterChat(string key, string dialogue, List<ExampleCommand.Phrase> phrases)
         {
             commands.Add(new ExampleCommand(key, key, false,
-                response => reference.interactions.Interact(ExampleInteractions.Interactions.CHAT, new ChatInteractParameters(dialogue, response)), phrases));
+                response => reference.brain.Interact(ExampleBrain.Interactions.CHAT, new ChatInteractParameters(dialogue, response)), phrases));
         }
 
         /// <summary>
@@ -352,7 +352,7 @@ namespace BetterLegacy.Companion.Entity
             if (chatter == null)
                 return;
 
-            reference?.interactions?.Interact(ExampleInteractions.Interactions.CHAT);
+            reference?.brain?.Interact(ExampleBrain.Interactions.CHAT);
 
             for (int i = 0; i < commands.Count; i++)
                 commands[i].CheckResponse(chatter.text);

@@ -14,6 +14,7 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -1565,8 +1566,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
 
-            if (prefab.name.Contains("Example"))
-                Example.Current?.brain?.Notice(ExampleBrain.Notices.EXAMPLE_REFERENCE);
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(prefab, prefabObject));
         }
 
         public bool expanding;
@@ -3080,6 +3080,8 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.prefabs.Add(tmpPrefab);
             StartCoroutine(RefreshInternalPrefabs());
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(tmpPrefab));
 
             return tmpPrefab;
         }

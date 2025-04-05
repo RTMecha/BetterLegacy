@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 
 namespace BetterLegacy.Companion.Data.Parameters
@@ -27,5 +28,31 @@ namespace BetterLegacy.Companion.Data.Parameters
         /// Player reference.
         /// </summary>
         public CustomPlayer player;
+    }
+
+    public class BeatmapObjectNoticeParameters : NoticeParameters
+    {
+        public BeatmapObjectNoticeParameters() { }
+
+        public BeatmapObjectNoticeParameters(BeatmapObject beatmapObject) => this.beatmapObject = beatmapObject;
+
+        public BeatmapObjectNoticeParameters(BeatmapObject beatmapObject, bool custom) : this(beatmapObject) => this.custom = custom;
+
+        public BeatmapObject beatmapObject;
+
+        public bool custom = false;
+    }
+
+    public class PrefabNoticeParameters : NoticeParameters
+    {
+        public PrefabNoticeParameters() { }
+
+        public PrefabNoticeParameters(Prefab prefab) => this.prefab = prefab;
+
+        public PrefabNoticeParameters(Prefab prefab, PrefabObject prefabObject) : this(prefab) => this.prefabObject = prefabObject;
+
+        public Prefab prefab;
+
+        public PrefabObject prefabObject;
     }
 }
