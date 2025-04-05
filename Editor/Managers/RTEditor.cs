@@ -5104,10 +5104,10 @@ namespace BetterLegacy.Editor.Managers
 
             bool setNew = false;
             int num = 0;
-            string p = RTFile.CombinePaths(BeatmapsPath, EditorManager.inst.newLevelName);
+            string p = RTFile.CombinePaths(BeatmapsPath, EditorPath, EditorManager.inst.newLevelName);
             while (RTFile.DirectoryExists(p))
             {
-                p = RTFile.CombinePaths(BeatmapsPath, EditorManager.inst.newLevelName) + " - " + num.ToString();
+                p = RTFile.CombinePaths(BeatmapsPath, EditorPath, EditorManager.inst.newLevelName) + " - " + num.ToString();
                 num += 1;
                 setNew = true;
 
@@ -5115,7 +5115,7 @@ namespace BetterLegacy.Editor.Managers
             if (setNew)
                 EditorManager.inst.newLevelName += " - " + num.ToString();
 
-            var path = RTFile.CombinePaths(BeatmapsPath, EditorManager.inst.newLevelName);
+            var path = RTFile.CombinePaths(BeatmapsPath, EditorPath, EditorManager.inst.newLevelName);
 
             if (RTFile.DirectoryExists(path))
             {
