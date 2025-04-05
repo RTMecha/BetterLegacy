@@ -5664,20 +5664,20 @@ namespace BetterLegacy.Editor.Managers
                     var curvesMulti = multiDialog.Find("curves/curves").GetComponent<Dropdown>();
                     var curvesMultiApplyButton = multiDialog.Find("curves/apply").GetComponent<Button>();
                     curvesMulti.onValueChanged.ClearAll();
+                    curvesMultiApplyButton.onClick.ClearAll();
                     curvesMultiApplyButton.onClick.AddListener(() =>
                     {
                         var anim = (Easing)curvesMulti.value;
-                        foreach (var keyframe in selected.Where(x => x.Index != 0).Select(x => x.eventKeyframe))
-                            keyframe.curve = anim;
+                        foreach (var keyframe in selected)
+                        {
+                            if (keyframe.Index != 0)
+                                keyframe.eventKeyframe.curve = anim;
+                        }
 
-                        ResizeKeyframeTimeline(beatmapObject);
-
-                        RenderKeyframes(beatmapObject);
-
-                        // Keyframe Time affects both physical object and timeline object.
-                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        // Since keyframe curve has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
                             Updater.UpdateObject(beatmapObject, "Keyframes");
+                        RenderKeyframes(beatmapObject);
                     });
 
                     var valueIndex = multiDialog.Find("value base/value index/input").GetComponent<InputField>();
