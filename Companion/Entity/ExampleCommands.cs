@@ -67,18 +67,17 @@ namespace BetterLegacy.Companion.Entity
             draggable.target = chatterBase;
             draggable.ogPos = chatterBase.anchoredPosition;
 
-            var title = UIManager.GenerateUIText("Title", chatterBase.transform);
-            var titleText = (Text)title["Text"];
+            var title = Creator.NewUIObject("Title", chatterBase.transform);
+            var titleText = title.AddComponent<Text>();
+            titleText.font = Font.GetDefault();
+            titleText.fontSize = 20;
             titleText.text = "Example Commands";
             titleText.rectTransform.anchoredPosition = new Vector2(8f, -16f);
             titleText.rectTransform.sizeDelta = new Vector2(800f, 100f);
 
-            var uiField = UIManager.GenerateUIInputField("Discussion", chatterBase);
+            chatter = UIManager.GenerateInputField("Discussion", chatterBase);
 
-            var chatterField = ((GameObject)uiField["GameObject"]).transform.AsRT();
-            chatter = (InputField)uiField["InputField"];
-            chatter.image = chatter.GetComponent<Image>();
-
+            var chatterField = chatter.image.rectTransform;
             chatterField.AsRT().anchoredPosition = new Vector2(0f, -32);
             chatterField.AsRT().sizeDelta = new Vector2(800f, 64f);
 
@@ -87,7 +86,7 @@ namespace BetterLegacy.Companion.Entity
 
             chatter.onValueChanged.AddListener(SearchCommandAutocomplete);
 
-            chatter.onEndEdit.AddListener(_val => HandleChatting());
+            chatter.onEndEdit.AddListener(HandleChatting);
 
             EditorThemeManager.ApplyInputField(chatter);
 
@@ -153,10 +152,10 @@ namespace BetterLegacy.Companion.Entity
 
             commandAutocompletePrefab.AddComponent<Button>().image = commandAutocompletePrefabImage;
 
-            var commandAutocompletePrefabName = UIManager.GenerateUIText("Name", commandAutocompletePrefab.transform);
-            UIManager.SetRectTransform((RectTransform)commandAutocompletePrefabName["RectTransform"], Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
-            var commandAutocompletePrefabDesc = UIManager.GenerateUIText("Desc", commandAutocompletePrefab.transform);
-            UIManager.SetRectTransform((RectTransform)commandAutocompletePrefabDesc["RectTransform"], new Vector2(0f, -16f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
+            var commandAutocompletePrefabName = Creator.NewUIObject("Name", commandAutocompletePrefab.transform);
+            UIManager.SetRectTransform(commandAutocompletePrefabName.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+            var commandAutocompletePrefabDesc = Creator.NewUIObject("Desc", commandAutocompletePrefab.transform);
+            UIManager.SetRectTransform(commandAutocompletePrefabDesc.transform.AsRT(), new Vector2(0f, -16f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
 
             CoroutineHelper.StartCoroutine(SetupCommandsAutocomplete());
 
@@ -169,6 +168,7 @@ namespace BetterLegacy.Companion.Entity
         {
             LSHelpers.DeleteChildren(autocompleteContent);
 
+            var font = Font.GetDefault();
             foreach (var command in commands.Where(x => x.autocomplete))
             {
                 var autocomplete = commandAutocompletePrefab.Duplicate(autocompleteContent, "Autocomplete");
@@ -187,9 +187,10 @@ namespace BetterLegacy.Companion.Entity
                 EditorThemeManager.ApplySelectable(autocompleteButton, ThemeGroup.List_Button_1);
 
                 var autocompleteName = autocomplete.transform.Find("Name").GetComponent<Text>();
-                autocompleteName.text = command.name.ToUpper();
+                autocompleteName.font = font;
                 autocompleteName.fontSize = 28;
                 autocompleteName.fontStyle = FontStyle.Bold;
+                autocompleteName.text = command.name.ToUpper();
                 EditorThemeManager.ApplyLightText(autocompleteName);
                 var autocompleteDesc = autocomplete.transform.Find("Desc").GetComponent<Text>();
                 autocompleteDesc.text = command.desc;
@@ -347,7 +348,7 @@ namespace BetterLegacy.Companion.Entity
             }
         }
 
-        void HandleChatting()
+        void HandleChatting(string chat)
         {
             if (chatter == null)
                 return;
@@ -355,7 +356,7 @@ namespace BetterLegacy.Companion.Entity
             reference?.brain?.Interact(ExampleBrain.Interactions.CHAT);
 
             for (int i = 0; i < commands.Count; i++)
-                commands[i].CheckResponse(chatter.text);
+                commands[i].CheckResponse(chat);
 
             AchievementManager.inst.UnlockAchievement("example_chat");
         }

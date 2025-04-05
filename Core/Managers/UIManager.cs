@@ -120,83 +120,29 @@ namespace BetterLegacy.Core.Managers
             return dictionary;
         }
 
-        public static Dictionary<string, object> GenerateUIInputField(string _name, Transform _parent)
-        {
-            var dictionary = new Dictionary<string, object>();
-            var image = GenerateUIImage(_name, _parent);
-            var text = GenerateUIText("text", ((GameObject)image["GameObject"]).transform);
-            var placeholder = GenerateUIText("placeholder", ((GameObject)image["GameObject"]).transform);
-
-            SetRectTransform((RectTransform)text["RectTransform"], new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
-            SetRectTransform((RectTransform)placeholder["RectTransform"], new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
-
-            dictionary.Add("GameObject", image["GameObject"]);
-            dictionary.Add("RectTransform", image["RectTransform"]);
-            dictionary.Add("Image", image["Image"]);
-            dictionary.Add("Text", text["Text"]);
-            dictionary.Add("Placeholder", placeholder["Text"]);
-            var inputField = ((GameObject)image["GameObject"]).AddComponent<InputField>();
-            inputField.textComponent = (Text)text["Text"];
-            inputField.placeholder = (Text)placeholder["Text"];
-            dictionary.Add("InputField", inputField);
-
-            return dictionary;
-        }
-
         public static InputField GenerateInputField(string name, Transform parent)
         {
-            var image = GenerateUIImage(name, parent);
-            var text = GenerateUIText("text", ((GameObject)image["GameObject"]).transform);
-            var placeholder = GenerateUIText("placeholder", ((GameObject)image["GameObject"]).transform);
+            var gameObject = Creator.NewUIObject(name, parent);
+            var image = gameObject.AddComponent<Image>();
 
-            SetRectTransform((RectTransform)text["RectTransform"], new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
-            SetRectTransform((RectTransform)placeholder["RectTransform"], new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
+            var text = Creator.NewUIObject("text", gameObject.transform);
+            var inputText = text.AddComponent<Text>();
+            inputText.font = Font.GetDefault();
+            inputText.fontSize = 20;
 
-            var inputField = ((GameObject)image["GameObject"]).AddComponent<InputField>();
-            inputField.textComponent = (Text)text["Text"];
-            inputField.placeholder = (Text)placeholder["Text"];
-            inputField.image = (Image)image["Image"];
+            var placeholder = Creator.NewUIObject("placeholder", gameObject.transform);
+            var placeholderText = placeholder.AddComponent<Text>();
+            placeholderText.font = Font.GetDefault();
+            placeholderText.fontSize = 20;
+
+            SetRectTransform(inputText.rectTransform, new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
+            SetRectTransform(placeholderText.rectTransform, new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
+
+            var inputField = gameObject.AddComponent<InputField>();
+            inputField.textComponent = inputText;
+            inputField.placeholder = placeholderText;
+            inputField.image = image;
             return inputField;
-        }
-
-        public static Dictionary<string, object> GenerateUIButton(string _name, Transform _parent)
-        {
-            var gameObject = GenerateUIImage(_name, _parent);
-            gameObject.Add("Button", ((GameObject)gameObject["GameObject"]).AddComponent<Button>());
-
-            return gameObject;
-        }
-
-        public static Dictionary<string, object> GenerateUIToggle(string _name, Transform _parent)
-        {
-            var dictionary = new Dictionary<string, object>();
-            var gameObject = new GameObject(_name);
-            gameObject.transform.SetParent(_parent);
-            gameObject.transform.localScale = Vector3.one;
-            dictionary.Add("GameObject", gameObject);
-            dictionary.Add("RectTransform", gameObject.AddComponent<RectTransform>());
-
-            var bg = GenerateUIImage("Background", gameObject.transform);
-            dictionary.Add("Background", bg["GameObject"]);
-            dictionary.Add("BackgroundRT", bg["RectTransform"]);
-            dictionary.Add("BackgroundImage", bg["Image"]);
-
-            var checkmark = GenerateUIImage("Checkmark", ((GameObject)bg["GameObject"]).transform);
-            dictionary.Add("Checkmark", checkmark["GameObject"]);
-            dictionary.Add("CheckmarkRT", checkmark["RectTransform"]);
-            dictionary.Add("CheckmarkImage", checkmark["Image"]);
-
-            var toggle = gameObject.AddComponent<Toggle>();
-            toggle.image = (Image)bg["Image"];
-            toggle.targetGraphic = (Image)bg["Image"];
-            toggle.graphic = (Image)checkmark["Image"];
-            dictionary.Add("Toggle", toggle);
-
-            ((Image)checkmark["Image"]).color = new Color(0.1216f, 0.1216f, 0.1216f, 1f);
-
-            GetImage((Image)checkmark["Image"], RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_checkmark.png");
-
-            return dictionary;
         }
 
         public static Dictionary<string, object> GenerateUIDropdown(string _name, Transform _parent)
@@ -328,26 +274,6 @@ namespace BetterLegacy.Core.Managers
             cb.disabledColor = disabled;
             cb.fadeDuration = fade;
             return cb;
-        }
-
-        public static void SetLayoutGroup(HorizontalLayoutGroup layoutGroup, bool controlHeight, bool controlWidth, bool expandHeight, bool expandWidth, bool scaleHeight = false, bool scaleWidth = false)
-        {
-            layoutGroup.childControlHeight = controlHeight;
-            layoutGroup.childControlWidth = controlWidth;
-            layoutGroup.childForceExpandHeight = expandHeight;
-            layoutGroup.childForceExpandWidth = expandWidth;
-            layoutGroup.childScaleHeight = scaleHeight;
-            layoutGroup.childScaleWidth = scaleWidth;
-        }
-
-        public static void SetLayoutGroup(VerticalLayoutGroup layoutGroup, bool controlHeight, bool controlWidth, bool expandHeight, bool expandWidth, bool scaleHeight = false, bool scaleWidth = false)
-        {
-            layoutGroup.childControlHeight = controlHeight;
-            layoutGroup.childControlWidth = controlWidth;
-            layoutGroup.childForceExpandHeight = expandHeight;
-            layoutGroup.childForceExpandWidth = expandWidth;
-            layoutGroup.childScaleHeight = scaleHeight;
-            layoutGroup.childScaleWidth = scaleWidth;
         }
 
         public static void GetImage(Image _image, string _filePath)
