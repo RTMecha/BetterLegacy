@@ -600,7 +600,7 @@ namespace BetterLegacy.Core.Optimization
                 ResetOffsets();
 
                 for (int i = 0; i < levelProcessor.level.objects.Count; i++)
-                    ((LevelObject)levelProcessor.level.objects[i]).Clear();
+                    levelProcessor.level.objects[i].Clear();
 
                 levelProcessor.level.objects.Clear();
                 levelProcessor.converter.beatmapObjects.Clear();
@@ -975,7 +975,7 @@ namespace BetterLegacy.Core.Optimization
             if (levelProcessor != null)
             {
                 for (int i = 0; i < levelProcessor.level.objects.Count; i++)
-                    ((LevelObject)levelProcessor.level.objects[i]).Clear();
+                    levelProcessor.level.objects[i].Clear();
 
                 levelProcessor.level.objects.Clear();
                 levelProcessor.converter.beatmapObjects.Clear();

@@ -105,9 +105,6 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         #region Methods
 
-        /// <summary>
-        /// Clears the data of the object.
-        /// </summary>
         public void Clear()
         {
             if (parentObjects != null)
