@@ -118,7 +118,6 @@
 
 ### Core
 - Change how modifiers are saved for better consistency.
-- Clean up UIManager.
 - Summary and note as much as I can (or need to).
 
 ### Editor
