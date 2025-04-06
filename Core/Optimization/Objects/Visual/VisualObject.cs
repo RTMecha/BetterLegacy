@@ -33,6 +33,11 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         public bool colliderEnabled = true;
 
         /// <summary>
+        /// Helper opacity of the visual object.
+        /// </summary>
+        public float opacity = 1f;
+
+        /// <summary>
         /// Color sequence to interpolate through.
         /// </summary>
         public Sequence<Color> colorSequence;

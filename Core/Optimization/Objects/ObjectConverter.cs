@@ -208,7 +208,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             // Init visual object wrapper
             float opacity = beatmapObject.objectType == ObjectType.Helper ? 0.35f : 1.0f;
-            bool hasCollider = beatmapObject.objectType == ObjectType.Helper ||
+            bool deco = beatmapObject.objectType == ObjectType.Helper ||
                                beatmapObject.objectType == ObjectType.Decoration;
 
             bool isSolid = beatmapObject.objectType == ObjectType.Solid;
@@ -217,8 +217,8 @@ namespace BetterLegacy.Core.Optimization.Objects
             {
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), (int)beatmapObject.renderLayerType),
                 ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
-                ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShapeSettings),
-                _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
+                ShapeType.Polygon => new PolygonObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShapeSettings),
+                _ => new SolidObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
             };
 
             if (CoreHelper.InEditor)

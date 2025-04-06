@@ -10,9 +10,11 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
+using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Core.Optimization
 {
@@ -337,10 +339,42 @@ namespace BetterLegacy.Core.Optimization
                         break;
                     } // Material
 
-                    // theory:
-                    // if object was changed from non-empty to non-empty, then just update the object properties. otherwise run UpdateObject.
                 case ObjectContext.OBJECT_TYPE: {
+                        // object was empty
+                        if (!levelObject)
+                        {
+                            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty) // object is still empty
+                                break;
+
+                            UpdateObject(beatmapObject);
+
+                            break;
+                        }
+
+                        // object was non-empty (normal, helper, etc)
+
+                        // object is still non-empty
+                        if (beatmapObject.objectType != BeatmapObject.ObjectType.Empty)
+                        {
+                            if (levelObject.visualObject)
+                                levelObject.visualObject.opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? 0.35f : 1.0f;
+
+                            if (levelObject.visualObject is SolidObject solidObject)
+                            {
+                                bool deco = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ||
+                                                    beatmapObject.objectType == BeatmapObject.ObjectType.Decoration;
+
+                                bool solid = beatmapObject.objectType == BeatmapObject.ObjectType.Solid;
+
+                                solidObject.UpdateCollider(deco, solid, beatmapObject.opacityCollision);
+                            }
+
+                            break;
+                        }
+
+                        // object is now empty.
                         UpdateObject(beatmapObject);
+
                         break;
                     } // ObjectType
 
@@ -495,17 +529,30 @@ namespace BetterLegacy.Core.Optimization
                         break;
                     } // Origin & Depth
 
-                    // theory:
-                    // remove visual object and instantiate another object onto the visual object?
                 case ObjectContext.SHAPE: {
-                        UpdateObject(beatmapObject);
+                        UpdateVisualObject(beatmapObject, levelObject);
 
                         break;
                     } // Shape
+                    
+                case ObjectContext.POLYGONS: {
+                        UpdateVisualObject(beatmapObject, levelObject);
+
+                        break;
+                    } // Polygons
+
+                case ObjectContext.IMAGE: {
+                        UpdateVisualObject(beatmapObject, levelObject);
+
+                        break;
+                    } // Image
 
                 case ObjectContext.TEXT: {
                         if (levelObject && levelObject.visualObject != null && levelObject.visualObject is TextObject textObject)
-                            textObject.textMeshPro.text = beatmapObject.text;
+                        {
+                            textObject.text = beatmapObject.text;
+                            textObject.SetText(textObject.text);
+                        }
 
                         break;
                     } // Text
@@ -641,6 +688,9 @@ namespace BetterLegacy.Core.Optimization
             var baseObject = levelObject.visualObject.gameObject.transform.parent;
             baseObject.SetParent(levelObject.top);
 
+            for (int i = 1; i < levelObject.parentObjects.Count; i++)
+                CoreHelper.Destroy(levelObject.parentObjects[i].gameObject);
+
             var parentObjects = new List<LevelParentObject>();
 
             if (!string.IsNullOrEmpty(beatmapObject.Parent) && levelProcessor.converter.beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
@@ -684,6 +734,69 @@ namespace BetterLegacy.Core.Optimization
             }
         }
 
+        static void UpdateVisualObject(BeatmapObject beatmapObject, LevelObject levelObject)
+        {
+            if (!levelObject)
+                return;
+
+            var parent = levelObject.parentObjects[0].transform?.parent;
+
+            CoreHelper.Destroy(levelObject.parentObjects[0].transform.gameObject);
+            levelObject.visualObject?.Clear();
+            levelObject.visualObject = null;
+
+            var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
+            var shapeType = (ShapeType)shape;
+
+            GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : ObjectManager.inst.objectParent.transform);
+
+            baseObject.transform.localScale = Vector3.one;
+
+            var visualObject = baseObject.transform.GetChild(0).gameObject;
+            if (beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.autoTextAlign)
+                visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
+            visualObject.name = "Visual [ " + beatmapObject.name + " ]";
+
+            levelObject.parentObjects[0] = levelProcessor.converter.InitLevelParentObject(beatmapObject, baseObject);
+
+            baseObject.name = beatmapObject.name;
+
+            baseObject.SetActive(true);
+            visualObject.SetActive(true);
+
+            // Init visual object wrapper
+            float opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? 0.35f : 1.0f;
+            bool hasCollider = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ||
+                               beatmapObject.objectType == BeatmapObject.ObjectType.Decoration;
+
+            bool isSolid = beatmapObject.objectType == BeatmapObject.ObjectType.Solid;
+
+            VisualObject visual = shapeType switch
+            {
+                ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), (int)beatmapObject.renderLayerType),
+                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null),
+                ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShapeSettings),
+                _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
+            };
+
+            if (CoreHelper.InEditor)
+            {
+                var obj = visualObject.AddComponent<SelectObject>();
+                obj.SetObject(beatmapObject);
+                beatmapObject.selector = obj;
+
+                Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
+            }
+
+            var cachedSequence = levelProcessor.converter.cachedSequences[beatmapObject.id];
+
+            visual.colorSequence = cachedSequence.ColorSequence;
+            visual.secondaryColorSequence = cachedSequence.SecondaryColorSequence;
+
+            levelObject.visualObject = visual;
+        }
+
         public static class ObjectContext
         {
             public const string START_TIME = "starttime";
@@ -697,6 +810,8 @@ namespace BetterLegacy.Core.Optimization
             public const string VISUAL_OFFSET = "visualoffset";
             public const string SHAPE = "shape";
             public const string TEXT = "text";
+            public const string POLYGONS = "polygons";
+            public const string IMAGE = "image";
             public const string KEYFRAMES = "keyframes";
         }
 

@@ -16,8 +16,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public Material material;
 
-        readonly bool opacityCollision;
-        readonly float opacity;
+        bool opacityCollision;
 
         int gradientType;
 
@@ -31,7 +30,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
 
-        public SolidObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation)
+        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation)
         {
             this.gameObject = gameObject;
 
@@ -40,20 +39,30 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             renderer = gameObject.GetComponent<Renderer>();
             renderer.enabled = true;
 
-            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation);
-
             collider = gameObject.GetComponent<Collider2D>();
 
-            if (collider)
-            {
-                collider.enabled = true;
-                if (hasCollider)
-                    collider.tag = Tags.HELPER;
+            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation);
+            UpdateCollider(deco, solid, opacityCollision);
+        }
 
-                collider.isTrigger = !solid;
-            }
-
+        /// <summary>
+        /// Updates the solid objects' collision.
+        /// </summary>
+        /// <param name="deco">If the object shouldn't damage players.</param>
+        /// <param name="solid">If players can't pass through the object.</param>
+        /// <param name="opacityCollision">If opacity of the object changes collision.</param>
+        public void UpdateCollider(bool deco, bool solid, bool opacityCollision)
+        {
             this.opacityCollision = opacityCollision;
+
+            if (!collider)
+                return;
+
+            collider.enabled = true;
+            if (deco)
+                collider.tag = Tags.HELPER;
+
+            collider.isTrigger = !solid;
         }
 
         /// <summary>

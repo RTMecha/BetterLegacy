@@ -12,7 +12,6 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         SpriteRenderer spriteRenderer;
 
         Material material;
-        readonly float opacity;
 
         public string path;
 

@@ -4625,7 +4625,7 @@ namespace BetterLegacy.Editor.Managers
 
                             // Since text has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.TEXT);
                         });
 
                         var textContextClickable = textIF.gameObject.GetOrAddComponent<ContextClickable>();
@@ -4768,15 +4768,11 @@ namespace BetterLegacy.Editor.Managers
 
                                     AssetManager.SpriteAssets[beatmapObject.text] = SpriteHelper.CreateSprite(texture2d);
                                 }
-
-                                Updater.UpdateObject(beatmapObject);
                             }
                             else
-                            {
                                 AssetManager.SpriteAssets.Remove(beatmapObject.text);
 
-                                Updater.UpdateObject(beatmapObject);
-                            }
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
 
                             dataText.text = !assetExists ? "Set Data" : "Clear Data";
                         });
@@ -4797,7 +4793,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 num = Mathf.Clamp(num, 3, 32);
                                 beatmapObject.polygonShapeSettings.Sides = num;
-                                Updater.UpdateObject(beatmapObject);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                             }
                         });
 
@@ -4813,7 +4809,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 num = Mathf.Clamp(num, 0f, 1f);
                                 beatmapObject.polygonShapeSettings.Roundness = num;
-                                Updater.UpdateObject(beatmapObject);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                             }
                         });
 
@@ -4829,7 +4825,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 num = Mathf.Clamp(num, 0f, 1f);
                                 beatmapObject.polygonShapeSettings.Thickness = num;
-                                Updater.UpdateObject(beatmapObject);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                             }
                         });
 
@@ -4845,7 +4841,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 num = Mathf.Clamp(num, 1, 32);
                                 beatmapObject.polygonShapeSettings.Slices = num;
-                                Updater.UpdateObject(beatmapObject);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                             }
                         });
 
@@ -6459,7 +6455,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Since setting image has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
-                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
+                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
 
             RenderShape(beatmapObject);
         }

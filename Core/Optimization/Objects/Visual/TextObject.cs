@@ -10,7 +10,6 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     public class TextObject : VisualObject
     {
         public TextMeshPro textMeshPro;
-        readonly float opacity;
 
         readonly bool autoTextAlign;
         public string text;
