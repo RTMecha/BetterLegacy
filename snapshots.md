@@ -10,6 +10,7 @@
   - Dragging an audio file into a loaded editor level will create an object with a playSound modifier.
   - Dragging a MP4 file into a loaded editor level will set it as the video BG.
 - Internally, a custom "base path" can be set in the editor. This means you can have Project Arrhythmia open on one harddrive, while another harddrive has the beatmaps folder. There is no UI to set this yet.
+- Added Prefab Object inspect buttons if you have Unity Explorer installed.
 
 ## Changes
 - Some JSON values have been changed. This means BetterLegacy is no longer compatible with vanilla Legacy. (why would you use that outdated version anyways)
@@ -18,6 +19,7 @@
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 - Shapes are now loaded from a shapes.json file in the Assets folder.
 - Updating parent chains, object type and shapes have been optimized.
+- SetSongTimeAutokill keybind function now includes Prefab Object autokill.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
@@ -25,6 +27,7 @@
 - Fixed non-shape objects not updating their render type when the dropdown value is changed.
 - Fixed Multi Object Keyframe Editor "Apply Curves" button re-rendering keyframes from previously selected objects.
 - Fixed setParent modifiers crashing the game because I got the parent and the child confused.
+- Fixed Prefab Object autokill updating being broken.
 
 ------------------------------------------------------------------------------------------
 
