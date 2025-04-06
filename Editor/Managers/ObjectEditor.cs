@@ -6730,7 +6730,7 @@ namespace BetterLegacy.Editor.Managers
                             continue;
                         }
 
-                        timelineObject.GetData<BeatmapObject>().SetParent(obj, false);
+                        timelineObject.GetData<BeatmapObject>().SetParent(obj);
                     }
 
                     Updater.RecalculateObjectStates();

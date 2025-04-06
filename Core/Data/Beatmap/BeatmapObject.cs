@@ -1997,7 +1997,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a list of the objects' children.</returns>
         public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
 
-        public void SetParent(BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true) => TrySetParent(beatmapObjectToParentTo, recalculate, renderParent);
+        public void SetParent(BeatmapObject beatmapObjectToParentTo, bool renderParent = true) => TrySetParent(beatmapObjectToParentTo, renderParent);
 
         /// <summary>
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
@@ -2005,7 +2005,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="beatmapObjectToParentTo">Object to try parenting to.</param>
         /// <param name="recalculate">If spawner should recalculate.</param>
         /// <returns>Returns true if the <see cref="BeatmapObject"/> was successfully parented, otherwise returns false.</returns>
-        public bool TrySetParent(BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true)
+        public bool TrySetParent(BeatmapObject beatmapObjectToParentTo, bool renderParent = true)
         {
             var dictionary = new Dictionary<string, bool>();
             var beatmapObjects = GameData.Current.beatmapObjects;
@@ -2020,7 +2020,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (shouldParent)
             {
                 Parent = beatmapObjectToParentTo.id;
-                Updater.UpdateObject(this, recalculate: recalculate);
+                Updater.UpdateObject(this, Updater.ObjectContext.PARENT_CHAIN);
 
                 if (renderParent)
                     ObjectEditor.inst.RenderParent(this);

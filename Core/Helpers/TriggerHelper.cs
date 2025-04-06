@@ -905,7 +905,7 @@ namespace BetterLegacy.Core.Helpers
                             success = true;
                             continue;
                         }
-                        success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>(), false);
+                        success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
                     }
                     Updater.RecalculateObjectStates();
 

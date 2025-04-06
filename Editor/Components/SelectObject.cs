@@ -226,7 +226,7 @@ namespace BetterLegacy.Editor.Components
                         continue;
                     }
 
-                    success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(beatmapObject, recalculate: false, renderParent: false);
+                    success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(beatmapObject, false);
                 }
 
                 if (!success)
