@@ -337,6 +337,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Prefab
 
+        /// <summary>
+        /// If the object is spawned from a prefab and has no parent.
+        /// </summary>
+        public bool fromPrefabBase;
+
+        /// <summary>
+        /// If the object is spawned from a prefab.
+        /// </summary>
         public bool fromPrefab;
 
         public string prefabID = string.Empty;

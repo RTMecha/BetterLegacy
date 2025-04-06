@@ -82,6 +82,8 @@ namespace BetterLegacy.Editor.Managers
 
         void Start() => StartCoroutine(SetupUI());
 
+        // todo:
+        // rework this UI generation code
         IEnumerator SetupUI()
         {
             while (!PrefabEditor.inst || !EditorManager.inst || !EditorManager.inst.EditorDialogsDictionary.ContainsKey("Prefab Popup") || EditorPrefabHolder.Instance == null || !EditorPrefabHolder.Instance.Function1Button)
@@ -393,6 +395,22 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(layersIF.image, ThemeGroup.Null, true);
                 EditorThemeManager.AddSelectable(layersIF.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(layersIF.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
+
+                if (ModCompatibility.UnityExplorerInstalled)
+                {
+                    labelGenerator(prefabSelectorLeft, "inspect", "Unity Explorer");
+
+                    var inspectPrefabObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(prefabSelectorLeft, "inspect prefab object");
+                    var inspectPrefabObjectPrefab = inspectPrefabObject.GetComponent<FunctionButtonStorage>();
+                    inspectPrefabObjectPrefab.label.text = "Inspect Prefab Object";
+                    EditorThemeManager.AddSelectable(inspectPrefabObjectPrefab.button, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(inspectPrefabObjectPrefab.label, ThemeGroup.Function_2_Text);
+                    var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(prefabSelectorLeft, "inspect timeline object");
+                    var inspectTimelineObjectPrefab = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
+                    inspectTimelineObjectPrefab.label.text = "Inspect Timeline Object";
+                    EditorThemeManager.AddSelectable(inspectTimelineObjectPrefab.button, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(inspectTimelineObjectPrefab.label, ThemeGroup.Function_2_Text);
+                }
 
                 // Name
                 labelGenerator(prefabSelectorRight, "name", "Name");
@@ -763,7 +781,7 @@ namespace BetterLegacy.Editor.Managers
                 if (isObjectLayer && prefabObject.editorData.Layer == EditorTimeline.inst.Layer)
                     EditorTimeline.inst.GetTimelineObject(prefabObject).RenderPosLength();
 
-                Updater.UpdatePrefab(prefabObject, "Drag");
+                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TIME, false);
             }
             Updater.RecalculateObjectStates();
         }
@@ -780,6 +798,7 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabObjectParent(prefabObject);
             RenderPrefabObjectRepeat(prefabObject);
             RenderPrefabObjectSpeed(prefabObject);
+            RenderPrefabObjectInspector(prefabObject);
 
             RenderPrefabObjectStartTime(prefabObject);
             RenderPrefabObjectLayer(prefabObject);
@@ -844,7 +863,7 @@ namespace BetterLegacy.Editor.Managers
                             if (isObjectLayer && prefabObj.editorData.Layer == EditorTimeline.inst.Layer)
                                 EditorTimeline.inst.GetTimelineObject(prefabObj).RenderPosLength();
 
-                            Updater.UpdatePrefab(prefabObj, "Drag");
+                            Updater.UpdatePrefab(prefabObj, Updater.PrefabContext.TIME, false);
                         }
                         Updater.RecalculateObjectStates();
                     }));
@@ -880,9 +899,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     prefabObject.StartTime = n;
-                    Updater.UpdatePrefab(prefabObject, "Drag");
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TIME);
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
-                    Updater.RecalculateObjectStates();
                 }
                 else
                     EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
@@ -927,7 +945,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.AutokillDropdown.onValueChanged.AddListener(_val =>
             {
                 prefabObject.autoKillType = (PrefabObject.AutoKillType)_val;
-                Updater.UpdatePrefab(prefabObject, "autokill");
+                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.AUTOKILL);
             });
 
             PrefabObjectEditor.AutokillField.onValueChanged.ClearAll();
@@ -938,7 +956,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     prefabObject.autoKillOffset = num;
                     if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular)
-                        Updater.UpdatePrefab(prefabObject, "autokill");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.AUTOKILL);
                 }
             });
 
@@ -947,9 +965,12 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabObjectEditor.AutokillSetButton.onClick.NewListener(() =>
             {
-                PrefabObjectEditor.AutokillField.text = (prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset :
-                                                prefabObject.autoKillType == PrefabObject.AutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f).ToString();
+                prefabObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset :
+                                                prefabObject.autoKillType == PrefabObject.AutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
 
+                if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular)
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.AUTOKILL);
+                RenderPrefabObjectAutokill(prefabObject, prefab);
             });
         }
 
@@ -1024,7 +1045,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.parent = "";
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
-                Updater.UpdatePrefab(prefabObject);
+                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                 RenderPrefabObjectParent(prefabObject);
             });
 
@@ -1068,7 +1089,7 @@ namespace BetterLegacy.Editor.Managers
             spawnOnce.onValueChanged.AddListener(_val =>
             {
                 prefabObject.desync = _val;
-                Updater.UpdatePrefab(prefabObject);
+                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
             });
 
             for (int i = 0; i < 3; i++)
@@ -1088,7 +1109,7 @@ namespace BetterLegacy.Editor.Managers
                     prefabObject.SetParentType(index, _val);
 
                     // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                    Updater.UpdatePrefab(prefabObject);
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                 });
 
                 // Parent Offset
@@ -1105,7 +1126,7 @@ namespace BetterLegacy.Editor.Managers
                         prefabObject.SetParentOffset(index, num);
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        Updater.UpdatePrefab(prefabObject);
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                     }
                 });
 
@@ -1122,7 +1143,7 @@ namespace BetterLegacy.Editor.Managers
                 additive.onValueChanged.AddListener(_val =>
                 {
                     prefabObject.SetParentAdditive(index, _val);
-                    Updater.UpdatePrefab(prefabObject);
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                 });
                 parallax.text = prefabObject.parentParallax[index].ToString();
                 parallax.onValueChanged.AddListener(_val =>
@@ -1132,7 +1153,7 @@ namespace BetterLegacy.Editor.Managers
                         prefabObject.parentParallax[index] = num;
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        Updater.UpdatePrefab(prefabObject);
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                     }
                 });
 
@@ -1205,7 +1226,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentKeyframe.values[0] = num;
-                        Updater.UpdatePrefab(prefabObject, "offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
 
@@ -1222,7 +1243,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             currentKeyframe.values[1] = num;
-                            Updater.UpdatePrefab(prefabObject, "offset");
+                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                         }
                     });
 
@@ -1256,7 +1277,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     num = Mathf.Clamp(num, 0, 1000);
                     prefabObject.RepeatCount = num;
-                    Updater.UpdatePrefab(prefabObject);
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.REPEAT);
                 }
             });
 
@@ -1271,7 +1292,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     num = Mathf.Clamp(num, 0f, 60f);
                     prefabObject.RepeatOffsetTime = num;
-                    Updater.UpdatePrefab(prefabObject, "Start Time");
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TIME);
                 }
             });
 
@@ -1282,7 +1303,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderPrefabObjectSpeed(PrefabObject prefabObject)
         {
             PrefabObjectEditor.LeftContent.Find("speed label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.LeftContent.Find("speed").gameObject.SetActive(RTEditor.ShowModdedUI);
+            PrefabObjectEditor.SpeedField.gameObject.SetActive(RTEditor.ShowModdedUI);
 
             if (!RTEditor.ShowModdedUI)
                 return;
@@ -1294,12 +1315,30 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     prefabObject.Speed = num;
-                    Updater.UpdatePrefab(prefabObject, "Speed");
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.SPEED);
                 }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.SpeedField, min: 0.1f, max: PrefabObject.MAX_PREFAB_OBJECT_SPEED);
             TriggerHelper.AddEventTriggers(PrefabObjectEditor.SpeedField.inputField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.SpeedField.inputField, min: 0.1f, max: PrefabObject.MAX_PREFAB_OBJECT_SPEED));
+        }
+
+        public void RenderPrefabObjectInspector(PrefabObject prefabObject)
+        {
+            if (!ModCompatibility.UnityExplorerInstalled)
+                return;
+
+            PrefabObjectEditor.LeftContent.Find("inspect label").gameObject.SetActive(RTEditor.ShowModdedUI);
+            PrefabObjectEditor.InspectPrefabObject.gameObject.SetActive(RTEditor.ShowModdedUI);
+            PrefabObjectEditor.InspectTimelineObject.gameObject.SetActive(RTEditor.ShowModdedUI);
+
+            if (!RTEditor.ShowModdedUI)
+                return;
+
+            PrefabObjectEditor.InspectPrefabObject.button.onClick.ClearAll();
+            PrefabObjectEditor.InspectPrefabObject.button.onClick.AddListener(() => ModCompatibility.Inspect(prefabObject));
+            PrefabObjectEditor.InspectTimelineObject.button.onClick.ClearAll();
+            PrefabObjectEditor.InspectTimelineObject.button.onClick.AddListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(prefabObject)));
         }
 
         public void RenderPrefabObjectName(Prefab prefab)

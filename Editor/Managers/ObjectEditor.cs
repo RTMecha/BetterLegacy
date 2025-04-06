@@ -2228,7 +2228,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var prefabObject = timelineObject.GetData<PrefabObject>();
                     RTPrefabEditor.inst.RenderPrefabObjectStartTime(prefabObject);
-                    Updater.UpdatePrefab(prefabObject, "Drag");
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TIME, false);
                     continue;
                 }
 
@@ -2412,7 +2412,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             bm.Parent = "";
 
-                            Updater.UpdateObject(bm, recalculate: false);
+                            Updater.UpdateObject(bm, Updater.ObjectContext.PARENT_CHAIN);
                         }
                     }
 
@@ -3728,7 +3728,7 @@ namespace BetterLegacy.Editor.Managers
                 // ObjectType affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateObject(beatmapObject);
+                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.OBJECT_TYPE);
 
                 RenderDialog(beatmapObject);
             });
@@ -3973,7 +3973,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Parent to Camera", () =>
                     {
                         beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
-                        Updater.UpdateObject(beatmapObject);
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                         RenderParent(beatmapObject);
                     })
                     );
@@ -4108,7 +4108,7 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.ParentDesyncToggle.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.desync = _val;
-                    Updater.UpdateObject(beatmapObject);
+                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                 });
             }
 
@@ -4126,10 +4126,8 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.SetParentType(index, _val);
 
                     // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.Parent != BeatmapObject.CAMERA_PARENT)
-                        Updater.UpdateObject(beatmapObject.GetParent());
-                    else if (UpdateObjects && beatmapObject.Parent == BeatmapObject.CAMERA_PARENT)
-                        Updater.UpdateObject(beatmapObject);
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                 });
 
                 // Parent Offset
@@ -4145,10 +4143,8 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.SetParentOffset(index, num);
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.Parent != BeatmapObject.CAMERA_PARENT)
-                            Updater.UpdateObject(beatmapObject.GetParent());
-                        else if (UpdateObjects && beatmapObject.Parent == BeatmapObject.CAMERA_PARENT)
-                            Updater.UpdateObject(beatmapObject);
+                        if (UpdateObjects)
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                     }
                 });
 
@@ -4167,7 +4163,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.SetParentAdditive(index, _val);
                     if (UpdateObjects)
-                        Updater.UpdateObject(beatmapObject);
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                 });
                 parentSetting.parallaxField.text = beatmapObject.parallaxSettings[index].ToString();
                 parentSetting.parallaxField.onValueChanged.AddListener(_val =>
@@ -4178,7 +4174,7 @@ namespace BetterLegacy.Editor.Managers
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
-                            Updater.UpdateObject(beatmapObject);
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                     }
                 });
 
@@ -4459,8 +4455,9 @@ namespace BetterLegacy.Editor.Managers
                 toggle.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.gradientType = (BeatmapObject.GradientType)index;
+                    var incompatibleGradient = beatmapObject.gradientType != BeatmapObject.GradientType.Normal && beatmapObject.IsSpecialShape;
 
-                    if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && beatmapObject.IsSpecialShape)
+                    if (incompatibleGradient)
                     {
                         beatmapObject.shape = 0;
                         beatmapObject.shapeOption = 0;
@@ -4475,7 +4472,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since shape has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateObject(beatmapObject);
+                        Updater.UpdateObject(beatmapObject, incompatibleGradient ? Updater.ObjectContext.SHAPE : Updater.ObjectContext.RENDERING);
 
                     RenderGradient(beatmapObject);
                     inst.RenderObjectKeyframesDialog(beatmapObject);
@@ -4664,7 +4661,7 @@ namespace BetterLegacy.Editor.Managers
                                 new ButtonFunction($"Auto Align: [{(beatmapObject.autoTextAlign)}]", () =>
                                 {
                                     beatmapObject.autoTextAlign = !beatmapObject.autoTextAlign;
-                                    Updater.UpdateObject(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
                                 }),
                                 new ButtonFunction("Align Left", () => textIF.text = "<align=left>" + textIF.text),
                                 new ButtonFunction("Align Center", () => textIF.text = "<align=center>" + textIF.text),
@@ -6152,7 +6149,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.opacityCollision = _val;
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                                Updater.UpdateObject(beatmapObject);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.OBJECT_TYPE);
                         });
 
                         var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
@@ -6507,7 +6504,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         bm.Parent = "";
-                        Updater.UpdateObject(bm);
+                        Updater.UpdateObject(bm, Updater.ObjectContext.PARENT_CHAIN);
                     }
                 });
 
@@ -6638,7 +6635,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.parent = "";
-                        Updater.UpdatePrefab(prefabObject, recalculate: false);
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
                         RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                         continue;
@@ -6646,7 +6643,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var bm = timelineObject.GetData<BeatmapObject>();
                     bm.Parent = "";
-                    Updater.UpdateObject(bm, recalculate: false);
+                    Updater.UpdateObject(bm, Updater.ObjectContext.PARENT_CHAIN);
                 }
 
                 Updater.RecalculateObjectStates();
@@ -6677,14 +6674,14 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.parent = BeatmapObject.CAMERA_PARENT;
-                            Updater.UpdatePrefab(prefabObject, recalculate: false);
+                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
 
                             continue;
                         }
 
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Parent = BeatmapObject.CAMERA_PARENT;
-                        Updater.UpdateObject(bm, recalculate: false);
+                        Updater.UpdateObject(bm, Updater.ObjectContext.PARENT_CHAIN);
                     }
 
                     Updater.RecalculateObjectStates();
@@ -6728,7 +6725,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.parent = id;
-                            Updater.UpdatePrefab(prefabObject);
+                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
 
                             continue;
                         }

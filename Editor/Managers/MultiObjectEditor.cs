@@ -239,7 +239,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME);
 
                         timelineObject.RenderPosLength();
                     }
@@ -255,7 +255,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME);
 
                         timelineObject.RenderPosLength();
                     }
@@ -273,7 +273,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME);
 
                         timelineObject.RenderPosLength();
                     }
@@ -665,7 +665,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                             {
                                 beatmapObject.Parent = "";
-                                Updater.UpdateObject(beatmapObject);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN);
                             }
 
                             RTEditor.inst.HideWarningPopup();
@@ -722,7 +722,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME);
 
                         timelineObject.RenderPosLength();
                     }
@@ -737,7 +737,7 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.isBeatmapObject)
                             Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME);
 
                         timelineObject.RenderPosLength();
                     }
@@ -1069,7 +1069,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[0] -= num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.middleButton.onClick.NewListener(() =>
@@ -1080,7 +1080,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[0] = num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.rightButton.onClick.NewListener(() =>
@@ -1091,7 +1091,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[0] += num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 var inputFieldStorageY = GenerateInputField(movePrefabsParent.transform, "move prefabs", "1", "Enter value...", true);
@@ -1104,7 +1104,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[1] -= num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.middleButton.onClick.NewListener(() =>
@@ -1115,7 +1115,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[1] = num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.rightButton.onClick.NewListener(() =>
@@ -1126,7 +1126,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[1] += num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorageX.inputField));
@@ -1153,7 +1153,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[0] -= num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.middleButton.onClick.NewListener(() =>
@@ -1164,7 +1164,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[0] = num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.rightButton.onClick.NewListener(() =>
@@ -1175,7 +1175,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[0] += num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 var inputFieldStorageY = GenerateInputField(movePrefabsParent.transform, "scale prefabs", "0.1", "Enter value...", true);
@@ -1188,7 +1188,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[1] -= num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.middleButton.onClick.NewListener(() =>
@@ -1199,7 +1199,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[1] = num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.rightButton.onClick.NewListener(() =>
@@ -1210,7 +1210,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[1] += num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorageX.inputField));
@@ -1230,7 +1230,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[2].values[0] -= num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorage.middleButton.onClick.NewListener(() =>
@@ -1241,7 +1241,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[2].values[0] = num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -1252,7 +1252,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[2].values[0] += num;
-                        Updater.UpdatePrefab(prefabObject, "Offset");
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
@@ -2596,7 +2596,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 beatmapObject.text = _val;
 
-                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.TEXT);
                             }
                         });
 
@@ -2652,7 +2652,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     beatmapObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
 
-                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
                                 }
                                 RenderMultiShape();
                             }
@@ -2679,7 +2679,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShapeSettings.Sides = num;
-                                    Updater.UpdateObject(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -2697,7 +2697,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShapeSettings.Roundness = num;
-                                    Updater.UpdateObject(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -2715,7 +2715,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShapeSettings.Thickness = num;
-                                    Updater.UpdateObject(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -2733,7 +2733,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShapeSettings.Slices = num;
-                                    Updater.UpdateObject(beatmapObject);
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.POLYGONS);
                                 }
                             }
                         });

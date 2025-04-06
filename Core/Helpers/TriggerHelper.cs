@@ -601,9 +601,9 @@ namespace BetterLegacy.Core.Helpers
                 if (ObjectEditor.UpdateObjects)
                 {
                     if (timelineObject.isBeatmapObject)
-                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.DRAG);
+                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME, false);
                     if (timelineObject.isPrefabObject)
-                        Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Drag");
+                        Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME, false);
                 }
 
                 Updater.Sort();
@@ -899,7 +899,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                             prefabObject.parent = timelineObject.ID;
-                            Updater.UpdatePrefab(prefabObject);
+                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
                             RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                             success = true;
@@ -921,7 +921,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
                     prefabObject.parent = timelineObject.ID;
-                    Updater.UpdatePrefab(prefabObject);
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                     RTEditor.inst.parentPickerEnabled = false;
 

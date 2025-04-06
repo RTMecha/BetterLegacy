@@ -220,7 +220,7 @@ namespace BetterLegacy.Editor.Components
                     {
                         var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                         prefabObject.parent = beatmapObject.id;
-                        Updater.UpdatePrefab(prefabObject, recalculate: false);
+                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
 
                         success = true;
                         continue;
@@ -244,7 +244,7 @@ namespace BetterLegacy.Editor.Components
             {
                 var prefabObject = currentSelection.GetData<PrefabObject>();
                 prefabObject.parent = beatmapObject.id;
-                Updater.UpdatePrefab(prefabObject);
+                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
                 PrefabEditor.inst.OpenPrefabDialog();
                 RTEditor.inst.parentPickerEnabled = false;
 
@@ -361,7 +361,7 @@ namespace BetterLegacy.Editor.Components
                 selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
             if (prefabObjectToDrag != null)
-                Updater.UpdatePrefab(prefabObjectToDrag, "Offset");
+                Updater.UpdatePrefab(prefabObjectToDrag, Updater.PrefabContext.TRANSFORM_OFFSET);
             else
                 Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
         }

@@ -107,7 +107,7 @@ namespace BetterLegacy.Editor.Managers
                 }
                 if (selectionType == SelectionType.Prefab)
                 {
-                    Updater.UpdatePrefab(prefabObject, "Offset");
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
                 }
             }
@@ -1066,15 +1066,29 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SetSongTimeAutokill(Keybind keybind)
         {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
+                if (timelineObject.isPrefabObject)
+                {
+                    var prefabObject = timelineObject.GetData<PrefabObject>();
+
+                    prefabObject.autoKillType = PrefabObject.AutoKillType.SongTime;
+                    prefabObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
+                    prefabObject.editorData.collapse = true;
+
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.AUTOKILL, false);
+                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+
+                    continue;
+                }
+
                 var bm = timelineObject.GetData<BeatmapObject>();
 
                 bm.autoKillType = BeatmapObject.AutoKillType.SongTime;
                 bm.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
                 bm.editorData.collapse = true;
 
-                Updater.UpdateObject(bm, recalculate: false);
+                Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL, false);
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
             Updater.RecalculateObjectStates();
@@ -1160,7 +1174,7 @@ namespace BetterLegacy.Editor.Managers
 
                     po.events[type].values[value] += amount;
 
-                    Updater.UpdatePrefab(po, "offset");
+                    Updater.UpdatePrefab(po, Updater.PrefabContext.TRANSFORM_OFFSET);
                 }
             }
         }
@@ -1202,7 +1216,7 @@ namespace BetterLegacy.Editor.Managers
 
                     po.events[type].values[value] -= amount;
 
-                    Updater.UpdatePrefab(po, "offset");
+                    Updater.UpdatePrefab(po, Updater.PrefabContext.TRANSFORM_OFFSET);
                 }
             }
         }
@@ -1244,7 +1258,7 @@ namespace BetterLegacy.Editor.Managers
 
                     po.events[type].values[value] = amount;
 
-                    Updater.UpdatePrefab(po, "offset");
+                    Updater.UpdatePrefab(po, Updater.PrefabContext.TRANSFORM_OFFSET);
                 }
             }
         }
@@ -1382,7 +1396,7 @@ namespace BetterLegacy.Editor.Managers
                 if ((int)bm.objectType > Enum.GetNames(typeof(BeatmapObject.ObjectType)).Length)
                     bm.objectType = 0;
 
-                Updater.UpdateObject(bm, recalculate: false);
+                Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
             Updater.RecalculateObjectStates();
@@ -1404,7 +1418,7 @@ namespace BetterLegacy.Editor.Managers
 
                 bm.objectType = (BeatmapObject.ObjectType)e;
 
-                Updater.UpdateObject(bm, recalculate: false);
+                Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
             Updater.RecalculateObjectStates();
@@ -1754,7 +1768,7 @@ namespace BetterLegacy.Editor.Managers
                     if (timelineObject.isBeatmapObject)
                         Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                     if (timelineObject.isPrefabObject)
-                        Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
+                        Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME);
 
                     EditorTimeline.inst.RenderTimelineObject(timelineObject);
                 }
@@ -2112,7 +2126,7 @@ namespace BetterLegacy.Editor.Managers
             if (selectionType == SelectionType.Object)
                 Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
             if (selectionType == SelectionType.Prefab)
-                Updater.UpdatePrefab(prefabObject, "Offset");
+                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.TRANSFORM_OFFSET);
         }
 
         public void SetCurrentKeyframe(int type)
