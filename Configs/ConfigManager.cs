@@ -766,9 +766,9 @@ namespace BetterLegacy.Configs
                             EditorThemeManager.ApplyGraphic(watchKeyCodeTitleText, ThemeGroup.Function_1_Text);
                         }
 
-                        var enumObject = UIManager.GenerateUIDropdown("Dropdown", gameObject.transform);
-                        var dropdown = (Dropdown)enumObject["Dropdown"];
-                        var hide = ((GameObject)enumObject["GameObject"]).AddComponent<HideDropdownOptions>();
+                        var enumObject = UIManager.GenerateDropdown("Dropdown", gameObject.transform);
+                        var dropdown = enumObject.dropdown;
+                        var hide = enumObject.hideOptions;
 
                         RectValues.Default.AnchoredPosition(196f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
 
@@ -788,7 +788,7 @@ namespace BetterLegacy.Configs
                         }
 
                         dropdown.value = (int)setting.BoxedValue;
-                        dropdown.onValueChanged.AddListener(_val => { setting.BoxedValue = _val; });
+                        dropdown.onValueChanged.AddListener(_val => setting.BoxedValue = _val);
 
                         EditorThemeManager.ApplyDropdown(dropdown);
                     }

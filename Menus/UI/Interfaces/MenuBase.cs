@@ -881,10 +881,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (menuText.funcJSON != null || menuText.func != null)
                 menuText.clickable = menuText.gameObject.AddComponent<Clickable>();
 
-            var t = UIManager.GenerateUITextMeshPro("Text", menuText.gameObject.transform);
-            ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
-            ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
-            menuText.textUI = (TextMeshProUGUI)t["Text"];
+            var t = UIManager.GenerateTextMeshPro("Text", menuText.gameObject.transform);
+            t.rectTransform.anchoredPosition = Vector2.zero;
+            t.rectTransform.localRotation = Quaternion.identity;
+            menuText.textUI = t;
             menuText.textUI.gameObject.layer = 5;
             menuText.text = InterfaceManager.inst.ParseSpawnText(menuText.text);
             menuText.textUI.text = menuText.text;
@@ -959,10 +959,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 selected = menuButton.selectionPosition;
             };
 
-            var t = UIManager.GenerateUITextMeshPro("Text", menuButton.gameObject.transform);
-            ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
-            ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
-            menuButton.textUI = (TextMeshProUGUI)t["Text"];
+            var t = UIManager.GenerateTextMeshPro("Text", menuButton.gameObject.transform);
+            t.rectTransform.anchoredPosition = Vector2.zero;
+            t.rectTransform.localRotation = Quaternion.identity;
+            menuButton.textUI = t;
             menuButton.textUI.gameObject.layer = 5;
             menuButton.text = InterfaceManager.inst.ParseSpawnText(menuButton.text);
             menuButton.textUI.text = menuButton.text;
