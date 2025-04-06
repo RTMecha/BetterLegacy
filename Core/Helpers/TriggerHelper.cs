@@ -471,7 +471,7 @@ namespace BetterLegacy.Core.Helpers
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                         ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
@@ -488,34 +488,30 @@ namespace BetterLegacy.Core.Helpers
                     {
                         switch (timelineKeyframe.Type)
                         {
-                            case 0:
-                                {
+                            case 0: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.position.x;
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.transform.position.y;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
                                     break;
                                 }
-                            case 1:
-                                {
+                            case 1: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.orthographicSize / 20f;
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.orthographicSize / 20f;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
                                     break;
                                 }
-                            case 2:
-                                {
+                            case 2: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.eulerAngles.x;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
                                     break;
                                 }
-                            case 3:
-                                {
+                            case 3: {
                                     EditorManager.inst.DisplayNotification("Cannot apply any camera values to the color keyframe.", 3f, EditorManager.NotificationType.Warning);
                                     break;
                                 }
@@ -605,7 +601,7 @@ namespace BetterLegacy.Core.Helpers
                 if (ObjectEditor.UpdateObjects)
                 {
                     if (timelineObject.isBeatmapObject)
-                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Drag");
+                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.DRAG);
                     if (timelineObject.isPrefabObject)
                         Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Drag");
                 }

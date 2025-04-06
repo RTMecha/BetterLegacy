@@ -363,7 +363,7 @@ namespace BetterLegacy.Editor.Components
             if (prefabObjectToDrag != null)
                 Updater.UpdatePrefab(prefabObjectToDrag, "Offset");
             else
-                Updater.UpdateObject(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
         }
 
         float startDragTime;

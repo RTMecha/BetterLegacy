@@ -5563,8 +5563,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (failed)
                     CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {modifier.reference.name}\nID: {modifier.reference.id}");
-            }
-            ,
+            },
 
             #endregion
 
@@ -7004,7 +7003,7 @@ namespace BetterLegacy.Core.Helpers
         static void SetParent(BeatmapObject child, string parent)
         {
             child.customParent = parent;
-            Updater.UpdateObject(child);
+            Updater.UpdateObject(child, Updater.ObjectContext.PARENT_CHAIN);
 
             if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.RenderParent(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());

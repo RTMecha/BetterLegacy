@@ -150,7 +150,7 @@ namespace BetterLegacy.Editor.Components
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
                 Updater.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), "Offset");
             else
-                Updater.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), "Keyframes");
+                Updater.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), Updater.ObjectContext.KEYFRAMES);
         }
     }
 }

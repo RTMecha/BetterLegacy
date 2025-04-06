@@ -193,7 +193,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth -= num;
-                        Updater.UpdateObject(bm, "Depth");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.VISUAL_OFFSET);
                     }
                 });
                 inputFieldStorage.middleButton.onClick.NewListener(() =>
@@ -204,7 +204,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth = num;
-                        Updater.UpdateObject(bm, "Depth");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.VISUAL_OFFSET);
                     }
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -215,7 +215,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth += num;
-                        Updater.UpdateObject(bm, "Depth");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.VISUAL_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
@@ -237,7 +237,7 @@ namespace BetterLegacy.Editor.Managers
                         //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time + num;
                         timelineObject.Time = timelineObject.Time - num;
                         if (timelineObject.isBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
@@ -253,7 +253,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         timelineObject.Time = num;
                         if (timelineObject.isBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
@@ -271,7 +271,7 @@ namespace BetterLegacy.Editor.Managers
                         //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time - num;
                         timelineObject.Time = timelineObject.Time + num;
                         if (timelineObject.isBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
@@ -294,7 +294,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.autoKillOffset -= num;
-                        Updater.UpdateObject(bm, "Autokill");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
                 });
@@ -306,7 +306,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.autoKillOffset = num;
-                        Updater.UpdateObject(bm, "Autokill");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
                 });
@@ -318,7 +318,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.autoKillOffset += num;
-                        Updater.UpdateObject(bm, "Autokill");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
                 });
@@ -507,7 +507,7 @@ namespace BetterLegacy.Editor.Managers
                                      ObjectEditor.inst.RenderKeyframes(bm);
                                  }
 
-                                 Updater.UpdateObject(bm, "Keyframes");
+                                 Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                                  EditorTimeline.inst.RenderTimelineObject(timelineObject);
                              }
 
@@ -542,7 +542,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                         beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
-                        Updater.UpdateObject(beatmapObject, "Autokill");
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.AUTOKILL);
                         timelineObject.RenderPosLength();
                     }
                 }));
@@ -572,7 +572,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.autoKillOffset = num;
 
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        Updater.UpdateObject(beatmapObject, "Autokill");
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.AUTOKILL);
                     }
                 }));
 
@@ -596,7 +596,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = BeatmapObject.AutoKillType.OldStyleNoAutokill;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "Autokill");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         }
                     }),
                     new ButtonFunction("Last KF", () =>
@@ -607,7 +607,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = BeatmapObject.AutoKillType.LastKeyframe;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "Autokill");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         }
                     }),
                     new ButtonFunction("Last KF Offset", () =>
@@ -618,7 +618,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "Autokill");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         }
                     }),
                     new ButtonFunction("Fixed Time", () =>
@@ -629,7 +629,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = BeatmapObject.AutoKillType.FixedTime;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "Autokill");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         }
                     }),
                     new ButtonFunction("Song Time", () =>
@@ -640,7 +640,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = BeatmapObject.AutoKillType.SongTime;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "Autokill");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
                         }
                     }));
 
@@ -720,7 +720,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
                         if (timelineObject.isBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
@@ -735,7 +735,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         timelineObject.Time += distance;
                         if (timelineObject.isBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME);
                         if (timelineObject.isPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
@@ -767,7 +767,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = (BeatmapObject.ObjectType)objectType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction("Add", () =>
@@ -786,7 +786,7 @@ namespace BetterLegacy.Editor.Managers
 
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }));
 
@@ -799,7 +799,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Normal;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), () =>
@@ -810,7 +810,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Helper;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction("Deco", () =>
@@ -821,7 +821,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Decoration;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), () =>
@@ -832,7 +832,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Empty;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), () =>
@@ -843,7 +843,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Solid;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "ObjectType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.OBJECT_TYPE);
                         }
                     }));
 
@@ -870,7 +870,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = (BeatmapObject.GradientType)gradientType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Add", () =>
@@ -887,7 +887,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = (BeatmapObject.GradientType)gradientType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }));
 
@@ -900,7 +900,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = BeatmapObject.GradientType.Normal;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Linear Right", () =>
@@ -911,7 +911,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = BeatmapObject.GradientType.RightLinear;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Linear Left", () =>
@@ -922,7 +922,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = BeatmapObject.GradientType.LeftLinear;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Radial In", () =>
@@ -933,7 +933,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = BeatmapObject.GradientType.OutInRadial;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Radial Out", () =>
@@ -944,7 +944,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = BeatmapObject.GradientType.InOutRadial;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(bm, "GradientType");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.RENDERING);
                         }
                     }));
 
@@ -970,7 +970,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
-                            Updater.UpdateObject(beatmapObject, "Render Type");
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Foreground", () =>
@@ -978,7 +978,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
-                            Updater.UpdateObject(beatmapObject, "Render Type");
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("UI", () =>
@@ -986,7 +986,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
-                            Updater.UpdateObject(beatmapObject, "Render Type");
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.RENDERING);
                         }
                     }));
 
@@ -1631,7 +1631,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var bm = timelineObject.GetData<BeatmapObject>();
                     bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
-                    Updater.UpdateObject(bm, "Shape");
+                    Updater.UpdateObject(bm, Updater.ObjectContext.SHAPE);
                 }
             });
 
@@ -1870,7 +1870,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.values[9] = Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
-                                Updater.UpdateObject(bm, "Keyframes");
+                                Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Add", () =>
@@ -1910,7 +1910,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.values[9] += Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
-                                Updater.UpdateObject(bm, "Keyframes");
+                                Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Sub", () =>
@@ -1950,7 +1950,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.values[9] -= Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
-                                Updater.UpdateObject(bm, "Keyframes");
+                                Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             }
                         }));
 
@@ -1983,7 +1983,7 @@ namespace BetterLegacy.Editor.Managers
                                         SetKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
                                             opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                        Updater.UpdateObject(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                                     }
                                 }
 
@@ -1999,7 +1999,7 @@ namespace BetterLegacy.Editor.Managers
                                 SetKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
                                     opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                Updater.UpdateObject(bm, "Keyframes");
+                                Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Add", () =>
@@ -2021,7 +2021,7 @@ namespace BetterLegacy.Editor.Managers
                                         AddKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
                                             opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                        Updater.UpdateObject(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                                     }
                                 }
 
@@ -2037,7 +2037,7 @@ namespace BetterLegacy.Editor.Managers
                                 AddKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
                                     opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                Updater.UpdateObject(bm, "Keyframes");
+                                Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Sub", () =>
@@ -2059,7 +2059,7 @@ namespace BetterLegacy.Editor.Managers
                                         SubKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
                                             opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                        Updater.UpdateObject(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                                     }
                                 }
 
@@ -2075,7 +2075,7 @@ namespace BetterLegacy.Editor.Managers
                                 SubKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
                                     opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                Updater.UpdateObject(bm, "Keyframes");
+                                Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             }
                         }));
 
@@ -2140,7 +2140,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.events[3].Add(kf);
                             }
 
-                            Updater.UpdateObject(bm, "Keyframes");
+                            Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(bm));
                         }
                     }));
@@ -2215,7 +2215,7 @@ namespace BetterLegacy.Editor.Managers
                                     kf.random = copiedKeyframeData.random;
                                     kf.relative = copiedKeyframeData.relative;
 
-                                    Updater.UpdateObject(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                                 }
                             }
                         }
@@ -2241,7 +2241,7 @@ namespace BetterLegacy.Editor.Managers
                                     kf.random = copiedKeyframeData.random;
                                     kf.relative = copiedKeyframeData.relative;
 
-                                    Updater.UpdateObject(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                                 }
                             }
                             EditorManager.inst.DisplayNotification("Pasted keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
@@ -2565,7 +2565,7 @@ namespace BetterLegacy.Editor.Managers
                             if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
                                 beatmapObject.shape = 0;
 
-                            Updater.UpdateObject(beatmapObject, "Shape");
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
                         }
 
                         RenderMultiShape();
@@ -2596,7 +2596,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 beatmapObject.text = _val;
 
-                                Updater.UpdateObject(beatmapObject, "Shape");
+                                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
                             }
                         });
 
@@ -2652,7 +2652,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     beatmapObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
 
-                                    Updater.UpdateObject(beatmapObject, "Shape");
+                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
                                 }
                                 RenderMultiShape();
                             }
@@ -2765,7 +2765,7 @@ namespace BetterLegacy.Editor.Managers
                                         if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
                                             beatmapObject.shape = 0;
 
-                                        Updater.UpdateObject(beatmapObject, "Shape");
+                                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
                                     }
 
                                     RenderMultiShape();
@@ -2891,7 +2891,7 @@ namespace BetterLegacy.Editor.Managers
                         kf.random = copiedKeyframeData.random;
                         kf.relative = copiedKeyframeData.relative;
 
-                        Updater.UpdateObject(bm, "Keyframes");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                     }
                 }
                 EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
@@ -2925,7 +2925,7 @@ namespace BetterLegacy.Editor.Managers
                         kf.random = copiedKeyframeData.random;
                         kf.relative = copiedKeyframeData.relative;
 
-                        Updater.UpdateObject(bm, "Keyframes");
+                        Updater.UpdateObject(bm, Updater.ObjectContext.KEYFRAMES);
                     }
                     EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
                 }
