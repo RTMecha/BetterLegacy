@@ -39,7 +39,17 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                 this.collider = collider;
             }
 
-            if (imageData != null)
+            UpdateImage(text, imageData);
+        }
+
+        /// <summary>
+        /// Updates the image object.
+        /// </summary>
+        /// <param name="text">Path to the image file.</param>
+        /// <param name="imageData">Pre-loaded image data.</param>
+        public void UpdateImage(string text, Sprite imageData)
+        {
+            if (imageData)
             {
                 SetSprite(imageData);
                 return;

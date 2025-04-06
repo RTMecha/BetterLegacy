@@ -528,13 +528,14 @@ namespace BetterLegacy.Core.Optimization
                     } // Polygons
 
                 case ObjectContext.IMAGE: {
-                        UpdateVisualObject(beatmapObject, levelObject);
+                        if (levelObject && levelObject.visualObject is ImageObject imageObject)
+                            imageObject.UpdateImage(beatmapObject.text, AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null);
 
                         break;
                     } // Image
 
                 case ObjectContext.TEXT: {
-                        if (levelObject && levelObject.visualObject != null && levelObject.visualObject is TextObject textObject)
+                        if (levelObject && levelObject.visualObject is TextObject textObject)
                         {
                             textObject.text = beatmapObject.text;
                             textObject.SetText(textObject.text);
