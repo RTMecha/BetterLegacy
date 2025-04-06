@@ -118,6 +118,7 @@
 
 ### Core
 - Change how modifiers are saved for better consistency.
+- Rework object updating system to be more consistent and have extended updating functionality.
 - Summary and note as much as I can (or need to).
 
 ### Editor
