@@ -43,6 +43,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        #region Unity Explorer
+
+        public FunctionButtonStorage InspectPrefabObject { get; set; }
+
+        public FunctionButtonStorage InspectTimelineObject { get; set; }
+
+        #endregion
+
         #endregion
 
         #region Global Values
@@ -108,6 +116,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SpeedField.inputField.characterValidation = InputField.CharacterValidation.Decimal;
             SpeedField.inputField.contentType = InputField.ContentType.Standard;
             SpeedField.inputField.characterLimit = 0;
+
+            if (Core.Managers.ModCompatibility.UnityExplorerInstalled)
+            {
+                InspectPrefabObject = LeftContent.Find("inspect prefab object").GetComponent<FunctionButtonStorage>();
+                InspectTimelineObject = LeftContent.Find("inspect timeline object").GetComponent<FunctionButtonStorage>();
+            }
 
             #endregion
 
