@@ -2321,8 +2321,10 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AssignTooltip(timeObj, timeObj.name, 3f);
 
             timeObj.SetActive(true);
+            timeField.textComponent.alignment = TextAnchor.MiddleLeft;
+            timeField.textComponent.fontSize = 16;
             timeField.GetPlaceholderText().text = "Set time...";
-            timeField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
+            timeField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             timeField.GetPlaceholderText().fontSize = 16;
             timeField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             timeField.characterValidation = InputField.CharacterValidation.Decimal;
@@ -2352,10 +2354,12 @@ namespace BetterLegacy.Editor.Managers
 
             layersObj.AddComponent<ContrastColors>().Init(editorLayerField.textComponent, editorLayerImage);
 
+            editorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
+            editorLayerField.textComponent.fontSize = 16;
             editorLayerField.characterValidation = InputField.CharacterValidation.None;
             editorLayerField.contentType = InputField.ContentType.Standard;
             editorLayerField.GetPlaceholderText().text = "Set layer...";
-            editorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
+            editorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             editorLayerField.GetPlaceholderText().fontSize = 16;
             editorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             editorLayerField.onValueChanged.ClearAll();
@@ -2380,8 +2384,10 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
 
             pitchField = pitchObj.GetComponent<InputField>();
+            pitchField.textComponent.alignment = TextAnchor.MiddleCenter;
+            pitchField.textComponent.fontSize = 16;
             pitchField.GetPlaceholderText().text = "Pitch";
-            pitchField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
+            pitchField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             pitchField.GetPlaceholderText().fontSize = 16;
             pitchField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             pitchField.onValueChanged.ClearAll();
