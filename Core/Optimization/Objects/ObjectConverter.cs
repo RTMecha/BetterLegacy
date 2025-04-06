@@ -149,8 +149,6 @@ namespace BetterLegacy.Core.Optimization.Objects
                 visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
-            int num = parentObjects.Count;
-
             var p = InitLevelParentObject(beatmapObject, baseObject);
             if (!parentObjects.IsEmpty())
                 parentObjects.Insert(0, p);
@@ -249,7 +247,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             return levelObject;
         }
 
-        GameObject InitParentChain(BeatmapObject beatmapObject, List<LevelParentObject> parentObjects)
+        public GameObject InitParentChain(BeatmapObject beatmapObject, List<LevelParentObject> parentObjects)
         {
             var gameObject = new GameObject(beatmapObject.name);
 
@@ -266,7 +264,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             return gameObject;
         }
 
-        LevelParentObject InitLevelParentObject(BeatmapObject beatmapObject, GameObject gameObject)
+        public LevelParentObject InitLevelParentObject(BeatmapObject beatmapObject, GameObject gameObject)
         {
             CachedSequences cachedSequences = null;
 

@@ -321,199 +321,208 @@ namespace BetterLegacy.Core.Optimization
         public static void UpdateObject(BeatmapObject beatmapObject, string context)
         {
             context = context.ToLower().Replace(" ", "").Replace("_", "");
-            if (TryGetObject(beatmapObject, out LevelObject levelObject))
+            var levelObject = beatmapObject.levelObject;
+
+            switch (context)
             {
-                switch (context)
-                {
-                    case "gradient":
-                    case "gradienttype":
-                    case "rendertype":
-                        {
-                            if (levelObject.visualObject is SolidObject solidObject)
-                                solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, false, beatmapObject.gradientScale, beatmapObject.gradientRotation);
-                            else
-                                levelObject.visualObject.SetRenderType((int)beatmapObject.renderLayerType);
+                case ObjectContext.RENDERING: {
+                        if (!levelObject)
+                            break;
 
+                        if (levelObject.visualObject is SolidObject solidObject)
+                            solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, false, beatmapObject.gradientScale, beatmapObject.gradientRotation);
+                        else
+                            levelObject.visualObject.SetRenderType((int)beatmapObject.renderLayerType);
+
+                        break;
+                    } // Material
+
+                    // theory:
+                    // if object was changed from non-empty to non-empty, then just update the object properties. otherwise run UpdateObject.
+                case ObjectContext.OBJECT_TYPE: {
+                        UpdateObject(beatmapObject);
+                        break;
+                    } // ObjectType
+
+                case ObjectContext.START_TIME: {
+                        if (!levelObject)
+                        {
+                            Sort();
                             break;
                         }
-                    case "objecttype": // TODO: find a way to do this better
+
+                        if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                            break;
+
+                        var spawner = levelProcessor.engine.objectSpawner;
+
+                        levelObject.StartTime = beatmapObject.StartTime;
+                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+
+                        spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                        spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        spawner.RecalculateObjectStates();
+
+                        levelObject.SetActive(beatmapObject.Alive);
+
+                        foreach (var levelParent in levelObject.parentObjects)
+                            levelParent.timeOffset = levelParent.BeatmapObject.StartTime;
+
+                        break;
+                    } // StartTime
+
+                case ObjectContext.DRAG: {
+                        if (!levelObject || !levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                            break;
+
+                        var spawner = levelProcessor.engine.objectSpawner;
+
+                        levelObject.StartTime = beatmapObject.StartTime;
+                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+
+                        levelObject.SetActive(beatmapObject.Alive);
+
+                        foreach (var levelParent in levelObject.parentObjects)
+                            levelParent.timeOffset = levelParent.BeatmapObject.StartTime;
+
+                        break;
+                    } // Drag
+
+                case ObjectContext.AUTOKILL: {
+                        if (!levelObject || !levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                            break;
+
+                        var spawner = levelProcessor.engine.objectSpawner;
+
+                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+
+                        spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        spawner.RecalculateObjectStates();
+
+                        break;
+                    } // Autokill
+
+                case ObjectContext.PARENT: {
+                        var parentChain = beatmapObject.GetParentChain();
+                        if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
+                        {
+                            var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
+
+                            var childTree = beatmapObject.GetChildTree();
+                            for (int i = 0; i < childTree.Count; i++)
+                            {
+                                var child = childTree[i];
+                                if (TryGetObject(child, out LevelObject childLevelObject))
+                                {
+                                    childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+
+                                    childLevelObject.positionParent = beatmapParent.GetParentType(0);
+                                    childLevelObject.scaleParent = beatmapParent.GetParentType(1);
+                                    childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+
+                                    childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                                    childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                                    childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+                                }
+                            }
+                        }
+                        else
                         {
                             UpdateObject(beatmapObject);
-                            break;
-                        } // ObjectType
-                    case "time":
-                    case "starttime":
+                        }
+
+                        break;
+                    } // Parent
+
+                case ObjectContext.PARENT_SETTING: {
+                        var parentChain = beatmapObject.GetParentChain();
+                        if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
                         {
-                            if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
-                                break;
+                            var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
 
-                            var spawner = levelProcessor.engine.objectSpawner;
+                            var childTree = beatmapObject.GetChildTree();
+                            for (int i = 0; i < childTree.Count; i++)
+                            {
+                                var child = childTree[i];
+                                if (TryGetObject(child, out LevelObject childLevelObject))
+                                {
+                                    childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-                            levelObject.StartTime = beatmapObject.StartTime;
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                                    childLevelObject.positionParent = beatmapParent.GetParentType(0);
+                                    childLevelObject.scaleParent = beatmapParent.GetParentType(1);
+                                    childLevelObject.rotationParent = beatmapParent.GetParentType(2);
 
-                            spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                            spawner.RecalculateObjectStates();
+                                    childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                                    childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                                    childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+                                }
+                            }
+                        }
 
-                            levelObject.SetActive(beatmapObject.Alive);
-
-                            foreach (var levelParent in levelObject.parentObjects)
-                                levelParent.timeOffset = levelParent.BeatmapObject.StartTime;
-
+                        if (!levelObject)
                             break;
-                        } // StartTime
-                    case "drag":
+
+                        foreach (var levelParent in levelObject.parentObjects)
                         {
-                            if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
-                                break;
+                            if (GameData.Current.beatmapObjects.TryFind(x => x.id == levelParent.id, out BeatmapObject parent))
+                            {
+                                levelParent.parentAnimatePosition = parent.GetParentType(0);
+                                levelParent.parentAnimateScale = parent.GetParentType(1);
+                                levelParent.parentAnimateRotation = parent.GetParentType(2);
 
-                            var spawner = levelProcessor.engine.objectSpawner;
+                                levelParent.parentOffsetPosition = parent.GetParentOffset(0);
+                                levelParent.parentOffsetScale = parent.GetParentOffset(1);
+                                levelParent.parentOffsetRotation = parent.GetParentOffset(2);
+                            }
+                        }
 
-                            levelObject.StartTime = beatmapObject.StartTime;
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        break;
+                    }
 
-                            levelObject.SetActive(beatmapObject.Alive);
+                case ObjectContext.PARENT_CHAIN: {
+                        UpdateParentChain(beatmapObject, levelObject);
+                        break;
+                    }
 
-                            foreach (var levelParent in levelObject.parentObjects)
-                                levelParent.timeOffset = levelParent.BeatmapObject.StartTime;
+                case ObjectContext.VISUAL_OFFSET: {
+                        if (!levelObject)
+                            break;
 
+                        levelObject.depth = beatmapObject.Depth;
+                        if (levelObject.visualObject)
+                            levelObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
+
+                        break;
+                    } // Origin & Depth
+
+                    // theory:
+                    // remove visual object and instantiate another object onto the visual object?
+                case ObjectContext.SHAPE: {
+                        UpdateObject(beatmapObject);
+
+                        break;
+                    } // Shape
+
+                case ObjectContext.TEXT: {
+                        if (levelObject && levelObject.visualObject != null && levelObject.visualObject is TextObject textObject)
+                            textObject.textMeshPro.text = beatmapObject.text;
+
+                        break;
+                    } // Text
+
+                case ObjectContext.KEYFRAMES: {
+                        if (!levelObject)
+                        {
+                            RecacheSequences(beatmapObject, levelProcessor.converter);
                             break;
                         }
-                    case "autokilltype":
-                    case "autokilloffset":
-                    case "autokill":
-                        {
-                            if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
-                                break;
 
-                            var spawner = levelProcessor.engine.objectSpawner;
+                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        RecacheSequences(beatmapObject, levelProcessor.converter, true, true);
 
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-
-                            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                            spawner.RecalculateObjectStates();
-
-                            break;
-                        } // Autokill
-                    case "parent":
-                        {
-                            var parentChain = beatmapObject.GetParentChain();
-                            if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
-                            {
-                                var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
-
-                                var childTree = beatmapObject.GetChildTree();
-                                for (int i = 0; i < childTree.Count; i++)
-                                {
-                                    var child = childTree[i];
-                                    if (TryGetObject(child, out LevelObject childLevelObject))
-                                    {
-                                        childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
-
-                                        childLevelObject.positionParent = beatmapParent.GetParentType(0);
-                                        childLevelObject.scaleParent = beatmapParent.GetParentType(1);
-                                        childLevelObject.rotationParent = beatmapParent.GetParentType(2);
-
-                                        childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                                        childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                                        childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                UpdateObject(beatmapObject);
-                            }
-
-                            break;
-                        } // Parent
-                    case "parenttype":
-                    case "parentoffset":
-                        {
-                            var parentChain = beatmapObject.GetParentChain();
-                            if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
-                            {
-                                var beatmapParent = parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT ? parentChain[parentChain.Count - 1] : beatmapObject;
-                                
-                                var childTree = beatmapObject.GetChildTree();
-                                for (int i = 0; i < childTree.Count; i++)
-                                {
-                                    var child = childTree[i];
-                                    if (TryGetObject(child, out LevelObject childLevelObject))
-                                    {
-                                        childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
-
-                                        childLevelObject.positionParent = beatmapParent.GetParentType(0);
-                                        childLevelObject.scaleParent = beatmapParent.GetParentType(1);
-                                        childLevelObject.rotationParent = beatmapParent.GetParentType(2);
-
-                                        childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                                        childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                                        childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
-                                    }
-                                }
-                            }
-
-                            foreach (var levelParent in levelObject.parentObjects)
-                            {
-                                if (GameData.Current.beatmapObjects.TryFind(x => x.id == levelParent.id, out BeatmapObject parent))
-                                {
-                                    levelParent.parentAnimatePosition = parent.GetParentType(0);
-                                    levelParent.parentAnimateScale = parent.GetParentType(1);
-                                    levelParent.parentAnimateRotation = parent.GetParentType(2);
-
-                                    levelParent.parentOffsetPosition = parent.GetParentOffset(0);
-                                    levelParent.parentOffsetScale = parent.GetParentOffset(1);
-                                    levelParent.parentOffsetRotation = parent.GetParentOffset(2);
-                                }
-                            }
-
-                            break;
-                        }
-                    case "origin":
-                    case "depth":
-                    case "renderdepth":
-                    case "originoffset":
-                        {
-                            levelObject.depth = beatmapObject.Depth;
-                            if (levelObject.visualObject)
-                                levelObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
-
-                            break;
-                        } // Origin & Depth
-                    case "shape":
-                        {
-                            //if (beatmapObject.shape == 4 || beatmapObject.shape == 6 || beatmapObject.shape == 9)
-                            UpdateObject(beatmapObject);
-
-                            //else if (ShapeManager.GetShape(beatmapObject.shape, beatmapObject.shapeOption).mesh != null)
-                            //    levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.GetShape(beatmapObject.shape, beatmapObject.shapeOption).mesh;
-
-                            break;
-                        } // Shape
-                    case "text":
-                        {
-                            if (levelObject.visualObject != null && levelObject.visualObject is Objects.Visual.TextObject)
-                                (levelObject.visualObject as Objects.Visual.TextObject).textMeshPro.text = beatmapObject.text;
-                            break;
-                        } // Text
-                    case "keyframe":
-                    case "keyframes":
-                        {
-                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-                            RecacheSequences(beatmapObject, levelProcessor.converter, true, true);
-
-                            break;
-                        } // Keyframes
-                }
+                        break;
+                    } // Keyframes
             }
-            else if (context.ToLower() == "keyframe" || context.ToLower() == "keyframes")
-                RecacheSequences(beatmapObject, levelProcessor.converter);
-            else if (context == "starttime" || context == "time")
-                Sort();
-            else if (context == "objecttype")
-                UpdateObject(beatmapObject);
         }
 
         /// <summary>
@@ -615,10 +624,80 @@ namespace BetterLegacy.Core.Optimization
             }
         }
 
+        static void UpdateParentChain(BeatmapObject beatmapObject, LevelObject levelObject = null)
+        {
+            string id = beatmapObject.id;
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            for (int i = 0; i < beatmapObjects.Count; i++)
+            {
+                var bm = beatmapObjects[i];
+                if (bm.Parent == id)
+                    UpdateParentChain(bm, bm.levelObject);
+            }
+
+            if (!levelObject)
+                return;
+
+            var baseObject = levelObject.visualObject.gameObject.transform.parent;
+            baseObject.SetParent(levelObject.top);
+
+            var parentObjects = new List<LevelParentObject>();
+
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && levelProcessor.converter.beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+                levelProcessor.converter.InitParentChain(beatmapObjectParent, parentObjects);
+
+            var lastParent = !parentObjects.IsEmpty() && parentObjects[0] && parentObjects[0].transform ?
+                parentObjects[0].transform : null;
+
+            var p = levelProcessor.converter.InitLevelParentObject(beatmapObject, baseObject.gameObject);
+            if (!parentObjects.IsEmpty())
+                parentObjects.Insert(0, p);
+            else
+                parentObjects.Add(p);
+
+            var top = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
+                parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
+
+            top.SetParent(levelObject.top);
+            top.localScale = Vector3.one;
+
+            if (lastParent)
+                baseObject.SetParent(lastParent);
+
+            levelObject.parentObjects = parentObjects;
+
+            var pc = beatmapObject.GetParentChain();
+
+            if (pc != null && !pc.IsEmpty())
+            {
+                var beatmapParent = pc[pc.Count - 1];
+
+                levelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+
+                levelObject.positionParent = beatmapParent.GetParentType(0);
+                levelObject.scaleParent = beatmapParent.GetParentType(1);
+                levelObject.rotationParent = beatmapParent.GetParentType(2);
+
+                levelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                levelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                levelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+            }
+        }
+
         public static class ObjectContext
         {
             public const string START_TIME = "starttime";
             public const string DRAG = "drag";
+            public const string RENDERING = "rendering";
+            public const string OBJECT_TYPE = "objecttype";
+            public const string AUTOKILL = "autokill";
+            public const string PARENT = "parent";
+            public const string PARENT_SETTING = "parentsetting";
+            public const string PARENT_CHAIN = "parentchain";
+            public const string VISUAL_OFFSET = "visualoffset";
+            public const string SHAPE = "shape";
+            public const string TEXT = "text";
+            public const string KEYFRAMES = "keyframes";
         }
 
         #endregion
@@ -741,7 +820,7 @@ namespace BetterLegacy.Core.Optimization
                                             }
                                         }
 
-                                        UpdateObject(beatmapObject, "Keyframes");
+                                        UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     }
 
                                     // Update Start Time
@@ -835,7 +914,7 @@ namespace BetterLegacy.Core.Optimization
                                 UpdatePrefab(prefabObject);
                             }
 
-                            UpdateObject(beatmapObject, "Start Time");
+                            UpdateObject(beatmapObject, ObjectContext.START_TIME);
                         }
 
                         break;
