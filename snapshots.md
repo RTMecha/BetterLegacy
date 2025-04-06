@@ -17,6 +17,7 @@
 - Example now has eyelids for more expressions.
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 - Shapes are now loaded from a shapes.json file in the Assets folder.
+- Updating parent chains has been optimized.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
