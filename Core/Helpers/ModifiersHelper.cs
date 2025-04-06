@@ -5531,8 +5531,10 @@ namespace BetterLegacy.Core.Helpers
 
                 if (modifier.GetValue(0) == string.Empty)
                     SetParent(modifier.reference, string.Empty);
-                else if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && beatmapObject.CanParent(modifier.reference))
+                else if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && modifier.reference.CanParent(beatmapObject))
                     SetParent(modifier.reference, beatmapObject.id);
+                else
+                    CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {modifier.reference.name}\nID: {modifier.reference.id}");
             },
             "setParentOther" => modifier =>
             {
@@ -5548,14 +5550,21 @@ namespace BetterLegacy.Core.Helpers
 
                 var isEmpty = modifier.GetBool(1, false);
 
+                bool failed = false;
                 list.ForLoop(beatmapObject =>
                 {
                     if (isEmpty)
                         SetParent(beatmapObject, string.Empty);
-                    else if (reference.CanParent(beatmapObject))
+                    else if (beatmapObject.CanParent(reference))
                         SetParent(beatmapObject, reference.id);
+                    else
+                        failed = true;
                 });
-            },
+
+                if (failed)
+                    CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {modifier.reference.name}\nID: {modifier.reference.id}");
+            }
+            ,
 
             #endregion
 
