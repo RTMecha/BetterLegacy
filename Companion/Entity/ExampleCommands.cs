@@ -153,8 +153,16 @@ namespace BetterLegacy.Companion.Entity
             commandAutocompletePrefab.AddComponent<Button>().image = commandAutocompletePrefabImage;
 
             var commandAutocompletePrefabName = Creator.NewUIObject("Name", commandAutocompletePrefab.transform);
+            var commandAutocompletePrefabNameText = commandAutocompletePrefabName.AddComponent<Text>();
+            commandAutocompletePrefabNameText.font = Font.GetDefault();
+            commandAutocompletePrefabNameText.fontSize = 28;
+            commandAutocompletePrefabNameText.fontStyle = FontStyle.Bold;
             UIManager.SetRectTransform(commandAutocompletePrefabName.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+
             var commandAutocompletePrefabDesc = Creator.NewUIObject("Desc", commandAutocompletePrefab.transform);
+            var commandAutocompletePrefabDescText = commandAutocompletePrefabDesc.AddComponent<Text>();
+            commandAutocompletePrefabDescText.font = Font.GetDefault();
+            commandAutocompletePrefabDescText.fontSize = 20;
             UIManager.SetRectTransform(commandAutocompletePrefabDesc.transform.AsRT(), new Vector2(0f, -16f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
 
             CoroutineHelper.StartCoroutine(SetupCommandsAutocomplete());
@@ -168,7 +176,6 @@ namespace BetterLegacy.Companion.Entity
         {
             LSHelpers.DeleteChildren(autocompleteContent);
 
-            var font = Font.GetDefault();
             foreach (var command in commands.Where(x => x.autocomplete))
             {
                 var autocomplete = commandAutocompletePrefab.Duplicate(autocompleteContent, "Autocomplete");
@@ -187,9 +194,6 @@ namespace BetterLegacy.Companion.Entity
                 EditorThemeManager.ApplySelectable(autocompleteButton, ThemeGroup.List_Button_1);
 
                 var autocompleteName = autocomplete.transform.Find("Name").GetComponent<Text>();
-                autocompleteName.font = font;
-                autocompleteName.fontSize = 28;
-                autocompleteName.fontStyle = FontStyle.Bold;
                 autocompleteName.text = command.name.ToUpper();
                 EditorThemeManager.ApplyLightText(autocompleteName);
                 var autocompleteDesc = autocomplete.transform.Find("Desc").GetComponent<Text>();
@@ -368,15 +372,15 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// If the commands window is visible.
         /// </summary>
-        public bool Active => chatterBase && chatterBase.gameObject.activeSelf;
+        public bool Active { get; set; }
 
         /// <summary>
         /// Shows the commands window.
         /// </summary>
         public void Show()
         {
-            if (chatterBase)
-                chatterBase.gameObject.SetActive(true);
+            Active = true;
+            Render();
         }
 
         /// <summary>
@@ -384,8 +388,8 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public void Hide()
         {
-            if (chatterBase)
-                chatterBase.gameObject.SetActive(false);
+            Active = true;
+            Render();
         }
 
         /// <summary>
@@ -393,8 +397,17 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public void Toggle()
         {
+            Active = !Active;
+            Render();
+        }
+
+        /// <summary>
+        /// Renders the commands window's active state.
+        /// </summary>
+        public void Render()
+        {
             if (chatterBase)
-                chatterBase.gameObject.SetActive(!chatterBase.gameObject.activeSelf);
+                chatterBase.gameObject.SetActive(Active);
         }
 
         GameObject commandAutocompletePrefab;

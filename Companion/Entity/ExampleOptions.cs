@@ -51,10 +51,7 @@ namespace BetterLegacy.Companion.Entity
             }));
             if (ModCompatibility.UnityExplorerInstalled)
                 options.Add(new Option("Inspect", () => ModCompatibility.Inspect(reference)));
-            options.Add(new Option("Cya later", () =>
-            {
-                reference?.Exit();
-            }));
+            options.Add(new Option("Cya later", () => reference?.Exit()));
         }
 
         #endregion
@@ -72,7 +69,7 @@ namespace BetterLegacy.Companion.Entity
             var optionsBase = Creator.NewUIObject("Options Base", reference.model.baseCanvas.transform);
 
             this.optionsBase = optionsBase.transform;
-            optionsBase.SetActive(optionsActive);
+            optionsBase.SetActive(Active);
 
             var options = Creator.NewUIObject("Options", optionsBase.transform);
 
@@ -108,7 +105,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Tick()
         {
-            if (!optionsActive || !optionsBase || !reference || !reference.model)
+            if (!Active || !optionsBase || !reference || !reference.model)
                 return;
 
             float addToOptionsX = -222f;
@@ -133,11 +130,16 @@ namespace BetterLegacy.Companion.Entity
         #region Options
 
         /// <summary>
+        /// Active state of the options menu.
+        /// </summary>
+        public bool Active { get; set; }
+
+        /// <summary>
         /// Shows the options menu.
         /// </summary>
         public void Show()
         {
-            optionsActive = true;
+            Active = true;
             Render();
         }
 
@@ -146,7 +148,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public void Hide()
         {
-            optionsActive = false;
+            Active = false;
             Render();
         }
 
@@ -155,7 +157,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public void Toggle()
         {
-            optionsActive = !optionsActive;
+            Active = !Active;
             Render();
         }
 
@@ -165,7 +167,7 @@ namespace BetterLegacy.Companion.Entity
         public void Render()
         {
             if (optionsBase)
-                optionsBase.gameObject.SetActive(optionsActive);
+                optionsBase.gameObject.SetActive(Active);
         }
 
         /// <summary>
@@ -198,11 +200,6 @@ namespace BetterLegacy.Companion.Entity
             EditorThemeManager.ApplySelectable(button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(text, ThemeGroup.Function_2_Text);
         }
-
-        /// <summary>
-        /// Active state of the options menu.
-        /// </summary>
-        public static bool optionsActive;
 
         /// <summary>
         /// List of options to show.
