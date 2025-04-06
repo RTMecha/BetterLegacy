@@ -158,6 +158,7 @@
 - Sort Levels Menu?
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
+- Tags for Prefab Objects so you can change a prefab via modifiers.
 
 
 ## Demos
