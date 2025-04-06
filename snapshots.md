@@ -17,14 +17,14 @@
 - Example now has eyelids for more expressions.
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 - Shapes are now loaded from a shapes.json file in the Assets folder.
-- Updating parent chains has been optimized.
+- Updating parent chains, object type and shapes have been optimized.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
 - Fixed default keybinds for First and Last Keyframe selectors being incorrect.
 - Fixed non-shape objects not updating their render type when the dropdown value is changed.
 - Fixed Multi Object Keyframe Editor "Apply Curves" button re-rendering keyframes from previously selected objects.
-- Fixed setParent crashing the game because I got the parent and the child confused.
+- Fixed setParent modifiers crashing the game because I got the parent and the child confused.
 
 ------------------------------------------------------------------------------------------
 
