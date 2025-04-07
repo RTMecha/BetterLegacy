@@ -1831,6 +1831,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     var shapeToggle = obj.GetComponent<Toggle>();
+                    shapeToggle.interactable = shapeType != ShapeType.Polygon;
                     EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
 
                     shapeToggles.Add(shapeToggle);
@@ -6385,18 +6386,15 @@ namespace BetterLegacy.Editor.Managers
 
                     switch (pointerEventData.button)
                     {
-                        case PointerEventData.InputButton.Left:
-                            {
+                        case PointerEventData.InputButton.Left: {
                                 AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
                                 break;
                             }
-                        case PointerEventData.InputButton.Right:
-                            {
+                        case PointerEventData.InputButton.Right: {
                                 RTMarkerEditor.inst.ShowMarkerContextMenu(marker.timelineMarker);
                                 break;
                             }
-                        case PointerEventData.InputButton.Middle:
-                            {
+                        case PointerEventData.InputButton.Middle: {
                                 if (EditorConfig.Instance.MarkerDragButton.Value == PointerEventData.InputButton.Middle)
                                     return;
 
