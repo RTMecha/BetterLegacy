@@ -2172,7 +2172,12 @@ namespace BetterLegacy.Editor.Managers
                     if (timelineObject.Locked)
                         continue;
 
-                    int binCalc = EditorConfig.Instance.TimelineObjectRetainsBinOnDrag.Value ? binOffset + timelineObject.binOffset : Mathf.Clamp(binOffset + timelineObject.binOffset, 0, EditorTimeline.inst.BinCount);
+                    int binCalc = EditorConfig.Instance.BinClampBehavior.Value switch
+                    {
+                        BinClamp.Clamp => Mathf.Clamp(binOffset + timelineObject.binOffset, 0, EditorTimeline.inst.BinCount),
+                        BinClamp.Loop => (binOffset + timelineObject.binOffset) % (EditorTimeline.inst.BinCount + 1),
+                        _ => binOffset + timelineObject.binOffset,
+                    };
 
                     if (timelineObject.Bin != binCalc)
                         hasChanged = true;

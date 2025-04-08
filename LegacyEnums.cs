@@ -1114,6 +1114,22 @@ namespace BetterLegacy
         Never
     }
 
+    public enum BinClamp
+    {
+        /// <summary>
+        /// Bin clamps between min and max.
+        /// </summary>
+        Clamp,
+        /// <summary>
+        /// Bin modulos from max to min or min to max.
+        /// </summary>
+        Loop,
+        /// <summary>
+        /// Bin continues on.
+        /// </summary>
+        None,
+    }
+
     #endregion
 
     #region Menus

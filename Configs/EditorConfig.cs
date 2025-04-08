@@ -96,7 +96,7 @@ namespace BetterLegacy.Configs
         public Setting<BinSliderControlActive> BinControlActiveBehavior { get; set; }
         public Setting<float> BinControlScrollAmount { get; set; }
         public Setting<bool> BinControlsPlaysSounds { get; set; }
-        public Setting<bool> TimelineObjectRetainsBinOnDrag { get; set; }
+        public Setting<BinClamp> BinClampBehavior { get; set; }
         public Setting<bool> MoveToChangedBin { get; set; }
         public Setting<float> KeyframeEndLengthOffset { get; set; }
         public Setting<float> TimelineCollapseLength { get; set; }
@@ -1371,7 +1371,7 @@ namespace BetterLegacy.Configs
             BinControlActiveBehavior = BindEnum(this, TIMELINE, "Bin Control Active Behavior", BinSliderControlActive.KeyToggled, "How the visibility of the Bin Slider should be treated.");
             BinControlScrollAmount = Bind(this, TIMELINE, "Bin Control Scroll Amount", 0.02f, "How much the bins should scroll.");
             BinControlsPlaysSounds = Bind(this, TIMELINE, "Bin Controls Plays Sounds", true, "If using the bin controls can play sounds.");
-            TimelineObjectRetainsBinOnDrag = Bind(this, TIMELINE, "Timeline Object Retains Bin On Drag", true, "If timeline object should retain their bin value when dragged. Having this on can prevent objects from collapsing when bins are removed.");
+            BinClampBehavior = BindEnum(this, TIMELINE, "Bin Clamp Behavior", BinClamp.Clamp, "How timeline objects bin should be handled when dragging past the limits.");
             MoveToChangedBin = Bind(this, TIMELINE, "Move To Changed Bin", true, "If the timeline should move to the bottom of the bin count when a bin is added / removed.");
             KeyframeEndLengthOffset = Bind(this, TIMELINE, "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
             TimelineCollapseLength = Bind(this, TIMELINE, "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
