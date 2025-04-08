@@ -321,7 +321,8 @@ namespace BetterLegacy.Core.Helpers
 
             "playerCollide" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.collider)
+                var levelObject = modifier.reference.levelObject;
+                if (levelObject && levelObject.visualObject && levelObject.visualObject.collider)
                 {
                     var collider = levelObject.visualObject.collider;
 
@@ -366,7 +367,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
 
-                        if (modifier.Result == null)
+                        if (!modifier.HasResult())
                             modifier.Result = player.position;
 
                         if (player.position != (Vector3)modifier.Result)
@@ -381,7 +382,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "playerBoosting" => modifier =>
             {
-                if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                 {
                     var orderedList = PlayerManager.Players
                         .Where(x => x.Player && x.Player.rb)
@@ -399,7 +401,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "playerAlive" => modifier =>
             {
-                if (int.TryParse(modifier.value, out int index) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (int.TryParse(modifier.value, out int index) && levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                 {
                     if (PlayerManager.Players.Count > index)
                     {
@@ -434,9 +437,10 @@ namespace BetterLegacy.Core.Helpers
             "playerDistanceGreater" => modifier =>
             {
                 float num = modifier.GetFloat(0, 0f);
+                var levelObject = modifier.reference.levelObject;
                 for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
                 {
-                    if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
+                    if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                     {
                         var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
                         if (Vector2.Distance(player.transform.position, levelObject.visualObject.gameObject.transform.position) > num)
@@ -449,9 +453,10 @@ namespace BetterLegacy.Core.Helpers
             "playerDistanceLesser" => modifier =>
             {
                 float num = modifier.GetFloat(0, 0f);
+                var levelObject = modifier.reference.levelObject;
                 for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
                 {
-                    if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
+                    if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                     {
                         var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
                         if (Vector2.Distance(player.transform.position, levelObject.visualObject.gameObject.transform.position) < num)
@@ -606,7 +611,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 var type = modifier.GetInt(0, 0);
 
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return false;
 
                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
@@ -622,7 +628,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 var type = modifier.GetInt(0, 0);
 
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return false;
 
                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
@@ -638,7 +645,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 var type = modifier.GetInt(0, 0);
 
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return false;
 
                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
@@ -657,30 +665,30 @@ namespace BetterLegacy.Core.Helpers
 
             "bulletCollide" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
-                {
-                    if (!modifier.reference.detector)
-                    {
-                        var op = levelObject.visualObject.gameObject.GetOrAddComponent<Detector>();
-                        op.beatmapObject = modifier.reference;
-                        modifier.reference.detector = op;
-                    }
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
+                    return false;
 
-                    if (modifier.reference.detector)
-                        return modifier.reference.detector.bulletOver;
+                if (!modifier.reference.detector)
+                {
+                    var op = levelObject.visualObject.gameObject.GetOrAddComponent<Detector>();
+                    op.beatmapObject = modifier.reference;
+                    modifier.reference.detector = op;
                 }
+
+                if (modifier.reference.detector)
+                    return modifier.reference.detector.bulletOver;
 
                 return false;
             },
             "objectCollide" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.collider)
-                {
-                    var list = (!modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value)).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.collider);
-                    return !list.IsEmpty() && list.Any(x => x.levelObject.visualObject.collider.IsTouching(levelObject.visualObject.collider));
-                }
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.collider)
+                    return false;
 
-                return false;
+                var list = (!modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.value) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.value)).FindAll(x => x.levelObject.visualObject && x.levelObject.visualObject.collider);
+                return !list.IsEmpty() && list.Any(x => x.levelObject.visualObject.collider.IsTouching(levelObject.visualObject.collider));
             },
 
             #endregion
@@ -1511,7 +1519,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "audioSource" => modifier =>
             {
-                if (modifier.HasResult() || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null ||
+                var levelObject = modifier.reference.levelObject;
+                if (modifier.HasResult() || !levelObject || !levelObject.visualObject ||
                     !levelObject.visualObject.gameObject)
                     return;
 
