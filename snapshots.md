@@ -1,6 +1,10 @@
 ﻿# 1.7.0-pre.2 > [???]
 
 ## Features
+### Story
+- More cutscene progress.
+
+### Editor
 - You can now drag and drop files into the game, both in the editor and the arcade.
   - Dragging a level into the arcade / editor will load it.
   - Dragging a txt file into a loaded editor level will create a text object.
@@ -13,13 +17,19 @@
 - Added Prefab Object inspect buttons if you have Unity Explorer installed.
 
 ## Changes
+### Core
 - Some JSON values have been changed. This means BetterLegacy is no longer compatible with vanilla Legacy. (why would you use that outdated version anyways)
-- Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
-- Example now has eyelids for more expressions.
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 - Shapes are now loaded from a shapes.json file in the Assets folder.
 - Updating parent chains, object type and shapes have been optimized.
+
+### Example Companion
+- Example now has eyelids for more expressions.
+
+### Editor
+- Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
 - SetSongTimeAutokill keybind function now includes Prefab Object autokill.
+- Replaced "Timeline Object Retains Bin On Drag" setting with "Bin Clamp Behavior" in Config Manager > Editor > Timeline. This changes how timeline object bin dragging is handled when the bin is dragged outside the normal bin range.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
