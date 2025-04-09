@@ -21,8 +21,6 @@ namespace BetterLegacy.Patchers
 
         public static BackgroundManager Instance { get => BackgroundManager.inst; set => BackgroundManager.inst = value; }
 
-        static System.Diagnostics.Stopwatch sw;
-
         [HarmonyPatch(nameof(BackgroundManager.Update))]
         [HarmonyPrefix]
         static void UpdatePrefix()
@@ -31,9 +29,6 @@ namespace BetterLegacy.Patchers
                 return;
 
             var list = GameData.Current.backgroundObjects;
-
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-                sw = CoreHelper.StartNewStopwatch();
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -55,19 +50,13 @@ namespace BetterLegacy.Patchers
                     ModifiersHelper.RunModifiersAll(modifiers, true);
                 }
             }
-
-            if (sw != null)
-            {
-                CoreHelper.StopAndLogStopwatch(sw, "BackgroundManager");
-                sw = null;
-            }
         }
 
         [HarmonyPatch(nameof(BackgroundManager.CreateBackgroundObject))]
         [HarmonyPrefix]
-        static bool CreateBackgroundObjectPrefix(ref GameObject __result, DataManager.GameData.BackgroundObject __0)
+        static bool CreateBackgroundObjectPrefix(ref GameObject __result)
         {
-            __result = Updater.CreateBackgroundObject((BackgroundObject)__0);
+            __result = null;
             return false;
         }
 
@@ -80,6 +69,7 @@ namespace BetterLegacy.Patchers
             var ldm = CoreConfig.Instance.LDM.Value;
             if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
+                // idk if there's a better solution for this
                 __instance.sampleLow = Updater.samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
                 __instance.sampleMid = Updater.samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
                 __instance.sampleHigh = Updater.samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
@@ -101,7 +91,9 @@ namespace BetterLegacy.Patchers
                     Color mainColor =
                         CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.color), backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
 
-                    if (backgroundObject.reactive)
+                    var reactive = backgroundObject.IsReactive;
+
+                    if (reactive)
                         mainColor =
                             RTMath.Lerp(mainColor,
                                 CoreHelper.ChangeColorHSV(
@@ -114,13 +106,13 @@ namespace BetterLegacy.Patchers
                     mainColor.a = 1f;
 
                     var fadeColor =
-                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.FadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
+                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.fadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
 
                     if (CoreHelper.ColorMatch(fadeColor, beatmapTheme.backgroundColor, 0.05f))
                         fadeColor = bgColorToLerp;
                     fadeColor.a = 1f;
 
-                    int layer = backgroundObject.depth - backgroundObject.layer;
+                    int layer = backgroundObject.iterations - backgroundObject.depth;
                     if (ldm && backgroundObject.renderers.Count > 0)
                     {
                         backgroundObject.renderers[0].material.color = mainColor;
@@ -147,39 +139,42 @@ namespace BetterLegacy.Patchers
                             renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
                         });
 
-                    if (!backgroundObject.reactive)
+                    if (!reactive)
                     {
                         backgroundObject.reactiveSize = Vector2.zero;
 
-                        gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
+                        gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
                         gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
                         gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
                         continue;
                     }
 
-                    switch (backgroundObject.reactiveType)
+                    backgroundObject.reactiveSize = backgroundObject.reactiveType switch
                     {
-                        case DataManager.GameData.BackgroundObject.ReactiveType.LOW:
-                            backgroundObject.reactiveSize = new Vector2(__instance.sampleLow, __instance.sampleLow) * backgroundObject.reactiveScale;
-                            break;
-                        case DataManager.GameData.BackgroundObject.ReactiveType.MID:
-                            backgroundObject.reactiveSize = new Vector2(__instance.sampleMid, __instance.sampleMid) * backgroundObject.reactiveScale;
-                            break;
-                        case DataManager.GameData.BackgroundObject.ReactiveType.HIGH:
-                            backgroundObject.reactiveSize = new Vector2(__instance.sampleHigh, __instance.sampleHigh) * backgroundObject.reactiveScale;
-                            break;
-                        case (DataManager.GameData.BackgroundObject.ReactiveType)3:
-                            {
-                                float xr = Updater.GetSample(backgroundObject.reactiveScaSamples[0], backgroundObject.reactiveScaIntensity[0]);
-                                float yr = Updater.GetSample(backgroundObject.reactiveScaSamples[1], backgroundObject.reactiveScaIntensity[1]);
+                        BackgroundObject.ReactiveType.Bass => new Vector2(__instance.sampleLow, __instance.sampleLow) * backgroundObject.reactiveScale,
+                        BackgroundObject.ReactiveType.Mids => new Vector2(__instance.sampleMid, __instance.sampleMid) * backgroundObject.reactiveScale,
+                        BackgroundObject.ReactiveType.Treble => new Vector2(__instance.sampleHigh, __instance.sampleHigh) * backgroundObject.reactiveScale,
+                        BackgroundObject.ReactiveType.Custom => new Vector2(Updater.GetSample(backgroundObject.reactiveScaSamples.x, backgroundObject.reactiveScaIntensity.x), Updater.GetSample(backgroundObject.reactiveScaSamples.y, backgroundObject.reactiveScaIntensity.y)) * backgroundObject.reactiveScale,
+                        _ => Vector2.zero,
+                    };
 
-                                backgroundObject.reactiveSize = new Vector2(xr, yr) * backgroundObject.reactiveScale;
-                                break;
-                            }
+                    if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
+                    {
+                        gameObject.transform.localPosition =
+                            new Vector3(backgroundObject.pos.x,
+                            backgroundObject.pos.y,
+                            32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
+                        gameObject.transform.localScale =
+                            new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
+                            new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
+                        gameObject.transform.localRotation =
+                            Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
+
+                        continue;
                     }
 
-                    float x = Updater.GetSample(backgroundObject.reactivePosSamples[0], backgroundObject.reactivePosIntensity[0]);
-                    float y = Updater.GetSample(backgroundObject.reactivePosSamples[1], backgroundObject.reactivePosIntensity[1]);
+                    float x = Updater.GetSample(backgroundObject.reactivePosSamples.x, backgroundObject.reactivePosIntensity.x);
+                    float y = Updater.GetSample(backgroundObject.reactivePosSamples.y, backgroundObject.reactivePosIntensity.y);
                     float z = Updater.GetSample(backgroundObject.reactiveZSample, backgroundObject.reactiveZIntensity);
 
                     float rot = Updater.GetSample(backgroundObject.reactiveRotSample, backgroundObject.reactiveRotIntensity);
@@ -187,7 +182,7 @@ namespace BetterLegacy.Patchers
                     gameObject.transform.localPosition =
                         new Vector3(backgroundObject.pos.x + x,
                         backgroundObject.pos.y + y,
-                        32f + backgroundObject.layer * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
+                        32f + backgroundObject.depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
                     gameObject.transform.localScale =
                         new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
                         new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
@@ -227,7 +222,7 @@ namespace BetterLegacy.Patchers
                 Instance.audio.clip.GetData(Instance.samples, 0);
 
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                Instance.CreateBackgroundObject(backgroundObject);
+                Updater.CreateBackgroundObject(backgroundObject);
 
             yield break;
         }

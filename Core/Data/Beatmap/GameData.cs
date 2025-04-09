@@ -2337,17 +2337,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                         {
                             return y.active == x.active &&
                                     y.color == x.color &&
-                                    y.depth == x.depth &&
+                                    y.iterations == x.iterations &&
                                     y.drawFade == x.drawFade &&
-                                    y.FadeColor == x.FadeColor &&
-                                    y.layer == x.layer &&
+                                    y.fadeColor == x.fadeColor &&
+                                    y.depth == x.depth &&
                                     y.name == x.name &&
                                     y.pos == x.pos &&
-                                    y.reactive == x.reactive &&
+                                    y.reactiveType == x.reactiveType &&
                                     y.reactiveCol == x.reactiveCol &&
                                     y.reactiveColIntensity == x.reactiveColIntensity &&
                                     y.reactiveColSample == x.reactiveColSample &&
-                                    y.reactiveIncludesZ == x.reactiveIncludesZ &&
                                     y.reactivePosIntensity == x.reactivePosIntensity &&
                                     y.reactivePosSamples == x.reactivePosSamples &&
                                     y.reactiveRotIntensity == x.reactiveRotIntensity &&
@@ -2356,7 +2355,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                                     y.reactiveScale == x.reactiveScale &&
                                     y.reactiveScaSamples == x.reactiveScaSamples &&
                                     y.reactiveSize == x.reactiveSize &&
-                                    y.reactiveType == x.reactiveType &&
                                     y.reactiveZIntensity == x.reactiveZIntensity &&
                                     y.reactiveZSample == x.reactiveZSample &&
                                     y.rot == x.rot &&

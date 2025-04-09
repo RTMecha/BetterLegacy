@@ -1234,7 +1234,7 @@ namespace BetterLegacy.Core.Optimization
 
             var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(BackgroundManager.inst.backgroundParent, backgroundObject.name);
             gameObject.layer = 9;
-            gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f);
+            gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f);
             gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
             gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
@@ -1254,9 +1254,9 @@ namespace BetterLegacy.Core.Optimization
 
             if (backgroundObject.drawFade)
             {
-                int depth = backgroundObject.depth;
+                int depth = backgroundObject.iterations;
 
-                for (int i = 1; i < depth - backgroundObject.layer; i++)
+                for (int i = 1; i < depth - backgroundObject.depth; i++)
                 {
                     var gameObject2 = BackgroundManager.inst.backgroundFadePrefab.Duplicate(gameObject.transform, $"{backgroundObject.name} Fade [{i}]");
 
@@ -1274,9 +1274,19 @@ namespace BetterLegacy.Core.Optimization
                 }
             }
 
-            backgroundObject.SetShape(backgroundObject.shape.Type, backgroundObject.shape.Option);
+            backgroundObject.UpdateShape();
 
             return gameObject;
+        }
+
+        /// <summary>
+        /// Updates the GameObjects for the BackgroundObject.
+        /// </summary>
+        /// <param name="backgroundObject">BG Object to update.</param>
+        public static void UpdateBackgroundObject(BackgroundObject backgroundObject)
+        {
+            DestroyBackgroundObject(backgroundObject);
+            CreateBackgroundObject(backgroundObject);
         }
 
         /// <summary>

@@ -793,14 +793,13 @@ namespace BetterLegacy.Story
                 gameData.backgroundObjects.Add(new BackgroundObject()
                 {
                     name = jnObject["name"],
-                    kind = jnObject["kind"].AsInt,
                     pos = Parser.TryParse(jnObject["pos"], Vector2.zero),
                     scale = Parser.TryParse(jnObject["size"], Vector2.zero),
                     rot = jnObject["rot"].AsFloat,
                     color = jnObject["color"].AsInt,
-                    layer = jnObject["layer"].AsInt,
+                    depth = jnObject["layer"].AsInt,
                     drawFade = jnObject["fade"].AsBool,
-                    reactive = jnObject["reactiveSettings"]["active"].AsBool,
+                    reactiveType = jnObject["reactiveSettings"]["active"].AsBool ? BackgroundObject.ReactiveType.Mids : BackgroundObject.ReactiveType.None,
                 });
             }
 
