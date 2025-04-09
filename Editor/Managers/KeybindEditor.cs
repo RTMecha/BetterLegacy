@@ -1038,8 +1038,8 @@ namespace BetterLegacy.Editor.Managers
             }
             Updater.RecalculateObjectStates();
 
-            if (RTBackgroundEditor.CurrentSelectedBG)
-                Updater.CreateBackgroundObject(RTBackgroundEditor.CurrentSelectedBG);
+            if (RTBackgroundEditor.inst.Dialog.IsCurrent && RTBackgroundEditor.inst.CurrentSelectedBG)
+                Updater.CreateBackgroundObject(RTBackgroundEditor.inst.CurrentSelectedBG);
         }
 
         public static void OpenPrefabDialog(Keybind keybind)
