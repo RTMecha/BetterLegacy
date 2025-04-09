@@ -119,6 +119,7 @@
 ### Core
 - Change how modifiers are saved for better consistency.
 - Rework object updating system to be more consistent and have extended updating functionality.
+- Make Background Objects based on timeline objects instead of a list. This means they have start time, autokill and keyframe functionality much like Beatmap Objects.
 - Summary and note as much as I can (or need to).
 
 ### Editor
