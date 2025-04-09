@@ -668,16 +668,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                 followPlayer = orig.data.level.followPlayer,
                 showIntro = orig.data.level.showIntro
             };
-            beatmapData.checkpoints = orig.data.checkpoints.Select(x => Checkpoint.DeepCopy(x)).ToList();
-            beatmapData.markers = orig.data.markers.Select(x => Marker.DeepCopy(x)).ToList();
+            beatmapData.checkpoints = orig.data.checkpoints.Select(x => x.Copy()).ToList();
+            beatmapData.markers = orig.data.markers.Select(x => x.Copy()).ToList();
 
             gameData.data = beatmapData;
             gameData.beatmapObjects = new List<BeatmapObject>((from obj in orig.beatmapObjects
-                                                                   select BeatmapObject.DeepCopy(obj, false)).ToList());
+                                                                   select obj.Copy(false)).ToList());
             gameData.backgroundObjects = new List<BackgroundObject>((from obj in orig.backgroundObjects
-                                                                         select BackgroundObject.DeepCopy(obj)).ToList());
+                                                                         select obj.Copy()).ToList());
             for (int i = 0; i < orig.events.Count; i++)
-                gameData.events.Add(orig.events[i].Select(x => EventKeyframe.DeepCopy(x)).ToList());
+                gameData.events.Add(orig.events[i].Select(x => x.Copy()).ToList());
             return gameData;
         }
 
@@ -1030,13 +1030,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
 
                 gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[11].Add(EventKeyframe.DeepCopy((EventKeyframe)DefaultKeyframes[11]));
+                gameData.events[11].Add(DefaultKeyframes[11].Copy());
                 gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[12].Add(EventKeyframe.DeepCopy((EventKeyframe)DefaultKeyframes[12]));
+                gameData.events[12].Add(DefaultKeyframes[12].Copy());
                 gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[13].Add(EventKeyframe.DeepCopy((EventKeyframe)DefaultKeyframes[13]));
+                gameData.events[13].Add(DefaultKeyframes[13].Copy());
                 gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[14].Add(EventKeyframe.DeepCopy((EventKeyframe)DefaultKeyframes[14]));
+                gameData.events[14].Add(DefaultKeyframes[14].Copy());
 
                 // Gradient
                 breakContext = "Gradient";
@@ -1065,7 +1065,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 16; i < DefaultKeyframes.Count; i++)
                 {
                     gameData.events.Add(new List<EventKeyframe>());
-                    gameData.events[i].Add(EventKeyframe.DeepCopy((EventKeyframe)DefaultKeyframes[i]));
+                    gameData.events[i].Add(DefaultKeyframes[i].Copy());
                 }
             }
             catch (Exception ex)
@@ -1697,7 +1697,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 // add an event if the list contains none.
                 if (eventKeyframes[type].Count < 1)
-                    eventKeyframes[type].Add(EventKeyframe.DeepCopy((EventKeyframe)DefaultKeyframes[type]));
+                    eventKeyframes[type].Add(DefaultKeyframes[type].Copy());
 
                 // verify the event value lengths are correct.
                 for (int index = 0; index < eventKeyframes[type].Count; index++)

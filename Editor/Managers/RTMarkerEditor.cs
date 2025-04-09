@@ -626,7 +626,10 @@ namespace BetterLegacy.Editor.Managers
                 new ButtonFunction(true),
                 new ButtonFunction("Copy", () =>
                 {
-                    markerCopy = Marker.DeepCopy(timelineMarker.Marker);
+                    if (!timelineMarker.Marker)
+                        return;
+
+                    markerCopy = timelineMarker.Marker.Copy();
                     EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
                 }),
                 new ButtonFunction("Paste", () =>
@@ -637,7 +640,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    var marker = Marker.DeepCopy(markerCopy);
+                    var marker = markerCopy.Copy();
                     marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
                     GameData.Current.data.markers.Add(marker);
                     CreateMarker(GameData.Current.data.markers.Count - 1);

@@ -180,7 +180,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             copyButtons.onClick.NewListener(() =>
             {
                 RTBackgroundEditor.inst.copiedBackgroundObjects.Clear();
-                RTBackgroundEditor.inst.copiedBackgroundObjects.AddRange(GameData.Current.backgroundObjects.Select(x => BackgroundObject.DeepCopy(x)));
+                RTBackgroundEditor.inst.copiedBackgroundObjects.AddRange(GameData.Current.backgroundObjects.Select(x => x.Copy()));
                 EditorManager.inst.DisplayNotification("Copied all Background Objects.", 2f, EditorManager.NotificationType.Success);
             });
 
@@ -215,7 +215,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 }
 
                 for (int i = 0; i < RTBackgroundEditor.inst.copiedBackgroundObjects.Count; i++)
-                    GameData.Current.backgroundObjects.Add(BackgroundObject.DeepCopy(RTBackgroundEditor.inst.copiedBackgroundObjects[i]));
+                    GameData.Current.backgroundObjects.Add(RTBackgroundEditor.inst.copiedBackgroundObjects[i].Copy());
 
                 RTBackgroundEditor.inst.SetCurrentBackground(GameData.Current.backgroundObjects.Count > 0 ? GameData.Current.backgroundObjects[0] : null);
 

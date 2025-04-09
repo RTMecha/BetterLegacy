@@ -13,7 +13,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Prefab : Exists
+    public class Prefab : PAObject<Prefab>
     {
         public Prefab() { }
 
@@ -24,8 +24,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : null;
             this.offset = offset;
 
-            this.beatmapObjects.AddRange(beatmapObjects.Select(x => BeatmapObject.DeepCopy(x, false)));
-            this.prefabObjects.AddRange(prefabObjects.Select(x => PrefabObject.DeepCopy(x, false)));
+            this.beatmapObjects.AddRange(beatmapObjects.Select(x => x.Copy(false)));
+            this.prefabObjects.AddRange(prefabObjects.Select(x => x.Copy(false)));
 
             float num = prefabObjects.Select(x => x.StartTime).Union(beatmapObjects.Select(x => x.StartTime)).Min(x => x);
             for (int i = 0; i < this.beatmapObjects.Count; i++)
@@ -37,8 +37,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Values
 
         public string name;
-
-        public string id;
 
         public float offset;
 
@@ -67,112 +65,110 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public static Prefab DeepCopy(Prefab og, bool newID = true)
+        public override void CopyData(Prefab orig, bool newID = true)
         {
-            var prefab = new Prefab()
-            {
-                description = og.description,
-                id = newID ? LSText.randomString(16) : og.id,
-                name = og.name,
-                offset = og.offset,
-                prefabObjects = og.prefabObjects.Clone(),
-                type = og.type,
-                typeID = og.typeID,
-            };
+            description = orig.description;
+            id = newID ? LSText.randomString(16) : orig.id;
+            name = orig.name;
+            offset = orig.offset;
+            prefabObjects = orig.prefabObjects.Clone();
+            type = orig.type;
+            typeID = orig.typeID;
 
-            prefab.beatmapObjects = new List<BeatmapObject>();
-            prefab.beatmapObjects.AddRange(og.beatmapObjects.Select(x => BeatmapObject.DeepCopy(x, false)).ToList());
+            beatmapObjects = new List<BeatmapObject>();
+            beatmapObjects.AddRange(orig.beatmapObjects.Select(x => x.Copy(false)).ToList());
 
-            foreach (var beatmapObject in prefab.beatmapObjects)
-                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && og.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
-                    prefab.SpriteAssets[beatmapObject.text] = sprite;
+            foreach (var beatmapObject in beatmapObjects)
+                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && orig.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                    SpriteAssets[beatmapObject.text] = sprite;
+        }
 
+        public override Prefab Copy(bool newID = true)
+        {
+            var prefab = new Prefab();
+            prefab.CopyData(this, newID);
             return prefab;
         }
 
         public static Prefab ParseVG(JSONNode jn, Version version = default)
         {
-            var beatmapObjects = new List<BeatmapObject>();
-            for (int i = 0; i < jn["objs"].Count; i++)
-                beatmapObjects.Add(BeatmapObject.ParseVG(jn["objs"][i], version));
-
-            var prefab = new Prefab
-            {
-                id = jn["id"] ?? LSText.randomString(16),
-                name = jn["n"],
-                type = jn["type"].AsInt,
-                offset = -jn["o"].AsFloat,
-                beatmapObjects = beatmapObjects,
-                prefabObjects = new List<PrefabObject>(),
-                description = jn["description"],
-            };
-            prefab.typeID = PrefabType.prefabTypeVGIndexToID.TryGetValue(prefab.type, out string prefabTypeID) ? prefabTypeID : "";
-
+            var prefab = new Prefab();
+            prefab.ReadJSONVG(jn, version);
             return prefab;
         }
 
         public static Prefab Parse(JSONNode jn)
         {
-            var beatmapObjects = new List<BeatmapObject>();
-            for (int j = 0; j < jn["objects"].Count; j++)
-                beatmapObjects.Add(BeatmapObject.Parse(jn["objects"][j]));
-
-            var prefabObjects = new List<PrefabObject>();
-            for (int k = 0; k < jn["prefab_objects"].Count; k++)
-                prefabObjects.Add(PrefabObject.Parse(jn["prefab_objects"][k]));
-
-            var prefab = new Prefab
-            {
-                id = jn["id"],
-                name = jn["name"],
-                type = jn["type"].AsInt,
-                offset = jn["offset"].AsFloat,
-                beatmapObjects = beatmapObjects,
-                prefabObjects = prefabObjects,
-                description = jn["desc"] == null ? "" : jn["desc"],
-                typeID = jn["type_id"],
-            };
-
-            if (string.IsNullOrEmpty(prefab.typeID))
-                prefab.typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(prefab.type, out string prefabTypeID) ? prefabTypeID : "";
-
-            if (jn["assets"] != null && jn["assets"]["spr"] != null)
-            {
-                for (int i = 0; i < jn["assets"]["spr"].Count; i++)
-                {
-                    var name = jn["assets"]["spr"][i]["n"];
-                    var data = jn["assets"]["spr"][i]["d"];
-
-                    if (!prefab.SpriteAssets.ContainsKey(name))
-                    {
-                        if (jn["assets"]["spr"][i]["i"] != null)
-                        {
-                            prefab.SpriteAssets.Add(name, SpriteHelper.StringToSprite(jn["assets"]["spr"][i]["i"]));
-                            continue;
-                        }
-
-                        byte[] imageData = new byte[data.Count];
-                        for (int j = 0; j < data.Count; j++)
-                        {
-                            imageData[j] = (byte)data[j].AsInt;
-                        }
-
-                        var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                        texture2d.LoadImage(imageData);
-
-                        texture2d.wrapMode = TextureWrapMode.Clamp;
-                        texture2d.filterMode = FilterMode.Point;
-                        texture2d.Apply();
-
-                        prefab.SpriteAssets.Add(name, SpriteHelper.CreateSprite(texture2d));
-                    }
-                }
-            }
-
+            var prefab = new Prefab();
+            prefab.ReadJSON(jn);
             return prefab;
         }
 
-        public JSONNode ToJSONVG()
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+        {
+            beatmapObjects.Clear();
+            for (int i = 0; i < jn["objs"].Count; i++)
+                beatmapObjects.Add(BeatmapObject.ParseVG(jn["objs"][i], version));
+
+            id = jn["id"] ?? LSText.randomString(16);
+            name = jn["n"];
+            type = jn["type"].AsInt;
+            offset = -jn["o"].AsFloat;
+            prefabObjects = new List<PrefabObject>();
+            description = jn["description"];
+            typeID = PrefabType.prefabTypeVGIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : "";
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            beatmapObjects.Clear();
+            for (int j = 0; j < jn["objects"].Count; j++)
+                beatmapObjects.Add(BeatmapObject.Parse(jn["objects"][j]));
+
+            prefabObjects.Clear();
+            for (int k = 0; k < jn["prefab_objects"].Count; k++)
+                prefabObjects.Add(PrefabObject.Parse(jn["prefab_objects"][k]));
+
+            id = jn["id"];
+            name = jn["name"];
+            type = jn["type"].AsInt;
+            typeID = jn["type_id"];
+            offset = jn["offset"].AsFloat;
+            description = jn["desc"] == null ? string.Empty : jn["desc"];
+
+            if (string.IsNullOrEmpty(typeID))
+                typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : "";
+
+            if (jn["assets"] == null || jn["assets"]["spr"] == null)
+                return;
+
+            for (int i = 0; i < jn["assets"]["spr"].Count; i++)
+            {
+                var name = jn["assets"]["spr"][i]["n"];
+                var data = jn["assets"]["spr"][i]["d"];
+
+                if (jn["assets"]["spr"][i]["i"] != null)
+                {
+                    SpriteAssets[name] = SpriteHelper.StringToSprite(jn["assets"]["spr"][i]["i"]);
+                    continue;
+                }
+
+                byte[] imageData = new byte[data.Count];
+                for (int j = 0; j < data.Count; j++)
+                    imageData[j] = (byte)data[j].AsInt;
+
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
+
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
+
+                SpriteAssets[name] = SpriteHelper.CreateSprite(texture2d);
+            }
+        }
+
+        public override JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
             jn["n"] = name;
@@ -191,7 +187,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
             jn["name"] = name;
@@ -238,13 +234,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Operators
 
-        public static implicit operator bool(Prefab exists) => exists != null;
-
-        public override bool Equals(object obj) => obj is Prefab && id == (obj as Prefab).id;
+        public override bool Equals(object obj) => obj is Prefab paObj && id == paObj.id;
 
         public override int GetHashCode() => base.GetHashCode();
 
-        public override string ToString() => id;
+        public override string ToString() => $"{id} - {name}";
 
         #endregion
     }

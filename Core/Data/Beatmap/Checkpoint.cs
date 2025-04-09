@@ -6,7 +6,7 @@ using SimpleJSON;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Checkpoint : Exists
+    public class Checkpoint : PAObject<Checkpoint>
 	{
 		public Checkpoint() { }
 
@@ -111,10 +111,55 @@ namespace BetterLegacy.Core.Data.Beatmap
 
 		public static Checkpoint DeepCopy(Checkpoint orig) => new Checkpoint(orig.name, orig.time, orig.pos);
 
-		public static Checkpoint ParseVG(JSONNode jn) => new Checkpoint(jn["n"], jn["t"].AsFloat, jn["p"].AsVector2());
-		public static Checkpoint Parse(JSONNode jn) => new Checkpoint(jn["name"], jn["t"].AsFloat, jn["pos"].AsVector2());
+        public override void CopyData(Checkpoint orig, bool newID = true)
+        {
+			name = orig.name;
+			time = orig.time;
+			pos = orig.pos;
+			positions = new List<Vector2>(orig.positions);
+			spawnType = orig.spawnType;
+			respawn = orig.respawn;
+			heal = orig.heal;
+			setTime = orig.setTime;
+			reverse = orig.reverse;
+        }
 
-		public JSONNode ToJSONVG()
+        public override Checkpoint Copy(bool newID = true)
+        {
+			var checkpoint = new Checkpoint();
+			checkpoint.CopyData(this, newID);
+			return checkpoint;
+        }
+
+        public static Checkpoint ParseVG(JSONNode jn, Version version = default)
+        {
+			var checkpoint = new Checkpoint();
+			checkpoint.ReadJSONVG(jn, version);
+			return checkpoint;
+        }
+
+		public static Checkpoint Parse(JSONNode jn)
+		{
+			var checkpoint = new Checkpoint();
+			checkpoint.ReadJSON(jn);
+			return checkpoint;
+		}
+
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+		{
+			name = jn["n"];
+			time = jn["t"].AsFloat;
+			pos = jn["p"].AsVector2();
+		}
+
+        public override void ReadJSON(JSONNode jn)
+        {
+			name = jn["name"];
+			time = jn["t"].AsFloat;
+			pos = jn["pos"].AsVector2();
+        }
+
+        public override JSONNode ToJSONVG()
 		{
 			var jn = JSON.Parse("{}");
 
@@ -127,7 +172,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 			return jn;
 		}
 
-		public JSONNode ToJSON()
+		public override JSONNode ToJSON()
 		{
 			var jn = JSON.Parse("{}");
 
@@ -146,8 +191,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 		/// <returns>Returns a checkpoint position.</returns>
 		public Vector2 GetPosition(int index) => spawnType == SpawnPositionType.Single || positions == null || !positions.InRange(index) ? pos : positions[index];
 
-		public override string ToString() => name;
+		#endregion
 
-        #endregion
-    }
+		#region Operators
+
+		public override bool Equals(object obj) => obj is Checkpoint paObj && id == paObj.id;
+
+		public override int GetHashCode() => base.GetHashCode();
+
+		public override string ToString() => $"{id} - {name}";
+
+		#endregion
+	}
 }

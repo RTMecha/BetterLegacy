@@ -530,7 +530,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int type = keyframeSelection2.Type;
                 int index = keyframeSelection2.Index;
-                var eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.Current.events[type][index], false);
+                var eventKeyframe = GameData.Current.events[type][index].Copy(false);
                 eventKeyframe.time -= num;
                 var timelineKeyframe = new TimelineKeyframe(eventKeyframe);
                 timelineKeyframe.Type = type;
@@ -588,7 +588,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var keyframeSelection in kfs)
             {
-                var eventKeyframe = EventKeyframe.DeepCopy(keyframeSelection.eventKeyframe);
+                var eventKeyframe = keyframeSelection.eventKeyframe.Copy();
                 if (setTime)
                     eventKeyframe.time = time + eventKeyframe.time;
 
@@ -654,12 +654,12 @@ namespace BetterLegacy.Editor.Managers
 
             if (num >= 0)
             {
-                eventKeyframe = EventKeyframe.DeepCopy(GameData.Current.events[type][num]);
+                eventKeyframe = GameData.Current.events[type][num].Copy();
                 eventKeyframe.time = time;
             }
             else
             {
-                eventKeyframe = EventKeyframe.DeepCopy(GameData.DefaultKeyframes[type]);
+                eventKeyframe = GameData.DefaultKeyframes[type].Copy();
                 eventKeyframe.time = 0f;
             }
 
@@ -2854,7 +2854,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (copiedKeyframeDatas.Count > currentKeyframe.Type)
             {
-                copiedKeyframeDatas[currentKeyframe.Type] = EventKeyframe.DeepCopy(currentKeyframe.eventKeyframe);
+                copiedKeyframeDatas[currentKeyframe.Type] = currentKeyframe.eventKeyframe.Copy();
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
             }
             else

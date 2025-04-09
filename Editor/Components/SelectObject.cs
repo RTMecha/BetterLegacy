@@ -379,7 +379,7 @@ namespace BetterLegacy.Editor.Components
         public static EventKeyframe SetCurrentKeyframe(int type, BeatmapObject beatmapObject = null, PrefabObject prefabObject = null)
         {
             if (prefabObject != null)
-                return (EventKeyframe)prefabObject.events[type];
+                return prefabObject.events[type];
 
             var timeOffset = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
             int nextIndex = beatmapObject.events[type].FindIndex(x => x.time >= timeOffset);
@@ -390,13 +390,13 @@ namespace BetterLegacy.Editor.Components
             EventKeyframe selected;
             if (beatmapObject.events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
             {
-                selected = (EventKeyframe)beatmapObject.events[type][sameIndex];
+                selected = beatmapObject.events[type][sameIndex];
                 index = sameIndex;
                 AudioManager.inst.SetMusicTime(selected.time + beatmapObject.StartTime);
             }
             else if (CreateKeyframe)
             {
-                selected = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][nextIndex]);
+                selected = beatmapObject.events[type][nextIndex].Copy();
                 selected.time = timeOffset;
                 index = beatmapObject.events[type].Count;
                 beatmapObject.events[type].Add(selected);
@@ -404,7 +404,7 @@ namespace BetterLegacy.Editor.Components
             else
             {
                 index = beatmapObject.events[type].FindLastIndex(x => x.time < timeOffset);
-                selected = (EventKeyframe)beatmapObject.events[type][index];
+                selected = beatmapObject.events[type][index];
             }
 
             ObjectEditor.inst.RenderKeyframes(beatmapObject);

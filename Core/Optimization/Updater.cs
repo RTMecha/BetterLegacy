@@ -1044,7 +1044,7 @@ namespace BetterLegacy.Core.Optimization
                     int num = 0;
                     foreach (var beatmapObject in prefab.beatmapObjects)
                     {
-                        var beatmapObjectCopy = BeatmapObject.DeepCopy(beatmapObject, false);
+                        var beatmapObjectCopy = beatmapObject.Copy(false);
                         try
                         {
                             beatmapObjectCopy.id = objectIDs[num].newID;

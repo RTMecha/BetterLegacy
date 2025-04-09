@@ -83,17 +83,33 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public static EventKeyframe DeepCopy(EventKeyframe eventKeyframe, bool newID = true) => new EventKeyframe
+        /// <summary>
+        /// Copies data from another EventKeyframe.
+        /// </summary>
+        /// <param name="orig">Original object to copy data from.</param>
+        public void CopyData(EventKeyframe orig, bool newID = true)
         {
-            id = newID ? LSText.randomNumString(8) : eventKeyframe.id,
-            curve = eventKeyframe.curve,
-            time = eventKeyframe.time,
-            values = eventKeyframe.values.ToList().Clone().ToArray(),
-            randomValues = eventKeyframe.randomValues.ToList().Clone().ToArray(),
-            random = eventKeyframe.random,
-            relative = eventKeyframe.relative,
-            locked = eventKeyframe.locked,
-        };
+            id = newID ? LSText.randomNumString(8) : orig.id;
+            curve = orig.curve;
+            time = orig.time;
+            values = orig.values.Copy();
+            randomValues = orig.randomValues.Copy();
+            random = orig.random;
+            relative = orig.relative;
+            locked = orig.locked;
+        }
+
+        /// <summary>
+        /// Creates a copy of the EventKeyframe.
+        /// </summary>
+        /// <param name="newID">If the ID of the EventKeyframe should be copied.</param>
+        /// <returns>Returns a copy of the object.</returns>
+        public EventKeyframe Copy(bool newID = true)
+        {
+            var eventKeyframe = new EventKeyframe();
+            eventKeyframe.CopyData(this, newID);
+            return eventKeyframe;
+        }
 
         public static EventKeyframe Parse(JSONNode jn, int type, int valueCount, bool defaultRelative = false)
         {
@@ -228,7 +244,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return $"{index}, {type}: {strs}";
         }
 
-        public override bool Equals(object obj) => obj is EventKeyframe && id == (obj as EventKeyframe).id;
+        public override bool Equals(object obj) => obj is EventKeyframe eventKeyframe && id == eventKeyframe.id;
 
         public override int GetHashCode() => base.GetHashCode();
 

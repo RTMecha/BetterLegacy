@@ -2139,25 +2139,25 @@ namespace BetterLegacy.Editor.Managers
             int index;
             if (useNearest && beatmapObject.events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
             {
-                selectedKeyframe = (EventKeyframe)beatmapObject.events[type][sameIndex];
+                selectedKeyframe = beatmapObject.events[type][sameIndex];
                 index = sameIndex;
                 AudioManager.inst.SetMusicTime(selectedKeyframe.time + beatmapObject.StartTime);
             }
             else if (createKeyframe)
             {
-                selectedKeyframe = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][nextIndex]);
+                selectedKeyframe = beatmapObject.events[type][nextIndex].Copy();
                 selectedKeyframe.time = timeOffset;
                 index = beatmapObject.events[type].Count;
                 beatmapObject.events[type].Add(selectedKeyframe);
             }
             else if (usePrevious)
             {
-                selectedKeyframe = (EventKeyframe)beatmapObject.events[type].FindLast(x => x.time < timeOffset);
+                selectedKeyframe = beatmapObject.events[type].FindLast(x => x.time < timeOffset);
                 index = beatmapObject.events[type].FindLastIndex(x => x.time < timeOffset);
             }
             else
             {
-                selectedKeyframe = (EventKeyframe)beatmapObject.events[type][0];
+                selectedKeyframe = beatmapObject.events[type][0];
                 index = 0;
             }
 

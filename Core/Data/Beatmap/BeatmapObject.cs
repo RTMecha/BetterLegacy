@@ -21,15 +21,13 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BeatmapObject : Exists
+    public class BeatmapObject : PAObject<BeatmapObject>
     {
         public BeatmapObject() { }
 
         public BeatmapObject(float startTime) => StartTime = startTime;
 
         #region Values
-
-        public string id = LSText.randomString(16);
 
         public string name = string.Empty;
 
@@ -441,58 +439,51 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        /// <summary>
-        /// Creates a new Beatmap Object with all the same values as the original provided.
-        /// </summary>
-        /// <param name="orig">The original to copy.</param>
-        /// <param name="newID">If a new ID should be generated.</param>
-        /// <param name="copyVariables">If variables should be copied.</param>
-        /// <returns>Returns a copied Beatmap Object.</returns>
-        public static BeatmapObject DeepCopy(BeatmapObject orig, bool newID = true, bool copyVariables = true)
+        public override void CopyData(BeatmapObject orig, bool newID = true)
         {
-            var beatmapObject = new BeatmapObject
-            {
-                id = newID ? LSText.randomString(16) : orig.id,
-                parent = orig.parent,
-                name = orig.name,
-                StartTime = orig.StartTime,
-                autoKillOffset = orig.autoKillOffset,
-                autoKillType = orig.autoKillType,
-                Depth = orig.Depth,
-                editorData = ObjectEditorData.DeepCopy(orig.editorData),
-                fromPrefab = orig.fromPrefab,
-                objectType = orig.objectType,
-                origin = orig.origin,
-                prefabID = orig.prefabID,
-                prefabInstanceID = orig.prefabInstanceID,
-                gradientType = orig.gradientType,
-                gradientScale = orig.gradientScale,
-                gradientRotation = orig.gradientRotation,
-                shape = orig.shape,
-                shapeOption = orig.shapeOption,
-                polygonShapeSettings = new PolygonShape(orig.polygonShapeSettings.Sides, orig.polygonShapeSettings.Roundness, orig.polygonShapeSettings.Thickness, orig.polygonShapeSettings.Slices),
-                autoTextAlign = orig.autoTextAlign,
-                text = orig.text,
-                LDM = orig.LDM,
-                parentType = orig.parentType,
-                parentOffsets = orig.parentOffsets.Copy(),
-                parentAdditive = orig.parentAdditive,
-                parallaxSettings = orig.parallaxSettings.Copy(),
-                integerVariable = copyVariables ? orig.integerVariable : 0,
-                floatVariable = copyVariables ? orig.floatVariable : 0f,
-                stringVariable = copyVariables ? orig.stringVariable : "",
-                tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>(),
-                renderLayerType = orig.renderLayerType,
-                ignoreLifespan = orig.ignoreLifespan,
-                orderModifiers = orig.orderModifiers,
-                opacityCollision = orig.opacityCollision,
-                desync = orig.desync
-            };
+            id = newID ? LSText.randomString(16) : orig.id;
+            parent = orig.parent;
+            name = orig.name;
+            StartTime = orig.StartTime;
+            autoKillOffset = orig.autoKillOffset;
+            autoKillType = orig.autoKillType;
+            Depth = orig.Depth;
+            editorData = ObjectEditorData.DeepCopy(orig.editorData);
+            fromPrefab = orig.fromPrefab;
+            objectType = orig.objectType;
+            origin = orig.origin;
+            prefabID = orig.prefabID;
+            prefabInstanceID = orig.prefabInstanceID;
+            gradientType = orig.gradientType;
+            gradientScale = orig.gradientScale;
+            gradientRotation = orig.gradientRotation;
+            shape = orig.shape;
+            shapeOption = orig.shapeOption;
+            polygonShapeSettings = new PolygonShape(orig.polygonShapeSettings.Sides, orig.polygonShapeSettings.Roundness, orig.polygonShapeSettings.Thickness, orig.polygonShapeSettings.Slices);
+            autoTextAlign = orig.autoTextAlign;
+            text = orig.text;
+            LDM = orig.LDM;
+            parentType = orig.parentType;
+            parentOffsets = orig.parentOffsets.Copy();
+            parentAdditive = orig.parentAdditive;
+            parallaxSettings = orig.parallaxSettings.Copy();
+            tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>();
+            renderLayerType = orig.renderLayerType;
+            ignoreLifespan = orig.ignoreLifespan;
+            orderModifiers = orig.orderModifiers;
+            opacityCollision = orig.opacityCollision;
+            desync = orig.desync;
 
-            for (int i = 0; i < beatmapObject.events.Count; i++)
-                beatmapObject.events[i].AddRange(orig.events[i].Select(x => EventKeyframe.DeepCopy(x)));
+            for (int i = 0; i < events.Count; i++)
+                events[i].AddRange(orig.events[i].Select(x => x.Copy()));
 
-            beatmapObject.modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, beatmapObject)).ToList() : new List<Modifier<BeatmapObject>>();
+            modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, this)).ToList() : new List<Modifier<BeatmapObject>>();
+        }
+
+        public override BeatmapObject Copy(bool newID = true)
+        {
+            var beatmapObject = new BeatmapObject();
+            beatmapObject.CopyData(this, newID);
             return beatmapObject;
         }
 
@@ -504,7 +495,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static BeatmapObject ParseVG(JSONNode jn, Version version = default)
         {
             var beatmapObject = new BeatmapObject();
-            beatmapObject.ReadVG(jn, version);
+            beatmapObject.ReadJSONVG(jn, version);
             return beatmapObject;
         }
 
@@ -516,15 +507,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static BeatmapObject Parse(JSONNode jn)
         {
             var beatmapObject = new BeatmapObject();
-            beatmapObject.Read(jn);
+            beatmapObject.ReadJSON(jn);
             return beatmapObject;
         }
 
-        /// <summary>
-        /// Parses and applies object values from VG to formatted JSON.
-        /// </summary>
-        /// <param name="jn">VG JSON.</param>
-        public void ReadVG(JSONNode jn, Version version = default)
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             var events = new List<List<EventKeyframe>>();
             events.Add(new List<EventKeyframe>());
@@ -763,11 +750,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 editorData = ObjectEditorData.ParseVG(jn["ed"]);
         }
 
-        /// <summary>
-        /// Parses and applies object values from LS to formatted JSON.
-        /// </summary>
-        /// <param name="jn">LS JSON.</param>
-        public void Read(JSONNode jn)
+        public override void ReadJSON(JSONNode jn)
         {
             var events = new List<List<EventKeyframe>>();
             events.Add(new List<EventKeyframe>());
@@ -1039,11 +1022,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        /// <summary>
-        /// Converts the current Beatmap Object to the VG format.
-        /// </summary>
-        /// <returns></returns>
-        public JSONNode ToJSONVG()
+        public override JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
 
@@ -1189,11 +1168,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Converts the current Beatmap Object to the LS format.
-        /// </summary>
-        /// <returns>Returns a JSONNode.</returns>
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
 
@@ -2128,11 +2103,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Operators
 
-        public override bool Equals(object obj) => obj is BeatmapObject && id == (obj as BeatmapObject).id;
-
-        public override string ToString() => id;
+        public override bool Equals(object obj) => obj is PrefabObject paObj && id == paObj.id;
 
         public override int GetHashCode() => base.GetHashCode();
+
+        public override string ToString() => $"{id} - {name}";
 
         #endregion
     }

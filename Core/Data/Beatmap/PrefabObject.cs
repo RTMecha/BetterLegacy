@@ -16,12 +16,10 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/>.
     /// </summary>
-    public class PrefabObject : Exists
+    public class PrefabObject : PAObject<PrefabObject>
     {
         public PrefabObject()
         {
-            id = LSText.randomString(16);
-
             editorData.Bin = 0;
             editorData.Layer = 0;
 
@@ -40,8 +38,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         #region Values
-
-        public string id;
 
         public string prefabID = "";
 
@@ -139,55 +135,70 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public static PrefabObject DeepCopy(PrefabObject orig, bool _newID = true)
+        public override void CopyData(PrefabObject orig, bool newID = true)
         {
-            var prefabObject = new PrefabObject
-            {
-                id = _newID ? LSText.randomString(16) : orig.id,
-                prefabID = orig.prefabID,
-                startTime = orig.StartTime,
-                repeatCount = orig.repeatCount,
-                repeatOffsetTime = orig.repeatOffsetTime,
-                editorData = ObjectEditorData.DeepCopy(orig.editorData),
-                speed = orig.Speed,
-                autoKillOffset = orig.autoKillOffset,
-                autoKillType = orig.autoKillType,
-                parent = orig.parent,
-                parentAdditive = orig.parentAdditive,
-                parentOffsets = orig.parentOffsets.Copy(),
-                parentParallax = orig.parentParallax.Copy(),
-                parentType = orig.parentType,
-                desync = orig.desync,
-            };
+            id = newID ? LSText.randomString(16) : orig.id;
+                prefabID = orig.prefabID;
+                startTime = orig.StartTime;
+                repeatCount = orig.repeatCount;
+                repeatOffsetTime = orig.repeatOffsetTime;
+                editorData = ObjectEditorData.DeepCopy(orig.editorData);
+                speed = orig.Speed;
+                autoKillOffset = orig.autoKillOffset;
+                autoKillType = orig.autoKillType;
+                parent = orig.parent;
+                parentAdditive = orig.parentAdditive;
+                parentOffsets = orig.parentOffsets.Copy();
+                parentParallax = orig.parentParallax.Copy();
+                parentType = orig.parentType;
+                desync = orig.desync;
 
-            if (prefabObject.events == null)
-                prefabObject.events = new List<EventKeyframe>();
-            prefabObject.events.Clear();
+            if (events == null)
+                events = new List<EventKeyframe>();
+            events.Clear();
 
             if (orig.events != null)
                 foreach (var eventKeyframe in orig.events)
-                    prefabObject.events.Add(EventKeyframe.DeepCopy(eventKeyframe, _newID));
+                    events.Add(eventKeyframe.Copy(newID));
 
+        }
+
+        public override PrefabObject Copy(bool newID = true)
+        {
+            var prefabObject = new PrefabObject();
+            prefabObject.CopyData(this, newID);
             return prefabObject;
         }
 
-        public static PrefabObject ParseVG(JSONNode jn)
+        public static PrefabObject ParseVG(JSONNode jn, Version version = default)
         {
             var prefabObject = new PrefabObject();
+            prefabObject.ReadJSONVG(jn, version);
+            return prefabObject;
+        }
 
-            prefabObject.id = jn["id"];
-            prefabObject.prefabID = jn["pid"];
-            prefabObject.StartTime = jn["t"] == null ? jn["st"].AsFloat : jn["t"].AsFloat;
+        public static PrefabObject Parse(JSONNode jn)
+        {
+            var prefabObject = new PrefabObject();
+            prefabObject.ReadJSON(jn);
+            return prefabObject;
+        }
 
-            prefabObject.editorData = ObjectEditorData.ParseVG(jn["ed"]);
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+        {
+            id = jn["id"];
+            prefabID = jn["pid"];
+            StartTime = jn["t"] == null ? jn["st"].AsFloat : jn["t"].AsFloat;
 
-            prefabObject.events.Clear();
+            editorData = ObjectEditorData.ParseVG(jn["ed"]);
+
+            events.Clear();
 
             if (jn["e"] != null)
             {
                 try
                 {
-                    prefabObject.events.Add(new EventKeyframe
+                    events.Add(new EventKeyframe
                     {
                         values = new float[2]
                         {
@@ -198,7 +209,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
                 catch (System.Exception)
                 {
-                    prefabObject.events.Add(new EventKeyframe
+                    events.Add(new EventKeyframe
                     {
                         values = new float[2],
                     });
@@ -206,7 +217,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 try
                 {
-                    prefabObject.events.Add(new EventKeyframe
+                    events.Add(new EventKeyframe
                     {
                         values = new float[2]
                         {
@@ -217,7 +228,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
                 catch (System.Exception)
                 {
-                    prefabObject.events.Add(new EventKeyframe
+                    events.Add(new EventKeyframe
                     {
                         values = new float[2],
                     });
@@ -225,14 +236,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 try
                 {
-                    prefabObject.events.Add(new EventKeyframe
+                    events.Add(new EventKeyframe
                     {
                         values = new float[1] { jn["e"][2]["ev"][0].AsFloat }
                     });
                 }
                 catch (System.Exception)
                 {
-                    prefabObject.events.Add(new EventKeyframe
+                    events.Add(new EventKeyframe
                     {
                         values = new float[1]
                     });
@@ -240,43 +251,40 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
             else
             {
-                prefabObject.events.Add(new EventKeyframe(0f, new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
-                prefabObject.events.Add(new EventKeyframe(0f, new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
-                prefabObject.events.Add(new EventKeyframe(0f, new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
+                events.Add(new EventKeyframe(0f, new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
+                events.Add(new EventKeyframe(0f, new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
+                events.Add(new EventKeyframe(0f, new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
             }
-
-            return prefabObject;
         }
 
-        public static PrefabObject Parse(JSONNode jn)
+        public override void ReadJSON(JSONNode jn)
         {
-            var prefabObject = new PrefabObject();
-            prefabObject.id = jn["id"] ?? LSText.randomString(16);
-            prefabObject.prefabID = jn["pid"];
-            prefabObject.StartTime = jn["st"].AsFloat;
+            id = jn["id"] ?? LSText.randomString(16);
+            prefabID = jn["pid"];
+            StartTime = jn["st"].AsFloat;
 
             if (jn["p"] != null)
-                prefabObject.parent = jn["p"];
+                parent = jn["p"];
 
             if (jn["rc"] != null)
-                prefabObject.RepeatCount = jn["rc"].AsInt;
+                RepeatCount = jn["rc"].AsInt;
 
             if (jn["ro"] != null)
-                prefabObject.RepeatOffsetTime = jn["ro"].AsFloat;
+                RepeatOffsetTime = jn["ro"].AsFloat;
 
             if (jn["sp"] != null)
-                prefabObject.Speed = jn["sp"].AsFloat;
+                Speed = jn["sp"].AsFloat;
 
             if (jn["akt"] != null)
-                prefabObject.autoKillType = (AutoKillType)jn["akt"].AsInt;
+                autoKillType = (AutoKillType)jn["akt"].AsInt;
 
             if (jn["ako"] != null)
-                prefabObject.autoKillOffset = jn["ako"].AsFloat;
+                autoKillOffset = jn["ako"].AsFloat;
 
             if (jn["ed"] != null)
-                prefabObject.editorData = ObjectEditorData.Parse(jn["ed"]);
+                editorData = ObjectEditorData.Parse(jn["ed"]);
 
-            prefabObject.events.Clear();
+            events.Clear();
 
             if (jn["e"] != null)
             {
@@ -288,10 +296,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     kf.SetEventValues(jnpos["x"].AsFloat, jnpos["y"].AsFloat);
                     kf.random = jnpos["r"].AsInt;
                     kf.SetEventRandomValues(jnpos["rx"].AsFloat, jnpos["ry"].AsFloat, jnpos["rz"].AsFloat);
-                    prefabObject.events.Add(kf);
+                    events.Add(kf);
                 }
                 else
-                    prefabObject.events.Add(new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
+                    events.Add(new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
 
                 if (jn["e"]["sca"] != null)
                 {
@@ -300,10 +308,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     kf.SetEventValues(jnsca["x"].AsFloat, jnsca["y"].AsFloat);
                     kf.random = jnsca["r"].AsInt;
                     kf.SetEventRandomValues(jnsca["rx"].AsFloat, jnsca["ry"].AsFloat, jnsca["rz"].AsFloat);
-                    prefabObject.events.Add(kf);
+                    events.Add(kf);
                 }
                 else
-                    prefabObject.events.Add(new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }));
+                    events.Add(new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }));
 
                 if (jn["e"]["rot"] != null)
                 {
@@ -312,24 +320,23 @@ namespace BetterLegacy.Core.Data.Beatmap
                     kf.SetEventValues(jnrot["x"].AsFloat);
                     kf.random = jnrot["r"].AsInt;
                     kf.SetEventRandomValues(jnrot["rx"].AsFloat, 0f, jnrot["rz"].AsFloat);
-                    prefabObject.events.Add(kf);
+                    events.Add(kf);
                 }
                 else
-                    prefabObject.events.Add(new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
+                    events.Add(new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
             }
             else
             {
-                prefabObject.events = new List<EventKeyframe>()
+                events = new List<EventKeyframe>()
                 {
                     new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }),
                     new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }),
                     new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }),
                 };
             }
-            return prefabObject;
         }
 
-        public JSONNode ToJSONVG()
+        public override JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
 
@@ -354,7 +361,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
 
@@ -488,9 +495,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Operators
 
-        public static implicit operator bool(PrefabObject exists) => exists != null;
-
-        public override bool Equals(object obj) => obj is PrefabObject && id == (obj as PrefabObject).id;
+        public override bool Equals(object obj) => obj is PrefabObject paObj && id == paObj.id;
 
         public override int GetHashCode() => base.GetHashCode();
 

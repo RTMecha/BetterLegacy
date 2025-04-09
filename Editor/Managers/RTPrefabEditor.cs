@@ -1492,7 +1492,7 @@ namespace BetterLegacy.Editor.Managers
 
             int index = gameData.prefabs.FindIndex(x => x.id == beatmapObject.prefabID);
             var originalPrefab = gameData.prefabs[index];
-            var newPrefab = Prefab.DeepCopy(originalPrefab);
+            var newPrefab = originalPrefab.Copy();
 
             var prefabObject = new PrefabObject(newPrefab.id, startTime - newPrefab.offset);
             prefabObject.editorData.Bin = editorData.Bin;
@@ -1635,7 +1635,7 @@ namespace BetterLegacy.Editor.Managers
                 if (i > 0 && expandObjectsYieldType != YieldType.None)
                     yield return CoroutineHelper.GetYieldInstruction(expandObjectsYieldType, ref delay);
 
-                var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
+                var beatmapObjectCopy = beatmapObject.Copy(false);
 
                 beatmapObjectCopy.id = objectIDs[i].newID;
 
@@ -2995,7 +2995,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Here we add the Example prefab provided to you.
             if (!GameData.Current.prefabs.Exists(x => x.id == LegacyPlugin.ExamplePrefab.id) && config.PrefabExampleTemplate.Value)
-                GameData.Current.prefabs.Add(Prefab.DeepCopy(LegacyPlugin.ExamplePrefab, false));
+                GameData.Current.prefabs.Add(LegacyPlugin.ExamplePrefab.Copy(false));
 
             yield return CoroutineHelper.Seconds(0.03f);
 
@@ -3112,7 +3112,7 @@ namespace BetterLegacy.Editor.Managers
         public Prefab ImportPrefabIntoLevel(Prefab prefab)
         {
             Debug.Log($"{PrefabEditor.inst.className}Adding Prefab: [{prefab.name}]");
-            var tmpPrefab = Prefab.DeepCopy(prefab);
+            var tmpPrefab = prefab.Copy();
             int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.name, "( +\\[\\d+])", string.Empty) == tmpPrefab.name).Count;
             if (num > 0)
                 tmpPrefab.name = $"{tmpPrefab.name} [{num}]";

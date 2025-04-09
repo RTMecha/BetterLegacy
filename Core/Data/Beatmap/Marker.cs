@@ -6,12 +6,9 @@ using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Marker : Exists
+    public class Marker : PAObject<Marker>
     {
-        public Marker()
-        {
-            id = LSText.randomString(16);
-        }
+        public Marker() { }
 
         public Marker(string name, string desc, int color, float time) : this(LSText.randomString(16), name, desc, color, time) { }
         
@@ -23,11 +20,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.color = color;
             this.time = time;
         }
-
-        /// <summary>
-        /// ID of the Marker to be used for editor identifying.
-        /// </summary>
-        public string id;
 
         public string name = "";
 
@@ -44,33 +36,64 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        /// <summary>
-        /// Creates a copy of a <see cref="Marker"/>.
-        /// </summary>
-        /// <param name="orig">Original to copy.</param>
-        /// <param name="newID">True if a new ID should be generated, false if it should use the original.</param>
-        /// <returns>Returns a copied <see cref="Marker"/>.</returns>
-        public static Marker DeepCopy(Marker orig, bool newID = true) => new Marker(newID ? LSText.randomString(16) : orig.id, orig.name, orig.desc, orig.color, orig.time);
+        public override void CopyData(Marker orig, bool newID = true)
+        {
+            id = newID ? LSText.randomString(16) : orig.id;
+            name = orig.name;
+            desc = orig.desc;
+            color = orig.color;
+            time = orig.time;
+        }
+
+        public override Marker Copy(bool newID = true)
+        {
+            var marker = new Marker();
+            marker.CopyData(this, newID);
+            return marker;
+        }
 
         /// <summary>
         /// Parses a Marker from a VG format file.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed marker.</returns>
-        public static Marker ParseVG(JSONNode jn) => new Marker(jn["ID"]?.Value ?? LSText.randomString(16), jn["n"] ?? string.Empty, jn["d"] ?? string.Empty, jn["c"].AsInt, jn["t"].AsFloat);
+        public static Marker ParseVG(JSONNode jn, Version version = default)
+        {
+            var marker = new Marker();
+            marker.ReadJSONVG(jn, version);
+            return marker;
+        }
 
         /// <summary>
         /// Parses a Marker from an LS format file.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed marker.</returns>
-        public static Marker Parse(JSONNode jn) => new Marker(jn["name"]?.Value ?? "", jn["desc"]?.Value ?? "", jn["col"].AsInt, jn["t"].AsFloat);
+        public static Marker Parse(JSONNode jn)
+        {
+            var marker = new Marker();
+            marker.ReadJSON(jn);
+            return marker;
+        }
 
-        /// <summary>
-        /// Converts the marker to a JSON Object in the VG format.
-        /// </summary>
-        /// <returns>Returns a JSON Object representing the Marker.</returns>
-        public JSONNode ToJSONVG()
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+        {
+            //id = LSText.randomString(16); // don't need to read the id
+            name = jn["n"] ?? string.Empty;
+            desc = jn["d"] ?? string.Empty;
+            color = jn["c"].AsInt;
+            time = jn["t"].AsFloat;
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            name = jn["name"] ?? string.Empty;
+            desc = jn["desc"] ?? string.Empty;
+            color = jn["col"].AsInt;
+            time = jn["t"].AsFloat;
+        }
+
+        public override JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
 
@@ -84,11 +107,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Converts the marker to a JSON Object in the LS format.
-        /// </summary>
-        /// <returns>Returns a JSON Object representing the Marker.</returns>
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
             if (!string.IsNullOrEmpty(name))
@@ -105,10 +124,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        #endregion
+
+        #region Operators
+
+        public override bool Equals(object obj) => obj is Marker paObj && id == paObj.id;
+
+        public override int GetHashCode() => base.GetHashCode();
+
         public override string ToString() => $"{id} - {name}";
 
         #endregion
-
-        public static implicit operator bool(Marker exists) => exists != null;
     }
 }

@@ -14,24 +14,46 @@ namespace BetterLegacy.Core.Data
     {
         public PAObject() { }
 
+        /// <summary>
+        /// Identification of the object.
+        /// </summary>
         public string id = LSText.randomString(16);
 
-        public virtual T ReadJSONVG(JSONNode jn) => default;
+        /// <summary>
+        /// Copies data from another <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="orig">Original object to copy data from.</param>
+        public abstract void CopyData(T orig, bool newID = true);
 
-        public virtual T ReadJSON(JSONNode jn) => default;
+        /// <summary>
+        /// Creates a copy of the <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="newID">If the ID of the <typeparamref name="T"/> should be copied.</param>
+        /// <returns>Returns a copy of the object.</returns>
+        public abstract T Copy(bool newID = true);
 
+        /// <summary>
+        /// Parses and applies object values from VG to formatted JSON.
+        /// </summary>
+        /// <param name="jn">VG JSON.</param>
+        public virtual void ReadJSONVG(JSONNode jn, Version version = default) { }
+
+        /// <summary>
+        /// Parses and applies object values from LS to formatted JSON.
+        /// </summary>
+        /// <param name="jn">LS JSON.</param>
+        public virtual void ReadJSON(JSONNode jn) { }
+
+        /// <summary>
+        /// Converts the current Beatmap Object to the VG format.
+        /// </summary>
+        /// <returns>Returns a JSONNode.</returns>
         public virtual JSONNode ToJSONVG() => JSON.Parse("{}");
 
+        /// <summary>
+        /// Converts the current Beatmap Object to the LS format.
+        /// </summary>
+        /// <returns>Returns a JSONNode.</returns>
         public virtual JSONNode ToJSON() => JSON.Parse("{}");
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(PAObject<T> a, PAObject<T> b) => a && a.Equals(b);
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(PAObject<T> a, PAObject<T> b) => !a || !a.Equals(b);
-
-        public override bool Equals(object obj) => obj is PAObject<T> paObj && id == paObj.id;
-
-        public override int GetHashCode() => base.GetHashCode();
     }
 }

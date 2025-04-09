@@ -2558,7 +2558,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int type = timelineObject.Type;
                 int index = timelineObject.Index;
-                var eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[type][index]);
+                var eventKeyframe = beatmapObject.events[type][index].Copy();
                 eventKeyframe.time -= num;
 
                 copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
@@ -2608,7 +2608,7 @@ namespace BetterLegacy.Editor.Managers
 
         public EventKeyframe PasteKF(BeatmapObject beatmapObject, TimelineKeyframe timelineKeyframe, bool setTime = true)
         {
-            var eventKeyframe = EventKeyframe.DeepCopy(timelineKeyframe.eventKeyframe);
+            var eventKeyframe = timelineKeyframe.eventKeyframe.Copy();
 
             var time = EditorManager.inst.CurrentAudioPos;
             if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value)
@@ -2651,13 +2651,13 @@ namespace BetterLegacy.Editor.Managers
         {
             switch (type)
             {
-                case 0: CopiedPositionData = EventKeyframe.DeepCopy(kf);
+                case 0: CopiedPositionData = kf.Copy();
                     break;
-                case 1: CopiedScaleData = EventKeyframe.DeepCopy(kf);
+                case 1: CopiedScaleData = kf.Copy();
                     break;
-                case 2: CopiedRotationData = EventKeyframe.DeepCopy(kf);
+                case 2: CopiedRotationData = kf.Copy();
                     break;
-                case 3: CopiedColorData = EventKeyframe.DeepCopy(kf);
+                case 3: CopiedColorData = kf.Copy();
                     break;
             }
         }
@@ -2758,7 +2758,7 @@ namespace BetterLegacy.Editor.Managers
                     if (i > 0 && pasteObjectsYieldType != YieldType.None)
                         yield return CoroutineHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
-                    var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
+                    var beatmapObjectCopy = beatmapObject.Copy(false);
 
                     if (!retainID)
                         beatmapObjectCopy.id = objectIDs[i].newID;
@@ -2830,7 +2830,7 @@ namespace BetterLegacy.Editor.Managers
                     if (i > 0 && pasteObjectsYieldType != YieldType.None)
                         yield return CoroutineHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
-                    var prefabObjectCopy = PrefabObject.DeepCopy((PrefabObject)prefabObject, false);
+                    var prefabObjectCopy = prefabObject.Copy(false);
                     prefabObjectCopy.id = ids[i];
                     prefabObjectCopy.prefabID = prefabObject.prefabID;
 
@@ -2972,7 +2972,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < jn["objects"].Count; i++)
             {
                 var data = jn["data"];
-                customObjectOptions.Add(new ObjectOption(jn["name"], jn["desc"], timelineObject => timelineObject.GetData<BeatmapObject>().Read(data)));
+                customObjectOptions.Add(new ObjectOption(jn["name"], jn["desc"], timelineObject => timelineObject.GetData<BeatmapObject>().ReadJSON(data)));
             }
         }
 
@@ -3457,7 +3457,7 @@ namespace BetterLegacy.Editor.Managers
 
         public EventKeyframe AddEvent(BeatmapObject beatmapObject, float time, int type, EventKeyframe _keyframe, bool openDialog)
         {
-            var eventKeyframe = EventKeyframe.DeepCopy(_keyframe);
+            var eventKeyframe = _keyframe.Copy();
             var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(beatmapObject.StartTime - RTEditor.SnapToBPM(beatmapObject.StartTime + time)) : time;
             eventKeyframe.time = t;
 

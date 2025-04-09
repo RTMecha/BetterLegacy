@@ -497,7 +497,7 @@ namespace BetterLegacy.Editor.Managers
                                  for (int i = 0; i < bm.events.Count; i++)
                                  {
                                      bm.events[i] = bm.events[i].OrderBy(x => x.time).ToList();
-                                     var firstKF = EventKeyframe.DeepCopy((EventKeyframe)bm.events[i][0], false);
+                                     var firstKF = bm.events[i][0].Copy(false);
                                      bm.events[i].Clear();
                                      bm.events[i].Add(firstKF);
                                  }
@@ -1548,7 +1548,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             bm.events[i].Clear();
                             for (int j = 0; j < beatmapObject.events[i].Count; j++)
-                                bm.events[i].Add(EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[i][j]));
+                                bm.events[i].Add(beatmapObject.events[i][j].Copy());
                         }
 
                     }, true, true, "Keyframes");
@@ -2109,7 +2109,7 @@ namespace BetterLegacy.Editor.Managers
 
                             if (index >= 0 && currentTime > bm.StartTime)
                             {
-                                var kf = EventKeyframe.DeepCopy(bm.events[3][index]);
+                                var kf = bm.events[3][index].Copy();
                                 kf.time = currentTime - bm.StartTime;
                                 if (curves.value != 0)
                                     kf.curve = (Easing)(curves.value - 1);

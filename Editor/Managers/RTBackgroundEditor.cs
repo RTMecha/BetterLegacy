@@ -77,7 +77,7 @@ namespace BetterLegacy.Editor.Managers
         public void CopyBackground(BackgroundObject backgroundObject)
         {
             CoreHelper.Log($"Copied Background Object");
-            backgroundObjCopy = BackgroundObject.DeepCopy(backgroundObject);
+            backgroundObjCopy = backgroundObject.Copy();
             BackgroundEditor.inst.hasCopiedObject = true;
         }
 
@@ -89,7 +89,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var backgroundObject = BackgroundObject.DeepCopy(backgroundObjCopy);
+            var backgroundObject = backgroundObjCopy.Copy();
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
             Updater.CreateBackgroundObject(backgroundObject);

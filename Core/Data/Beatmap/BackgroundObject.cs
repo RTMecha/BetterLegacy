@@ -12,7 +12,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BackgroundObject : Exists
+    public class BackgroundObject : PAObject<BackgroundObject>
     {
         public BackgroundObject() { }
 
@@ -35,7 +35,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
-        public string id = LSText.randomString(16);
         public bool active = true;
         public string name = "Background";
 
@@ -146,188 +145,207 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public static BackgroundObject DeepCopy(BackgroundObject orig)
+        public override void CopyData(BackgroundObject orig, bool newID = true)
         {
-            var backgroundObject = new BackgroundObject()
-            {
-                id = orig.id,
-                active = orig.active,
-                drawFade = orig.drawFade,
-                depth = orig.depth,
-                name = orig.name,
-                pos = orig.pos,
-                reactiveScale = orig.reactiveScale,
-                reactiveSize = orig.reactiveSize,
-                reactiveType = orig.reactiveType,
-                rot = orig.rot,
-                scale = orig.scale,
-                text = orig.text,
-                iterations = orig.iterations,
-                shape = orig.shape,
-                shapeOption = orig.shapeOption,
-                flat = orig.flat,
-                zposition = orig.zposition,
-                zscale = orig.zscale,
-                rotation = orig.rotation,
+            id = newID ? LSText.randomNumString(16) : orig.id;
+            active = orig.active;
+            drawFade = orig.drawFade;
+            depth = orig.depth;
+            name = orig.name;
+            pos = orig.pos;
+            reactiveScale = orig.reactiveScale;
+            reactiveSize = orig.reactiveSize;
+            reactiveType = orig.reactiveType;
+            rot = orig.rot;
+            scale = orig.scale;
+            text = orig.text;
+            iterations = orig.iterations;
+            shape = orig.shape;
+            shapeOption = orig.shapeOption;
+            flat = orig.flat;
+            zposition = orig.zposition;
+            zscale = orig.zscale;
+            rotation = orig.rotation;
 
-                color = orig.color,
-                hue = orig.hue,
-                saturation = orig.saturation,
-                value = orig.value,
+            color = orig.color;
+            hue = orig.hue;
+            saturation = orig.saturation;
+            value = orig.value;
 
-                fadeColor = orig.fadeColor,
-                fadeHue = orig.fadeHue,
-                fadeSaturation = orig.fadeSaturation,
-                fadeValue = orig.fadeValue,
+            fadeColor = orig.fadeColor;
+            fadeHue = orig.fadeHue;
+            fadeSaturation = orig.fadeSaturation;
+            fadeValue = orig.fadeValue;
 
-                reactiveCol = orig.reactiveCol,
-                reactiveColSample = orig.reactiveColSample,
-                reactiveColIntensity = orig.reactiveColIntensity,
-                reactivePosSamples = orig.reactivePosSamples,
-                reactivePosIntensity = orig.reactivePosIntensity,
-                reactiveRotSample = orig.reactiveRotSample,
-                reactiveRotIntensity = orig.reactiveRotIntensity,
-                reactiveScaSamples = orig.reactiveScaSamples,
-                reactiveScaIntensity = orig.reactiveScaIntensity,
-                reactiveZIntensity = orig.reactiveZIntensity,
-                reactiveZSample = orig.reactiveZSample,
+            reactiveCol = orig.reactiveCol;
+            reactiveColSample = orig.reactiveColSample;
+            reactiveColIntensity = orig.reactiveColIntensity;
+            reactivePosSamples = orig.reactivePosSamples;
+            reactivePosIntensity = orig.reactivePosIntensity;
+            reactiveRotSample = orig.reactiveRotSample;
+            reactiveRotIntensity = orig.reactiveRotIntensity;
+            reactiveScaSamples = orig.reactiveScaSamples;
+            reactiveScaIntensity = orig.reactiveScaIntensity;
+            reactiveZIntensity = orig.reactiveZIntensity;
+            reactiveZSample = orig.reactiveZSample;
 
-                tags = orig.tags.Clone(),
-                orderModifiers = orig.orderModifiers,
-            };
-
+            tags = orig.tags.Clone();
+            orderModifiers = orig.orderModifiers;
             for (int i = 0; i < orig.modifiers.Count; i++)
             {
-                backgroundObject.modifiers.Add(new List<Modifier<BackgroundObject>>());
+                modifiers.Add(new List<Modifier<BackgroundObject>>());
                 for (int j = 0; j < orig.modifiers[i].Count; j++)
                 {
-                    var modifier = Modifier<BackgroundObject>.DeepCopy(orig.modifiers[i][j], backgroundObject);
-                    backgroundObject.modifiers[i].Add(modifier);
+                    var modifier = Modifier<BackgroundObject>.DeepCopy(orig.modifiers[i][j], this);
+                    modifiers[i].Add(modifier);
                 }
             }
+        }
 
+        public override BackgroundObject Copy(bool newID = true)
+        {
+            var backgroundObject = new BackgroundObject();
+            backgroundObject.CopyData(this, newID);
             return backgroundObject;
         }
 
         public static BackgroundObject Parse(JSONNode jn)
         {
             var backgroundObject = new BackgroundObject();
+            backgroundObject.ReadJSON(jn);
+            return backgroundObject;
+        }
 
+        public override void ReadJSON(JSONNode jn)
+        {
             if (jn["id"] != null)
-                backgroundObject.id = jn["id"];
+                id = jn["id"];
 
             if (jn["active"] != null)
-                backgroundObject.active = jn["active"].AsBool;
+                active = jn["active"].AsBool;
 
             if (jn["name"] != null)
-                backgroundObject.name = jn["name"];
+                name = jn["name"];
+
+            pos = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
+            scale = new Vector2(jn["size"]["x"].AsFloat, jn["size"]["y"].AsFloat);
+
+            rot = jn["rot"].AsFloat;
+
+            if (jn["layer"] != null)
+                depth = jn["layer"].AsInt;
+            else
+                depth = jn["d"].AsInt;
+
+            if (jn["zposition"] != null)
+                zposition = jn["zposition"].AsFloat;
+
+            if (jn["zpos"] != null)
+                zposition = jn["zpos"].AsFloat;
+
+            if (jn["zscale"] != null)
+                zscale = jn["zscale"].AsFloat;
+
+            if (jn["zsca"] != null)
+                zscale = jn["zsca"].AsFloat;
+
+            if (jn["depth"] != null)
+                iterations = jn["depth"].AsInt;
+
+            if (jn["iter"] != null)
+                iterations = jn["iter"].AsInt;
+
+            if (jn["s"] != null)
+                shape = jn["s"].AsInt;
+
+            if (jn["so"] != null)
+                shapeOption = jn["so"].AsInt;
 
             if (jn["text"] != null)
-                backgroundObject.text = jn["text"];
+                text = jn["text"];
 
-            backgroundObject.pos = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
-            backgroundObject.scale = new Vector2(jn["size"]["x"].AsFloat, jn["size"]["y"].AsFloat);
-
-            backgroundObject.rot = jn["rot"].AsFloat;
-            backgroundObject.color = jn["color"].AsInt;
-            if (jn["layer"] != null)
-                backgroundObject.depth = jn["layer"].AsInt;
+            if (jn["col"] != null)
+            {
+                color = jn["col"]["slot"].AsInt;
+                hue = jn["col"]["hue"].AsFloat;
+                saturation = jn["col"]["sat"].AsFloat;
+                value = jn["col"]["val"].AsFloat;
+            }
             else
-                backgroundObject.depth = jn["depth"].AsInt;
+            {
+                color = jn["color"].AsInt;
+                hue = jn["sat"].AsFloat;
+                saturation = jn["sat"].AsFloat;
+                value = jn["val"].AsFloat;
+            }
+
+            if (jn["fade"] != null)
+                drawFade = jn["fade"].AsBool;
+
+            if (jn["fade_col"] != null)
+            {
+                fadeColor = jn["fade_col"]["slot"].AsInt;
+                fadeHue = jn["fade_col"]["hue"].AsFloat;
+                fadeSaturation = jn["fade_col"]["sat"].AsFloat;
+                fadeValue = jn["fade_col"]["val"].AsFloat;
+            }
+            else
+            {
+                fadeColor = jn["color_fade"].AsInt;
+                fadeHue = jn["fade_hue"].AsFloat;
+                fadeSaturation = jn["fade_sat"].AsFloat;
+                fadeValue = jn["fade_val"].AsFloat;
+            }
+
+            if (jn["r_offset"] != null && jn["r_offset"]["x"] != null && jn["r_offset"]["y"] != null)
+                rotation = new Vector2(jn["r_offset"]["x"].AsFloat, jn["r_offset"]["y"].AsFloat);
 
             var reactiveType = jn["r_set"]["type"];
             if (reactiveType != null)
             {
                 if (reactiveType == "LOW")
-                    backgroundObject.reactiveType = ReactiveType.Bass;
+                    this.reactiveType = ReactiveType.Bass;
                 else if (reactiveType == "MID")
-                    backgroundObject.reactiveType = ReactiveType.Mids;
+                    this.reactiveType = ReactiveType.Mids;
                 else if (reactiveType == "HIGH")
-                    backgroundObject.reactiveType = ReactiveType.Treble;
+                    this.reactiveType = ReactiveType.Treble;
                 else
-                    backgroundObject.reactiveType = Parser.TryParse(jn["r_set"]["type"], true, ReactiveType.None);
+                    this.reactiveType = Parser.TryParse(jn["r_set"]["type"], true, ReactiveType.None);
             }
 
             if (jn["r_set"]["scale"] != null)
-                backgroundObject.reactiveScale = jn["r_set"]["scale"].AsFloat;
-
-            if (jn["fade"] != null)
-                backgroundObject.drawFade = jn["fade"].AsBool;
-
-            if (jn["hue"] != null)
-                backgroundObject.hue = jn["sat"].AsFloat;
-            if (jn["sat"] != null)
-                backgroundObject.saturation = jn["sat"].AsFloat;
-            if (jn["val"] != null)
-                backgroundObject.value = jn["val"].AsFloat;
-
-            if (jn["fade_hue"] != null)
-                backgroundObject.fadeHue = jn["fade_sat"].AsFloat;
-            if (jn["fade_sat"] != null)
-                backgroundObject.fadeSaturation = jn["fade_sat"].AsFloat;
-            if (jn["fade_val"] != null)
-                backgroundObject.fadeValue = jn["fade_val"].AsFloat;
-
-            if (jn["zposition"] != null)
-                backgroundObject.zposition = jn["zposition"].AsFloat;
-            
-            if (jn["zpos"] != null)
-                backgroundObject.zposition = jn["zpos"].AsFloat;
-
-            if (jn["zscale"] != null)
-                backgroundObject.zscale = jn["zscale"].AsFloat;
-            
-            if (jn["zsca"] != null)
-                backgroundObject.zscale = jn["zsca"].AsFloat;
-
-            if (jn["depth"] != null)
-                backgroundObject.iterations = jn["depth"].AsInt;
-            
-            if (jn["iter"] != null)
-                backgroundObject.iterations = jn["iter"].AsInt;
-
-            if (jn["s"] != null)
-                backgroundObject.shape = jn["s"].AsInt;
-            
-            if (jn["so"] != null)
-                backgroundObject.shapeOption = jn["so"].AsInt;
-
-            if (jn["r_offset"] != null && jn["r_offset"]["x"] != null && jn["r_offset"]["y"] != null)
-                backgroundObject.rotation = new Vector2(jn["r_offset"]["x"].AsFloat, jn["r_offset"]["y"].AsFloat);
-
-            if (jn["color_fade"] != null)
-                backgroundObject.fadeColor = jn["color_fade"].AsInt;
+                reactiveScale = jn["r_set"]["scale"].AsFloat;
 
             if (jn["rc"] != null)
             {
                 try
                 {
                     if (jn["rc"]["pos"] != null && jn["rc"]["pos"]["i"] != null && jn["rc"]["pos"]["i"]["x"] != null && jn["rc"]["pos"]["i"]["y"] != null)
-                        backgroundObject.reactivePosIntensity = new Vector2(jn["rc"]["pos"]["i"]["x"].AsFloat, jn["rc"]["pos"]["i"]["y"].AsFloat);
+                        reactivePosIntensity = new Vector2(jn["rc"]["pos"]["i"]["x"].AsFloat, jn["rc"]["pos"]["i"]["y"].AsFloat);
                     if (jn["rc"]["pos"] != null && jn["rc"]["pos"]["s"] != null && jn["rc"]["pos"]["s"]["x"] != null && jn["rc"]["pos"]["s"]["y"] != null)
-                        backgroundObject.reactivePosSamples = new Vector2Int(jn["rc"]["pos"]["s"]["x"].AsInt, jn["rc"]["pos"]["s"]["y"].AsInt);
+                        reactivePosSamples = new Vector2Int(jn["rc"]["pos"]["s"]["x"].AsInt, jn["rc"]["pos"]["s"]["y"].AsInt);
 
                     if (jn["rc"]["z"] != null && jn["rc"]["z"]["i"] != null)
-                        backgroundObject.reactiveZIntensity = jn["rc"]["z"]["i"].AsFloat;
+                        reactiveZIntensity = jn["rc"]["z"]["i"].AsFloat;
                     if (jn["rc"]["z"] != null && jn["rc"]["z"]["s"] != null)
-                        backgroundObject.reactiveZSample = jn["rc"]["z"]["s"].AsInt;
+                        reactiveZSample = jn["rc"]["z"]["s"].AsInt;
 
                     if (jn["rc"]["sca"] != null && jn["rc"]["sca"]["i"] != null && jn["rc"]["sca"]["i"]["x"] != null && jn["rc"]["sca"]["i"]["y"] != null)
-                        backgroundObject.reactiveScaIntensity = new Vector2(jn["rc"]["sca"]["i"]["x"].AsFloat, jn["rc"]["sca"]["i"]["y"].AsFloat);
+                        reactiveScaIntensity = new Vector2(jn["rc"]["sca"]["i"]["x"].AsFloat, jn["rc"]["sca"]["i"]["y"].AsFloat);
                     if (jn["rc"]["sca"] != null && jn["rc"]["sca"]["s"] != null && jn["rc"]["sca"]["s"]["x"] != null && jn["rc"]["sca"]["s"]["y"] != null)
-                        backgroundObject.reactiveScaSamples = new Vector2Int(jn["rc"]["sca"]["s"]["x"].AsInt, jn["rc"]["sca"]["s"]["y"].AsInt);
+                        reactiveScaSamples = new Vector2Int(jn["rc"]["sca"]["s"]["x"].AsInt, jn["rc"]["sca"]["s"]["y"].AsInt);
 
                     if (jn["rc"]["rot"] != null && jn["rc"]["rot"]["i"] != null)
-                        backgroundObject.reactiveRotIntensity = jn["rc"]["rot"]["i"].AsFloat;
+                        reactiveRotIntensity = jn["rc"]["rot"]["i"].AsFloat;
                     if (jn["rc"]["rot"] != null && jn["rc"]["rot"]["s"] != null)
-                        backgroundObject.reactiveRotSample = jn["rc"]["rot"]["s"].AsInt;
+                        reactiveRotSample = jn["rc"]["rot"]["s"].AsInt;
 
                     if (jn["rc"]["col"] != null && jn["rc"]["col"]["i"] != null)
-                        backgroundObject.reactiveColIntensity = jn["rc"]["col"]["i"].AsFloat;
+                        reactiveColIntensity = jn["rc"]["col"]["i"].AsFloat;
                     if (jn["rc"]["col"] != null && jn["rc"]["col"]["s"] != null)
-                        backgroundObject.reactiveColSample = jn["rc"]["col"]["s"].AsInt;
+                        reactiveColSample = jn["rc"]["col"]["s"].AsInt;
                     if (jn["rc"]["col"] != null && jn["rc"]["col"]["c"] != null)
-                        backgroundObject.reactiveCol = jn["rc"]["col"]["c"].AsInt;
+                        reactiveCol = jn["rc"]["col"]["c"].AsInt;
                 }
                 catch (Exception ex)
                 {
@@ -337,29 +355,27 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["tags"] != null)
                 for (int i = 0; i < jn["tags"].Count; i++)
-                    backgroundObject.tags.Add(jn["tags"][i]);
+                    tags.Add(jn["tags"][i]);
 
             if (jn["ordmod"] != null)
-                backgroundObject.orderModifiers = jn["ordmod"].AsBool;
+                orderModifiers = jn["ordmod"].AsBool;
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
-                backgroundObject.modifiers.Add(new List<Modifier<BackgroundObject>>());
+                modifiers.Add(new List<Modifier<BackgroundObject>>());
                 for (int j = 0; j < jn["modifiers"][i].Count; j++)
                 {
-                    var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], backgroundObject);
+                    var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], this);
                     if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
-                        backgroundObject.modifiers[i].Add(modifier);
+                        modifiers[i].Add(modifier);
                 }
             }
 
             if (jn["ed"] != null)
-                backgroundObject.editorData = ObjectEditorData.Parse(jn["ed"]);
-
-            return backgroundObject;
+                editorData = ObjectEditorData.Parse(jn["ed"]);
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
 
@@ -389,23 +405,25 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["rot"] = rot;
 
             if (color != 0)
-                jn["color"] = color;
-
+                jn["col"]["slot"] = color;
             if (hue != 0f)
-                jn["hue"] = hue;
+                jn["col"]["hue"] = hue;
             if (saturation != 0f)
-                jn["sat"] = saturation;
+                jn["col"]["sat"] = saturation;
             if (value != 0f)
-                jn["val"] = value;
+                jn["col"]["val"] = value;
+
+            if (fadeColor != 0)
+                jn["fade_col"]["slot"] = fadeColor;
             if (fadeHue != 0f)
-                jn["fade_hue"] = fadeHue;
+                jn["fade_col"]["hue"] = fadeHue;
             if (fadeSaturation != 0f)
-                jn["fade_sat"] = fadeSaturation;
+                jn["fade_col"]["sat"] = fadeSaturation;
             if (fadeValue != 0f)
-                jn["fade_val"] = fadeValue;
+                jn["fade_col"]["val"] = fadeValue;
 
             if (depth != 0)
-                jn["depth"] = depth;
+                jn["d"] = depth;
 
             if (!drawFade)
                 jn["fade"] = drawFade;
@@ -427,9 +445,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (flat)
                 jn["flat"] = flat;
-
-            if (fadeColor != 0)
-                jn["color_fade"] = fadeColor;
 
             if (rotation.x != 0f || rotation.y != 0f)
             {
@@ -567,7 +582,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Operators
 
-        public override string ToString() => name;
+        public override bool Equals(object obj) => obj is PrefabObject paObj && id == paObj.id;
+
+        public override int GetHashCode() => base.GetHashCode();
+
+        public override string ToString() => $"{id} - {name}";
 
         #endregion
     }
