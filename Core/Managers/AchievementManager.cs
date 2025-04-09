@@ -452,7 +452,7 @@ namespace BetterLegacy.Core.Managers
                         new FloatKeyframe(3.5f, 0f, Ease.Linear),
                     }, achievement.transform.SetLocalScaleY),
                 };
-                animation.onComplete = () => { CoreHelper.Destroy(achievement); };
+                animation.onComplete = () => CoreHelper.Destroy(achievement);
                 AnimationManager.inst.Play(animation);
 
                 SoundManager.inst.PlaySound(DefaultSounds.loadsound);

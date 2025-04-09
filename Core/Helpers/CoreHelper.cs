@@ -175,14 +175,6 @@ namespace BetterLegacy.Core.Helpers
         public static bool IsUsingInputField { get; set; }
 
         /// <summary>
-        /// Loads an AssetBundle from the Assets folder.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        public static AssetBundle LoadAssetBundle(string file)
-            => AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}{file}");
-
-        /// <summary>
         /// Tries to find a <see cref="GameObject"/>.
         /// </summary>
         /// <param name="find"><see cref="GameObject"/> to find. To search through a chain, do "object 1/object 2/object 3"</param>
@@ -195,34 +187,69 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
-        /// Destroys a Unity Object from anywhere, includes instant and delay time.
+        /// Destroys a Unity Object from anywhere.
         /// </summary>
         /// <param name="obj">Unity Object to destroy.</param>
         /// <param name="instant">If object should destroy instantly.</param>
         /// <param name="t">The delay to destroy the object at if instant is off.</param>
-        public static void Destroy(UnityEngine.Object obj, bool instant = false, float t = 0f)
+        public static void Destroy(UnityEngine.Object obj) => UnityEngine.Object.Destroy(obj);
+
+        /// <summary>
+        /// Destroys a Unity Object.
+        /// </summary>
+        /// <param name="obj">Unity Object to destroy.</param>
+        /// <param name="instant">If object should destroy instantly.</param>
+        public static void Destroy(UnityEngine.Object obj, bool instant)
         {
             if (instant)
-            {
                 UnityEngine.Object.DestroyImmediate(obj);
-                return;
-            }
-
-            UnityEngine.Object.Destroy(obj, t);
+            else
+                UnityEngine.Object.Destroy(obj);
         }
 
         /// <summary>
-        /// Destroys multiple Unity Objects from anywhere, includes instant and delay time.
+        /// Destroys a Unity Object from anywhere, includes instant and delay time.
         /// </summary>
-        /// <param name="instant">If object should destroy instantly.</param>
+        /// <param name="obj">Unity Object to destroy.</param>
         /// <param name="t">The delay to destroy the object at if instant is off.</param>
+        public static void Destroy(UnityEngine.Object obj, float t) => UnityEngine.Object.Destroy(obj, t);
+
+        /// <summary>
+        /// Destroys multiple Unity Objects.
+        /// </summary>
         /// <param name="objects">Unity Objects to destroy.</param>
-        public static void Destroy(bool instant, float t, params UnityEngine.Object[] objects)
+        public static void Destroy(params UnityEngine.Object[] objects)
         {
             for (int i = 0; i < objects.Length; i++)
-                Destroy(objects[i], instant, t);
+                Destroy(objects[i]);
         }
 
+        /// <summary>
+        /// Destroys multiple Unity Objects.
+        /// </summary>
+        /// <param name="t">The delay to destroy the object at if instant is off.</param>
+        /// <param name="objects">Unity Objects to destroy.</param>
+        public static void Destroy(float t, params UnityEngine.Object[] objects)
+        {
+            for (int i = 0; i < objects.Length; i++)
+                Destroy(objects[i], t);
+        }
+
+        /// <summary>
+        /// Destroys multiple Unity Objects.
+        /// </summary>
+        /// <param name="instant">If object should destroy instantly.</param>
+        /// <param name="objects">Unity Objects to destroy.</param>
+        public static void Destroy(bool instant, params UnityEngine.Object[] objects)
+        {
+            for (int i = 0; i < objects.Length; i++)
+                Destroy(objects[i], instant);
+        }
+
+        /// <summary>
+        /// Deletes a <see cref="GameObject"/> by removing it from its parent and destroying it.
+        /// </summary>
+        /// <param name="gameObject">GameObject to destroy.</param>
         public static void Delete(GameObject gameObject)
         {
             if (!gameObject)
@@ -233,18 +260,13 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
-        /// Deletes all children from a transform.
+        /// Deletes several <see cref="GameObject"/>s by removing it from its parent and destroying it.
         /// </summary>
-        /// <param name="transform">Transform to delete the children of.</param>
-        public static void DeleteChildren(Transform transform)
+        /// <param name="objects">GameObjects to destroy.</param>
+        public static void Delete(params GameObject[] objects)
         {
-            var listToDelete = new List<GameObject>();
-            for (int i = 0; i < transform.childCount; i++)
-                listToDelete.Add(transform.GetChild(i).gameObject);
-            for (int i = 0; i < listToDelete.Count; i++)
-                Destroy(listToDelete[i], true);
-            listToDelete.Clear();
-            listToDelete = null;
+            for (int i = 0; i < objects.Length; i++)
+                Delete(objects[i]);
         }
 
         /// <summary>
@@ -253,15 +275,49 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="transform">Transform to delete the children of.</param>
         public static void DestroyChildren(Transform transform)
         {
-            var listToDestroy = new List<GameObject>();
-            while (transform.childCount > 0)
+            for (int i = transform.childCount - 1; i >= 0; i--)
             {
-                var child = transform.GetChild(0);
+                var child = transform.GetChild(i);
                 child.SetParent(null);
-                listToDestroy.Add(child.gameObject);
+                Destroy(child.gameObject);
+            }
+        }
+
+        /// <summary>
+        /// Removes all children from the transform and destroys them. This is done due to Unity's Destroy method not working in some cases.
+        /// </summary>
+        /// <param name="transform">Transform to delete the children of.</param>
+        /// <param name="predicate">If a match is found, delete the child.</param>
+        public static void DestroyChildren(Transform transform, Predicate<GameObject> predicate)
+        {
+            var listToDestroy = new List<GameObject>();
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                var child = transform.GetChild(i);
+                if (predicate(child.gameObject))
+                {
+                    child.SetParent(null);
+                    Destroy(child.gameObject);
+                }
             }
             foreach (var child in listToDestroy)
                 Destroy(child);
+        }
+
+        /// <summary>
+        /// Removes all children from the transform and destroys them. This is done due to Unity's Destroy method not working in some cases.
+        /// </summary>
+        /// <param name="transform">Transform to delete the children of.</param>
+        /// <param name="startIndex">Start sibling index to delete from.</param>
+        /// <param name="endIndex">End sibling index to delete to.</param>
+        public static void DestroyChildren(Transform transform, int startIndex, int endIndex)
+        {
+            for (int i = endIndex; i >= startIndex; i--)
+            {
+                var child = transform.GetChild(i);
+                child.SetParent(null);
+                Destroy(child.gameObject);
+            }
         }
 
         /// <summary>

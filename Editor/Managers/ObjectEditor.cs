@@ -357,11 +357,7 @@ namespace BetterLegacy.Editor.Managers
                     objectView.GetChild(index - 1).GetComponentInChildren<Text>().text = "Gradient / Shape";
                     var gradient = objectView.Find("shape").gameObject.Duplicate(objectView, "gradienttype", index);
 
-                    var listToDestroy = new List<GameObject>();
-                    for (int i = 1; i < gradient.transform.childCount; i++)
-                        listToDestroy.Add(gradient.transform.GetChild(i).gameObject);
-                    for (int i = 0; i < listToDestroy.Count; i++)
-                        CoreHelper.Delete(listToDestroy[i]);
+                    CoreHelper.DestroyChildren(gradient.transform, 1, gradient.transform.childCount - 1);
 
                     Destroy(gradient.GetComponent<ToggleGroup>());
 
@@ -904,8 +900,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddDropdown(renderTypeDD);
             }
 
-            DestroyImmediate(ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(1).gameObject);
-            DestroyImmediate(ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(1).gameObject);
+            CoreHelper.Delete(ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(1).gameObject);
+            CoreHelper.Delete(ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(1).gameObject);
 
             var multiKF = ObjEditor.inst.KeyframeDialogs[4];
             multiKF.transform.AsRT().anchorMax = new Vector2(0f, 1f);

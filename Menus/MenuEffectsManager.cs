@@ -71,7 +71,7 @@ namespace BetterLegacy.Menus
             try
             {
                 if (!postProcessResourcesAssetBundle)
-                    postProcessResourcesAssetBundle = CoreHelper.LoadAssetBundle("effectresources.asset");
+                    postProcessResourcesAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("effectresources.asset"));
                 var postProcessLayer = camera.gameObject.GetComponent<PostProcessLayer>() ?? camera.gameObject.AddComponent<PostProcessLayer>();
                 postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
                 HarmonyLib.AccessTools.Field(typeof(PostProcessLayer), "m_Resources").SetValue(postProcessLayer, postProcessResources);

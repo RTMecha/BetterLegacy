@@ -2153,7 +2153,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (!prefabExternalAddButton)
             {
-                CoreHelper.DeleteChildren(PrefabEditor.inst.externalContent);
+                CoreHelper.DestroyChildren(PrefabEditor.inst.externalContent);
 
                 prefabExternalAddButton = CreatePrefabButton(PrefabEditor.inst.externalContent, "New External Prefab", eventData =>
                 {

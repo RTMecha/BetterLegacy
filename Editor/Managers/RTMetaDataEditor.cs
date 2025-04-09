@@ -264,7 +264,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                CoreHelper.Destroy(true, 0f,
+                CoreHelper.Delete(
                     uploadInfo.transform.Find("cover_art").gameObject,
                     uploadInfo.transform.Find("name").gameObject,
                     uploadInfo.transform.Find("link").gameObject,
