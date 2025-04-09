@@ -27,6 +27,8 @@
   - BackgroundObject ["HIGH" > "Treble"]
   - BackgroundObject ["zposition" > "zpos"]
   - BackgroundObject ["zscale" > "zsca"]
+  - BackgroundObject ["color" > "col"]
+  - BackgroundObject ["color_fade" > "fade_col"]
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 - Shapes are now loaded from a shapes.json file in the Assets folder.
 - Updating parent chains, object type and shapes have been optimized.
@@ -48,6 +50,7 @@
 - Fixed Multi Object Keyframe Editor "Apply Curves" button re-rendering keyframes from previously selected objects.
 - Fixed setParent modifiers crashing the game because I got the parent and the child confused.
 - Fixed Prefab Object autokill updating being broken.
+- Fixed Hue values not loading correctly for Background Objects.
 
 ------------------------------------------------------------------------------------------
 
