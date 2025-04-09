@@ -79,6 +79,8 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public Text label;
 
+        public void Assign() => Assign(gameObject);
+
         public void Assign(GameObject gameObject)
         {
             if (gameObject.transform.TryFind("Text", out Transform transform))
@@ -128,6 +130,45 @@ namespace BetterLegacy.Core.Prefabs
         public Image image;
     }
 
+    public class Vector2InputFieldStorage : MonoBehaviour
+    {
+        [SerializeField]
+        public InputFieldStorage x;
+
+        [SerializeField]
+        public InputFieldStorage y;
+
+        public virtual void Assign()
+        {
+            if (gameObject.transform.TryFind("x", out Transform xTransform))
+            {
+                x = xTransform.gameObject.GetOrAddComponent<InputFieldStorage>();
+                x.Assign(x.gameObject);
+            }
+            if (gameObject.transform.TryFind("y", out Transform yTransform))
+            {
+                y = yTransform.gameObject.GetOrAddComponent<InputFieldStorage>();
+                y.Assign(y.gameObject);
+            }
+        }
+    }
+    
+    public class Vector3InputFieldStorage : Vector2InputFieldStorage
+    {
+        [SerializeField]
+        public InputFieldStorage z;
+
+        public override void Assign()
+        {
+            base.Assign();
+            if (gameObject.transform.TryFind("z", out Transform zTransform))
+            {
+                z = zTransform.gameObject.GetOrAddComponent<InputFieldStorage>();
+                z.Assign(z.gameObject);
+            }
+        }
+    }
+
     public class InputFieldStorage : MonoBehaviour
     {
         [SerializeField]
@@ -150,6 +191,8 @@ namespace BetterLegacy.Core.Prefabs
         public Toggle lockToggle;
         [SerializeField]
         public EventTrigger eventTrigger;
+
+        public void Assign() => Assign(gameObject);
 
         public void Assign(GameObject gameObject)
         {
