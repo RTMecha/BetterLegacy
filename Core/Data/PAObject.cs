@@ -45,13 +45,13 @@ namespace BetterLegacy.Core.Data
         public virtual void ReadJSON(JSONNode jn) { }
 
         /// <summary>
-        /// Converts the current Beatmap Object to the VG format.
+        /// Converts the current <typeparamref name="T"/> to the VG format.
         /// </summary>
         /// <returns>Returns a JSONNode.</returns>
         public virtual JSONNode ToJSONVG() => JSON.Parse("{}");
 
         /// <summary>
-        /// Converts the current Beatmap Object to the LS format.
+        /// Converts the current <typeparamref name="T"/> to the LS format.
         /// </summary>
         /// <returns>Returns a JSONNode.</returns>
         public virtual JSONNode ToJSON() => JSON.Parse("{}");
