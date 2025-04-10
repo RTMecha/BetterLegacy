@@ -42,6 +42,7 @@
 - Replaced "Timeline Object Retains Bin On Drag" setting with "Bin Clamp Behavior" in Config Manager > Editor > Timeline. This changes how timeline object bin dragging is handled when the bin is dragged outside the normal bin range.
 - Overhauled a lot of Background Editor code.
 - There no longer needs to always be 1 Background Object in a level. Due to this, "Delete All Backgrounds" now actually does what it says. If there are no Backgrounds present, the editor UI will disable.
+- Custom Background Object reactive values UI now disable if the reactive type is not custom.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
