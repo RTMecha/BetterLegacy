@@ -11,28 +11,30 @@ using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class EventKeyframe : Exists
+    public class EventKeyframe : PAObject<EventKeyframe>
     {
-        public EventKeyframe() { }
-
-        public EventKeyframe(float time) => this.time = time;
-
-        public EventKeyframe(float[] values, float[] randomValues, int random = 0)
+        public EventKeyframe()
         {
             id = LSText.randomNumString(8);
+        }
+
+        public EventKeyframe(float time) : this() => this.time = time;
+
+        public EventKeyframe(float[] values, float[] randomValues, int random = 0) : this()
+        {
             this.random = random;
             SetEventValues(values);
             SetEventRandomValues(randomValues);
         }
 
-        public EventKeyframe(float time, float[] values, string curve)
+        public EventKeyframe(float time, float[] values, string curve) : this()
         {
             this.time = time;
             SetEventValues(values);
             this.curve = Parser.TryParse(curve, Easing.Linear);
         }
 
-        public EventKeyframe(float time, float[] values, float[] randomValues, int random = 0)
+        public EventKeyframe(float time, float[] values, float[] randomValues, int random = 0) : this()
         {
             this.time = time;
             this.random = random;
@@ -51,11 +53,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
-        public string id = LSText.randomNumString(8);
-
         public float[] values = new float[2];
 
         public float[] randomValues = new float[3];
+
+        public string[] stringValues;
 
         public int random;
 
@@ -87,7 +89,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Copies data from another EventKeyframe.
         /// </summary>
         /// <param name="orig">Original object to copy data from.</param>
-        public void CopyData(EventKeyframe orig, bool newID = true)
+        public override void CopyData(EventKeyframe orig, bool newID = true)
         {
             id = newID ? LSText.randomNumString(8) : orig.id;
             curve = orig.curve;
@@ -97,18 +99,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             random = orig.random;
             relative = orig.relative;
             locked = orig.locked;
-        }
-
-        /// <summary>
-        /// Creates a copy of the EventKeyframe.
-        /// </summary>
-        /// <param name="newID">If the ID of the EventKeyframe should be copied.</param>
-        /// <returns>Returns a copy of the object.</returns>
-        public EventKeyframe Copy(bool newID = true)
-        {
-            var eventKeyframe = new EventKeyframe();
-            eventKeyframe.CopyData(this, newID);
-            return eventKeyframe;
         }
 
         public static EventKeyframe Parse(JSONNode jn, int type, int valueCount, bool defaultRelative = false)
