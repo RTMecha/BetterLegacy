@@ -353,12 +353,156 @@ namespace BetterLegacy.Core
         /// <returns>Returns a string with the specified string removed.</returns>
         public static string Remove(this string input, string remove) => input.Replace(remove, "");
 
+        /// <summary>
+        /// Gets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <returns>Returns an axis.</returns>
         public static float At(this Vector2 vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
+
+        /// <summary>
+        /// Gets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <returns>Returns an axis.</returns>
         public static float At(this Vector3 vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
+
+        /// <summary>
+        /// Gets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <returns>Returns an axis.</returns>
         public static float At(this Vector4 vector4, int index) => vector4[Mathf.Clamp(index, 0, 3)];
-        
+
+        /// <summary>
+        /// Gets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <returns>Returns an axis.</returns>
         public static float At(this Vector2Int vector2, int index) => vector2[Mathf.Clamp(index, 0, 1)];
+
+        /// <summary>
+        /// Gets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <returns>Returns an axis.</returns>
         public static float At(this Vector3Int vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
+
+        /// <summary>
+        /// Sets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <param name="value">Value to set.</param>
+        public static void Set(this Vector2 vector2, int index, float value)
+        {
+            switch (index)
+            {
+                case 0: {
+                        vector2.x = value;
+                        break;
+                    }
+                case 1: {
+                        vector2.y = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Sets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <param name="value">Value to set.</param>
+        public static void Set(this Vector3 vector3, int index, float value)
+        {
+            switch (index)
+            {
+                case 0: {
+                        vector3.x = value;
+                        break;
+                    }
+                case 1: {
+                        vector3.y = value;
+                        break;
+                    }
+                case 2: {
+                        vector3.z = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Sets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <param name="value">Value to set.</param>
+        public static void Set(this Vector4 vector4, int index, float value)
+        {
+            switch (index)
+            {
+                case 0: {
+                        vector4.x = value;
+                        break;
+                    }
+                case 1: {
+                        vector4.y = value;
+                        break;
+                    }
+                case 2: {
+                        vector4.z = value;
+                        break;
+                    }
+                case 3: {
+                        vector4.w = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Sets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <param name="value">Value to set.</param>
+        public static void Set(this Vector2Int vector2, int index, int value)
+        {
+            switch (index)
+            {
+                case 0: {
+                        vector2.x = value;
+                        break;
+                    }
+                case 1: {
+                        vector2.y = value;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Sets a vector value at an index.
+        /// </summary>
+        /// <param name="index">Index of the axis.</param>
+        /// <param name="value">Value to set.</param>
+        public static void Set(this Vector3Int vector3, int index, int value)
+        {
+            switch (index)
+            {
+                case 0: {
+                        vector3.x = value;
+                        break;
+                    }
+                case 1: {
+                        vector3.y = value;
+                        break;
+                    }
+                case 2: {
+                        vector3.z = value;
+                        break;
+                    }
+            }
+        }
 
         #endregion
 
