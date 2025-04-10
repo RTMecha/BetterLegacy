@@ -67,7 +67,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        public Vector3InputFieldStorage TopHueSatVal { get; set; }
+        public RectTransform ColorsParent { get; set; }
+
+        public Vector3InputFieldStorage HueSatVal { get; set; }
+
+        public RectTransform FadeColorsParent { get; set; }
+
         public Vector3InputFieldStorage FadeHueSatVal { get; set; }
 
         public ToggleButtonStorage FadeToggle { get; set; }
@@ -92,7 +97,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public InputFieldStorage ReactiveRotationSampleField { get; set; }
         
         public InputFieldStorage ReactiveRotationIntensityField { get; set; }
-        
+
+        public RectTransform ReactiveColorsParent { get; set; }
+
         public InputFieldStorage ReactiveColorSampleField { get; set; }
         
         public InputFieldStorage ReactiveColorIntensityField { get; set; }
@@ -541,6 +548,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     var reactiveColor = LeftContent.Find("color").gameObject.Duplicate(LeftContent, "reactive-color", 41);
                     CustomReactive.Add(reactiveColor);
+                    ReactiveColorsParent = reactiveColor.transform.AsRT();
                 }
 
                 // Reactive Z
@@ -578,6 +586,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var color = LeftContent.Find("color");
                 var fadeColor = LeftContent.Find("color").gameObject.Duplicate(LeftContent, "fade-color", 17);
+
+                ColorsParent = color.AsRT();
+                FadeColorsParent = fadeColor.transform.AsRT();
             }
 
             // Rotation
@@ -639,14 +650,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "huesatval", 25);
                 iterations.GetOrAddComponent<HorizontalLayoutGroup>();
-                TopHueSatVal = iterations.gameObject.GetOrAddComponent<Vector3InputFieldStorage>();
-                TopHueSatVal.Assign();
+                HueSatVal = iterations.gameObject.GetOrAddComponent<Vector3InputFieldStorage>();
+                HueSatVal.Assign();
 
-                TopHueSatVal.x.inputField.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
-                TopHueSatVal.y.inputField.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
+                HueSatVal.x.inputField.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
+                HueSatVal.y.inputField.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
-                TopHueSatVal.z = iterations.transform.Find("x").gameObject.Duplicate(iterations.transform, "z").GetOrAddComponent<InputFieldStorage>();
-                TopHueSatVal.z.Assign();
+                HueSatVal.z = iterations.transform.Find("x").gameObject.Duplicate(iterations.transform, "z").GetOrAddComponent<InputFieldStorage>();
+                HueSatVal.z.Assign();
 
                 for (int i = 0; i < iterations.transform.childCount; i++)
                     iterations.transform.GetChild(i).GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);

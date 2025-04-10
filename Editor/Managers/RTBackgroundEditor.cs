@@ -886,8 +886,8 @@ namespace BetterLegacy.Editor.Managers
             if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
                 return;
 
-            LSHelpers.DeleteChildren(Dialog.LeftContent.Find("reactive-color"));
-            ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.reactiveCol, index, Dialog.LeftContent.Find("reactive-color"), SetReactiveColor));
+            LSHelpers.DeleteChildren(Dialog.ReactiveColorsParent);
+            ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.reactiveCol, index, Dialog.ReactiveColorsParent, SetReactiveColor));
 
             Dialog.ReactiveColorSampleField.inputField.onValueChanged.ClearAll();
             Dialog.ReactiveColorSampleField.inputField.text = backgroundObject.reactiveColSample.ToString();
@@ -950,12 +950,12 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderColor(BackgroundObject backgroundObject)
         {
-            LSHelpers.DeleteChildren(Dialog.LeftContent.Find("color"));
-            ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.LeftContent.Find("color"), SetColor));
+            LSHelpers.DeleteChildren(Dialog.ColorsParent);
+            ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
 
-            Dialog.TopHueSatVal.x.inputField.onValueChanged.ClearAll();
-            Dialog.TopHueSatVal.x.inputField.text = backgroundObject.hue.ToString();
-            Dialog.TopHueSatVal.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.HueSatVal.x.inputField.onValueChanged.ClearAll();
+            Dialog.HueSatVal.x.inputField.text = backgroundObject.hue.ToString();
+            Dialog.HueSatVal.x.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -963,9 +963,9 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.TopHueSatVal.y.inputField.onValueChanged.ClearAll();
-            Dialog.TopHueSatVal.y.inputField.text = backgroundObject.saturation.ToString();
-            Dialog.TopHueSatVal.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.HueSatVal.y.inputField.onValueChanged.ClearAll();
+            Dialog.HueSatVal.y.inputField.text = backgroundObject.saturation.ToString();
+            Dialog.HueSatVal.y.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -973,9 +973,9 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.TopHueSatVal.z.inputField.onValueChanged.ClearAll();
-            Dialog.TopHueSatVal.z.inputField.text = backgroundObject.value.ToString();
-            Dialog.TopHueSatVal.z.inputField.onValueChanged.AddListener(_val =>
+            Dialog.HueSatVal.z.inputField.onValueChanged.ClearAll();
+            Dialog.HueSatVal.z.inputField.text = backgroundObject.value.ToString();
+            Dialog.HueSatVal.z.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -986,8 +986,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderFadeColor(BackgroundObject backgroundObject)
         {
-            LSHelpers.DeleteChildren(Dialog.LeftContent.Find("fade-color"));
-            ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.LeftContent.Find("fade-color"), SetFadeColor));
+            LSHelpers.DeleteChildren(Dialog.FadeColorsParent);
+            ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
 
             Dialog.FadeHueSatVal.x.inputField.onValueChanged.ClearAll();
             Dialog.FadeHueSatVal.x.inputField.text = backgroundObject.fadeHue.ToString();
