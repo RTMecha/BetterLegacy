@@ -76,6 +76,35 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        public static void OnBGTick()
+        {
+            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.Current || GameData.Current.backgroundObjects == null)
+                return;
+
+            var list = GameData.Current.backgroundObjects;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var backgroundObject = list[i];
+
+                if (backgroundObject.modifiers.Count <= 0)
+                    continue;
+
+                for (int j = 0; j < backgroundObject.modifiers.Count; j++)
+                {
+                    var modifiers = backgroundObject.modifiers[j];
+
+                    if (backgroundObject.orderModifiers)
+                    {
+                        ModifiersHelper.RunModifiersLoop(modifiers, true);
+                        continue;
+                    }
+
+                    ModifiersHelper.RunModifiersAll(modifiers, true);
+                }
+            }
+        }
+
         public static List<KeyValuePair<string, AudioSource>> queuedAudioToDelete = new List<KeyValuePair<string, AudioSource>>();
 
         /// <summary>

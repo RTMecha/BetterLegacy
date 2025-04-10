@@ -27,13 +27,6 @@ namespace BetterLegacy.Patchers
     {
         public static GameManager Instance { get => GameManager.inst; set => GameManager.inst = value; }
 
-        #region Variables
-
-        public static Color bgColorToLerp;
-        public static Color timelineColorToLerp;
-
-        #endregion
-
         [HarmonyPatch(nameof(GameManager.Awake))]
         [HarmonyPrefix]
         static void AwakePrefix(GameManager __instance)
@@ -194,46 +187,8 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(GameManager.UpdateTheme))]
         [HarmonyPrefix]
-        static bool UpdateThemePrefix(GameManager __instance)
+        static bool UpdateThemePrefix()
         {
-            BackgroundManagerPatch.bgColorToLerp = bgColorToLerp;
-
-            if (RTGameManager.inst && EventManager.inst)
-            {
-                EventManager.inst.camPer.backgroundColor = bgColorToLerp;
-                if (RTGameManager.inst.checkpointImages.Count > 0)
-                    foreach (var image in RTGameManager.inst.checkpointImages)
-                        image.color = timelineColorToLerp;
-
-                RTGameManager.inst.timelinePlayer.color = timelineColorToLerp;
-                RTGameManager.inst.timelineLeftCap.color = timelineColorToLerp;
-                RTGameManager.inst.timelineRightCap.color = timelineColorToLerp;
-                RTGameManager.inst.timelineLine.color = timelineColorToLerp;
-            }
-
-            if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
-            {
-                bool introActive = GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData && !levelData.showIntro;
-
-                __instance.introTitle.gameObject.SetActive(introActive);
-                __instance.introArtist.gameObject.SetActive(introActive);
-                if (introActive && __instance.introTitle.color != timelineColorToLerp)
-                    __instance.introTitle.color = timelineColorToLerp;
-                if (introActive && __instance.introArtist.color != timelineColorToLerp)
-                    __instance.introArtist.color = timelineColorToLerp;
-            }
-
-            if (__instance.guiImages.Length > 0)
-                foreach (var image in __instance.guiImages)
-                    image.color = timelineColorToLerp;
-
-            if (!__instance.menuUI || !__instance.menuUI.activeInHierarchy)
-                return false;
-
-            var componentsInChildren2 = __instance.menuUI.GetComponentsInChildren<TextMeshProUGUI>();
-            for (int i = 0; i < componentsInChildren2.Length; i++)
-                componentsInChildren2[i].color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(bgColorToLerp));
-
             return false;
         }
 

@@ -20,7 +20,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor;
-using BetterLegacy.Patchers;
 
 using Ease = BetterLegacy.Core.Animation.Ease;
 using Random = UnityEngine.Random;
@@ -537,9 +536,9 @@ namespace BetterLegacy.Arcade.Managers
                     inst.vignetteHue, inst.vignetteSat, inst.vignetteVal));
 
                 var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
-                GameManagerPatch.bgColorToLerp = ChangeColorHSV(LerpColor(inst.prevBGColor, inst.nextBGColor, inst.bgColor, beatmapTheme.backgroundColor), inst.bgHue, inst.bgSat, inst.bgVal);
+                ThemeManager.inst.bgColorToLerp = ChangeColorHSV(LerpColor(inst.prevBGColor, inst.nextBGColor, inst.bgColor, beatmapTheme.backgroundColor), inst.bgHue, inst.bgSat, inst.bgVal);
 
-                GameManagerPatch.timelineColorToLerp =
+                ThemeManager.inst.timelineColorToLerp =
                     LSColors.fadeColor(ChangeColorHSV(LerpColor(inst.prevTimelineColor, inst.nextTimelineColor, inst.timelineColor, beatmapTheme.guiColor),
                     inst.timelineHue, inst.timelineSat, inst.timelineVal), inst.timelineOpacity);
 
@@ -940,7 +939,7 @@ namespace BetterLegacy.Arcade.Managers
             inst.themeLerp = x;
 
             ThemeManager.inst.Current.Lerp(ThemeManager.inst.GetTheme(inst.prevTheme), ThemeManager.inst.GetTheme(inst.nextTheme), x);
-            GameManager.inst.UpdateTheme();
+            ThemeManager.inst.UpdateThemes();
         }
 
         #endregion

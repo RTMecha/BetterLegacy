@@ -6,6 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 
@@ -75,6 +76,9 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        public Color bgColorToLerp;
+        public Color timelineColorToLerp;
+
         /// <summary>
         /// Gets a theme based on the ID.
         /// </summary>
@@ -123,6 +127,38 @@ namespace BetterLegacy.Core.Managers
         {
             customThemes.Clear();
             themeIDs.Clear();
+        }
+
+        public void UpdateThemes()
+        {
+            if (RTGameManager.inst && EventManager.inst)
+            {
+                EventManager.inst.camPer.backgroundColor = bgColorToLerp;
+                if (RTGameManager.inst.checkpointImages.Count > 0)
+                    foreach (var image in RTGameManager.inst.checkpointImages)
+                        image.color = timelineColorToLerp;
+
+                RTGameManager.inst.timelinePlayer.color = timelineColorToLerp;
+                RTGameManager.inst.timelineLeftCap.color = timelineColorToLerp;
+                RTGameManager.inst.timelineRightCap.color = timelineColorToLerp;
+                RTGameManager.inst.timelineLine.color = timelineColorToLerp;
+            }
+
+            if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
+            {
+                bool introActive = GameData.Current && GameData.Current.data && GameData.Current.data.level && !GameData.Current.data.level.showIntro;
+
+                GameManager.inst.introTitle.gameObject.SetActive(introActive);
+                GameManager.inst.introArtist.gameObject.SetActive(introActive);
+                if (introActive && GameManager.inst.introTitle.color != timelineColorToLerp)
+                    GameManager.inst.introTitle.color = timelineColorToLerp;
+                if (introActive && GameManager.inst.introArtist.color != timelineColorToLerp)
+                    GameManager.inst.introArtist.color = timelineColorToLerp;
+            }
+
+            if (GameManager.inst.guiImages.Length > 0)
+                foreach (var image in GameManager.inst.guiImages)
+                    image.color = timelineColorToLerp;
         }
 
         #endregion

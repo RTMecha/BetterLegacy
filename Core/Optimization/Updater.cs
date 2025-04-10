@@ -34,19 +34,6 @@ namespace BetterLegacy.Core.Optimization
         static float audioTimeVelocity;
 
         /// <summary>
-        /// Samples of the current audio.
-        /// </summary>
-        public static float[] samples = new float[256];
-
-        /// <summary>
-        /// Gets a sample by a sample index and multiplies it by intensity.
-        /// </summary>
-        /// <param name="sample">Sample index to get.</param>
-        /// <param name="intensity">Intensity to multiply the sample by.</param>
-        /// <returns>Returns a sample.</returns>
-        public static float GetSample(int sample, float intensity) => samples[Mathf.Clamp(sample, 0, samples.Length - 1)] * intensity;
-
-        /// <summary>
         /// Checks if a <see cref="BeatmapObject"/> has a generated <see cref="LevelObject"/> and spits out said <see cref="LevelObject"/>.
         /// </summary>
         /// <param name="beatmapObject"><see cref="BeatmapObject"/> to get a LevelObject from.</param>
@@ -63,6 +50,27 @@ namespace BetterLegacy.Core.Optimization
             levelObject = null;
             return false;
         }
+
+        #region Samples
+
+        /// <summary>
+        /// Samples of the current audio.
+        /// </summary>
+        public static float[] samples = new float[256];
+
+        public static float sampleLow;
+        public static float sampleMid;
+        public static float sampleHigh;
+
+        /// <summary>
+        /// Gets a sample by a sample index and multiplies it by intensity.
+        /// </summary>
+        /// <param name="sample">Sample index to get.</param>
+        /// <param name="intensity">Intensity to multiply the sample by.</param>
+        /// <returns>Returns a sample.</returns>
+        public static float GetSample(int sample, float intensity) => samples[Mathf.Clamp(sample, 0, samples.Length - 1)] * intensity;
+
+        #endregion
 
         #region Start / End
 
@@ -132,6 +140,135 @@ namespace BetterLegacy.Core.Optimization
             CurrentTime = smoothedTime;
             levelProcessor?.Update(smoothedTime);
             previousAudioTime = smoothedTime;
+        }
+
+        public static void OnBGTick()
+        {
+            var ldm = CoreConfig.Instance.LDM.Value;
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
+            {
+                // idk if there's a better solution for this
+                sampleLow = samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
+                sampleMid = samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
+                sampleHigh = samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
+
+                var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
+
+                for (int bg = 0; bg < GameData.Current.backgroundObjects.Count; bg++)
+                {
+                    var backgroundObject = GameData.Current.backgroundObjects[bg];
+
+                    var gameObject = backgroundObject.BaseObject;
+
+                    if (backgroundObject.active && gameObject && gameObject.activeSelf != backgroundObject.Enabled)
+                        gameObject.SetActive(backgroundObject.Enabled);
+
+                    if (!backgroundObject.active || !backgroundObject.Enabled || !gameObject)
+                        continue;
+
+                    Color mainColor =
+                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.color), backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
+
+                    var reactive = backgroundObject.IsReactive;
+
+                    if (reactive)
+                        mainColor =
+                            RTMath.Lerp(mainColor,
+                                CoreHelper.ChangeColorHSV(
+                                    beatmapTheme.GetBGColor(backgroundObject.reactiveCol),
+                                    backgroundObject.hue,
+                                    backgroundObject.saturation,
+                                    backgroundObject.value),
+                                GetSample(backgroundObject.reactiveColSample, backgroundObject.reactiveColIntensity));
+
+                    mainColor.a = 1f;
+
+                    var fadeColor =
+                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.fadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
+
+                    if (CoreHelper.ColorMatch(fadeColor, beatmapTheme.backgroundColor, 0.05f))
+                        fadeColor = ThemeManager.inst.bgColorToLerp;
+                    fadeColor.a = 1f;
+
+                    int layer = backgroundObject.iterations - backgroundObject.depth;
+                    if (ldm && backgroundObject.renderers.Count > 0)
+                    {
+                        backgroundObject.renderers[0].material.color = mainColor;
+                        if (backgroundObject.renderers.Count > 1 && backgroundObject.renderers[1].gameObject.activeSelf)
+                        {
+                            for (int i = 1; i < backgroundObject.renderers.Count; i++)
+                                backgroundObject.renderers[i].gameObject.SetActive(false);
+                        }
+                    }
+                    else
+                        backgroundObject.renderers.ForLoop((renderer, i) =>
+                        {
+                            if (i == 0)
+                            {
+                                renderer.material.color = mainColor;
+                                return;
+                            }
+
+                            if (!renderer.gameObject.activeSelf)
+                                renderer.gameObject.SetActive(true);
+
+                            float t = 1f / layer * i;
+
+                            renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
+                        });
+
+                    if (!reactive)
+                    {
+                        backgroundObject.reactiveSize = Vector2.zero;
+
+                        gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
+                        gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
+                        continue;
+                    }
+
+                    backgroundObject.reactiveSize = backgroundObject.reactiveType switch
+                    {
+                        BackgroundObject.ReactiveType.Bass => new Vector2(sampleLow, sampleLow) * backgroundObject.reactiveScale,
+                        BackgroundObject.ReactiveType.Mids => new Vector2(sampleMid, sampleMid) * backgroundObject.reactiveScale,
+                        BackgroundObject.ReactiveType.Treble => new Vector2(sampleHigh, sampleHigh) * backgroundObject.reactiveScale,
+                        BackgroundObject.ReactiveType.Custom => new Vector2(GetSample(backgroundObject.reactiveScaSamples.x, backgroundObject.reactiveScaIntensity.x), GetSample(backgroundObject.reactiveScaSamples.y, backgroundObject.reactiveScaIntensity.y)) * backgroundObject.reactiveScale,
+                        _ => Vector2.zero,
+                    };
+
+                    if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
+                    {
+                        gameObject.transform.localPosition =
+                            new Vector3(backgroundObject.pos.x,
+                            backgroundObject.pos.y,
+                            32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
+                        gameObject.transform.localScale =
+                            new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
+                            new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
+                        gameObject.transform.localRotation =
+                            Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
+
+                        continue;
+                    }
+
+                    float x = GetSample(backgroundObject.reactivePosSamples.x, backgroundObject.reactivePosIntensity.x);
+                    float y = GetSample(backgroundObject.reactivePosSamples.y, backgroundObject.reactivePosIntensity.y);
+                    float z = GetSample(backgroundObject.reactiveZSample, backgroundObject.reactiveZIntensity);
+
+                    float rot = GetSample(backgroundObject.reactiveRotSample, backgroundObject.reactiveRotIntensity);
+
+                    gameObject.transform.localPosition =
+                        new Vector3(backgroundObject.pos.x + x,
+                        backgroundObject.pos.y + y,
+                        32f + backgroundObject.depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
+                    gameObject.transform.localScale =
+                        new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
+                        new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
+                    gameObject.transform.localRotation = Quaternion.Euler(
+                        new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
+                        backgroundObject.rot + rot) + backgroundObject.rotationOffset);
+                }
+            }
         }
 
         #endregion

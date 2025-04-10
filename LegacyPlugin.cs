@@ -174,6 +174,8 @@ namespace BetterLegacy
                 ObjectManagerPatch.LevelTick += RTEventManager.OnLevelTick; // events need to update first
                 ObjectManagerPatch.LevelTick += Updater.OnLevelTick; // objects update second
                 ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick; // modifiers update third
+                ObjectManagerPatch.LevelTick += Updater.OnBGTick; // bgs update fourth
+                ObjectManagerPatch.LevelTick += ModifiersManager.OnBGTick; // bg modifiers update fifth
             }
 
             try
