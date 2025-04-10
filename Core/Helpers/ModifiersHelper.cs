@@ -1159,11 +1159,11 @@ namespace BetterLegacy.Core.Helpers
             },
             "levelCompleted" => modifier =>
             {
-                return CoreHelper.InEditor || LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && LevelManager.CurrentLevel.playerData.Completed;
+                return CoreHelper.InEditor || LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed;
             },
             "levelCompletedOther" => modifier =>
             {
-                return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(0), out Level level) && level.playerData != null && level.playerData.Completed;
+                return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.GetValue(0), out Level level) && level.saveData && level.saveData.Completed;
             },
             "levelExists" => modifier =>
             {
@@ -6994,7 +6994,7 @@ namespace BetterLegacy.Core.Helpers
 
         static bool GetLevelRank(Level level, out int levelRankIndex)
         {
-            var active = level && level.playerData;
+            var active = level && level.saveData;
             levelRankIndex = active ? LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] : 0;
             return active;
         }

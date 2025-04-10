@@ -59,7 +59,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// All level saves in the current story save slot.
         /// </summary>
-        public List<PlayerData> Saves { get; set; } = new List<PlayerData>();
+        public List<SaveData> Saves { get; set; } = new List<SaveData>();
 
         #endregion
 
@@ -81,23 +81,23 @@ namespace BetterLegacy.Story
             //if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
             //    return;
 
-            var makeNewPlayerData = level.playerData == null;
-            if (makeNewPlayerData)
-                level.playerData = new PlayerData(level);
-            level.playerData.LevelName = level.metadata?.beatmap?.name; // update level name
+            bool makeNewSaveData = !level.saveData;
+            if (makeNewSaveData)
+                level.saveData = new SaveData(level);
+            level.saveData.LevelName = level.metadata?.beatmap?.name; // update level name
 
             CoreHelper.Log($"Updating save data\n" +
-                $"New Player Data = {makeNewPlayerData}\n" +
-                $"Deaths [OLD = {level.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
-                $"Hits: [OLD = {level.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
-                $"Boosts: [OLD = {level.playerData.Boosts} > NEW = {LevelManager.BoostCount}]");
+                $"New Player Data = {makeNewSaveData}\n" +
+                $"Deaths [OLD = {level.saveData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
+                $"Hits: [OLD = {level.saveData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
+                $"Boosts: [OLD = {level.saveData.Boosts} > NEW = {LevelManager.BoostCount}]");
 
-            level.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
+            level.saveData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
 
             if (Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
-                Saves[saveIndex] = level.playerData;
+                Saves[saveIndex] = level.saveData;
             else
-                Saves.Add(level.playerData);
+                Saves.Add(level.saveData);
 
             SaveProgress();
         }
@@ -207,7 +207,7 @@ namespace BetterLegacy.Story
             Saves.Clear();
             if (storySavesJSON["lvl"] != null)
                 for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
-                    Saves.Add(PlayerData.Parse(storySavesJSON["lvl"][i]));
+                    Saves.Add(SaveData.Parse(storySavesJSON["lvl"][i]));
         }
 
         /// <summary>

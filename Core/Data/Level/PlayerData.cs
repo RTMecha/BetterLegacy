@@ -11,11 +11,11 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Represents the data of a played level.
     /// </summary>
-    public class PlayerData : Exists
+    public class SaveData : Exists
     {
-        public PlayerData() { }
+        public SaveData() { }
 
-        public PlayerData(Level level)
+        public SaveData(Level level)
         {
             ID = level.id;
             LevelName = level.metadata?.beatmap?.name;
@@ -229,13 +229,13 @@ namespace BetterLegacy.Core.Data.Level
         #region JSON
 
         /// <summary>
-        /// Parses a <see cref="PlayerData"/> from JSON.
+        /// Parses a <see cref="SaveData"/> from JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed player data.</returns>
-        public static PlayerData Parse(JSONNode jn)
+        public static SaveData Parse(JSONNode jn)
         {
-            var playerData = new PlayerData
+            var saveData = new SaveData
             {
                 LevelName = jn["n"],
                 ID = jn["id"],
@@ -248,32 +248,32 @@ namespace BetterLegacy.Core.Data.Level
             };
 
             if (jn["h"] != null)
-                playerData.Hits = jn["h"].AsInt;
+                saveData.Hits = jn["h"].AsInt;
             if (jn["d"] != null)
-                playerData.Deaths = jn["d"].AsInt;
+                saveData.Deaths = jn["d"].AsInt;
             if (jn["b"] != null)
-                playerData.Boosts = jn["b"].AsInt;
+                saveData.Boosts = jn["b"].AsInt;
 
             if (jn["ach"] != null)
             {
-                playerData.UnlockedAchievements = new Dictionary<string, bool>();
+                saveData.UnlockedAchievements = new Dictionary<string, bool>();
                 for (int i = 0; i < jn["ach"].Count; i++)
                 {
                     var unlocked = jn["ach"][i]["u"].AsBool;
                     if (unlocked)
-                        playerData.UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
+                        saveData.UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
                 }
             }
 
-            return playerData;
+            return saveData;
         }
 
         /// <summary>
-        /// Parses a <see cref="PlayerData"/> from a vanilla version JSON.
+        /// Parses a <see cref="SaveData"/> from a vanilla version JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed player data.</returns>
-        public static PlayerData ParseVanilla(JSONNode jn) => new PlayerData
+        public static SaveData ParseVanilla(JSONNode jn) => new SaveData
         {
             ID = jn["level_data"]["id"],
             Completed = jn["play_data"]["finished"].AsBool,

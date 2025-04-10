@@ -295,7 +295,7 @@ namespace BetterLegacy.Core.Helpers
                     case EndLevelFunction.ContinueCollection: {
                             var metadata = LevelManager.CurrentLevel.metadata;
                             var nextLevel = LevelManager.NextLevelInCollection;
-                            if (LevelManager.CurrentLevelCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || nextLevel && nextLevel.playerData && nextLevel.playerData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
+                            if (LevelManager.CurrentLevelCollection && (metadata.song.LevelDifficulty == LevelDifficulty.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
                             {
                                 if (nextLevel)
                                     CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");

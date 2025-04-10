@@ -121,7 +121,7 @@ namespace BetterLegacy.Core.Data.Level
         {
             get
             {
-                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
+                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.saveData && x.saveData.Unlocked));
 
                 if (entryLevelIndex < 0)
                     entryLevelIndex = 0;

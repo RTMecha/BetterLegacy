@@ -243,8 +243,8 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = true;
             LevelEnded = false;
 
-            if (level.playerData == null && (level.isStory ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out PlayerData playerData))
-                level.playerData = playerData;
+            if (!level.saveData && (level.isStory ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out SaveData saveData))
+                level.saveData = saveData;
 
             PreviousLevel = CurrentLevel;
             CurrentLevel = level;
@@ -550,7 +550,7 @@ namespace BetterLegacy.Core.Managers
 
                     level.metadata = null;
                     level.icon = null;
-                    level.playerData = null;
+                    level.saveData = null;
                     if (level.achievements != null)
                         level.achievements.Clear();
 
@@ -721,7 +721,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Arcade saves list.
         /// </summary>
-        public static List<PlayerData> Saves { get; set; } = new List<PlayerData>();
+        public static List<SaveData> Saves { get; set; } = new List<SaveData>();
 
         /// <summary>
         /// Level rank dictionary indexer.
@@ -749,11 +749,11 @@ namespace BetterLegacy.Core.Managers
         /// <param name="level">Level to assign to.</param>
         public static void AssignPlayerData(Level level)
         {
-            if (!level || !Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
+            if (!level || !Saves.TryFind(x => x.ID == level.id, out SaveData saveData))
                 return;
 
-            level.playerData = playerData;
-            playerData.LevelName = level.metadata?.beatmap?.name;
+            level.saveData = saveData;
+            saveData.LevelName = level.metadata?.beatmap?.name;
         }
 
         /// <summary>
@@ -792,35 +792,35 @@ namespace BetterLegacy.Core.Managers
         static void SetLevelData(List<Level> levels, Level currentLevel, bool update)
         {
             bool makeNewPlayerData = false;
-            if (!currentLevel.playerData)
+            if (!currentLevel.saveData)
             {
                 makeNewPlayerData = true;
-                currentLevel.playerData = new PlayerData(currentLevel);
+                currentLevel.saveData = new SaveData(currentLevel);
             }
-            if (currentLevel && currentLevel.playerData)
-                currentLevel.playerData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
+            if (currentLevel && currentLevel.saveData)
+                currentLevel.saveData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
 
             if (update)
             {
                 CoreHelper.Log($"Updating save data\n" +
                     $"New Player Data = {makeNewPlayerData}\n" +
-                    $"Deaths [OLD = {currentLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
-                    $"Hits: [OLD = {currentLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
-                    $"Boosts: [OLD = {currentLevel.playerData.Boosts} > NEW = {BoostCount}]");
+                    $"Deaths [OLD = {currentLevel.saveData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
+                    $"Hits: [OLD = {currentLevel.saveData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
+                    $"Boosts: [OLD = {currentLevel.saveData.Boosts} > NEW = {BoostCount}]");
 
-                currentLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
+                currentLevel.saveData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
             }
 
             if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion && (currentLevel.metadata.song.LevelDifficulty == LevelDifficulty.Animation || !PlayerManager.IsZenMode && !PlayerManager.IsPractice))
-                currentLevel.playerData.Unlocked = true;
+                currentLevel.saveData.Unlocked = true;
 
             if (Saves.TryFindIndex(x => x.ID == currentLevel.id, out int saveIndex))
-                Saves[saveIndex] = currentLevel.playerData;
+                Saves[saveIndex] = currentLevel.saveData;
             else
-                Saves.Add(currentLevel.playerData);
+                Saves.Add(currentLevel.saveData);
 
             if (levels.TryFind(x => x.id == currentLevel.id, out Level level))
-                level.playerData = currentLevel.playerData;
+                level.saveData = currentLevel.saveData;
 
             SaveProgress();
         }
@@ -869,7 +869,7 @@ namespace BetterLegacy.Core.Managers
                 if (!modded)
                 {
                     for (int i = 0; i < jn["arcade"].Count; i++)
-                        Saves.Add(PlayerData.ParseVanilla(jn["arcade"][i]));
+                        Saves.Add(SaveData.ParseVanilla(jn["arcade"][i]));
 
                     SaveProgress();
                     return;
@@ -879,7 +879,7 @@ namespace BetterLegacy.Core.Managers
                 jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(profilePath, $"arcade_saves{FileFormat.LSS.Dot()}")));
 
             for (int i = 0; i < jn["lvl"].Count; i++)
-                Saves.Add(PlayerData.Parse(jn["lvl"][i]));
+                Saves.Add(SaveData.Parse(jn["lvl"][i]));
 
             if (!string.IsNullOrEmpty(jn["played_count"]))
                 PlayedLevelCount = jn["played_count"].AsInt;
@@ -900,7 +900,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="id">ID of the player data to get.</param>
         /// <returns>Returns the player data of the level.</returns>
-        public static PlayerData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
+        public static SaveData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
 
         /// <summary>
         /// Maximum amount of data points for the End Level Menu.
@@ -954,14 +954,14 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="level">Level to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
-        public static DataManager.LevelRank GetLevelRank(Level level) => GetLevelRank(level?.playerData?.Hits ?? -1);
+        public static DataManager.LevelRank GetLevelRank(Level level) => GetLevelRank(level?.saveData?.Hits ?? -1);
 
         /// <summary>
         /// Gets a levels' rank.
         /// </summary>
         /// <param name="playerData">PlayerData to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
-        public static DataManager.LevelRank GetLevelRank(PlayerData playerData) => GetLevelRank(playerData?.Hits ?? -1);
+        public static DataManager.LevelRank GetLevelRank(SaveData playerData) => GetLevelRank(playerData?.Hits ?? -1);
 
         /// <summary>
         /// Calculates the players' accuracy in a level.

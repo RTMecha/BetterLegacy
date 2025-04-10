@@ -91,7 +91,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Saved player data, used for ranking a level.
         /// </summary>
-        public PlayerData playerData;
+        public SaveData saveData;
 
         /// <summary>
         /// Achievements to be loaded for a level.
@@ -147,7 +147,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Gets the current locked state of the level. Returns true if <see cref="MetaData.requireUnlock"/> is on and the level was not unlocked, otherwise returns false.
         /// </summary>
-        public bool Locked => metadata != null && metadata.requireUnlock && (playerData == null || !playerData.Unlocked);
+        public bool Locked => metadata != null && metadata.requireUnlock && (!saveData || !saveData.Unlocked);
 
         /// <summary>
         /// The level files. (level.lsb, level.vgd, etc)
