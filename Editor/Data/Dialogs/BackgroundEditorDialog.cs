@@ -433,6 +433,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         reactiveRangeToggle.group = null;
                         ReactiveRanges.Add(reactiveRangeToggle);
+
+                        var label = reactiveRange.Find("Label").GetComponent<Text>();
+                        label.fontSize = 16;
                     }
                 }
 
