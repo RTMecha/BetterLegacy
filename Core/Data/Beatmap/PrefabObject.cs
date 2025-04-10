@@ -18,7 +18,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public class PrefabObject : PAObject<PrefabObject>
     {
-        public PrefabObject()
+        public PrefabObject() : base()
         {
             editorData.Bin = 0;
             editorData.Layer = 0;

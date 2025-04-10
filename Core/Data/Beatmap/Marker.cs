@@ -8,11 +8,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Marker : PAObject<Marker>
     {
-        public Marker() { }
+        public Marker() : base() { }
 
         public Marker(string name, string desc, int color, float time) : this(LSText.randomString(16), name, desc, color, time) { }
         
-        public Marker(string id, string name, string desc, int color, float time)
+        public Marker(string id, string name, string desc, int color, float time) : this()
         {
             this.id = id;
             this.name = name;

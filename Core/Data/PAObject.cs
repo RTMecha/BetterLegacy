@@ -12,12 +12,12 @@ namespace BetterLegacy.Core.Data
     /// <typeparam name="T">Type of the PA Object.</typeparam>
     public abstract class PAObject<T> : Exists where T : PAObject<T>, new()
     {
-        public PAObject() { }
+        public PAObject() => id = LSText.randomString(16);
 
         /// <summary>
         /// Identification of the object.
         /// </summary>
-        public string id = LSText.randomString(16);
+        public string id;
 
         /// <summary>
         /// Copies data from another <typeparamref name="T"/>.

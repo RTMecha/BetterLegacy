@@ -23,9 +23,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BeatmapObject : PAObject<BeatmapObject>
     {
-        public BeatmapObject() { }
+        public BeatmapObject() : base() { }
 
-        public BeatmapObject(float startTime) => StartTime = startTime;
+        public BeatmapObject(float startTime) : this() => StartTime = startTime;
 
         #region Values
 

@@ -37,7 +37,7 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < jn["themes"].Count; i++)
                 defaultThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
 
-            Current = BeatmapTheme.DeepCopy(defaultThemes[0]);
+            Current = defaultThemes[0].Copy(false);
 
             UpdateAllThemes();
         }

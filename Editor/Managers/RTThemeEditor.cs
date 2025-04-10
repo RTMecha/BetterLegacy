@@ -873,9 +873,9 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Editing Theme: {beatmapThemeEdit}");
 
             var newTheme = !beatmapThemeEdit;
-            PreviewTheme = !newTheme ? BeatmapTheme.DeepCopy(beatmapThemeEdit, true) : new BeatmapTheme();
+            PreviewTheme = !newTheme ? beatmapThemeEdit.Copy() : new BeatmapTheme();
             if (newTheme)
-                PreviewTheme.ClearBeatmap();
+                PreviewTheme.Reset();
 
             var theme = Dialog.Editor.transform;
             Dialog.Editor.SetActive(true);
@@ -912,7 +912,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.EditorCreateNew.onClick.AddListener(() =>
             {
                 PreviewTheme.id = null;
-                SaveTheme(BeatmapTheme.DeepCopy(PreviewTheme));
+                SaveTheme(PreviewTheme.Copy());
                 EventEditor.inst.StartCoroutine(LoadThemes(true));
                 var child = EventEditor.inst.dialogRight.GetChild(EventEditor.inst.currentEventType);
                 RenderThemePreview();
@@ -924,7 +924,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.EditorUpdate.gameObject.SetActive(!isDefaultTheme);
             Dialog.EditorUpdate.onClick.AddListener(() =>
             {
-                var beatmapTheme = BeatmapTheme.DeepCopy(PreviewTheme, true);
+                var beatmapTheme = PreviewTheme.Copy(false);
 
                 if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.FilePath))
                 {
@@ -956,11 +956,11 @@ namespace BetterLegacy.Editor.Managers
                 if (beatmapThemeEdit && beatmapThemeEdit.isDefault)
                 {
                     PreviewTheme.id = null;
-                    beatmapTheme = BeatmapTheme.DeepCopy(PreviewTheme);
+                    beatmapTheme = PreviewTheme.Copy();
                 }
                 else
                 {
-                    beatmapTheme = BeatmapTheme.DeepCopy(PreviewTheme, true);
+                    beatmapTheme = PreviewTheme.Copy(false);
 
                     if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.FilePath))
                     {

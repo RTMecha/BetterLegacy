@@ -8,9 +8,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Checkpoint : PAObject<Checkpoint>
 	{
-		public Checkpoint() { }
+		public Checkpoint() : base() { }
 
-		public Checkpoint(string name, float time, Vector2 pos)
+		public Checkpoint(string name, float time, Vector2 pos) : this()
 		{
 			this.name = name ?? DEFAULT_CHECKPOINT_NAME;
 			this.time = time;
@@ -108,8 +108,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 		#endregion
 
 		#region Methods
-
-		public static Checkpoint DeepCopy(Checkpoint orig) => new Checkpoint(orig.name, orig.time, orig.pos);
 
         public override void CopyData(Checkpoint orig, bool newID = true)
         {

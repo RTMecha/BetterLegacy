@@ -15,9 +15,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Prefab : PAObject<Prefab>
     {
-        public Prefab() { }
+        public Prefab() : base() { }
 
-        public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects)
+        public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects) : this()
         {
             this.name = name;
             this.type = type;

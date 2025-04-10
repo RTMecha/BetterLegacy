@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BackgroundObject : PAObject<BackgroundObject>
     {
-        public BackgroundObject() { }
+        public BackgroundObject() : base() { }
 
         public void SetShape(int shape, int shapeOption)
         {
@@ -525,33 +525,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             switch (toType)
             {
                 case 0: {
-                        if (toAxis == 0)
-                            positionOffset.x = value;
-                        if (toAxis == 1)
-                            positionOffset.y = value;
-                        if (toAxis == 2)
-                            positionOffset.z = value;
-
+                        positionOffset.Set(toAxis, value);
                         break;
                     }
                 case 1: {
-                        if (toAxis == 0)
-                            scaleOffset.x = value;
-                        if (toAxis == 1)
-                            scaleOffset.y = value;
-                        if (toAxis == 2)
-                            scaleOffset.z = value;
-
+                        scaleOffset.Set(toAxis, value);
                         break;
                     }
                 case 2: {
-                        if (toAxis == 0)
-                            rotationOffset.x = value;
-                        if (toAxis == 1)
-                            rotationOffset.y = value;
-                        if (toAxis == 2)
-                            rotationOffset.z = value;
-
+                        rotationOffset.Set(toAxis, value);
                         break;
                     }
             }
