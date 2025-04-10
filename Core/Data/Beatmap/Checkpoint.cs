@@ -124,27 +124,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 			reverse = orig.reverse;
         }
 
-        public override Checkpoint Copy(bool newID = true)
-        {
-			var checkpoint = new Checkpoint();
-			checkpoint.CopyData(this, newID);
-			return checkpoint;
-        }
-
-        public static Checkpoint ParseVG(JSONNode jn, Version version = default)
-        {
-			var checkpoint = new Checkpoint();
-			checkpoint.ReadJSONVG(jn, version);
-			return checkpoint;
-        }
-
-		public static Checkpoint Parse(JSONNode jn)
-		{
-			var checkpoint = new Checkpoint();
-			checkpoint.ReadJSON(jn);
-			return checkpoint;
-		}
-
         public override void ReadJSONVG(JSONNode jn, Version version = default)
 		{
 			name = jn["n"];

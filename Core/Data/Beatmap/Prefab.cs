@@ -83,27 +83,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                     SpriteAssets[beatmapObject.text] = sprite;
         }
 
-        public override Prefab Copy(bool newID = true)
-        {
-            var prefab = new Prefab();
-            prefab.CopyData(this, newID);
-            return prefab;
-        }
-
-        public static Prefab ParseVG(JSONNode jn, Version version = default)
-        {
-            var prefab = new Prefab();
-            prefab.ReadJSONVG(jn, version);
-            return prefab;
-        }
-
-        public static Prefab Parse(JSONNode jn)
-        {
-            var prefab = new Prefab();
-            prefab.ReadJSON(jn);
-            return prefab;
-        }
-
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             beatmapObjects.Clear();

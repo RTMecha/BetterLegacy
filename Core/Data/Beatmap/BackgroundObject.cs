@@ -202,20 +202,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public override BackgroundObject Copy(bool newID = true)
-        {
-            var backgroundObject = new BackgroundObject();
-            backgroundObject.CopyData(this, newID);
-            return backgroundObject;
-        }
-
-        public static BackgroundObject Parse(JSONNode jn)
-        {
-            var backgroundObject = new BackgroundObject();
-            backgroundObject.ReadJSON(jn);
-            return backgroundObject;
-        }
-
         public override void ReadJSON(JSONNode jn)
         {
             if (jn["id"] != null)

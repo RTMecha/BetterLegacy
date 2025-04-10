@@ -480,37 +480,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, this)).ToList() : new List<Modifier<BeatmapObject>>();
         }
 
-        public override BeatmapObject Copy(bool newID = true)
-        {
-            var beatmapObject = new BeatmapObject();
-            beatmapObject.CopyData(this, newID);
-            return beatmapObject;
-        }
-
-        /// <summary>
-        /// Parses a Beatmap Object from VG to formatted JSON.
-        /// </summary>
-        /// <param name="jn">VG JSON.</param>
-        /// <returns>Returns a parsed Beatmap Object.</returns>
-        public static BeatmapObject ParseVG(JSONNode jn, Version version = default)
-        {
-            var beatmapObject = new BeatmapObject();
-            beatmapObject.ReadJSONVG(jn, version);
-            return beatmapObject;
-        }
-
-        /// <summary>
-        /// Parses a Beatmap Object from LS formatted JSON.
-        /// </summary>
-        /// <param name="jn">LS JSON.</param>
-        /// <returns>Returns a parsed Beatmap Object.</returns>
-        public static BeatmapObject Parse(JSONNode jn)
-        {
-            var beatmapObject = new BeatmapObject();
-            beatmapObject.ReadJSON(jn);
-            return beatmapObject;
-        }
-
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             var events = new List<List<EventKeyframe>>();

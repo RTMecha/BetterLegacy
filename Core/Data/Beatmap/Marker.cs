@@ -45,37 +45,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             time = orig.time;
         }
 
-        public override Marker Copy(bool newID = true)
-        {
-            var marker = new Marker();
-            marker.CopyData(this, newID);
-            return marker;
-        }
-
-        /// <summary>
-        /// Parses a Marker from a VG format file.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed marker.</returns>
-        public static Marker ParseVG(JSONNode jn, Version version = default)
-        {
-            var marker = new Marker();
-            marker.ReadJSONVG(jn, version);
-            return marker;
-        }
-
-        /// <summary>
-        /// Parses a Marker from an LS format file.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed marker.</returns>
-        public static Marker Parse(JSONNode jn)
-        {
-            var marker = new Marker();
-            marker.ReadJSON(jn);
-            return marker;
-        }
-
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             //id = LSText.randomString(16); // don't need to read the id

@@ -10,7 +10,7 @@ namespace BetterLegacy.Core.Data
     /// Base object used for PA Objects.
     /// </summary>
     /// <typeparam name="T">Type of the PA Object.</typeparam>
-    public abstract class PAObject<T> : Exists
+    public abstract class PAObject<T> : Exists where T : PAObject<T>, new()
     {
         public PAObject() { }
 
@@ -30,7 +30,36 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <param name="newID">If the ID of the <typeparamref name="T"/> should be copied.</param>
         /// <returns>Returns a copy of the object.</returns>
-        public abstract T Copy(bool newID = true);
+        public T Copy(bool newID = true)
+        {
+            var obj = new T();
+            obj.CopyData(this as T, newID);
+            return obj;
+        }
+
+        /// <summary>
+        /// Parses a <typeparamref name="T"/> from VG formatted JSON.
+        /// </summary>
+        /// <param name="jn">VG JSON.</param>
+        /// <returns>Returns a parsed <typeparamref name="T"/>.</returns>
+        public static T ParseVG(JSONNode jn, Version version = default)
+        {
+            var obj = new T();
+            obj.ReadJSONVG(jn, version);
+            return obj;
+        }
+
+        /// <summary>
+        /// Parses a <typeparamref name="T"/> from LS formatted JSON.
+        /// </summary>
+        /// <param name="jn">LS JSON.</param>
+        /// <returns>Returns a parsed <typeparamref name="T"/>.</returns>
+        public static T Parse(JSONNode jn)
+        {
+            var obj = new T();
+            obj.ReadJSON(jn);
+            return obj;
+        }
 
         /// <summary>
         /// Parses and applies object values from VG to formatted JSON.

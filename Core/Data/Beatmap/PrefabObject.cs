@@ -163,27 +163,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         }
 
-        public override PrefabObject Copy(bool newID = true)
-        {
-            var prefabObject = new PrefabObject();
-            prefabObject.CopyData(this, newID);
-            return prefabObject;
-        }
-
-        public static PrefabObject ParseVG(JSONNode jn, Version version = default)
-        {
-            var prefabObject = new PrefabObject();
-            prefabObject.ReadJSONVG(jn, version);
-            return prefabObject;
-        }
-
-        public static PrefabObject Parse(JSONNode jn)
-        {
-            var prefabObject = new PrefabObject();
-            prefabObject.ReadJSON(jn);
-            return prefabObject;
-        }
-
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             id = jn["id"];
