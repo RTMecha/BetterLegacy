@@ -43,6 +43,8 @@
 - Overhauled a lot of Background Editor code.
 - There no longer needs to always be 1 Background Object in a level. Due to this, "Delete All Backgrounds" now actually does what it says. If there are no Backgrounds present, the editor UI will disable.
 - Custom Background Object reactive values UI now disable if the reactive type is not custom.
+- Removed "Yield Type settings" for Expanding Prefabs and Pasting Objects. This isn't really needed anymore.
+- Cleaned up Copy, Paste and Delete functions.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
