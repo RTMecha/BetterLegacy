@@ -1988,177 +1988,255 @@ namespace BetterLegacy.Editor.Managers
 
         #region Objects
 
-        // todo: clean this up bruh
-        public void Duplicate(bool _regen = true) => Copy(false, true, _regen);
+        /// <summary>
+        /// Duplicates objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="regen">If IDs should be regenerated.</param>
+        public void Duplicate(bool regen = true) => Copy(false, true, regen);
 
-        public void Copy(bool _cut = false, bool _dup = false, bool _regen = true)
+        /// <summary>
+        /// Cuts objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="regen">If IDs should be regenerated.</param>
+        public void Cut(bool regen = true) => Copy(true, regen: regen);
+
+        /// <summary>
+        /// Copies objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="cut">If the objects should be removed.</param>
+        /// <param name="dup">If the objects should be pasted.</param>
+        /// <param name="regen">If IDs should be regenerated.</param>
+        public void Copy(bool cut = false, bool dup = false, bool regen = true)
         {
-            if (!EditorTimeline.inst.isOverMainTimeline && RTBackgroundEditor.inst.Dialog.IsCurrent)
-            {
-                RTBackgroundEditor.inst.CopyBackground();
-                if (!_cut)
-                {
-                    EditorManager.inst.DisplayNotification("Copied Background Object", 1f, EditorManager.NotificationType.Success, false);
-                }
-                else
-                {
-                    RTBackgroundEditor.inst.DeleteBackground();
-                    EditorManager.inst.DisplayNotification("Cut Background Object", 1f, EditorManager.NotificationType.Success, false);
-                }
-                if (_dup)
-                {
-                    EditorManager.inst.Paste();
-                }
-            }
-
-            if (!EditorTimeline.inst.isOverMainTimeline && CheckpointEditorDialog.IsCurrent)
-            {
-                if (!_dup)
-                {
-                    CheckpointEditor.inst.CopyCheckpoint();
-                    if (!_cut)
-                    {
-                        EditorManager.inst.DisplayNotification("Copied Checkpoint", 1f, EditorManager.NotificationType.Success, false);
-                    }
-                    else
-                    {
-                        CheckpointEditor.inst.DeleteCheckpoint(CheckpointEditor.inst.currentObj);
-                        EditorManager.inst.DisplayNotification("Cut Checkpoint", 1f, EditorManager.NotificationType.Success, false);
-                    }
-                }
-                else
-                {
-                    EditorManager.inst.DisplayNotification("Can't duplicate Checkpoint", 1f, EditorManager.NotificationType.Error, false);
-                }
-            }
-
-            if (!EditorTimeline.inst.isOverMainTimeline && ObjectEditor.inst.Dialog.IsCurrent)
-            {
-                if (!_dup)
-                {
-                    ObjEditor.inst.CopyAllSelectedEvents();
-                    if (!_cut)
-                    {
-                        EditorManager.inst.DisplayNotification("Copied Object Keyframe", 1f, EditorManager.NotificationType.Success, false);
-                    }
-                    else
-                    {
-                        StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
-                        EditorManager.inst.DisplayNotification("Cut Object Keyframe", 1f, EditorManager.NotificationType.Success, false);
-                    }
-                }
-                else
-                {
-                    EditorManager.inst.DisplayNotification("Can't duplicate Object Keyframe", 1f, EditorManager.NotificationType.Error, false);
-                }
-            }
-
-            if (!EditorTimeline.inst.isOverMainTimeline)
-                return;
-
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                if (!_dup)
-                {
-                    EventEditor.inst.CopyAllSelectedEvents();
-                    if (!_cut)
-                    {
-                        EditorManager.inst.DisplayNotification("Copied Event Keyframe", 1f, EditorManager.NotificationType.Success, false);
-                    }
-                    else
-                    {
-                        StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
-                        EditorManager.inst.DisplayNotification("Cut Event Keyframe", 1f, EditorManager.NotificationType.Success, false);
-                    }
-                }
-                else
-                {
-                    EditorManager.inst.DisplayNotification("Can't duplicate Event Keyframe", 1f, EditorManager.NotificationType.Error, false);
-                }
-            }
-
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-            {
-                var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
-
-                ObjEditor.inst.CopyObject();
-                if (!_cut)
-                {
-                    EditorManager.inst.DisplayNotification("Copied Beatmap Object", 1f, EditorManager.NotificationType.Success, false);
-                }
-                else
-                {
-                    StartCoroutine(ObjectEditor.inst.DeleteObjects());
-                    EditorManager.inst.DisplayNotification("Cut Beatmap Object", 1f, EditorManager.NotificationType.Success, false);
-                }
-                if (_dup)
-                {
-                    Paste(offsetTime, _regen);
-                }
-            }
-        }
-
-        public void Paste(float _offsetTime = 0f, bool _regen = true)
-        {
-            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-                ObjectEditor.inst.PasteObject(_offsetTime, _regen);
-
-            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.FileExists($"{Application.persistentDataPath}/copied_events.lsev"))
-                {
-                    var jn = JSON.Parse(RTFile.ReadFromFile($"{Application.persistentDataPath}/copied_events.lsev"));
-
-                    RTEventEditor.inst.copiedEventKeyframes.Clear();
-
-                    for (int i = 0; i < GameData.EventTypes.Length; i++)
-                    {
-                        if (jn["events"][GameData.EventTypes[i]] != null)
-                        {
-                            for (int j = 0; j < jn["events"][GameData.EventTypes[i]].Count; j++)
-                            {
-                                var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].values.Length));
-                                timelineObject.Type = i;
-                                timelineObject.Index = j;
-                                RTEventEditor.inst.copiedEventKeyframes.Add(timelineObject);
-                            }
-                        }
-                    }
-                }
-
-                RTEventEditor.inst.PasteEvents();
-                EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
-            }
-
             if (EditorTimeline.inst.isOverMainTimeline)
+            {
+                switch (EditorTimeline.inst.layerType)
+                {
+                    case EditorTimeline.LayerType.Objects: {
+                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+
+                            ObjectEditor.inst.CopyObject();
+                            if (!cut)
+                                EditorManager.inst.DisplayNotification("Copied Beatmap Object", 1f, EditorManager.NotificationType.Success);
+                            else
+                            {
+                                StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                                EditorManager.inst.DisplayNotification("Cut Beatmap Object", 1f, EditorManager.NotificationType.Success);
+                            }
+
+                            if (dup)
+                                Paste(offsetTime, dup, regen);
+
+                            break;
+                        }
+                    case EditorTimeline.LayerType.Events: {
+                            if (dup)
+                            {
+                                EditorManager.inst.DisplayNotification("Can't duplicate Event Keyframe", 1f, EditorManager.NotificationType.Error);
+                                break;
+                            }
+
+                            EventEditor.inst.CopyAllSelectedEvents();
+                            if (!cut)
+                                EditorManager.inst.DisplayNotification("Copied Event Keyframe", 1f, EditorManager.NotificationType.Success);
+                            else
+                            {
+                                StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
+                                EditorManager.inst.DisplayNotification("Cut Event Keyframe", 1f, EditorManager.NotificationType.Success);
+                            }
+
+                            break;
+                        }
+                }
+                return;
+            }
+
+            if (!EditorDialog.CurrentDialog)
                 return;
 
-            if (!EditorTimeline.inst.isOverMainTimeline && ObjectEditor.inst.Dialog.IsCurrent)
+            switch (EditorDialog.CurrentDialog.Name)
             {
-                ObjEditor.inst.PasteKeyframes();
-                EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
-            }
+                case EditorDialog.OBJECT_EDITOR: {
+                        if (dup)
+                        {
+                            EditorManager.inst.DisplayNotification("Can't duplicate Object Keyframe", 1f, EditorManager.NotificationType.Error);
+                            break;
+                        }
 
-            if (!EditorTimeline.inst.isOverMainTimeline && CheckpointEditorDialog.IsCurrent)
-            {
-                CheckpointEditor.inst.PasteCheckpoint();
-                EditorManager.inst.DisplayNotification("Pasted Checkpoint", 1f, EditorManager.NotificationType.Success);
-            }
+                        ObjEditor.inst.CopyAllSelectedEvents();
+                        if (!cut)
+                            EditorManager.inst.DisplayNotification("Copied Object Keyframe", 1f, EditorManager.NotificationType.Success);
+                        else
+                        {
+                            StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
+                            EditorManager.inst.DisplayNotification("Cut Object Keyframe", 1f, EditorManager.NotificationType.Success);
+                        }
 
-            if (!EditorTimeline.inst.isOverMainTimeline && RTBackgroundEditor.inst.Dialog.IsCurrent)
-            {
-                RTBackgroundEditor.inst.PasteBackground();
-                EditorManager.inst.DisplayNotification("Pasted Background Object", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+                case EditorDialog.BACKGROUND_EDITOR: {
+                        RTBackgroundEditor.inst.CopyBackground();
+                        if (!cut)
+                            EditorManager.inst.DisplayNotification("Copied Background Object", 1f, EditorManager.NotificationType.Success);
+                        else
+                        {
+                            RTBackgroundEditor.inst.DeleteBackground();
+                            EditorManager.inst.DisplayNotification("Cut Background Object", 1f, EditorManager.NotificationType.Success);
+                        }
+
+                        if (dup)
+                            Paste();
+
+                        break;
+                    }
+                case EditorDialog.CHECKPOINT_EDITOR: {
+                        CheckpointEditor.inst.CopyCheckpoint();
+                        if (!cut)
+                            EditorManager.inst.DisplayNotification("Copied Checkpoint", 1f, EditorManager.NotificationType.Success);
+                        else
+                        {
+                            CheckpointEditor.inst.DeleteCheckpoint(CheckpointEditor.inst.currentObj);
+                            EditorManager.inst.DisplayNotification("Cut Checkpoint", 1f, EditorManager.NotificationType.Success);
+                        }
+
+                        if (dup)
+                            Paste();
+
+                        break;
+                    }
             }
         }
 
+        public void Paste() => Paste(0f, false);
+
+        public void Paste(float offsetTime) => Paste(offsetTime, false);
+
+        public void Paste(bool regen) => Paste(0f, regen);
+
+        public void Paste(float offsetTime, bool regen) => Paste(offsetTime, false, regen);
+
+        /// <summary>
+        /// Pastes copied objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="offsetTime">Time to offset the paste from.</param>
+        /// <param name="regen">If IDs should be regenerated.</param>
+        public void Paste(float offsetTime, bool dup, bool regen)
+        {
+            if (EditorTimeline.inst.isOverMainTimeline)
+            {
+                switch (EditorTimeline.inst.layerType)
+                {
+                    case EditorTimeline.LayerType.Objects: {
+                            ObjectEditor.inst.PasteObject(offsetTime, dup, regen);
+                            break;
+                        }
+                    case EditorTimeline.LayerType.Events: {
+                            RTEventEditor.inst.PasteEvents();
+                            EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                            break;
+                        }
+                }
+                return;
+            }
+
+            if (!EditorDialog.CurrentDialog)
+                return;
+
+            switch (EditorDialog.CurrentDialog.Name)
+            {
+                case EditorDialog.OBJECT_EDITOR: {
+                        ObjectEditor.inst.PasteKeyframes();
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+                case EditorDialog.BACKGROUND_EDITOR: {
+                        RTBackgroundEditor.inst.PasteBackground();
+                        EditorManager.inst.DisplayNotification("Pasted Background Object", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+                case EditorDialog.CHECKPOINT_EDITOR: {
+                        CheckpointEditor.inst.PasteCheckpoint();
+                        EditorManager.inst.DisplayNotification("Pasted Checkpoint", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Deletes an object based on mouse position and current dialog.
+        /// </summary>
         public void Delete()
         {
-            if (!EditorTimeline.inst.isOverMainTimeline && ObjectEditor.inst.Dialog.IsCurrent)
+            if (EditorTimeline.inst.isOverMainTimeline)
             {
-                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                    if (ObjEditor.inst.currentKeyframe != 0)
-                    {
+                switch (EditorTimeline.inst.layerType)
+                {
+                    case EditorTimeline.LayerType.Objects: {
+                            if (GameData.Current.beatmapObjects.Count <= 1 || EditorTimeline.inst.SelectedObjectCount == GameData.Current.beatmapObjects.Count)
+                            {
+                                EditorManager.inst.DisplayNotification("Can't delete only Beatmap Object", 1f, EditorManager.NotificationType.Error);
+                                break;
+                            }
+
+                            var list = new List<TimelineObject>();
+                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                list.Add(timelineObject);
+
+                            EditorDialog.CurrentDialog?.Close();
+
+                            var prefab = new Prefab("deleted objects", 0, list.Min(x => x.Time),
+                                list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                                list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+
+                            EditorManager.inst.history.Add(new History.Command("Delete Objects", Delete, () =>
+                            {
+                                EditorTimeline.inst.DeselectAllObjects();
+                                new PrefabExpander(null, prefab, true, 0f, true, false, true, false).Expand();
+                            }));
+
+                            StartCoroutine(ObjectEditor.inst.DeleteObjects());
+
+                            break;
+                        }
+                    case EditorTimeline.LayerType.Events: {
+                            if (RTEventEditor.inst.SelectedKeyframes.Count <= 0 || RTEventEditor.inst.SelectedKeyframes.Has(x => x.Index == 0))
+                            {
+                                EditorManager.inst.DisplayNotification("Can't delete first Event Keyframe.", 1f, EditorManager.NotificationType.Error);
+                                break;
+                            }
+
+                            EditorDialog.CurrentDialog?.Close();
+
+                            var list = new List<TimelineKeyframe>();
+                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                                list.Add(timelineObject);
+
+                            EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", RTEventEditor.inst.DeleteKeyframes(list).Start, () => RTEventEditor.inst.PasteEvents(list, false)));
+
+                            StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
+
+                            break;
+                        }
+                }
+
+                return;
+            }
+
+            if (!EditorDialog.CurrentDialog)
+                return;
+
+            switch (EditorDialog.CurrentDialog.Name)
+            {
+                case EditorDialog.OBJECT_EDITOR: {
+                        if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                            break;
+
+                        if (ObjEditor.inst.currentKeyframe == 0)
+                        {
+                            EditorManager.inst.DisplayNotification("Can't delete first keyframe.", 1f, EditorManager.NotificationType.Error);
+                            break;
+                        }
+
                         var list = new List<TimelineKeyframe>();
                         foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             list.Add(timelineObject);
@@ -2167,84 +2245,24 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.history.Add(new History.Command("Delete Keyframes", ObjectEditor.inst.DeleteKeyframes().Start, () => ObjectEditor.inst.PasteKeyframes(beatmapObject, list, false)));
 
                         StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
+
+                        break;
                     }
-                    else
-                        EditorManager.inst.DisplayNotification("Can't delete first keyframe.", 1f, EditorManager.NotificationType.Error);
-                return;
-            }
-            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-            {
-                if (GameData.Current.beatmapObjects.Count > 1 && EditorTimeline.inst.SelectedObjectCount != GameData.Current.beatmapObjects.Count)
-                {
-                    var list = new List<TimelineObject>();
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        list.Add(timelineObject);
+                case EditorDialog.BACKGROUND_EDITOR: {
+                        RTBackgroundEditor.inst.DeleteBackground();
+                        break;
+                    }
+                case EditorDialog.CHECKPOINT_EDITOR: {
+                        if (CheckpointEditor.inst.currentObj == 0)
+                        {
+                            EditorManager.inst.DisplayNotification("Can't delete first Checkpoint.", 1f, EditorManager.NotificationType.Error);
+                            break;
+                        }
 
-                    EditorDialog.CurrentDialog?.Close();
-
-                    float startTime = 0f;
-
-                    var startTimeList = new List<float>();
-                    foreach (var bm in list)
-                        startTimeList.Add(bm.Time);
-
-                    startTimeList = (from x in startTimeList
-                                     orderby x ascending
-                                     select x).ToList();
-
-                    startTime = startTimeList[0];
-
-                    var prefab = new Prefab("deleted objects", 0, startTime,
-                        list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                        list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
-
-                    EditorManager.inst.history.Add(new History.Command("Delete Objects", Delete, () =>
-                    {
-                        EditorTimeline.inst.DeselectAllObjects();
-                        StartCoroutine(ObjectEditor.inst.AddPrefabExpandedToLevel(prefab, true, 0f, true, retainID: true));
-                    }));
-
-                    StartCoroutine(ObjectEditor.inst.DeleteObjects());
-                }
-                else
-                    EditorManager.inst.DisplayNotification("Can't delete only Beatmap Object", 1f, EditorManager.NotificationType.Error);
-                return;
-            }
-            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                if (RTEventEditor.inst.SelectedKeyframes.Count > 0 && !RTEventEditor.inst.SelectedKeyframes.Has(x => x.Index == 0))
-                {
-                    EditorDialog.CurrentDialog?.Close();
-
-                    var list = new List<TimelineKeyframe>();
-                    foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        list.Add(timelineObject);
-
-                    EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", RTEventEditor.inst.DeleteKeyframes(list).Start, () => RTEventEditor.inst.PasteEvents(list, false)));
-
-                    StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
-                }
-                else
-                    EditorManager.inst.DisplayNotification("Can't delete first Event Keyframe.", 1f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            if (RTBackgroundEditor.inst.Dialog.IsCurrent)
-            {
-                RTBackgroundEditor.inst.DeleteBackground();
-                return;
-            }
-
-            if (CheckpointEditorDialog.IsCurrent)
-            {
-                if (CheckpointEditor.inst.currentObj != 0)
-                {
-                    CheckpointEditor.inst.DeleteCheckpoint(CheckpointEditor.inst.currentObj);
-                    EditorManager.inst.DisplayNotification("Deleted Checkpoint.", 1f, EditorManager.NotificationType.Success);
-                }
-                else
-                    EditorManager.inst.DisplayNotification("Can't delete first Checkpoint.", 1f, EditorManager.NotificationType.Error);
-                return;
+                        CheckpointEditor.inst.DeleteCheckpoint(CheckpointEditor.inst.currentObj);
+                        EditorManager.inst.DisplayNotification("Deleted Checkpoint.", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
             }
         }
 
@@ -2714,16 +2732,16 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction(true),
                         new ButtonFunction("Cut", () =>
                         {
-                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.CopyObject();
                             CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
                         }),
-                        new ButtonFunction("Copy", ObjEditor.inst.CopyObject),
+                        new ButtonFunction("Copy", ObjectEditor.inst.CopyObject),
                         new ButtonFunction("Paste", () => ObjectEditor.inst.PasteObject()),
                         new ButtonFunction("Duplicate", () =>
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime);
                         }),
                         new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
@@ -2731,7 +2749,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
                         new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),

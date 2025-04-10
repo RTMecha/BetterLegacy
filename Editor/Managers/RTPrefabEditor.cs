@@ -1557,7 +1557,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.DeselectAllObjects();
 
             Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
-            StartCoroutine(AddExpandedPrefabToLevel(prefabObject));
+            new PrefabExpander(prefabObject, true).Expand();
 
             EditorTimeline.inst.RenderTimelineObjects();
 
@@ -1606,100 +1606,6 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(prefab, prefabObject));
-        }
-
-        public bool expanding;
-        public IEnumerator AddExpandedPrefabToLevel(PrefabObject prefabObject)
-        {
-            var updateExpandedObjectsYieldType = EditorConfig.Instance.UpdateExpandedObjectsYieldMode.Value;
-            var expandObjectsYieldType = EditorConfig.Instance.ExpandObjectsYieldMode.Value;
-
-            RTEditor.inst.ienumRunning = true;
-            expanding = true;
-            float delay = 0f;
-            float audioTime = EditorManager.inst.CurrentAudioPos;
-
-            var prefab = prefabObject.GetPrefab();
-
-            var objectIDs = new List<IDPair>();
-            for (int j = 0; j < prefab.beatmapObjects.Count; j++)
-                objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
-
-            var sw = CoreHelper.StartNewStopwatch();
-
-            var expandedObjects = new List<BeatmapObject>();
-            var notParented = new List<BeatmapObject>();
-            for (int i = 0; i < prefab.beatmapObjects.Count; i++)
-            {
-                var beatmapObject = prefab.beatmapObjects[i];
-                if (i > 0 && expandObjectsYieldType != YieldType.None)
-                    yield return CoroutineHelper.GetYieldInstruction(expandObjectsYieldType, ref delay);
-
-                var beatmapObjectCopy = beatmapObject.Copy(false);
-
-                beatmapObjectCopy.id = objectIDs[i].newID;
-
-                if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
-                    beatmapObjectCopy.Parent = idPair.newID;
-                else if (!string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObjectCopy.Parent != BeatmapObject.CAMERA_PARENT && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1)
-                    beatmapObjectCopy.Parent = "";
-
-                beatmapObjectCopy.fromPrefab = false;
-                beatmapObjectCopy.prefabID = prefab.id;
-                beatmapObjectCopy.StartTime += prefabObject.StartTime + prefab.offset;
-
-                beatmapObjectCopy.editorData.Layer = prefabObject.editorData.Layer;
-                beatmapObjectCopy.editorData.Bin = beatmapObjectCopy.editorData.Bin;
-
-                if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
-                    AssetManager.SpriteAssets[beatmapObject.text] = sprite;
-
-                beatmapObjectCopy.prefabInstanceID = prefabObject.id;
-                GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
-                    Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
-
-                if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
-                    notParented.Add(beatmapObjectCopy);
-                expandedObjects.Add(beatmapObjectCopy);
-
-                var timelineObject = new TimelineObject(beatmapObjectCopy);
-                timelineObject.Selected = true;
-                EditorTimeline.inst.CurrentSelection = timelineObject;
-
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-
-            var list = notParented.Count > 0 ? notParented : expandedObjects;
-            delay = 0f;
-            for (int i = 0; i < notParented.Count; i++)
-            {
-                if (i > 0 && updateExpandedObjectsYieldType != YieldType.None)
-                    yield return CoroutineHelper.GetYieldInstruction(updateExpandedObjectsYieldType, ref delay);
-                Updater.UpdateObject(notParented[i], recalculate: false);
-            }
-
-            Updater.RecalculateObjectStates();
-
-            notParented.Clear();
-            notParented = null;
-            expandedObjects.Clear();
-            expandedObjects = null;
-
-            CoreHelper.StopAndLogStopwatch(sw);
-
-            if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
-                MultiObjectEditor.inst.Dialog.Open();
-            else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
-            else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                PrefabEditor.inst.OpenPrefabDialog();
-
-            EditorManager.inst.DisplayNotification($"Expanded Prefab Object {prefab.name} in {sw.Elapsed}!.", 5f, EditorManager.NotificationType.Success, false);
-            RTEditor.inst.ienumRunning = false;
-            expanding = false;
-            sw = null;
-            yield break;
         }
 
         #endregion

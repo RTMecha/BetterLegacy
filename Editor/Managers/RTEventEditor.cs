@@ -568,7 +568,31 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void PasteEvents(bool setTime = true) => PasteEvents(copiedEventKeyframes, setTime);
+        public void PasteEvents(bool setTime = true)
+        {
+            if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.FileExists($"{Application.persistentDataPath}/copied_events.lsev"))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile($"{Application.persistentDataPath}/copied_events.lsev"));
+
+                copiedEventKeyframes.Clear();
+
+                for (int i = 0; i < GameData.EventTypes.Length; i++)
+                {
+                    if (jn["events"][GameData.EventTypes[i]] != null)
+                    {
+                        for (int j = 0; j < jn["events"][GameData.EventTypes[i]].Count; j++)
+                        {
+                            var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].values.Length));
+                            timelineObject.Type = i;
+                            timelineObject.Index = j;
+                            copiedEventKeyframes.Add(timelineObject);
+                        }
+                    }
+                }
+            }
+
+            PasteEvents(copiedEventKeyframes, setTime);
+        }
 
         public void PasteEvents(List<TimelineKeyframe> kfs, bool setTime = true)
         {

@@ -1641,42 +1641,28 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public static void Cut(Keybind keybind) => EditorManager.inst.Cut();
+        public static void Cut(Keybind keybind) => RTEditor.inst.Cut();
 
-        public static void Copy(Keybind keybind) => EditorManager.inst.Copy();
+        public static void Copy(Keybind keybind) => RTEditor.inst.Copy();
 
         public static void Paste(Keybind keybind)
         {
-            if (!RTEditor.inst.ienumRunning)
-            {
-                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
+            bool regen = true;
 
-                bool regen = true;
+            if (keybind.settings.ContainsKey("Remove Prefab Instance ID") && bool.TryParse(keybind.settings["Remove Prefab Instance ID"], out bool result))
+                regen = result;
 
-                if (keybind.settings.ContainsKey("Remove Prefab Instance ID") && bool.TryParse(keybind.settings["Remove Prefab Instance ID"], out bool result))
-                    regen = result;
-
-                RTEditor.inst.Paste(0f, regen);
-            }
-            else
-                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
+            RTEditor.inst.Paste(regen);
         }
 
         public static void Duplicate(Keybind keybind)
         {
-            if (!RTEditor.inst.ienumRunning)
-            {
-                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
+            bool regen = true;
 
-                bool regen = true;
+            if (keybind.settings.ContainsKey("Remove Prefab Instance ID") && bool.TryParse(keybind.settings["Remove Prefab Instance ID"], out bool result))
+                regen = result;
 
-                if (keybind.settings.ContainsKey("Remove Prefab Instance ID") && bool.TryParse(keybind.settings["Remove Prefab Instance ID"], out bool result))
-                    regen = result;
-
-                RTEditor.inst.Duplicate(regen);
-            }
-            else
-                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
+            RTEditor.inst.Duplicate(regen);
         }
 
         public static void Delete(Keybind keybind) => RTEditor.inst.Delete();

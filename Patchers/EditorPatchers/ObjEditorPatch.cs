@@ -187,8 +187,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool PasteKeyframesPrefix()
         {
-            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.PasteKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+            ObjectEditor.inst.PasteKeyframes();
             return false;
         }
 
@@ -293,26 +292,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyObjectPrefix()
         {
-            var a = new List<TimelineObject>(EditorTimeline.inst.SelectedObjects);
-
-            a = (from x in a
-                 orderby x.Time
-                 select x).ToList();
-
-            float start = 0f;
-            if (EditorConfig.Instance.PasteOffset.Value)
-                start = -AudioManager.inst.CurrentAudioSource.time + a[0].Time;
-
-            var copy = new Prefab("copied prefab", 0, start,
-                a.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                a.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
-
-            copy.description = "Take me wherever you go!";
-            ObjectEditor.inst.copy = copy;
-            Instance.hasCopiedObject = true;
-
-            if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.DirectoryExists(Application.persistentDataPath))
-                RTFile.WriteToFile(RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}"), copy.ToJSON().ToString());
+            ObjectEditor.inst.CopyObject();
             return false;
         }
 

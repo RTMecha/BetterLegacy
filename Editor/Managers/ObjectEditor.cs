@@ -2545,6 +2545,50 @@ namespace BetterLegacy.Editor.Managers
             } // load global copy
         }
 
+        public void CopyObject()
+        {
+            var a = new List<TimelineObject>(EditorTimeline.inst.SelectedObjects);
+
+            a = (from x in a
+                 orderby x.Time
+                 select x).ToList();
+
+            float start = 0f;
+            if (EditorConfig.Instance.PasteOffset.Value)
+                start = -AudioManager.inst.CurrentAudioSource.time + a[0].Time;
+
+            var copy = new Prefab("copied prefab", 0, start,
+                a.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                a.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+
+            copy.description = "Take me wherever you go!";
+            this.copy = copy;
+            ObjEditor.inst.hasCopiedObject = true;
+
+            if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.DirectoryExists(Application.persistentDataPath))
+                RTFile.WriteToFile(RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}"), copy.ToJSON().ToString());
+        }
+
+        public void PasteObject() => PasteObject(0f);
+
+        public void PasteObject(float offsetTime) => PasteObject(offsetTime, false);
+
+        public void PasteObject(float offsetTime, bool regen) => PasteObject(offsetTime, false, regen);
+
+        public void PasteObject(float offsetTime, bool dup, bool regen)
+        {
+            if (!ObjEditor.inst.hasCopiedObject || !copy || (copy.prefabObjects.Count <= 0 && copy.beatmapObjects.Count <= 0))
+            {
+                EditorManager.inst.DisplayNotification("No copied object yet!", 1f, EditorManager.NotificationType.Error, false);
+                return;
+            }
+
+            EditorTimeline.inst.DeselectAllObjects();
+            EditorManager.inst.DisplayNotification("Pasting objects, please wait.", 1f, EditorManager.NotificationType.Success);
+
+            new PrefabExpander(copy, true, offsetTime, regen, dup).Expand();
+        }
+
         public void CopyAllSelectedEvents(BeatmapObject beatmapObject)
         {
             copiedObjectKeyframes.Clear();
@@ -2563,6 +2607,12 @@ namespace BetterLegacy.Editor.Managers
 
                 copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
             }
+        }
+
+        public void PasteKeyframes(bool setTime = true)
+        {
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                PasteKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), setTime);
         }
 
         public void PasteKeyframes(BeatmapObject beatmapObject, bool setTime = true) => PasteKeyframes(beatmapObject, copiedObjectKeyframes, setTime);
@@ -2622,20 +2672,6 @@ namespace BetterLegacy.Editor.Managers
                 eventKeyframe.time = 0.001f;
 
             return eventKeyframe;
-        }
-
-        public void PasteObject(float _offsetTime = 0f, bool _regen = true)
-        {
-            if (!ObjEditor.inst.hasCopiedObject || !copy || (copy.prefabObjects.Count <= 0 && copy.beatmapObjects.Count <= 0))
-            {
-                EditorManager.inst.DisplayNotification("No copied object yet!", 1f, EditorManager.NotificationType.Error, false);
-                return;
-            }
-
-            EditorTimeline.inst.DeselectAllObjects();
-            EditorManager.inst.DisplayNotification("Pasting objects, please wait.", 1f, EditorManager.NotificationType.Success);
-
-            StartCoroutine(AddPrefabExpandedToLevel(copy, true, _offsetTime, false, _regen));
         }
 
         public EventKeyframe GetCopiedData(int type) => type switch
@@ -2704,181 +2740,6 @@ namespace BetterLegacy.Editor.Managers
             RenderObjectKeyframesDialog(beatmapObject);
             Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
             EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
-        }
-
-        #endregion
-
-        #region Prefabs
-
-        /// <summary>
-        /// Expands a prefab into the level.
-        /// </summary>
-        /// <param name="prefab"></param>
-        /// <param name="select"></param>
-        /// <param name="offset"></param>
-        /// <param name="undone"></param>
-        /// <param name="regen"></param>
-        /// <param name="dictionary"></param>
-        /// <returns></returns>
-        public IEnumerator AddPrefabExpandedToLevel(Prefab prefab, bool select = false, float offset = 0f, bool undone = false, bool regen = false, bool retainID = false)
-        {
-            RTEditor.inst.ienumRunning = true;
-            float delay = 0f;
-            float audioTime = EditorManager.inst.CurrentAudioPos;
-            if (EditorConfig.Instance.BPMSnapsPasted.Value)
-                audioTime = RTEditor.SnapToBPM(audioTime);
-
-            CoreHelper.Log($"Placing prefab with {prefab.beatmapObjects.Count} objects and {prefab.prefabObjects.Count} prefabs");
-
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
-
-            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.beatmapObjects.Count > 0)
-                ClearKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
-
-            if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
-                EditorManager.inst.ClearPopups();
-
-            var sw = CoreHelper.StartNewStopwatch();
-
-            var pasteObjectsYieldType = EditorConfig.Instance.PasteObjectsYieldMode.Value;
-            var updatePastedObjectsYieldType = EditorConfig.Instance.UpdatePastedObjectsYieldMode.Value;
-
-            //Objects
-            {
-                var objectIDs = new List<IDPair>();
-                for (int j = 0; j < prefab.beatmapObjects.Count; j++)
-                    objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
-
-                var pastedObjects = new List<BeatmapObject>();
-                var unparentedPastedObjects = new List<BeatmapObject>();
-                for (int i = 0; i < prefab.beatmapObjects.Count; i++)
-                {
-                    var beatmapObject = prefab.beatmapObjects[i];
-                    if (i > 0 && pasteObjectsYieldType != YieldType.None)
-                        yield return CoroutineHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
-
-                    var beatmapObjectCopy = beatmapObject.Copy(false);
-
-                    if (!retainID)
-                        beatmapObjectCopy.id = objectIDs[i].newID;
-
-                    if (!retainID && !string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
-                        beatmapObjectCopy.Parent = idPair.newID;
-                    else if (!retainID && !string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObjectCopy.Parent != BeatmapObject.CAMERA_PARENT)
-                        beatmapObjectCopy.Parent = "";
-
-                    if (regen)
-                        beatmapObjectCopy.RemovePrefabReference();
-                    else
-                    {
-                        beatmapObjectCopy.prefabID = beatmapObject.prefabID;
-                        beatmapObjectCopy.prefabInstanceID = beatmapObject.prefabInstanceID;
-                    }
-
-                    beatmapObjectCopy.fromPrefab = false;
-
-                    beatmapObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.offset : audioTime + prefab.offset : offset;
-                    if (offset != 0.0)
-                        ++beatmapObjectCopy.editorData.Bin;
-
-                    if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
-                        AssetManager.SpriteAssets[beatmapObjectCopy.text] = sprite;
-
-                    beatmapObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
-                    GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                    if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
-                        Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
-
-                    if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
-                        unparentedPastedObjects.Add(beatmapObjectCopy);
-                    pastedObjects.Add(beatmapObjectCopy);
-
-                    var timelineObject = new TimelineObject(beatmapObjectCopy);
-
-                    timelineObject.Selected = true;
-                    EditorTimeline.inst.CurrentSelection = timelineObject;
-
-                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                }
-
-                var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : pastedObjects;
-                delay = 0f;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    if (i > 0 && updatePastedObjectsYieldType != YieldType.None)
-                        yield return CoroutineHelper.GetYieldInstruction(updatePastedObjectsYieldType, ref delay);
-                    Updater.UpdateObject(list[i], recalculate: false);
-                }
-
-                unparentedPastedObjects.Clear();
-                unparentedPastedObjects = null;
-                pastedObjects.Clear();
-                pastedObjects = null;
-            }
-
-            //Prefabs
-            {
-                var ids = new List<string>();
-                for (int i = 0; i < prefab.prefabObjects.Count; i++)
-                    ids.Add(LSText.randomString(16));
-
-                delay = 0f;
-                for (int i = 0; i < prefab.prefabObjects.Count; i++)
-                {
-                    var prefabObject = prefab.prefabObjects[i];
-                    if (i > 0 && pasteObjectsYieldType != YieldType.None)
-                        yield return CoroutineHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
-
-                    var prefabObjectCopy = prefabObject.Copy(false);
-                    prefabObjectCopy.id = ids[i];
-                    prefabObjectCopy.prefabID = prefabObject.prefabID;
-
-                    prefabObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.offset : audioTime + prefab.offset : offset;
-                    if (offset != 0.0)
-                        ++prefabObjectCopy.editorData.Bin;
-
-                    prefabObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
-
-                    GameData.Current.prefabObjects.Add(prefabObjectCopy);
-
-                    var timelineObject = new TimelineObject(prefabObjectCopy);
-
-                    timelineObject.Selected = true;
-                    EditorTimeline.inst.CurrentSelection = timelineObject;
-
-                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-
-                    Updater.AddPrefabToLevel(prefabObjectCopy, recalculate: false);
-                }
-            }
-
-            CoreHelper.StopAndLogStopwatch(sw);
-
-            Updater.RecalculateObjectStates();
-
-            string stri = "object";
-            if (prefab.beatmapObjects.Count == 1)
-                stri = prefab.beatmapObjects[0].name;
-            if (prefab.beatmapObjects.Count > 1)
-                stri = prefab.name;
-
-            EditorManager.inst.DisplayNotification(
-                $"Pasted Beatmap Object{(prefab.beatmapObjects.Count == 1 ? "" : "s")} [ {stri} ] {(regen ? "" : $"and kept Prefab Instance ID")} in {sw.Elapsed}!",
-                5f, EditorManager.NotificationType.Success);
-
-            if (select)
-            {
-                if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
-                    MultiObjectEditor.inst.Dialog.Open();
-                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                    OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
-                else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                    PrefabEditor.inst.OpenPrefabDialog();
-            }
-
-            RTEditor.inst.ienumRunning = false;
-            yield break;
         }
 
         #endregion
