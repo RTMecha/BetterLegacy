@@ -2143,12 +2143,17 @@ namespace BetterLegacy.Editor.Managers
 
             EventEditor.inst.dialogLeft.Find("theme").gameObject.SetActive(false);
 
-            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent] as EventKeyframe;
+            RenderTitle(EventEditor.inst.currentEventType);
+
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+
+            bool isNotFirst = EventEditor.inst.currentEvent != 0;
+
+            dialog.CurvesLabel.gameObject.SetActive(isNotFirst);
+            dialog.CurvesDropdown.gameObject.SetActive(isNotFirst);
 
             dialog.EventTimeField.inputField.onValueChanged.ClearAll();
             dialog.EventTimeField.inputField.text = currentKeyframe.time.ToString("f3");
-
-            bool isNotFirst = EventEditor.inst.currentEvent != 0;
 
             TriggerHelper.SetInteractable(isNotFirst,
                 dialog.EventTimeField.inputField,
@@ -2159,6 +2164,18 @@ namespace BetterLegacy.Editor.Managers
 
             if (isNotFirst)
             {
+                dialog.CurvesDropdown.onValueChanged.ClearAll();
+                dialog.CurvesDropdown.value = (int)currentKeyframe.curve;
+                dialog.CurvesDropdown.onValueChanged.AddListener(_val =>
+                {
+                    var anim = (Easing)_val;
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == EventEditor.inst.currentEventType))
+                        kf.eventKeyframe.curve = anim;
+
+                    RenderEventObjects();
+                    EventManager.inst.updateEvents();
+                });
+
                 dialog.EventTimeField.inputField.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2180,634 +2197,6 @@ namespace BetterLegacy.Editor.Managers
 
                 TriggerHelper.IncreaseDecreaseButtons(dialog.EventTimeField);
                 TriggerHelper.AddEventTriggers(dialog.EventTimeField.gameObject, TriggerHelper.ScrollDelta(dialog.EventTimeField.inputField, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
-            }
-
-            switch (EventEditor.inst.currentEventType)
-            {
-                case 0: // Move
-                    {
-                        SetVector2InputField(dialogTmp, "position", 0, 1);
-                        break;
-                    }
-                case 1: // Zoom
-                    {
-                        SetFloatInputField(dialogTmp, "zoom/x", 0, min: -9999f, max: 9999f);
-                        break;
-                    }
-                case 2: // Rotate
-                    {
-                        SetFloatInputField(dialogTmp, "rotation/x", 0, 15f, 3f);
-                        break;
-                    }
-                case 3: // Shake
-                    {
-                        // Shake Intensity
-                        SetFloatInputField(dialogTmp, "shake/x", 0, min: 0f, max: 10f, allowNegative: false);
-
-                        // Shake Intensity X / Y
-
-                        RTEditor.SetActive(dialogTmp.Find("direction").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("notice-label").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("interpolation").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("speed").gameObject, RTEditor.ShowModdedUI);
-
-                        if (!RTEditor.ShowModdedUI)
-                            break;
-
-                        SetVector2InputField(dialogTmp, "direction", 1, 2, -10f, 10f);
-                        SetFloatInputField(dialogTmp, "interpolation/x", 3, max: 999f, allowNegative: false);
-                        SetFloatInputField(dialogTmp, "speed/x", 4, min: 0.001f, max: 9999f, allowNegative: false);
-                        break;
-                    }
-                case 4: // Theme
-                    {
-                        var themeSearchContextMenu = RTThemeEditor.inst.Dialog.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
-                        themeSearchContextMenu.onClick = null;
-                        themeSearchContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
-                                {
-                                    RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
-                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
-                                }),
-                                new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
-                                {
-                                    EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
-                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
-                                })
-                                );
-                        };
-
-                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.ClearAll();
-                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.AddListener(_val => CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(_val)));
-                        CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
-                        RTThemeEditor.inst.RenderThemePreview();
-
-                        break;
-                    }
-                case 5: // Chromatic
-                    {
-                        SetFloatInputField(dialogTmp, "chroma/x", 0, min: 0f, max: float.PositiveInfinity, allowNegative: false);
-
-                        break;
-                    }
-                case 6: // Bloom
-                    {
-                        //Bloom Intensity
-                        SetFloatInputField(dialogTmp, "bloom/x", 0, max: 1280f, allowNegative: false);
-
-                        RTEditor.SetActive(dialogTmp.Find("diffusion").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("threshold").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("anamorphic ratio").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("colorshift").gameObject, RTEditor.ShowModdedUI);
-
-                        if (!RTEditor.ShowModdedUI)
-                            break;
-
-                        // Bloom Diffusion
-                        SetFloatInputField(dialogTmp, "diffusion/x", 1, min: 1f, max: float.PositiveInfinity, allowNegative: false);
-
-                        // Bloom Threshold
-                        SetFloatInputField(dialogTmp, "threshold/x", 2, min: 0f, max: 1.4f, allowNegative: false);
-
-                        // Bloom Anamorphic Ratio
-                        SetFloatInputField(dialogTmp, "anamorphic ratio/x", 3, min: -1f, max: 1f);
-
-                        // Bloom Color
-                        SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black);
-
-                        // Bloom Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 5);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 6);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 7);
-                        break;
-                    }
-                case 7: // Vignette
-                    {
-                        // Vignette Intensity
-                        SetFloatInputField(dialogTmp, "intensity", 0, allowNegative: false);
-
-                        // Vignette Smoothness
-                        SetFloatInputField(dialogTmp, "smoothness", 1);
-
-                        // Vignette Rounded
-                        SetToggle(dialogTmp, "roundness/rounded", 2, 1, 0);
-
-                        // Vignette Roundness
-                        SetFloatInputField(dialogTmp, "roundness", 3, 0.01f, 10f, float.NegativeInfinity, 1.2f);
-
-                        // Vignette Center
-                        SetVector2InputField(dialogTmp, "position", 4, 5);
-
-                        // Vignette Color
-
-                        RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("colorshift").gameObject, RTEditor.ShowModdedUI);
-
-                        if (!RTEditor.ShowModdedUI)
-                            break;
-
-                        SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black);
-                        // Vignette Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 7);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 8);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 9);
-
-                        break;
-                    }
-                case 8: // Lens
-                    {
-                        // Lens Intensity
-                        SetFloatInputField(dialogTmp, "lens/x", 0, 1f, 10f, -100f, 100f);
-
-                        RTEditor.SetActive(dialogTmp.Find("center").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("intensity").gameObject, RTEditor.ShowModdedUI);
-                        RTEditor.SetActive(dialogTmp.Find("scale").gameObject, RTEditor.ShowModdedUI);
-
-                        if (!RTEditor.ShowModdedUI)
-                            break;
-
-                        // Lens Center X / Y
-                        SetVector2InputField(dialogTmp, "center", 1, 2);
-
-                        // Lens Intensity X / Y
-                        SetVector2InputField(dialogTmp, "intensity", 3, 4);
-
-                        // Lens Scale
-                        SetFloatInputField(dialogTmp, "scale/x", 5, 0.1f, 10f, 0.001f, float.PositiveInfinity, allowNegative: false);
-                        break;
-                    }
-                case 9: // Grain
-                    {
-                        // Grain Intensity
-                        SetFloatInputField(dialogTmp, "intensity", 0, 0.1f, 10f, 0f, float.PositiveInfinity, allowNegative: false);
-
-                        // Grain Colored
-                        SetToggle(dialogTmp, "colored", 1, 1, 0);
-
-                        // Grain Size
-                        SetFloatInputField(dialogTmp, "size", 2, 0.1f, 10f, 0f, float.PositiveInfinity, allowNegative: false);
-
-                        break;
-                    }
-                case 10: // ColorGrading
-                    {
-                        // ColorGrading Hueshift
-                        SetFloatInputField(dialogTmp, "hueshift/x", 0, 0.1f, 10f);
-
-                        // ColorGrading Contrast
-                        SetFloatInputField(dialogTmp, "contrast/x", 1, 1f, 10f);
-
-                        // ColorGrading Gamma
-                        SetFloatInputField(dialogTmp, "gamma/x", 2);
-                        SetFloatInputField(dialogTmp, "gamma/y", 3);
-                        SetFloatInputField(dialogTmp, "gamma/z", 4);
-                        SetFloatInputField(dialogTmp, "gamma/w", 5);
-
-                        // ColorGrading Saturation
-                        SetFloatInputField(dialogTmp, "saturation/x", 6, 1f, 10f);
-
-                        // ColorGrading Temperature
-                        SetFloatInputField(dialogTmp, "temperature/x", 7, 1f, 10f);
-
-                        // ColorGrading Tint
-                        SetFloatInputField(dialogTmp, "tint/x", 8, 1f, 10f);
-                        break;
-                    }
-                case 11: // Ripples
-                    {
-                        // Ripples Strength
-                        SetFloatInputField(dialogTmp, "strength/x", 0);
-
-                        // Ripples Speed
-                        SetFloatInputField(dialogTmp, "speed/x", 1);
-
-                        // Ripples Distance
-                        SetFloatInputField(dialogTmp, "distance/x", 2, 0.1f, 10f, 0.001f, float.PositiveInfinity);
-
-                        SetVector2InputField(dialogTmp, "size", 3, 4);
-
-                        // Ripples Mode (No separate method required atm)
-                        {
-                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[5];
-                            drp.onValueChanged.AddListener(_val =>
-                            {
-                                currentKeyframe.values[5] = _val;
-                                EventManager.inst.updateEvents();
-                            });
-                        }
-
-                        break;
-                    }
-                case 12: // RadialBlur
-                    {
-                        // RadialBlur Intensity
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        // RadialBlur Iterations
-                        SetIntInputField(dialogTmp, "iterations/x", 1, 1, 1, 20);
-
-                        break;
-                    }
-                case 13: // ColorSplit
-                    {
-                        // ColorSplit Offset
-                        SetFloatInputField(dialogTmp, "offset/x", 0);
-
-                        // ColorSplit Mode (No separate method required atm)
-                        {
-                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[1];
-                            drp.onValueChanged.AddListener(_val =>
-                            {
-                                currentKeyframe.values[1] = _val;
-                                EventManager.inst.updateEvents();
-                            });
-                        }
-
-                        break;
-                    }
-                case 14: // Cam Offset
-                    {
-                        SetVector2InputField(dialogTmp, "position", 0, 1);
-
-                        break;
-                    }
-                case 15: // Gradient
-                    {
-                        // Gradient Intensity / Rotation (Had to put them together due to mode going over the timeline lol)
-                        SetVector2InputField(dialogTmp, "introt", 0, 1);
-
-                        // Gradient Color Top
-                        SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black);
-
-                        // Gradient Color Bottom
-                        SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black);
-
-                        // Gradient Mode (No separate method required atm)
-                        {
-                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[4];
-                            drp.onValueChanged.AddListener(_val =>
-                            {
-                                currentKeyframe.values[4] = _val;
-                                EventManager.inst.updateEvents();
-                            });
-                        }
-
-                        // Gradient Top Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift1/x", 5);
-                        SetFloatInputField(dialogTmp, "colorshift1/y", 6);
-                        SetFloatInputField(dialogTmp, "colorshift1/z", 7);
-                        SetFloatInputField(dialogTmp, "colorshift1/w", 8);
-
-                        // Gradient Bottom Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift2/x", 9);
-                        SetFloatInputField(dialogTmp, "colorshift2/y", 10);
-                        SetFloatInputField(dialogTmp, "colorshift2/z", 11);
-                        SetFloatInputField(dialogTmp, "colorshift2/w", 12);
-
-                        break;
-                    }
-                case 16: // DoubleVision
-                    {
-                        // DoubleVision Intensity
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        // DoubleVision Mode (No separate method required atm)
-                        {
-                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[1];
-                            drp.onValueChanged.AddListener(_val =>
-                            {
-                                currentKeyframe.values[1] = _val;
-                                EventManager.inst.updateEvents();
-                            });
-                        }
-
-                        break;
-                    }
-                case 17: // ScanLines
-                    {
-                        // ScanLines Intensity
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        // ScanLines Amount
-                        SetFloatInputField(dialogTmp, "amount/x", 1);
-
-                        // ScanLines Speed
-                        SetFloatInputField(dialogTmp, "speed/x", 2);
-                        break;
-                    }
-                case 18: // Blur
-                    {
-                        //Blur Amount
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        //Blur Iterations
-                        SetIntInputField(dialogTmp, "iterations/x", 1, 1, 1, 12);
-
-                        break;
-                    }
-                case 19: // Pixelize
-                    {
-                        //Pixelize
-                        SetFloatInputField(dialogTmp, "amount/x", 0, 0.1f, 10f, 0f, 0.99f);
-
-                        break;
-                    }
-                case 20: // BG
-                    {
-                        SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black);
-
-                        SetToggle(dialogTmp, "active", 1, 0, 1);
-
-                        // BG Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 2);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 3);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 4);
-
-                        break;
-                    }
-                case 21: // Invert
-                    {
-                        //Invert Amount
-                        SetFloatInputField(dialogTmp, "amount/x", 0, 0.1f, 10f, 0f, 1f);
-
-                        break;
-                    }
-                case 22: // Timeline
-                    {
-                        // Timeline Active
-                        SetToggle(dialogTmp, "active", 0, 0, 1);
-
-                        // Timeline Position
-                        SetVector2InputField(dialogTmp, "position", 1, 2);
-
-                        // Timeline Scale
-                        SetVector2InputField(dialogTmp, "scale", 3, 4);
-
-                        // Timeline Rotation
-                        SetFloatInputField(dialogTmp, "rotation/x", 5, 15f, 3f);
-
-                        // Timeline Color
-                        SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black);
-
-                        // Timeline Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 7);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 8);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 9);
-                        SetFloatInputField(dialogTmp, "colorshift/w", 10);
-
-                        break;
-                    }
-                case 23: // Player
-                    {
-                        // Player Active
-                        SetToggle(dialogTmp, "active", 0, 0, 1);
-
-                        // Player Moveable
-                        SetToggle(dialogTmp, "move", 1, 0, 1);
-
-                        // Player Position
-                        SetVector2InputField(dialogTmp, "position", 2, 3);
-
-                        // Player Rotation
-                        SetFloatInputField(dialogTmp, "rotation/x", 4, 15f, 3f);
-
-                        SetToggle(dialogTmp, "oob", 5, 1, 0);
-
-                        break;
-                    }
-                case 24: // Follow Player
-                    {
-                        // Follow Player Active
-                        SetToggle(dialogTmp, "active", 0, 1, 0);
-
-                        // Follow Player Move
-                        SetToggle(dialogTmp, "move", 1, 1, 0);
-
-                        // Follow Player Rotate
-                        SetToggle(dialogTmp, "rotate", 2, 1, 0);
-
-                        // Follow Player Sharpness
-                        SetFloatInputField(dialogTmp, "position/x", 3, 0.1f, 10f, 0.001f, 1f);
-
-                        // Follow Player Offset
-                        SetFloatInputField(dialogTmp, "position/y", 4);
-
-                        // Follow Player Limit Left
-                        SetFloatInputField(dialogTmp, "limit horizontal/x", 5);
-
-                        // Follow Player Limit Right
-                        SetFloatInputField(dialogTmp, "limit horizontal/y", 6);
-
-                        // Follow Player Limit Up
-                        SetFloatInputField(dialogTmp, "limit vertical/x", 7);
-
-                        // Follow Player Limit Down
-                        SetFloatInputField(dialogTmp, "limit vertical/y", 8);
-
-                        // Follow Player Anchor
-                        SetFloatInputField(dialogTmp, "anchor/x", 9, 0.1f, 10f);
-
-                        break;
-                    }
-                case 25: // Audio
-                    {
-                        // Audio Pitch
-                        SetFloatInputField(dialogTmp, "music/x", 0, 0.1f, 10f, 0.001f, 10f, allowNegative: false);
-
-                        // Audio Volume
-                        SetFloatInputField(dialogTmp, "music/y", 1, 0.1f, 10f, 0f, 1f, allowNegative: false);
-
-                        break;
-                    }
-                case 26: // Video BG Parent
-                    {
-                        // Position
-                        SetFloatInputField(dialogTmp, "position/x", 0);
-                        SetFloatInputField(dialogTmp, "position/y", 1);
-                        SetFloatInputField(dialogTmp, "position/z", 2);
-
-                        // Scale
-                        SetFloatInputField(dialogTmp, "scale/x", 3);
-                        SetFloatInputField(dialogTmp, "scale/y", 4);
-                        SetFloatInputField(dialogTmp, "scale/z", 5);
-
-                        // Rotation
-                        SetFloatInputField(dialogTmp, "rotation/x", 6, 5f, 3f);
-                        SetFloatInputField(dialogTmp, "rotation/y", 7, 5f, 3f);
-                        SetFloatInputField(dialogTmp, "rotation/z", 8, 5f, 3f);
-
-                        break;
-                    }
-                case 27: // Video BG
-                    {
-                        // Position
-                        SetFloatInputField(dialogTmp, "position/x", 0);
-                        SetFloatInputField(dialogTmp, "position/y", 1);
-                        SetFloatInputField(dialogTmp, "position/z", 2);
-
-                        // Scale
-                        SetFloatInputField(dialogTmp, "scale/x", 3);
-                        SetFloatInputField(dialogTmp, "scale/y", 4);
-                        SetFloatInputField(dialogTmp, "scale/z", 5);
-
-                        // Rotation
-                        SetFloatInputField(dialogTmp, "rotation/x", 6, 5f, 3f);
-                        SetFloatInputField(dialogTmp, "rotation/y", 7, 5f, 3f);
-                        SetFloatInputField(dialogTmp, "rotation/z", 8, 5f, 3f);
-
-                        // Render Type
-                        {
-                            var drp = dialogTmp.Find("rendertype").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[9];
-                            drp.onValueChanged.AddListener(_val =>
-                            {
-                                currentKeyframe.values[9] = _val;
-                                EventManager.inst.updateEvents();
-                            });
-                        }
-
-
-                        break;
-                    }
-                case 28: // Sharpen
-                    {
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-                        break;
-                    }
-                case 29: // Bars
-                    {
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        // Direction
-                        {
-                            var drp = dialogTmp.Find("direction").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[1];
-                            drp.onValueChanged.AddListener(_val =>
-                            {
-                                currentKeyframe.values[1] = _val;
-                                EventManager.inst.updateEvents();
-                            });
-                        }
-
-                        break;
-                    }
-                case 30: // Danger
-                    {
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        SetFloatInputField(dialogTmp, "size/x", 1);
-
-                        // Danger Color
-                        SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black);
-
-                        // Danger Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 3);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 4);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 5);
-                        SetFloatInputField(dialogTmp, "colorshift/w", 6);
-
-                        break;
-                    }
-                case 31: // 3D Rotation
-                    {
-                        SetFloatInputField(dialogTmp, "rotation/x", 0, 5f, 3f);
-                        SetFloatInputField(dialogTmp, "rotation/y", 1, 5f, 3f);
-
-                        break;
-                    }
-                case 32: // Camera Depth
-                    {
-                        SetFloatInputField(dialogTmp, "depth/x", 0);
-                        SetFloatInputField(dialogTmp, "zoom/x", 1);
-                        SetToggle(dialogTmp, "global", 2, 0, 1);
-                        SetToggle(dialogTmp, "align", 3, 1, 0);
-
-                        break;
-                    }
-                case 33: // Window Base
-                    {
-                        // Force Resolution
-                        SetToggle(dialogTmp, "force", 0, 1, 0);
-
-                        SetVector2InputField(dialogTmp, "resolution", 1, 2, max: int.MaxValue, allowNegative: false);
-
-                        SetToggle(dialogTmp, "allow", 3, 1, 0);
-
-                        break;
-                    }
-                case 34: // Window Position X
-                    {
-                        SetFloatInputField(dialogTmp, "x/x", 0);
-
-                        break;
-                    }
-                case 35: // Window Position Y
-                    {
-                        SetFloatInputField(dialogTmp, "y/x", 0);
-
-                        break;
-                    }
-                case 36: // Player Force
-                    {
-                        SetVector2InputField(dialogTmp, "position", 0, 1);
-                        break;
-                    }
-                case 37: // Mosaic
-                    {
-                        SetFloatInputField(dialogTmp, "amount/x", 0);
-
-                        break;
-                    }
-                case 38: // Analog Glitch
-                    {
-                        SetToggle(dialogTmp, "enabled", 0, 1, 0);
-                        SetFloatInputField(dialogTmp, "colordrift/x", 1);
-                        SetFloatInputField(dialogTmp, "horizontalshake/x", 2);
-                        SetFloatInputField(dialogTmp, "scanlinejitter/x", 3);
-                        SetFloatInputField(dialogTmp, "verticaljump/x", 4);
-
-                        break;
-                    }
-                case 39: // Digital Glitch
-                    {
-                        SetFloatInputField(dialogTmp, "intensity/x", 0);
-
-                        break;
-                    }
-            }
-
-            // Curves
-            dialog.CurvesLabel.gameObject.SetActive(isNotFirst);
-            dialog.CurvesDropdown.gameObject.SetActive(isNotFirst);
-            if (isNotFirst)
-            {
-                dialog.CurvesDropdown.onValueChanged.ClearAll();
-                dialog.CurvesDropdown.value = (int)currentKeyframe.curve;
-                dialog.CurvesDropdown.onValueChanged.AddListener(_val =>
-                {
-                    var anim = (Easing)_val;
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == EventEditor.inst.currentEventType))
-                        kf.eventKeyframe.curve = anim;
-
-                    RenderEventObjects();
-                    EventManager.inst.updateEvents();
-                });
             }
 
             #region Edit
@@ -2871,7 +2260,577 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            RenderTitle(EventEditor.inst.currentEventType);
+            switch (EventEditor.inst.currentEventType)
+            {
+                case 0: {
+                        if (dialog is Vector2KeyframeDialog vector2Dialog)
+                            SetVector2InputField(vector2Dialog.Vector2Field, 0, 1);
+
+                        break;
+                    } // Move
+                case 1: {
+                        SetFloatInputField(dialogTmp, "zoom/x", 0, min: -9999f, max: 9999f);
+                        break;
+                    } // Zoom
+                case 2: {
+                        SetFloatInputField(dialogTmp, "rotation/x", 0, 15f, 3f);
+                        break;
+                    } // Rotate
+                case 3: {
+                        // Shake Intensity
+                        SetFloatInputField(dialogTmp, "shake/x", 0, min: 0f, max: 10f, allowNegative: false);
+
+                        // Shake Intensity X / Y
+
+                        RTEditor.SetActive(dialogTmp.Find("direction").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("notice-label").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("interpolation").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("speed").gameObject, RTEditor.ShowModdedUI);
+
+                        if (!RTEditor.ShowModdedUI)
+                            break;
+
+                        SetVector2InputField(dialogTmp, "direction", 1, 2, -10f, 10f);
+                        SetFloatInputField(dialogTmp, "interpolation/x", 3, max: 999f, allowNegative: false);
+                        SetFloatInputField(dialogTmp, "speed/x", 4, min: 0.001f, max: 9999f, allowNegative: false);
+                        break;
+                    } // Shake
+                case 4: {
+                        var themeSearchContextMenu = RTThemeEditor.inst.Dialog.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
+                        themeSearchContextMenu.onClick = null;
+                        themeSearchContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
+                                {
+                                    RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
+                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                                }),
+                                new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
+                                {
+                                    EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
+                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                                })
+                                );
+                        };
+
+                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.ClearAll();
+                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.AddListener(_val => CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(_val)));
+                        CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                        RTThemeEditor.inst.RenderThemePreview();
+
+                        break;
+                    } // Theme
+                case 5: {
+                        SetFloatInputField(dialogTmp, "chroma/x", 0, min: 0f, max: float.PositiveInfinity, allowNegative: false);
+
+                        break;
+                    } // Chromatic
+                case 6: {
+                        //Bloom Intensity
+                        SetFloatInputField(dialogTmp, "bloom/x", 0, max: 1280f, allowNegative: false);
+
+                        RTEditor.SetActive(dialogTmp.Find("diffusion").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("threshold").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("anamorphic ratio").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("colorshift").gameObject, RTEditor.ShowModdedUI);
+
+                        if (!RTEditor.ShowModdedUI)
+                            break;
+
+                        // Bloom Diffusion
+                        SetFloatInputField(dialogTmp, "diffusion/x", 1, min: 1f, max: float.PositiveInfinity, allowNegative: false);
+
+                        // Bloom Threshold
+                        SetFloatInputField(dialogTmp, "threshold/x", 2, min: 0f, max: 1.4f, allowNegative: false);
+
+                        // Bloom Anamorphic Ratio
+                        SetFloatInputField(dialogTmp, "anamorphic ratio/x", 3, min: -1f, max: 1f);
+
+                        // Bloom Color
+                        SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black);
+
+                        // Bloom Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift/x", 5);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 6);
+                        SetFloatInputField(dialogTmp, "colorshift/z", 7);
+                        break;
+                    } // Bloom
+                case 7: {
+                        // Vignette Intensity
+                        SetFloatInputField(dialogTmp, "intensity", 0, allowNegative: false);
+
+                        // Vignette Smoothness
+                        SetFloatInputField(dialogTmp, "smoothness", 1);
+
+                        // Vignette Rounded
+                        SetToggle(dialogTmp, "roundness/rounded", 2, 1, 0);
+
+                        // Vignette Roundness
+                        SetFloatInputField(dialogTmp, "roundness", 3, 0.01f, 10f, float.NegativeInfinity, 1.2f);
+
+                        // Vignette Center
+                        SetVector2InputField(dialogTmp, "position", 4, 5);
+
+                        // Vignette Color
+
+                        RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("colorshift").gameObject, RTEditor.ShowModdedUI);
+
+                        if (!RTEditor.ShowModdedUI)
+                            break;
+
+                        SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black);
+                        // Vignette Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift/x", 7);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 8);
+                        SetFloatInputField(dialogTmp, "colorshift/z", 9);
+
+                        break;
+                    } // Vignette
+                case 8: {
+                        // Lens Intensity
+                        SetFloatInputField(dialogTmp, "lens/x", 0, 1f, 10f, -100f, 100f);
+
+                        RTEditor.SetActive(dialogTmp.Find("center").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("intensity").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("scale").gameObject, RTEditor.ShowModdedUI);
+
+                        if (!RTEditor.ShowModdedUI)
+                            break;
+
+                        // Lens Center X / Y
+                        SetVector2InputField(dialogTmp, "center", 1, 2);
+
+                        // Lens Intensity X / Y
+                        SetVector2InputField(dialogTmp, "intensity", 3, 4);
+
+                        // Lens Scale
+                        SetFloatInputField(dialogTmp, "scale/x", 5, 0.1f, 10f, 0.001f, float.PositiveInfinity, allowNegative: false);
+                        break;
+                    } // Lens
+                case 9: {
+                        // Grain Intensity
+                        SetFloatInputField(dialogTmp, "intensity", 0, 0.1f, 10f, 0f, float.PositiveInfinity, allowNegative: false);
+
+                        // Grain Colored
+                        SetToggle(dialogTmp, "colored", 1, 1, 0);
+
+                        // Grain Size
+                        SetFloatInputField(dialogTmp, "size", 2, 0.1f, 10f, 0f, float.PositiveInfinity, allowNegative: false);
+
+                        break;
+                    } // Grain
+                case 10: {
+                        // ColorGrading Hueshift
+                        SetFloatInputField(dialogTmp, "hueshift/x", 0, 0.1f, 10f);
+
+                        // ColorGrading Contrast
+                        SetFloatInputField(dialogTmp, "contrast/x", 1, 1f, 10f);
+
+                        // ColorGrading Gamma
+                        SetFloatInputField(dialogTmp, "gamma/x", 2);
+                        SetFloatInputField(dialogTmp, "gamma/y", 3);
+                        SetFloatInputField(dialogTmp, "gamma/z", 4);
+                        SetFloatInputField(dialogTmp, "gamma/w", 5);
+
+                        // ColorGrading Saturation
+                        SetFloatInputField(dialogTmp, "saturation/x", 6, 1f, 10f);
+
+                        // ColorGrading Temperature
+                        SetFloatInputField(dialogTmp, "temperature/x", 7, 1f, 10f);
+
+                        // ColorGrading Tint
+                        SetFloatInputField(dialogTmp, "tint/x", 8, 1f, 10f);
+                        break;
+                    } // ColorGrading
+                case 11: {
+                        // Ripples Strength
+                        SetFloatInputField(dialogTmp, "strength/x", 0);
+
+                        // Ripples Speed
+                        SetFloatInputField(dialogTmp, "speed/x", 1);
+
+                        // Ripples Distance
+                        SetFloatInputField(dialogTmp, "distance/x", 2, 0.1f, 10f, 0.001f, float.PositiveInfinity);
+
+                        SetVector2InputField(dialogTmp, "size", 3, 4);
+
+                        // Ripples Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.values[5];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.values[5] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
+                        break;
+                    } // Ripples
+                case 12: {
+                        // RadialBlur Intensity
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        // RadialBlur Iterations
+                        SetIntInputField(dialogTmp, "iterations/x", 1, 1, 1, 20);
+
+                        break;
+                    } // RadialBlur
+                case 13: {
+                        // ColorSplit Offset
+                        SetFloatInputField(dialogTmp, "offset/x", 0);
+
+                        // ColorSplit Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.values[1];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.values[1] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
+                        break;
+                    } // ColorSplit
+                case 14: {
+                        SetVector2InputField(dialogTmp, "position", 0, 1);
+
+                        break;
+                    } // Cam Offset
+                case 15: {
+                        // Gradient Intensity / Rotation (Had to put them together due to mode going over the timeline lol)
+                        SetVector2InputField(dialogTmp, "introt", 0, 1);
+
+                        // Gradient Color Top
+                        SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black);
+
+                        // Gradient Color Bottom
+                        SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black);
+
+                        // Gradient Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.values[4];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.values[4] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
+                        // Gradient Top Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift1/x", 5);
+                        SetFloatInputField(dialogTmp, "colorshift1/y", 6);
+                        SetFloatInputField(dialogTmp, "colorshift1/z", 7);
+                        SetFloatInputField(dialogTmp, "colorshift1/w", 8);
+
+                        // Gradient Bottom Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift2/x", 9);
+                        SetFloatInputField(dialogTmp, "colorshift2/y", 10);
+                        SetFloatInputField(dialogTmp, "colorshift2/z", 11);
+                        SetFloatInputField(dialogTmp, "colorshift2/w", 12);
+
+                        break;
+                    } // Gradient
+                case 16: {
+                        // DoubleVision Intensity
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        // DoubleVision Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.values[1];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.values[1] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
+                        break;
+                    } // DoubleVision
+                case 17: {
+                        // ScanLines Intensity
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        // ScanLines Amount
+                        SetFloatInputField(dialogTmp, "amount/x", 1);
+
+                        // ScanLines Speed
+                        SetFloatInputField(dialogTmp, "speed/x", 2);
+                        break;
+                    } // ScanLines
+                case 18: {
+                        //Blur Amount
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        //Blur Iterations
+                        SetIntInputField(dialogTmp, "iterations/x", 1, 1, 1, 12);
+
+                        break;
+                    } // Blur
+                case 19: {
+                        //Pixelize
+                        SetFloatInputField(dialogTmp, "amount/x", 0, 0.1f, 10f, 0f, 0.99f);
+
+                        break;
+                    } // Pixelize
+                case 20: {
+                        SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black);
+
+                        SetToggle(dialogTmp, "active", 1, 0, 1);
+
+                        // BG Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift/x", 2);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 3);
+                        SetFloatInputField(dialogTmp, "colorshift/z", 4);
+
+                        break;
+                    } // BG
+                case 21: {
+                        //Invert Amount
+                        SetFloatInputField(dialogTmp, "amount/x", 0, 0.1f, 10f, 0f, 1f);
+
+                        break;
+                    } // Invert
+                case 22: {
+                        // Timeline Active
+                        SetToggle(dialogTmp, "active", 0, 0, 1);
+
+                        // Timeline Position
+                        SetVector2InputField(dialogTmp, "position", 1, 2);
+
+                        // Timeline Scale
+                        SetVector2InputField(dialogTmp, "scale", 3, 4);
+
+                        // Timeline Rotation
+                        SetFloatInputField(dialogTmp, "rotation/x", 5, 15f, 3f);
+
+                        // Timeline Color
+                        SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black);
+
+                        // Timeline Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift/x", 7);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 8);
+                        SetFloatInputField(dialogTmp, "colorshift/z", 9);
+                        SetFloatInputField(dialogTmp, "colorshift/w", 10);
+
+                        break;
+                    } // Timeline
+                case 23: {
+                        // Player Active
+                        SetToggle(dialogTmp, "active", 0, 0, 1);
+
+                        // Player Moveable
+                        SetToggle(dialogTmp, "move", 1, 0, 1);
+
+                        // Player Position
+                        SetVector2InputField(dialogTmp, "position", 2, 3);
+
+                        // Player Rotation
+                        SetFloatInputField(dialogTmp, "rotation/x", 4, 15f, 3f);
+
+                        SetToggle(dialogTmp, "oob", 5, 1, 0);
+
+                        break;
+                    } // Player
+                case 24: {
+                        // Follow Player Active
+                        SetToggle(dialogTmp, "active", 0, 1, 0);
+
+                        // Follow Player Move
+                        SetToggle(dialogTmp, "move", 1, 1, 0);
+
+                        // Follow Player Rotate
+                        SetToggle(dialogTmp, "rotate", 2, 1, 0);
+
+                        // Follow Player Sharpness
+                        SetFloatInputField(dialogTmp, "position/x", 3, 0.1f, 10f, 0.001f, 1f);
+
+                        // Follow Player Offset
+                        SetFloatInputField(dialogTmp, "position/y", 4);
+
+                        // Follow Player Limit Left
+                        SetFloatInputField(dialogTmp, "limit horizontal/x", 5);
+
+                        // Follow Player Limit Right
+                        SetFloatInputField(dialogTmp, "limit horizontal/y", 6);
+
+                        // Follow Player Limit Up
+                        SetFloatInputField(dialogTmp, "limit vertical/x", 7);
+
+                        // Follow Player Limit Down
+                        SetFloatInputField(dialogTmp, "limit vertical/y", 8);
+
+                        // Follow Player Anchor
+                        SetFloatInputField(dialogTmp, "anchor/x", 9, 0.1f, 10f);
+
+                        break;
+                    } // Follow Player
+                case 25: {
+                        // Audio Pitch
+                        SetFloatInputField(dialogTmp, "music/x", 0, 0.1f, 10f, 0.001f, 10f, allowNegative: false);
+
+                        // Audio Volume
+                        SetFloatInputField(dialogTmp, "music/y", 1, 0.1f, 10f, 0f, 1f, allowNegative: false);
+
+                        break;
+                    } // Audio
+                case 26: {
+                        // Position
+                        SetFloatInputField(dialogTmp, "position/x", 0);
+                        SetFloatInputField(dialogTmp, "position/y", 1);
+                        SetFloatInputField(dialogTmp, "position/z", 2);
+
+                        // Scale
+                        SetFloatInputField(dialogTmp, "scale/x", 3);
+                        SetFloatInputField(dialogTmp, "scale/y", 4);
+                        SetFloatInputField(dialogTmp, "scale/z", 5);
+
+                        // Rotation
+                        SetFloatInputField(dialogTmp, "rotation/x", 6, 5f, 3f);
+                        SetFloatInputField(dialogTmp, "rotation/y", 7, 5f, 3f);
+                        SetFloatInputField(dialogTmp, "rotation/z", 8, 5f, 3f);
+
+                        break;
+                    } // Video BG Parent
+                case 27: {
+                        // Position
+                        SetFloatInputField(dialogTmp, "position/x", 0);
+                        SetFloatInputField(dialogTmp, "position/y", 1);
+                        SetFloatInputField(dialogTmp, "position/z", 2);
+
+                        // Scale
+                        SetFloatInputField(dialogTmp, "scale/x", 3);
+                        SetFloatInputField(dialogTmp, "scale/y", 4);
+                        SetFloatInputField(dialogTmp, "scale/z", 5);
+
+                        // Rotation
+                        SetFloatInputField(dialogTmp, "rotation/x", 6, 5f, 3f);
+                        SetFloatInputField(dialogTmp, "rotation/y", 7, 5f, 3f);
+                        SetFloatInputField(dialogTmp, "rotation/z", 8, 5f, 3f);
+
+                        // Render Type
+                        {
+                            var drp = dialogTmp.Find("rendertype").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.values[9];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.values[9] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
+
+                        break;
+                    } // Video BG
+                case 28: {
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+                        break;
+                    } // Sharpen
+                case 29: {
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        // Direction
+                        {
+                            var drp = dialogTmp.Find("direction").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.values[1];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.values[1] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
+                        break;
+                    } // Bars
+                case 30: {
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        SetFloatInputField(dialogTmp, "size/x", 1);
+
+                        // Danger Color
+                        SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black);
+
+                        // Danger Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift/x", 3);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 4);
+                        SetFloatInputField(dialogTmp, "colorshift/z", 5);
+                        SetFloatInputField(dialogTmp, "colorshift/w", 6);
+
+                        break;
+                    } // Danger
+                case 31: {
+                        SetFloatInputField(dialogTmp, "rotation/x", 0, 5f, 3f);
+                        SetFloatInputField(dialogTmp, "rotation/y", 1, 5f, 3f);
+
+                        break;
+                    } // 3D Rotation
+                case 32: {
+                        SetFloatInputField(dialogTmp, "depth/x", 0);
+                        SetFloatInputField(dialogTmp, "zoom/x", 1);
+                        SetToggle(dialogTmp, "global", 2, 0, 1);
+                        SetToggle(dialogTmp, "align", 3, 1, 0);
+
+                        break;
+                    } // Camera Depth
+                case 33: {
+                        // Force Resolution
+                        SetToggle(dialogTmp, "force", 0, 1, 0);
+
+                        SetVector2InputField(dialogTmp, "resolution", 1, 2, max: int.MaxValue, allowNegative: false);
+
+                        SetToggle(dialogTmp, "allow", 3, 1, 0);
+
+                        break;
+                    } // Window Base
+                case 34: {
+                        SetFloatInputField(dialogTmp, "x/x", 0);
+
+                        break;
+                    } // Window Position X
+                case 35: {
+                        SetFloatInputField(dialogTmp, "y/x", 0);
+
+                        break;
+                    } // Window Position Y
+                case 36: {
+                        SetVector2InputField(dialogTmp, "position", 0, 1);
+                        break;
+                    } // Player Force
+                case 37: {
+                        SetFloatInputField(dialogTmp, "amount/x", 0);
+
+                        break;
+                    } // Mosaic
+                case 38: {
+                        SetToggle(dialogTmp, "enabled", 0, 1, 0);
+                        SetFloatInputField(dialogTmp, "colordrift/x", 1);
+                        SetFloatInputField(dialogTmp, "horizontalshake/x", 2);
+                        SetFloatInputField(dialogTmp, "scanlinejitter/x", 3);
+                        SetFloatInputField(dialogTmp, "verticaljump/x", 4);
+
+                        break;
+                    } // Analog Glitch
+                case 39: {
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        break;
+                    } // Digital Glitch
+            }
         }
 
         public void CopyKeyframeData(TimelineKeyframe currentKeyframe)
@@ -3145,12 +3104,10 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetVector2InputField(Transform dialogTmp, string name, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
         {
-            var __instance = EventEditor.inst;
-
-            var currentKeyframe = GameData.Current.events[__instance.currentEventType][__instance.currentEvent];
-
             if (!dialogTmp.Find(name) || !dialogTmp.Find($"{name}/x") || !dialogTmp.Find($"{name}/y"))
                 return;
+
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
             var posX = dialogTmp.Find($"{name}/x").GetComponent<InputField>();
             var posY = dialogTmp.Find($"{name}/y").GetComponent<InputField>();
@@ -3165,7 +3122,7 @@ namespace BetterLegacy.Editor.Managers
                     if (min != 0f && max != 0f)
                         num = Mathf.Clamp(num, min, max);
 
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[xindex] = num;
 
                     EventManager.inst.updateEvents();
@@ -3195,7 +3152,7 @@ namespace BetterLegacy.Editor.Managers
                     if (min != 0f && max != 0f)
                         num = Mathf.Clamp(num, min, max);
 
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[yindex] = num;
 
                     EventManager.inst.updateEvents();
@@ -3235,7 +3192,7 @@ namespace BetterLegacy.Editor.Managers
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
@@ -3255,7 +3212,7 @@ namespace BetterLegacy.Editor.Managers
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
@@ -3285,7 +3242,7 @@ namespace BetterLegacy.Editor.Managers
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
@@ -3305,7 +3262,176 @@ namespace BetterLegacy.Editor.Managers
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posY.text = result.ToString();
+                    }
+                });
+            }
+
+            var clampList = new List<float> { min, max };
+            TriggerHelper.AddEventTriggers(posX.gameObject, TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posY.gameObject, TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+
+            if (allowNegative)
+            {
+                if (!posX.gameObject.GetComponent<InputFieldSwapper>())
+                {
+                    var ifh = posX.gameObject.AddComponent<InputFieldSwapper>();
+                    ifh.Init(posX, InputFieldSwapper.Type.Num);
+                }
+                if (!posY.gameObject.GetComponent<InputFieldSwapper>())
+                {
+                    var ifh = posY.gameObject.AddComponent<InputFieldSwapper>();
+                    ifh.Init(posY, InputFieldSwapper.Type.Num);
+                }
+            }
+        }
+
+        public void SetVector2InputField(Vector2InputFieldStorage vector2Field, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
+        {
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+
+            var posX = vector2Field.x.inputField;
+            var posY = vector2Field.y.inputField;
+
+            posX.onEndEdit.ClearAll();
+            posX.onValueChanged.ClearAll();
+            posX.text = currentKeyframe.values[xindex].ToString();
+            posX.onValueChanged.AddListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                {
+                    if (min != 0f && max != 0f)
+                        num = Mathf.Clamp(num, min, max);
+
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
+                        kf.eventKeyframe.values[xindex] = num;
+
+                    EventManager.inst.updateEvents();
+                }
+                else
+                    LogIncorrectFormat(_val);
+            });
+            posX.onEndEdit.AddListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.time },
+                    { "currentValueX", currentKeyframe.values[xindex] },
+                    { "currentValueY", currentKeyframe.values[yindex] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[xindex], variables, out float calc))
+                    posX.text = calc.ToString();
+            });
+
+            posY.onValueChanged.ClearAll();
+            posY.text = currentKeyframe.values[yindex].ToString();
+            posY.onValueChanged.AddListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                {
+                    if (min != 0f && max != 0f)
+                        num = Mathf.Clamp(num, min, max);
+
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
+                        kf.eventKeyframe.values[yindex] = num;
+
+                    EventManager.inst.updateEvents();
+                }
+                else
+                    LogIncorrectFormat(_val);
+            });
+            posY.onEndEdit.AddListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.time },
+                    { "currentValueX", currentKeyframe.values[xindex] },
+                    { "currentValueY", currentKeyframe.values[yindex] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[yindex], variables, out float calc))
+                    posY.text = calc.ToString();
+            });
+
+            if (vector2Field.x.leftButton && vector2Field.x.rightButton)
+            {
+                float num = 1f;
+                vector2Field.x.leftButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posX.text, out float result))
+                    {
+                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posX.text = result.ToString();
+                    }
+                });
+                vector2Field.x.rightButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posX.text, out float result))
+                    {
+                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[xindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posX.text = result.ToString();
+                    }
+                });
+            }
+
+            if (vector2Field.y.leftButton && vector2Field.y.rightButton)
+            {
+                float num = 1f;
+                vector2Field.y.leftButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posY.text, out float result))
+                    {
+                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posY.text = result.ToString();
+                    }
+                });
+                vector2Field.y.rightButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posY.text, out float result))
+                    {
+                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)

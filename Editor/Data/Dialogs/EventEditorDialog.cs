@@ -33,6 +33,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var dialog = EventEditor.inst.dialogRight.GetChild(i);
                 KeyframeDialog keyframeDialog = i switch
                 {
+                    0 => new Vector2KeyframeDialog(i),
                     4 => new ThemeKeyframeDialog(),
                     _ => new KeyframeDialog(i),
                 };
