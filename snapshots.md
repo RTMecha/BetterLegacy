@@ -45,6 +45,9 @@
 - Custom Background Object reactive values UI now disable if the reactive type is not custom.
 - Removed "Yield Type settings" for Expanding Prefabs and Pasting Objects. This isn't really needed anymore.
 - Cleaned up Copy, Paste and Delete functions.
+- Finally made the Settings button on the title bar consistent with other dropdown menus.
+- Shuffled some dropdown menu buttons around.
+- Changed MetaData Editor link buttons icons to a link icon to better represent what they are.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
