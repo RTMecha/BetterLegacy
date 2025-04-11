@@ -141,7 +141,6 @@
 - New Editor Layer types [Object Only, Prefab Object Only]
 - Update the sprite asset.
 - Documentation & tooltips.
-- Change the Settings menu to a dropdown to be more consistent with the other title bar buttons.
 - Possible multi object editor rework???
 - Make Editor Documentation read from a json file.  
   Update: 1.8.0
