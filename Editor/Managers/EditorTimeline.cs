@@ -556,7 +556,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Updates the timelines' waveform texture.
         /// </summary>
-        public IEnumerator AssignTimelineTexture()
+        public IEnumerator AssignTimelineTexture(bool forceReload = false)
         {
             var config = EditorConfig.Instance;
             var path = RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
@@ -565,7 +565,7 @@ namespace BetterLegacy.Editor.Managers
             SetTimelineSprite(null);
 
             if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists(settingsPath) ||
-                !RTFile.FileExists(path)) && !config.WaveformRerender.Value || config.WaveformRerender.Value)
+                !RTFile.FileExists(path)) && !config.WaveformRerender.Value || config.WaveformRerender.Value || forceReload)
             {
                 var clip = AudioManager.inst.CurrentAudioSource.clip;
                 int num = Mathf.Clamp((int)clip.length * 48, 100, 15000);
