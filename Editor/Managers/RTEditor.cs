@@ -4851,7 +4851,7 @@ namespace BetterLegacy.Editor.Managers
             InfoPopup.SetInfo($"Updating Timeline for [ {name} ]");
             EditorTimeline.inst.UpdateTimelineSizes();
             GameManager.inst.UpdateTimeline();
-            RTMetaDataEditor.inst.RenderEditor();
+            RTMetaDataEditor.inst.RenderDialog();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.CreateGhostCheckpoints();

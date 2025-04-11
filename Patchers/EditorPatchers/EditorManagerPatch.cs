@@ -1147,7 +1147,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenMetadataPrefix()
         {
-            RTMetaDataEditor.inst.OpenEditor();
+            RTMetaDataEditor.inst.OpenDialog();
             return false;
         }
 

@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDialogPrefix()
         {
-            RTMetaDataEditor.inst.OpenEditor();
+            RTMetaDataEditor.inst.OpenDialog();
             return false;
         }
         
@@ -41,7 +41,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderPrefix()
         {
-            RTMetaDataEditor.inst.RenderEditor();
+            RTMetaDataEditor.inst.RenderDialog();
             return false;
         }
 
