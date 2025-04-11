@@ -2906,13 +2906,25 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupDropdowns()
         {
-            var quitToArcade = EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var settingsButton = titleBar.Find("Settings").GetComponent<Button>();
+            var settingsDropdown = titleBar.Find("Edit/Edit Dropdown").gameObject.Duplicate(settingsButton.transform, "Settings Dropdown");
+            CoreHelper.DestroyChildren(settingsDropdown.transform);
+            EditorManager.inst.DropdownMenus.Insert(3, settingsDropdown);
+            settingsButton.onClick.NewListener(() =>
+            {
+                EditorManager.inst.ToggleDropdown(settingsDropdown);
+                EditorManager.inst.ClearPopups();
+            });
+
+            EditorHelper.AddEditorDropdown("Editor Settings", "", EditorHelper.SETTINGS_DROPDOWN, EditorSprites.EditSprite, () => RTSettingEditor.inst.OpenDialog());
+
+            var quitToArcade = EditorHelper.AddEditorDropdown("Quit to Arcade", "", EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
             EditorHelper.SetComplexity(quitToArcade, Complexity.Normal);
 
-            var copyLevelToArcade = EditorHelper.AddEditorDropdown("Copy Level to Arcade", "", "File", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
+            var copyLevelToArcade = EditorHelper.AddEditorDropdown("Copy Level to Arcade", "", EditorHelper.FILE_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -2953,7 +2965,7 @@ namespace BetterLegacy.Editor.Managers
             }, 7);
             EditorHelper.SetComplexity(copyLevelToArcade, Complexity.Normal);
 
-            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", "File", EditorSprites.ReloadSprite, () =>
+            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 DG.Tweening.DOTween.Clear();
                 Updater.UpdateObjects(false);
@@ -2964,17 +2976,17 @@ namespace BetterLegacy.Editor.Managers
             }, 7);
             EditorHelper.SetComplexity(restartEditor, Complexity.Normal);
 
-            var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
+            var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", "", EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
                 BrowserPopup.Open();
                 RefreshFileBrowserLevels();
             }, 3);
             EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
 
-            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", EditorSprites.SearchSprite, ConvertVGToLS, 4);
+            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, ConvertVGToLS, 4);
             EditorHelper.SetComplexity(convertVGToLS, Complexity.Normal);
 
-            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", "File", EditorSprites.SearchSprite, () =>
+            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3037,7 +3049,7 @@ namespace BetterLegacy.Editor.Managers
             }, 5);
             EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
 
-            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", "", "File", EditorSprites.ReloadSprite, () =>
+            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", "", EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3059,13 +3071,13 @@ namespace BetterLegacy.Editor.Managers
             }, 4);
             EditorHelper.SetComplexity(reloadLevel, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
+            EditorHelper.AddEditorDropdown("Editor Config", "", EditorHelper.SETTINGS_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
             {
                 ConfigManager.inst.SetTab(2);
                 ConfigManager.inst.Show();
             });
 
-            var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", "", EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
@@ -3075,7 +3087,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(clearSpriteData, Complexity.Advanced);
 
-            var clearModifierPrefabs = EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var clearModifierPrefabs = EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", "", EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to remove all Prefab Objects spawned from modifiers?", () =>
                 {
@@ -3095,7 +3107,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(clearModifierPrefabs, Complexity.Advanced);
 
-            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", EditorSprites.CloseSprite, () =>
+            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
                 RTEventManager.inst?.SetResetOffsets();
 
@@ -3103,19 +3115,19 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetEventOffsets, Complexity.Advanced);
 
-            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", "Edit", EditorSprites.ReloadSprite, () =>
+            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 if (EditorConfig.Instance.WaveformGenerate.Value)
                 {
                     EditorTimeline.inst.SetTimelineSprite(null);
-                    StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
+                    StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(true));
                 }
                 else
                     EditorTimeline.inst.SetTimelineSprite(null);
             });
             EditorHelper.SetComplexity(renderWaveform, Complexity.Normal);
 
-            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", EditorSprites.CloseSprite, () =>
+            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
                 if (!GameData.Current)
                     return;
@@ -3143,7 +3155,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(deactivateModifiers, Complexity.Advanced);
 
-            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", EditorSprites.CloseSprite, () =>
+            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
                 if (!GameData.Current)
                     return;
@@ -3166,16 +3178,22 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetObjectVariables, Complexity.Advanced);
 
-            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), Example.Init);
+            EditorHelper.AddEditorDropdown("Get Example", "", EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), () =>
+            {
+                if (!Example.Current)
+                    Example.Init();
+                else
+                    Example.Current.brain?.Notice(ExampleBrain.Notices.ALREADY_SPAWNED);
+            });
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
+            EditorHelper.AddEditorDropdown("Show Config Manager", "", EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
 
             titleBar.Find("Steam/Text").GetComponent<Text>().text = "Upload";
             var steamLayoutElement = titleBar.Find("Steam").GetComponent<LayoutElement>();
             steamLayoutElement.minWidth = 95f;
             steamLayoutElement.preferredWidth = 95f;
 
-            EditorHelper.AddEditorDropdown("Login", "", "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_login.png"), () =>
+            EditorHelper.AddEditorDropdown("Login", "", EditorHelper.UPLOAD_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_login.png"), () =>
             {
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                 {
@@ -3886,7 +3904,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ObjectSearchPopup = GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
 
-            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", EditorSprites.SearchSprite, () =>
+            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "View", EditorSprites.SearchSprite, () =>
             {
                 ObjectSearchPopup.Open();
                 ObjectEditor.inst.RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
@@ -6717,6 +6735,38 @@ namespace BetterLegacy.Editor.Managers
                 RotCloseDurationConfig = EditorConfig.Instance.ViewDropdownRotCloseDuration,
                 RotOpenEaseConfig = EditorConfig.Instance.ViewDropdownRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.ViewDropdownRotCloseEase,
+            },
+            new EditorAnimation("Settings Dropdown")
+            {
+                ActiveConfig = EditorConfig.Instance.SettingsDropdownActive,
+
+                PosActiveConfig = EditorConfig.Instance.SettingsDropdownPosActive,
+                PosOpenConfig = EditorConfig.Instance.SettingsDropdownPosOpen,
+                PosCloseConfig = EditorConfig.Instance.SettingsDropdownPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.SettingsDropdownPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.SettingsDropdownPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.SettingsDropdownPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.SettingsDropdownPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.SettingsDropdownPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.SettingsDropdownPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.SettingsDropdownScaActive,
+                ScaOpenConfig = EditorConfig.Instance.SettingsDropdownScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.SettingsDropdownScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.SettingsDropdownScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.SettingsDropdownScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.SettingsDropdownScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.SettingsDropdownScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.SettingsDropdownScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.SettingsDropdownScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.SettingsDropdownRotActive,
+                RotOpenConfig = EditorConfig.Instance.SettingsDropdownRotOpen,
+                RotCloseConfig = EditorConfig.Instance.SettingsDropdownRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.SettingsDropdownRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.SettingsDropdownRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.SettingsDropdownRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.SettingsDropdownRotCloseEase,
             },
             new EditorAnimation("Steam Dropdown")
             {

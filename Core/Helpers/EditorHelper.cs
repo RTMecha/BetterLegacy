@@ -20,6 +20,13 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class EditorHelper
     {
+        public const string FILE_DROPDOWN = "File";
+        public const string EDIT_DROPDOWN = "Edit";
+        public const string VIEW_DROPDOWN = "View";
+        public const string SETTINGS_DROPDOWN = "Settings";
+        public const string UPLOAD_DROPDOWN = "Steam";
+        public const string HELP_DROPDOWN = "Help";
+
         public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false)
         {
             if (complexity == Complexity.Simple || onlySpecificComplexity)

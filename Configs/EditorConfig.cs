@@ -1210,6 +1210,40 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Settings Dropdown
+
+        public Setting<bool> SettingsDropdownActive { get; set; }
+
+        public Setting<bool> SettingsDropdownPosActive { get; set; }
+        public Setting<Vector2> SettingsDropdownPosOpen { get; set; }
+        public Setting<Vector2> SettingsDropdownPosClose { get; set; }
+        public Setting<Vector2> SettingsDropdownPosOpenDuration { get; set; }
+        public Setting<Vector2> SettingsDropdownPosCloseDuration { get; set; }
+        public Setting<Easing> SettingsDropdownPosXOpenEase { get; set; }
+        public Setting<Easing> SettingsDropdownPosXCloseEase { get; set; }
+        public Setting<Easing> SettingsDropdownPosYOpenEase { get; set; }
+        public Setting<Easing> SettingsDropdownPosYCloseEase { get; set; }
+
+        public Setting<bool> SettingsDropdownScaActive { get; set; }
+        public Setting<Vector2> SettingsDropdownScaOpen { get; set; }
+        public Setting<Vector2> SettingsDropdownScaClose { get; set; }
+        public Setting<Vector2> SettingsDropdownScaOpenDuration { get; set; }
+        public Setting<Vector2> SettingsDropdownScaCloseDuration { get; set; }
+        public Setting<Easing> SettingsDropdownScaXOpenEase { get; set; }
+        public Setting<Easing> SettingsDropdownScaXCloseEase { get; set; }
+        public Setting<Easing> SettingsDropdownScaYOpenEase { get; set; }
+        public Setting<Easing> SettingsDropdownScaYCloseEase { get; set; }
+
+        public Setting<bool> SettingsDropdownRotActive { get; set; }
+        public Setting<float> SettingsDropdownRotOpen { get; set; }
+        public Setting<float> SettingsDropdownRotClose { get; set; }
+        public Setting<float> SettingsDropdownRotOpenDuration { get; set; }
+        public Setting<float> SettingsDropdownRotCloseDuration { get; set; }
+        public Setting<Easing> SettingsDropdownRotOpenEase { get; set; }
+        public Setting<Easing> SettingsDropdownRotCloseEase { get; set; }
+
+        #endregion
+
         #region Steam Dropdown
 
         public Setting<bool> SteamDropdownActive { get; set; }
@@ -2477,6 +2511,40 @@ namespace BetterLegacy.Configs
             ViewDropdownRotCloseDuration = Bind(this, ANIMATIONS, "View Dropdown Close Rotation Duration", 0f, "The duration of closing.");
             ViewDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "View Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
             ViewDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "View Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Settings Dropdown
+
+            SettingsDropdownActive = Bind(this, ANIMATIONS, "Settings Dropdown Active", true, "If the popup animation should play.");
+
+            SettingsDropdownPosActive = Bind(this, ANIMATIONS, "Settings Dropdown Animate Position", false, "If position should be animated.");
+            SettingsDropdownPosOpen = Bind(this, ANIMATIONS, "Settings Dropdown Open Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SettingsDropdownPosClose = Bind(this, ANIMATIONS, "Settings Dropdown Close Position", new Vector2(-37.5f, -16f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SettingsDropdownPosOpenDuration = Bind(this, ANIMATIONS, "Settings Dropdown Open Position Duration", Vector2.zero, "The duration of opening.");
+            SettingsDropdownPosCloseDuration = Bind(this, ANIMATIONS, "Settings Dropdown Close Position Duration", Vector2.zero, "The duration of closing.");
+            SettingsDropdownPosXOpenEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Open Position X Ease", Easing.Linear, "The easing of opening.");
+            SettingsDropdownPosXCloseEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Close Position X Ease", Easing.Linear, "The easing of opening.");
+            SettingsDropdownPosYOpenEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            SettingsDropdownPosYCloseEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Close Position Y Ease", Easing.Linear, "The easing of opening.");
+
+            SettingsDropdownScaActive = Bind(this, ANIMATIONS, "Settings Dropdown Animate Scale", true, "If scale should be animated.");
+            SettingsDropdownScaOpen = Bind(this, ANIMATIONS, "Settings Dropdown Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SettingsDropdownScaClose = Bind(this, ANIMATIONS, "Settings Dropdown Close Scale", new Vector2(1f, 0f), "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SettingsDropdownScaOpenDuration = Bind(this, ANIMATIONS, "Settings Dropdown Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            SettingsDropdownScaCloseDuration = Bind(this, ANIMATIONS, "Settings Dropdown Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            SettingsDropdownScaXOpenEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            SettingsDropdownScaXCloseEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            SettingsDropdownScaYOpenEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            SettingsDropdownScaYCloseEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
+
+            SettingsDropdownRotActive = Bind(this, ANIMATIONS, "Settings Dropdown Animate Rotation", false, "If rotation should be animated.");
+            SettingsDropdownRotOpen = Bind(this, ANIMATIONS, "Settings Dropdown Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            SettingsDropdownRotClose = Bind(this, ANIMATIONS, "Settings Dropdown Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            SettingsDropdownRotOpenDuration = Bind(this, ANIMATIONS, "Settings Dropdown Open Rotation Duration", 0f, "The duration of opening.");
+            SettingsDropdownRotCloseDuration = Bind(this, ANIMATIONS, "Settings Dropdown Close Rotation Duration", 0f, "The duration of closing.");
+            SettingsDropdownRotOpenEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            SettingsDropdownRotCloseEase = BindEnum(this, ANIMATIONS, "Settings Dropdown Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
