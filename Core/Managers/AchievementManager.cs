@@ -269,7 +269,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="achievement">Achievement to lock.</param>
         public void LockAchievement(Achievement achievement)
         {
-            if (achievement != null && achievement.unlocked)
+            if (achievement && achievement.unlocked)
             {
                 achievement.unlocked = false;
                 LegacyPlugin.SaveProfile();
@@ -283,8 +283,13 @@ namespace BetterLegacy.Core.Managers
         /// <param name="id">ID to find a matching achievement and lock.</param>
         public void LockAchievement(string id, bool global = true)
         {
-            var list = global ? globalAchievements : customAchievements;
-            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            if (!global)
+            {
+                LevelManager.CurrentLevel?.saveData?.LockAchievement(id);
+                return;
+            }
+
+            if (!globalAchievements.TryFind(x => x.id == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return;
@@ -299,7 +304,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="achievement">Achievement to unlock.</param>
         public void UnlockAchievement(Achievement achievement)
         {
-            if (achievement != null && !achievement.unlocked)
+            if (achievement && !achievement.unlocked)
             {
                 achievement.unlocked = true;
                 LegacyPlugin.SaveProfile();
@@ -313,8 +318,13 @@ namespace BetterLegacy.Core.Managers
         /// <param name="id">ID to find a matching achievement and unlock.</param>
         public void UnlockAchievement(string id, bool global = true)
         {
-            var list = global ? globalAchievements : customAchievements;
-            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            if (!global)
+            {
+                LevelManager.CurrentLevel?.saveData?.UnlockAchievement(id);
+                return;
+            }
+
+            if (!globalAchievements.TryFind(x => x.id == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return;
@@ -330,8 +340,10 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns true if an achievement is found and it is unlocked, otherwise returns false.</returns>
         public bool AchievementUnlocked(string id, bool global = true)
         {
-            var list = global ? globalAchievements : customAchievements;
-            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            if (!global)
+                return LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(id);
+
+            if (!globalAchievements.TryFind(x => x.id == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return false;
@@ -355,8 +367,14 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void ResetCustomAchievements()
         {
+            var customAchievements = LevelManager.CurrentLevel.GetAchievements();
+
+            if (customAchievements == null)
+                return;
+
             for (int i = 0; i < customAchievements.Count; i++)
                 customAchievements[i].unlocked = false;
+            LevelManager.SaveProgress();
         }
 
         /// <summary>
@@ -368,14 +386,6 @@ namespace BetterLegacy.Core.Managers
         /// List of built-in BetterLegacy achievements.
         /// </summary>
         public static List<Achievement> globalAchievements = new List<Achievement>();
-
-        /// <summary>
-        /// List of user-made achievements.
-        /// </summary>
-        public static List<Achievement> customAchievements = new List<Achievement>
-        {
-            Achievement.TestAchievement,
-        };
 
         #endregion
 
@@ -398,8 +408,12 @@ namespace BetterLegacy.Core.Managers
         /// <param name="global">If it should search the global list.</param>
         public void ShowAchievement(string id, bool global = true)
         {
-            var list = global ? globalAchievements : customAchievements;
-            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            var list = global ? globalAchievements : LevelManager.CurrentLevel.GetAchievements();
+
+            if (list == null)
+                return;
+
+            if (!list.TryFind(x => x.id == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return;
@@ -412,7 +426,7 @@ namespace BetterLegacy.Core.Managers
         /// Displays the achievement popup.
         /// </summary>
         /// <param name="achievement">Achievement to apply to the popup UI.</param>
-        public void ShowAchievement(Achievement achievement) => ShowAchievement(achievement.Name, achievement.Description, achievement.Icon, achievement.DifficultyType.color);
+        public void ShowAchievement(Achievement achievement) => ShowAchievement(achievement.name, achievement.description, achievement.icon, achievement.DifficultyType.color);
 
         /// <summary>
         /// Displays the achievement popup.

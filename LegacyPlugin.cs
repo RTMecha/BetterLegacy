@@ -321,25 +321,22 @@ namespace BetterLegacy
 
             for (int i = 0; i < AchievementManager.globalAchievements.Count; i++)
             {
-                jn["internal_achievements"][i]["id"] = AchievementManager.globalAchievements[i].ID;
+                jn["internal_achievements"][i]["id"] = AchievementManager.globalAchievements[i].id;
                 jn["internal_achievements"][i]["unlocked"] = AchievementManager.globalAchievements[i].unlocked;
             }
 
-            for (int i = 0; i < AchievementManager.customAchievements.Count; i++)
-                jn["custom_achievements"][i] = AchievementManager.customAchievements[i].ToJSON(true);
-
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
-
-            RTFile.WriteToFile("profile/profile.sep", jn.ToString());
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            RTFile.CreateDirectory(path);
+            RTFile.WriteToFile(RTFile.CombinePaths(path, "profile.sep"), jn.ToString());
         }
 
         public static void ParseProfile()
         {
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            if (!RTFile.DirectoryExists(path))
                 return;
 
-            string rawProfileJSON = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "profile/profile.sep");
+            string rawProfileJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "profile.sep"));
 
             if (string.IsNullOrEmpty(rawProfileJSON))
                 return;
@@ -354,18 +351,12 @@ namespace BetterLegacy
 
             try
             {
+                AchievementManager.unlockedGlobalAchievements.Clear();
                 if (jn["internal_achievements"] != null)
                 {
                     for (int i = 0; i < jn["internal_achievements"].Count; i++)
                         AchievementManager.unlockedGlobalAchievements[jn["internal_achievements"][i]["id"]] = jn["internal_achievements"][i]["unlocked"].AsBool;
                 }
-
-                if (jn["custom_achievements"] == null)
-                    return;
-
-                AchievementManager.customAchievements.Clear();
-                for (int i = 0; i < jn["custom_achievements"].Count; i++)
-                    AchievementManager.customAchievements.Add(Achievement.Parse(jn["custom_achievements"][i]));
             }
             catch (Exception ex)
             {

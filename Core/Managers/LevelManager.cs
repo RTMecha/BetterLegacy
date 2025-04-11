@@ -245,6 +245,7 @@ namespace BetterLegacy.Core.Managers
 
             if (!level.saveData && (level.isStory ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out SaveData saveData))
                 level.saveData = saveData;
+            level.LoadAchievements();
 
             PreviousLevel = CurrentLevel;
             CurrentLevel = level;
@@ -754,6 +755,7 @@ namespace BetterLegacy.Core.Managers
 
             level.saveData = saveData;
             saveData.LevelName = level.metadata?.beatmap?.name;
+            level.LoadAchievements();
         }
 
         /// <summary>
@@ -821,6 +823,7 @@ namespace BetterLegacy.Core.Managers
 
             if (levels.TryFind(x => x.id == currentLevel.id, out Level level))
                 level.saveData = currentLevel.saveData;
+            level.LoadAchievements();
 
             SaveProgress();
         }

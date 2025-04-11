@@ -119,10 +119,12 @@ namespace BetterLegacy.Core.Data.Level
         /// Steam Workshop item reference.
         /// </summary>
         public SteamworksFacepunch.Ugc.Item steamItem;
+
         /// <summary>
         /// If level is from the Steam Workshop.
         /// </summary>
         public bool isSteamLevel;
+
         /// <summary>
         /// If steamItem was initialized.
         /// </summary>
@@ -132,6 +134,11 @@ namespace BetterLegacy.Core.Data.Level
         /// The editor level wrapper.
         /// </summary>
         public Editor.Data.LevelPanel editorLevelPanel;
+
+        /// <summary>
+        /// If achievements have been loaded.
+        /// </summary>
+        public bool loadedAchievements;
 
         #endregion
 
@@ -363,13 +370,35 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public void LoadAchievements()
         {
+            loadedAchievements = false;
             var achievementsPath = GetFile(ACHIEVEMENTS_LSA);
-            if (RTFile.FileExists(achievementsPath))
+            if (!RTFile.FileExists(achievementsPath))
+                return;
+
+            try
             {
                 var ach = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
                 for (int i = 0; i < ach["achievements"].Count; i++)
-                    achievements.Add(Achievement.Parse(ach["achievements"][i]));
+                {
+                    var achievement = Achievement.Parse(ach["achievements"][i]);
+                    achievement.unlocked = saveData && saveData.UnlockedAchievements != null && saveData.UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) && unlocked;
+                    achievements.Add(achievement);
+                }
+
+                loadedAchievements = true;
             }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Couldn't load achievements due to the exception: {ex}");
+            }
+        }
+
+        public List<Achievement> GetAchievements()
+        {
+            var list = achievements;
+            if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.achievements != null)
+                list.AddRange(LevelManager.CurrentLevelCollection.achievements);
+            return list;
         }
 
         /// <summary>
