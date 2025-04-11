@@ -149,6 +149,10 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => "bro what",
                     parameters => reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
             }));
+            dialogues.Add(new ExampleDialogueGroup(Dialogues.ALREADY_HERE, new ExampleDialogue[]
+            {
+                new ExampleDialogue((companion, parameters) => "I'm already here!"),
+            }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.LOADED_NEW_LEVEL, new ExampleDialogue[]
             {
                 new ExampleDialogue((companion, parameters) => "Ooh, it's a new level!?"),
@@ -626,6 +630,11 @@ namespace BetterLegacy.Companion.Entity
             /// Do you dislike Example?
             /// </summary>
             public const string HATE = "Hate";
+
+            /// <summary>
+            /// Example is already here.
+            /// </summary>
+            public const string ALREADY_HERE = "Already Here";
 
             /// <summary>
             /// Loaded a new editor level.

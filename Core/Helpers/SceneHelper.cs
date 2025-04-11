@@ -123,6 +123,20 @@ namespace BetterLegacy.Core.Helpers
         #region Base Methods
 
         /// <summary>
+        /// Gets the type of a scene.
+        /// </summary>
+        /// <param name="scene">Scene name.</param>
+        /// <returns>Returns the type fo the scene.</returns>
+        public static SceneType GetSceneType(SceneName scene) => scene == SceneName.Editor ? SceneType.Editor : scene == SceneName.Game ? SceneType.Game : SceneType.Interface;
+
+        /// <summary>
+        /// Gets the type of a scene.
+        /// </summary>
+        /// <param name="level">Scene name.</param>
+        /// <returns>Returns the type fo the scene.</returns>
+        public static SceneType GetSceneType(string level) => level == "Editor" ? SceneType.Editor : level == "Game" ? SceneType.Game : SceneType.Interface;
+
+        /// <summary>
         /// Sets the loading screen active / inactive.
         /// </summary>
         /// <param name="active">Active state to set to the loading screen.</param>
@@ -278,7 +292,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!Example.Current && ExampleConfig.Instance.SpawnScene.Value.ToName() == level)
                     Example.Init();
 
-                Example.Current?.brain?.Notice(ExampleBrain.Notices.SCENE_LOADED);
+                Example.Current?.brain?.Notice(ExampleBrain.Notices.SCENE_LOADED, new Companion.Data.Parameters.SceneNoticeParameters(Parser.TryParse(level, SceneName.Interface), GetSceneType(level)));
             }
             catch (Exception ex)
             {

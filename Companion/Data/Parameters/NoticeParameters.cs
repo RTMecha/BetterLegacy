@@ -55,4 +55,17 @@ namespace BetterLegacy.Companion.Data.Parameters
 
         public PrefabObject prefabObject;
     }
+
+    public class SceneNoticeParameters : NoticeParameters
+    {
+        public SceneNoticeParameters() { }
+
+        public SceneNoticeParameters(SceneName scene) => this.scene = scene;
+
+        public SceneNoticeParameters(SceneName scene, SceneType type) : this(scene) => this.type = type;
+
+        public SceneName scene;
+
+        public SceneType type;
+    }
 }

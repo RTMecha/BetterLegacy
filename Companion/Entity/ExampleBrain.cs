@@ -108,6 +108,11 @@ namespace BetterLegacy.Companion.Entity
 
                         break;
                     }
+                case Notices.ALREADY_SPAWNED: {
+                        reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.ALREADY_HERE);
+
+                        break;
+                    }
 
                 #region Editor
 
@@ -264,6 +269,11 @@ namespace BetterLegacy.Companion.Entity
             /// Triggers when a scene is loaded.
             /// </summary>
             public const string SCENE_LOADED = "Scene Loaded";
+
+            /// <summary>
+            /// Triggers if Example is already spawned when being summoned.
+            /// </summary>
+            public const string ALREADY_SPAWNED = "Already Spawned";
 
             #region Editor
 
