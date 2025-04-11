@@ -90,7 +90,7 @@ namespace BetterLegacy.Editor.Managers
             if (!content.Find("artist/link/inputs/openurl"))
             {
                 var openLink = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("Panel/x").gameObject.Duplicate(content.Find("artist/link/inputs"), "openurl", 0);
-                openLink.transform.Find("Image").gameObject.GetComponent<Image>().sprite = EditorManager.inst.DropdownMenus[3].transform.Find("Open Workshop").Find("Image").gameObject.GetComponent<Image>().sprite;
+                openLink.transform.Find("Image").gameObject.GetComponent<Image>().sprite = EditorSprites.LinkSprite;
 
                 var openLinkLE = openLink.AddComponent<LayoutElement>();
                 var openLinkButton = openLink.GetComponent<Button>();
