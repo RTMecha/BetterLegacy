@@ -316,7 +316,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var name = MarkerEditor.inst.left.Find("name").GetComponent<InputField>();
             name.onValueChanged.ClearAll();
-            name.text = marker.name.ToString();
+            name.text = marker.name;
             name.onValueChanged.AddListener(SetName);
         }
 
@@ -328,7 +328,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
             desc.onValueChanged.ClearAll();
-            desc.text = marker.desc.ToString();
+            desc.text = marker.desc;
             desc.onValueChanged.AddListener(SetDescription);
         }
 
@@ -402,8 +402,8 @@ namespace BetterLegacy.Editor.Managers
                             SetColor(colorIndex);
                             UpdateColorSelection();
                         }),
-                        new ButtonFunction("Set as Default", () => { EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex; }),
-                        new ButtonFunction("Edit Colors", SettingEditor.inst.Render)
+                        new ButtonFunction("Set as Default", () => EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex),
+                        new ButtonFunction("Edit Colors", RTSettingEditor.inst.OpenDialog)
                         );
                 };
 
@@ -550,7 +550,7 @@ namespace BetterLegacy.Editor.Managers
             Marker marker;
             if (!Markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out Marker baseMarker))
             {
-                marker = new Marker("", "", Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1), time);
+                marker = new Marker(string.Empty, string.Empty, Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1), time);
                 Markers.Add(marker);
             }
             else

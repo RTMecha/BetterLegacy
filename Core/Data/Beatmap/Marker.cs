@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.time = time;
         }
 
-        public string name = "";
+        public string name = string.Empty;
 
         public string desc = "Description";
 
@@ -39,7 +39,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(Marker orig, bool newID = true)
         {
             id = newID ? LSText.randomString(16) : orig.id;
-            name = orig.name;
+            name = orig.name ?? string.Empty;
             desc = orig.desc;
             color = orig.color;
             time = orig.time;
