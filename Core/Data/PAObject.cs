@@ -77,12 +77,30 @@ namespace BetterLegacy.Core.Data
         /// Converts the current <typeparamref name="T"/> to the VG format.
         /// </summary>
         /// <returns>Returns a JSONNode.</returns>
-        public virtual JSONNode ToJSONVG() => JSON.Parse("{}");
+        public virtual JSONNode ToJSONVG() => Parser.NewJSONObject();
 
         /// <summary>
         /// Converts the current <typeparamref name="T"/> to the LS format.
         /// </summary>
         /// <returns>Returns a JSONNode.</returns>
-        public virtual JSONNode ToJSON() => JSON.Parse("{}");
+        public virtual JSONNode ToJSON() => Parser.NewJSONObject();
+
+        /// <summary>
+        /// Creates a 16 length string ID.
+        /// </summary>
+        /// <returns>Returns a string ID of 16 length.</returns>
+        public static string GetStringID() => LSText.randomString(16);
+
+        /// <summary>
+        /// Creates a 16 length number ID.
+        /// </summary>
+        /// <returns>Returns a number ID of 16 length.</returns>
+        public static string GetNumberID() => LSText.randomNumString(16);
+
+        /// <summary>
+        /// Creates a 8 length number ID.
+        /// </summary>
+        /// <returns>Returns a number ID of 8 length.</returns>
+        public static string GetShortNumberID() => LSText.randomNumString(8);
     }
 }

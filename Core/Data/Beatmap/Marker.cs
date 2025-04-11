@@ -10,7 +10,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     {
         public Marker() : base() { }
 
-        public Marker(string name, string desc, int color, float time) : this(LSText.randomString(16), name, desc, color, time) { }
+        public Marker(string name, string desc, int color, float time) : this(GetStringID(), name, desc, color, time) { }
         
         public Marker(string id, string name, string desc, int color, float time) : this()
         {
