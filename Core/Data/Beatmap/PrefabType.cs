@@ -13,21 +13,17 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents the type of a prefab.
     /// </summary>
-    public class PrefabType : Exists
+    public class PrefabType : PAObject<PrefabType>
     {
-        public PrefabType(string name, Color color)
+        public PrefabType() => id = GetNumberID();
+
+        public PrefabType(string name, Color color) : this()
         {
             this.name = name;
             this.color = color;
-            id = LSText.randomNumString(16);
         }
 
         #region Values
-
-        /// <summary>
-        /// Identification of the prefab type.
-        /// </summary>
-        public string id;
 
         /// <summary>
         /// Name of the prefab type.
@@ -150,32 +146,32 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void AssignColor(string _val) => color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
-        public static PrefabType DeepCopy(PrefabType og, bool newID = true) => new PrefabType(og.name, og.color)
+        public override void CopyData(PrefabType orig, bool newID = true)
         {
-            id = newID ? LSText.randomNumString(16) : og.id,
-            icon = og.icon,
-        };
+            id = newID ? GetNumberID() : orig.id;
+            name = orig.name;
+            color = orig.color;
+            icon = orig.icon;
+        }
 
-        public static PrefabType Parse(JSONNode jn, bool isDefault = false)
+        public override void ReadJSON(JSONNode jn)
         {
-            var prefabType = new PrefabType(jn["name"], LSColors.HexToColorAlpha(jn["color"]));
-            prefabType.isDefault = isDefault;
-            prefabType.id = jn["id"] ?? LSText.randomNumString(16);
+            id = jn["id"] ?? GetNumberID();
+            name = jn["name"];
+            color = LSColors.HexToColorAlpha(jn["color"]);
             try
             {
-                prefabType.icon = jn["icon"] == null ? null : SpriteHelper.StringToSprite(jn["icon"]);
+                icon = jn["icon"] == null ? null : SpriteHelper.StringToSprite(jn["icon"]);
             }
             catch
             {
 
             }
-
-            return prefabType;
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             jn["name"] = name;
             jn["color"] = CoreHelper.ColorToHex(color);
             jn["id"] = id;

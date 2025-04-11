@@ -1801,7 +1801,11 @@ namespace BetterLegacy.Editor.Managers
 
             var defaultPrefabTypesJN = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_prefabtypes{FileFormat.LSPT.Dot()}"));
             for (int i = 0; i < defaultPrefabTypesJN["prefab_types"].Count; i++)
-                prefabTypes.Add(PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i], true));
+            {
+                var prefabType = PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i]);
+                prefabType.isDefault = true;
+                prefabTypes.Add(prefabType);
+            }
 
             var prefabTypesPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath);
             RTFile.CreateDirectory(prefabTypesPath);
