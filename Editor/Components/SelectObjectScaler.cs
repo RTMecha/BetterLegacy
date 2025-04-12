@@ -96,7 +96,7 @@ namespace BetterLegacy.Editor.Components
             if (!dragging)
             {
                 dragging = true;
-                selectedKeyframe = SelectObject.SetCurrentKeyframe(1, EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                selectedKeyframe = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetOrCreateKeyframe(1, SelectObject.CreateKeyframe);
             }
 
             Drag(vector2, vector3);

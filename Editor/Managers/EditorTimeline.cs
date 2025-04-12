@@ -17,6 +17,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 
@@ -542,6 +543,150 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 timelineObject.GameObject.transform.SetSiblingIndex(siblingIndex);
                 siblingIndex++;
+            }
+        }
+
+        /// <summary>
+        /// Handles object selecting and picking.
+        /// </summary>
+        /// <param name="timelineObject">Timeline object to select.</param>
+        public void SelectObject(TimelineObject timelineObject)
+        {
+            if (!timelineObject || timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().fromPrefab && timelineObject.GetData<BeatmapObject>().TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+                return;
+
+            if (onSelectTimelineObject != null)
+            {
+                onSelectTimelineObject(timelineObject);
+                onSelectTimelineObject = null;
+                return;
+            }
+
+            // select object if picker is not currently active.
+            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
+            {
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                    AddSelectedObject(timelineObject);
+                else
+                    SetCurrentObject(timelineObject);
+
+                return;
+            }
+
+            var currentSelection = CurrentSelection;
+            var selectedObjects = SelectedObjects;
+
+            // assigns the Beatmap Objects' prefab reference to selected objects.
+            if (RTEditor.inst.prefabPickerEnabled && timelineObject.isBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
+                {
+                    EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                if (RTEditor.inst.selectingMultiple)
+                {
+                    foreach (var otherTimelineObject in SelectedObjects.Where(x => x.isBeatmapObject))
+                    {
+                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+                        otherBeatmapObject.SetPrefabReference(beatmapObject);
+                        RenderTimelineObject(otherTimelineObject);
+                    }
+                }
+                else if (CurrentSelection.isBeatmapObject)
+                {
+                    var currentBeatmapObject = CurrentSelection.GetData<BeatmapObject>();
+                    currentBeatmapObject.SetPrefabReference(beatmapObject);
+                    RenderTimelineObject(CurrentSelection);
+                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
+                }
+
+                RTEditor.inst.prefabPickerEnabled = false;
+
+                return;
+            }
+
+            // assigns the Prefab Objects' prefab reference to selected objects.
+            if (RTEditor.inst.prefabPickerEnabled && timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                var prefabInstanceID = LSText.randomString(16);
+
+                if (RTEditor.inst.selectingMultiple)
+                {
+                    foreach (var otherTimelineObject in SelectedObjects.Where(x => x.isBeatmapObject))
+                    {
+                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+
+                        otherBeatmapObject.prefabID = prefabObject.prefabID;
+                        otherBeatmapObject.prefabInstanceID = prefabInstanceID;
+                        RenderTimelineObject(otherTimelineObject);
+                    }
+                }
+                else if (CurrentSelection.isBeatmapObject)
+                {
+                    var currentBeatmapObject = CurrentSelection.GetData<BeatmapObject>();
+
+                    currentBeatmapObject.prefabID = prefabObject.prefabID;
+                    currentBeatmapObject.prefabInstanceID = prefabInstanceID;
+                    RenderTimelineObject(CurrentSelection);
+                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
+                }
+
+                RTEditor.inst.prefabPickerEnabled = false;
+
+                return;
+            }
+
+            // assigns the selected objects' parent.
+            if (RTEditor.inst.parentPickerEnabled && timelineObject.isBeatmapObject)
+            {
+                if (RTEditor.inst.selectingMultiple)
+                {
+                    bool success = false;
+                    foreach (var otherTimelineObject in SelectedObjects)
+                    {
+                        if (otherTimelineObject.isPrefabObject)
+                        {
+                            var prefabObject = otherTimelineObject.GetData<PrefabObject>();
+                            prefabObject.parent = timelineObject.ID;
+                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
+                            RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+
+                            success = true;
+                            continue;
+                        }
+                        success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
+                    }
+                    Updater.RecalculateObjectStates();
+
+                    if (!success)
+                        EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
+                    else
+                        RTEditor.inst.parentPickerEnabled = false;
+
+                    return;
+                }
+
+                if (CurrentSelection.isPrefabObject)
+                {
+                    var prefabObject = CurrentSelection.GetData<PrefabObject>();
+                    prefabObject.parent = timelineObject.ID;
+                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                    RTEditor.inst.parentPickerEnabled = false;
+
+                    return;
+                }
+
+                var tryParent = CurrentSelection.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
+
+                if (!tryParent)
+                    EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
+                else
+                    RTEditor.inst.parentPickerEnabled = false;
             }
         }
 

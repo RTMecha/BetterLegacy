@@ -621,320 +621,182 @@ namespace BetterLegacy.Core.Helpers
             
             CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
 
-            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled && EditorTimeline.inst.onSelectTimelineObject == null)
+            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled && EditorTimeline.inst.onSelectTimelineObject == null && pointerEventData.button == PointerEventData.InputButton.Right)
             {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
-                {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Select", () => EditorTimeline.inst.SetCurrentObject(timelineObject)),
-                        new ButtonFunction("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(timelineObject)),
-                        new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
-                        new ButtonFunction("Update Object", () =>
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Select", () => EditorTimeline.inst.SetCurrentObject(timelineObject)),
+                    new ButtonFunction("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(timelineObject)),
+                    new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
+                    new ButtonFunction("Update Object", () =>
+                    {
+                        if (timelineObject.isBeatmapObject)
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
+                        if (timelineObject.isPrefabObject)
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Cut", () =>
+                    {
+                        ObjectEditor.inst.CopyObject();
+                        CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                    }),
+                    new ButtonFunction("Copy", ObjectEditor.inst.CopyObject),
+                    new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
+                    new ButtonFunction("Duplicate", () =>
+                    {
+                        var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+
+                        ObjectEditor.inst.CopyObject();
+                        ObjectEditor.inst.PasteObject(offsetTime);
+                    }),
+                    new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
+                    new ButtonFunction("Duplicate (Keep Prefab)", () =>
+                    {
+                        var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+
+                        ObjectEditor.inst.CopyObject();
+                        ObjectEditor.inst.PasteObject(offsetTime, false);
+                    }),
+                    new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Move Backwards", () =>
+                    {
+                        switch (timelineObject.TimelineReference)
                         {
-                            if (timelineObject.isBeatmapObject)
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
-                            if (timelineObject.isPrefabObject)
-                                Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Cut", () =>
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                    if (index <= 0)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.beatmapObjects.Move(index, index - 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                    if (index <= 0)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.prefabObjects.Move(index, index - 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                        }
+                    }),
+                    new ButtonFunction("Move Forwards", () =>
+                    {
+                        switch (timelineObject.TimelineReference)
                         {
-                            ObjectEditor.inst.CopyObject();
-                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
-                        }),
-                        new ButtonFunction("Copy", ObjectEditor.inst.CopyObject),
-                        new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
-                        new ButtonFunction("Duplicate", () =>
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                    if (index >= GameData.Current.beatmapObjects.Count - 1)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.beatmapObjects.Move(index, index + 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                    if (index >= GameData.Current.prefabObjects.Count - 1)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.prefabObjects.Move(index, index + 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                        }
+                    }),
+                    new ButtonFunction("Move to Back", () =>
+                    {
+                        switch (timelineObject.TimelineReference)
                         {
-                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                    if (index <= 0)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
 
-                            ObjectEditor.inst.CopyObject();
-                            ObjectEditor.inst.PasteObject(offsetTime);
-                        }),
-                        new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
-                        new ButtonFunction("Duplicate (Keep Prefab)", () =>
+                                    GameData.Current.beatmapObjects.Move(index, 0);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                    if (index <= 0)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.prefabObjects.Move(index, 0);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                        }
+                    }),
+                    new ButtonFunction("Move to Front", () =>
+                    {
+                        switch (timelineObject.TimelineReference)
                         {
-                            var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
-
-                            ObjectEditor.inst.CopyObject();
-                            ObjectEditor.inst.PasteObject(offsetTime, false);
-                        }),
-                        new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Move Backwards", () =>
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject:
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                    if (index >= GameData.Current.beatmapObjects.Count - 1)
                                     {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
-                                        if (index <= 0)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.beatmapObjects.Move(index, index - 1);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
                                     }
-                                case TimelineObject.TimelineReferenceType.PrefabObject:
+
+                                    GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                    if (index >= GameData.Current.prefabObjects.Count - 1)
                                     {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
-                                        if (index <= 0)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.prefabObjects.Move(index, index - 1);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
                                     }
-                            }
-                        }),
-                        new ButtonFunction("Move Forwards", () =>
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject:
-                                    {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
-                                        if (index >= GameData.Current.beatmapObjects.Count - 1)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
 
-                                        GameData.Current.beatmapObjects.Move(index, index + 1);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject:
-                                    {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
-                                        if (index >= GameData.Current.prefabObjects.Count - 1)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.prefabObjects.Move(index, index + 1);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
-                                    }
-                            }
-                        }),
-                        new ButtonFunction("Move to Back", () =>
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject:
-                                    {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
-                                        if (index <= 0)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.beatmapObjects.Move(index, 0);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject:
-                                    {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
-                                        if (index <= 0)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.prefabObjects.Move(index, 0);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
-                                    }
-                            }
-                        }),
-                        new ButtonFunction("Move to Front", () =>
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject:
-                                    {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
-                                        if (index >= GameData.Current.beatmapObjects.Count - 1)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject:
-                                    {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
-                                        if (index >= GameData.Current.prefabObjects.Count - 1)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
-
-                                        GameData.Current.prefabObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
-                                        EditorTimeline.inst.UpdateTransformIndex();
-                                        break;
-                                    }
-                            }
-                        })
-                        );
-
-                    return;
-                }
-
-                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
-                    EditorTimeline.inst.AddSelectedObject(timelineObject);
-                else
-                    EditorTimeline.inst.SetCurrentObject(timelineObject);
-
-                float timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value);
-                ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
+                                    GameData.Current.prefabObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                        }
+                    })
+                    );
                 return;
             }
 
             if (pointerEventData.button == PointerEventData.InputButton.Right)
                 return;
 
-            if (EditorTimeline.inst.onSelectTimelineObject != null)
-            {
-                EditorTimeline.inst.onSelectTimelineObject(timelineObject);
-                EditorTimeline.inst.onSelectTimelineObject = null;
-                return;
-            }
-
-            if (RTEditor.inst.prefabPickerEnabled && timelineObject.isBeatmapObject)
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                {
-                    EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                if (RTEditor.inst.selectingMultiple)
-                {
-                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
-
-                        otherBeatmapObject.prefabID = beatmapObject.prefabID;
-                        otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
-                    }
-                }
-                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                {
-                    var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                    currentBeatmapObject.prefabID = beatmapObject.prefabID;
-                    currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
-                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
-                }
-
-                RTEditor.inst.prefabPickerEnabled = false;
-
-                return;
-            }
-
-            if (RTEditor.inst.prefabPickerEnabled && timelineObject.isPrefabObject)
-            {
-                var prefabObject = timelineObject.GetData<PrefabObject>();
-                var prefabInstanceID = LSText.randomString(16);
-
-                if (RTEditor.inst.selectingMultiple)
-                {
-                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
-
-                        otherBeatmapObject.prefabID = prefabObject.prefabID;
-                        otherBeatmapObject.prefabInstanceID = prefabInstanceID;
-                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
-                    }
-                }
-                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                {
-                    var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                    currentBeatmapObject.prefabID = prefabObject.prefabID;
-                    currentBeatmapObject.prefabInstanceID = prefabInstanceID;
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
-                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
-                }
-
-                RTEditor.inst.prefabPickerEnabled = false;
-
-                return;
-            }
-
-            if (RTEditor.inst.parentPickerEnabled && timelineObject.isBeatmapObject)
-            {
-                if (RTEditor.inst.selectingMultiple)
-                {
-                    bool success = false;
-                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects)
-                    {
-                        if (otherTimelineObject.isPrefabObject)
-                        {
-                            var prefabObject = otherTimelineObject.GetData<PrefabObject>();
-                            prefabObject.parent = timelineObject.ID;
-                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
-                            RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-
-                            success = true;
-                            continue;
-                        }
-                        success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
-                    }
-                    Updater.RecalculateObjectStates();
-
-                    if (!success)
-                        EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
-                    else
-                        RTEditor.inst.parentPickerEnabled = false;
-
-                    return;
-                }
-
-                if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                {
-                    var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
-                    prefabObject.parent = timelineObject.ID;
-                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
-                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-                    RTEditor.inst.parentPickerEnabled = false;
-
-                    return;
-                }
-
-                var tryParent = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
-
-                if (!tryParent)
-                    EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
-                else
-                    RTEditor.inst.parentPickerEnabled = false;
-            }
+            float timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value);
+            ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
+            EditorTimeline.inst.SelectObject(timelineObject);
         });
 
         #endregion

@@ -141,123 +141,7 @@ namespace BetterLegacy.Editor.Components
 
             startDragTime = Time.time;
 
-            if (beatmapObject && beatmapObject.fromPrefab && beatmapObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-                return;
-
-            if (EditorTimeline.inst.onSelectTimelineObject != null)
-            {
-                var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
-                EditorTimeline.inst.onSelectTimelineObject(timelineObject);
-                EditorTimeline.inst.onSelectTimelineObject = null;
-                return;
-            }
-
-            // select object if picker is not currently active.
-            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
-            {
-                var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
-                if (!Input.GetKey(KeyCode.LeftShift))
-                {
-                    EditorTimeline.inst.SetCurrentObject(timelineObject);
-                    return;
-                }
-
-                EditorTimeline.inst.AddSelectedObject(timelineObject);
-
-                return;
-            }
-
-            var currentSelection = EditorTimeline.inst.CurrentSelection;
-            var selectedObjects = EditorTimeline.inst.SelectedObjects;
-
-            // prefab assign picker
-            if (RTEditor.inst.prefabPickerEnabled)
-            {
-                if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                {
-                    EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                if (RTEditor.inst.selectingMultiple)
-                {
-                    foreach (var otherTimelineObject in selectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
-
-                        otherBeatmapObject.prefabID = beatmapObject.prefabID;
-                        otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-
-                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
-                    }
-                }
-                else if (currentSelection.isBeatmapObject)
-                {
-                    var currentBeatmapObject = currentSelection.GetData<BeatmapObject>();
-
-                    currentBeatmapObject.prefabID = beatmapObject.prefabID;
-                    currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-
-                    EditorTimeline.inst.RenderTimelineObject(currentSelection);
-                    ObjectEditor.inst.RenderDialog(currentBeatmapObject);
-                }
-
-                RTEditor.inst.prefabPickerEnabled = false;
-
-                return;
-            }
-
-            if (beatmapObject.fromPrefab || !RTEditor.inst.parentPickerEnabled)
-                return;
-
-            // parent picker multiple
-            if (RTEditor.inst.selectingMultiple)
-            {
-                bool success = false;
-                foreach (var otherTimelineObject in selectedObjects)
-                {
-                    if (otherTimelineObject.isPrefabObject)
-                    {
-                        var prefabObject = otherTimelineObject.GetData<PrefabObject>();
-                        prefabObject.parent = beatmapObject.id;
-                        Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
-
-                        success = true;
-                        continue;
-                    }
-
-                    success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(beatmapObject, false);
-                }
-
-                if (!success)
-                    EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
-                else
-                    RTEditor.inst.parentPickerEnabled = false;
-
-                Updater.RecalculateObjectStates();
-
-                return;
-            }
-
-            // assign parent to prefab
-            if (currentSelection.isPrefabObject)
-            {
-                var prefabObject = currentSelection.GetData<PrefabObject>();
-                prefabObject.parent = beatmapObject.id;
-                Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
-                PrefabEditor.inst.OpenPrefabDialog();
-                RTEditor.inst.parentPickerEnabled = false;
-
-                return;
-            }
-
-            // set single parent
-            var tryParent = currentSelection.GetData<BeatmapObject>().TrySetParent(beatmapObject);
-
-            if (!tryParent)
-                EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
-            else
-                RTEditor.inst.parentPickerEnabled = false;
+            EditorTimeline.inst.SelectObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
         }
 
         void OnMouseEnter()
@@ -319,7 +203,7 @@ namespace BetterLegacy.Editor.Components
                 if (!dragging && selectedKeyframe == null)
                 {
                     dragging = true;
-                    selectedKeyframe = SetCurrentKeyframe(0, beatmapObject);
+                    selectedKeyframe = beatmapObject.GetOrCreateKeyframe(0, CreateKeyframe);
                 }
 
                 Drag(vector2, vector3);
@@ -413,6 +297,9 @@ namespace BetterLegacy.Editor.Components
                 }
             }
 
+            if (EventSystem.current.IsPointerOverGameObject())
+                return;
+
             if (beatmapObject.fromPrefab)
             {
                 if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
@@ -443,7 +330,7 @@ namespace BetterLegacy.Editor.Components
                 return;
             }
 
-            if (beatmapObject.editorData == null || !Updater.TryGetObject(beatmapObject, out LevelObject selfLevelObject))
+            if (!beatmapObject.editorData || !Updater.TryGetObject(beatmapObject, out LevelObject selfLevelObject))
                 return;
 
             SetColor(selfLevelObject, renderer, beatmapObject.editorData.Layer);
