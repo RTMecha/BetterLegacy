@@ -823,7 +823,7 @@ namespace BetterLegacy.Core.Managers
 
             if (levels.TryFind(x => x.id == currentLevel.id, out Level level))
                 level.saveData = currentLevel.saveData;
-            level.LoadAchievements();
+            currentLevel.LoadAchievements();
 
             SaveProgress();
         }
