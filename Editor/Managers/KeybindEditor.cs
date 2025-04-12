@@ -2117,40 +2117,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetCurrentKeyframe(int type)
         {
-            var timeOffset = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-            int nextIndex = beatmapObject.events[type].FindIndex(x => x.time >= timeOffset);
-            if (nextIndex < 0)
-                nextIndex = beatmapObject.events[type].Count - 1;
-
-            int index;
-            if (useNearest && beatmapObject.events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
-            {
-                selectedKeyframe = beatmapObject.events[type][sameIndex];
-                index = sameIndex;
-                AudioManager.inst.SetMusicTime(selectedKeyframe.time + beatmapObject.StartTime);
-            }
-            else if (createKeyframe)
-            {
-                selectedKeyframe = beatmapObject.events[type][nextIndex].Copy();
-                selectedKeyframe.time = timeOffset;
-                index = beatmapObject.events[type].Count;
-                beatmapObject.events[type].Add(selectedKeyframe);
-            }
-            else if (usePrevious)
-            {
-                selectedKeyframe = beatmapObject.events[type].FindLast(x => x.time < timeOffset);
-                index = beatmapObject.events[type].FindLastIndex(x => x.time < timeOffset);
-            }
-            else
-            {
-                selectedKeyframe = beatmapObject.events[type][0];
-                index = 0;
-            }
-
+            selectedKeyframe = beatmapObject.GetOrCreateKeyframe(type, createKeyframe, useNearest, usePrevious);
             originalValues = selectedKeyframe.values.Copy();
-
-            ObjectEditor.inst.RenderKeyframes(beatmapObject);
-            ObjectEditor.inst.SetCurrentKeyframe(beatmapObject, type, index, false, false);
         }
 
         public bool createKeyframe = true;

@@ -1375,6 +1375,57 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        /// <summary>
+        /// Gets or creates an Event Keyframe. Used for object dragging.
+        /// </summary>
+        /// <param name="type">Animation event type.</param>
+        /// <param name="createKeyframe">If a keyframe should be created when no keyframe is found.</param>
+        /// <param name="useNearest">If nearest keyframe should be searched for.</param>
+        /// <param name="usePrevious">If the previous keyframe should be searched for.</param>
+        /// <param name="renderEditor">If the editor should be rendered.</param>
+        /// <returns>Returns the found keyframe.</returns>
+        public EventKeyframe GetOrCreateKeyframe(int type, bool createKeyframe, bool useNearest = true, bool usePrevious = true, bool renderEditor = true)
+        {
+            var timeOffset = AudioManager.inst.CurrentAudioSource.time - StartTime;
+            int nextIndex = events[type].FindIndex(x => x.time >= timeOffset);
+            if (nextIndex < 0)
+                nextIndex = events[type].Count - 1;
+
+            int index;
+            EventKeyframe selected;
+            if (useNearest && events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
+            {
+                selected = events[type][sameIndex];
+                index = sameIndex;
+                AudioManager.inst.SetMusicTime(selected.time + StartTime);
+            }
+            else if (createKeyframe)
+            {
+                selected = events[type][nextIndex].Copy();
+                selected.time = timeOffset;
+                index = events[type].Count;
+                events[type].Add(selected);
+            }
+            else if (usePrevious)
+            {
+                index = events[type].FindLastIndex(x => x.time < timeOffset);
+                selected = events[type][index];
+            }
+            else
+            {
+                index = 0;
+                selected = events[type][index];
+            }
+
+            if (renderEditor && ObjectEditor.inst)
+            {
+                ObjectEditor.inst.RenderKeyframes(this);
+                ObjectEditor.inst.SetCurrentKeyframe(this, type, index, false, false);
+            }
+
+            return selected;
+        }
+
         #region Prefab Reference
 
         /// <summary>
