@@ -21,6 +21,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
+    /// <summary>
+    /// Represents an object PA levels are made of.
+    /// </summary>
     public class BeatmapObject : PAObject<BeatmapObject>
     {
         public BeatmapObject() : base() { }
@@ -29,6 +32,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
+        /// <summary>
+        /// Name of the object.
+        /// </summary>
         public string name = string.Empty;
 
         /// <summary>
@@ -41,6 +47,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string originalID;
 
+        /// <summary>
+        /// Animation events.
+        /// </summary>
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>()
         {
             new List<EventKeyframe>(),
@@ -49,11 +58,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             new List<EventKeyframe>()
         };
 
+        /// <summary>
+        /// Data for the object in the editor.
+        /// </summary>
         public ObjectEditorData editorData = new ObjectEditorData();
 
         #region Parent
 
+        /// <summary>
+        /// ID of the object to parent this to. This value is not saved and is temporarily used for swapping parents.
+        /// </summary>
         public string customParent;
+
         string parent = string.Empty;
         /// <summary>
         /// ID of the object to parent this to.
@@ -68,6 +84,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        /// <summary>
+        /// Parent delay values.
+        /// </summary>
         public float[] parentOffsets = new float[3]
         {
             0f, // Pos
@@ -75,6 +94,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             0f, // Rot
         };
 
+        /// <summary>
+        /// Parent toggle values.
+        /// </summary>
         public string parentType = "101";
 
         /// <summary>
@@ -102,23 +124,50 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Timing
 
         float startTime;
+        /// <summary>
+        /// Object spawn time.
+        /// </summary>
         public float StartTime
         {
             get => startTime;
             set => startTime = value;
         }
 
+        /// <summary>
+        /// Object despawn behavior.
+        /// </summary>
+        public AutoKillType autoKillType;
+
+        /// <summary>
+        /// Object despawn behavior.
+        /// </summary>
         public enum AutoKillType
         {
-            OldStyleNoAutokill,
+            /// <summary>
+            /// Object will not despawn. Good for character models or general persistent objects.
+            /// </summary>
+            NoAutokill,
+            /// <summary>
+            /// Object will despawn once all animations are done.
+            /// </summary>
             LastKeyframe,
+            /// <summary>
+            /// Object will despawn once all animations are done and at an offset.
+            /// </summary>
             LastKeyframeOffset,
+            /// <summary>
+            /// Object will despawn after a fixed time.
+            /// </summary>
             FixedTime,
+            /// <summary>
+            /// Object will despawn at song time.
+            /// </summary>
             SongTime
         }
 
-        public AutoKillType autoKillType;
-
+        /// <summary>
+        /// Autokill time offset.
+        /// </summary>
         public float autoKillOffset;
 
         #endregion
@@ -126,10 +175,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Physics
 
         /// <summary>
-        /// Object spawn conditions.
+        /// Object physical conditions.
         /// </summary>
         public ObjectType objectType;
 
+        /// <summary>
+        /// Object physical conditions.
+        /// </summary>
         public enum ObjectType
         {
             /// <summary>
@@ -141,7 +193,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             /// </summary>
             Helper,
             /// <summary>
-            /// Has no collision but is opaque like <see cref="ObjectType.Normal"/>.
+            /// Has no collision but is opaque like <see cref="Normal"/>.
             /// </summary>
             Decoration,
             /// <summary>
@@ -282,6 +334,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             set => shape = (int)value;
         }
 
+        /// <summary>
+        /// If the shape has special properties: Text or Image.
+        /// </summary>
         public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image;
 
         #endregion
@@ -308,8 +363,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool orderModifiers = false;
 
+        /// <summary>
+        /// Variable set and used by modifiers.
+        /// </summary>
         public int integerVariable;
+
+        /// <summary>
+        /// Variable set and used by modifiers.
+        /// </summary>
         public float floatVariable;
+
+        /// <summary>
+        /// Variable set and used by modifiers.
+        /// </summary>
         public string stringVariable = string.Empty;
 
         public Vector3 reactivePositionOffset = Vector3.zero;
@@ -345,7 +411,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool fromPrefab;
 
+        /// <summary>
+        /// Prefab reference ID.
+        /// </summary>
         public string prefabID = string.Empty;
+
+        /// <summary>
+        /// Prefab Object reference ID.
+        /// </summary>
         public string prefabInstanceID = string.Empty;
 
         #endregion
@@ -398,6 +471,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Constants
 
+        /// <summary>
+        /// Camera parent ID.
+        /// </summary>
         public const string CAMERA_PARENT = "CAMERA_PARENT";
 
         #endregion
@@ -416,7 +492,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var akt = autoKillType;
                 var ako = autoKillOffset;
                 var l = SpawnDuration;
-                return time >= st && (time <= l + st && akt != AutoKillType.OldStyleNoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.OldStyleNoAutokill || time < ako && akt == AutoKillType.SongTime);
+                return time >= st && (time <= l + st && akt != AutoKillType.NoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.NoAutokill || time < ako && akt == AutoKillType.SongTime);
             }
         }
 
@@ -970,7 +1046,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 autoTextAlign = jn["ata"];
 
             if (jn["ak"] != null)
-                autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.OldStyleNoAutokill;
+                autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.NoAutokill;
             else if (jn["akt"] != null)
                 autoKillType = (AutoKillType)jn["akt"].AsInt;
 
@@ -1247,7 +1323,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns the lifetime of the object.</returns>
         public float GetObjectLifeLength(float offset = 0f, bool oldStyle = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
         {
-            AutoKillType.OldStyleNoAutokill => oldStyle ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
+            AutoKillType.NoAutokill => oldStyle ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
             AutoKillType.LastKeyframe => Length + offset,
             AutoKillType.LastKeyframeOffset => Length + autoKillOffset + offset,
             AutoKillType.FixedTime => autoKillOffset,
@@ -1255,6 +1331,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             _ => 0f,
         };
 
+        /// <summary>
+        /// Automatically applies autokill to child objects if the scale is 0.
+        /// </summary>
+        /// <param name="beatmapObjects">Beatmap Object to apply to.</param>
         public void SetAutokillToScale(List<BeatmapObject> beatmapObjects)
         {
             try
@@ -1331,6 +1411,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
 
+        /// <summary>
+        /// Tries to get the Prefab Object reference.
+        /// </summary>
+        /// <param name="result">Output object.</param>
+        /// <returns>Returns true if a Prefab Object was found, otherwise returns false.</returns>
         public bool TryGetPrefabObject(out PrefabObject result)
         {
             result = GetPrefabObject();

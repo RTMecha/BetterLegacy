@@ -3233,7 +3233,7 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = Seasons.AprilFools ? "dead" : "no autokill";
-            bm.autoKillType = BeatmapObject.AutoKillType.OldStyleNoAutokill;
+            bm.autoKillType = BeatmapObject.AutoKillType.NoAutokill;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {

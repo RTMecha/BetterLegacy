@@ -593,7 +593,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = BeatmapObject.AutoKillType.OldStyleNoAutokill;
+                            bm.autoKillType = BeatmapObject.AutoKillType.NoAutokill;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             Updater.UpdateObject(bm, Updater.ObjectContext.AUTOKILL);
