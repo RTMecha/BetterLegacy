@@ -95,6 +95,14 @@ namespace BetterLegacy.Editor.Managers
 
             fileDragAndDrop.onFilesDropped = dropInfos =>
             {
+                CoreHelper.Log($"Dropping files.\nCount: {dropInfos.Count}");
+                if (dropInfos.All(x => RTFile.FileIsFormat(x.filePath, FileFormat.PNG, FileFormat.JPG)))
+                {
+                    CoreHelper.Log($"Creating image sequence.");
+                    ObjectEditor.inst.CreateImageSequence(dropInfos.Select(x => x.filePath).ToArray(), EditorConfig.Instance.ImageSequenceFPS.Value);
+                    return;
+                }
+
                 for (int i = 0; i < dropInfos.Count; i++)
                 {
                     var dropInfo = dropInfos[i];
@@ -112,6 +120,15 @@ namespace BetterLegacy.Editor.Managers
                         {
                             editorPathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
                             UpdateEditorPath(false);
+                        }
+                        else
+                        {
+                            var files = Directory.GetFiles(dropInfo.filePath);
+                            if (files.All(x => RTFile.FileIsFormat(x, FileFormat.PNG, FileFormat.JPG)))
+                            {
+                                CoreHelper.Log($"Creating image sequence.");
+                                ObjectEditor.inst.CreateImageSequence(files, EditorConfig.Instance.ImageSequenceFPS.Value);
+                            }
                         }
                         break;
                     }

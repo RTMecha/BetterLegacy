@@ -144,6 +144,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> FileBrowserRemembersLocation { get; set; }
         public Setting<bool> PasteBackgroundObjectsOverwrites { get; set; }
         public Setting<bool> ShowDefaultThemes { get; set; }
+        public Setting<int> ImageSequenceFPS { get; set; }
 
         #endregion
 
@@ -1425,30 +1426,31 @@ namespace BetterLegacy.Configs
 
             #region Data
 
-            AutosaveLimit = Bind(this, "Data", "Autosave Limit", 7, "If autosave count reaches this number, delete the first autosave.");
-            AutosaveLoopTime = Bind(this, "Data", "Autosave Loop Time", 600f, "The repeat time of autosave.");
-            UploadDeleteOnLogin = Bind(this, "Data", "Retry Upload or Delete on Login", false, "If the game should try uploading / deleting again after you have logged in.");
-            SaveAsync = Bind(this, "Data", "Save Async", true, "If saving levels should run asynchronously. Having this on will not show logs in the BepInEx log console.");
-            LevelLoadsLastTime = Bind(this, "Data", "Level Loads Last Time", true, "Sets the editor position (audio time, layer, etc) to the last saved editor position on level load.");
-            LevelPausesOnStart = Bind(this, "Data", "Level Pauses on Start", false, "Editor pauses on level load.");
-            BackupPreviousLoadedLevel = Bind(this, "Data", "Backup Previous Loaded Level", false, "Saves the previously loaded level when loading a different level to a level-previous.lsb file.");
-            SettingPathReloads = Bind(this, "Data", "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
-            EditorRank = BindEnum(this, "Data", "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
-            CopyPasteGlobal = Bind(this, "Data", "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
-            CombinerOutputFormat = BindEnum(this, "Data", "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
-            SavingSavesThemeOpacity = Bind(this, "Data", "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
-            UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
-            UpdateThemeListOnFilesChanged = Bind(this, "Data", "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");
-            ShowFoldersInLevelList = Bind(this, "Data", "Show Folders In Level List", true, "If folders should appear in the level list UI. This allows you to quickly navigate level folders.");
-            ZIPLevelExportPath = Bind(this, "Data", "ZIP Level Export Path", "", "The custom path to export a zipped level to. If no path is set then it will export to beatmaps/exports.");
-            ConvertLevelLSToVGExportPath = Bind(this, "Data", "Convert Level LS to VG Export Path", "", "The custom path to export a level to. If no path is set then it will export to beatmaps/exports.");
-            ConvertPrefabLSToVGExportPath = Bind(this, "Data", "Convert Prefab LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
-            ConvertThemeLSToVGExportPath = Bind(this, "Data", "Convert Theme LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
-            FileBrowserAudioPreviewLength = Bind(this, "Data", "File Browser Audio Preview Length", 3f, "How long the file browser audio preview should be.");
-            ThemeSavesIndents = Bind(this, "Data", "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
-            FileBrowserRemembersLocation = Bind(this, "Data", "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");
-            PasteBackgroundObjectsOverwrites = Bind(this, "Data", "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
-            ShowDefaultThemes = Bind(this, "Data", "Show Default Themes", true, "If the default beatmap themes should appear in the theme list.");
+            AutosaveLimit = Bind(this, DATA, "Autosave Limit", 7, "If autosave count reaches this number, delete the first autosave.");
+            AutosaveLoopTime = Bind(this, DATA, "Autosave Loop Time", 600f, "The repeat time of autosave.");
+            UploadDeleteOnLogin = Bind(this, DATA, "Retry Upload or Delete on Login", false, "If the game should try uploading / deleting again after you have logged in.");
+            SaveAsync = Bind(this, DATA, "Save Async", true, "If saving levels should run asynchronously. Having this on will not show logs in the BepInEx log console.");
+            LevelLoadsLastTime = Bind(this, DATA, "Level Loads Last Time", true, "Sets the editor position (audio time, layer, etc) to the last saved editor position on level load.");
+            LevelPausesOnStart = Bind(this, DATA, "Level Pauses on Start", false, "Editor pauses on level load.");
+            BackupPreviousLoadedLevel = Bind(this, DATA, "Backup Previous Loaded Level", false, "Saves the previously loaded level when loading a different level to a level-previous.lsb file.");
+            SettingPathReloads = Bind(this, DATA, "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
+            EditorRank = BindEnum(this, DATA, "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
+            CopyPasteGlobal = Bind(this, DATA, "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
+            CombinerOutputFormat = BindEnum(this, DATA, "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
+            SavingSavesThemeOpacity = Bind(this, DATA, "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
+            UpdatePrefabListOnFilesChanged = Bind(this, DATA, "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
+            UpdateThemeListOnFilesChanged = Bind(this, DATA, "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");
+            ShowFoldersInLevelList = Bind(this, DATA, "Show Folders In Level List", true, "If folders should appear in the level list UI. This allows you to quickly navigate level folders.");
+            ZIPLevelExportPath = Bind(this, DATA, "ZIP Level Export Path", "", "The custom path to export a zipped level to. If no path is set then it will export to beatmaps/exports.");
+            ConvertLevelLSToVGExportPath = Bind(this, DATA, "Convert Level LS to VG Export Path", "", "The custom path to export a level to. If no path is set then it will export to beatmaps/exports.");
+            ConvertPrefabLSToVGExportPath = Bind(this, DATA, "Convert Prefab LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
+            ConvertThemeLSToVGExportPath = Bind(this, DATA, "Convert Theme LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
+            FileBrowserAudioPreviewLength = Bind(this, DATA, "File Browser Audio Preview Length", 3f, "How long the file browser audio preview should be.");
+            ThemeSavesIndents = Bind(this, DATA, "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
+            FileBrowserRemembersLocation = Bind(this, DATA, "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");
+            PasteBackgroundObjectsOverwrites = Bind(this, DATA, "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
+            ShowDefaultThemes = Bind(this, DATA, "Show Default Themes", true, "If the default beatmap themes should appear in the theme list.");
+            ImageSequenceFPS = Bind(this, DATA, "Image Sequence FPS", 24, "FPS of a generated image sequence. Image sequences can be created by dragging in a collection of images or a folder that only contains images.");
 
             #endregion
 

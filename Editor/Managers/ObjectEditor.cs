@@ -2900,12 +2900,67 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Creates a new Beatmap Object and generates a Timeline Object for it.
+        /// </summary>
+        /// <param name="select">If the Timeline Object should be selected.</param>
+        /// <returns>Returns the generated Timeline Object.</returns>
+        public TimelineObject CreateNewDefaultObject(bool select = true)
+        {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Can't add objects to level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
+                return null;
+            }
+
+            var beatmapObject = CreateNewBeatmapObject(AudioManager.inst.CurrentAudioSource.time);
+            beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
+            beatmapObject.autoKillOffset = 5f;
+            beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
+
+            beatmapObject.parentType = EditorConfig.Instance.CreateObjectsScaleParentDefault.Value ? "111" : "101";
+
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+                EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
+
+            GameData.Current.beatmapObjects.Add(beatmapObject);
+
+            var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
+
+            AudioManager.inst.SetMusicTime(AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
+
+            if (select)
+                EditorTimeline.inst.SetCurrentObject(timelineObject);
+
+            return timelineObject;
+        }
+
+        /// <summary>
+        /// Creates a new Beatmap Object with the default start keyframes.
+        /// </summary>
+        /// <param name="time">Time to create the object at.</param>
+        /// <returns>Returns a new Beatmap Object.</returns>
+        public BeatmapObject CreateNewBeatmapObject(float time)
+        {
+            var beatmapObject = new BeatmapObject(time);
+
+            if (!Seasons.AprilFools)
+                beatmapObject.editorData.Layer = EditorTimeline.inst.Layer;
+
+            beatmapObject.events[0].Add(EventKeyframe.DefaultPositionKeyframe);
+            beatmapObject.events[1].Add(EventKeyframe.DefaultScaleKeyframe);
+            beatmapObject.events[2].Add(EventKeyframe.DefaultRotationKeyframe);
+            beatmapObject.events[3].Add(EventKeyframe.DefaultColorKeyframe);
+
+            return beatmapObject;
+        }
+
+        /// <summary>
         /// Creates a new beatmap object.
         /// </summary>
         /// <param name="action">Action to apply to the timeline object.</param>
         /// <param name="select">If the object should be selected.</param>
         /// <param name="setHistory">If undo / redo history should be set.</param>
-        public void CreateNewObject(Action<TimelineObject> action = null, bool select = true, bool setHistory = true)
+        public void CreateNewObject(Action<TimelineObject> action = null, bool select = true, bool setHistory = true, bool recalculate = true, bool openDialog = true, bool exampleNotice = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
 
@@ -2919,11 +2974,14 @@ namespace BetterLegacy.Editor.Managers
             }
 
             action?.Invoke(timelineObject);
-            Updater.UpdateObject(bm);
+            Updater.UpdateObject(bm, recalculate: recalculate);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            OpenDialog(bm);
 
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm, true));
+            if (openDialog)
+                OpenDialog(bm);
+
+            if (exampleNotice)
+                Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm, true));
 
             if (setHistory)
                 EditorManager.inst.history.Add(new History.Command("Create New Object", () => CreateNewObject(action, select, false), DeleteObject(timelineObject).Start));
@@ -3197,49 +3255,81 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", () => CreateNewNoAutokillObject(select, false), DeleteObject(timelineObject).Start));
         }
 
-        public TimelineObject CreateNewDefaultObject(bool select = true)
+        /// <summary>
+        /// Creates a sequence of image objects.
+        /// </summary>
+        /// <param name="directory">Directory that contains images.</param>
+        /// <param name="fps">FPS of the image sequence.</param>
+        public void CreateImageSequence(string directory, int fps)
+        {
+            if (RTFile.DirectoryExists(directory))
+                CreateImageSequence(Directory.GetFiles(directory), fps);
+        }
+
+        /// <summary>
+        /// Creates a sequence of image objects.
+        /// </summary>
+        /// <param name="files">Files to create an image sequence from.</param>
+        /// <param name="fps">FPS of the image sequence.</param>
+        public void CreateImageSequence(string[] files, int fps)
         {
             if (!EditorManager.inst.hasLoadedLevel)
             {
-                EditorManager.inst.DisplayNotification("Can't add objects to level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
-                return null;
+                EditorManager.inst.DisplayNotification("Cannot create an image sequence wihtout a level loaded.", 4f, EditorManager.NotificationType.Error);
+                return;
             }
 
-            var beatmapObject = CreateNewBeatmapObject(AudioManager.inst.CurrentAudioSource.time);
-            beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
-            beatmapObject.autoKillOffset = 5f;
-            beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
+            EditorManager.inst.DisplayNotification("Creating image sequence. Please wait...", 3f, EditorManager.NotificationType.Warning);
 
-            beatmapObject.parentType = EditorConfig.Instance.CreateObjectsScaleParentDefault.Value ? "111" : "101";
+            TimelineObject parentObject = null;
+            string parentID = string.Empty;
+            var time = AudioManager.inst.CurrentAudioSource.time;
+            int frame = 0;
+            var sw = CoreHelper.StartNewStopwatch();
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                if (!RTFile.FileIsFormat(file, FileFormat.PNG, FileFormat.JPG))
+                    continue;
 
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
+                if (!parentObject)
+                    CreateNewObject(timelineObject =>
+                    {
+                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                        beatmapObject.name = "P_Sequence Parent";
+                        beatmapObject.StartTime = time;
+                        beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
+                        parentID = beatmapObject.id;
+                        parentObject = timelineObject;
+                    }, false, true, false, false, false);
 
-            GameData.Current.beatmapObjects.Add(beatmapObject);
+                float t = 1f / fps;
 
-            var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
+                CreateNewObject(timelineObject =>
+                {
+                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                    beatmapObject.name = $"{frame} frame";
+                    beatmapObject.parentType = "111";
+                    beatmapObject.Parent = parentID;
+                    beatmapObject.StartTime = time;
+                    beatmapObject.ShapeType = ShapeType.Image;
+                    beatmapObject.autoKillOffset = t;
+                    beatmapObject.autoKillType = BeatmapObject.AutoKillType.FixedTime;
+                    beatmapObject.editorData.Bin = 1;
+                    SelectImage(file, beatmapObject, false, false);
+                }, false, true, false, false, false);
 
-            AudioManager.inst.SetMusicTime(AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
+                time += t;
+                frame++;
+            }
 
-            if (select)
-                EditorTimeline.inst.SetCurrentObject(timelineObject);
+            Updater.RecalculateObjectStates();
 
-            return timelineObject;
-        }
+            if (parentObject)
+                EditorTimeline.inst.SetCurrentObject(parentObject);
 
-        public BeatmapObject CreateNewBeatmapObject(float time)
-        {
-            var beatmapObject = new BeatmapObject(time);
-
-            if (!Seasons.AprilFools)
-                beatmapObject.editorData.Layer = EditorTimeline.inst.Layer;
-
-            beatmapObject.events[0].Add(EventKeyframe.DefaultPositionKeyframe);
-            beatmapObject.events[1].Add(EventKeyframe.DefaultScaleKeyframe);
-            beatmapObject.events[2].Add(EventKeyframe.DefaultRotationKeyframe);
-            beatmapObject.events[3].Add(EventKeyframe.DefaultColorKeyframe);
-
-            return beatmapObject;
+            CoreHelper.StopAndLogStopwatch(sw);
+            EditorManager.inst.DisplayNotification($"Created image sequence! Took {sw.Elapsed}", 3f, EditorManager.NotificationType.Warning);
         }
 
         #endregion
@@ -6291,9 +6381,11 @@ namespace BetterLegacy.Editor.Managers
             SelectImage(jpgFile, beatmapObject);
         }
 
-        void SelectImage(string file, BeatmapObject beatmapObject)
+        void SelectImage(string file, BeatmapObject beatmapObject, bool renderEditor = true, bool updateObject = true)
         {
-            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            var editorPath = RTFile.CombinePaths(RTEditor.inst.CurrentLevel.path, "images");
+            RTFile.CreateDirectory(editorPath);
+
             file = RTFile.ReplaceSlash(file);
             CoreHelper.Log($"Selected file: {file}");
             if (string.IsNullOrEmpty(file))
@@ -6311,10 +6403,11 @@ namespace BetterLegacy.Editor.Managers
             beatmapObject.text = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
 
             // Since setting image has no affect on the timeline object, we will only need to update the physical object.
-            if (UpdateObjects)
+            if (updateObject && UpdateObjects)
                 Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
 
-            RenderShape(beatmapObject);
+            if (renderEditor)
+                RenderShape(beatmapObject);
         }
 
         #endregion
