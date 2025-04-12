@@ -49,6 +49,7 @@
 - Finally made the Settings button on the title bar consistent with other dropdown menus.
 - Shuffled some dropdown menu buttons around.
 - Changed MetaData Editor link buttons icons to a link icon to better represent what they are.
+- Default Image Object image selection path changed to "images" folder inside the level folder.
 
 ## Fixes
 - Fixed animateObject modifiers and shot bullets being inconsistent with different framerates.
