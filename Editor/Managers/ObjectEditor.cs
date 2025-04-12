@@ -6383,15 +6383,15 @@ namespace BetterLegacy.Editor.Managers
 
         void SelectImage(string file, BeatmapObject beatmapObject, bool renderEditor = true, bool updateObject = true)
         {
-            var editorPath = RTFile.CombinePaths(RTEditor.inst.CurrentLevel.path, "images");
-            RTFile.CreateDirectory(editorPath);
+            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            RTFile.CreateDirectory(RTFile.CombinePaths(editorPath, "images"));
 
             file = RTFile.ReplaceSlash(file);
             CoreHelper.Log($"Selected file: {file}");
             if (string.IsNullOrEmpty(file))
                 return;
 
-            string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(file));
+            string jpgFileLocation = RTFile.CombinePaths(editorPath, "images", Path.GetFileName(file));
 
             var levelPath = file.Remove(editorPath + "/");
 
@@ -6400,7 +6400,7 @@ namespace BetterLegacy.Editor.Managers
             else
                 jpgFileLocation = editorPath + "/" + levelPath;
 
-            beatmapObject.text = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
+            beatmapObject.text = jpgFileLocation.Remove(editorPath + "/");
 
             // Since setting image has no affect on the timeline object, we will only need to update the physical object.
             if (updateObject && UpdateObjects)
