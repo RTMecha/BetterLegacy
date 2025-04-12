@@ -13,6 +13,7 @@
   - Dragging an audio file while the New Level Creator popup is open will set the audio path for the new level.
   - Dragging an audio file into a loaded editor level will create an object with a playSound modifier.
   - Dragging a MP4 file into a loaded editor level will set it as the video BG.
+  - Dragging a folder containing images or several images will create an image sequence. The FPS of the sequence can be configured in Config Manager > Editor > Data > Image Sequence FPS.
 - Internally, a custom "base path" can be set in the editor. This means you can have Project Arrhythmia open on one harddrive, while another harddrive has the beatmaps folder. There is no UI to set this yet.
 - Added Prefab Object inspect buttons if you have Unity Explorer installed.
 
