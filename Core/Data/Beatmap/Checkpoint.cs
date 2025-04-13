@@ -55,7 +55,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 		public bool heal = false;
 
 		/// <summary>
-		/// If true, the game will reverse to the checkpoint time. Otherwise if false, the game will reverse to the start of the song.
+		/// If true, the game will be set to the checkpoint time.
 		/// </summary>
 		public bool setTime = true;
 
