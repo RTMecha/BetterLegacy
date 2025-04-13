@@ -674,6 +674,9 @@ namespace BetterLegacy.Core.Helpers
 
                                     GameData.Current.beatmapObjects.Move(index, index - 1);
                                     EditorTimeline.inst.UpdateTransformIndex();
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderIndex(beatmapObject);
+
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -700,12 +703,15 @@ namespace BetterLegacy.Core.Helpers
                                     var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
                                     if (index >= GameData.Current.beatmapObjects.Count - 1)
                                     {
-                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
                                         return;
                                     }
 
                                     GameData.Current.beatmapObjects.Move(index, index + 1);
                                     EditorTimeline.inst.UpdateTransformIndex();
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderIndex(beatmapObject);
+
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -713,7 +719,7 @@ namespace BetterLegacy.Core.Helpers
                                     var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
                                     if (index >= GameData.Current.prefabObjects.Count - 1)
                                     {
-                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
                                         return;
                                     }
 
@@ -738,6 +744,9 @@ namespace BetterLegacy.Core.Helpers
 
                                     GameData.Current.beatmapObjects.Move(index, 0);
                                     EditorTimeline.inst.UpdateTransformIndex();
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderIndex(beatmapObject);
+
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -764,12 +773,15 @@ namespace BetterLegacy.Core.Helpers
                                     var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
                                     if (index >= GameData.Current.beatmapObjects.Count - 1)
                                     {
-                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
                                         return;
                                     }
 
                                     GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
                                     EditorTimeline.inst.UpdateTransformIndex();
+                                    if (ObjectEditor.inst.Dialog.IsCurrent)
+                                        ObjectEditor.inst.RenderIndex(beatmapObject);
+
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -777,7 +789,7 @@ namespace BetterLegacy.Core.Helpers
                                     var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
                                     if (index >= GameData.Current.prefabObjects.Count - 1)
                                     {
-                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
                                         return;
                                     }
 

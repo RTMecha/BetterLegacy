@@ -107,6 +107,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Slider BinSlider { get; set; }
         public InputField EditorLayerField { get; set; }
 
+        public InputFieldStorage EditorIndexField { get; set; }
+
         #endregion
 
         #region Prefab
@@ -286,6 +288,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorLayerField = EditorSettingsParent.Find("layers")?.GetComponent<InputField>();
             EditorLayerField.image = EditorLayerField.GetComponent<Image>();
             BinSlider = EditorSettingsParent.Find("bin")?.GetComponent<Slider>();
+            EditorIndexField = Content.Find("indexer").GetComponent<InputFieldStorage>();
 
             #endregion
 

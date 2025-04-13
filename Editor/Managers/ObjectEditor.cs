@@ -1192,6 +1192,28 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"Had an error in trying to setup Unity Explorer. Exception: {ex}");
             }
 
+            // Editor
+            {
+                var index = objectView.Find("editor").GetSiblingIndex() + 1;
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "indexer_label");
+                label.transform.SetSiblingIndex(index);
+
+                var labelText = label.transform.GetChild(0).GetComponent<Text>();
+                labelText.text = "Editor Index";
+                EditorThemeManager.AddLightText(labelText);
+
+                var indexEditor = EditorPrefabHolder.Instance.NumberInputField.Duplicate(objectView, "indexer", index + 1);
+                var indexEditorField = indexEditor.GetComponent<InputFieldStorage>();
+                EditorThemeManager.AddInputField(indexEditorField.inputField);
+                EditorThemeManager.AddSelectable(indexEditorField.leftGreaterButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(indexEditorField.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(indexEditorField.rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(indexEditorField.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                if (indexEditorField.middleButton)
+                    CoreHelper.Delete(indexEditorField.middleButton.gameObject);
+            }
+
             // Editor Themes
             {
                 EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
@@ -3504,6 +3526,15 @@ namespace BetterLegacy.Editor.Managers
             RenderLayers(beatmapObject);
             RenderBin(beatmapObject);
 
+            try
+            {
+                RenderIndex(beatmapObject);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
             RenderGameObjectInspector(beatmapObject);
             RenderPrefabReference(beatmapObject);
 
@@ -5023,6 +5054,124 @@ namespace BetterLegacy.Editor.Managers
                 // Since bin has no effect on the physical object, we will only need to update the timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
             });
+        }
+
+        /// <summary>
+        /// Renders the Index field.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
+        public void RenderIndex(BeatmapObject beatmapObject)
+        {
+            if (!Dialog.EditorIndexField)
+                return;
+
+            Dialog.Content.Find("indexer_label").gameObject.SetActive(RTEditor.ShowModdedUI);
+            Dialog.EditorIndexField.gameObject.SetActive(RTEditor.ShowModdedUI);
+
+            if (!RTEditor.ShowModdedUI)
+                return;
+
+            var currentIndex = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
+            Dialog.EditorIndexField.inputField.onValueChanged.ClearAll();
+            Dialog.EditorIndexField.inputField.text = currentIndex.ToString();
+            Dialog.EditorIndexField.inputField.onEndEdit.AddListener(_val =>
+            {
+                if (currentIndex < 0)
+                {
+                    EditorManager.inst.DisplayNotification($"Object is not in the Beatmap Object list.", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                if (int.TryParse(_val, out int index))
+                {
+                    index = Mathf.Clamp(index, 0, GameData.Current.beatmapObjects.Count - 1);
+
+                    GameData.Current.beatmapObjects.Move(currentIndex, index);
+                    RenderIndex(beatmapObject);
+                    EditorTimeline.inst.UpdateTransformIndex();
+                }
+            });
+
+            Dialog.EditorIndexField.leftGreaterButton.onClick.NewListener(() =>
+            {
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                if (index <= 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                GameData.Current.beatmapObjects.Move(index, 0);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderIndex(beatmapObject);
+            });
+            Dialog.EditorIndexField.leftButton.onClick.NewListener(() =>
+            {
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                if (index <= 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                GameData.Current.beatmapObjects.Move(index, index - 1);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderIndex(beatmapObject);
+            });
+            Dialog.EditorIndexField.rightButton.onClick.NewListener(() =>
+            {
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                if (index >= GameData.Current.beatmapObjects.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                GameData.Current.beatmapObjects.Move(index, index + 1);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderIndex(beatmapObject);
+            });
+            Dialog.EditorIndexField.rightGreaterButton.onClick.NewListener(() =>
+            {
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                if (index >= GameData.Current.beatmapObjects.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderIndex(beatmapObject);
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.EditorIndexField.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+            {
+                var pointerEventData = (PointerEventData)eventData;
+
+                if (!int.TryParse(Dialog.EditorIndexField.inputField.text, out int index))
+                    return;
+
+                if (pointerEventData.scrollDelta.y < 0f)
+                    index -= (Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10 : 1);
+                if (pointerEventData.scrollDelta.y > 0f)
+                    index += (Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10 : 1);
+
+                if (index < 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+                if (index > GameData.Current.beatmapObjects.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                GameData.Current.beatmapObjects.Move(currentIndex, index);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderIndex(beatmapObject);
+            }));
         }
 
         /// <summary>
