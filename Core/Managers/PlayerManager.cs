@@ -276,33 +276,9 @@ namespace BetterLegacy.Core.Managers
         public static void SpawnPlayers(Checkpoint checkpoint)
         {
             AssignPlayerModels();
-            var players = Players;
-
-            int randomIndex = UnityEngine.Random.Range(-1, checkpoint.positions.Count);
-            var positions = new Vector2[players.Count];
-
-            for (int i = 0; i < players.Count; i++)
-            {
-                if (checkpoint.positions.IsEmpty())
-                {
-                    positions[i] = checkpoint.pos;
-                    continue;
-                }
-
-                positions[i] = checkpoint.spawnType switch
-                {
-                    Checkpoint.SpawnPositionType.Single => checkpoint.pos,
-                    Checkpoint.SpawnPositionType.RandomSingle => randomIndex == -1 ? checkpoint.pos : checkpoint.positions[randomIndex],
-                    Checkpoint.SpawnPositionType.Random => checkpoint.positions[UnityEngine.Random.Range(0, checkpoint.positions.Count)],
-                    _ => checkpoint.positions[i % checkpoint.positions.Count],
-                };
-            }
-
-            if (checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
-                positions = positions.ToList().Shuffle().ToArray();
-
+            var positions = GetSpawnPositions(checkpoint);
             bool spawned = false;
-            foreach (var customPlayer in players)
+            foreach (var customPlayer in Players)
             {
                 if (!customPlayer.Player)
                 {
@@ -555,7 +531,7 @@ namespace BetterLegacy.Core.Managers
         /// Respawns a specific player at the default spawn position.
         /// </summary>
         /// <param name="index">Index of the player to respawn.</param>
-        public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPosition());
+        public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPositions(RTGameManager.inst.ActiveCheckpoint)[index]);
 
         /// <summary>
         /// Respawns a specific player at a set spawn position.
@@ -577,7 +553,6 @@ namespace BetterLegacy.Core.Managers
             SpawnPlayers(pos);
         }
 
-        // TODO: replace this with Checkpoint.ActiveCheckpoint.
         /// <summary>
         /// Gets the last active checkpoint and its position.
         /// </summary>
@@ -591,6 +566,39 @@ namespace BetterLegacy.Core.Managers
 
             return GameData.Current && GameData.Current.data.checkpoints.InRange(prevIndex) && GameData.Current.data.checkpoints[prevIndex] != null ?
                 GameData.Current.data.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position;
+        }
+
+        /// <summary>
+        /// Gets the checkpoint spawn positions.
+        /// </summary>
+        /// <param name="checkpoint">Checkpoint to get the position of.</param>
+        /// <returns>Returns the checkpoint position.</returns>
+        public static Vector2[] GetSpawnPositions(Checkpoint checkpoint)
+        {
+            var players = Players;
+            int randomIndex = UnityEngine.Random.Range(-1, checkpoint.positions.Count);
+            var positions = new Vector2[players.Count];
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (checkpoint.positions.IsEmpty())
+                {
+                    positions[i] = checkpoint.pos;
+                    continue;
+                }
+
+                positions[i] = checkpoint.spawnType switch
+                {
+                    Checkpoint.SpawnPositionType.Single => checkpoint.pos,
+                    Checkpoint.SpawnPositionType.RandomSingle => randomIndex == -1 ? checkpoint.pos : checkpoint.positions[randomIndex],
+                    Checkpoint.SpawnPositionType.Random => checkpoint.positions[UnityEngine.Random.Range(0, checkpoint.positions.Count)],
+                    _ => checkpoint.positions[i % checkpoint.positions.Count],
+                };
+            }
+
+            if (checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
+                positions = positions.ToList().Shuffle().ToArray();
+            return positions;
         }
 
         #endregion
