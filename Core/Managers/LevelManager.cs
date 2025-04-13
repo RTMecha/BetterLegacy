@@ -594,8 +594,8 @@ namespace BetterLegacy.Core.Managers
             LevelSort.DatePublished => levels.Order(x => x.metadata.beatmap.date_published, !ascend),
             LevelSort.Ranking => levels.Order(x =>
             {
-                var playerData = GetPlayerData(x.id);
-                return playerData != null ? playerData.Hits : int.MaxValue;
+                var saveData = GetSaveData(x.id);
+                return saveData ? saveData.Hits : int.MaxValue;
             }, !ascend),
             _ => levels,
         };
@@ -717,7 +717,7 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        #region Player Data
+        #region Save Data
 
         /// <summary>
         /// Arcade saves list.
@@ -745,10 +745,10 @@ namespace BetterLegacy.Core.Managers
         public static DataManager.LevelRank EditorRank => DataManager.inst.levelRanks[(int)EditorConfig.Instance.EditorRank.Value];
 
         /// <summary>
-        /// Finds and sets the levels' player data.
+        /// Finds and sets the levels' save data.
         /// </summary>
         /// <param name="level">Level to assign to.</param>
-        public static void AssignPlayerData(Level level)
+        public static void AssignSaveData(Level level)
         {
             if (!level || !Saves.TryFind(x => x.ID == level.id, out SaveData saveData))
                 return;
@@ -793,10 +793,10 @@ namespace BetterLegacy.Core.Managers
 
         static void SetLevelData(List<Level> levels, Level currentLevel, bool update)
         {
-            bool makeNewPlayerData = false;
+            bool makeNewSaveData = false;
             if (!currentLevel.saveData)
             {
-                makeNewPlayerData = true;
+                makeNewSaveData = true;
                 currentLevel.saveData = new SaveData(currentLevel);
             }
             if (currentLevel && currentLevel.saveData)
@@ -805,7 +805,7 @@ namespace BetterLegacy.Core.Managers
             if (update)
             {
                 CoreHelper.Log($"Updating save data\n" +
-                    $"New Player Data = {makeNewPlayerData}\n" +
+                    $"New Player Data = {makeNewSaveData}\n" +
                     $"Deaths [OLD = {currentLevel.saveData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
                     $"Hits: [OLD = {currentLevel.saveData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
                     $"Boosts: [OLD = {currentLevel.saveData.Boosts} > NEW = {BoostCount}]");
@@ -892,9 +892,9 @@ namespace BetterLegacy.Core.Managers
         /// Removes player data.
         /// </summary>
         /// <param name="id">ID of the player data to remove.</param>
-        public static void RemovePlayerData(string id)
+        public static void RemoveSaveData(string id)
         {
-            Saves.RemoveAll(x => x.ID == id);
+            Saves.Remove(x => x.ID == id);
             SaveProgress();
         }
 
@@ -903,7 +903,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="id">ID of the player data to get.</param>
         /// <returns>Returns the player data of the level.</returns>
-        public static SaveData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
+        public static SaveData GetSaveData(string id) => Saves.Find(x => x.ID == id);
 
         /// <summary>
         /// Maximum amount of data points for the End Level Menu.

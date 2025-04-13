@@ -141,7 +141,7 @@ namespace BetterLegacy.Core.Data.Level
             // So when the player plays the level inside the collection, it isn't already ranked.
             level.id = id;
 
-            LevelManager.AssignPlayerData(level);
+            LevelManager.AssignSaveData(level);
         }
 
         /// <summary>

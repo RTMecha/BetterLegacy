@@ -234,7 +234,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 level.steamItem = item;
                 level.steamLevelInit = exists;
 
-                LevelManager.AssignPlayerData(level);
+                LevelManager.AssignSaveData(level);
 
                 onLoad?.Invoke(level, i);
 

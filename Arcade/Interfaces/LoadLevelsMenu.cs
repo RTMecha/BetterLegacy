@@ -210,7 +210,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 metadata.VerifyID(path);
                 var level = new Level(path, metadata);
 
-                LevelManager.AssignPlayerData(level);
+                LevelManager.AssignSaveData(level);
                 
                 UpdateInfo(level.icon, $"Loading {name}", i);
 
