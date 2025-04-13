@@ -90,13 +90,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 			/// </summary>
 			FillAll,
 			/// <summary>
+			/// All players end up at the same checkpoint, but randomly.
+			/// </summary>
+			RandomSingle,
+			/// <summary>
 			/// Fills all checkpoint positions with a player individually up until the last, then it loops over. Each player is assigned to a random checkpoint, instead of from 0.
 			/// </summary>
 			RandomFillAll,
-			/// <summary>
-			/// All players end up at the same checkpoint, but randomly.
-			/// </summary>
-			IndividualRandom,
 			/// <summary>
 			/// All players end up at random checkpoints.
 			/// </summary>
@@ -127,6 +127,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 			name = jn["n"];
 			time = jn["t"].AsFloat;
 			pos = jn["p"].AsVector2();
+			heal = true; // checkpoints in VG heal the player so this is on by default.
 		}
 
         public override void ReadJSON(JSONNode jn)
@@ -142,9 +143,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
 			jn["n"] = name;
 			if (time != 0f)
-				jn["t"] = time.ToString();
+				jn["t"] = time;
 			if (pos.x != 0f && pos.y != 0f)
-				jn["p"] = pos.ToJSON();
+				jn["p"] = pos.ToJSON(false);
 
 			return jn;
 		}
@@ -156,17 +157,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 			jn["name"] = name;
 			if (time != 0f)
 				jn["t"] = time;
-			jn["pos"] = pos.ToJSON();
+			jn["pos"] = pos.ToJSON(false);
 
 			return jn;
 		}
-
-		/// <summary>
-		/// Gets a position at a specific index.
-		/// </summary>
-		/// <param name="index">The position index.</param>
-		/// <returns>Returns a checkpoint position.</returns>
-		public Vector2 GetPosition(int index) => spawnType == SpawnPositionType.Single || positions == null || !positions.InRange(index) ? pos : positions[index];
 
 		#endregion
 

@@ -185,7 +185,7 @@ namespace BetterLegacy.Arcade.Managers
                 PlayerManager.Players.ForLoop(customPlayer => customPlayer.ResetHealth());
 
             if (checkpoint.respawn)
-                PlayerManager.SpawnPlayers(ActiveCheckpoint.pos);
+                PlayerManager.SpawnPlayers(ActiveCheckpoint);
 
             StartCoroutine(IPlayCheckpointAnimation());
         }
@@ -281,7 +281,7 @@ namespace BetterLegacy.Arcade.Managers
 
             yield return CoroutineHelper.Seconds(0.1f);
 
-            PlayerManager.SpawnPlayers(checkpoint.pos);
+            PlayerManager.SpawnPlayers(checkpoint);
 
             checkpoint = null;
 

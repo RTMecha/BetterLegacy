@@ -269,10 +269,47 @@ namespace BetterLegacy.Core.Managers
 
         #region Spawning
 
-        // todo: implement new checkpoint system
+        /// <summary>
+        /// Spawns all players at a checkpoint.
+        /// </summary>
+        /// <param name="checkpoint">Checkpoint to spawn at.</param>
         public static void SpawnPlayers(Checkpoint checkpoint)
         {
-            SpawnPlayers(checkpoint.pos);
+            AssignPlayerModels();
+            var players = Players;
+
+            int randomIndex = UnityEngine.Random.Range(0, checkpoint.positions.Count);
+            var positions = new Vector2[players.Count];
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                positions[i] = checkpoint.spawnType switch
+                {
+                    Checkpoint.SpawnPositionType.Single => checkpoint.pos,
+                    Checkpoint.SpawnPositionType.RandomSingle => checkpoint.positions[randomIndex],
+                    Checkpoint.SpawnPositionType.Random => checkpoint.positions[UnityEngine.Random.Range(0, checkpoint.positions.Count)],
+                    _ => checkpoint.positions[i % checkpoint.positions.Count],
+                };
+            }
+
+            if (checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
+                positions = positions.ToList().Shuffle().ToArray();
+
+            bool spawned = false;
+            foreach (var customPlayer in players)
+            {
+                if (!customPlayer.Player)
+                {
+                    spawned = true;
+                    SpawnPlayer(customPlayer, positions[customPlayer.index]);
+                    continue;
+                }
+
+                CoreHelper.Log($"Player {customPlayer.index} already exists!");
+            }
+
+            if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
+                SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
         }
 
         /// <summary>
@@ -298,7 +335,6 @@ namespace BetterLegacy.Core.Managers
 
             if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
-
         }
 
         /// <summary>
@@ -458,7 +494,7 @@ namespace BetterLegacy.Core.Managers
             DestroyPlayers();
 
             if (!GameData.Current || GameData.Current.data is not LevelBeatmapData beatmapData || beatmapData.level is not LevelData levelData || levelData.spawnPlayers)
-                SpawnPlayers(GameData.Current.data.checkpoints[0].pos);
+                SpawnPlayers(GameData.Current.data.checkpoints[0]);
         }
 
         /// <summary>
