@@ -16,6 +16,7 @@
   - Dragging a folder containing images or several images will create an image sequence. The FPS of the sequence can be configured in Config Manager > Editor > Data > Image Sequence FPS.
 - Internally, a custom "base path" can be set in the editor. This means you can have Project Arrhythmia open on one harddrive, while another harddrive has the beatmaps folder. There is no UI to set this yet.
 - Added Prefab Object inspect buttons if you have Unity Explorer installed.
+- Added an Index Editor to the Object Editor. This means you can now view and edit the index of an object. (the index controls what it appears in front of in the timeline)
 
 ## Changes
 ### Core
