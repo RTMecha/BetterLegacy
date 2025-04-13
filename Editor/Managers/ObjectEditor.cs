@@ -5072,6 +5072,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var currentIndex = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
+            Dialog.EditorIndexField.inputField.onEndEdit.ClearAll();
             Dialog.EditorIndexField.inputField.onValueChanged.ClearAll();
             Dialog.EditorIndexField.inputField.text = currentIndex.ToString();
             Dialog.EditorIndexField.inputField.onEndEdit.AddListener(_val =>
@@ -5085,6 +5086,8 @@ namespace BetterLegacy.Editor.Managers
                 if (int.TryParse(_val, out int index))
                 {
                     index = Mathf.Clamp(index, 0, GameData.Current.beatmapObjects.Count - 1);
+                    if (currentIndex == index)
+                        return;
 
                     GameData.Current.beatmapObjects.Move(currentIndex, index);
                     RenderIndex(beatmapObject);
@@ -5172,6 +5175,76 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.UpdateTransformIndex();
                 RenderIndex(beatmapObject);
             }));
+
+            var contextMenu = Dialog.EditorIndexField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
+            contextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Select Previous", () =>
+                    {
+                        if (currentIndex <= 0)
+                        {
+                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        var prevObject = GameData.Current.beatmapObjects[currentIndex - 1];
+
+                        if (!prevObject)
+                            return;
+
+                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
+
+                        if (timelineObject)
+                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+                    }),
+                    new ButtonFunction("Select Previous", () =>
+                    {
+                        if (currentIndex >= GameData.Current.beatmapObjects.Count - 1)
+                        {
+                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        var nextObject = GameData.Current.beatmapObjects[currentIndex + 1];
+
+                        if (!nextObject)
+                            return;
+
+                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
+
+                        if (timelineObject)
+                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Select First", () =>
+                    {
+                        var prevObject = GameData.Current.beatmapObjects.First();
+
+                        if (!prevObject)
+                            return;
+
+                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
+
+                        if (timelineObject)
+                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+                    }),
+                    new ButtonFunction("Select Last", () =>
+                    {
+                        var nextObject = GameData.Current.beatmapObjects.Last();
+
+                        if (!nextObject)
+                            return;
+
+                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
+
+                        if (timelineObject)
+                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+                    }));
+            };
         }
 
         /// <summary>
