@@ -2193,7 +2193,7 @@ namespace BetterLegacy.Editor.Managers
                     int binCalc = EditorConfig.Instance.BinClampBehavior.Value switch
                     {
                         BinClamp.Clamp => Mathf.Clamp(binOffset + timelineObject.binOffset, 0, EditorTimeline.inst.BinCount),
-                        BinClamp.Loop => (binOffset + timelineObject.binOffset) % (EditorTimeline.inst.BinCount + 1),
+                        BinClamp.Loop => (int)Mathf.Repeat(binOffset + timelineObject.binOffset, EditorTimeline.inst.BinCount + 1),
                         _ => binOffset + timelineObject.binOffset,
                     };
 
