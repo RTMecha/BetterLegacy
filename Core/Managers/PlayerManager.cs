@@ -278,15 +278,21 @@ namespace BetterLegacy.Core.Managers
             AssignPlayerModels();
             var players = Players;
 
-            int randomIndex = UnityEngine.Random.Range(0, checkpoint.positions.Count);
+            int randomIndex = UnityEngine.Random.Range(-1, checkpoint.positions.Count);
             var positions = new Vector2[players.Count];
 
             for (int i = 0; i < players.Count; i++)
             {
+                if (checkpoint.positions.IsEmpty())
+                {
+                    positions[i] = checkpoint.pos;
+                    continue;
+                }
+
                 positions[i] = checkpoint.spawnType switch
                 {
                     Checkpoint.SpawnPositionType.Single => checkpoint.pos,
-                    Checkpoint.SpawnPositionType.RandomSingle => checkpoint.positions[randomIndex],
+                    Checkpoint.SpawnPositionType.RandomSingle => randomIndex == -1 ? checkpoint.pos : checkpoint.positions[randomIndex],
                     Checkpoint.SpawnPositionType.Random => checkpoint.positions[UnityEngine.Random.Range(0, checkpoint.positions.Count)],
                     _ => checkpoint.positions[i % checkpoint.positions.Count],
                 };
