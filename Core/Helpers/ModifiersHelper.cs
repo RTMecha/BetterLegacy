@@ -6421,24 +6421,21 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 switch (fromType)
                                 {
-                                    case 0:
-                                        {
+                                    case 0: {
                                             var sequence = cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay);
-                                            float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
+                                            float value = (sequence.At(fromAxis) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                             break;
                                         }
-                                    case 1:
-                                        {
+                                    case 1: {
                                             var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
-                                            float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
+                                            float value = (sequence.At(fromAxis) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                             break;
                                         }
-                                    case 2:
-                                        {
+                                    case 2: {
                                             var sequence = (cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));

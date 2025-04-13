@@ -501,9 +501,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        public void SetTransform(int toType, Vector3 value)
+        /// <summary>
+        /// Sets a transform offset of the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="value">Value to assign to the offset.</param>
+        public void SetTransform(int type, Vector3 value)
         {
-            switch (toType)
+            switch (type)
             {
                 case 0: {
                         positionOffset = value;
@@ -520,20 +530,31 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public void SetTransform(int toType, int toAxis, float value)
+        /// <summary>
+        /// Sets a transform offset of the object.
+        /// </summary>
+        /// <param name="type">
+        /// The type of transform value to get.<br></br>
+        /// 0 -> <see cref="positionOffset"/><br></br>
+        /// 1 -> <see cref="scaleOffset"/><br></br>
+        /// 2 -> <see cref="rotationOffset"/>
+        /// </param>
+        /// <param name="axis">The axis of the transform value to get.</param>
+        /// <param name="value">Value to assign to the offset's axis.</param>
+        public void SetTransform(int type, int axis, float value)
         {
-            switch (toType)
+            switch (type)
             {
                 case 0: {
-                        positionOffset.Set(toAxis, value);
+                        positionOffset[axis] = value;
                         break;
                     }
                 case 1: {
-                        scaleOffset.Set(toAxis, value);
+                        scaleOffset[axis] = value;
                         break;
                     }
                 case 2: {
-                        rotationOffset.Set(toAxis, value);
+                        rotationOffset[axis] = value;
                         break;
                     }
             }
