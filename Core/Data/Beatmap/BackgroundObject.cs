@@ -38,7 +38,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool active = true;
         public string name = "Background";
 
-        public int layer = -1;
+        public string layer = string.Empty;
 
         // todo: change background objects to be in the main editor timeline and have the same start time system as beatmap objects.
         public ObjectEditorData editorData;
@@ -245,7 +245,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 depth = jn["d"].AsInt;
 
             if (jn["l"] != null)
-                layer = jn["l"].AsInt;
+                layer = jn["l"];
 
             if (jn["zposition"] != null)
                 zposition = jn["zposition"].AsFloat;
@@ -453,7 +453,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (depth != 0)
                 jn["d"] = depth;
 
-            if (layer != -1)
+            if (!string.IsNullOrEmpty(layer))
                 jn["l"] = layer;
 
             if (!drawFade)

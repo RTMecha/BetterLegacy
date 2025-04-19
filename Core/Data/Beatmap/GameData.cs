@@ -784,11 +784,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < jn["parallax_settings"]["l"].Count; i++)
                 {
                     var jnLayer = jn["parallax_settings"]["l"][i];
-                    gameData.backgroundLayers.Add(BackgroundLayer.ParseVG(jnLayer, version));
+                    var backgroundLayer = BackgroundLayer.ParseVG(jnLayer, version);
+                    gameData.backgroundLayers.Add(backgroundLayer);
                     for (int j = 0; j < jnLayer["o"].Count; j++)
                     {
                         var bg = BackgroundObject.ParseVG(jnLayer["o"][j], version);
-                        bg.layer = i;
+                        bg.layer = backgroundLayer.id;
                         gameData.backgroundObjects.Add(bg);
                     }
                 }
@@ -1294,15 +1295,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             int numLayer = 1;
             for (int i = 0; i < Mathf.Clamp(backgroundLayers.Count, 0, 5); i++)
             {
+                var layerID = backgroundLayers[i].id;
                 var jnLayer = Parser.NewJSONObject();
 
+                int numBG = 0;
                 for (int j = 0; j < backgroundObjects.Count; j++)
                 {
                     var bg = backgroundObjects[j];
-                    if (bg.layer != i)
+                    if (bg.layer != layerID)
                         continue;
 
-                    jnLayer["o"][j] = bg.ToJSONVG();
+                    jnLayer["o"][numBG] = bg.ToJSONVG();
+                    numBG++;
                 }
 
                 jn["parallax_settings"]["l"][i] = jnLayer;
