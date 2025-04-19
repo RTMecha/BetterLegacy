@@ -4,6 +4,9 @@
 ### Story
 - More cutscene progress.
 
+### Core
+- Parallax Objects from VG can now be converted to and from BG Objects. It's not 100% accurate yet, but at least it's something.
+
 ### Editor
 - You can now drag and drop files into the game, both in the editor and the arcade.
   - Dragging a level into the arcade / editor will load it.
