@@ -45,7 +45,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform TagsContent { get; set; }
 
-        public InputFieldStorage LayerField { get; set; }
+        //public InputFieldStorage LayerField { get; set; }
 
         #region Transforms
 
@@ -747,17 +747,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddInputFields(LeftContent.Find("block").gameObject, true, "Background Editor Reactive");
             }
 
-            // Depth
-            {
-                RTEditor.GenerateLabels("label", LeftContent, 4, false,
-                           new LabelSettings("Background Layer") { horizontalWrap = HorizontalWrapMode.Overflow });
+            //// Depth
+            //{
+            //    RTEditor.GenerateLabels("label", LeftContent, 4, false,
+            //               new LabelSettings("Background Layer") { horizontalWrap = HorizontalWrapMode.Overflow });
 
-                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "layer", 5);
-                CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
+            //    var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "layer", 5);
+            //    CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
 
-                LayerField = iterations.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
-                LayerField.Assign();
-            }
+            //    LayerField = iterations.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
+            //    LayerField.Assign();
+            //}
 
             CoreHelper.Destroy(ActiveToggle.GetComponent<Animator>());
             ActiveToggle.transition = Selectable.Transition.ColorTint;
@@ -765,7 +765,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddToggle(ActiveToggle);
             LeftContent.Find("name/name").AsRT().sizeDelta = new Vector2(300f, 32f);
             EditorThemeManager.AddInputField(NameField);
-            EditorThemeManager.AddInputFields(LeftContent.Find("layer").gameObject, true, "");
+            //EditorThemeManager.AddInputFields(LeftContent.Find("layer").gameObject, true, "");
             EditorThemeManager.AddInputFields(LeftContent.Find("depth").gameObject, true, "");
             EditorThemeManager.AddInputFields(LeftContent.Find("iterations").gameObject, true, "");
             EditorThemeManager.AddInputFields(LeftContent.Find("zposition").gameObject, true, "");

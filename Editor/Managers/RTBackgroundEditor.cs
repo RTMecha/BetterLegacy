@@ -203,7 +203,6 @@ namespace BetterLegacy.Editor.Managers
             RenderActive(backgroundObject);
             RenderName(backgroundObject);
             RenderTags(backgroundObject);
-            RenderLayer(backgroundObject);
             RenderDepth(backgroundObject);
             RenderIterations(backgroundObject);
             RenderPosition(backgroundObject);
@@ -314,23 +313,6 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
-        }
-
-        public void RenderLayer(BackgroundObject backgroundObject)
-        {
-            Dialog.LayerField.inputField.onValueChanged.ClearAll();
-            Dialog.LayerField.inputField.text = backgroundObject.layer.ToString();
-            Dialog.LayerField.inputField.onValueChanged.AddListener(_val =>
-            {
-                if (int.TryParse(_val, out int num))
-                {
-                    backgroundObject.layer = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
-                }
-            });
-
-            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.LayerField);
-            TriggerHelper.AddEventTriggers(Dialog.LayerField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.LayerField.inputField));
         }
 
         public void RenderDepth(BackgroundObject backgroundObject)
