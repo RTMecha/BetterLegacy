@@ -45,6 +45,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform TagsContent { get; set; }
 
+        public InputFieldStorage LayerField { get; set; }
+
         #region Transforms
 
         public Vector2InputFieldStorage PositionFields { get; set; }
@@ -745,19 +747,32 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddInputFields(LeftContent.Find("block").gameObject, true, "Background Editor Reactive");
             }
 
+            // Depth
+            {
+                RTEditor.GenerateLabels("label", LeftContent, 4, false,
+                           new LabelSettings("Background Layer") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "layer", 5);
+                CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
+
+                LayerField = iterations.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
+                LayerField.Assign();
+            }
+
             CoreHelper.Destroy(ActiveToggle.GetComponent<Animator>());
             ActiveToggle.transition = Selectable.Transition.ColorTint;
             ActiveToggle.colors = UIManager.SetColorBlock(ActiveToggle.colors, Color.white, new Color(0.7f, 0.7f, 0.7f), new Color(0.7f, 0.7f, 0.7f), new Color(0.7f, 0.7f, 0.7f), new Color(0.7f, 0.7f, 0.7f));
             EditorThemeManager.AddToggle(ActiveToggle);
             LeftContent.Find("name/name").AsRT().sizeDelta = new Vector2(300f, 32f);
             EditorThemeManager.AddInputField(NameField);
-            EditorThemeManager.AddInputFields(LeftContent.Find("depth").gameObject, true, "Background Editor Depth");
-            EditorThemeManager.AddInputFields(LeftContent.Find("iterations").gameObject, true, "Background Editor Iterations");
+            EditorThemeManager.AddInputFields(LeftContent.Find("layer").gameObject, true, "");
+            EditorThemeManager.AddInputFields(LeftContent.Find("depth").gameObject, true, "");
+            EditorThemeManager.AddInputFields(LeftContent.Find("iterations").gameObject, true, "");
             EditorThemeManager.AddInputFields(LeftContent.Find("zposition").gameObject, true, "");
-            EditorThemeManager.AddInputFields(LeftContent.Find("zscale").gameObject, true, "Background Editor Z Scale");
-            EditorThemeManager.AddInputFields(LeftContent.Find("position").gameObject, true, "Background Editor Position");
-            EditorThemeManager.AddInputFields(LeftContent.Find("scale").gameObject, true, "Background Editor Scale");
-            EditorThemeManager.AddInputFields(LeftContent.Find("depth-rotation").gameObject, true, "Background Editor 3D Rotation");
+            EditorThemeManager.AddInputFields(LeftContent.Find("zscale").gameObject, true, "");
+            EditorThemeManager.AddInputFields(LeftContent.Find("position").gameObject, true, "");
+            EditorThemeManager.AddInputFields(LeftContent.Find("scale").gameObject, true, "");
+            EditorThemeManager.AddInputFields(LeftContent.Find("depth-rotation").gameObject, true, "");
             EditorThemeManager.AddInputField(LeftContent.Find("rotation/x").GetComponent<InputField>());
 
             EditorThemeManager.AddInputFields(LeftContent.Find("fadehuesatval").gameObject, true, "");

@@ -38,6 +38,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool active = true;
         public string name = "Background";
 
+        public int layer = -1;
+
         // todo: change background objects to be in the main editor timeline and have the same start time system as beatmap objects.
         public ObjectEditorData editorData;
 
@@ -151,6 +153,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             active = orig.active;
             drawFade = orig.drawFade;
             depth = orig.depth;
+            layer = orig.layer;
             name = orig.name;
             pos = orig.pos;
             reactiveScale = orig.reactiveScale;
@@ -202,6 +205,24 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+        {
+            flat = true;
+            if (jn["t"] != null)
+            {
+                pos = jn["t"]["p"].AsVector2();
+                scale = jn["t"]["s"].AsVector2();
+                rot = jn["t"]["r"].AsFloat;
+            }
+
+            if (jn["s"] != null)
+            {
+                shape = jn["s"]["s"].AsInt; // wtf
+                shapeOption = jn["s"]["so"].AsInt;
+                text = jn["s"]["t"] ?? string.Empty;
+            }
+        }
+
         public override void ReadJSON(JSONNode jn)
         {
             if (jn["id"] != null)
@@ -222,6 +243,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 depth = jn["layer"].AsInt;
             else
                 depth = jn["d"].AsInt;
+
+            if (jn["l"] != null)
+                layer = jn["l"].AsInt;
 
             if (jn["zposition"] != null)
                 zposition = jn["zposition"].AsFloat;
@@ -361,6 +385,30 @@ namespace BetterLegacy.Core.Data.Beatmap
                 editorData = ObjectEditorData.Parse(jn["ed"]);
         }
 
+        public override JSONNode ToJSONVG()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["id"] = id;
+            jn["c"] = color;
+
+            if (pos.x != 0f || pos.y != 0f)
+                jn["t"]["p"] = pos.ToJSON(false);
+            if (scale.x != 0f || scale.y != 0f)
+                jn["t"]["s"] = scale.ToJSON(false);
+            if (rot != 0f)
+                jn["t"]["r"] = rot;
+
+            if (shape != 0)
+                jn["s"]["s"] = shape;
+            if (shapeOption != 0)
+                jn["s"]["so"] = shapeOption;
+            if (!string.IsNullOrEmpty(text))
+                jn["s"]["t"] = text;
+
+            return jn;
+        }
+
         public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
@@ -376,16 +424,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     jn["tags"][i] = tags[i];
 
             if (pos.x != 0f || pos.y != 0f)
-            {
-                jn["pos"]["x"] = pos.x;
-                jn["pos"]["y"] = pos.y;
-            }
+                jn["pos"] = pos.ToJSON(false);
 
             if (scale.x != 0f || scale.y != 0f)
-            {
-                jn["size"]["x"] = scale.x;
-                jn["size"]["y"] = scale.y;
-            }
+                jn["size"] = scale.ToJSON(false);
 
             if (rot != 0f)
                 jn["rot"] = rot;
@@ -410,6 +452,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (depth != 0)
                 jn["d"] = depth;
+
+            if (layer != -1)
+                jn["l"] = layer;
 
             if (!drawFade)
                 jn["fade"] = drawFade;

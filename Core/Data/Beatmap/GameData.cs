@@ -673,9 +673,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             gameData.data = beatmapData;
             gameData.beatmapObjects = new List<BeatmapObject>((from obj in orig.beatmapObjects
-                                                                   select obj.Copy(false)).ToList());
+                                                                   select obj.Copy(false)));
+            gameData.backgroundLayers = new List<BackgroundLayer>((from obj in orig.backgroundLayers
+                                                                   select obj.Copy(false)));
             gameData.backgroundObjects = new List<BackgroundObject>((from obj in orig.backgroundObjects
-                                                                         select obj.Copy()).ToList());
+                                                                         select obj.Copy(false)));
             for (int i = 0; i < orig.events.Count; i++)
                 gameData.events.Add(orig.events[i].Select(x => x.Copy()).ToList());
             return gameData;
@@ -778,11 +780,18 @@ namespace BetterLegacy.Core.Data.Beatmap
                 ThemeManager.inst.UpdateAllThemes();
             }
 
-            gameData.backgroundObjects.Add(new BackgroundObject
-            {
-                active = false,
-                pos = new Vector2(9999f, 9999f),
-            });
+            if (jn["parallax_settings"] != null)
+                for (int i = 0; i < jn["parallax_settings"]["l"].Count; i++)
+                {
+                    var jnLayer = jn["parallax_settings"]["l"][i];
+                    gameData.backgroundLayers.Add(BackgroundLayer.ParseVG(jnLayer, version));
+                    for (int j = 0; j < jnLayer["o"].Count; j++)
+                    {
+                        var bg = BackgroundObject.ParseVG(jnLayer["o"][j], version);
+                        bg.layer = i;
+                        gameData.backgroundObjects.Add(bg);
+                    }
+                }
 
             gameData.events = new List<List<EventKeyframe>>();
 
@@ -1217,6 +1226,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
+            if (jn["bg_layers"] != null)
+                for (int i = 0; i < jn["bg_layers"].Count; i++)
+                    gameData.backgroundLayers.Add(BackgroundLayer.Parse(jn["bg_layers"][i]));
+
             for (int i = 0; i < jn["bg_objects"].Count; i++)
                 gameData.backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
 
@@ -1278,10 +1291,30 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < 6; i++)
                 jn["editor_prefab_spawn"][i] = new JSONObject();
 
-            for (int i = 1; i < 6; i++)
+            int numLayer = 1;
+            for (int i = 0; i < Mathf.Clamp(backgroundLayers.Count, 0, 5); i++)
             {
-                jn["parallax_settings"]["l"][i - 1]["d"] = 100 * i;
-                jn["parallax_settings"]["l"][i - 1]["c"] = 1 * i;
+                var jnLayer = Parser.NewJSONObject();
+
+                for (int j = 0; j < backgroundObjects.Count; j++)
+                {
+                    var bg = backgroundObjects[j];
+                    if (bg.layer != i)
+                        continue;
+
+                    jnLayer["o"][j] = bg.ToJSONVG();
+                }
+
+                jn["parallax_settings"]["l"][i] = jnLayer;
+                numLayer++;
+            }
+
+            // other layers are required.
+            while (numLayer < 6)
+            {
+                jn["parallax_settings"]["l"][numLayer - 1]["d"] = 100 * numLayer;
+                jn["parallax_settings"]["l"][numLayer - 1]["c"] = 1 * numLayer;
+                numLayer++;
             }
 
             for (int i = 0; i < levelModifiers.Count; i++)
@@ -1573,6 +1606,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 CoreHelper.Log("skipping objects");
                 jn["beatmap_objects"] = new JSONArray();
             }
+
+            CoreHelper.Log("Saving Background Layers");
+            for (int i = 0; i < backgroundLayers.Count; i++)
+                jn["bg_layers"][i] = backgroundLayers[i].ToJSON();
 
             CoreHelper.Log("Saving Background Objects");
             for (int i = 0; i < backgroundObjects.Count; i++)
@@ -1985,6 +2022,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
 
         public List<Prefab> prefabs = new List<Prefab>();
+
+        public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
 
         public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
 
