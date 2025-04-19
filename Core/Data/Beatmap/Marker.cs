@@ -21,13 +21,30 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.time = time;
         }
 
+        /// <summary>
+        /// Name of the marker.
+        /// </summary>
         public string name = string.Empty;
 
+        /// <summary>
+        /// Description of the marker.
+        /// </summary>
         public string desc = "Description";
 
+        /// <summary>
+        /// Color of the marker.
+        /// </summary>
         public int color;
 
+        /// <summary>
+        /// Time the marker displays at.
+        /// </summary>
         public float time;
+
+        /// <summary>
+        /// Marker group layer that should currently appear.
+        /// </summary>
+        public int layer;
 
         /// <summary>
         /// Timeline Marker reference.
@@ -43,6 +60,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = orig.desc;
             color = orig.color;
             time = orig.time;
+            layer = orig.layer;
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -60,6 +78,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = jn["desc"] ?? string.Empty;
             color = jn["col"].AsInt;
             time = jn["t"].AsFloat;
+            layer = jn["l"].AsInt;
         }
 
         public override JSONNode ToJSONVG()
@@ -89,6 +108,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["col"] = color;
 
             jn["t"] = time;
+
+            if (layer != 0)
+                jn["l"] = layer;
 
             return jn;
         }
