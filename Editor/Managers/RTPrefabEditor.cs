@@ -2491,8 +2491,8 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var beatmapObject in prefab.beatmapObjects)
             {
-                if (!string.IsNullOrEmpty(beatmapObject.text) && beatmapObject.shape == 6 && AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
-                    prefab.SpriteAssets[beatmapObject.text] = sprite;
+                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
+                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
             }
 
             if (createInternal)

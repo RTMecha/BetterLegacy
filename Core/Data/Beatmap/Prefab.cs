@@ -53,12 +53,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Contents
 
+        public Assets assets = new Assets();
+
         public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
 
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
-
-        public Dictionary<string, Sprite> SpriteAssets { get; set; } = new Dictionary<string, Sprite>();
-
+        
         #endregion
 
         #endregion
@@ -76,11 +76,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             typeID = orig.typeID;
 
             beatmapObjects = new List<BeatmapObject>();
-            beatmapObjects.AddRange(orig.beatmapObjects.Select(x => x.Copy(false)).ToList());
+            if (!orig.beatmapObjects.IsEmpty())
+                beatmapObjects.AddRange(orig.beatmapObjects.Select(x => x.Copy(false)).ToList());
+
+            prefabObjects = new List<PrefabObject>();
+            if (!orig.prefabObjects.IsEmpty())
+                prefabObjects.AddRange(orig.prefabObjects.Select(x => x.Copy(false)).ToList());
 
             foreach (var beatmapObject in beatmapObjects)
-                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && orig.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
-                    SpriteAssets[beatmapObject.text] = sprite;
+            {
+                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && orig.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
+                    assets.sprites.Add(spriteAsset.Copy());
+            }
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -113,43 +120,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             type = jn["type"].AsInt;
             typeID = jn["type_id"];
             offset = jn["offset"].AsFloat;
-            description = jn["desc"] == null ? string.Empty : jn["desc"];
+            description = jn["desc"] ?? string.Empty;
 
             if (string.IsNullOrEmpty(typeID))
                 typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : "";
 
-            if (jn["assets"] == null || jn["assets"]["spr"] == null)
-                return;
-
-            for (int i = 0; i < jn["assets"]["spr"].Count; i++)
-            {
-                var name = jn["assets"]["spr"][i]["n"];
-                var data = jn["assets"]["spr"][i]["d"];
-
-                if (jn["assets"]["spr"][i]["i"] != null)
-                {
-                    SpriteAssets[name] = SpriteHelper.StringToSprite(jn["assets"]["spr"][i]["i"]);
-                    continue;
-                }
-
-                byte[] imageData = new byte[data.Count];
-                for (int j = 0; j < data.Count; j++)
-                    imageData[j] = (byte)data[j].AsInt;
-
-                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                texture2d.LoadImage(imageData);
-
-                texture2d.wrapMode = TextureWrapMode.Clamp;
-                texture2d.filterMode = FilterMode.Point;
-                texture2d.Apply();
-
-                SpriteAssets[name] = SpriteHelper.CreateSprite(texture2d);
-            }
+            assets.Clear();
+            if (jn["assets"] != null)
+                assets.ReadJSON(jn["assets"]);
         }
 
         public override JSONNode ToJSONVG()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             jn["n"] = name;
             if (id != null)
                 jn["id"] = id;
@@ -168,7 +151,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             jn["name"] = name;
             jn["type"] = (PrefabType.prefabTypeLSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
             jn["offset"] = offset;
@@ -179,7 +162,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (typeID != null)
                 jn["type_id"] = typeID;
 
-            jn["desc"] = description ?? string.Empty;
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
 
             for (int i = 0; i < beatmapObjects.Count; i++)
                 jn["objects"][i] = beatmapObjects[i].ToJSON();
@@ -188,17 +172,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < prefabObjects.Count; i++)
                     jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
-            var spriteAssets = new Dictionary<string, Sprite>();
+            if (GameData.Current)
+                foreach (var obj in beatmapObjects)
+                    if (GameData.Current.assets.sprites.TryFind(x => x.name == obj.text, out SpriteAsset sprite) && !assets.sprites.Has(x => x.name == obj.text))
+                        assets.sprites.Add(sprite);
 
-            foreach (var obj in beatmapObjects)
-                if (AssetManager.SpriteAssets.TryGetValue(obj.text, out Sprite sprite) && !spriteAssets.ContainsKey(obj.text))
-                    spriteAssets.Add(obj.text, sprite);
-
-            for (int i = 0; i < spriteAssets.Count; i++)
-            {
-                jn["assets"]["spr"][i]["n"] = spriteAssets.ElementAt(i).Key;
-                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(spriteAssets.ElementAt(i).Value);
-            }
+            if (assets && !assets.IsEmpty())
+                jn["assets"] = assets.ToJSON();
 
             return jn;
         }

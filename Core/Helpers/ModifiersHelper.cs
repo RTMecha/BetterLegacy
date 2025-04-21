@@ -1485,7 +1485,16 @@ namespace BetterLegacy.Core.Helpers
             "playSound" => modifier =>
             {
                 if (bool.TryParse(modifier.GetValue(1), out bool global) && float.TryParse(modifier.GetValue(2), out float pitch) && float.TryParse(modifier.GetValue(3), out float vol) && bool.TryParse(modifier.GetValue(4), out bool loop))
-                    GetSoundPath(modifier.reference.id, modifier.GetValue(0), global, pitch, vol, loop);
+                {
+                    var path = modifier.GetValue(0);
+                    if (GameData.Current && GameData.Current.assets.sounds.TryFind(x => x.name == path, out SoundAsset soundAsset) && soundAsset.audio)
+                    {
+                        PlaySound(modifier.reference.id, soundAsset.audio, pitch, vol, loop);
+                        return;
+                    }
+
+                    GetSoundPath(modifier.reference.id, path, global, pitch, vol, loop);
+                }
             },
             "playSoundOnline" => modifier =>
             {
@@ -4005,10 +4014,13 @@ namespace BetterLegacy.Core.Helpers
                         return;
                     }
 
-                    if (SoundManager.inst.TryGetSound(modifier.GetValue(4), out AudioClip audioClip))
+                    var soundName = modifier.GetValue(4);
+                    if (GameData.Current.assets.sounds.TryFind(x => x.name == soundName, out SoundAsset soundAsset) && soundAsset.audio)
+                        SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch);
+                    else if (SoundManager.inst.TryGetSound(soundName, out AudioClip audioClip))
                         SoundManager.inst.PlaySound(audioClip, volume, pitch);
                     else
-                        GetSoundPath(modifier.reference.id, modifier.GetValue(4), modifier.GetBool(5, false), pitch, volume, false);
+                        GetSoundPath(modifier.reference.id, soundName, modifier.GetBool(5, false), pitch, volume, false);
                 }
             },
 
@@ -5878,6 +5890,8 @@ namespace BetterLegacy.Core.Helpers
             },
 
             #endregion
+
+            _ => modifier => { },
         };
 
         /// <summary>

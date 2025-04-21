@@ -784,7 +784,7 @@ namespace BetterLegacy.Story
                 gameData.beatmapObjects.Add(beatmapObject);
             }
 
-            AssetManager.SpriteAssets.Clear();
+            gameData.assets.Clear();
 
             CoreHelper.Log($"Parsing background objects...");
             for (int i = 0; i < jn["backgroundObjects"].Count; i++)

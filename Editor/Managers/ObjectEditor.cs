@@ -4710,13 +4710,11 @@ namespace BetterLegacy.Editor.Managers
 
                         // Sets Image Data for transfering of Image Objects between levels.
                         var dataText = shapeSettings.Find("7/set/Text").GetComponent<Text>();
-                        dataText.text = !AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? "Set Data" : "Clear Data";
+                        dataText.text = !GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text) ? "Set Data" : "Clear Data";
                         var set = shapeSettings.Find("7/set").GetComponent<Button>();
-                        set.onClick.ClearAll();
-                        set.onClick.AddListener(() =>
+                        set.onClick.NewListener(() =>
                         {
-                            var assetExists = AssetManager.SpriteAssets.ContainsKey(beatmapObject.text);
-                            if (!assetExists)
+                            if (!GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text))
                             {
                                 var regex = new Regex(@"img\((.*?)\)");
                                 var match = regex.Match(beatmapObject.text);
@@ -4734,7 +4732,7 @@ namespace BetterLegacy.Editor.Managers
                                     texture2d.filterMode = FilterMode.Point;
                                     texture2d.Apply();
 
-                                    AssetManager.SpriteAssets[beatmapObject.text] = SpriteHelper.CreateSprite(texture2d);
+                                    GameData.Current.assets.AddSprite(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
                                 }
                                 else
                                 {
@@ -4747,15 +4745,15 @@ namespace BetterLegacy.Editor.Managers
                                     texture2d.filterMode = FilterMode.Point;
                                     texture2d.Apply();
 
-                                    AssetManager.SpriteAssets[beatmapObject.text] = SpriteHelper.CreateSprite(texture2d);
+                                    GameData.Current.assets.AddSprite(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
                                 }
                             }
                             else
-                                AssetManager.SpriteAssets.Remove(beatmapObject.text);
+                                GameData.Current.assets.RemoveSprite(beatmapObject.text);
 
                             Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
 
-                            dataText.text = !assetExists ? "Set Data" : "Clear Data";
+                            RenderShape(beatmapObject);
                         });
 
                         break;

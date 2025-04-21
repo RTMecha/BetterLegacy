@@ -3098,7 +3098,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
-                    AssetManager.SpriteAssets.Clear();
+                    GameData.Current.assets.sprites.Clear();
                     HideWarningPopup();
                 }, HideWarningPopup);
             });
@@ -4747,6 +4747,20 @@ namespace BetterLegacy.Editor.Managers
                     bg.renderers.Clear();
                     bg.transforms.Clear();
                 }
+
+                try
+                {
+                    for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
+                    {
+                        CoreHelper.Destroy(GameData.Current.assets.sounds[i].audio);
+                        GameData.Current.assets.sounds[i].audio = null;
+                    }
+                    GameData.Current.assets.sounds.Clear();
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Failed to clear sound assets due to the exception: {ex}");
+                }
             }
 
             Updater.UpdateObjects(false);
@@ -4837,6 +4851,15 @@ namespace BetterLegacy.Editor.Managers
 
                 yield break;
             }
+
+            // preload audio clips
+            if (GameData.Current && GameData.Current.assets)
+                for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
+                {
+                    var soundAsset = GameData.Current.assets.sounds[i];
+                    if (!soundAsset.audio)
+                        yield return CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
+                }
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 

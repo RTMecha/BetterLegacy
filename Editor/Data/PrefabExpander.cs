@@ -137,8 +137,8 @@ namespace BetterLegacy.Editor.Data
                 if (addBin)
                     ++beatmapObjectCopy.editorData.Bin;
 
-                if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
-                    AssetManager.SpriteAssets[beatmapObjectCopy.text] = sprite;
+                if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
+                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
 
                 beatmapObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                 GameData.Current.beatmapObjects.Add(beatmapObjectCopy);

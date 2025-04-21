@@ -1193,39 +1193,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < gameData.beatmapObjects.Count; i++)
                     gameData.beatmapObjects[i].SetAutokillToScale(gameData.beatmapObjects);
             
-            AssetManager.SpriteAssets.Clear();
-            if (jn["assets"] != null && jn["assets"]["spr"] != null)
-            {
-                for (int i = 0; i < jn["assets"]["spr"].Count; i++)
-                {
-                    var name = jn["assets"]["spr"][i]["n"];
-                    var data = jn["assets"]["spr"][i]["d"];
-
-                    if (!AssetManager.SpriteAssets.ContainsKey(name) && gameData.beatmapObjects.Has(x => x.text == name))
-                    {
-                        if (jn["assets"]["spr"][i]["i"] != null)
-                        {
-                            AssetManager.SpriteAssets.Add(name, SpriteHelper.StringToSprite(jn["assets"]["spr"][i]["i"]));
-                            continue;
-                        }
-
-                        byte[] imageData = new byte[data.Count];
-                        for (int j = 0; j < data.Count; j++)
-                        {
-                            imageData[j] = (byte)data[j].AsInt;
-                        }
-
-                        var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                        texture2d.LoadImage(imageData);
-
-                        texture2d.wrapMode = TextureWrapMode.Clamp;
-                        texture2d.filterMode = FilterMode.Point;
-                        texture2d.Apply();
-
-                        AssetManager.SpriteAssets.Add(name, SpriteHelper.CreateSprite(texture2d));
-                    }
-                }
-            }
+            gameData.assets.Clear();
+            if (jn["assets"] != null)
+                gameData.assets.ReadJSON(jn["assets"]);
 
             if (jn["bg_layers"] != null)
                 for (int i = 0; i < jn["bg_layers"].Count; i++)
@@ -1561,12 +1531,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["modifiers"][i]["retrigger"] = levelModifier.retriggerAmount;
             }
 
-            for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
-            {
-                var spriteAsset = AssetManager.SpriteAssets.ElementAt(i);
-                jn["assets"]["spr"][i]["n"] = spriteAsset.Key;
-                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(spriteAsset.Value);
-            }
+            if (assets && !assets.IsEmpty())
+                jn["assets"] = assets.ToJSON();
 
             CoreHelper.Log("Saving Object Prefabs");
             var prefabObjects = this.prefabObjects.FindAll(x => !x.fromModifier);
@@ -2020,6 +1986,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Fields
 
         public LevelBeatmapData data;
+
+        public Assets assets = new Assets();
 
         public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
 

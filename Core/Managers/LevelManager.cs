@@ -372,6 +372,15 @@ namespace BetterLegacy.Core.Managers
             AudioManager.inst.SetPitch(CoreHelper.Pitch);
             GameManager.inst.songLength = level.music.length;
 
+            // preload audio clips
+            if (GameData.Current && GameData.Current.assets)
+                for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
+                {
+                    var soundAsset = GameData.Current.assets.sounds[i];
+                    if (!soundAsset.audio)
+                        yield return CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
+                }
+
             #endregion
 
             #region Camera

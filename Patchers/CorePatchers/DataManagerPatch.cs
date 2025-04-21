@@ -40,7 +40,6 @@ namespace BetterLegacy.Patchers
             UIManager.Init();
             QuickElementManager.Init();
             FontManager.Init();
-            AssetManager.Init();
             LevelManager.Init();
             PlayerManager.Init();
             StoryManager.Init();
