@@ -91,6 +91,14 @@ namespace BetterLegacy.Core.Managers
             return audioSource;
         }
 
+        public AudioClip GetSound(DefaultSounds defaultSound) => GetSound(defaultSound.ToString());
+
+        public AudioClip GetSound(string name)
+        {
+            var soundClips = Library.soundClips[name];
+            return soundClips[UnityEngine.Random.Range(0, soundClips.Length)];
+        }
+
         public bool TryGetSound(string name, out AudioClip audioClip)
         {
             if (Library.soundClips.TryGetValue(name, out AudioClip[] soundClips))
