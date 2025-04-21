@@ -83,7 +83,11 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
         /// Sets the image objects' image.
         /// </summary>
         /// <param name="texture2D">Creates a sprite from this texture and applies it to the sprite renderer.</param>
-        public void SetTexture(Texture2D texture2D) => SetSprite(SpriteHelper.CreateSprite(texture2D));
+        public void SetTexture(Texture2D texture2D)
+        {
+            texture2D.filterMode = FilterMode.Point;
+            SetSprite(SpriteHelper.CreateSprite(texture2D));
+        }
 
         /// <summary>
         /// Sets the image objects' image.
