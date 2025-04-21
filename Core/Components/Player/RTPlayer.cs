@@ -2308,6 +2308,19 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         /// <summary>
+        /// Stops the player from boosting.
+        /// </summary>
+        public void StopBoosting()
+        {
+            if (boostCoroutine != null)
+                StopCoroutine(boostCoroutine);
+
+            isBoosting = false;
+            CanMove = true;
+            CanBoost = true;
+        }
+
+        /// <summary>
         /// Forces the player to jump if the gamemode is set to <see cref="GameMode.Platformer"/>.
         /// </summary>
         public void Jump()
@@ -2731,10 +2744,10 @@ namespace BetterLegacy.Core.Components.Player
             CanTakeDamage = true;
         }
 
-        IEnumerator BoostCancel(float _offset)
+        IEnumerator BoostCancel(float offset)
         {
             isBoostCancelled = true;
-            yield return CoroutineHelper.Seconds(_offset);
+            yield return CoroutineHelper.Seconds(offset);
             SetTriggerCollision(false);
             isBoosting = false;
             if (!isTakingHit)
@@ -2742,7 +2755,7 @@ namespace BetterLegacy.Core.Components.Player
 
             yield return CoroutineHelper.Seconds(0.1f);
             InitAfterBoost();
-            CancelBoostAnim();
+            InitBoostEndAnimation();
             yield break;
         }
 
@@ -2756,7 +2769,6 @@ namespace BetterLegacy.Core.Components.Player
 
         void InitBeforeHit()
         {
-            CoreHelper.Log($"Player {playerIndex} InitBeforeHit");
             startHurtTime = Time.time;
             CanBoost = true;
             SetTriggerCollision(false);
@@ -2767,22 +2779,6 @@ namespace BetterLegacy.Core.Components.Player
             Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_HIT, new PlayerNoticeParameters(CustomPlayer));
 
             SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.HurtPlayer);
-        }
-
-        void CancelBoostAnim()
-        {
-            CoreHelper.Log($"Player {playerIndex} {nameof(CancelBoostAnim)}");
-            InitBoostEndAnimation();
-        }
-
-        void ResetMovement()
-        {
-            if (boostCoroutine != null)
-                StopCoroutine(boostCoroutine);
-
-            isBoosting = false;
-            CanMove = true;
-            CanBoost = true;
         }
 
         IEnumerator CanShoot()
