@@ -273,6 +273,9 @@ namespace BetterLegacy.Core.Data.Player
             else
                 playerModel.needsUpdate = true;
 
+            if (jn["assets"] != null)
+                playerModel.assets.ReadJSON(jn["assets"]);
+
             playerModel.basePart = Base.Parse(jn["base"], playerModel);
             playerModel.stretchPart = Stretch.Parse(jn["stretch"], playerModel);
             playerModel.guiPart = GUI.Parse(jn["gui"], playerModel);
@@ -335,25 +338,29 @@ namespace BetterLegacy.Core.Data.Player
             var jn = JSON.Parse("{}");
 
             jn["version"] = Version.ToString();
-            if (basePart != null)
+
+            if (assets && !assets.IsEmpty())
+                jn["assets"] = assets.ToJSON();
+
+            if (basePart)
                 jn["base"] = basePart.ToJSON();
-            if (stretchPart != null)
+            if (stretchPart)
                 jn["stretch"] = stretchPart.ToJSON();
-            if (guiPart != null)
+            if (guiPart)
                 jn["gui"] = guiPart.ToJSON();
             jn["face"]["position"] = facePosition.ToJSON();
             jn["face"]["con_active"] = faceControlActive.ToString();
-            if (headPart != null)
+            if (headPart)
                 jn["head"] = headPart.ToJSON();
-            if (boostPart != null)
+            if (boostPart)
                 jn["boost"] = boostPart.ToJSON();
-            if (pulsePart != null)
+            if (pulsePart)
                 jn["pulse"] = pulsePart.ToJSON();
-            if (bulletPart != null)
+            if (bulletPart)
                 jn["bullet"] = bulletPart.ToJSON();
-            if (tailBase != null)
+            if (tailBase)
                 jn["tail_base"] = tailBase.ToJSON();
-            if (boostTailPart != null)
+            if (boostTailPart)
                 jn["tail_boost"] = boostTailPart.ToJSON();
 
             if (tailParts != null)
@@ -1798,6 +1805,8 @@ namespace BetterLegacy.Core.Data.Player
             
             "Custom Objects",
         };
+
+        public Assets assets = new Assets();
 
         public Base basePart;
 
