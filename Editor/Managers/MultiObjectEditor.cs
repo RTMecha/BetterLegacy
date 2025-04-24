@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -956,8 +957,47 @@ namespace BetterLegacy.Editor.Managers
             // Shape
             {
                 GenerateLabels(parent, 32f, "Shape");
-                //shapeSiblingIndex = parent.childCount;
                 RenderMultiShape();
+            }
+
+            // Store Images
+            {
+                var labels = GenerateLabels(parent, 32f, "Image");
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Store", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            if (beatmapObject.ShapeType != ShapeType.Image)
+                                continue;
+
+                            if (GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text))
+                                continue;
+
+                            var regex = new Regex(@"img\((.*?)\)");
+                            var match = regex.Match(beatmapObject.text);
+
+                            var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
+
+                            ObjectEditor.inst.StoreImage(beatmapObject, path);
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
+                        }
+                    }),
+                    new ButtonFunction("Clear", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the images of all selected objects?", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            if (beatmapObject.ShapeType != ShapeType.Image)
+                                continue;
+
+                            beatmapObject.text = string.Empty;
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
+                        }
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup)));
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
             }
 
             // Render Type
