@@ -20,6 +20,8 @@
 - Internally, a custom "base path" can be set in the editor. This means you can have Project Arrhythmia open on one harddrive, while another harddrive has the beatmaps folder. There is no UI to set this yet.
 - Added Prefab Object inspect buttons if you have Unity Explorer installed.
 - Added an Index Editor to the Object Editor. This means you can now view and edit the index of an object. The index controls what it appears in front of in the timeline. It also includes a context menu for selecting the previous / next objects in index order.
+- Added context menus to Image Objects.
+- Added Image Object editing to Multi Object Editor.
 
 ## Changes
 ### Core
