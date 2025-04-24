@@ -4678,13 +4678,24 @@ namespace BetterLegacy.Editor.Managers
                                             RTEditor.inst.BrowserPopup.Close();
                                         });
                                     }),
+                                    new ButtonFunction($"Store & Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject, copyFile: false, storeImage: true)),
+                                    new ButtonFunction($"Store & Use {RTEditor.EDITOR_BROWSER}", () =>
+                                    {
+                                        var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+                                        RTEditor.inst.BrowserPopup.Open();
+                                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
+                                        {
+                                            SelectImage(file, beatmapObject, copyFile: false, storeImage: true);
+                                            RTEditor.inst.BrowserPopup.Close();
+                                        });
+                                    }),
                                     new ButtonFunction(true),
                                     new ButtonFunction("Remove Image", () =>
                                     {
                                         beatmapObject.text = string.Empty;
 
-                                // Since setting image has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
+                                        // Since setting image has no affect on the timeline object, we will only need to update the physical object.
+                                        if (UpdateObjects)
                                             Updater.UpdateObject(beatmapObject, Updater.ObjectContext.SHAPE);
 
                                         RenderShape(beatmapObject);
@@ -4714,42 +4725,19 @@ namespace BetterLegacy.Editor.Managers
                         var set = shapeSettings.Find("7/set").GetComponent<Button>();
                         set.onClick.NewListener(() =>
                         {
+                            var regex = new Regex(@"img\((.*?)\)");
+                            var match = regex.Match(beatmapObject.text);
+
+                            var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
+
                             if (!GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text))
-                            {
-                                var regex = new Regex(@"img\((.*?)\)");
-                                var match = regex.Match(beatmapObject.text);
-
-                                var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
-
-                                if (RTFile.FileExists(path))
-                                {
-                                    var imageData = File.ReadAllBytes(path);
-
-                                    var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                                    texture2d.LoadImage(imageData);
-
-                                    texture2d.wrapMode = TextureWrapMode.Clamp;
-                                    texture2d.filterMode = FilterMode.Point;
-                                    texture2d.Apply();
-
-                                    GameData.Current.assets.AddSprite(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
-                                }
-                                else
-                                {
-                                    var imageData = LegacyPlugin.PALogoSprite.texture.EncodeToPNG();
-
-                                    var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                                    texture2d.LoadImage(imageData);
-
-                                    texture2d.wrapMode = TextureWrapMode.Clamp;
-                                    texture2d.filterMode = FilterMode.Point;
-                                    texture2d.Apply();
-
-                                    GameData.Current.assets.AddSprite(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
-                                }
-                            }
+                                StoreImage(beatmapObject, path);
                             else
+                            {
                                 GameData.Current.assets.RemoveSprite(beatmapObject.text);
+                                if (!RTFile.FileExists(path))
+                                    beatmapObject.text = string.Empty;
+                            }
 
                             Updater.UpdateObject(beatmapObject, Updater.ObjectContext.IMAGE);
 
@@ -6594,33 +6582,62 @@ namespace BetterLegacy.Editor.Managers
                 timelineMarkers[i].RenderPosition(timelineMarkers[i].Marker.time - beatmapObject.StartTime, ObjEditor.inst.Zoom * 14f, 0f);
         }
 
-        public void OpenImageSelector(BeatmapObject beatmapObject)
+        public void OpenImageSelector(BeatmapObject beatmapObject, bool copyFile = true, bool storeImage = false)
         {
             var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
-            SelectImage(jpgFile, beatmapObject);
+            SelectImage(jpgFile, beatmapObject, copyFile: copyFile, storeImage: storeImage);
         }
 
-        void SelectImage(string file, BeatmapObject beatmapObject, bool renderEditor = true, bool updateObject = true)
+        public void StoreImage(BeatmapObject beatmapObject, string file)
+        {
+            if (RTFile.FileExists(file))
+            {
+                var imageData = File.ReadAllBytes(file);
+
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
+
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
+
+                GameData.Current.assets.AddSprite(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
+            }
+            else
+            {
+                var imageData = LegacyPlugin.PALogoSprite.texture.EncodeToPNG();
+
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
+
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
+
+                GameData.Current.assets.AddSprite(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
+            }
+        }
+
+        void SelectImage(string file, BeatmapObject beatmapObject, bool renderEditor = true, bool updateObject = true, bool copyFile = true, bool storeImage = false)
         {
             var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
             RTFile.CreateDirectory(RTFile.CombinePaths(editorPath, "images"));
 
             file = RTFile.ReplaceSlash(file);
             CoreHelper.Log($"Selected file: {file}");
-            if (string.IsNullOrEmpty(file))
+            if (!RTFile.FileExists(file))
                 return;
-
+            
             string jpgFileLocation = RTFile.CombinePaths(editorPath, "images", Path.GetFileName(file));
 
-            var levelPath = file.Remove(editorPath + "/");
-
-            if (!RTFile.FileExists(jpgFileLocation) && !file.Contains(editorPath))
+            if (copyFile && !RTFile.FileExists(jpgFileLocation) && !file.Contains(editorPath))
                 RTFile.CopyFile(file, jpgFileLocation);
-            else
-                jpgFileLocation = editorPath + "/" + levelPath;
 
             beatmapObject.text = jpgFileLocation.Remove(editorPath + "/");
+
+            if (storeImage)
+                StoreImage(beatmapObject, file);
 
             // Since setting image has no affect on the timeline object, we will only need to update the physical object.
             if (updateObject && UpdateObjects)
