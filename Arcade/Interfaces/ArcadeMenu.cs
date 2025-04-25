@@ -1724,14 +1724,14 @@ namespace BetterLegacy.Arcade.Interfaces
                                 CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
-                                    OnlineLevelIcons.Add(id, sprite);
+                                    OnlineLevelIcons[id] = sprite;
                                     button.icon = sprite;
                                     if (button.iconUI)
                                         button.iconUI.sprite = sprite;
                                 }, onError =>
                                 {
                                     var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                                    OnlineLevelIcons.Add(id, sprite);
+                                    OnlineLevelIcons[id] = sprite;
                                     button.icon = sprite;
                                     if (button.iconUI)
                                         button.iconUI.sprite = sprite;
@@ -1742,10 +1742,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         }
                     }
 
-                    if (jn["count"] != null)
-                    {
-                        OnlineLevelCount = jn["count"].AsInt;
-                    }
+                    OnlineLevelCount = jn["count"].AsInt;
                 }
                 catch (Exception ex)
                 {
