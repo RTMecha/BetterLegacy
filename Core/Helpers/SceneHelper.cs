@@ -40,7 +40,7 @@ namespace BetterLegacy.Core.Helpers
         public static bool Loading { get; set; }
 
         /// <summary>
-        /// True fi the game has loaded, otherwise false.
+        /// True if the game has loaded, otherwise false.
         /// </summary>
         public static bool LoadedGame { get; set; }
 
