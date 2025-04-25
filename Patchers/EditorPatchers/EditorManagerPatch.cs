@@ -109,9 +109,6 @@ namespace BetterLegacy.Patchers
             InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
 
-            if (Example.Current && Example.Current.model)
-                Example.Current.model.SetActive(true); // if Example was disabled
-
             #region Editor Theme Setup
 
             EditorThemeManager.AddGraphic(EditorManager.inst.timeline.transform.parent.Find("Panel 2").GetComponent<Image>(), ThemeGroup.Timeline_Background);
@@ -257,6 +254,7 @@ namespace BetterLegacy.Patchers
             __instance.loading = false;
             SceneHelper.LoadedGame = true;
 
+            Example.Current?.model?.SetActive(true); // if Example was disabled
             Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_START);
             Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.SPAWN);
 
