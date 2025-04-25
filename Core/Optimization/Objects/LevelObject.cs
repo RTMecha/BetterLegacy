@@ -122,6 +122,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                 parentObjects.Clear();
             }
 
+            if (top)
+                Helpers.CoreHelper.Destroy(top.gameObject);
+
             parentObjects = null;
             top = null;
             beatmapObject = null;

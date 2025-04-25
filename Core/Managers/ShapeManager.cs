@@ -209,6 +209,7 @@ namespace BetterLegacy.Core.Managers
             loadedShapes = false;
 
             var parent = new GameObject("Shape Parent");
+            parent.SetActive(false);
             shapeParent = parent.transform;
 
             for (int i = 0; i < Shapes2D.Count; i++)
@@ -266,6 +267,17 @@ namespace BetterLegacy.Core.Managers
                     imageObject.AddComponent<SpriteRenderer>();
 
                     ObjectManager.inst.objectPrefabs[6].options.Add(imageMesh);
+                }
+            }
+
+            for (int i = 0; i < ObjectManager.inst.objectPrefabs.Count; i++)
+            {
+                var objectPrefab = ObjectManager.inst.objectPrefabs[i];
+                for (int j = 0; j < objectPrefab.options.Count; j++)
+                {
+                    var gameObject = objectPrefab.options[j];
+                    if (gameObject)
+                        gameObject.SetActive(false);
                 }
             }
 

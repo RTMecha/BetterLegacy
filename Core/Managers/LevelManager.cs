@@ -520,6 +520,7 @@ namespace BetterLegacy.Core.Managers
                 if (CurrentLevelCollection && CurrentLevelCollection.previewAudio)
                 {
                     CurrentLevelCollection.previewAudio.UnloadAudioData();
+                    CoreHelper.Destroy(CurrentLevelCollection.previewAudio);
                     CurrentLevelCollection.previewAudio = null;
                 }
                 CurrentLevelCollection = null;
@@ -527,6 +528,7 @@ namespace BetterLegacy.Core.Managers
                 if (CurrentLevel && CurrentLevel.music)
                 {
                     CurrentLevel.music.UnloadAudioData();
+                    CoreHelper.Destroy(CurrentLevel.music);
                     CurrentLevel.music = null;
                 }
                 CurrentLevel = null;
@@ -541,9 +543,16 @@ namespace BetterLegacy.Core.Managers
                     collection.levelInformation.Clear();
                     collection.levels.Clear();
 
+                    collection.icon = null;
+                    
+                    if (collection.banner)
+                        CoreHelper.Destroy(collection.banner);
+                    collection.banner = null;
+
                     if (collection.previewAudio)
                     {
                         collection.previewAudio.UnloadAudioData();
+                        CoreHelper.Destroy(collection.previewAudio);
                         collection.previewAudio = null;
                     }
 
@@ -567,6 +576,7 @@ namespace BetterLegacy.Core.Managers
                     if (level.music)
                     {
                         level.music.UnloadAudioData();
+                        CoreHelper.Destroy(level.music);
                         level.music = null;
                     }
 
@@ -576,6 +586,9 @@ namespace BetterLegacy.Core.Managers
 
                 OnLevelStart = null;
                 OnLevelEnd = null;
+
+                Arcade.Interfaces.ArcadeMenu.OnlineLevelIcons.Clear();
+                Arcade.Interfaces.ArcadeMenu.OnlineSteamLevelIcons.Clear();
             }
             catch (Exception ex)
             {
