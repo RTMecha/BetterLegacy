@@ -225,7 +225,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (parentObject.spawned && desync) // continue if parent has desync setting on and was spawned.
                     continue;
 
-                if (parentObject.detatched) // for modifier use, probably
+                if (parentObject.BeatmapObject.detatched && desync) // for modifier use, probably
                     continue;
 
                 parentObject.spawned = true;
@@ -285,7 +285,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (desync) // don't reset desync as the intention is the object "detatches" itself from the parent object.
                     continue;
 
-                desync = parentObject.desync;
+                desync = parentObject.desync || parentObject.BeatmapObject.detatched;
                 syncOffset = parentObject.timeOffset;
             }
 

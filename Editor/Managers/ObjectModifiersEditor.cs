@@ -2547,6 +2547,19 @@ namespace BetterLegacy.Editor.Managers
                             BoolGenerator(modifier, layout, "Playing", 0, false);
                             break;
                         }
+                    case "detachParent":
+                    case "detachParentOther":
+                        {
+                            BoolGenerator(modifier, layout, "Detach", 0, false);
+                            if (cmd.Contains("Other"))
+                            {
+                                PrefabGroupOnly(modifier, layout);
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
+
+                            break;
+                        }
 
                     #endregion
 

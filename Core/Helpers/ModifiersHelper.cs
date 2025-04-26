@@ -5585,34 +5585,25 @@ namespace BetterLegacy.Core.Helpers
                 if (failed)
                     CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {modifier.reference.name}\nID: {modifier.reference.id}");
             },
-            //"detachParent" => modifier =>
-            //{
-            //    if (modifier.constant || !modifier.reference || !modifier.reference.levelObject)
-            //        return;
+            "detachParent" => modifier =>
+            {
+                if (!modifier.constant && modifier.reference)
+                    modifier.reference.detatched = modifier.GetBool(0, true);
+            },
+            "detachParentOther" => modifier =>
+            {
+                if (modifier.constant)
+                    return;
 
-            //    var parentObjects = modifier.reference.levelObject.parentObjects;
-            //    if (parentObjects.Count > 1)
-            //        parentObjects[1].detatched = modifier.GetBool(0, false);
-            //},
-            //"detachParentOther" => modifier =>
-            //{
-            //    if (modifier.constant)
-            //        return;
+                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
+                var detach = modifier.GetBool(0, true);
 
-            //    var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-            //    var detach = modifier.GetBool(0, false);
-
-            //    for (int i = 0; i < list.Count; i++)
-            //    {
-            //        var beatmapObject = list[i];
-            //        if (!beatmapObject.levelObject)
-            //            continue;
-
-            //        var parentObjects = modifier.reference.levelObject.parentObjects;
-            //        if (parentObjects.Count > 1)
-            //            parentObjects[1].detatched = detach;
-            //    }
-            //},
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var beatmapObject = list[i];
+                    beatmapObject.detatched = detach;
+                }
+            },
 
             #endregion
 

@@ -38,8 +38,6 @@ namespace BetterLegacy.Core.Optimization.Objects
         public bool desync;
         public bool spawned;
 
-        public bool detatched;
-
         public BeatmapObject BeatmapObject { get; set; }
     }
 }

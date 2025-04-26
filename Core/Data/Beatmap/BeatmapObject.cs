@@ -117,7 +117,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// If the object should stop following the parent chain after spawn.
         /// </summary>
-        public bool desync = false;
+        public bool desync;
+
+        /// <summary>
+        /// Temporary detatches the parent (similar to <see cref="desync"/>).
+        /// </summary>
+        public bool detatched;
 
         #endregion
 

@@ -361,6 +361,8 @@ namespace BetterLegacy.Core.Optimization.Objects
                         BeatmapObject = beatmapObject
                     };
                 } // In case the CashedSequence is null, set defaults.
+
+                beatmapObject.detatched = false;
             }
             catch (Exception e)
             {
