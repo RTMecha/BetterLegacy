@@ -601,7 +601,12 @@ namespace BetterLegacy.Core.Helpers
                 if (ObjectEditor.UpdateObjects)
                 {
                     if (timelineObject.isBeatmapObject)
-                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), Updater.ObjectContext.START_TIME, false);
+                    {
+                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.START_TIME, false);
+                        if (beatmapObject.desync)
+                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN, false);
+                    }
                     if (timelineObject.isPrefabObject)
                         Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME, false);
                 }

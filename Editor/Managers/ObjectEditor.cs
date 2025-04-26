@@ -4085,8 +4085,8 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
 
             Dialog.ParentDesyncToggle.onValueChanged.ClearAll();
-            Dialog.ParentDesyncToggle.gameObject.SetActive(RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value);
-            if (RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value)
+            Dialog.ParentDesyncToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+            if (RTEditor.ShowModdedUI)
             {
                 Dialog.ParentDesyncToggle.isOn = beatmapObject.desync;
                 Dialog.ParentDesyncToggle.onValueChanged.AddListener(_val =>

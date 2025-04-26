@@ -28,8 +28,6 @@ namespace BetterLegacy.Core.Optimization.Objects
             this.prefabOffsetScale = prefabOffsetScale;
             this.prefabOffsetRotation = prefabOffsetRotation;
 
-            desyncParentIndex = this.parentObjects.Count;
-
             try
             {
                 top = this.parentObjects[this.parentObjects.Count - 1].transform.parent;
@@ -92,10 +90,6 @@ namespace BetterLegacy.Core.Optimization.Objects
         #region Internal
 
         bool active = false;
-        float prevStartTime = 0f;
-        bool spawned = false;
-        int desyncParentIndex;
-        int syncParentIndex;
 
         Vector3 currentScale; // if scale is 0, 0 then disable collider and renderer
 
@@ -140,16 +134,18 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             if (!active && this.active)
             {
-                desyncParentIndex = parentObjects.Count;
-                spawned = false;
+                for (int i = 0; i < parentObjects.Count; i++)
+                {
+                    var parentObject = parentObjects[i];
+                    parentObject.spawned = false;
+                    for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
+                        parentObject.positionSequence.keyframes[j].Stop();
+                    for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
+                        parentObject.scaleSequence.keyframes[j].Stop();
+                    for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
+                        parentObject.rotationSequence.keyframes[j].Stop();
+                }
 
-                var parentObject = parentObjects[0];
-                for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
-                    parentObject.positionSequence.keyframes[j].Stop();
-                for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
-                    parentObject.scaleSequence.keyframes[j].Stop();
-                for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
-                    parentObject.rotationSequence.keyframes[j].Stop();
                 for (int i = 0; i < visualObject.colorSequence.keyframes.Length; i++)
                     visualObject.colorSequence.keyframes[i].Stop();
             }
@@ -214,15 +210,11 @@ namespace BetterLegacy.Core.Optimization.Objects
             float scaleParallax = 1f;
             float rotationParallax = 1f;
 
-            if (prevStartTime != beatmapObject.StartTime)
-            {
-                prevStartTime = beatmapObject.StartTime;
-                spawned = false;
-            }
+            bool desync = false;
+            float syncOffset = 0f;
 
             var totalScale = Vector3.one;
-            int desyncParentIndex = 0;
-            bool hasSpawned = false;
+
             for (int i = 0; i < parentObjects.Count; i++)
             {
                 var parentObject = parentObjects[i];
@@ -230,73 +222,74 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (totalScale == Vector3.zero) // stop interpolating entire parent chain if any of the parents scale is zero due to scale being multiplied.
                     break;
 
-                if (!spawned || i >= syncParentIndex && i < this.desyncParentIndex)
+                if (parentObject.spawned && desync) // continue if parent has desync setting on and was spawned.
+                    continue;
+
+                if (parentObject.detatched) // for modifier use, probably
+                    continue;
+
+                parentObject.spawned = true;
+
+                if (parentObject.parentAdditivePosition)
+                    positionAddedOffset += parentObject.parentOffsetPosition;
+                if (parentObject.parentAdditiveScale)
+                    scaleAddedOffset += parentObject.parentOffsetScale;
+                if (parentObject.parentAdditiveRotation)
+                    rotationAddedOffset += parentObject.parentOffsetRotation;
+
+                // If last parent is position parented, animate position
+                if (animatePosition)
                 {
-                    if (parentObject.parentAdditivePosition)
-                        positionAddedOffset += parentObject.parentOffsetPosition;
-                    if (parentObject.parentAdditiveScale)
-                        scaleAddedOffset += parentObject.parentOffsetScale;
-                    if (parentObject.parentAdditiveRotation)
-                        rotationAddedOffset += parentObject.parentOffsetRotation;
+                    var value =
+                        parentObject.positionSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (positionOffset + positionAddedOffset) : time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) +
+                        parentObject.BeatmapObject.reactivePositionOffset +
+                        parentObject.BeatmapObject.positionOffset;
 
-                    // If last parent is position parented, animate position
-                    if (animatePosition)
-                    {
-                        var value = parentObject.positionSequence.Interpolate(time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) + parentObject.BeatmapObject.reactivePositionOffset + parentObject.BeatmapObject.positionOffset;
+                    float z = depth * 0.0005f + (value.z / 10f);
 
-                        float z = depth * 0.0005f + (value.z / 10f);
-
-                        parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
-                    }
-
-                    // If last parent is scale parented, animate scale
-                    if (animateScale)
-                    {
-                        var r = parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.scaleOffset;
-                        var value = parentObject.scaleSequence.Interpolate(time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
-                        var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
-                        parentObject.transform.localScale = scale;
-                        totalScale = RTMath.Scale(totalScale, scale);
-                    }
-
-                    // If last parent is rotation parented, animate rotation
-                    if (animateRotation)
-                    {
-                        var value = Quaternion.AngleAxis(
-                            (parentObject.rotationSequence.Interpolate(time - parentObject.timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.BeatmapObject.reactiveRotationOffset) * rotationParallax,
-                            Vector3.forward);
-                        parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.BeatmapObject.rotationOffset);
-                    }
-
-                    // Cache parent values to use for next parent
-                    positionOffset = parentObject.parentOffsetPosition;
-                    scaleOffset = parentObject.parentOffsetScale;
-                    rotationOffset = parentObject.parentOffsetRotation;
-
-                    animatePosition = parentObject.parentAnimatePosition;
-                    animateScale = parentObject.parentAnimateScale;
-                    animateRotation = parentObject.parentAnimateRotation;
-
-                    positionParallax = parentObject.parentParallaxPosition;
-                    scaleParallax = parentObject.parentParallaxScale;
-                    rotationParallax = parentObject.parentParallaxRotation;
-
-                    if (!spawned)
-                        syncParentIndex = i;
-
-                    if (parentObject.desync && !spawned)
-                    {
-                        hasSpawned = true;
-                        spawned = true;
-                        desyncParentIndex = i + 1;
-                    }
+                    parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
                 }
+
+                // If last parent is scale parented, animate scale
+                if (animateScale)
+                {
+                    var r = parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.scaleOffset;
+                    var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (scaleOffset + scaleAddedOffset) : time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
+                    var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
+                    parentObject.transform.localScale = scale;
+                    totalScale = RTMath.Scale(totalScale, scale);
+                }
+
+                // If last parent is rotation parented, animate rotation
+                if (animateRotation)
+                {
+                    var value = Quaternion.AngleAxis(
+                        (parentObject.rotationSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (rotationOffset + rotationAddedOffset) : time - parentObject.timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.BeatmapObject.reactiveRotationOffset) * rotationParallax,
+                        Vector3.forward);
+                    parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.BeatmapObject.rotationOffset);
+                }
+
+                // Cache parent values to use for next parent
+                positionOffset = parentObject.parentOffsetPosition;
+                scaleOffset = parentObject.parentOffsetScale;
+                rotationOffset = parentObject.parentOffsetRotation;
+
+                animatePosition = parentObject.parentAnimatePosition;
+                animateScale = parentObject.parentAnimateScale;
+                animateRotation = parentObject.parentAnimateRotation;
+
+                positionParallax = parentObject.parentParallaxPosition;
+                scaleParallax = parentObject.parentParallaxScale;
+                rotationParallax = parentObject.parentParallaxRotation;
+
+                if (desync) // don't reset desync as the intention is the object "detatches" itself from the parent object.
+                    continue;
+
+                desync = parentObject.desync;
+                syncOffset = parentObject.timeOffset;
             }
 
             currentScale = totalScale;
-
-            if (hasSpawned)
-                this.desyncParentIndex = desyncParentIndex;
 
             CheckCollision();
         }
