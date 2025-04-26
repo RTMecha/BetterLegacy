@@ -6,6 +6,7 @@
 
 ### Core
 - Parallax Objects from VG can now be converted to and from BG Objects. It's not 100% accurate yet, but at least it's something.
+- Added detachParent modifiers. This makes an object act as if they have "parent desync" on, except it desyncs from where the current song time is.
 
 ### Editor
 - You can now drag and drop files into the game, both in the editor and the arcade.
@@ -65,6 +66,7 @@
 - Fixed setParent modifiers crashing the game because I got the parent and the child confused.
 - Fixed Prefab Object autokill updating being broken.
 - Fixed Hue values not loading correctly for Background Objects.
+- Fixed Parent Desync being broken. Due to this, it's no longer considered experimental and now displays by default with Editor Complexity set to Advanced.
 
 ------------------------------------------------------------------------------------------
 
