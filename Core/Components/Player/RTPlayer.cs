@@ -3083,6 +3083,7 @@ namespace BetterLegacy.Core.Components.Player
                 int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
                 customObj.parent = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent).transform;
+                customObj.parent.gameObject.SetActive(true);
                 customObj.gameObject = customObj.parent.GetChild(0).gameObject;
                 customObj.parent.transform.localPosition = Vector3.zero;
                 customObj.parent.transform.localScale = Vector3.one;
