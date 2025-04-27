@@ -136,12 +136,12 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <summary>
         /// Opens the editor popup.
         /// </summary>
-        public void Open() => PlayAnimation(true);
+        public virtual void Open() => PlayAnimation(true);
 
         /// <summary>
         /// Closes the editor popup.
         /// </summary>
-        public void Close() => PlayAnimation(false);
+        public virtual void Close() => PlayAnimation(false);
 
         /// <summary>
         /// Plays the popups' animation.

@@ -102,6 +102,24 @@ namespace BetterLegacy.Companion.Entity
             if (!reference || !reference.model || !reference.model.Visible) // Example can't notice anything if he's not visible!
                 return;
 
+            if (reference.tutorials && reference.tutorials.inTutorial)
+            {
+                switch (context)
+                {
+                    #region Editor
+
+                    case Notices.LOADED_LEVEL: {
+                            Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 5);
+
+                            break;
+                        }
+
+                    #endregion
+                }
+
+                return;
+            }
+
             switch (context)
             {
                 case Notices.SCENE_LOADED: {

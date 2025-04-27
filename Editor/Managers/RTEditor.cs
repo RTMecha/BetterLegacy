@@ -3819,8 +3819,11 @@ namespace BetterLegacy.Editor.Managers
             browseLocalButton.onClick.AddListener(() =>
             {
                 string text = FileBrowser.OpenSingleFile("Select a song to use!", RTFile.ApplicationDirectory, "ogg", "wav", "mp3");
-                if (!string.IsNullOrEmpty(text))
-                    path.text = text;
+                if (string.IsNullOrEmpty(text))
+                    return;
+
+                path.text = text;
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 1);
             });
 
             var browseInternal = browseLocal.gameObject.Duplicate(browseBase.transform, "internal browse");
@@ -3833,11 +3836,12 @@ namespace BetterLegacy.Editor.Managers
                 BrowserPopup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.AudioDotFormats, onSelectFile: _val =>
                 {
-                    if (!string.IsNullOrEmpty(_val))
-                    {
-                        path.text = _val;
-                        BrowserPopup.Close();
-                    }
+                    if (string.IsNullOrEmpty(_val))
+                        return;
+
+                    path.text = _val;
+                    Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 1);
+                    BrowserPopup.Close();
                 });
             });
 
@@ -3870,10 +3874,29 @@ namespace BetterLegacy.Editor.Managers
             songTitleInputField.onValueChanged.ClearAll();
             songTitleInputField.onEndEdit.ClearAll();
             songTitleInputField.text = newLevelSongTitle;
-            songTitleInputField.onValueChanged.AddListener(x => newLevelSongTitle = x);
+            songTitleInputField.onValueChanged.AddListener(_val =>
+            {
+                newLevelSongTitle = _val;
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 3);
+            });
 
-            EditorThemeManager.AddLightText(newFilePopup.Find("Level Name").GetComponent<Text>());
-            EditorThemeManager.AddInputField(newFilePopup.Find("level-name").GetComponent<InputField>());
+            var levelNameField = levelName.GetComponent<InputField>();
+            levelNameField.onEndEdit.ClearAll();
+            levelNameField.onValueChanged.NewListener(_val =>
+            {
+                EditorManager.inst.NewLevelName(_val);
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 2);
+            });
+
+            var create = newFilePopup.Find("submit").GetComponent<Button>();
+            create.onClick.NewListener(() =>
+            {
+                CreateNewLevel();
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 4);
+            });
+
+            EditorThemeManager.AddLightText(levelNameLabel.GetComponent<Text>());
+            EditorThemeManager.AddInputField(levelNameField);
 
             EditorThemeManager.AddLightText(songTitleLabelText);
             EditorThemeManager.AddInputField(songTitleInputField);
@@ -3889,7 +3912,6 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(chooseTemplateButton.image, ThemeGroup.Function_2_Normal, true);
             EditorThemeManager.AddGraphic(chooseTemplateText, ThemeGroup.Function_2_Text);
 
-            var create = newFilePopup.Find("submit").GetComponent<Button>();
             Destroy(create.GetComponent<Animator>());
             create.transition = Selectable.Transition.ColorTint;
             EditorThemeManager.AddGraphic(create.image, ThemeGroup.Add, true);
@@ -4922,7 +4944,6 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log("Updating timeline objects...");
             EventEditor.inst.CreateEventObjects();
             BackgroundManager.inst.UpdateBackgrounds();
-            //GameManager.inst.UpdateTheme();
 
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;

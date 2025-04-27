@@ -21,13 +21,14 @@ namespace BetterLegacy.Companion.Entity
     {
         public Example() => internalID = LSText.randomNumString(8);
 
-        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, List<ExampleModule> modules = null) : this()
+        public Example(ExampleBrain brain, ExampleModel model, ExampleChatBubble chatBubble, ExampleOptions options, ExampleCommands commands, ExampleTutorials tutorials, List<ExampleModule> modules = null) : this()
         {
             this.brain = brain;
             this.model = model;
             this.chatBubble = chatBubble;
             this.options = options;
             this.commands = commands;
+            this.tutorials = tutorials;
             this.modules = modules;
 
             this.brain.SetReference(this);
@@ -35,6 +36,7 @@ namespace BetterLegacy.Companion.Entity
             this.chatBubble.SetReference(this);
             this.options.SetReference(this);
             this.commands.SetReference(this);
+            this.tutorials.SetReference(this);
             this.modules?.ForLoop(module => module?.SetReference(this));
         }
 
@@ -76,6 +78,8 @@ namespace BetterLegacy.Companion.Entity
         /// Example's chat window.
         /// </summary>
         public ExampleCommands commands;
+
+        public ExampleTutorials tutorials;
 
         /// <summary>
         /// List of custom modules.
@@ -232,7 +236,7 @@ namespace BetterLegacy.Companion.Entity
         /// <summary>
         /// Gets the default Example.
         /// </summary>
-        public static Func<Example> getDefault = () => new Example(ExampleBrain.getDefault(), ExampleModel.getDefault(), ExampleChatBubble.getDefault(), ExampleOptions.getDefault(), ExampleCommands.getDefault(), getDefaultModules?.Select(x => x?.Invoke())?.ToList() ?? null);
+        public static Func<Example> getDefault = () => new Example(ExampleBrain.getDefault(), ExampleModel.getDefault(), ExampleChatBubble.getDefault(), ExampleOptions.getDefault(), ExampleCommands.getDefault(), ExampleTutorials.getDefault(), getDefaultModules?.Select(x => x?.Invoke())?.ToList() ?? null);
 
         public static List<Func<ExampleModule>> getDefaultModules;
 
@@ -275,6 +279,8 @@ namespace BetterLegacy.Companion.Entity
             options.Build();
             LogStartup("Building the commands...");
             commands.Build();
+            LogStartup("Building the tutorials...");
+            tutorials.Build();
             if (modules != null)
             {
                 LogStartup("Building the custom modules...");
@@ -298,6 +304,7 @@ namespace BetterLegacy.Companion.Entity
             chatBubble?.Tick();
             options?.Tick();
             commands?.Tick();
+            tutorials?.Tick();
 
             modules?.ForLoop(module => module?.Tick());
 
@@ -330,6 +337,8 @@ namespace BetterLegacy.Companion.Entity
             options = null;
             commands?.Clear();
             commands = null;
+            tutorials?.Clear();
+            tutorials = null;
 
             modules?.ForLoop(module => module?.Clear());
             modules?.Clear();
