@@ -973,6 +973,15 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(EditorManager.OpenNewLevelPopup))]
+        [HarmonyPrefix]
+        static bool OpenNewLevelPopupPrefix()
+        {
+            EditorManager.inst.ClearPopups();
+            RTEditor.inst.NewLevelPopup.Open();
+            return false;
+        }
+
         [HarmonyPatch(nameof(EditorManager.OpenLevelFolder))]
         [HarmonyPrefix]
         static bool OpenLevelFolder()
