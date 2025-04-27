@@ -8,6 +8,9 @@
 - Parallax Objects from VG can now be converted to and from BG Objects. It's not 100% accurate yet, but at least it's something.
 - Added detachParent modifiers. This makes an object act as if they have "parent desync" on, except it desyncs from where the current song time is.
 
+### Example Companion
+- Started working on tutorials. These won't be implemented for a while, but at least the groundwork is there.
+
 ### Editor
 - You can now drag and drop files into the game, both in the editor and the arcade.
   - Dragging a level into the arcade / editor will load it.
@@ -43,6 +46,9 @@
 
 ### Example Companion
 - Example now has eyelids for more expressions.
+
+### Interfaces
+- Increased changelog menu interpolate speed.
 
 ### Editor
 - Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
