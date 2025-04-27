@@ -26,7 +26,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 parentLayout = "updates",
                 rect = RectValues.Default.SizeDelta(0f, 36f),
                 hideBG = true,
-                textColor = 6
+                textColor = 6,
+                length = 0.05f,
             });
         }
     }
