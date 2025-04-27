@@ -196,7 +196,7 @@ namespace BetterLegacy.Companion.Entity
             /// <summary>
             /// Tutorial on creating a new level.
             /// </summary>
-            public static string CREATE_LEVEL = "CREATE_LEVEL";
+            public const string CREATE_LEVEL = "CREATE_LEVEL";
         }
 
         #endregion
