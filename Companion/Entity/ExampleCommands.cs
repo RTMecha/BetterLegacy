@@ -32,10 +32,10 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public static Func<ExampleCommands> getDefault = () =>
         {
-            var brain = new ExampleCommands();
-            brain.InitDefault();
+            var commands = new ExampleCommands();
+            commands.InitDefault();
 
-            return brain;
+            return commands;
         };
         public override void InitDefault()
         {

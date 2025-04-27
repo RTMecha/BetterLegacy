@@ -34,10 +34,10 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public static Func<ExampleModel> getDefault = () =>
         {
-            var brain = new ExampleModel();
-            brain.InitDefault();
+            var model = new ExampleModel();
+            model.InitDefault();
 
-            return brain;
+            return model;
         };
 
         public override void InitDefault()

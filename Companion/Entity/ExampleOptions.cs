@@ -27,10 +27,10 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public static Func<ExampleOptions> getDefault = () =>
         {
-            var brain = new ExampleOptions();
-            brain.InitDefault();
+            var options = new ExampleOptions();
+            options.InitDefault();
 
-            return brain;
+            return options;
         };
 
         public override void InitDefault()

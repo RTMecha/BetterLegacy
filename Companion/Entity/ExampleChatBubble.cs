@@ -32,10 +32,10 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public static Func<ExampleChatBubble> getDefault = () =>
         {
-            var brain = new ExampleChatBubble();
-            brain.InitDefault();
+            var chatBubble = new ExampleChatBubble();
+            chatBubble.InitDefault();
 
-            return brain;
+            return chatBubble;
         };
 
         public override void InitDefault()
