@@ -544,9 +544,6 @@ namespace BetterLegacy.Core.Managers
                     collection.levels.Clear();
 
                     collection.icon = null;
-                    
-                    if (collection.banner)
-                        CoreHelper.Destroy(collection.banner);
                     collection.banner = null;
 
                     if (collection.previewAudio)
