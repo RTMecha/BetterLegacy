@@ -316,21 +316,23 @@ namespace BetterLegacy.Editor.Components
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var bm = beatmapObjects[i];
-                    if (Updater.TryGetObject(bm, out Core.Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.renderer)
-                    {
-                        var renderer = levelObject.visualObject.renderer;
-                        if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
-                            continue;
+                    var levelObject = bm.levelObject;
+                    if (!levelObject || !levelObject.visualObject)
+                        continue;
 
-                        SetHoverColor(levelObject, renderer);
-                        SetLayerColor(levelObject, renderer, prefabObject.editorData.Layer);
-                    }
+                    var renderer = levelObject.visualObject.renderer;
+                    if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
+                        continue;
+
+                    SetHoverColor(levelObject, renderer);
+                    SetLayerColor(levelObject, renderer, prefabObject.editorData.Layer);
                 }
 
                 return;
             }
 
-            if (!beatmapObject.editorData || !Updater.TryGetObject(beatmapObject, out LevelObject selfLevelObject))
+            var selfLevelObject = beatmapObject.levelObject;
+            if (!beatmapObject.editorData || !selfLevelObject)
                 return;
 
             SetColor(selfLevelObject, renderer, beatmapObject.editorData.Layer);

@@ -2148,7 +2148,9 @@ namespace BetterLegacy.Editor.Managers
 
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
-                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject))
+                var levelObject = beatmapObject.levelObject;
+
+                if (levelObject)
                 {
                     levelObject.StartTime = beatmapObject.StartTime;
                     levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
@@ -6575,11 +6577,11 @@ namespace BetterLegacy.Editor.Managers
             if (clearParent)
             {
                 var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.ObjectSearchPopup.Content, "Clear Parents");
-                buttonPrefab.transform.GetChild(0).GetComponent<Text>().text = "Clear Parents";
+                var buttonText = buttonPrefab.transform.GetChild(0).GetComponent<Text>();
+                buttonText.text = "Clear Parents";
 
                 var button = buttonPrefab.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
@@ -6591,21 +6593,24 @@ namespace BetterLegacy.Editor.Managers
                 var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
                 image.color = Color.red;
                 image.sprite = EditorSprites.CloseSprite;
+
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(buttonText);
             }
 
             if (beatmapObjects == null)
                 beatmapObjects = GameData.Current.beatmapObjects;
 
             var list = beatmapObjects.FindAll(x => !x.fromPrefab);
+            int num = 0;
             foreach (var beatmapObject in list)
             {
                 var regex = new Regex(@"\[([0-9])\]");
                 var match = regex.Match(objectSearchTerm);
 
-                if (string.IsNullOrEmpty(objectSearchTerm) ||
-                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < beatmapObjects.Count && beatmapObjects.IndexOf(beatmapObject) == index ||
-                    beatmapObject.id == objectSearchTerm ||
-                    beatmapObject.name.ToLower().Contains(objectSearchTerm.ToLower()))
+                if (RTString.SearchString(objectSearchTerm, beatmapObject.name) ||
+                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < beatmapObjects.Count && num == index ||
+                    beatmapObject.id == objectSearchTerm)
                 {
                     string nm = $"[{(list.IndexOf(beatmapObject) + 1).ToString("0000")}/{list.Count.ToString("0000")} - {beatmapObject.id}] : {beatmapObject.name}";
                     var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.ObjectSearchPopup.Content, nm);
@@ -6613,8 +6618,7 @@ namespace BetterLegacy.Editor.Managers
                     buttonText.text = nm;
 
                     var button = buttonPrefab.GetComponent<Button>();
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() => { onSelect?.Invoke(beatmapObject); });
+                    button.onClick.NewListener(() => onSelect?.Invoke(beatmapObject));
 
                     var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
                     image.color = RTEditor.GetObjectColor(beatmapObject, false);
@@ -6627,53 +6631,61 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                     EditorThemeManager.ApplyLightText(buttonText);
 
-                    string desc = "";
-                    string hint = "";
+                    #region Info
 
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                    var levelObject = beatmapObject.levelObject;
+
+                    if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     {
-                        var transform = levelObject.visualObject.gameObject.transform;
-
-                        string parent = "";
-                        if (!string.IsNullOrEmpty(beatmapObject.Parent))
-                            parent = "<br>P: " + beatmapObject.Parent + " (" + beatmapObject.parentType + ")";
-                        else
-                            parent = "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
-
-                        string text = "";
-                        if (beatmapObject.shape != 4 || beatmapObject.shape != 6)
-                            text = "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption) +
-                                "<br>T: " + beatmapObject.text;
-                        if (beatmapObject.shape == 4)
-                            text = "<br>S: Text" +
-                                "<br>T: " + beatmapObject.text;
-                        if (beatmapObject.shape == 6)
-                            text = "<br>S: Image" +
-                                "<br>T: " + beatmapObject.text;
-
-                        string ptr = "";
-                        if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                            ptr = "<br><#" + CoreHelper.ColorToHex(beatmapObject.GetPrefab().GetPrefabType().color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
-                        else
-                            ptr = "<br>Not from prefab";
-
-                        desc = "N/ST: " + beatmapObject.name + " [ " + beatmapObject.StartTime + " ]";
-                        hint = "ID: {" + beatmapObject.id + "}" +
-                            parent +
-                            "<br>Alive: " + beatmapObject.Alive.ToString() +
-                            "<br>Origin: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
-                            text +
-                            "<br>Depth: " + beatmapObject.Depth +
-                            "<br>ED: {L: " + beatmapObject.editorData.Layer + ", B: " + beatmapObject.editorData.Bin + "}" +
-                            "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
-                            "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
-                            "<br>ROT: " + transform.eulerAngles.z +
-                            "<br>COL: " + "<#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, false)) + ">" + "█ <b>#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, true)) + "</b></color>" +
-                            ptr;
-
-                        TooltipHelper.AddHoverTooltip(buttonPrefab, desc, hint);
+                        num++;
+                        continue;
                     }
+
+                    var transform = levelObject.visualObject.gameObject.transform;
+
+                    string parent = "";
+                    if (!string.IsNullOrEmpty(beatmapObject.Parent))
+                        parent = "<br>P: " + beatmapObject.Parent + " (" + beatmapObject.parentType + ")";
+                    else
+                        parent = "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
+
+                    string text = "";
+                    if (beatmapObject.shape != 4 || beatmapObject.shape != 6)
+                        text = "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption) +
+                            "<br>T: " + beatmapObject.text;
+                    if (beatmapObject.shape == 4)
+                        text = "<br>S: Text" +
+                            "<br>T: " + beatmapObject.text;
+                    if (beatmapObject.shape == 6)
+                        text = "<br>S: Image" +
+                            "<br>T: " + beatmapObject.text;
+
+                    string ptr = "";
+                    if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
+                        ptr = "<br><#" + CoreHelper.ColorToHex(beatmapObject.GetPrefab().GetPrefabType().color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
+                    else
+                        ptr = "<br>Not from prefab";
+
+                    var desc = "N/ST: " + beatmapObject.name + " [ " + beatmapObject.StartTime + " ]";
+                    var hint = "ID: {" + beatmapObject.id + "}" +
+                        parent +
+                        "<br>Alive: " + beatmapObject.Alive.ToString() +
+                        "<br>Origin: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
+                        text +
+                        "<br>Depth: " + beatmapObject.Depth +
+                        "<br>ED: {L: " + beatmapObject.editorData.Layer + ", B: " + beatmapObject.editorData.Bin + "}" +
+                        "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
+                        "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
+                        "<br>ROT: " + transform.eulerAngles.z +
+                        "<br>COL: " + "<#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, false)) + ">" + "█ <b>#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, true)) + "</b></color>" +
+                        ptr;
+
+                    TooltipHelper.AddHoverTooltip(buttonPrefab, desc, hint);
+
+                    #endregion
                 }
+
+                num++;
             }
         }
 

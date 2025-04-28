@@ -75,7 +75,7 @@ namespace BetterLegacy.Core.Managers
                 try
                 {
                     if (beatmapObject.shape == 4 && beatmapObject.Alive && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
-                        Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject)
+                        beatmapObject.levelObject && beatmapObject.levelObject.visualObject is TextObject textObject)
                         textObject.SetText(RTString.FormatText(beatmapObject, textObject.text));
                 }
                 catch

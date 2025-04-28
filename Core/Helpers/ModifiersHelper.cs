@@ -1776,8 +1776,9 @@ namespace BetterLegacy.Core.Helpers
             "blur" => modifier =>
             {
                 if (modifier.reference && modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                    Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.renderer)
+                    modifier.reference.levelObject && modifier.reference.levelObject.visualObject.renderer)
                 {
+                    var levelObject = modifier.reference.levelObject;
                     var num = modifier.GetFloat(0, 0f);
                     var rend = levelObject.visualObject.renderer;
 
@@ -1804,7 +1805,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                 {
-                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !Updater.TryGetObject(beatmapObject, out LevelObject levelObject) || !levelObject.visualObject.renderer)
+                    var levelObject = beatmapObject.levelObject;
+                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !levelObject || !levelObject.visualObject.renderer)
                         continue;
 
                     var rend = levelObject.visualObject.renderer;
@@ -1821,8 +1823,9 @@ namespace BetterLegacy.Core.Helpers
             "blurVariable" => modifier =>
             {
                 if (modifier.reference && modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                    Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.renderer)
+                    modifier.reference.levelObject && modifier.reference.levelObject.visualObject.renderer)
                 {
+                    var levelObject = modifier.reference.levelObject;
                     var num = modifier.GetFloat(0, 0f);
                     var rend = levelObject.visualObject.renderer;
 
@@ -1846,7 +1849,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                 {
-                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !Updater.TryGetObject(beatmapObject, out LevelObject levelObject) || !levelObject.visualObject.renderer)
+                    var levelObject = beatmapObject.levelObject;
+                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !levelObject || !levelObject.visualObject.renderer)
                         continue;
 
                     var rend = levelObject.visualObject.renderer;
@@ -1863,8 +1867,9 @@ namespace BetterLegacy.Core.Helpers
             "blurColored" => modifier =>
             {
                 if (modifier.reference && modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                    Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.renderer)
+                    modifier.reference.levelObject && modifier.reference.levelObject.visualObject.renderer)
                 {
+                    var levelObject = modifier.reference.levelObject;
                     var num = modifier.GetFloat(0, 0f);
                     var rend = levelObject.visualObject.renderer;
 
@@ -1892,7 +1897,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                 {
-                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !Updater.TryGetObject(beatmapObject, out LevelObject levelObject) || !levelObject.visualObject.renderer)
+                    var levelObject = beatmapObject.levelObject;
+                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !levelObject || !levelObject.visualObject.renderer)
                         continue;
 
                     var rend = levelObject.visualObject.renderer;
@@ -1908,17 +1914,19 @@ namespace BetterLegacy.Core.Helpers
             },
             "doubleSided" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (levelObject && levelObject.visualObject is SolidObject solidObject && solidObject.gameObject)
                     solidObject.UpdateRendering((int)modifier.reference.gradientType, (int)modifier.reference.renderLayerType, true, modifier.reference.gradientScale, modifier.reference.gradientRotation);
             },
             "particleSystem" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return;
 
                 var gameObject = levelObject.visualObject.gameObject;
 
-                if (modifier.Result == null || modifier.Result is KeyValuePair<ParticleSystem, ParticleSystemRenderer> keyValuePair && (!keyValuePair.Key || !keyValuePair.Value))
+                if (!modifier.HasResult() || modifier.Result is KeyValuePair<ParticleSystem, ParticleSystemRenderer> keyValuePair && (!keyValuePair.Key || !keyValuePair.Value))
                 {
                     var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                     var psr = gameObject.GetComponent<ParticleSystemRenderer>();
@@ -2026,7 +2034,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "trailRenderer" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return;
 
                 var mod = levelObject.visualObject.gameObject;
@@ -2080,7 +2089,8 @@ namespace BetterLegacy.Core.Helpers
                 var velocityY = modifier.GetFloat(5, 0f);
                 var bodyType = modifier.GetInt(6, 0);
 
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return;
 
                 if (!modifier.reference.rigidbody)
@@ -2109,7 +2119,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                 {
-                    if (!Updater.TryGetObject(beatmapObject, out LevelObject levelObject) || !levelObject.visualObject || !levelObject.visualObject.gameObject)
+                    var levelObject = beatmapObject.levelObject;
+                    if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !levelObject || !levelObject.visualObject.renderer)
                         continue;
 
                     if (!beatmapObject.rigidbody)
@@ -2126,31 +2137,32 @@ namespace BetterLegacy.Core.Helpers
             },
             "videoPlayer" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || levelObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                    return;
+
+                var filePath = RTFile.CombinePaths(RTFile.BasePath, modifier.value);
+                if (!RTFile.FileExists(filePath))
+                    return;
+
+                if (modifier.Result == null || modifier.Result is RTVideoPlayer nullVideo && !nullVideo)
                 {
-                    var filePath = RTFile.CombinePaths(RTFile.BasePath, modifier.value);
-                    if (!RTFile.FileExists(filePath))
-                        return;
+                    var gameObject = levelObject.visualObject.gameObject;
+                    var videoPlayer = gameObject.GetComponent<RTVideoPlayer>() ?? gameObject.AddComponent<RTVideoPlayer>();
 
-                    if (modifier.Result == null || modifier.Result is RTVideoPlayer nullVideo && !nullVideo)
-                    {
-                        var gameObject = levelObject.visualObject.gameObject;
-                        var videoPlayer = gameObject.GetComponent<RTVideoPlayer>() ?? gameObject.AddComponent<RTVideoPlayer>();
+                    solidObject.renderer.material = GameObject.Find("ExtraBG").transform.GetChild(0).GetComponent<Renderer>().material;
 
-                        solidObject.renderer.material = GameObject.Find("ExtraBG").transform.GetChild(0).GetComponent<Renderer>().material;
+                    modifier.Result = videoPlayer;
+                }
 
-                        modifier.Result = videoPlayer;
-                    }
+                if (modifier.Result is RTVideoPlayer videeoPlayer &&
+                    float.TryParse(modifier.commands[1], out float timeOffset) &&
+                    int.TryParse(modifier.commands[2], out int audioOutputType))
+                {
+                    videeoPlayer.timeOffset = modifier.reference.StartTime + timeOffset;
 
-                    if (modifier.Result is RTVideoPlayer videeoPlayer &&
-                        float.TryParse(modifier.commands[1], out float timeOffset) &&
-                        int.TryParse(modifier.commands[2], out int audioOutputType))
-                    {
-                        videeoPlayer.timeOffset = modifier.reference.StartTime + timeOffset;
-
-                        if (videeoPlayer.didntPlay)
-                            videeoPlayer.Play(videeoPlayer.gameObject, filePath, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
-                    }
+                    if (videeoPlayer.didntPlay)
+                        videeoPlayer.Play(videeoPlayer.gameObject, filePath, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
                 }
             }, // todo: dunno if this will ever be implemented as one video player might be enough
 
@@ -2165,7 +2177,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2198,7 +2211,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var heal = Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue);
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2239,7 +2253,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2270,7 +2285,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || modifier.constant)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var playerIndex = PlayerManager.GetClosestPlayerIndex(pos);
 
@@ -2298,7 +2314,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2337,7 +2354,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2380,7 +2398,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2423,7 +2442,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2466,7 +2486,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2480,7 +2501,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2495,7 +2517,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2510,7 +2533,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 foreach (var player in PlayerManager.Players)
                 {
@@ -2526,7 +2550,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2541,7 +2566,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 foreach (var player in PlayerManager.Players)
                 {
@@ -2557,7 +2583,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
@@ -2571,7 +2598,8 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var rot = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.localRotation.eulerAngles.z : modifier.reference.InterpolateChainRotation();
+                var levelObject = modifier.reference.levelObject;
+                var rot = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.localEulerAngles.z : modifier.reference.InterpolateChainRotation();
 
                 foreach (var player in PlayerManager.Players)
                 {
@@ -2585,10 +2613,13 @@ namespace BetterLegacy.Core.Helpers
             // actions
             "playerBoost" => modifier =>
             {
-                if (modifier.constant || !modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                if (modifier.constant || !modifier.reference)
                     return;
 
-                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player)
                     return;
@@ -2607,13 +2638,16 @@ namespace BetterLegacy.Core.Helpers
             },
             "playerDisableBoost" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
-                {
-                    var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
+                if (!modifier.reference)
+                    return;
 
-                    if (player && player.Player)
-                        player.Player.CanBoost = false;
-                }
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.CanBoost = false;
             },
             "playerDisableBoostIndex" => modifier =>
             {
@@ -2627,13 +2661,16 @@ namespace BetterLegacy.Core.Helpers
             },
             "playerEnableBoost" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
-                {
-                    var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
+                if (!modifier.reference)
+                    return;
 
-                    if (player && player.Player)
-                        player.Player.CanBoost = true;
-                }
+                var levelObject = modifier.reference.levelObject;
+                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.CanBoost = true;
             },
             "playerEnableBoostIndex" => modifier =>
             {
@@ -2975,8 +3012,8 @@ namespace BetterLegacy.Core.Helpers
             // enable
             "enableObject" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
-                    levelObject.top.gameObject.SetActive(true);
+                if (modifier.reference.levelObject && modifier.reference.levelObject.top)
+                    modifier.reference.levelObject.top.gameObject.SetActive(true);
             },
             "enableObjectTree" => modifier =>
             {
@@ -2995,8 +3032,8 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var beatmapObject = list[i];
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                        levelObject.top.gameObject.SetActive(true);
+                    if (beatmapObject.levelObject && beatmapObject.levelObject.top)
+                        beatmapObject.levelObject.top.gameObject.SetActive(true);
                 }
             },
             "enableObjectOther" => modifier =>
@@ -3005,8 +3042,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (!list.IsEmpty())
                     foreach (var beatmapObject in list)
-                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                            levelObject.top.gameObject.SetActive(true);
+                        if (beatmapObject.levelObject && beatmapObject.levelObject.top)
+                            beatmapObject.levelObject.top.gameObject.SetActive(true);
             },
             "enableObjectTreeOther" => modifier =>
             {
@@ -3029,16 +3066,16 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var beatmapObject = list[i];
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                        levelObject.top.gameObject.SetActive(true);
+                    if (beatmapObject.levelObject && beatmapObject.levelObject.top)
+                        beatmapObject.levelObject.top.gameObject.SetActive(true);
                 }
             },
 
             // disable
             "disableObject" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
-                    levelObject.top.gameObject.SetActive(false);
+                if (modifier.reference.levelObject && modifier.reference.levelObject.top)
+                    modifier.reference.levelObject.top.gameObject.SetActive(false);
             },
             "disableObjectTree" => modifier =>
             {
@@ -3057,8 +3094,8 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var beatmapObject = list[i];
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                        levelObject.top.gameObject.SetActive(false);
+                    if (beatmapObject.levelObject && beatmapObject.levelObject.top)
+                        beatmapObject.levelObject.top.gameObject.SetActive(false);
                 }
             },
             "disableObjectOther" => modifier =>
@@ -3067,8 +3104,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (!list.IsEmpty())
                     foreach (var beatmapObject in list)
-                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                            levelObject.top.gameObject.SetActive(false);
+                        if (beatmapObject.levelObject && beatmapObject.levelObject.top)
+                            beatmapObject.levelObject.top.gameObject.SetActive(false);
             },
             "disableObjectTreeOther" => modifier =>
             {
@@ -3091,8 +3128,8 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var beatmapObject = list[i];
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                        levelObject.top.gameObject.SetActive(false);
+                    if (beatmapObject.levelObject && beatmapObject.levelObject.top)
+                        beatmapObject.levelObject.top.gameObject.SetActive(false);
                 }
             },
 
@@ -3112,7 +3149,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "saveText" => modifier =>
             {
-                if (CoreHelper.InEditorPreview && modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject)
+                if (CoreHelper.InEditorPreview && modifier.reference.levelObject && modifier.reference.levelObject.visualObject is TextObject textObject)
                     SaveProgress(modifier.GetValue(1), modifier.GetValue(2), modifier.GetValue(3), textObject.textMeshPro.text);
             },
             "saveVariable" => modifier =>
@@ -3169,13 +3206,10 @@ namespace BetterLegacy.Core.Helpers
                 var intensityX = modifier.GetFloat(3, 0f);
                 var intensityY = modifier.GetFloat(4, 0f);
 
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
-                {
-                    float reactivePositionX = Updater.GetSample(sampleX, intensityX * val);
-                    float reactivePositionY = Updater.GetSample(sampleY, intensityY * val);
-
-                    levelObject.visualObject.SetOrigin(new Vector3(modifier.reference.origin.x + reactivePositionX, modifier.reference.origin.y + reactivePositionY, modifier.reference.Depth * 0.1f));
-                }
+                modifier.reference?.levelObject?.visualObject?.SetOrigin(new Vector3(
+                    modifier.reference.origin.x + Updater.GetSample(sampleX, intensityX * val),
+                    modifier.reference.origin.y + Updater.GetSample(sampleY, intensityY * val),
+                    modifier.reference.Depth * 0.1f));
             },
             "reactiveSca" => modifier =>
             {
@@ -3185,27 +3219,22 @@ namespace BetterLegacy.Core.Helpers
                 var intensityX = modifier.GetFloat(3, 0f);
                 var intensityY = modifier.GetFloat(4, 0f);
 
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
-                {
-                    float reactiveScaleX = Updater.GetSample(sampleX, intensityX * val);
-                    float reactiveScaleY = Updater.GetSample(sampleY, intensityY * val);
-
-                    levelObject.visualObject.SetScaleOffset(new Vector2(1f + reactiveScaleX, 1f + reactiveScaleY));
-                }
+                modifier.reference?.levelObject?.visualObject?.SetScaleOffset(new Vector2(1f + Updater.GetSample(sampleX, intensityX * val), 1f + Updater.GetSample(sampleY, intensityY * val)));
             },
             "reactiveRot" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.gameObject)
-                    levelObject.visualObject.SetRotationOffset(Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
+                modifier.reference?.levelObject?.visualObject?.SetRotationOffset(Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
             },
             "reactiveCol" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.renderer)
+                var levelObject = modifier.reference.levelObject;
+                if (levelObject && levelObject.visualObject && levelObject.visualObject.renderer)
                     levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0)) * Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f)));
             },
             "reactiveColLerp" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.renderer)
+                var levelObject = modifier.reference.levelObject;
+                if (levelObject && levelObject.visualObject && levelObject.visualObject.renderer)
                     levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0)), Updater.GetSample(modifier.GetInt(1, 0), modifier.GetFloat(0, 0f))));
             },
             "reactivePosChain" => modifier =>
@@ -3328,7 +3357,7 @@ namespace BetterLegacy.Core.Helpers
                         2 => Mathf.Clamp((cachedSequences.RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop, min, max),
                         _ => 0f,
                     });
-                else if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                else if (modifier.reference.levelObject is LevelObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                     RTEventManager.inst.SetOffset(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
             },
             "vignetteTracksPlayer" => modifier =>
@@ -3367,9 +3396,10 @@ namespace BetterLegacy.Core.Helpers
             #region Color
 
             // color
+            // todo: implement gradients and different color controls
             "addColor" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
+                if (!modifier.reference || !modifier.reference.levelObject || !modifier.reference.levelObject.visualObject)
                     return;
 
                 var multiply = modifier.GetFloat(0, 1f);
@@ -3378,11 +3408,7 @@ namespace BetterLegacy.Core.Helpers
                 var sat = modifier.GetFloat(3, 0f);
                 var val = modifier.GetFloat(4, 0f);
 
-                var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply;
-                //if (levelObject.isGradient)
-                //    levelObject.gradientObject.SetColor(levelObject.gradientObject.GetPrimaryColor() + color, levelObject.gradientObject.GetSecondaryColor() + color);
-                //else
-                levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + color);
+                modifier.reference.levelObject.visualObject.SetColor(modifier.reference.levelObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
             },
             "addColorOther" => modifier =>
             {
@@ -3399,19 +3425,13 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
-                        continue;
-
-                    var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply;
-                    //if (levelObject.isGradient)
-                    //    levelObject.gradientObject.SetColor(levelObject.gradientObject.GetPrimaryColor() + color, levelObject.gradientObject.GetSecondaryColor() + color);
-                    //else
-                    levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + color);
+                    if (bm.levelObject)
+                        bm.levelObject.visualObject.SetColor(bm.levelObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
                 }
             },
             "lerpColor" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null)
+                if (!modifier.reference || !modifier.reference.levelObject || !modifier.reference.levelObject.visualObject)
                     return;
 
                 var multiply = modifier.GetFloat(0, 0f);
@@ -3420,7 +3440,7 @@ namespace BetterLegacy.Core.Helpers
                 var sat = modifier.GetFloat(3, 0f);
                 var val = modifier.GetFloat(4, 0f);
 
-                levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
+                modifier.reference.levelObject.visualObject.SetColor(RTMath.Lerp(modifier.reference.levelObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
             },
             "lerpColorOther" => modifier =>
             {
@@ -3439,15 +3459,14 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var bm = list[i];
-                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject == null)
-                        continue;
-
-                    levelObject.visualObject.SetColor(RTMath.Lerp(levelObject.visualObject.GetPrimaryColor(), color, multiply));
+                    if (bm.levelObject && bm.levelObject.visualObject)
+                        bm.levelObject.visualObject.SetColor(RTMath.Lerp(bm.levelObject.visualObject.GetPrimaryColor(), color, multiply));
                 }
             },
             "addColorPlayerDistance" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!modifier.reference || !levelObject || !levelObject.visualObject.gameObject)
                     return;
 
                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
@@ -3465,7 +3484,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "lerpColorPlayerDistance" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!modifier.reference || !levelObject || !levelObject.visualObject.gameObject)
                     return;
 
                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
@@ -3491,13 +3511,13 @@ namespace BetterLegacy.Core.Helpers
             // opacity
             "setAlpha" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
-                    levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
+                if (modifier.reference && modifier.reference.levelObject)
+                    modifier.reference.levelObject.visualObject.SetColor(LSColors.fadeColor(modifier.reference.levelObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
             },
             "setOpacity" => modifier =>
             {
-                if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
-                    levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
+                if (modifier.reference && modifier.reference.levelObject)
+                    modifier.reference.levelObject.visualObject.SetColor(LSColors.fadeColor(modifier.reference.levelObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
             },
             "setAlphaOther" => modifier =>
             {
@@ -3509,10 +3529,8 @@ namespace BetterLegacy.Core.Helpers
                 var num = modifier.GetFloat(0, 1f);
                 foreach (var bm in list)
                 {
-                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
-                        continue;
-
-                    levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), num));
+                    if (bm.levelObject && bm.levelObject.visualObject)
+                        bm.levelObject.visualObject.SetColor(LSColors.fadeColor(bm.levelObject.visualObject.GetPrimaryColor(), num));
                 }
             },
             "setOpacityOther" => modifier =>
@@ -3525,38 +3543,33 @@ namespace BetterLegacy.Core.Helpers
                 var num = modifier.GetFloat(0, 1f);
                 foreach (var bm in list)
                 {
-                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
-                        continue;
-
-                    levelObject.visualObject.SetColor(LSColors.fadeColor(levelObject.visualObject.GetPrimaryColor(), num));
+                    if (bm.levelObject && bm.levelObject.visualObject)
+                        bm.levelObject.visualObject.SetColor(LSColors.fadeColor(bm.levelObject.visualObject.GetPrimaryColor(), num));
                 }
             },
 
             // copy
             "copyColor" => modifier =>
             {
-                if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject))
-                    return;
-
-                if (!Updater.TryGetObject(beatmapObject, out LevelObject otherLevelObject) ||
-                    !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
-                    return;
-
-                CopyColor(levelObject, otherLevelObject, modifier.GetBool(1, true), modifier.GetBool(2, true));
+                if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && modifier.reference.levelObject && beatmapObject.levelObject)
+                    CopyColor(modifier.reference.levelObject, beatmapObject.levelObject, modifier.GetBool(1, true), modifier.GetBool(2, true));
             },
             "copyColorOther" => modifier =>
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
-                if (list.IsEmpty() || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
+                if (list.IsEmpty())
                     return;
+
+                var levelObject = modifier.reference.levelObject;
 
                 var applyColor1 = modifier.GetBool(1, true);
                 var applyColor2 = modifier.GetBool(2, true);
 
                 foreach (var bm in list)
                 {
-                    if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject))
+                    var otherLevelObject = bm.levelObject;
+                    if (!otherLevelObject)
                         continue;
 
                     CopyColor(otherLevelObject, levelObject, applyColor1, applyColor2);
@@ -3664,7 +3677,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (!Updater.TryGetObject(bm, out LevelObject otherLevelObject))
+                    var otherLevelObject = bm.levelObject;
+                    if (!otherLevelObject)
                         continue;
 
                     if (!otherLevelObject.visualObject.isGradient)
@@ -3680,7 +3694,8 @@ namespace BetterLegacy.Core.Helpers
             // hex code
             "setColorHex" => modifier =>
             {
-                if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
+                var levelObject = modifier.reference.levelObject;
+                if (!modifier.reference || !levelObject)
                     return;
 
                 if (!levelObject.visualObject.isGradient)
@@ -3705,7 +3720,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (!Updater.TryGetObject(bm, out LevelObject levelObject))
+                    var levelObject = bm.levelObject;
+                    if (!levelObject)
                         continue;
 
                     if (!levelObject.visualObject.isGradient)
@@ -3731,7 +3747,7 @@ namespace BetterLegacy.Core.Helpers
 
             "actorFrameTexture" => modifier =>
             {
-                if (modifier.reference.ShapeType != ShapeType.Image || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not ImageObject imageObject)
+                if (modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not ImageObject imageObject)
                     return;
 
                 var camera = modifier.GetInt(0, 0) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
@@ -3744,7 +3760,7 @@ namespace BetterLegacy.Core.Helpers
             // image
             "setImage" => modifier =>
             {
-                if (modifier.constant || modifier.reference.ShapeType != ShapeType.Image || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not ImageObject imageObject)
+                if (modifier.constant || modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not ImageObject imageObject)
                     return;
 
                 var path = RTFile.CombinePaths(RTFile.BasePath, modifier.GetValue(0));
@@ -3789,9 +3805,7 @@ namespace BetterLegacy.Core.Helpers
             // text (pain)
             "setText" => modifier =>
             {
-                if (modifier.reference.ShapeType != ShapeType.Text ||
-                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
-                levelObject.visualObject is not TextObject textObject)
+                if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                     return;
 
                 if (modifier.constant)
@@ -3808,7 +3822,7 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (bm.ShapeType != ShapeType.Text || !Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject is not TextObject textObject)
+                    if (bm.ShapeType != ShapeType.Text || !bm.levelObject || bm.levelObject.visualObject is not TextObject textObject)
                         continue;
 
                     if (modifier.constant)
@@ -3819,9 +3833,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "addText" => modifier =>
             {
-                if (modifier.reference.ShapeType != ShapeType.Text ||
-                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
-                levelObject.visualObject is not TextObject textObject)
+                if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                     return;
 
                 if (modifier.constant)
@@ -3838,7 +3850,7 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (bm.ShapeType != ShapeType.Text || !Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject is not TextObject textObject)
+                    if (bm.ShapeType != ShapeType.Text || !bm.levelObject || bm.levelObject.visualObject is not TextObject textObject)
                         continue;
 
                     if (modifier.constant)
@@ -3849,9 +3861,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "removeText" => modifier =>
             {
-                if (modifier.reference.ShapeType != ShapeType.Text ||
-                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
-                levelObject.visualObject is not TextObject textObject)
+                if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                     return;
 
                 string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty :
@@ -3873,7 +3883,8 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (bm.ShapeType != ShapeType.Text || !Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject is not TextObject textObject)
+                    var levelObject = bm.levelObject;
+                    if (bm.ShapeType != ShapeType.Text || !levelObject || levelObject.visualObject is not TextObject textObject)
                         continue;
 
                     string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" :
@@ -3887,9 +3898,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "removeTextAt" => modifier =>
             {
-                if (modifier.reference.ShapeType != ShapeType.Text ||
-                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
-                levelObject.visualObject is not TextObject textObject)
+                if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                     return;
 
                 var remove = modifier.GetInt(0, 1);
@@ -3912,7 +3921,7 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var bm in list)
                 {
-                    if (bm.ShapeType != ShapeType.Text || !Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject is not TextObject textObject)
+                    if (bm.ShapeType != ShapeType.Text || !bm.levelObject || bm.levelObject.visualObject is not TextObject textObject)
                         continue;
 
                     string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
@@ -3926,17 +3935,13 @@ namespace BetterLegacy.Core.Helpers
             },
             "formatText" => modifier =>
             {
-                if (CoreConfig.Instance.AllowCustomTextFormatting.Value ||
-                modifier.reference.ShapeType != ShapeType.Text ||
-                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) ||
-                levelObject.visualObject is not TextObject textObject)
-                    return;
-
-                textObject.SetText(RTString.FormatText(modifier.reference, textObject.text));
+                if (!CoreConfig.Instance.AllowCustomTextFormatting.Value && modifier.reference.ShapeType == ShapeType.Text &&
+                    modifier.reference.levelObject is LevelObject levelObject && levelObject.visualObject is TextObject textObject)
+                    textObject.SetText(RTString.FormatText(modifier.reference, textObject.text));
             },
             "textSequence" => modifier =>
             {
-                if (modifier.reference.ShapeType != ShapeType.Text || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not TextObject textObject)
+                if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                     return;
 
                 var text = !string.IsNullOrEmpty(modifier.GetValue(9)) ? modifier.GetValue(9) : modifier.reference.text;
@@ -4027,7 +4032,8 @@ namespace BetterLegacy.Core.Helpers
             // modify shape
             "backgroundShape" => modifier =>
             {
-                if (modifier.HasResult() || modifier.reference.IsSpecialShape || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (modifier.HasResult() || modifier.reference.IsSpecialShape || !levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return;
 
                 if (ShapeManager.inst.Shapes3D.TryGetAt(modifier.reference.shape, out ShapeGroup shapeGroup) && shapeGroup.TryGetShape(modifier.reference.shapeOption, out Shape shape))
@@ -4039,7 +4045,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "sphereShape" => modifier =>
             {
-                if (modifier.HasResult() || modifier.reference.IsSpecialShape || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (modifier.HasResult() || modifier.reference.IsSpecialShape || !levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                     return;
 
                 var shape = new Vector2Int(modifier.reference.shape, modifier.reference.shapeOption);
@@ -4050,7 +4057,8 @@ namespace BetterLegacy.Core.Helpers
             },
             "translateShape" => modifier =>
             {
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject.gameObject)
                     return;
 
                 if (!modifier.HasResult())
@@ -4640,7 +4648,7 @@ namespace BetterLegacy.Core.Helpers
                             _ => 0f,
                         });
                     }
-                    else if (useVisual && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                    else if (useVisual && bm.levelObject is LevelObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                         modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
                     else if (useVisual)
                         modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
@@ -4711,7 +4719,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                             }
                         }
-                        else if (useVisual && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                        else if (useVisual && bm.levelObject is LevelObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                         {
                             var axis = levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
 
@@ -4791,7 +4799,7 @@ namespace BetterLegacy.Core.Helpers
                                 2 => Mathf.Clamp(cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay), min, max),
                                 _ => 0f,
                             };
-                        else if (useVisual && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+                        else if (useVisual && beatmapObject.levelObject is LevelObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                             variables[name] = Mathf.Clamp(levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis), min, max);
                         else if (useVisual)
                             variables[name] = fromType switch
@@ -5667,7 +5675,8 @@ namespace BetterLegacy.Core.Helpers
                 float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
                 var players = PlayerManager.Players;
 
-                if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.gameObject)
+                var levelObject = modifier.reference.levelObject;
+                if (!levelObject || !levelObject.visualObject.gameObject)
                 {
                     var position = modifier.reference.InterpolateChainPosition();
 
@@ -5708,7 +5717,7 @@ namespace BetterLegacy.Core.Helpers
             // collision
             "setCollision" => modifier =>
             {
-                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.collider)
+                if (modifier.reference.levelObject is LevelObject levelObject && levelObject.visualObject != null && levelObject.visualObject.collider)
                     levelObject.visualObject.colliderEnabled = Parser.TryParse(modifier.value, false);
             },
             "setCollisionOther" => modifier =>
@@ -5717,7 +5726,7 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var beatmapObject in list)
                 {
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.collider)
+                    if (beatmapObject.levelObject is LevelObject levelObject && levelObject.visualObject != null && levelObject.visualObject.collider)
                         levelObject.visualObject.colliderEnabled = Parser.TryParse(modifier.value, false);
                 }
             },
@@ -5937,7 +5946,7 @@ namespace BetterLegacy.Core.Helpers
                     case "blurVariableOther": {
                             if (modifier.Result != null && modifier.reference &&
                                 modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                                Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
+                                modifier.reference.levelObject is LevelObject levelObject &&
                                 levelObject.visualObject.renderer && levelObject.visualObject is SolidObject &&
                                 modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
                             {
@@ -5953,7 +5962,7 @@ namespace BetterLegacy.Core.Helpers
                     case "blurVariable": {
                             if (modifier.Result != null && modifier.reference &&
                                 modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                                Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
+                                modifier.reference.levelObject is LevelObject levelObject &&
                                 levelObject.visualObject.renderer && levelObject.visualObject is SolidObject &&
                                 modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
                             {
@@ -5984,7 +5993,7 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     case "enableObject": {
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            if (modifier.reference.levelObject is LevelObject levelObject && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                                 levelObject.top.gameObject.SetActive(false);
 
                             break;
@@ -5996,7 +6005,8 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var beatmapObject in list)
                                 {
-                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    var levelObject = beatmapObject.levelObject;
+                                    if (levelObject && levelObject.top)
                                         levelObject.top.gameObject.SetActive(false);
                                 }
                             }
@@ -6025,7 +6035,8 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var beatmapObject = list[i];
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                var levelObject = beatmapObject.levelObject;
+                                if (levelObject && levelObject.top)
                                     levelObject.top.gameObject.SetActive(false);
                             }
 
@@ -6057,7 +6068,8 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var beatmapObject = list[i];
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                var levelObject = beatmapObject.levelObject;
+                                if (levelObject && levelObject.top)
                                     levelObject.top.gameObject.SetActive(false);
                             }
 
@@ -6066,7 +6078,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "disableObject": {
-                            if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            if (!modifier.hasChanged && modifier.reference != null && modifier.reference.levelObject is LevelObject levelObject && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
                                 levelObject.top.gameObject.SetActive(true);
                                 modifier.hasChanged = true;
@@ -6081,7 +6093,8 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var beatmapObject in list)
                                 {
-                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    var levelObject = beatmapObject.levelObject;
+                                    if (levelObject && levelObject.top)
                                         levelObject.top.gameObject.SetActive(true);
                                 }
                             }
@@ -6110,7 +6123,8 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var beatmapObject = list[i];
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                var levelObject = beatmapObject.levelObject;
+                                if (levelObject && levelObject.top)
                                     levelObject.top.gameObject.SetActive(true);
                             }
 
@@ -6142,7 +6156,8 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var beatmapObject = list[i];
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                var levelObject = beatmapObject.levelObject;
+                                if (levelObject && levelObject.top)
                                     levelObject.top.gameObject.SetActive(true);
                             }
 
@@ -6941,7 +6956,7 @@ namespace BetterLegacy.Core.Helpers
                 if (animateRot)
                     applyTo.rotationOffset = new Vector3(0f, 0f, cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot));
             }
-            else if (useVisual && Updater.TryGetObject(takeFrom, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+            else if (useVisual && takeFrom.levelObject is LevelObject levelObject && levelObject.visualObject != null && levelObject.visualObject.gameObject)
             {
                 var transform = levelObject.visualObject.gameObject.transform;
 
@@ -6988,7 +7003,7 @@ namespace BetterLegacy.Core.Helpers
                     2 => Mathf.Clamp((cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 };
-            else if (visual && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+            else if (visual && bm.levelObject is LevelObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                 return Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
 
             return 0f;

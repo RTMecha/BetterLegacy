@@ -33,24 +33,6 @@ namespace BetterLegacy.Core.Optimization
         static float previousAudioTime;
         static float audioTimeVelocity;
 
-        /// <summary>
-        /// Checks if a <see cref="BeatmapObject"/> has a generated <see cref="LevelObject"/> and spits out said <see cref="LevelObject"/>.
-        /// </summary>
-        /// <param name="beatmapObject"><see cref="BeatmapObject"/> to get a LevelObject from.</param>
-        /// <param name="levelObject"><see cref="LevelObject"/> result.</param>
-        /// <returns>Returns true if the <see cref="BeatmapObject"/> has a generated <see cref="LevelObject"/>, otherwise returns false.</returns>
-        public static bool TryGetObject(BeatmapObject beatmapObject, out LevelObject levelObject)
-        {
-            if (beatmapObject.levelObject)
-            {
-                levelObject = beatmapObject.levelObject;
-                return true;
-            }
-
-            levelObject = null;
-            return false;
-        }
-
         #region Samples
 
         /// <summary>
@@ -373,7 +355,8 @@ namespace BetterLegacy.Core.Optimization
                 }
             }
 
-            if (!TryGetObject(beatmapObject, out LevelObject levelObject))
+            var levelObject = beatmapObject.levelObject;
+            if (!levelObject)
                 return;
 
             if (levelObject.visualObject)
@@ -569,24 +552,23 @@ namespace BetterLegacy.Core.Optimization
                             for (int i = 0; i < childTree.Count; i++)
                             {
                                 var child = childTree[i];
-                                if (TryGetObject(child, out LevelObject childLevelObject))
-                                {
-                                    childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+                                var childLevelObject = child.levelObject;
+                                if (!childLevelObject)
+                                    continue;
 
-                                    childLevelObject.positionParent = beatmapParent.GetParentType(0);
-                                    childLevelObject.scaleParent = beatmapParent.GetParentType(1);
-                                    childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+                                childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-                                    childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                                    childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                                    childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
-                                }
+                                childLevelObject.positionParent = beatmapParent.GetParentType(0);
+                                childLevelObject.scaleParent = beatmapParent.GetParentType(1);
+                                childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+
+                                childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                                childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                                childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
                             }
                         }
                         else
-                        {
                             UpdateObject(beatmapObject);
-                        }
 
                         break;
                     } // Parent
@@ -601,18 +583,19 @@ namespace BetterLegacy.Core.Optimization
                             for (int i = 0; i < childTree.Count; i++)
                             {
                                 var child = childTree[i];
-                                if (TryGetObject(child, out LevelObject childLevelObject))
-                                {
-                                    childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+                                var childLevelObject = child.levelObject;
+                                if (!childLevelObject)
+                                    continue;
 
-                                    childLevelObject.positionParent = beatmapParent.GetParentType(0);
-                                    childLevelObject.scaleParent = beatmapParent.GetParentType(1);
-                                    childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+                                childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-                                    childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                                    childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                                    childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
-                                }
+                                childLevelObject.positionParent = beatmapParent.GetParentType(0);
+                                childLevelObject.scaleParent = beatmapParent.GetParentType(1);
+                                childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+
+                                childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                                childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                                childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
                             }
                         }
 
@@ -729,7 +712,8 @@ namespace BetterLegacy.Core.Optimization
                 }
             }
 
-            if (TryGetObject(beatmapObject, out LevelObject levelObject))
+            var levelObject = beatmapObject.levelObject;
+            if (levelObject)
             {
                 var top = levelObject.top;
 
@@ -1057,7 +1041,8 @@ namespace BetterLegacy.Core.Optimization
                                     }
 
                                     // Update Start Time
-                                    if (TryGetObject(beatmapObject, out LevelObject levelObject))
+                                    var levelObject = beatmapObject.levelObject;
+                                    if (levelObject)
                                     {
                                         levelObject.StartTime = beatmapObject.StartTime;
                                         levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
