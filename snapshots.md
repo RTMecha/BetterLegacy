@@ -25,6 +25,7 @@
 - Added Prefab Object inspect buttons if you have Unity Explorer installed.
 - Added an Index Editor to the Object Editor. This means you can now view and edit the index of an object. The index controls what it appears in front of in the timeline. It also includes a context menu for selecting the previous / next objects in index order.
 - Added context menus to Image Objects.
+- Added "Pull Changes" to Upload Level context menu.
 - Added Image Object editing to Multi Object Editor.
 
 ## Changes
