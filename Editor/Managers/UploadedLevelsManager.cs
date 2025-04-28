@@ -320,15 +320,19 @@ namespace BetterLegacy.Editor.Managers
 			loadingOnlineLevels = false;
 		}
 
-        public void DownloadLevel(JSONNode jn)
+        public void DownloadLevel(JSONNode jn, Action onDownload = null)
         {
             var name = jn["name"].Value;
             EditorManager.inst.DisplayNotification($"Downloading {name}, please wait...", 3f, EditorManager.NotificationType.Success);
             name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
             name = RTFile.ValidateDirectory(name);
             var directory = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, $"{name} [{jn["id"].Value}]");
+            DownloadLevel(jn["id"], directory, name, onDownload);
+        }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
+        public void DownloadLevel(string id, string directory, string name, Action onDownload = null)
+        {
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{id}.zip", bytes =>
             {
                 RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);
@@ -341,6 +345,8 @@ namespace BetterLegacy.Editor.Managers
 
                 CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevels());
                 EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
+
+                onDownload?.Invoke();
             }, onError =>
             {
                 EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);

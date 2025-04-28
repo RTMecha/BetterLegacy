@@ -615,6 +615,10 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            var headers = new Dictionary<string, string>();
+            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
             {
                 EditorManager.inst.DisplayNotification($"Level is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
@@ -622,43 +626,48 @@ namespace BetterLegacy.Editor.Managers
             {
                 switch (responseCode)
                 {
-                    case 404:
-                        EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                        RTEditor.inst.ShowWarningPopup("Level was not found on the server. Do you want to remove the server ID?", () =>
-                        {
-                            MetaData.Current.serverID = null;
-                            MetaData.Current.beatmap.date_published = "";
-                            var jn = MetaData.Current.ToJSON();
-                            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-                        }, RTEditor.inst.HideWarningPopup);
+                    case 404: {
+                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                            RTEditor.inst.ShowWarningPopup("Level was not found on the server. Do you want to remove the server ID?", () =>
+                            {
+                                MetaData.Current.serverID = null;
+                                MetaData.Current.beatmap.date_published = "";
+                                var jn = MetaData.Current.ToJSON();
+                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
 
-                        return;
-                    case 401:
-                        {
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup);
+
+                            return;
+                        }
+                    case 401: {
                             if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                             {
                                 CoroutineHelper.StartCoroutine(RefreshTokens(VerifyLevelIsOnServer));
                                 return;
                             }
-                            ShowLoginPopup(UploadLevel);
+                            ShowLoginPopup(VerifyLevelIsOnServer);
                             break;
                         }
-                    default:
-                        EditorManager.inst.DisplayNotification($"Verify failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                        RTEditor.inst.ShowWarningPopup("Verification failed. In case the level is not on the server, do you want to remove the server ID?", () =>
-                        {
-                            MetaData.Current.serverID = null;
-                            MetaData.Current.beatmap.date_published = "";
-                            var jn = MetaData.Current.ToJSON();
-                            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-                        }, RTEditor.inst.HideWarningPopup);
+                    default: {
+                            EditorManager.inst.DisplayNotification($"Verify failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                            RTEditor.inst.ShowWarningPopup("Verification failed. In case the level is not on the server, do you want to remove the server ID?", () =>
+                            {
+                                MetaData.Current.serverID = null;
+                                MetaData.Current.beatmap.date_published = "";
+                                var jn = MetaData.Current.ToJSON();
+                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
 
-                        break;
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup);
+
+                            break;
+                        }
                 }
 
                 if (errorMsg != null)
                     CoreHelper.LogError($"Error Message: {errorMsg}");
-            }));
+            }, headers));
         }
 
         public void ConvertLevel()
@@ -818,11 +827,11 @@ namespace BetterLegacy.Editor.Managers
 
                     switch (responseCode)
                     {
-                        case 404:
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        case 401:
-                            {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+                        case 401: {
                                 if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                                 {
                                     CoroutineHelper.StartCoroutine(RefreshTokens(UploadLevel));
@@ -831,9 +840,10 @@ namespace BetterLegacy.Editor.Managers
                                 ShowLoginPopup(UploadLevel);
                                 break;
                             }
-                        default:
-                            EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
                     }
 
                     if (errorMsg != null)
@@ -885,12 +895,12 @@ namespace BetterLegacy.Editor.Managers
                         uploading = false;
                         switch (responseCode)
                         {
-                            case 404:
-                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                RTEditor.inst.HideWarningPopup();
-                                return;
-                            case 401:
-                                {
+                            case 404: {
+                                    EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                    RTEditor.inst.HideWarningPopup();
+                                    return;
+                                }
+                            case 401: {
                                     if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                                     {
                                         CoroutineHelper.StartCoroutine(RefreshTokens(DeleteLevel));
@@ -899,10 +909,11 @@ namespace BetterLegacy.Editor.Managers
                                     ShowLoginPopup(DeleteLevel);
                                     break;
                                 }
-                            default:
-                                EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                RTEditor.inst.HideWarningPopup();
-                                break;
+                            default: {
+                                    EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                    RTEditor.inst.HideWarningPopup();
+                                    break;
+                                }
                         }
                     }, headers));
                 }
@@ -911,6 +922,62 @@ namespace BetterLegacy.Editor.Managers
                     CoreHelper.LogError($"Had an exception in deleting the level.\nException: {ex}");
                 }
             }, RTEditor.inst.HideWarningPopup);
+        }
+
+        public void PullLevel()
+        {
+            if (EditorManager.inst.savingBeatmap)
+            {
+                EditorManager.inst.DisplayNotification("Cannot pull level from the Arcade server because the level is saving!", 3f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var serverID = MetaData.Current.serverID;
+
+            if (string.IsNullOrEmpty(serverID))
+            {
+                EditorManager.inst.DisplayNotification("Server ID was not assigned, so the level probably wasn't on the server.", 3f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var headers = new Dictionary<string, string>();
+            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
+            {
+                var jn = JSON.Parse(json);
+
+                if (GameData.Current)
+                    GameData.Current.SaveData(RTFile.CombinePaths(RTEditor.inst.CurrentLevel.path, "reload-level-backup.lsb"));
+
+                UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path), jn["name"], RTEditor.inst.LoadLevel(RTEditor.inst.CurrentLevel).Start);
+            }, (string onError, long responseCode, string errorMsg) =>
+            {
+                switch (responseCode)
+                {
+                    case 404: {
+                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+                    case 401: {
+                            if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                            {
+                                CoroutineHelper.StartCoroutine(RefreshTokens(PullLevel));
+                                return;
+                            }
+                            ShowLoginPopup(PullLevel);
+                            break;
+                        }
+                    default: {
+                            EditorManager.inst.DisplayNotification($"Pull failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                            break;
+                        }
+                }
+
+                if (errorMsg != null)
+                    CoreHelper.LogError($"Error Message: {errorMsg}");
+            }, headers));
         }
 
         #endregion
