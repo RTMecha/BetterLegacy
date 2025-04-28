@@ -73,6 +73,7 @@
 - Fixed Prefab Object autokill updating being broken.
 - Fixed Hue values not loading correctly for Background Objects.
 - Fixed Parent Desync being broken. Due to this, it's no longer considered experimental and now displays by default with Editor Complexity set to Advanced.
+- Fixed Players not correctly validating in arcade / story levels.
 
 ------------------------------------------------------------------------------------------
 
