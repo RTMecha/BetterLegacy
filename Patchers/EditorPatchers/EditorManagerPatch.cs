@@ -283,11 +283,7 @@ namespace BetterLegacy.Patchers
             Instance.SetDialogStatus("Timeline", true, true);
 
             CoreHelper.Log($"EDITOR START -> Check players");
-            if (InputDataManager.inst.players.Count == 0 || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
-            {
-                InputDataManager.inst.players.Clear();
-                InputDataManager.inst.players.Add(PlayerManager.CreateDefaultPlayer());
-            }
+            PlayerManager.ValidatePlayers();
 
             CoreHelper.Log($"EDITOR START -> Can Edit?");
             Instance.GUI.SetActive(false);
