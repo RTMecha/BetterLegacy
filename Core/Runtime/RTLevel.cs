@@ -14,6 +14,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
+using BetterLegacy.Core.Threading;
 using BetterLegacy.Editor.Components;
 
 using UnityObject = UnityEngine.Object;
@@ -31,7 +32,10 @@ namespace BetterLegacy.Core.Runtime
 
         public RTLevel() { }
 
-        public static string className = "[<color=#FF26C5>Updater</color>] \n";
+        /// <summary>
+        /// Class name for logging.
+        /// </summary>
+        public static string className = "[<color=#FF26C5>RTLevel</color>] \n";
 
         float previousAudioTime;
         float audioTimeVelocity;
@@ -51,7 +55,15 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public float CurrentTime { get; set; }
 
+        /// <summary>
+        /// If the engine and converter were initialized.
+        /// </summary>
         public bool Initialized => engine && converter;
+
+        /// <summary>
+        /// Performs heavy calculations on a separate tick thread.
+        /// </summary>
+        public TickRunner threadedTickRunner;
 
         /// <summary>
         /// Initializes the runtime level.
@@ -93,6 +105,14 @@ namespace BetterLegacy.Core.Runtime
             objectModifiersEngine = new ObjectEngine(Modifiers);
 
             Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
+
+            threadedTickRunner = new TickRunner(true);
+            threadedTickRunner.onTick = () =>
+            {
+                sampleLow = samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
+                sampleMid = samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
+                sampleHigh = samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
+            };
         }
 
         /// <summary>
@@ -189,6 +209,9 @@ namespace BetterLegacy.Core.Runtime
 
             engine = null;
             objectModifiersEngine = null;
+
+            threadedTickRunner?.Dispose();
+            threadedTickRunner = null;
         }
 
         #endregion
@@ -225,6 +248,7 @@ namespace BetterLegacy.Core.Runtime
 
         #endregion
 
+        // todo: move events tick to here and do some cleanup.
         #region Events
 
         void OnEventsTick()
@@ -372,11 +396,24 @@ namespace BetterLegacy.Core.Runtime
 
         #endregion
 
+        /// <summary>
+        /// Object time engine. Handles object spawning and interpolation.
+        /// </summary>
         public ObjectEngine engine;
+
+        /// <summary>
+        /// Object conversion system. Handles converting data objects to runtime objects.
+        /// </summary>
         public ObjectConverter converter;
 
+        /// <summary>
+        /// Readonly collection of runtime objects.
+        /// </summary>
         public IReadOnlyList<IRTObject> Objects => objects.AsReadOnly();
 
+        /// <summary>
+        /// List of runtime objects.
+        /// </summary>
         public List<IRTObject> objects;
 
         void OnBeatmapObjectsTick()
@@ -910,10 +947,19 @@ namespace BetterLegacy.Core.Runtime
 
         #region Modifiers
 
+        /// <summary>
+        /// Modifiers time engine. Handles active / inactive modifiers efficiently.
+        /// </summary>
         public ObjectEngine objectModifiersEngine;
 
+        /// <summary>
+        /// Readonly collection of runtime modifiers.
+        /// </summary>
         public IReadOnlyList<IRTObject> Modifiers => modifiers.AsReadOnly();
 
+        /// <summary>
+        /// List of runtime modifiers.
+        /// </summary>
         public List<IRTObject> modifiers;
 
         void OnObjectModifiersTick()
@@ -948,21 +994,19 @@ namespace BetterLegacy.Core.Runtime
 
         #endregion
 
+        // todo: implement start and autokill values to BG objects
         #region Background Objects
 
-        // todo: implement start and autokill values to BG objects
-        public ObjectSpawner bgSpawner;
+        /// <summary>
+        /// Background Objects time engine. Handles BG object spawning and interpolation.
+        /// </summary>
+        public ObjectEngine backgroundEngine;
 
         void OnBackgroundObjectsTick()
         {
             var ldm = CoreConfig.Instance.LDM.Value;
             if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
-                // idk if there's a better solution for this
-                sampleLow = samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
-                sampleMid = samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
-                sampleHigh = samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
-
                 var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
                 for (int bg = 0; bg < GameData.Current.backgroundObjects.Count; bg++)
@@ -1082,34 +1126,6 @@ namespace BetterLegacy.Core.Runtime
             }
         }
 
-        #region Modifiers
-
-        void OnBackgroundModifiersTick()
-        {
-            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.Current || GameData.Current.backgroundObjects == null)
-                return;
-
-            var list = GameData.Current.backgroundObjects;
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                var backgroundObject = list[i];
-
-                if (backgroundObject.modifiers.Count <= 0)
-                    continue;
-
-                for (int j = 0; j < backgroundObject.modifiers.Count; j++)
-                {
-                    var modifiers = backgroundObject.modifiers[j];
-
-                    if (backgroundObject.orderModifiers)
-                        ModifiersHelper.RunModifiersLoop(modifiers);
-                    else
-                        ModifiersHelper.RunModifiersAll(modifiers);
-                }
-            }
-        }
-
         /// <summary>
         /// Updates all BackgroundObjects.
         /// </summary>
@@ -1200,6 +1216,34 @@ namespace BetterLegacy.Core.Runtime
             backgroundObject.gameObjects.Clear();
             backgroundObject.transforms.Clear();
             backgroundObject.renderers.Clear();
+        }
+
+        #region Modifiers
+
+        void OnBackgroundModifiersTick()
+        {
+            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.Current || GameData.Current.backgroundObjects == null)
+                return;
+
+            var list = GameData.Current.backgroundObjects;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var backgroundObject = list[i];
+
+                if (backgroundObject.modifiers.Count <= 0)
+                    continue;
+
+                for (int j = 0; j < backgroundObject.modifiers.Count; j++)
+                {
+                    var modifiers = backgroundObject.modifiers[j];
+
+                    if (backgroundObject.orderModifiers)
+                        ModifiersHelper.RunModifiersLoop(modifiers);
+                    else
+                        ModifiersHelper.RunModifiersAll(modifiers);
+                }
+            }
         }
 
         #endregion
