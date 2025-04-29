@@ -242,9 +242,7 @@ namespace BetterLegacy.Core.Managers
                             continue;
                         }
 
-                        DestroyImmediate(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>());
-                        gameObject.transform.GetChild(0).gameObject.AddComponent<RTColliderCreator>();
-
+                        CoreHelper.CreateCollider(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>(), shape.mesh);
                         ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
                     }
 
