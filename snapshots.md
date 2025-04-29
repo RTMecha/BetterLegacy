@@ -1,4 +1,13 @@
-﻿# 1.7.0-pre.2 > [Apr 29, 2025]
+﻿# ???
+
+## Changes
+### Core
+- The Game Timeline no longer overlaps when opacity is less than 1.
+
+### Editor
+- Renamed "Gamma X" "Gamma Y" "Gamma Z" "Gamma W" to "Red" "Green" "Blue" "Global"
+
+# 1.7.0-pre.2 > [Apr 29, 2025]
 
 ## Features
 ### Story
