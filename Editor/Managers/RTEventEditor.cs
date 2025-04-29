@@ -2529,13 +2529,13 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         // Gradient Top Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift1/x", 5);
+                        SetFloatInputField(dialogTmp, "colorshift1/x", 5, max: 1f);
                         SetFloatInputField(dialogTmp, "colorshift1/y", 6);
                         SetFloatInputField(dialogTmp, "colorshift1/z", 7);
                         SetFloatInputField(dialogTmp, "colorshift1/w", 8);
 
                         // Gradient Bottom Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift2/x", 9);
+                        SetFloatInputField(dialogTmp, "colorshift2/x", 9, max: 1f);
                         SetFloatInputField(dialogTmp, "colorshift2/y", 10);
                         SetFloatInputField(dialogTmp, "colorshift2/z", 11);
                         SetFloatInputField(dialogTmp, "colorshift2/w", 12);
@@ -2621,7 +2621,7 @@ namespace BetterLegacy.Editor.Managers
                         SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black);
 
                         // Timeline Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 7);
+                        SetFloatInputField(dialogTmp, "colorshift/x", 7, max: 1f);
                         SetFloatInputField(dialogTmp, "colorshift/y", 8);
                         SetFloatInputField(dialogTmp, "colorshift/z", 9);
                         SetFloatInputField(dialogTmp, "colorshift/w", 10);
@@ -2766,7 +2766,7 @@ namespace BetterLegacy.Editor.Managers
                         SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black);
 
                         // Danger Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 3);
+                        SetFloatInputField(dialogTmp, "colorshift/x", 3, max: 1f);
                         SetFloatInputField(dialogTmp, "colorshift/y", 4);
                         SetFloatInputField(dialogTmp, "colorshift/z", 5);
                         SetFloatInputField(dialogTmp, "colorshift/w", 6);
