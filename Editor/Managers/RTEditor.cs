@@ -41,7 +41,7 @@ using BetterLegacy.Editor.Data.Popups;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// Base modded editor manager.
+    /// Base modded editor manager. RT stands for RhythmTech.
     /// </summary>
     public class RTEditor : MonoBehaviour
     {
@@ -7334,6 +7334,7 @@ namespace BetterLegacy.Editor.Managers
         }
 
         string storyLevelsCompilerPath = "C:/Users/Mecha/Documents/Project Arrhythmia/Unity/BetterLegacyEditor/Assets/Story Levels";
+        string storyLevelsVersionControlPath = "C:/Users/Mecha/Documents/Project Arrhythmia/BetterLegacy.Story";
 
         public void ToStoryLevel() => ToStoryLevel(editorInfo);
 
@@ -7373,6 +7374,48 @@ namespace BetterLegacy.Editor.Managers
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_JPG), RTFile.CombinePaths(saveTo, Level.COVER_JPG));
 
             EditorManager.inst.DisplayNotification("Saved the level to the story level compiler.", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public void ToStoryVersionControl() => ToStoryVersionControl(editorInfo);
+
+        public void ToStoryVersionControl(EditorInfo editorInfo)
+        {
+            try
+            {
+                if (!editorInfo.isStory)
+                    return;
+
+                string cutsceneDestination = string.Empty;
+                if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
+                    cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower();
+                int cutscene = 0;
+                if (editorInfo.cutscene >= 0)
+                    cutscene = editorInfo.cutscene;
+
+                ToStoryVersionControl(editorInfo.storyChapter, editorInfo.storyLevel, cutsceneDestination, cutscene);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Debug only.
+        /// </summary>
+        public void ToStoryVersionControl(int chapter, int level, string type, int cutscene)
+        {
+            var path = RTFile.BasePath;
+            var doc = $"doc{RTString.ToStoryNumber(chapter)}";
+            var saveTo = RTFile.CombinePaths(storyLevelsVersionControlPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? "" : "_" + type + RTString.ToStoryNumber(cutscene))} - {CurrentLevel.FolderName}");
+
+            RTFile.CreateDirectory(saveTo);
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_LSB), RTFile.CombinePaths(saveTo, Level.LEVEL_LSB));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.METADATA_LSB), RTFile.CombinePaths(saveTo, Level.METADATA_LSB));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.PLAYERS_LSB), RTFile.CombinePaths(saveTo, Level.PLAYERS_LSB));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.EDITOR_LSE), RTFile.CombinePaths(saveTo, Level.EDITOR_LSE));
+            // don't copy audio files
+            //RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_OGG), RTFile.CombinePaths(saveTo, $"song{FileFormat.OGG.Dot()}"));
+            RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_JPG), RTFile.CombinePaths(saveTo, Level.LEVEL_JPG));
+
+            EditorManager.inst.DisplayNotification("Saved the level to the story level version control.", 2f, EditorManager.NotificationType.Success);
         }
 
         #endregion
