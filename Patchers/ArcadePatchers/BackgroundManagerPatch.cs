@@ -31,10 +31,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(BackgroundManager.UpdateBackgroundObjects))]
         [HarmonyPrefix]
-        static bool UpdateBackgroundObjectsPrefix(BackgroundManager __instance)
-        {
-            return false;
-        }
+        static bool UpdateBackgroundObjectsPrefix() => false; // original tick method
 
         [HarmonyPatch(nameof(BackgroundManager.UpdateBackgrounds))]
         [HarmonyPrefix]
