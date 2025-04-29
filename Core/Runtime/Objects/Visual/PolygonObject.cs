@@ -2,7 +2,7 @@
 
 using BetterLegacy.Core.Data.Beatmap;
 
-namespace BetterLegacy.Core.Optimization.Objects.Visual
+namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
     /// <summary>
     /// Class for polygon shape objects.

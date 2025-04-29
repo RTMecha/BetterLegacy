@@ -3,7 +3,7 @@
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 
-namespace BetterLegacy.Core.Optimization.Objects
+namespace BetterLegacy.Core.Runtime.Objects
 {
     public class CachedSequences : Exists
     {

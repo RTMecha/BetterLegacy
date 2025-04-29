@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using BetterLegacy.Core.Data;
 
-namespace BetterLegacy.Core.Optimization.Objects
+namespace BetterLegacy.Core.Runtime.Objects
 {
     /// <summary>
     /// Main animation engine class.

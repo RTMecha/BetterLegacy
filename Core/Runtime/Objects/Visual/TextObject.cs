@@ -2,7 +2,7 @@
 
 using TMPro;
 
-namespace BetterLegacy.Core.Optimization.Objects.Visual
+namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
     /// <summary>
     /// Class for special text objects.

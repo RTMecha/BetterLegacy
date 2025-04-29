@@ -22,7 +22,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Components;
 
 using Ease = BetterLegacy.Core.Animation.Ease;

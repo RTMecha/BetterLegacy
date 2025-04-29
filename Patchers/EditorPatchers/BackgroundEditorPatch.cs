@@ -5,7 +5,7 @@ using UnityEngine;
 using HarmonyLib;
 
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers

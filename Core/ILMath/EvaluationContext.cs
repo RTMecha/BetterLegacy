@@ -2,7 +2,7 @@
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Runtime;
 using ILMath.Exception;
 using System;
 using System.Collections.Generic;

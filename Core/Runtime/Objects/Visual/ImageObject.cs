@@ -2,7 +2,7 @@
 
 using BetterLegacy.Core.Helpers;
 
-namespace BetterLegacy.Core.Optimization.Objects.Visual
+namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
     /// <summary>
     /// Class for special image objects.

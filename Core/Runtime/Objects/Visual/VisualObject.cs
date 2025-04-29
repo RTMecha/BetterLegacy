@@ -5,7 +5,7 @@ using LSFunctions;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 
-namespace BetterLegacy.Core.Optimization.Objects.Visual
+namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
     /// <summary>
     /// Base Class for all VisualObjects.

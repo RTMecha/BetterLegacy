@@ -1,4 +1,4 @@
-﻿namespace BetterLegacy.Core.Optimization.Objects
+﻿namespace BetterLegacy.Core.Runtime.Objects
 {
     /// <summary>
     /// Represents a Runtime Object.

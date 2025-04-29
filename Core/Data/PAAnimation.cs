@@ -9,7 +9,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data

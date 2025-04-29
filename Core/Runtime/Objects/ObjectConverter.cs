@@ -12,13 +12,13 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization.Objects.Visual;
+using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Components;
 
 using Object = UnityEngine.Object;
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
-namespace BetterLegacy.Core.Optimization.Objects
+namespace BetterLegacy.Core.Runtime.Objects
 {
     // WARNING: This class has side effects and will instantiate GameObjects
     /// <summary>

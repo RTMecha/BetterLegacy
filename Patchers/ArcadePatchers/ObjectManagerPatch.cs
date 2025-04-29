@@ -10,7 +10,7 @@ using TMPro;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Patchers
 {

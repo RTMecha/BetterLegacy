@@ -8,7 +8,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 
-namespace BetterLegacy.Core.Optimization.Objects
+namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTModifiers<T> : Exists, IRTObject
     {

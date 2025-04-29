@@ -12,7 +12,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 

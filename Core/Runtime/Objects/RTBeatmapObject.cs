@@ -4,9 +4,9 @@ using UnityEngine;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Optimization.Objects.Visual;
+using BetterLegacy.Core.Runtime.Objects.Visual;
 
-namespace BetterLegacy.Core.Optimization.Objects
+namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTBeatmapObject : Exists, IRTObject
     {

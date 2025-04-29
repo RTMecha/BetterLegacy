@@ -1,7 +1,7 @@
 ﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 
-namespace BetterLegacy.Core.Optimization.Objects
+namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTBackgroundObject : Exists, IRTObject
     {

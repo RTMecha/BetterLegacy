@@ -10,7 +10,7 @@ using LSFunctions;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;

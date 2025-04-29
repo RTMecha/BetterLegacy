@@ -10,8 +10,8 @@ using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Components

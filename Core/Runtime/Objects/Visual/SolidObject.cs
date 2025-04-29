@@ -4,7 +4,7 @@ using LSFunctions;
 
 using BetterLegacy.Core.Data;
 
-namespace BetterLegacy.Core.Optimization.Objects.Visual
+namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
     /// <summary>
     /// Class for regular shape objects.
