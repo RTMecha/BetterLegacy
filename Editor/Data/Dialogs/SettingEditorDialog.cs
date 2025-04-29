@@ -69,7 +69,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Info("Object Count", () => GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString()),
             new Info("Total Object Count", () => GameData.Current.beatmapObjects.Count.ToString()),
             new Info("Objects Alive Count", () => GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString()),
-            new Info("No Autokill Count", () => GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == BeatmapObject.AutoKillType.NoAutokill).Count.ToString()),
+            new Info("No Autokill Count", () => GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == AutoKillType.NoAutokill).Count.ToString()),
             new Info("Keyframe Offsets > Song Length Count", () => GameData.Current.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString()),
             new Info("Text Object Count", () => GameData.Current.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Count.ToString()),
             new Info("Text Symbol Total Count", () => GameData.Current.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Sum(x => x.text.Length).ToString()),

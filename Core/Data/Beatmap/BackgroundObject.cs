@@ -12,6 +12,9 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
+    /// <summary>
+    /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
+    /// </summary>
     public class BackgroundObject : PAObject<BackgroundObject>
     {
         public BackgroundObject() : base() { }
@@ -42,6 +45,61 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         // todo: change background objects to be in the main editor timeline and have the same start time system as beatmap objects.
         public ObjectEditorData editorData;
+
+        #region Timing
+
+        float startTime;
+        /// <summary>
+        /// Object spawn time.
+        /// </summary>
+        public float StartTime
+        {
+            get => startTime;
+            set => startTime = value;
+        }
+
+        /// <summary>
+        /// Object despawn behavior.
+        /// </summary>
+        public AutoKillType autoKillType;
+
+        /// <summary>
+        /// Autokill time offset.
+        /// </summary>
+        public float autoKillOffset;
+
+        /// <summary>
+        /// Gets if the current audio time is within the lifespan of the object.
+        /// </summary>
+        public bool Alive
+        {
+            get
+            {
+                var time = AudioManager.inst.CurrentAudioSource.time;
+                var st = StartTime;
+                var akt = autoKillType;
+                var ako = autoKillOffset;
+                var l = SpawnDuration;
+                return time >= st && (time <= l + st && akt != AutoKillType.NoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.NoAutokill || time < ako && akt == AutoKillType.SongTime);
+            }
+        }
+
+        /// <summary>
+        /// Gets the total amount of keyframes the object has.
+        /// </summary>
+        public int KeyframeCount => 0;
+
+        /// <summary>
+        /// Total length of the objects' sequence.
+        /// </summary>
+        public float Length => 0f;
+
+        /// <summary>
+        /// Gets the total time the object is alive for.
+        /// </summary>
+        public float SpawnDuration => GetObjectLifeLength(0.0f, true);
+
+        #endregion
 
         #region Transforms
 
@@ -150,11 +208,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(BackgroundObject orig, bool newID = true)
         {
             id = newID ? LSText.randomNumString(16) : orig.id;
+            name = orig.name;
+            startTime = orig.startTime;
+            autoKillType = orig.autoKillType;
+            autoKillOffset = orig.autoKillOffset;
             active = orig.active;
             drawFade = orig.drawFade;
             depth = orig.depth;
             layer = orig.layer;
-            name = orig.name;
             pos = orig.pos;
             reactiveScale = orig.reactiveScale;
             reactiveSize = orig.reactiveSize;
@@ -233,6 +294,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["name"] != null)
                 name = jn["name"];
+
+            StartTime = jn["st"].AsFloat;
+            autoKillType = (AutoKillType)jn["akt"].AsInt;
+            autoKillOffset = jn["ako"].AsFloat;
 
             pos = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
             scale = new Vector2(jn["size"]["x"].AsFloat, jn["size"]["y"].AsFloat);
@@ -419,6 +484,14 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["active"] = active;
             jn["name"] = name;
 
+            if (StartTime != 0f)
+                jn["st"] = StartTime;
+
+            if (autoKillType != AutoKillType.NoAutokill)
+                jn["akt"] = (int)autoKillType;
+            if (autoKillOffset != 0f)
+                jn["ako"] = autoKillOffset;
+
             if (tags != null && !tags.IsEmpty())
                 for (int i = 0; i < tags.Count; i++)
                     jn["tags"][i] = tags[i];
@@ -545,6 +618,23 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return jn;
         }
+
+        /// <summary>
+        /// Gets the objects' lifetime based on its autokill type and offset.
+        /// </summary>
+        /// <param name="offset">Offset to apply to lifetime.</param>
+        /// <param name="oldStyle">If the autokill length should be considered.</param>
+        /// <param name="collapse">If the length should be collapsed.</param>
+        /// <returns>Returns the lifetime of the object.</returns>
+        public float GetObjectLifeLength(float offset = 0f, bool oldStyle = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
+        {
+            AutoKillType.NoAutokill => oldStyle ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
+            AutoKillType.LastKeyframe => Length + offset,
+            AutoKillType.LastKeyframeOffset => Length + autoKillOffset + offset,
+            AutoKillType.FixedTime => autoKillOffset,
+            AutoKillType.SongTime => (startTime >= autoKillOffset) ? 0.1f : (autoKillOffset - startTime),
+            _ => 0f,
+        };
 
         /// <summary>
         /// Sets a transform offset of the object.

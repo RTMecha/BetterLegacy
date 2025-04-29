@@ -1477,7 +1477,7 @@ namespace BetterLegacy.Core.Optimization
 
                         if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.offset + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
                         {
-                            beatmapObjectCopy.autoKillType = BeatmapObject.AutoKillType.SongTime;
+                            beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
                             beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                         }
 

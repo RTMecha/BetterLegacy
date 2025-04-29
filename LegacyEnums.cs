@@ -491,24 +491,6 @@ namespace BetterLegacy
     }
 
     /// <summary>
-    /// Represents all shape types.
-    /// </summary>
-    public enum ShapeType
-    {
-        Square = 0,
-        Circle = 1,
-        Triangle = 2,
-        Arrow = 3,
-        Text = 4,
-        Hexagon = 5,
-        Image = 6,
-        Pentagon = 7,
-        Misc = 8,
-        Polygon = 9,
-        Particles = 10,
-    }
-
-    /// <summary>
     /// Represents a math symbol such as "+" or "-".
     /// </summary>
     public enum MathOperation
@@ -552,6 +534,55 @@ namespace BetterLegacy
         /// Does nothing.
         /// </summary>
         Nothing,
+    }
+
+    #endregion
+
+    #region Beatmap
+
+    /// <summary>
+    /// Represents all shape types.
+    /// </summary>
+    public enum ShapeType
+    {
+        Square = 0,
+        Circle = 1,
+        Triangle = 2,
+        Arrow = 3,
+        Text = 4,
+        Hexagon = 5,
+        Image = 6,
+        Pentagon = 7,
+        Misc = 8,
+        Polygon = 9,
+        Particles = 10,
+    }
+
+    /// <summary>
+    /// Object despawn behavior.
+    /// </summary>
+    public enum AutoKillType
+    {
+        /// <summary>
+        /// Object will not despawn. Good for character models or general persistent objects.
+        /// </summary>
+        NoAutokill,
+        /// <summary>
+        /// Object will despawn once all animations are done.
+        /// </summary>
+        LastKeyframe,
+        /// <summary>
+        /// Object will despawn once all animations are done and at an offset.
+        /// </summary>
+        LastKeyframeOffset,
+        /// <summary>
+        /// Object will despawn after a fixed time.
+        /// </summary>
+        FixedTime,
+        /// <summary>
+        /// Object will despawn at song time.
+        /// </summary>
+        SongTime
     }
 
     #endregion

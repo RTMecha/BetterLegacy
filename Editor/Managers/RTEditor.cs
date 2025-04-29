@@ -5339,7 +5339,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.events[2].Add(new EventKeyframe(12f, new float[1] { 360000f }, new float[3]));
 
             beatmapObject.name = Seasons.AprilFools ? "trololololo" : DEFAULT_OBJECT_NAME;
-            beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
+            beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 4f;
             beatmapObject.editorData.Layer = 0;
             gameData.beatmapObjects.Add(beatmapObject);
@@ -7026,7 +7026,7 @@ namespace BetterLegacy.Editor.Managers
                 return Color.white;
 
             var color = AudioManager.inst.CurrentAudioSource.time < beatmapObject.StartTime ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][0].values[0])
-                : AudioManager.inst.CurrentAudioSource.time > beatmapObject.StartTime + beatmapObject.GetObjectLifeLength() && beatmapObject.autoKillType != BeatmapObject.AutoKillType.NoAutokill
+                : AudioManager.inst.CurrentAudioSource.time > beatmapObject.StartTime + beatmapObject.GetObjectLifeLength() && beatmapObject.autoKillType != AutoKillType.NoAutokill
                 ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][beatmapObject.events[3].Count - 1].values[0])
                 : levelObject.visualObject.renderer.material.HasProperty("_Color") ? levelObject.visualObject.renderer.material.color : Color.white;
 

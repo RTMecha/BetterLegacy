@@ -1084,7 +1084,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var bm = timelineObject.GetData<BeatmapObject>();
 
-                bm.autoKillType = BeatmapObject.AutoKillType.SongTime;
+                bm.autoKillType = AutoKillType.SongTime;
                 bm.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
                 bm.editorData.collapse = true;
 

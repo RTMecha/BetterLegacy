@@ -2391,7 +2391,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             for (int i = 0; i < beatmapObject.events.Count; i++)
-                beatmapObject.events[i].RemoveAll(x => strs.Contains(((EventKeyframe)x).id));
+                beatmapObject.events[i].RemoveAll(x => strs.Contains(x.id));
 
             bmTimelineObject.InternalTimelineObjects.Where(x => x.Selected).ToList().ForEach(x => Destroy(x.GameObject));
             bmTimelineObject.InternalTimelineObjects.RemoveAll(x => x.Selected);
@@ -2399,7 +2399,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(bmTimelineObject);
             RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
 
-            if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.LastKeyframe || beatmapObject.autoKillType == BeatmapObject.AutoKillType.LastKeyframeOffset)
+            if (beatmapObject.autoKillType == AutoKillType.LastKeyframe || beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
                 RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
 
             RenderKeyframes(beatmapObject);
@@ -2827,7 +2827,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var beatmapObject = CreateNewBeatmapObject(AudioManager.inst.CurrentAudioSource.time);
-            beatmapObject.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
+            beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 5f;
             beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
@@ -3147,7 +3147,7 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = Seasons.AprilFools ? "dead" : "no autokill";
-            bm.autoKillType = BeatmapObject.AutoKillType.NoAutokill;
+            bm.autoKillType = AutoKillType.NoAutokill;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
@@ -3228,7 +3228,7 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.StartTime = time;
                     beatmapObject.ShapeType = ShapeType.Image;
                     beatmapObject.autoKillOffset = t;
-                    beatmapObject.autoKillType = BeatmapObject.AutoKillType.FixedTime;
+                    beatmapObject.autoKillType = AutoKillType.FixedTime;
                     beatmapObject.editorData.Bin = 1;
                     SelectImage(file, beatmapObject, false, false);
                 }, false, true, false, false, false);
@@ -3741,7 +3741,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.AutokillDropdown.value = (int)beatmapObject.autoKillType;
             Dialog.AutokillDropdown.onValueChanged.AddListener(_val =>
             {
-                beatmapObject.autoKillType = (BeatmapObject.AutoKillType)_val;
+                beatmapObject.autoKillType = (AutoKillType)_val;
                 // AutoKillType affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
@@ -3751,9 +3751,9 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkers(beatmapObject);
             });
 
-            if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.FixedTime ||
-                beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime ||
-                beatmapObject.autoKillType == BeatmapObject.AutoKillType.LastKeyframeOffset)
+            if (beatmapObject.autoKillType == AutoKillType.FixedTime ||
+                beatmapObject.autoKillType == AutoKillType.SongTime ||
+                beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
             {
                 Dialog.AutokillField.gameObject.SetActive(true);
 
@@ -3763,7 +3763,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime)
+                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
                         {
                             float startTime = beatmapObject.StartTime;
                             if (num < startTime)
@@ -3791,7 +3791,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     float num = 0f;
 
-                    if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime)
+                    if (beatmapObject.autoKillType == AutoKillType.SongTime)
                         num = AudioManager.inst.CurrentAudioSource.time;
                     else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
 

@@ -563,7 +563,7 @@ namespace BetterLegacy.Editor.Managers
 
                         float num = 0f;
 
-                        if (beatmapObject.autoKillType == BeatmapObject.AutoKillType.SongTime)
+                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
                             num = AudioManager.inst.CurrentAudioSource.time;
                         else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
 
@@ -594,7 +594,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = BeatmapObject.AutoKillType.NoAutokill;
+                            bm.autoKillType = AutoKillType.NoAutokill;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
@@ -605,7 +605,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = BeatmapObject.AutoKillType.LastKeyframe;
+                            bm.autoKillType = AutoKillType.LastKeyframe;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
@@ -616,7 +616,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = BeatmapObject.AutoKillType.LastKeyframeOffset;
+                            bm.autoKillType = AutoKillType.LastKeyframeOffset;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
@@ -627,7 +627,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = BeatmapObject.AutoKillType.FixedTime;
+                            bm.autoKillType = AutoKillType.FixedTime;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
@@ -638,7 +638,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.autoKillType = BeatmapObject.AutoKillType.SongTime;
+                            bm.autoKillType = AutoKillType.SongTime;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);

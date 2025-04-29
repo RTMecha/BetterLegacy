@@ -144,36 +144,40 @@ namespace BetterLegacy.Core.Data.Beatmap
         public AutoKillType autoKillType;
 
         /// <summary>
-        /// Object despawn behavior.
-        /// </summary>
-        public enum AutoKillType
-        {
-            /// <summary>
-            /// Object will not despawn. Good for character models or general persistent objects.
-            /// </summary>
-            NoAutokill,
-            /// <summary>
-            /// Object will despawn once all animations are done.
-            /// </summary>
-            LastKeyframe,
-            /// <summary>
-            /// Object will despawn once all animations are done and at an offset.
-            /// </summary>
-            LastKeyframeOffset,
-            /// <summary>
-            /// Object will despawn after a fixed time.
-            /// </summary>
-            FixedTime,
-            /// <summary>
-            /// Object will despawn at song time.
-            /// </summary>
-            SongTime
-        }
-
-        /// <summary>
         /// Autokill time offset.
         /// </summary>
         public float autoKillOffset;
+
+        /// <summary>
+        /// Gets if the current audio time is within the lifespan of the object.
+        /// </summary>
+        public bool Alive
+        {
+            get
+            {
+                var time = AudioManager.inst.CurrentAudioSource.time;
+                var st = StartTime;
+                var akt = autoKillType;
+                var ako = autoKillOffset;
+                var l = SpawnDuration;
+                return time >= st && (time <= l + st && akt != AutoKillType.NoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.NoAutokill || time < ako && akt == AutoKillType.SongTime);
+            }
+        }
+
+        /// <summary>
+        /// Gets the total amount of keyframes the object has.
+        /// </summary>
+        public int KeyframeCount => events.Sum(x => x.Count);
+
+        /// <summary>
+        /// Total length of the objects' sequence.
+        /// </summary>
+        public float Length => events.Max(x => x.Max(x => x.time));
+
+        /// <summary>
+        /// Gets the total time the object is alive for.
+        /// </summary>
+        public float SpawnDuration => GetObjectLifeLength(0.0f, true);
 
         #endregion
 
@@ -480,41 +484,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Camera parent ID.
         /// </summary>
         public const string CAMERA_PARENT = "CAMERA_PARENT";
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets if the current audio time is within the lifespan of the object.
-        /// </summary>
-        public bool Alive
-        {
-            get
-            {
-                var time = AudioManager.inst.CurrentAudioSource.time;
-                var st = StartTime;
-                var akt = autoKillType;
-                var ako = autoKillOffset;
-                var l = SpawnDuration;
-                return time >= st && (time <= l + st && akt != AutoKillType.NoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.NoAutokill || time < ako && akt == AutoKillType.SongTime);
-            }
-        }
-
-        /// <summary>
-        /// Gets the total amount of keyframes the object has.
-        /// </summary>
-        public int KeyframeCount => events.Sum(x => x.Count);
-
-        /// <summary>
-        /// Total length of the objects' sequence.
-        /// </summary>
-        public float Length => events.Max(x => x.Max(x => x.time));
-
-        /// <summary>
-        /// Gets the total time the object is alive for.
-        /// </summary>
-        public float SpawnDuration => GetObjectLifeLength(0.0f, true);
 
         #endregion
 
@@ -2088,7 +2057,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
         /// </summary>
         /// <param name="beatmapObjectToParentTo">Object to try parenting to.</param>
-        /// <param name="recalculate">If spawner should recalculate.</param>
+        /// <param name="renderParent">If parent editor should render.</param>
         /// <returns>Returns true if the <see cref="BeatmapObject"/> was successfully parented, otherwise returns false.</returns>
         public bool TrySetParent(BeatmapObject beatmapObjectToParentTo, bool renderParent = true)
         {
