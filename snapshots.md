@@ -44,6 +44,7 @@
 - Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
 - Shapes are now loaded from a shapes.json file in the Assets folder.
 - Updating parent chains, object type and shapes have been optimized.
+- Refractored a lot of Catalyst code to fit BetterLegacy's code style.
 
 ### Example Companion
 - Example now has eyelids for more expressions.
