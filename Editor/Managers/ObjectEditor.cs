@@ -9,8 +9,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using HarmonyLib;
-
 using LSFunctions;
 
 using TMPro;
@@ -29,7 +27,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -1159,7 +1156,7 @@ namespace BetterLegacy.Editor.Managers
                     // Inspect Beatmap Object
                     var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectbeatmapobject", index + 1);
                     var inspectBeatmapObjectButton = inspectBeatmapObject.GetComponent<FunctionButtonStorage>();
-                    inspectBeatmapObjectButton.label.text = "Inspect BeatmapObject";
+                    inspectBeatmapObjectButton.label.text = "Inspect Beatmap Object";
 
                     Destroy(inspectBeatmapObject.GetComponent<Animator>());
                     inspectBeatmapObjectButton.button.transition = Selectable.Transition.ColorTint;
@@ -1169,7 +1166,7 @@ namespace BetterLegacy.Editor.Managers
                     // Inspect Level Object
                     var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectlevelobject", index + 2);
                     var inspectLevelObjectButton = inspectLevelObject.GetComponent<FunctionButtonStorage>();
-                    inspectLevelObjectButton.label.text = "Inspect LevelObject";
+                    inspectLevelObjectButton.label.text = "Inspect Runtime Object";
 
                     Destroy(inspectLevelObject.GetComponent<Animator>());
                     inspectLevelObjectButton.button.transition = Selectable.Transition.ColorTint;
@@ -1179,7 +1176,7 @@ namespace BetterLegacy.Editor.Managers
                     // Inspect Timeline Object
                     var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspecttimelineobject", index + 3);
                     var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
-                    inspectTimelineObjectButton.label.text = "Inspect TimelineObject";
+                    inspectTimelineObjectButton.label.text = "Inspect Timeline Object";
 
                     Destroy(inspectTimelineObject.GetComponent<Animator>());
                     inspectTimelineObjectButton.button.transition = Selectable.Transition.ColorTint;
