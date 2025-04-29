@@ -38,6 +38,11 @@ namespace BetterLegacy.Arcade.Managers
             timelineRightCap = GameManager.inst.timeline.transform.Find("Base/Image 1").GetComponent<Image>();
             timelineLine = GameManager.inst.timeline.transform.Find("Base").GetComponent<Image>();
 
+            timelinePlayer.material = LegacyResources.canvasImageMask;
+            timelineLeftCap.material = LegacyResources.canvasImageMask;
+            timelineRightCap.material = LegacyResources.canvasImageMask;
+            timelineLine.material = LegacyResources.canvasImageMask;
+
             levelAnimationController = gameObject.AddComponent<AnimationController>();
             checkpointAnimParent = GameManager.inst.CheckpointAnimator.transform;
             checkpointAnimTop = checkpointAnimParent.Find("top").GetComponent<Image>();
@@ -118,6 +123,32 @@ namespace BetterLegacy.Arcade.Managers
 
             if (RTEventManager.inst && RTEventManager.inst.uiCam)
                 RTEventManager.inst.uiCam.rect = rect;
+        }
+
+        public void UpdateTimeline()
+        {
+            if (RTEditor.inst)
+                RTEditor.inst.UpdateTimeline();
+
+            if (!GameManager.inst.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.data == null)
+                return;
+
+            checkpointImages.Clear();
+            var parent = GameManager.inst.timeline.transform.Find("elements");
+            LSHelpers.DeleteChildren(parent);
+            foreach (var checkpoint in GameData.Current.data.checkpoints)
+            {
+                if (checkpoint.time <= 0.5f)
+                    continue;
+
+                var gameObject = GameManager.inst.checkpointPrefab.Duplicate(parent, $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
+                float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
+
+                var image = gameObject.GetComponent<Image>();
+                image.material = LegacyResources.canvasImageMask;
+                checkpointImages.Add(image);
+            }
         }
 
         #region Checkpoints

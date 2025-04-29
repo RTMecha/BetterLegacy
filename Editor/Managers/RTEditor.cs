@@ -3684,6 +3684,11 @@ namespace BetterLegacy.Editor.Managers
             timelinePreviewLeftCap = timelinePreview.Find("Base/Image").GetComponent<Image>();
             timelinePreviewRightCap = timelinePreview.Find("Base/Image 1").GetComponent<Image>();
             timelinePreviewLine = timelinePreview.Find("Base").GetComponent<Image>();
+
+            timelinePreviewPlayer.material = LegacyResources.canvasImageMask;
+            timelinePreviewLeftCap.material = LegacyResources.canvasImageMask;
+            timelinePreviewRightCap.material = LegacyResources.canvasImageMask;
+            timelinePreviewLine.material = LegacyResources.canvasImageMask;
         }
 
         void SetupTimelineElements()
@@ -5718,7 +5723,10 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = GameManager.inst.checkpointPrefab.Duplicate(timelinePreview.Find("elements"), $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
                 float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
                 gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
-                checkpointImages.Add(gameObject.GetComponent<Image>());
+
+                var image = gameObject.GetComponent<Image>();
+                image.material = LegacyResources.canvasImageMask;
+                checkpointImages.Add(image);
             }
         }
 

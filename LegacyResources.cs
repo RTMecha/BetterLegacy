@@ -110,5 +110,14 @@ namespace BetterLegacy
             gradientDoubleSidedMaterial = new Material(gradientDoubleSidedShader);
             radialGradientDoubleSidedMaterial = new Material(radialGradientDoubleSidedShader);
         }
+
+        public static Material canvasImageMask;
+        // from https://stackoverflow.com/questions/59138535/unity-ui-image-alpha-overlap
+        public static void GetGUIAssets()
+        {
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("gui.asset"));
+            canvasImageMask = new Material(assetBundle.LoadAsset<Shader>("canvasimagemask.shader"));
+            assetBundle.Unload(false);
+        }
     }
 }
