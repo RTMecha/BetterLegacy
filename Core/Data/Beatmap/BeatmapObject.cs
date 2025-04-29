@@ -15,6 +15,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
@@ -462,12 +463,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Cached runtime object.
         /// </summary>
-        public Optimization.Objects.RTBeatmapObject runtimeObject;
+        public RTBeatmapObject runtimeObject;
 
         /// <summary>
         /// Cached sequences for the runtime object.
         /// </summary>
-        public Optimization.Objects.CachedSequences cachedSequences;
+        public CachedSequences cachedSequences;
+
+        /// <summary>
+        /// Cached runtime modifiers.
+        /// </summary>
+        public RTModifiers<BeatmapObject> runtimeModifiers;
 
         /// <summary>
         /// Used for editor.

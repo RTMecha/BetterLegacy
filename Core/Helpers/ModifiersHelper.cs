@@ -131,7 +131,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersAll<T>(List<Modifier<T>> modifiers, bool active)
+        public static void RunModifiersAll<T>(List<Modifier<T>> modifiers)
         {
             var actions = new List<Modifier<T>>();
             var triggers = new List<Modifier<T>>();
@@ -156,65 +156,55 @@ namespace BetterLegacy.Core.Helpers
                 }
             });
 
-            if (active)
+            if (!triggers.IsEmpty())
             {
-                if (!triggers.IsEmpty())
+                // If all triggers are active
+                if (CheckTriggers(triggers))
                 {
-                    // If all triggers are active
-                    if (CheckTriggers(triggers))
+                    actions.ForLoop(act =>
                     {
-                        actions.ForLoop(act =>
-                        {
-                            if (act.active) // Continue if modifier is not constant and was already activated
-                                return;
-
-                            if (!act.constant)
-                                act.active = true;
-
-                            act.running = true;
-                            act.Action?.Invoke(act);
-                        });
-                        triggers.ForLoop(trig =>
-                        {
-                            if (!trig.constant)
-                                trig.active = true;
-                            trig.running = true;
-                        });
-                        return;
-                    }
-
-                    // Deactivate both action and trigger modifiers
-                    modifiers.ForLoop(modifier =>
-                    {
-                        if (!modifier.active && (modifier.type == ModifierBase.Type.Trigger || !modifier.running))
+                        if (act.active) // Continue if modifier is not constant and was already activated
                             return;
 
-                        modifier.active = false;
-                        modifier.running = false;
-                        modifier.Inactive?.Invoke(modifier);
+                        if (!act.constant)
+                            act.active = true;
+
+                        act.running = true;
+                        act.Action?.Invoke(act);
+                    });
+                    triggers.ForLoop(trig =>
+                    {
+                        if (!trig.constant)
+                            trig.active = true;
+                        trig.running = true;
                     });
                     return;
                 }
 
-                actions.ForLoop(act =>
+                // Deactivate both action and trigger modifiers
+                modifiers.ForLoop(modifier =>
                 {
-                    if (act.active)
+                    if (!modifier.active && (modifier.type == ModifierBase.Type.Trigger || !modifier.running))
                         return;
 
-                    if (!act.constant)
-                        act.active = true;
-
-                    act.running = true;
-                    act.Action?.Invoke(act);
+                    modifier.active = false;
+                    modifier.running = false;
+                    modifier.Inactive?.Invoke(modifier);
                 });
+                return;
             }
-            else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
-                findAll.ForLoop(act =>
-                {
-                    act.active = false;
-                    act.running = false;
-                    act.Inactive?.Invoke(act);
-                });
+
+            actions.ForLoop(act =>
+            {
+                if (act.active)
+                    return;
+
+                if (!act.constant)
+                    act.active = true;
+
+                act.running = true;
+                act.Action?.Invoke(act);
+            });
         }
 
         /// <summary>
@@ -223,7 +213,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, bool active)
+        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, bool active = true)
         {
             if (active)
             {
@@ -4611,53 +4601,66 @@ namespace BetterLegacy.Core.Helpers
 
             "copyAxis" => modifier =>
             {
-                if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                    && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
-                    && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
-                    && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
-                    && float.TryParse(modifier.commands[10], out float loop) && bool.TryParse(modifier.commands[11], out bool useVisual)
-                    && GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                var fromType = modifier.GetInt(1, 0);
+                var fromAxis = modifier.GetInt(2, 0);
+                var toType = modifier.GetInt(3, 0);
+                var toAxis = modifier.GetInt(4, 0);
+                var delay = modifier.GetFloat(5, 0);
+                var multiply = modifier.GetFloat(6, 0);
+                var offset = modifier.GetFloat(7, 0);
+                var min = modifier.GetFloat(8, 0);
+                var max = modifier.GetFloat(9, 0);
+                var loop = modifier.GetFloat(10, 0);
+                var useVisual = modifier.GetBool(11, false);
+
+                if (!modifier.HasResult())
                 {
-                    var time = RTLevel.Current.CurrentTime;
-
-                    fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
-
-                    if (toType < 0 || toType > 3)
-                        return;
-
-                    if (!useVisual && bm.cachedSequences)
-                    {
-                        if (fromType == 3)
-                        {
-                            if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
-                                modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null)
-                            {
-                                var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
-                                var visualObject = modifier.reference.runtimeObject.visualObject;
-                                visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
-                            }
-                            return;
-                        }
-                        modifier.reference.SetTransform(toType, toAxis, fromType switch
-                        {
-                            0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        });
-                    }
-                    else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
-                    else if (useVisual)
-                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
-                        {
-                            0 => bm.InterpolateChainPosition().At(fromAxis),
-                            1 => bm.InterpolateChainScale().At(fromAxis),
-                            2 => bm.InterpolateChainRotation(),
-                            _ => 0f,
-                        }, min, max));
+                    if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject result))
+                        modifier.Result = result;
                 }
+
+                if (!modifier.TryGetResult(out BeatmapObject bm))
+                    return;
+
+                var time = RTLevel.Current.CurrentTime;
+
+                fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+
+                if (toType < 0 || toType > 3)
+                    return;
+
+                if (!useVisual && bm.cachedSequences)
+                {
+                    if (fromType == 3)
+                    {
+                        if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
+                            modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null)
+                        {
+                            var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
+                            var visualObject = modifier.reference.runtimeObject.visualObject;
+                            visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
+                        }
+                        return;
+                    }
+                    modifier.reference.SetTransform(toType, toAxis, fromType switch
+                    {
+                        0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                        1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                        2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
+                        _ => 0f,
+                    });
+                }
+                else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+                else if (useVisual)
+                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
+                    {
+                        0 => bm.InterpolateChainPosition().At(fromAxis),
+                        1 => bm.InterpolateChainScale().At(fromAxis),
+                        2 => bm.InterpolateChainRotation(),
+                        _ => 0f,
+                    }, min, max));
             },
             "copyAxisMath" => modifier =>
             {
@@ -4772,6 +4775,26 @@ namespace BetterLegacy.Core.Helpers
                     var time = RTLevel.Current.CurrentTime;
                     var variables = modifier.reference.GetObjectVariables();
 
+                    if (!modifier.HasResult())
+                    {
+                        var result = new List<BeatmapObject>();
+
+                        for (int i = 3; i < modifier.commands.Count; i += 8)
+                        {
+                            var group = modifier.GetValue(i + 1);
+
+                            var beatmapObject = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectWithTag(group) : GameData.Current.FindObjectWithTag(beatmapObjects, modifier.reference, group);
+
+                            result.Add(beatmapObject);
+                        }
+
+                        modifier.Result = result;
+                    }
+
+                    if (!modifier.TryGetResult(out List<BeatmapObject> list))
+                        return;
+
+                    int groupIndex = 0;
                     for (int i = 3; i < modifier.commands.Count; i += 8)
                     {
                         var name = modifier.commands[i];
@@ -4783,10 +4806,13 @@ namespace BetterLegacy.Core.Helpers
                         var max = Parser.TryParse(modifier.commands[i + 6], 0f);
                         var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
 
-                        var beatmapObject = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectWithTag(group) : GameData.Current.FindObjectWithTag(beatmapObjects, modifier.reference, group);
+                        var beatmapObject = list[groupIndex];
 
                         if (!beatmapObject)
+                        {
+                            groupIndex++;
                             continue;
+                        }
 
                         if (!useVisual && beatmapObject.cachedSequences)
                             variables[name] = fromType switch
@@ -4809,6 +4835,8 @@ namespace BetterLegacy.Core.Helpers
 
                         if (fromType == 4)
                             variables[name] = Mathf.Clamp(beatmapObject.integerVariable, min, max);
+
+                        groupIndex++;
                     }
 
                     modifier.reference.SetTransform(toType, toAxis, RTMath.Parse(evaluation, variables));
@@ -6237,6 +6265,8 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "copyAxis":
+                    case "copyAxisMath":
+                    case "copyAxisGroup":
                     case "objectSpawned": {
                             modifier.Result = null;
                             break;

@@ -271,7 +271,11 @@ namespace BetterLegacy.Editor.Managers
 
             ignoreToggle.onValueChanged.ClearAll();
             ignoreToggle.isOn = beatmapObject.ignoreLifespan;
-            ignoreToggle.onValueChanged.AddListener(_val => beatmapObject.ignoreLifespan = _val);
+            ignoreToggle.onValueChanged.AddListener(_val =>
+            {
+                beatmapObject.ignoreLifespan = _val;
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+            });
 
             orderToggle.onValueChanged.ClearAll();
             orderToggle.isOn = beatmapObject.orderModifiers;

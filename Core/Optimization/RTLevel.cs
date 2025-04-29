@@ -12,7 +12,6 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using BetterLegacy.Editor.Components;
@@ -21,6 +20,8 @@ using UnityObject = UnityEngine.Object;
 
 namespace BetterLegacy.Core.Optimization
 {
+    public delegate void RuntimeObjectNotifier(IRTObject runtimeObject);
+
     /// <summary>
     /// Short for Runtime Level. Controls all objects, events and modifiers in the level.
     /// </summary>
@@ -31,9 +32,6 @@ namespace BetterLegacy.Core.Optimization
         public RTLevel() { }
 
         public static string className = "[<color=#FF26C5>Updater</color>] \n";
-
-        public ObjectEngine engine;
-        public ObjectConverter converter;
 
         float previousAudioTime;
         float audioTimeVelocity;
@@ -84,10 +82,15 @@ namespace BetterLegacy.Core.Optimization
 
             // Convert GameData to LevelObjects
             converter = new ObjectConverter(gameData);
-            IEnumerable<IRTObject> levelObjects = converter.ToLevelObjects();
+            IEnumerable<IRTObject> runtimeObjects = converter.ToRuntimeObjects();
 
-            objects = levelObjects.ToList();
+            objects = runtimeObjects.ToList();
             engine = new ObjectEngine(Objects);
+
+            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers();
+
+            modifiers = runtimeModifiers.ToList();
+            objectModifiersEngine = new ObjectEngine(Modifiers);
 
             Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
         }
@@ -185,6 +188,7 @@ namespace BetterLegacy.Core.Optimization
             Debug.Log($"{className}Cleaning up level");
 
             engine = null;
+            objectModifiersEngine = null;
         }
 
         #endregion
@@ -368,6 +372,9 @@ namespace BetterLegacy.Core.Optimization
 
         #endregion
 
+        public ObjectEngine engine;
+        public ObjectConverter converter;
+
         public IReadOnlyList<IRTObject> Objects => objects.AsReadOnly();
 
         public List<IRTObject> objects;
@@ -446,7 +453,6 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // Material
-
                 case ObjectContext.OBJECT_TYPE: {
                         // object was empty
                         if (!levelObject)
@@ -485,7 +491,6 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // ObjectType
-
                 case ObjectContext.START_TIME: {
                         if (!levelObject)
                         {
@@ -512,7 +517,6 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // StartTime
-
                 case ObjectContext.AUTOKILL: {
                         if (!levelObject || !engine || !engine.objectSpawner)
                             break;
@@ -529,7 +533,6 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // Autokill
-
                 case ObjectContext.PARENT: {
                         var parentChain = beatmapObject.GetParentChain();
                         if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
@@ -558,7 +561,6 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // Parent
-
                 case ObjectContext.PARENT_SETTING: {
                         var parentChain = beatmapObject.GetParentChain();
                         if (beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || parentChain.Count > 1 && parentChain[parentChain.Count - 1].Parent == BeatmapObject.CAMERA_PARENT)
@@ -602,12 +604,10 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     }
-
                 case ObjectContext.PARENT_CHAIN: {
                         UpdateParentChain(beatmapObject, levelObject);
                         break;
                     }
-
                 case ObjectContext.VISUAL_OFFSET: {
                         if (!levelObject)
                             break;
@@ -618,26 +618,22 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // Origin & Depth
-
                 case ObjectContext.SHAPE: {
                         UpdateVisualObject(beatmapObject, levelObject);
 
                         break;
                     } // Shape
-
                 case ObjectContext.POLYGONS: {
                         UpdateVisualObject(beatmapObject, levelObject);
 
                         break;
                     } // Polygons
-
                 case ObjectContext.IMAGE: {
                         if (levelObject && levelObject.visualObject is ImageObject imageObject)
                             imageObject.UpdateImage(beatmapObject.text, GameData.Current.assets.GetSprite(beatmapObject.text));
 
                         break;
                     } // Image
-
                 case ObjectContext.TEXT: {
                         if (levelObject && levelObject.visualObject is TextObject textObject)
                         {
@@ -647,7 +643,6 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // Text
-
                 case ObjectContext.KEYFRAMES: {
                         if (!levelObject)
                         {
@@ -660,6 +655,30 @@ namespace BetterLegacy.Core.Optimization
 
                         break;
                     } // Keyframes
+                case ObjectContext.MODIFIERS: {
+                        var runtimeModifiers = beatmapObject.runtimeModifiers;
+
+                        if (runtimeModifiers)
+                        {
+                            objectModifiersEngine?.objectSpawner?.RemoveObject(runtimeModifiers, false);
+                            modifiers.Remove(runtimeModifiers);
+
+                            runtimeModifiers = null;
+                        }
+
+                        beatmapObject.runtimeModifiers = null;
+                        beatmapObject.runtimeModifiers =
+                            new RTModifiers<BeatmapObject>(
+                                beatmapObject.modifiers, beatmapObject.orderModifiers,
+                                beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime,
+                                beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration
+                            );
+
+                        modifiers.Add(beatmapObject.runtimeModifiers);
+                        objectModifiersEngine?.objectSpawner?.InsertObject(beatmapObject.runtimeModifiers, false);
+
+                        break;
+                    }
             }
         }
 
@@ -710,6 +729,18 @@ namespace BetterLegacy.Core.Optimization
 
                 runtimeObject = null;
                 top = null;
+                beatmapObject.runtimeObject = null;
+            }
+
+            var runtimeModifiers = beatmapObject.runtimeModifiers;
+
+            if (runtimeModifiers)
+            {
+                objectModifiersEngine?.objectSpawner?.RemoveObject(runtimeModifiers, false);
+                modifiers.Remove(runtimeModifiers);
+
+                runtimeModifiers = null;
+                beatmapObject.runtimeModifiers = null;
             }
 
             // If the object should be reinserted and it is not null then we reinsert the object.
@@ -717,11 +748,18 @@ namespace BetterLegacy.Core.Optimization
                 return;
 
             // Convert object to ILevelObject.
-            var ilevelObj = converter.ToILevelObject(beatmapObject);
-            if (ilevelObj != null)
+            var iRuntimeObject = converter.ToIRuntimeObject(beatmapObject);
+            if (iRuntimeObject != null)
             {
-                objects.Add(ilevelObj);
-                engine?.objectSpawner?.InsertObject(ilevelObj, false);
+                objects.Add(iRuntimeObject);
+                engine?.objectSpawner?.InsertObject(iRuntimeObject, false);
+            }
+
+            var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
+            if (iRuntimeModifiers != null)
+            {
+                modifiers.Add(iRuntimeModifiers);
+                objectModifiersEngine?.objectSpawner?.InsertObject(iRuntimeModifiers, false);
             }
         }
 
@@ -867,33 +905,23 @@ namespace BetterLegacy.Core.Optimization
             public const string POLYGONS = "polygons";
             public const string IMAGE = "image";
             public const string KEYFRAMES = "keyframes";
+            public const string MODIFIERS = "modifiers";
         }
 
         #region Modifiers
+
+        public ObjectEngine objectModifiersEngine;
+
+        public IReadOnlyList<IRTObject> Modifiers => modifiers.AsReadOnly();
+
+        public List<IRTObject> modifiers;
 
         void OnObjectModifiersTick()
         {
             if (!GameData.Current || !CoreHelper.Playing)
                 return;
 
-            var ldm = CoreConfig.Instance.LDM.Value;
-            var beatmapObjects = GameData.Current.beatmapObjects;
-
-            for (int i = 0; i < beatmapObjects.Count; i++)
-            {
-                var beatmapObject = beatmapObjects[i];
-
-                if (beatmapObject.modifiers.IsEmpty() || ldm && beatmapObject.LDM)
-                    continue;
-
-                if (beatmapObject.orderModifiers)
-                {
-                    ModifiersHelper.RunModifiersLoop(beatmapObject.modifiers, beatmapObject.ignoreLifespan || beatmapObject.Alive);
-                    continue;
-                }
-
-                ModifiersHelper.RunModifiersAll(beatmapObject.modifiers, beatmapObject.ignoreLifespan || beatmapObject.Alive);
-            }
+            objectModifiersEngine?.Update(CurrentTime);
 
             foreach (var audioSource in ModifiersManager.audioSources)
             {
@@ -1075,12 +1103,9 @@ namespace BetterLegacy.Core.Optimization
                     var modifiers = backgroundObject.modifiers[j];
 
                     if (backgroundObject.orderModifiers)
-                    {
-                        ModifiersHelper.RunModifiersLoop(modifiers, true);
-                        continue;
-                    }
-
-                    ModifiersHelper.RunModifiersAll(modifiers, true);
+                        ModifiersHelper.RunModifiersLoop(modifiers);
+                    else
+                        ModifiersHelper.RunModifiersAll(modifiers);
                 }
             }
         }

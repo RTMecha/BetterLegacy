@@ -40,7 +40,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                 CacheSequence(gameData.beatmapObjects[i]);
         }
 
-        public IEnumerable<IRTObject> ToLevelObjects()
+        #region Runtime Objects
+
+        public IEnumerable<IRTObject> ToRuntimeObjects()
         {
             foreach (var beatmapObject in gameData.beatmapObjects)
             {
@@ -52,11 +54,11 @@ namespace BetterLegacy.Core.Optimization.Objects
                     continue;
                 }
 
-                RTBeatmapObject levelObject = null;
+                RTBeatmapObject runtimeObject = null;
 
                 try
                 {
-                    levelObject = ToLevelObject(beatmapObject);
+                    runtimeObject = ToRuntimeObject(beatmapObject);
                 }
                 catch (Exception e)
                 {
@@ -68,14 +70,14 @@ namespace BetterLegacy.Core.Optimization.Objects
                     Debug.LogError(stringBuilder.ToString());
                 }
 
-                if (levelObject != null)
-                    yield return levelObject;
+                if (runtimeObject)
+                    yield return runtimeObject;
             }
         }
 
         public bool VerifyObject(BeatmapObject beatmapObject) => ShowDamagable && beatmapObject.objectType != ObjectType.Normal || !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
 
-        public IRTObject ToILevelObject(BeatmapObject beatmapObject)
+        public IRTObject ToIRuntimeObject(BeatmapObject beatmapObject)
         {
             if (VerifyObject(beatmapObject))
             {
@@ -90,7 +92,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                levelObject = ToLevelObject(beatmapObject);
+                levelObject = ToRuntimeObject(beatmapObject);
             }
             catch (Exception e)
             {
@@ -105,7 +107,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             return levelObject ?? null;
         }
 
-        RTBeatmapObject ToLevelObject(BeatmapObject beatmapObject)
+        RTBeatmapObject ToRuntimeObject(BeatmapObject beatmapObject)
         {
             var parentObjects = new List<ParentObject>();
 
@@ -336,6 +338,45 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             return levelParentObject;
         }
+
+        #endregion
+
+        #region Runtime Modifiers
+
+        public IEnumerable<IRTObject> ToRuntimeModifiers()
+        {
+            foreach (var beatmapObject in gameData.beatmapObjects)
+            {
+                if (beatmapObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value && beatmapObject.LDM)
+                {
+                    beatmapObject.runtimeModifiers = null;
+                    continue;
+                }
+
+                var runtimeModifiers = ToRuntimeModifiers(beatmapObject);
+
+                if (runtimeModifiers)
+                    yield return runtimeModifiers;
+            }
+        }
+
+        public IRTObject ToIRuntimeModifiers(BeatmapObject beatmapObject)
+        {
+            return ToRuntimeModifiers(beatmapObject);
+        }
+
+        RTModifiers<BeatmapObject> ToRuntimeModifiers(BeatmapObject beatmapObject)
+        {
+            var runtimeModifiers = new RTModifiers<BeatmapObject>(
+                    beatmapObject.modifiers, beatmapObject.orderModifiers,
+                    beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime,
+                    beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration
+                );
+            beatmapObject.runtimeModifiers = runtimeModifiers;
+            return runtimeModifiers;
+        }
+
+        #endregion
 
         #region Sequences
 
