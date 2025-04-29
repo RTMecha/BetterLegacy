@@ -1,4 +1,4 @@
-﻿# 1.7.0-pre.2 > [???]
+﻿# 1.7.0-pre.2 > [Apr 29, 2025]
 
 ## Features
 ### Story
@@ -45,6 +45,7 @@
 - Shapes are now loaded from a shapes.json file in the Assets folder.
 - Updating parent chains, object type and shapes have been optimized.
 - Refractored a lot of Catalyst code to fit BetterLegacy's code style.
+- Due to the above changes, modifiers system has also been heavily optimized.
 
 ### Example Companion
 - Example now has eyelids for more expressions.
