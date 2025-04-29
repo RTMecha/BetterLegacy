@@ -142,8 +142,8 @@ namespace BetterLegacy.Editor.Data
 
                 beatmapObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                 GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
-                    Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
+                if (RTLevel.Current && RTLevel.Current.converter != null)
+                    RTLevel.Current.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
                 if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                     unparentedPastedObjects.Add(beatmapObjectCopy);
@@ -162,7 +162,7 @@ namespace BetterLegacy.Editor.Data
 
             var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : pastedObjects;
             for (int i = 0; i < list.Count; i++)
-                Updater.UpdateObject(list[i], recalculate: false);
+                RTLevel.Current?.UpdateObject(list[i], recalculate: false);
 
             unparentedPastedObjects.Clear();
             unparentedPastedObjects = null;
@@ -193,7 +193,7 @@ namespace BetterLegacy.Editor.Data
 
                 GameData.Current.prefabObjects.Add(prefabObjectCopy);
 
-                Updater.AddPrefabToLevel(prefabObjectCopy, recalculate: false);
+                RTLevel.Current?.AddPrefabToLevel(prefabObjectCopy, recalculate: false);
 
                 if (!CoreHelper.InEditor)
                     continue;
@@ -208,7 +208,7 @@ namespace BetterLegacy.Editor.Data
 
             var elapsed = sw.Elapsed;
 
-            Updater.RecalculateObjectStates();
+            RTLevel.Current?.RecalculateObjectStates();
 
             CoreHelper.StopAndLogStopwatch(sw);
 

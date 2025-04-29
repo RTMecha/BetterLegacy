@@ -1,9 +1,9 @@
 ﻿namespace BetterLegacy.Core.Optimization.Objects
 {
     /// <summary>
-    /// Represents a level object.
+    /// Represents a Runtime Object.
     /// </summary>
-    public interface ILevelObject
+    public interface IRTObject
     {
         /// <summary>
         /// Time the object spawns at.

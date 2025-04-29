@@ -60,7 +60,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateBackgroundPrefix(int __0)
         {
-            CoreHelper.LogError($"Cannot run {nameof(BackgroundEditor.UpdateBackground)}, please use {nameof(Updater.UpdateBackgroundObject)} instead!");
+            CoreHelper.LogError($"Cannot run {nameof(BackgroundEditor.UpdateBackground)}, please use {nameof(RTLevel.UpdateBackgroundObject)} instead!");
             return false;
         }
 

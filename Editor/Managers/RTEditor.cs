@@ -316,7 +316,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     EditorTimeline.inst.SetCurrentObject(timelineObject);
 
-                                    Updater.UpdateObject(beatmapObject);
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
                                     EditorTimeline.inst.RenderTimelineObject(timelineObject);
                                     ObjectEditor.inst.OpenDialog(beatmapObject);
 
@@ -701,8 +701,8 @@ namespace BetterLegacy.Editor.Managers
             }));
             EditorTimeline.inst.timelineSlider.onValueChanged.AddListener(x =>
             {
-                if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value)
-                    System.Threading.Tasks.Task.Run(Updater.UpdateHomingKeyframes);
+                if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value && RTLevel.Current)
+                    System.Threading.Tasks.Task.Run(RTLevel.Current.UpdateHomingKeyframes);
             });
 
             DestroyImmediate(EditorManager.inst.mouseTooltip);
@@ -2744,7 +2744,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             BackgroundManager.inst.UpdateBackgrounds();
                             EventManager.inst.updateEvents();
-                            Updater.UpdateObjects();
+                            RTLevel.Reinit();
                         }),
                         new ButtonFunction(true),
                         new ButtonFunction("Cut", () =>
@@ -2985,7 +2985,7 @@ namespace BetterLegacy.Editor.Managers
             var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 DG.Tweening.DOTween.Clear();
-                Updater.UpdateObjects(false);
+                RTLevel.Reinit(false);
                 GameData.Current = null;
                 GameData.Current = new GameData();
                 TooltipHelper.InitTooltips();
@@ -3114,7 +3114,7 @@ namespace BetterLegacy.Editor.Managers
                         var prefabObject = prefabObjects[i];
                         if (prefabObject.fromModifier)
                         {
-                            Updater.UpdatePrefab(prefabObject, false);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, false);
                             prefabObjects.RemoveAt(i);
                         }
                     }
@@ -4148,7 +4148,7 @@ namespace BetterLegacy.Editor.Managers
             GenerateDebugButton(
                 "Inspect LevelProcessor",
                 "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
-                () => ModCompatibility.Inspect(Updater.levelProcessor));
+                () => ModCompatibility.Inspect(RTLevel.Current));
 
             GenerateDebugButton(
                 "Inspect Current GameData",
@@ -4785,7 +4785,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            Updater.UpdateObjects(false);
+            RTLevel.Reinit(false);
 
             // We stop and play the doggo bop animation in case the user has looked at the settings dialog.
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
@@ -4938,7 +4938,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CoreHelper.Log("Updating objects...");
-            StartCoroutine(Updater.IUpdateObjects(true));
+            StartCoroutine(RTLevel.IReinit());
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CoreHelper.Log("Updating timeline objects...");
@@ -7021,7 +7021,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static Color GetObjectColor(BeatmapObject beatmapObject, bool ignoreTransparency)
         {
-            var levelObject = beatmapObject.levelObject;
+            var levelObject = beatmapObject.runtimeObject;
             if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !levelObject || !levelObject.visualObject || !levelObject.visualObject.renderer)
                 return Color.white;
 

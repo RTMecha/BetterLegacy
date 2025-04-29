@@ -28,8 +28,8 @@ namespace BetterLegacy.Core.Components
         void Update()
         {
             if (AudioSource == null || BeatmapObject == null ||
-                !Updater.levelProcessor || Updater.levelProcessor.converter == null ||
-                Updater.levelProcessor.converter.cachedSequences == null || !Updater.levelProcessor.converter.cachedSequences.TryGetValue(BeatmapObject.id, out Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
+                !RTLevel.Current || RTLevel.Current?.converter == null ||
+                RTLevel.Current.converter.cachedSequences == null || !RTLevel.Current.converter.cachedSequences.TryGetValue(BeatmapObject.id, out Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
                 return;
 
             var time = CurrentAudioSource.time - BeatmapObject.StartTime;

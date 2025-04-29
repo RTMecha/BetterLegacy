@@ -121,8 +121,7 @@ namespace ILMath
 
                 switch (split[0])
                 {
-                    case "findAxis":
-                        {
+                    case "findAxis": {
                             if (!CoreHelper.InGame)
                             {
                                 result = 0;
@@ -148,9 +147,9 @@ namespace ILMath
 
                             var fromAxis = (int)parameters[1];
 
-                            var time = parameters.Length < 3 ? Updater.CurrentTime - bm.StartTime : (float)parameters[2];
+                            var time = parameters.Length < 3 ? RTLevel.Current.CurrentTime - bm.StartTime : (float)parameters[2];
 
-                            if (!Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out BetterLegacy.Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
+                            if (!RTLevel.Current.converter.cachedSequences.TryGetValue(bm.id, out BetterLegacy.Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
                             {
                                 result = 0;
                                 return false;
@@ -165,8 +164,7 @@ namespace ILMath
                             };
                             return true;
                         }
-                    case "findOffset":
-                        {
+                    case "findOffset": {
                             if (!CoreHelper.InGame)
                             {
                                 result = 0;
@@ -201,8 +199,7 @@ namespace ILMath
                             };
                             return true;
                         }
-                    case "findObject":
-                        {
+                    case "findObject": {
                             if (!CoreHelper.InGame)
                             {
                                 result = 0;
@@ -229,8 +226,7 @@ namespace ILMath
                             };
                             return true;
                         }
-                    case "findInterpolateChain":
-                        {
+                    case "findInterpolateChain": {
                             if (!CoreHelper.InGame)
                             {
                                 result = 0;
@@ -249,7 +245,7 @@ namespace ILMath
                             var type = parameters[0];
                             var axis = parameters[1];
                             var hasValues = parameters.Length < 3;
-                            var time = hasValues ? Updater.CurrentTime - bm.StartTime : (float)parameters[2];
+                            var time = hasValues ? RTLevel.Current?.CurrentTime - bm.StartTime : (float)parameters[2];
 
                             result = type switch
                             {
@@ -260,13 +256,11 @@ namespace ILMath
                             };
                             return true;
                         }
-                    case "easing":
-                        {
+                    case "easing": {
                             result = Ease.GetEaseFunction(split[1])((float)parameters[0]);
                             return true;
                         }
-                    case "date":
-                        {
+                    case "date": {
                             result = float.Parse(DateTime.Now.ToString(split[1]));
                             return true;
                         }

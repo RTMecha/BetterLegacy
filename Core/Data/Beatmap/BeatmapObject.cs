@@ -458,7 +458,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Used for optimization.
         /// </summary>
-        public Optimization.Objects.LevelObject levelObject;
+        public Optimization.Objects.RTBeatmapObject runtimeObject;
 
         /// <summary>
         /// Used for editor.
@@ -1587,7 +1587,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </param>
         /// <param name="valueIndex">Axis index to interpolate.</param>
         /// <returns>Returns a single value based on the event.</returns>
-        public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, Updater.CurrentTime - StartTime);
+        public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, RTLevel.Current.CurrentTime - StartTime);
 
         /// <summary>
         /// Interpolates an animation from the object.
@@ -1696,7 +1696,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="includeDepth">If depth should be considered.</param>
         /// <returns>Returns an accurate object position.</returns>
-        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(Updater.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(RTLevel.Current.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
 
         /// <summary>
         /// Gets the accurate object position regardless of whether it's empty or not. (does not include homing nor random)
@@ -1742,7 +1742,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(Updater.CurrentTime - StartTime, includeOffsets, includeSelf);
+        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(RTLevel.Current.CurrentTime - StartTime, includeOffsets, includeSelf);
 
         public Vector2 InterpolateChainScale(float time, bool includeOffsets = true, bool includeSelf = true)
         {
@@ -1771,7 +1771,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(Updater.CurrentTime - StartTime, includeOffsets, includeSelf);
+        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(RTLevel.Current.CurrentTime - StartTime, includeOffsets, includeSelf);
 
         public float InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
         {
@@ -1800,7 +1800,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public ObjectAnimationResult InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(Updater.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public ObjectAnimationResult InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(RTLevel.Current.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
 
         public ObjectAnimationResult InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
@@ -1910,9 +1910,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["otherRotationOffsetY"] = rotationOffset.y;
             variables["otherRotationOffsetZ"] = rotationOffset.z;
 
-            if (levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
             {
-                var transform = levelObject.visualObject.gameObject.transform;
+                var transform = runtimeObject.visualObject.gameObject.transform;
 
                 variables["otherVisualPosX"] = transform.position.x;
                 variables["otherVisualPosY"] = transform.position.y;
@@ -1944,9 +1944,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["rotationOffsetY"] = rotationOffset.y;
             variables["rotationOffsetZ"] = rotationOffset.z;
 
-            if (levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
             {
-                var transform = levelObject.visualObject.gameObject.transform;
+                var transform = runtimeObject.visualObject.gameObject.transform;
 
                 variables["visualPosX"] = transform.position.x;
                 variables["visualPosY"] = transform.position.y;
@@ -2105,7 +2105,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (shouldParent)
             {
                 Parent = beatmapObjectToParentTo.id;
-                Updater.UpdateObject(this, Updater.ObjectContext.PARENT_CHAIN);
+                RTLevel.Current?.UpdateObject(this, RTLevel.ObjectContext.PARENT_CHAIN);
 
                 if (renderParent)
                     ObjectEditor.inst.RenderParent(this);

@@ -102,7 +102,7 @@ namespace BetterLegacy.Patchers
 
             RTEditor.EasingDropdowns = easingDropdowns;
 
-            Updater.OnLevelEnd();
+            RTLevel.Current?.Clear();
 
             InterfaceManager.inst.StopMusic();
             InterfaceManager.inst.CloseMenus();
@@ -556,7 +556,7 @@ namespace BetterLegacy.Patchers
                     AudioManager.inst.PlayMusic(null, audioClip, true, 0f);
                     GameManager.inst.gameState = GameManager.State.Playing;
 
-                    CoroutineHelper.StartCoroutine(Updater.IUpdateObjects(true));
+                    CoroutineHelper.StartCoroutine(RTLevel.IReinit());
                 }, onError => AssignGameData()));
             }, onError => AssignGameData()));
 

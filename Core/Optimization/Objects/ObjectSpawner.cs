@@ -10,18 +10,18 @@ namespace BetterLegacy.Core.Optimization.Objects
     /// </summary>
     public class ObjectSpawner : Exists
     {
-        public IEnumerable<ILevelObject> ActiveObjects => activeObjects;
+        public IEnumerable<IRTObject> ActiveObjects => activeObjects;
 
-        public readonly List<ILevelObject> activateList = new List<ILevelObject>();
-        public readonly List<ILevelObject> deactivateList = new List<ILevelObject>();
+        public readonly List<IRTObject> activateList = new List<IRTObject>();
+        public readonly List<IRTObject> deactivateList = new List<IRTObject>();
 
         int activateIndex = 0;
         int deactivateIndex = 0;
         float currentTime = 0.0f;
 
-        readonly HashSet<ILevelObject> activeObjects = new HashSet<ILevelObject>();
+        readonly HashSet<IRTObject> activeObjects = new HashSet<IRTObject>();
 
-        public ObjectSpawner(IEnumerable<ILevelObject> levelObjects)
+        public ObjectSpawner(IEnumerable<IRTObject> levelObjects)
         {
             // populate activate and deactivate lists
             activateList.AddRange(levelObjects);
@@ -49,7 +49,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         /// </summary>
         /// <param name="levelObject">The object to insert into.</param>
         /// <param name="recalculate">Whether should this recalculate object states.</param>
-        public void InsertObject(ILevelObject levelObject, bool recalculate = true)
+        public void InsertObject(IRTObject levelObject, bool recalculate = true)
         {
             activateList.Add(levelObject);
             activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
@@ -66,7 +66,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         /// </summary>
         /// <param name="levelObject">The object to remove from.</param>
         /// <param name="recalculate">Whether should this recalculate object states.</param>
-        public void RemoveObject(ILevelObject levelObject, bool recalculate = true)
+        public void RemoveObject(IRTObject levelObject, bool recalculate = true)
         {
             activateList.Remove(levelObject);
             deactivateList.Remove(levelObject);
@@ -80,7 +80,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         /// </summary>
         /// <param name="levelObjects">The list of objects to insert into.</param>
         /// <param name="recalculate">Whether should this recalculate object states.</param>
-        public void InsertObjects(IEnumerable<ILevelObject> levelObjects, bool recalculate = true)
+        public void InsertObjects(IEnumerable<IRTObject> levelObjects, bool recalculate = true)
         {
             activateList.AddRange(levelObjects);
             activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
@@ -97,7 +97,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         /// </summary>
         /// <param name="predicate">The predicate that matches the objects to remove.</param>
         /// <param name="recalculate">Whether should this recalculate object states.</param>
-        public void RemoveObjects(Predicate<ILevelObject> predicate, bool recalculate = true)
+        public void RemoveObjects(Predicate<IRTObject> predicate, bool recalculate = true)
         {
             activateList.RemoveAll(predicate);
             deactivateList.RemoveAll(predicate);

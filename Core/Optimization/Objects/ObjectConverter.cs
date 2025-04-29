@@ -61,20 +61,20 @@ namespace BetterLegacy.Core.Optimization.Objects
                 CacheSequence(beatmapObjects[i]);
         }
 
-        public IEnumerable<ILevelObject> ToLevelObjects()
+        public IEnumerable<IRTObject> ToLevelObjects()
         {
             foreach (var beatmapObject in gameData.beatmapObjects)
             {
                 if (VerifyObject(beatmapObject))
                 {
-                    if (beatmapObject.levelObject != null && beatmapObject.levelObject.parentObjects != null)
-                        beatmapObject.levelObject.parentObjects.Clear();
-                    if (beatmapObject.levelObject != null)
-                        beatmapObject.levelObject = null;
+                    if (beatmapObject.runtimeObject != null && beatmapObject.runtimeObject.parentObjects != null)
+                        beatmapObject.runtimeObject.parentObjects.Clear();
+                    if (beatmapObject.runtimeObject != null)
+                        beatmapObject.runtimeObject = null;
                     continue;
                 }
 
-                LevelObject levelObject = null;
+                RTBeatmapObject levelObject = null;
 
                 try
                 {
@@ -83,7 +83,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 catch (Exception e)
                 {
                     var stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine($"{Updater.className}Failed to convert object '{beatmapObject.id}' to {nameof(LevelObject)}.");
+                    stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{beatmapObject.id}' to {nameof(RTBeatmapObject)}.");
                     stringBuilder.AppendLine($"Exception: {e.Message}");
                     stringBuilder.AppendLine(e.StackTrace);
 
@@ -97,18 +97,18 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public bool VerifyObject(BeatmapObject beatmapObject) => ShowDamagable && beatmapObject.objectType != ObjectType.Normal || !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
 
-        public ILevelObject ToILevelObject(BeatmapObject beatmapObject)
+        public IRTObject ToILevelObject(BeatmapObject beatmapObject)
         {
             if (VerifyObject(beatmapObject))
             {
-                if (beatmapObject.levelObject != null && beatmapObject.levelObject.parentObjects != null)
-                    beatmapObject.levelObject.parentObjects.Clear();
-                if (beatmapObject.levelObject != null)
-                    beatmapObject.levelObject = null;
+                if (beatmapObject.runtimeObject != null && beatmapObject.runtimeObject.parentObjects != null)
+                    beatmapObject.runtimeObject.parentObjects.Clear();
+                if (beatmapObject.runtimeObject != null)
+                    beatmapObject.runtimeObject = null;
                 return null;
             }
 
-            LevelObject levelObject = null;
+            RTBeatmapObject levelObject = null;
 
             try
             {
@@ -117,7 +117,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             catch (Exception e)
             {
                 var stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine($"{Updater.className}Failed to convert object '{beatmapObject.id}' to {nameof(LevelObject)}.");
+                stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{beatmapObject.id}' to {nameof(RTBeatmapObject)}.");
                 stringBuilder.AppendLine($"Exception: {e.Message}");
                 stringBuilder.AppendLine(e.StackTrace);
 
@@ -127,9 +127,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             return levelObject ?? null;
         }
 
-        LevelObject ToLevelObject(BeatmapObject beatmapObject)
+        RTBeatmapObject ToLevelObject(BeatmapObject beatmapObject)
         {
-            var parentObjects = new List<LevelParentObject>();
+            var parentObjects = new List<ParentObject>();
 
             GameObject parent = null;
 
@@ -235,19 +235,19 @@ namespace BetterLegacy.Core.Optimization.Objects
             visual.colorSequence = cachedSequence.ColorSequence;
             visual.secondaryColorSequence = cachedSequence.SecondaryColorSequence;
 
-            var levelObject = new LevelObject(
+            var levelObject = new RTBeatmapObject(
                 beatmapObject,
                 parentObjects, visual,
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
             levelObject.SetActive(false);
 
-            beatmapObject.levelObject = levelObject;
+            beatmapObject.runtimeObject = levelObject;
 
             return levelObject;
         }
 
-        public GameObject InitParentChain(BeatmapObject beatmapObject, List<LevelParentObject> parentObjects)
+        public GameObject InitParentChain(BeatmapObject beatmapObject, List<ParentObject> parentObjects)
         {
             var gameObject = new GameObject(beatmapObject.name);
 
@@ -264,7 +264,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             return gameObject;
         }
 
-        public LevelParentObject InitLevelParentObject(BeatmapObject beatmapObject, GameObject gameObject)
+        public ParentObject InitLevelParentObject(BeatmapObject beatmapObject, GameObject gameObject)
         {
             CachedSequences cachedSequences = null;
 
@@ -284,12 +284,12 @@ namespace BetterLegacy.Core.Optimization.Objects
                 Debug.LogError(stringBuilder.ToString());
             }
 
-            LevelParentObject levelParentObject = null;
+            ParentObject levelParentObject = null;
 
             try
             {
                 if (cachedSequences != null)
-                    levelParentObject = new LevelParentObject
+                    levelParentObject = new ParentObject
                     {
                         positionSequence = cachedSequences.PositionSequence,
                         scaleSequence = cachedSequences.ScaleSequence,
@@ -317,7 +317,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                         transform = gameObject.transform,
                         id = beatmapObject.id,
                         desync = !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.desync,
-                        BeatmapObject = beatmapObject
+                        beatmapObject = beatmapObject
                     };
                 else
                 {
@@ -330,7 +330,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                     var rot = new List<IKeyframe<float>>();
                     rot.Add(new FloatKeyframe(0f, 0f, Ease.Linear, null));
 
-                    levelParentObject = new LevelParentObject
+                    levelParentObject = new ParentObject
                     {
                         positionSequence = new Sequence<Vector3>(pos),
                         scaleSequence = new Sequence<Vector2>(sca),
@@ -358,7 +358,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                         transform = gameObject.transform,
                         id = beatmapObject.id,
                         desync = !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.desync,
-                        BeatmapObject = beatmapObject
+                        beatmapObject = beatmapObject
                     };
                 } // In case the CashedSequence is null, set defaults.
 

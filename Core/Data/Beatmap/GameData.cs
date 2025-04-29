@@ -2068,7 +2068,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 current++;
 
-                var time = Updater.CurrentTime;
+                var time = RTLevel.Current?.CurrentTime;
 
                 switch (modiifer.Name.ToLower())
                 {

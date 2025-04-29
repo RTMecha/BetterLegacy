@@ -236,7 +236,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
 
-                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
             }
 
             return true;
@@ -258,7 +258,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
 
-                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
             }
 
             return true;
@@ -270,7 +270,7 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
 
             return true;
         }
@@ -325,8 +325,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (ObjectEditor.UpdateObjects)
                 {
-                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
-                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.AUTOKILL);
+                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
                 }
             }
         }
@@ -377,8 +377,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (ObjectEditor.UpdateObjects)
                 {
-                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
-                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.AUTOKILL);
+                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
                 }
             }
         }

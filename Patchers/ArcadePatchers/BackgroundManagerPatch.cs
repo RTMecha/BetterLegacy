@@ -40,7 +40,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateBackgrounds()
         {
-            Updater.UpdateBackgroundObjects();
+            RTLevel.Current?.UpdateBackgroundObjects();
             return false;
         }
 
@@ -63,7 +63,7 @@ namespace BetterLegacy.Patchers
                 Instance.audio.clip.GetData(Instance.samples, 0);
 
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                Updater.CreateBackgroundObject(backgroundObject);
+                RTLevel.Current?.CreateBackgroundObject(backgroundObject);
 
             yield break;
         }

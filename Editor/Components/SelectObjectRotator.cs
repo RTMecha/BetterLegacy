@@ -93,9 +93,9 @@ namespace BetterLegacy.Editor.Components
                 Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(dragKeyframeValues - dragOffset + -RTMath.VectorAngle(pos, vector2), 15f) : dragKeyframeValues - dragOffset + -RTMath.VectorAngle(pos, vector2);
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                Updater.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), Updater.PrefabContext.TRANSFORM_OFFSET);
+                RTLevel.Current?.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), RTLevel.PrefabContext.TRANSFORM_OFFSET);
             else
-                Updater.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), Updater.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), RTLevel.ObjectContext.KEYFRAMES);
         }
     }
 }

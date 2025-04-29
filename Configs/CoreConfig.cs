@@ -19,7 +19,7 @@ namespace BetterLegacy.Configs
             Instance = this;
             BindSettings();
 
-            Updater.UseNewUpdateMethod = UseNewUpdateMethod.Value;
+            RTLevel.UseNewUpdateMethod = UseNewUpdateMethod.Value;
 
             SetupSettingChanged();
         }
@@ -574,7 +574,7 @@ namespace BetterLegacy.Configs
 
             var list = GameData.Current.beatmapObjects.FindAll(x => x.LDM);
             for (int i = 0; i < list.Count; i++)
-                Updater.UpdateObject(list[i]);
+                RTLevel.Current?.UpdateObject(list[i]);
         }
 
         void ShowBackgroundObjectsChanged()
@@ -609,7 +609,7 @@ namespace BetterLegacy.Configs
             LegacyPlugin.SaveProfile();
         }
 
-        void UseNewUpdateMethodChanged() => Updater.UseNewUpdateMethod = UseNewUpdateMethod.Value;
+        void UseNewUpdateMethodChanged() => RTLevel.UseNewUpdateMethod = UseNewUpdateMethod.Value;
         
         void MusicVolumeChanged() => SoundManager.inst.PlaySound(DefaultSounds.UpDown, (MusicVol.Value / 9f) * (MasterVol.Value / 9f));
 

@@ -1064,7 +1064,7 @@ namespace BetterLegacy.Story
         void OnLevelEnd()
         {
             LevelManager.Clear();
-            Updater.OnLevelEnd();
+            RTLevel.Current?.Clear();
             UpdateCurrentLevelProgress(); // allow players to get a better rank
 
             if (!ContinueStory)
@@ -1100,7 +1100,7 @@ namespace BetterLegacy.Story
         void OnLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
         {
             LevelManager.Clear();
-            Updater.UpdateObjects(false);
+            RTLevel.Reinit(false);
             if (!isCutscene)
                 UpdateCurrentLevelProgress(); // allow players to get a better rank
 

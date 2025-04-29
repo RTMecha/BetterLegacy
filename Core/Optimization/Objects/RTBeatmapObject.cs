@@ -8,9 +8,9 @@ using BetterLegacy.Core.Optimization.Objects.Visual;
 
 namespace BetterLegacy.Core.Optimization.Objects
 {
-    public class LevelObject : Exists, ILevelObject
+    public class RTBeatmapObject : Exists, IRTObject
     {
-        public LevelObject(BeatmapObject beatmapObject, List<LevelParentObject> parentObjects, VisualObject visualObject,
+        public RTBeatmapObject(BeatmapObject beatmapObject, List<ParentObject> parentObjects, VisualObject visualObject,
             Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
         {
             this.beatmapObject = beatmapObject;
@@ -51,7 +51,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"{Updater.className}a\n{ex}");
+                Debug.LogError($"{RTLevel.className}a\n{ex}");
             }
         }
 
@@ -62,7 +62,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public BeatmapObject beatmapObject;
 
-        public List<LevelParentObject> parentObjects;
+        public List<ParentObject> parentObjects;
         public VisualObject visualObject;
         
         public float depth;
@@ -106,7 +106,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 for (int i = 0; i < parentObjects.Count; i++)
                 {
                     var parentObject = parentObjects[i];
-                    parentObject.BeatmapObject = null;
+                    parentObject.beatmapObject = null;
                     parentObject.gameObject = null;
                     parentObject.id = null;
                     parentObject.positionSequence = null;
@@ -225,7 +225,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (parentObject.spawned && desync) // continue if parent has desync setting on and was spawned.
                     continue;
 
-                if (parentObject.BeatmapObject.detatched && desync) // for modifier use, probably
+                if (parentObject.beatmapObject.detatched && desync) // for modifier use, probably
                     continue;
 
                 parentObject.spawned = true;
@@ -242,8 +242,8 @@ namespace BetterLegacy.Core.Optimization.Objects
                 {
                     var value =
                         parentObject.positionSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (positionOffset + positionAddedOffset) : time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) +
-                        parentObject.BeatmapObject.reactivePositionOffset +
-                        parentObject.BeatmapObject.positionOffset;
+                        parentObject.beatmapObject.reactivePositionOffset +
+                        parentObject.beatmapObject.positionOffset;
 
                     float z = depth * 0.0005f + (value.z / 10f);
 
@@ -253,9 +253,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                 // If last parent is scale parented, animate scale
                 if (animateScale)
                 {
-                    var r = parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.scaleOffset;
+                    var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
                     var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (scaleOffset + scaleAddedOffset) : time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
-                    var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
+                    var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.beatmapObject.scaleOffset.z);
                     parentObject.transform.localScale = scale;
                     totalScale = RTMath.Scale(totalScale, scale);
                 }
@@ -264,9 +264,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (animateRotation)
                 {
                     var value = Quaternion.AngleAxis(
-                        (parentObject.rotationSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (rotationOffset + rotationAddedOffset) : time - parentObject.timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.BeatmapObject.reactiveRotationOffset) * rotationParallax,
+                        (parentObject.rotationSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (rotationOffset + rotationAddedOffset) : time - parentObject.timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
                         Vector3.forward);
-                    parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.BeatmapObject.rotationOffset);
+                    parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset);
                 }
 
                 // Cache parent values to use for next parent
@@ -285,7 +285,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (desync) // don't reset desync as the intention is the object "detatches" itself from the parent object.
                     continue;
 
-                desync = parentObject.desync || parentObject.BeatmapObject.detatched;
+                desync = parentObject.desync || parentObject.beatmapObject.detatched;
                 syncOffset = parentObject.timeOffset;
             }
 

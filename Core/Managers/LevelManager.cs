@@ -431,7 +431,7 @@ namespace BetterLegacy.Core.Managers
             RTEventManager.inst.SetResetOffsets();
 
             BackgroundManager.inst.UpdateBackgrounds();
-            yield return inst.StartCoroutine(Updater.IUpdateObjects(true));
+            yield return inst.StartCoroutine(RTLevel.IReinit());
 
             CursorManager.inst.HideCursor();
 
@@ -498,7 +498,7 @@ namespace BetterLegacy.Core.Managers
             DG.Tweening.DOTween.Clear();
             try
             {
-                Updater.UpdateObjects(false);
+                RTLevel.Reinit(false);
             }
             catch (Exception ex)
             {

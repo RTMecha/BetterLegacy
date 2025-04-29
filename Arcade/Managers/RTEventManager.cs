@@ -450,7 +450,7 @@ namespace BetterLegacy.Arcade.Managers
                 if (CoreConfig.Instance.ControllerRumble.Value && EventsConfig.Instance.ShakeAffectsController.Value)
                     InputDataManager.inst.SetAllControllerRumble(EventManager.inst.shakeMultiplier);
 
-                if (Updater.UseNewUpdateMethod)
+                if (RTLevel.UseNewUpdateMethod)
                 {
                     var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
                     var smoothedTime = Mathf.SmoothDamp(inst.previousAudioTime, currentAudioTime, ref inst.audioTimeVelocity, 1.0f / 50.0f);

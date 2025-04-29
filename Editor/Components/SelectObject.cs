@@ -245,9 +245,9 @@ namespace BetterLegacy.Editor.Components
                 selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
             if (prefabObjectToDrag != null)
-                Updater.UpdatePrefab(prefabObjectToDrag, Updater.PrefabContext.TRANSFORM_OFFSET);
+                RTLevel.Current?.UpdatePrefab(prefabObjectToDrag, RTLevel.PrefabContext.TRANSFORM_OFFSET);
             else
-                Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
         }
 
         float startDragTime;
@@ -316,7 +316,7 @@ namespace BetterLegacy.Editor.Components
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var bm = beatmapObjects[i];
-                    var levelObject = bm.levelObject;
+                    var levelObject = bm.runtimeObject;
                     if (!levelObject || !levelObject.visualObject)
                         continue;
 
@@ -331,7 +331,7 @@ namespace BetterLegacy.Editor.Components
                 return;
             }
 
-            var selfLevelObject = beatmapObject.levelObject;
+            var selfLevelObject = beatmapObject.runtimeObject;
             if (!beatmapObject.editorData || !selfLevelObject)
                 return;
 
@@ -349,7 +349,7 @@ namespace BetterLegacy.Editor.Components
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObjectToDrag);
         }
 
-        void SetColor(LevelObject levelObject, Renderer renderer, int layer)
+        void SetColor(RTBeatmapObject levelObject, Renderer renderer, int layer)
         {
             if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
                 return;
@@ -358,7 +358,7 @@ namespace BetterLegacy.Editor.Components
             SetLayerColor(levelObject, renderer, layer);
         }
 
-        void SetHoverColor(LevelObject levelObject, Renderer renderer)
+        void SetHoverColor(RTBeatmapObject levelObject, Renderer renderer)
         {
             if (!HighlightObjects || !hovered || !levelObject || levelObject.visualObject == null)
                 return;
@@ -385,7 +385,7 @@ namespace BetterLegacy.Editor.Components
                 currentColor.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
                 0f);
 
-        void SetLayerColor(LevelObject levelObject, Renderer renderer, int layer)
+        void SetLayerColor(RTBeatmapObject levelObject, Renderer renderer, int layer)
         {
             if (ShowObjectsOnlyOnLayer && layer != EditorManager.inst.layer)
             {

@@ -652,7 +652,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                             prefabObject.parent = timelineObject.ID;
-                            Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT, false);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT, false);
                             RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                             success = true;
@@ -660,7 +660,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                         success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
                     }
-                    Updater.RecalculateObjectStates();
+                    RTLevel.Current?.RecalculateObjectStates();
 
                     if (!success)
                         EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
@@ -674,7 +674,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var prefabObject = CurrentSelection.GetData<PrefabObject>();
                     prefabObject.parent = timelineObject.ID;
-                    Updater.UpdatePrefab(prefabObject, Updater.PrefabContext.PARENT);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                     RTEditor.inst.parentPickerEnabled = false;
 

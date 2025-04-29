@@ -135,7 +135,8 @@ namespace BetterLegacy.Core
                         context.RegisterVariable($"player{i}Health", player.Health);
                     }
 
-                    context.RegisterFunction("sampleAudio", parameters => Updater.GetSample((int)parameters[0], (float)parameters[1]));
+                    if (RTLevel.Current)
+                        context.RegisterFunction("sampleAudio", parameters => RTLevel.Current.GetSample((int)parameters[0], (float)parameters[1]));
                     context.RegisterFunction("copyEvent", parameters => RTEventManager.inst.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
                 }
 

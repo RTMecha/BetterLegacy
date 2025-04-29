@@ -14,13 +14,9 @@ using BetterLegacy.Core.Optimization;
 
 namespace BetterLegacy.Patchers
 {
-    public delegate void LevelTickEventHandler();
-
     [HarmonyPatch(typeof(ObjectManager))]
     public class ObjectManagerPatch : MonoBehaviour
     {
-        public static event LevelTickEventHandler LevelTick;
-
         [HarmonyPatch(nameof(ObjectManager.Awake))]
         [HarmonyPostfix]
         static void AwakePostfix(ObjectManager __instance)
@@ -49,7 +45,7 @@ namespace BetterLegacy.Patchers
         static bool UpdatePrefix()
         {
             if (!CoreHelper.Paused && !CoreHelper.Parsing && !CoreHelper.Loading)
-                LevelTick?.Invoke();
+                RTLevel.Current?.Tick();
 
             return false;
         }
@@ -58,7 +54,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool updateObjectsPrefix()
         {
-            Updater.UpdateObjects();
+            RTLevel.Reinit();
             return false;
         }
     }

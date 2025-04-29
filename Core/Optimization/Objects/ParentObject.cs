@@ -6,9 +6,9 @@ using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Core.Optimization.Objects
 {
-    public class LevelParentObject : Exists
+    public class ParentObject : Exists
     {
-        public LevelParentObject() { }
+        public ParentObject() { }
 
         public Sequence<Vector3> positionSequence;
         public Sequence<Vector2> scaleSequence;
@@ -38,6 +38,6 @@ namespace BetterLegacy.Core.Optimization.Objects
         public bool desync;
         public bool spawned;
 
-        public BeatmapObject BeatmapObject { get; set; }
+        public BeatmapObject beatmapObject;
     }
 }

@@ -148,9 +148,9 @@ namespace BetterLegacy.Editor.Components
             }
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                Updater.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), Updater.PrefabContext.TRANSFORM_OFFSET);
+                RTLevel.Current?.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), RTLevel.PrefabContext.TRANSFORM_OFFSET);
             else
-                Updater.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), Updater.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), RTLevel.ObjectContext.KEYFRAMES);
         }
     }
 }

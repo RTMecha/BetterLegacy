@@ -471,7 +471,7 @@ namespace BetterLegacy.Core.Helpers
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                         ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
@@ -493,7 +493,7 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.transform.position.y;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 1: {
@@ -501,14 +501,14 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.orthographicSize / 20f;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 2: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.eulerAngles.x;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    Updater.UpdateObject(beatmapObject, Updater.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 3: {
@@ -603,15 +603,15 @@ namespace BetterLegacy.Core.Helpers
                     if (timelineObject.isBeatmapObject)
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        Updater.UpdateObject(beatmapObject, Updater.ObjectContext.START_TIME, false);
+                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME, false);
                         if (beatmapObject.desync)
-                            Updater.UpdateObject(beatmapObject, Updater.ObjectContext.PARENT_CHAIN, false);
+                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN, false);
                     }
                     if (timelineObject.isPrefabObject)
-                        Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), Updater.PrefabContext.TIME, false);
+                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME, false);
                 }
 
-                Updater.Sort();
+                RTLevel.Current?.Sort();
             }
 
             if (EditorTimeline.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
@@ -635,9 +635,9 @@ namespace BetterLegacy.Core.Helpers
                     new ButtonFunction("Update Object", () =>
                     {
                         if (timelineObject.isBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
+                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>());
                         if (timelineObject.isPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>());
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Cut", () =>

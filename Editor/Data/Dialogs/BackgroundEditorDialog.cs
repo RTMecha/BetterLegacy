@@ -219,7 +219,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (overwrite)
                 {
                     foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                        Updater.DestroyBackgroundObject(backgroundObject);
+                        RTLevel.Current?.DestroyBackgroundObject(backgroundObject);
                     GameData.Current.backgroundObjects.Clear();
                 }
 

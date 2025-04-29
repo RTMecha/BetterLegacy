@@ -68,7 +68,7 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
-            Updater.CreateBackgroundObject(backgroundObject);
+            RTLevel.Current?.CreateBackgroundObject(backgroundObject);
             SetCurrentBackground(backgroundObject);
         }
 
@@ -92,7 +92,7 @@ namespace BetterLegacy.Editor.Managers
             var backgroundObject = backgroundObjCopy.Copy();
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
-            Updater.CreateBackgroundObject(backgroundObject);
+            RTLevel.Current?.CreateBackgroundObject(backgroundObject);
             SetCurrentBackground(backgroundObject);
         }
 
@@ -106,7 +106,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            Updater.DestroyBackgroundObject(backgroundObject);
+            RTLevel.Current?.DestroyBackgroundObject(backgroundObject);
             var id = backgroundObject.id;
 
             if (GameData.Current.backgroundObjects.TryFindIndex(x => x.id == id, out int index))
@@ -168,7 +168,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var count = GameData.Current.backgroundObjects.Count;
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                Updater.DestroyBackgroundObject(backgroundObject);
+                RTLevel.Current?.DestroyBackgroundObject(backgroundObject);
             GameData.Current.backgroundObjects.Clear();
             UpdateBackgroundList();
             SetCurrentBackground(null);
@@ -249,7 +249,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ActiveToggle.onValueChanged.AddListener(_val =>
             {
                 backgroundObject.active = _val;
-                Updater.UpdateBackgroundObject(backgroundObject);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             });
         }
 
@@ -324,7 +324,7 @@ namespace BetterLegacy.Editor.Managers
                 if (int.TryParse(_val, out int num))
                 {
                     backgroundObject.depth = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -341,7 +341,7 @@ namespace BetterLegacy.Editor.Managers
                 if (int.TryParse(_val, out int num))
                 {
                     backgroundObject.iterations = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -358,7 +358,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.pos.x = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -369,7 +369,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.pos.y = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -393,7 +393,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.scale.x = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -404,7 +404,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.scale.y = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -428,7 +428,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.zposition = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -445,7 +445,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.zscale = float.Parse(_val);
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -462,7 +462,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.rot = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                     RenderRotation(backgroundObject);
                 }
             });
@@ -474,7 +474,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.RotationSlider.onValueChanged.AddListener(_val =>
             {
                 backgroundObject.rot = _val;
-                Updater.UpdateBackgroundObject(backgroundObject);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 RenderRotation(backgroundObject);
             });
         }
@@ -488,7 +488,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     backgroundObject.rotation.x = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -499,7 +499,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     CurrentSelectedBG.rotation.y = num;
-                    Updater.UpdateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
 
@@ -700,7 +700,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.FadeToggle.toggle.onValueChanged.AddListener(_val =>
             {
                 backgroundObject.drawFade = _val;
-                Updater.UpdateBackgroundObject(backgroundObject);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             });
         }
 
@@ -1040,21 +1040,21 @@ namespace BetterLegacy.Editor.Managers
         public void SetColor(BackgroundObject backgroundObject, int col)
         {
             backgroundObject.color = col;
-            Updater.UpdateBackgroundObject(backgroundObject);
+            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             UpdateColorList(backgroundObject, "color");
         }
 
         public void SetFadeColor(BackgroundObject backgroundObject, int col)
         {
             backgroundObject.fadeColor = col;
-            Updater.UpdateBackgroundObject(backgroundObject);
+            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             UpdateColorList(backgroundObject, "fade-color");
         }
 
         public void SetReactiveColor(BackgroundObject backgroundObject, int col)
         {
             backgroundObject.reactiveCol = col;
-            Updater.UpdateBackgroundObject(backgroundObject);
+            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             UpdateColorList(backgroundObject, "reactive-color");
         }
 
@@ -1348,7 +1348,7 @@ namespace BetterLegacy.Editor.Managers
                     backgroundObject.rotationOffset = Vector3.zero;
 
                     Destroy(backgroundObject.BaseObject);
-                    Updater.CreateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.CreateBackgroundObject(backgroundObject);
 
                     StartCoroutine(RenderModifiers(backgroundObject));
                 });
@@ -1486,7 +1486,7 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.rotationOffset = Vector3.zero;
 
                             Destroy(backgroundObject.BaseObject);
-                            Updater.CreateBackgroundObject(backgroundObject);
+                            RTLevel.Current?.CreateBackgroundObject(backgroundObject);
 
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),

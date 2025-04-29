@@ -325,7 +325,7 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.reactivePositionOffset = Vector3.zero;
                     beatmapObject.reactiveScaleOffset = Vector3.zero;
                     beatmapObject.reactiveRotationOffset = 0f;
-                    Updater.UpdateObject(beatmapObject);
+                    RTLevel.Current?.UpdateObject(beatmapObject);
                     StartCoroutine(RenderModifiers(beatmapObject));
                 });
 
@@ -382,7 +382,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.reactivePositionOffset = Vector3.zero;
                             beatmapObject.reactiveScaleOffset = Vector3.zero;
                             beatmapObject.reactiveRotationOffset = 0f;
-                            Updater.UpdateObject(beatmapObject);
+                            RTLevel.Current?.UpdateObject(beatmapObject);
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
                         new ButtonFunction(true),
@@ -982,7 +982,7 @@ namespace BetterLegacy.Editor.Managers
                                     modifier.commands[1] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D.Count - 1).ToString();
                                     modifier.active = false;
                                     StartCoroutine(RenderModifiers(beatmapObject));
-                                    Updater.UpdateObject(beatmapObject);
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
                                 });
 
                                 EditorThemeManager.ApplyLightText(labelText);
@@ -1018,7 +1018,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     modifier.commands[2] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D[type].Count - 1).ToString();
                                     modifier.active = false;
-                                    Updater.UpdateObject(beatmapObject);
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
                                 });
 
                                 EditorThemeManager.ApplyLightText(labelText);
@@ -1630,7 +1630,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     modifier.commands.RemoveAt(groupIndex);
 
-                                    Updater.UpdateObject(beatmapObject);
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
                                     StartCoroutine(RenderModifiers(beatmapObject));
                                 });
 
@@ -1642,7 +1642,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 modifier.commands.Add("modifierName");
 
-                                Updater.UpdateObject(beatmapObject);
+                                RTLevel.Current?.UpdateObject(beatmapObject);
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
@@ -2053,7 +2053,7 @@ namespace BetterLegacy.Editor.Managers
                                     for (int j = 0; j < 8; j++)
                                         modifier.commands.RemoveAt(groupIndex);
 
-                                    Updater.UpdateObject(beatmapObject);
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
                                     StartCoroutine(RenderModifiers(beatmapObject));
                                 });
 
@@ -2087,7 +2087,7 @@ namespace BetterLegacy.Editor.Managers
                                 modifier.commands.Add("9999");
                                 modifier.commands.Add("False");
 
-                                Updater.UpdateObject(beatmapObject);
+                                RTLevel.Current?.UpdateObject(beatmapObject);
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
@@ -2438,7 +2438,7 @@ namespace BetterLegacy.Editor.Managers
                                     for (int j = 0; j < 3; j++)
                                         modifier.commands.RemoveAt(groupIndex);
 
-                                    Updater.UpdateObject(beatmapObject);
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
                                     StartCoroutine(RenderModifiers(beatmapObject));
                                 });
 
@@ -2466,7 +2466,7 @@ namespace BetterLegacy.Editor.Managers
                                 modifier.commands.Add(length);
                                 modifier.commands.Add(time);
 
-                                Updater.UpdateObject(beatmapObject);
+                                RTLevel.Current?.UpdateObject(beatmapObject);
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
