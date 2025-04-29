@@ -460,9 +460,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         public SelectObject selector;
 
         /// <summary>
-        /// Used for optimization.
+        /// Cached runtime object.
         /// </summary>
         public Optimization.Objects.RTBeatmapObject runtimeObject;
+
+        /// <summary>
+        /// Cached sequences for the runtime object.
+        /// </summary>
+        public Optimization.Objects.CachedSequences cachedSequences;
 
         /// <summary>
         /// Used for editor.

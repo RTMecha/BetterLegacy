@@ -148,8 +148,9 @@ namespace ILMath
                             var fromAxis = (int)parameters[1];
 
                             var time = parameters.Length < 3 ? RTLevel.Current.CurrentTime - bm.StartTime : (float)parameters[2];
+                            var cachedSequences = bm.cachedSequences;
 
-                            if (!RTLevel.Current.converter.cachedSequences.TryGetValue(bm.id, out BetterLegacy.Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
+                            if (!cachedSequences)
                             {
                                 result = 0;
                                 return false;
@@ -157,9 +158,9 @@ namespace ILMath
 
                             result = fromType switch
                             {
-                                0 => cachedSequence.PositionSequence.Interpolate(time)[fromAxis],
-                                1 => cachedSequence.ScaleSequence.Interpolate(time)[fromAxis],
-                                2 => cachedSequence.RotationSequence.Interpolate(time),
+                                0 => cachedSequences.PositionSequence.Interpolate(time)[fromAxis],
+                                1 => cachedSequences.ScaleSequence.Interpolate(time)[fromAxis],
+                                2 => cachedSequences.RotationSequence.Interpolate(time),
                                 _ => 0,
                             };
                             return true;

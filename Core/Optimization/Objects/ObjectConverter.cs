@@ -22,22 +22,10 @@ namespace BetterLegacy.Core.Optimization.Objects
 {
     // WARNING: This class has side effects and will instantiate GameObjects
     /// <summary>
-    /// Converts GameData to LevelObjects to be used by the mod
+    /// Converts Beatmap Objects to Runtime Objects to be used by the mod
     /// </summary>
     public class ObjectConverter : Exists
     {
-        public class CachedSequences
-        {
-            public Sequence<Vector3> PositionSequence { get; set; }
-            public Sequence<Vector2> ScaleSequence { get; set; }
-            public Sequence<float> RotationSequence { get; set; }
-            public Sequence<Color> ColorSequence { get; set; }
-            public Sequence<Color> SecondaryColorSequence { get; set; }
-        }
-
-        public Dictionary<string, CachedSequences> cachedSequences = new Dictionary<string, CachedSequences>();
-        public Dictionary<string, BeatmapObject> beatmapObjects = new Dictionary<string, BeatmapObject>();
-
         public static bool ShowEmpties { get; set; } = false;
 
         public static bool ShowDamagable { get; set; } = false;
@@ -48,17 +36,8 @@ namespace BetterLegacy.Core.Optimization.Objects
         {
             this.gameData = gameData;
 
-            var beatmapObjects = gameData.beatmapObjects;
-            for (int i = 0; i < beatmapObjects.Count; i++)
-            {
-                if (this.beatmapObjects.ContainsKey(beatmapObjects[i].id))
-                    CoreHelper.LogError($"Object with ID \"{beatmapObjects[i].id}\" already exists!");
-
-                this.beatmapObjects[beatmapObjects[i].id] = beatmapObjects[i];
-            }
-
-            for (int i = 0; i < beatmapObjects.Count; i++)
-                CacheSequence(beatmapObjects[i]);
+            for (int i = 0; i < gameData.beatmapObjects.Count; i++)
+                CacheSequence(gameData.beatmapObjects[i]);
         }
 
         public IEnumerable<IRTObject> ToLevelObjects()
@@ -67,10 +46,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             {
                 if (VerifyObject(beatmapObject))
                 {
-                    if (beatmapObject.runtimeObject != null && beatmapObject.runtimeObject.parentObjects != null)
+                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.parentObjects != null)
                         beatmapObject.runtimeObject.parentObjects.Clear();
-                    if (beatmapObject.runtimeObject != null)
-                        beatmapObject.runtimeObject = null;
+                    beatmapObject.runtimeObject = null;
                     continue;
                 }
 
@@ -133,7 +111,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             GameObject parent = null;
 
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && gameData.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
                 parent = InitParentChain(beatmapObjectParent, parentObjects);
 
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
@@ -230,10 +208,8 @@ namespace BetterLegacy.Core.Optimization.Objects
                 Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
             }
 
-            var cachedSequence = cachedSequences[beatmapObject.id];
-
-            visual.colorSequence = cachedSequence.ColorSequence;
-            visual.secondaryColorSequence = cachedSequence.SecondaryColorSequence;
+            visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
+            visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
             var levelObject = new RTBeatmapObject(
                 beatmapObject,
@@ -254,7 +230,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             parentObjects.Add(InitLevelParentObject(beatmapObject, gameObject));
 
             // Has parent - init parent (recursive)
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && gameData.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
             {
                 var parentObject = InitParentChain(beatmapObjectParent, parentObjects);
 
@@ -266,29 +242,13 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public ParentObject InitLevelParentObject(BeatmapObject beatmapObject, GameObject gameObject)
         {
-            CachedSequences cachedSequences = null;
-
-            try
-            {
-                if (this.cachedSequences.TryGetValue(beatmapObject.id, out CachedSequences c))
-                    cachedSequences = c;
-
-            }
-            catch (Exception e)
-            {
-                var stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine($"Failed to init level parent object sequence for '{beatmapObject.id}'.");
-                stringBuilder.AppendLine($"Exception: {e.Message}");
-                stringBuilder.AppendLine(e.StackTrace);
-
-                Debug.LogError(stringBuilder.ToString());
-            }
+            CachedSequences cachedSequences = beatmapObject.cachedSequences;
 
             ParentObject levelParentObject = null;
 
             try
             {
-                if (cachedSequences != null)
+                if (cachedSequences)
                     levelParentObject = new ParentObject
                     {
                         positionSequence = cachedSequences.PositionSequence,
@@ -402,12 +362,12 @@ namespace BetterLegacy.Core.Optimization.Objects
                     collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3], DefaultThemeKeyframe, true);
             }
 
-            cachedSequences[beatmapObject.id] = collection;
+            beatmapObject.cachedSequences = collection;
 
             yield break;
         }
 
-        public CachedSequences CacheSequence(BeatmapObject beatmapObject) => cachedSequences[beatmapObject.id] = CreateSequence(beatmapObject);
+        public CachedSequences CacheSequence(BeatmapObject beatmapObject) => beatmapObject.cachedSequences = CreateSequence(beatmapObject);
 
         public CachedSequences CreateSequence(BeatmapObject beatmapObject)
         {

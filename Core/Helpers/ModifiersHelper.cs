@@ -2946,12 +2946,13 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var beatmapObject = list[i];
+                    var cachedSequences = beatmapObject.cachedSequences;
                     var time = AudioManager.inst.CurrentAudioSource.time;
 
                     fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
                     fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-                    if (!RTLevel.Current.converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences cachedSequence))
+                    if (!cachedSequences)
                         continue;
 
                     switch (fromType)
@@ -2959,9 +2960,8 @@ namespace BetterLegacy.Core.Helpers
                         // To Type Position
                         // To Axis X
                         // From Type Position
-                        case 0:
-                            {
-                                var sequence = cachedSequence.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay);
+                        case 0: {
+                                var sequence = cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 break;
@@ -2969,9 +2969,8 @@ namespace BetterLegacy.Core.Helpers
                         // To Type Position
                         // To Axis X
                         // From Type Scale
-                        case 1:
-                            {
-                                var sequence = cachedSequence.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
+                        case 1: {
+                                var sequence = cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 break;
@@ -2979,9 +2978,8 @@ namespace BetterLegacy.Core.Helpers
                         // To Type Position
                         // To Axis X
                         // From Type Rotation
-                        case 2:
-                            {
-                                var sequence = cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) * multiply;
+                        case 2: {
+                                var sequence = cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) * multiply;
 
                                 beatmapObject.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
                                 break;
@@ -3349,12 +3347,12 @@ namespace BetterLegacy.Core.Helpers
                 toType = Mathf.Clamp(toType, 0, RTEventManager.inst.offsets.Count - 1);
                 toAxis = Mathf.Clamp(toAxis, 0, RTEventManager.inst.offsets[toType].Count - 1);
 
-                if (!useVisual && RTLevel.Current.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequences))
+                if (!useVisual && modifier.reference.cachedSequences)
                     RTEventManager.inst.SetOffset(toType, toAxis, fromType switch
                     {
-                        0 => Mathf.Clamp((cachedSequences.PositionSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                        1 => Mathf.Clamp((cachedSequences.ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                        2 => Mathf.Clamp((cachedSequences.RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop, min, max),
+                        0 => Mathf.Clamp((modifier.reference.cachedSequences.PositionSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                        1 => Mathf.Clamp((modifier.reference.cachedSequences.ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                        2 => Mathf.Clamp((modifier.reference.cachedSequences.RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop, min, max),
                         _ => 0f,
                     });
                 else if (modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
@@ -3579,10 +3577,11 @@ namespace BetterLegacy.Core.Helpers
             {
                 var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(0)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(0));
 
-                if (list.IsEmpty() || !RTLevel.Current.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequence))
+                var beatmapObject = modifier.reference;
+                var cachedSequences = beatmapObject.cachedSequences;
+                if (list.IsEmpty() || !cachedSequences)
                     return;
 
-                var beatmapObject = modifier.reference;
                 var time = RTLevel.Current.CurrentTime - beatmapObject.StartTime;
                 Color color;
                 Color secondColor;
@@ -3663,15 +3662,15 @@ namespace BetterLegacy.Core.Helpers
 
                 float t = !isEmpty ? type switch
                 {
-                    0 => axis == 0 ? cachedSequence.PositionSequence.Value.x : axis == 1 ? cachedSequence.PositionSequence.Value.y : cachedSequence.PositionSequence.Value.z,
-                    1 => axis == 0 ? cachedSequence.ScaleSequence.Value.x : cachedSequence.ScaleSequence.Value.y,
-                    2 => cachedSequence.RotationSequence.Value,
+                    0 => axis == 0 ? cachedSequences.PositionSequence.Value.x : axis == 1 ? cachedSequences.PositionSequence.Value.y : cachedSequences.PositionSequence.Value.z,
+                    1 => axis == 0 ? cachedSequences.ScaleSequence.Value.x : cachedSequences.ScaleSequence.Value.y,
+                    2 => cachedSequences.RotationSequence.Value,
                     _ => 0f
                 } : type switch
                 {
-                    0 => axis == 0 ? cachedSequence.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequence.PositionSequence.Interpolate(time).y : cachedSequence.PositionSequence.Interpolate(time).z,
-                    1 => axis == 0 ? cachedSequence.ScaleSequence.Interpolate(time).x : cachedSequence.ScaleSequence.Interpolate(time).y,
-                    2 => cachedSequence.RotationSequence.Interpolate(time),
+                    0 => axis == 0 ? cachedSequences.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequences.PositionSequence.Interpolate(time).y : cachedSequences.PositionSequence.Interpolate(time).z,
+                    1 => axis == 0 ? cachedSequences.ScaleSequence.Interpolate(time).x : cachedSequences.ScaleSequence.Interpolate(time).y,
+                    2 => cachedSequences.RotationSequence.Interpolate(time),
                     _ => 0f
                 };
 
@@ -4627,14 +4626,14 @@ namespace BetterLegacy.Core.Helpers
                     if (toType < 0 || toType > 3)
                         return;
 
-                    if (!useVisual && RTLevel.Current.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
+                    if (!useVisual && bm.cachedSequences)
                     {
                         if (fromType == 3)
                         {
-                            if (toType == 3 && toAxis == 0 && cachedSequence.ColorSequence != null &&
+                            if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
                                 modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null)
                             {
-                                var sequence = cachedSequence.ColorSequence.Interpolate(time - bm.StartTime - delay);
+                                var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
                                 var visualObject = modifier.reference.runtimeObject.visualObject;
                                 visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
                             }
@@ -4642,9 +4641,9 @@ namespace BetterLegacy.Core.Helpers
                         }
                         modifier.reference.SetTransform(toType, toAxis, fromType switch
                         {
-                            0 => Mathf.Clamp((cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         });
                     }
@@ -4678,15 +4677,15 @@ namespace BetterLegacy.Core.Helpers
                         if (toType < 0 || toType > 3)
                             return;
 
-                        if (!useVisual && RTLevel.Current.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
+                        if (!useVisual && bm.cachedSequences)
                         {
                             if (fromType == 3)
                             {
-                                if (toType == 3 && toAxis == 0 && cachedSequence.ColorSequence != null &&
+                                if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
                                     modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null &&
                                     modifier.reference.runtimeObject.visualObject.renderer)
                                 {
-                                    var sequence = cachedSequence.ColorSequence.Interpolate(time - bm.StartTime - delay);
+                                    var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
 
                                     var renderer = modifier.reference.runtimeObject.visualObject.renderer;
 
@@ -4705,13 +4704,14 @@ namespace BetterLegacy.Core.Helpers
                             else
                             {
                                 var variables = modifier.reference.GetObjectVariables();
-                                variables["axis"] = fromType switch
-                                {
-                                    0 => cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
-                                    1 => cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
-                                    2 => cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay),
-                                    _ => 0f,
-                                };
+                                if (bm.cachedSequences)
+                                    variables["axis"] = fromType switch
+                                    {
+                                        0 => bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
+                                        1 => bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
+                                        2 => bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay),
+                                        _ => 0f,
+                                    };
                                 bm.SetOtherObjectVariables(variables);
 
                                 float value = RTMath.Parse(modifier.GetValue(8), variables);
@@ -4766,7 +4766,6 @@ namespace BetterLegacy.Core.Helpers
 
                 try
                 {
-                    var cachedSequences = RTLevel.Current?.converter.cachedSequences;
                     var beatmapObjects = GameData.Current.beatmapObjects;
                     var prefabObjects = GameData.Current.prefabObjects;
 
@@ -4789,14 +4788,12 @@ namespace BetterLegacy.Core.Helpers
                         if (!beatmapObject)
                             continue;
 
-                        cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences cachedSequence);
-
-                        if (!useVisual && cachedSequence != null)
+                        if (!useVisual && beatmapObject.cachedSequences)
                             variables[name] = fromType switch
                             {
-                                0 => Mathf.Clamp(cachedSequence.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                                1 => Mathf.Clamp(cachedSequence.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                                2 => Mathf.Clamp(cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay), min, max),
+                                0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                                1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                                2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay), min, max),
                                 _ => 0f,
                             };
                         else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
@@ -6465,26 +6462,26 @@ namespace BetterLegacy.Core.Helpers
                             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
                             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-                            if (RTLevel.Current.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
+                            if (bm.cachedSequences)
                             {
                                 switch (fromType)
                                 {
                                     case 0: {
-                                            var sequence = cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay);
                                             float value = (sequence.At(fromAxis) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                             break;
                                         }
                                     case 1: {
-                                            var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                             float value = (sequence.At(fromAxis) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                             break;
                                         }
                                     case 2: {
-                                            var sequence = (cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
+                                            var sequence = (bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
                                             break;
@@ -6939,22 +6936,22 @@ namespace BetterLegacy.Core.Helpers
             bool animatePos, bool animateSca, bool animateRot,
             float delayPos, float delaySca, float delayRot)
         {
-            if (!useVisual && RTLevel.Current.converter.cachedSequences.TryGetValue(takeFrom.id, out ObjectConverter.CachedSequences cachedSequences))
+            if (!useVisual && takeFrom.cachedSequences)
             {
                 // Animate position
                 if (animatePos)
-                    applyTo.positionOffset = cachedSequences.PositionSequence.Interpolate(currentTime - time - delayPos);
+                    applyTo.positionOffset = takeFrom.cachedSequences.PositionSequence.Interpolate(currentTime - time - delayPos);
 
                 // Animate scale
                 if (animateSca)
                 {
-                    var scaleSequence = cachedSequences.ScaleSequence.Interpolate(currentTime - time - delaySca);
+                    var scaleSequence = takeFrom.cachedSequences.ScaleSequence.Interpolate(currentTime - time - delaySca);
                     applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
                 }
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = new Vector3(0f, 0f, cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot));
+                    applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot));
             }
             else if (useVisual && takeFrom.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject != null && levelObject.visualObject.gameObject)
             {
@@ -6995,12 +6992,12 @@ namespace BetterLegacy.Core.Helpers
         {
             var time = RTLevel.Current.CurrentTime;
 
-            if (!visual && RTLevel.Current.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
+            if (!visual && bm.cachedSequences)
                 return fromType switch
                 {
-                    0 => Mathf.Clamp((cachedSequence.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    1 => Mathf.Clamp((cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
+                    0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 };
             else if (visual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)

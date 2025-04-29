@@ -114,7 +114,6 @@ namespace BetterLegacy.Core.Optimization
                     Current.objects[i].Clear();
 
                 Current.objects.Clear();
-                Current.converter.beatmapObjects.Clear();
             }
 
             // Delete all the "GameObjects" children.
@@ -150,7 +149,6 @@ namespace BetterLegacy.Core.Optimization
                     Current.objects[i].Clear();
 
                 Current.objects.Clear();
-                Current.converter.beatmapObjects.Clear();
             }
 
             // Delete all the "GameObjects" children.
@@ -271,7 +269,7 @@ namespace BetterLegacy.Core.Optimization
         /// </summary>
         public void RecacheAllSequences()
         {
-            if (!converter || converter.cachedSequences == null || !GameData.Current)
+            if (!converter || !GameData.Current)
                 return;
 
             var beatmapObjects = GameData.Current.beatmapObjects;
@@ -283,11 +281,7 @@ namespace BetterLegacy.Core.Optimization
         /// Updates objects' cached sequences without reinitialization.
         /// </summary>
         /// <param name="beatmapObject">Object to update.</param>
-        public void UpdateCachedSequence(BeatmapObject beatmapObject)
-        {
-            if (converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences collection))
-                converter.UpdateCachedSequence(beatmapObject, collection);
-        }
+        public void UpdateCachedSequence(BeatmapObject beatmapObject) => converter.UpdateCachedSequence(beatmapObject, beatmapObject.cachedSequences);
 
         /// <summary>
         /// Removes or updates an objects' sequences.
@@ -300,7 +294,7 @@ namespace BetterLegacy.Core.Optimization
         {
             if (!reinsert)
             {
-                converter.cachedSequences.Remove(beatmapObject.id);
+                beatmapObject.cachedSequences = null;
 
                 // Recursive recaching.
                 if (recursive)
@@ -345,7 +339,8 @@ namespace BetterLegacy.Core.Optimization
             if (updateParents)
                 foreach (var levelParent in levelObject.parentObjects)
                 {
-                    if (converter.cachedSequences.TryGetValue(levelParent.id, out ObjectConverter.CachedSequences cachedSequences))
+                    var cachedSequences = levelParent.beatmapObject.cachedSequences;
+                    if (cachedSequences)
                     {
                         levelParent.positionSequence = cachedSequences.PositionSequence;
                         levelParent.scaleSequence = cachedSequences.ScaleSequence;
@@ -359,14 +354,15 @@ namespace BetterLegacy.Core.Optimization
         /// </summary>
         public void UpdateHomingKeyframes()
         {
-            foreach (var cachedSequence in converter.cachedSequences.Values)
+            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {
-                for (int i = 0; i < cachedSequence.PositionSequence.keyframes.Length; i++)
-                    cachedSequence.PositionSequence.keyframes[i].Stop();
-                for (int i = 0; i < cachedSequence.RotationSequence.keyframes.Length; i++)
-                    cachedSequence.RotationSequence.keyframes[i].Stop();
-                for (int i = 0; i < cachedSequence.ColorSequence.keyframes.Length; i++)
-                    cachedSequence.ColorSequence.keyframes[i].Stop();
+                var cachedSequences = GameData.Current.beatmapObjects[i].cachedSequences;
+                for (int j = 0; j < cachedSequences.PositionSequence.keyframes.Length; j++)
+                    cachedSequences.PositionSequence.keyframes[j].Stop();
+                for (int j = 0; j < cachedSequences.RotationSequence.keyframes.Length; j++)
+                    cachedSequences.RotationSequence.keyframes[j].Stop();
+                for (int j = 0; j < cachedSequences.ColorSequence.keyframes.Length; j++)
+                    cachedSequences.ColorSequence.keyframes[j].Stop();
             }
         }
 
@@ -711,7 +707,6 @@ namespace BetterLegacy.Core.Optimization
                 objects.Remove(runtimeObject);
 
                 runtimeObject.parentObjects.Clear();
-                converter.beatmapObjects.Remove(id);
 
                 runtimeObject = null;
                 top = null;
@@ -720,9 +715,6 @@ namespace BetterLegacy.Core.Optimization
             // If the object should be reinserted and it is not null then we reinsert the object.
             if (!reinsert || !beatmapObject)
                 return;
-
-            // It's important that the beatmapObjects Dictionary has a reference to the object.
-            converter.beatmapObjects[beatmapObject.id] = beatmapObject;
 
             // Convert object to ILevelObject.
             var ilevelObj = converter.ToILevelObject(beatmapObject);
@@ -755,7 +747,7 @@ namespace BetterLegacy.Core.Optimization
 
             var parentObjects = new List<ParentObject>();
 
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && converter.beatmapObjects.TryGetValue(beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
                 converter.InitParentChain(beatmapObjectParent, parentObjects);
 
             var lastParent = !parentObjects.IsEmpty() && parentObjects[0] && parentObjects[0].transform ?
@@ -851,10 +843,8 @@ namespace BetterLegacy.Core.Optimization
                 UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
             }
 
-            var cachedSequence = converter.cachedSequences[beatmapObject.id];
-
-            visual.colorSequence = cachedSequence.ColorSequence;
-            visual.secondaryColorSequence = cachedSequence.SecondaryColorSequence;
+            visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
+            visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
             levelObject.visualObject = visual;
         }
@@ -1491,8 +1481,6 @@ namespace BetterLegacy.Core.Optimization
                         beatmapObjectCopy.originalID = beatmapObject.id;
                         GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
                         prefabObject.expandedObjects.Add(beatmapObjectCopy);
-                        if (converter)
-                            converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
                         if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                             notParented.Add(beatmapObjectCopy);

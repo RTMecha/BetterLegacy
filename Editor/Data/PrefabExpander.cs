@@ -142,8 +142,6 @@ namespace BetterLegacy.Editor.Data
 
                 beatmapObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                 GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                if (RTLevel.Current && RTLevel.Current.converter != null)
-                    RTLevel.Current.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
                 if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                     unparentedPastedObjects.Add(beatmapObjectCopy);
