@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Optimization.Objects;
 
-namespace BetterLegacy.Core.Optimization.Level
+namespace BetterLegacy.Core.Optimization.Objects
 {
     /// <summary>
     /// Main animation engine class.
