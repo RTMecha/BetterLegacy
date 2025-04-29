@@ -21,6 +21,9 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         readonly HashSet<IRTObject> activeObjects = new HashSet<IRTObject>();
 
+        public static event RuntimeObjectNotifier OnObjectSpawned;
+        public static event RuntimeObjectNotifier OnObjectDespawned;
+
         public ObjectSpawner(IEnumerable<IRTObject> levelObjects)
         {
             // populate activate and deactivate lists
@@ -135,16 +138,20 @@ namespace BetterLegacy.Core.Optimization.Objects
             // Spawn
             while (activateIndex < activateList.Count && time >= activateList[activateIndex].StartTime)
             {
-                activateList[activateIndex].SetActive(true);
-                activeObjects.Add(activateList[activateIndex]);
+                var activate = activateList[activateIndex];
+                activate.SetActive(true);
+                OnObjectSpawned?.Invoke(activate);
+                activeObjects.Add(activate);
                 activateIndex++;
             }
 
             // Despawn
             while (deactivateIndex < deactivateList.Count && time >= deactivateList[deactivateIndex].KillTime)
             {
-                deactivateList[deactivateIndex].SetActive(false);
-                activeObjects.Remove(deactivateList[deactivateIndex]);
+                var deactivate = deactivateList[deactivateIndex];
+                deactivate.SetActive(false);
+                OnObjectDespawned?.Invoke(deactivate);
+                activeObjects.Remove(deactivate);
                 deactivateIndex++;
             }
         }
@@ -154,16 +161,20 @@ namespace BetterLegacy.Core.Optimization.Objects
             // Spawn (backwards)
             while (deactivateIndex - 1 >= 0 && time < deactivateList[deactivateIndex - 1].KillTime)
             {
-                deactivateList[deactivateIndex - 1].SetActive(true);
-                activeObjects.Add(deactivateList[deactivateIndex - 1]);
+                var deactivate = deactivateList[deactivateIndex - 1];
+                deactivate.SetActive(true);
+                OnObjectSpawned?.Invoke(deactivate);
+                activeObjects.Add(deactivate);
                 deactivateIndex--;
             }
 
             // Despawn (backwards)
             while (activateIndex - 1 >= 0 && time < activateList[activateIndex - 1].StartTime)
             {
-                activateList[activateIndex - 1].SetActive(false);
-                activeObjects.Remove(activateList[activateIndex - 1]);
+                var activate = activateList[activateIndex - 1];
+                activate.SetActive(false);
+                OnObjectDespawned?.Invoke(activate);
+                activeObjects.Remove(activate);
                 activateIndex--;
             }
         }
