@@ -1134,7 +1134,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var hueShift = GenerateUIElement("hueshift", "Single", colorGrading.transform, 8, "Hueshift");
                 var contrast = GenerateUIElement("contrast", "Single", colorGrading.transform, 10, "Contrast");
-                var gamma = GenerateUIElement("gamma", "Vector4", colorGrading.transform, 12, "Gamma X", "Gamma Y", "Gamma Z", "Gamma W");
+                var gamma = GenerateUIElement("gamma", "Vector4", colorGrading.transform, 12, "Red", "Green", "Blue", "Global");
                 var saturation = GenerateUIElement("saturation", "Single", colorGrading.transform, 12, "Saturation");
                 var temperature = GenerateUIElement("temperature", "Single", colorGrading.transform, 14, "Temperature");
                 var tint = GenerateUIElement("tint", "Single", colorGrading.transform, 16, "Tint");
