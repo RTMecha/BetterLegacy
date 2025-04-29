@@ -293,11 +293,10 @@ namespace BetterLegacy.Core.Optimization
         /// Removes or updates an objects' sequences.
         /// </summary>
         /// <param name="beatmapObject">Object to update.</param>
-        /// <param name="converter"><see cref="ObjectConverter"/> reference.</param>
         /// <param name="reinsert">If the sequence should be reinserted or not.</param>
         /// <param name="updateParents">If the LevelObjects' parents should be updated.</param>
         /// <param name="recursive">If the method should run recursively.</param>
-        public void RecacheSequences(BeatmapObject beatmapObject, ObjectConverter converter, bool reinsert = true, bool updateParents = true, bool recursive = true)
+        public void RecacheSequences(BeatmapObject beatmapObject, bool reinsert = true, bool updateParents = true, bool recursive = true)
         {
             if (!reinsert)
             {
@@ -311,7 +310,7 @@ namespace BetterLegacy.Core.Optimization
                     {
                         var bm = beatmapObjects[i];
                         if (bm.Parent == beatmapObject.id)
-                            RecacheSequences(bm, converter, reinsert, updateParents, recursive);
+                            RecacheSequences(bm, reinsert, updateParents, recursive);
                     }
                 }
 
@@ -328,7 +327,7 @@ namespace BetterLegacy.Core.Optimization
                 {
                     var bm = beatmapObjects[i];
                     if (bm.Parent == beatmapObject.id)
-                        RecacheSequences(bm, converter, reinsert, updateParents, recursive);
+                        RecacheSequences(bm, reinsert, updateParents, recursive);
                 }
             }
 
@@ -418,10 +417,10 @@ namespace BetterLegacy.Core.Optimization
             }
 
             if (recache)
-                RecacheSequences(beatmapObject, converter, reinsert, recursive: recursive);
+                RecacheSequences(beatmapObject, reinsert, recursive: recursive);
 
             if (update)
-                ReinitObject(beatmapObject, objects, converter, objectSpawner, reinsert, recursive);
+                ReinitObject(beatmapObject, reinsert, recursive);
 
             if (recalculate)
                 objectSpawner.RecalculateObjectStates();
@@ -656,12 +655,12 @@ namespace BetterLegacy.Core.Optimization
                 case ObjectContext.KEYFRAMES: {
                         if (!levelObject)
                         {
-                            RecacheSequences(beatmapObject, converter);
+                            RecacheSequences(beatmapObject);
                             break;
                         }
 
                         levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-                        RecacheSequences(beatmapObject, converter, true, true);
+                        RecacheSequences(beatmapObject, true, true);
 
                         break;
                     } // Keyframes
@@ -677,7 +676,7 @@ namespace BetterLegacy.Core.Optimization
         /// <param name="spawner">Object spawner.</param>
         /// <param name="reinsert">If the object should be reinserted.</param>
         /// <param name="recursive">If the updating should be recursive.</param>
-        public void ReinitObject(BeatmapObject beatmapObject, List<IRTObject> objects, ObjectConverter converter, ObjectSpawner spawner, bool reinsert = true, bool recursive = true)
+        public void ReinitObject(BeatmapObject beatmapObject, bool reinsert = true, bool recursive = true)
         {
             string id = beatmapObject.id;
 
@@ -696,24 +695,27 @@ namespace BetterLegacy.Core.Optimization
                 {
                     var bm = beatmapObjects[i];
                     if (bm.Parent == id)
-                        ReinitObject(bm, objects, converter, spawner, reinsert, recursive);
+                        ReinitObject(bm, reinsert, recursive);
                 }
             }
 
-            var levelObject = beatmapObject.runtimeObject;
+            var runtimeObject = beatmapObject.runtimeObject;
 
-            var top = levelObject.top;
+            if (runtimeObject)
+            {
+                var top = runtimeObject.top;
+                if (top)
+                    UnityObject.Destroy(top.gameObject);
 
-            spawner.RemoveObject(levelObject, false);
-            objects.Remove(levelObject);
-            if (top)
-                UnityObject.Destroy(top.gameObject);
+                engine?.objectSpawner?.RemoveObject(runtimeObject, false);
+                objects.Remove(runtimeObject);
 
-            levelObject.parentObjects.Clear();
-            converter.beatmapObjects.Remove(id);
+                runtimeObject.parentObjects.Clear();
+                converter.beatmapObjects.Remove(id);
 
-            levelObject = null;
-            top = null;
+                runtimeObject = null;
+                top = null;
+            }
 
             // If the object should be reinserted and it is not null then we reinsert the object.
             if (!reinsert || !beatmapObject)
@@ -727,7 +729,7 @@ namespace BetterLegacy.Core.Optimization
             if (ilevelObj != null)
             {
                 objects.Add(ilevelObj);
-                spawner.InsertObject(ilevelObj, false);
+                engine?.objectSpawner?.InsertObject(ilevelObj, false);
             }
         }
 
