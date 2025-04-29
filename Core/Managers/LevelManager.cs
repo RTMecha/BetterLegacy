@@ -295,6 +295,12 @@ namespace BetterLegacy.Core.Managers
             if (BackgroundManager.inst)
                 LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);
 
+            if (GameManager.inst)
+            {
+                GameManager.inst.hits.Clear();
+                GameManager.inst.deaths.Clear();
+            }
+
             #endregion
 
             #region Parsing
@@ -306,17 +312,10 @@ namespace BetterLegacy.Core.Managers
             var storyLevel = level as StoryLevel;
 
             CoreHelper.InStory = level.isStory;
-            if (level.isStory && storyLevel)
-                GameData.Current = storyLevel.LoadGameData();
-            else
-            {
-                Debug.Log($"{className}Level Mode: {level.CurrentFile}...");
+            GameData.Current = level.LoadGameData();
 
-                if (level.IsVG)
-                    AchievementManager.inst.UnlockAchievement("time_traveler");
-
-                GameData.Current = level.LoadGameData();
-            }
+            if (level.IsVG)
+                AchievementManager.inst.UnlockAchievement("time_traveler");
 
             ThemeManager.inst.Clear();
             for (int i = 0; i < GameData.Current.beatmapThemes.Count; i++)
@@ -430,8 +429,8 @@ namespace BetterLegacy.Core.Managers
             EventManager.inst.updateEvents();
             RTEventManager.inst.SetResetOffsets();
 
-            BackgroundManager.inst.UpdateBackgrounds();
             yield return inst.StartCoroutine(RTLevel.IReinit());
+            BackgroundManager.inst.UpdateBackgrounds();
 
             CursorManager.inst.HideCursor();
 
@@ -506,7 +505,6 @@ namespace BetterLegacy.Core.Managers
             } // try cleanup
             GameData.Current?.Clear();
             GameData.Current = null;
-            //GameData.Current = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);
         }
 
