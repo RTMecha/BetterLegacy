@@ -193,6 +193,19 @@ namespace BetterLegacy.Core.Runtime
         {
             AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
 
+            if (!UseNewUpdateMethod)
+            {
+                var time = AudioManager.inst.CurrentAudioSource.time;
+                CurrentTime = time;
+            }
+            else
+            {
+                var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
+                var smoothedTime = Mathf.SmoothDamp(previousAudioTime, currentAudioTime, ref audioTimeVelocity, 1.0f / 50.0f);
+                CurrentTime = smoothedTime;
+                previousAudioTime = smoothedTime;
+            }
+
             OnEventsTick(); // events need to update first
             OnBeatmapObjectsTick(); // objects update second
             OnObjectModifiersTick(); // modifiers update third
@@ -416,22 +429,7 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public List<IRTObject> objects;
 
-        void OnBeatmapObjectsTick()
-        {
-            if (!UseNewUpdateMethod)
-            {
-                var time = AudioManager.inst.CurrentAudioSource.time;
-                CurrentTime = time;
-                engine?.Update(time);
-                return;
-            }
-
-            var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
-            var smoothedTime = Mathf.SmoothDamp(previousAudioTime, currentAudioTime, ref audioTimeVelocity, 1.0f / 50.0f);
-            CurrentTime = smoothedTime;
-            engine?.Update(smoothedTime);
-            previousAudioTime = smoothedTime;
-        }
+        void OnBeatmapObjectsTick() => engine?.Update(CurrentTime);
 
         /// <summary>
         /// Updates a Beatmap Object.
@@ -967,7 +965,7 @@ namespace BetterLegacy.Core.Runtime
             if (!GameData.Current || !CoreHelper.Playing)
                 return;
 
-            objectModifiersEngine?.Update(CurrentTime);
+            objectModifiersEngine?.Update(AudioManager.inst.CurrentAudioSource.time);
 
             foreach (var audioSource in ModifiersManager.audioSources)
             {
