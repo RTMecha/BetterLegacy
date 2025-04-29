@@ -430,6 +430,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to check.</param>
         public void CheckDescription(Marker marker)
         {
+            if (string.IsNullOrEmpty(marker.desc))
+                return;
+
             foreach (var markerFunction in markerFunctions)
                 if (markerFunction.Auto)
                     RTString.RegexMatches(marker.desc, markerFunction.Regex, markerFunction.Result);
@@ -441,6 +444,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to check.</param>
         public void RunMarkerFunctions(Marker marker)
         {
+            if (string.IsNullOrEmpty(marker.desc))
+                return;
+
             foreach (var markerFunction in markerFunctions)
                 RTString.RegexMatches(marker.desc, markerFunction.Regex, markerFunction.Result);
         }
