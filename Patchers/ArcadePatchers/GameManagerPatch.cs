@@ -249,28 +249,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateTimelinePrefix()
         {
-            if (RTEditor.inst)
-                RTEditor.inst.UpdateTimeline();
-
-            if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.data == null)
-                return false;
-
             if (RTGameManager.inst)
-                RTGameManager.inst.checkpointImages.Clear();
-            var parent = Instance.timeline.transform.Find("elements");
-            LSHelpers.DeleteChildren(parent);
-            foreach (var checkpoint in GameData.Current.data.checkpoints)
-            {
-                if (checkpoint.time <= 0.5f)
-                    continue;
-
-                var gameObject = Instance.checkpointPrefab.Duplicate(parent, $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
-                float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
-                gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
-                if (RTGameManager.inst)
-                    RTGameManager.inst.checkpointImages.Add(gameObject.GetComponent<Image>());
-            }
-
+                RTGameManager.inst.UpdateTimeline();
             return false;
         }
 
