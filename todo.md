@@ -119,7 +119,6 @@
 ### Core
 - Change how modifiers are saved for better consistency.
 - Make Background Objects based on timeline objects instead of a list. This means they have start time, autokill and keyframe functionality much like Beatmap Objects.
-- Rework Catalyst code to an "RTLevel" (aka Runtime Level) class. When BG objects get start time and autokill values, they will use the object spawner.
 - Summary and note as much as I can (or need to).
 
 ### Editor
