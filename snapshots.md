@@ -3,9 +3,13 @@
 ## Changes
 ### Core
 - The Game Timeline no longer overlaps when opacity is less than 1.
+- Refractored more runtime stuff (such as events) to RTLevel. As a consequence, event offsets are now reset every time the runtime level is reinitialized.
 
 ### Editor
 - Renamed "Gamma X" "Gamma Y" "Gamma Z" "Gamma W" to "Red" "Green" "Blue" "Global"
+
+## Fixes
+- Fixed Event Editor indexer not displaying "E" for end keyframes.
 
 # 1.7.0-pre.2 > [Apr 29, 2025]
 
