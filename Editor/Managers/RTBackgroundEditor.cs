@@ -83,6 +83,33 @@ namespace BetterLegacy.Editor.Managers
             BackgroundEditor.inst.hasCopiedObject = true;
         }
 
+        public void PasteBackgrounds()
+        {
+            if (copiedBackgroundObjects == null || copiedBackgroundObjects.Count < 1)
+                return;
+
+            var overwrite = EditorConfig.Instance.PasteBackgroundObjectsOverwrites.Value;
+            if (overwrite)
+            {
+                GameData.Current.backgroundObjects.ForLoopReverse((backgroundObject, index) =>
+                {
+                    if (backgroundObject.fromPrefab)
+                        return;
+
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false, false);
+                    GameData.Current.backgroundObjects.RemoveAt(index);
+                });
+            }
+
+            for (int i = 0; i < copiedBackgroundObjects.Count; i++)
+                GameData.Current.backgroundObjects.Add(copiedBackgroundObjects[i].Copy());
+
+            SetCurrentBackground(GameData.Current.backgroundObjects.Count > 0 ? GameData.Current.backgroundObjects[0] : null);
+
+            RTLevel.Current?.UpdateBackgroundObjects();
+            EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list" : "")}.", 2f, EditorManager.NotificationType.Success);
+        }
+
         public void PasteBackground()
         {
             if (!BackgroundEditor.inst.hasCopiedObject || backgroundObjCopy == null)
@@ -112,7 +139,13 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.DeleteObject(backgroundObject.timelineObject);
         }
 
-        public void SetCurrentBackground(BackgroundObject backgroundObject) => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+        public void SetCurrentBackground(BackgroundObject backgroundObject)
+        {
+            if (backgroundObject)
+                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+            else
+                OpenDialog(null);
+        }
 
         public void CreateBackgrounds(int amount)
         {
@@ -161,11 +194,11 @@ namespace BetterLegacy.Editor.Managers
         public void DeleteAllBackgrounds()
         {
             var count = GameData.Current.backgroundObjects.Count;
-            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+            GameData.Current.backgroundObjects.ForLoopReverse(backgroundObject =>
             {
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false, false);
                 EditorTimeline.inst.DeleteObject(EditorTimeline.inst.GetTimelineObject(backgroundObject), false, false);
-            }
+            });
             RTLevel.Current?.backgroundEngine?.spawner?.RecalculateObjectStates();
             GameData.Current.backgroundObjects.Clear();
             UpdateBackgroundList();
