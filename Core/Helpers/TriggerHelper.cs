@@ -595,24 +595,42 @@ namespace BetterLegacy.Core.Helpers
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                if (ObjectEditor.UpdateObjects)
-                {
-                    if (timelineObject.isBeatmapObject)
-                    {
-                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME, false);
-                        if (beatmapObject.desync)
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN, false);
-                    }
-                    if (timelineObject.isPrefabObject)
-                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME, false);
-                }
+                if (!ObjectEditor.UpdateObjects)
+                    continue;
 
-                RTLevel.Current?.Sort();
+                if (timelineObject.isBeatmapObject)
+                {
+                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME, false);
+                    if (beatmapObject.desync)
+                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN, false);
+                }
+                if (timelineObject.isPrefabObject)
+                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME, false);
+                if (timelineObject.isBackgroundObject)
+                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME, false);
             }
 
-            if (EditorTimeline.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.isBeatmapObject)
-                ObjectEditor.inst.RenderDialog(timelineObject.GetData<BeatmapObject>());
+            RTLevel.Current?.Sort();
+
+            if (EditorTimeline.inst.TimelineBeatmapObjects.Count == 1)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            ObjectEditor.inst.RenderDialog(timelineObject.GetData<BeatmapObject>());
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            RTBackgroundEditor.inst.RenderDialog(timelineObject.GetData<BackgroundObject>());
+                            break;
+                        }
+                }
+            }
         });
 
         public static EventTrigger.Entry CreateBeatmapObjectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerUp, eventData =>
@@ -635,6 +653,8 @@ namespace BetterLegacy.Core.Helpers
                             RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>());
                         if (timelineObject.isPrefabObject)
                             RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                        if (timelineObject.isBackgroundObject)
+                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>());
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Cut", () =>
@@ -694,6 +714,19 @@ namespace BetterLegacy.Core.Helpers
                                     EditorTimeline.inst.UpdateTransformIndex();
                                     break;
                                 }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                    if (index <= 0)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.backgroundObjects.Move(index, index - 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
                         }
                     }),
                     new ButtonFunction("Move Forwards", () =>
@@ -726,6 +759,19 @@ namespace BetterLegacy.Core.Helpers
                                     }
 
                                     GameData.Current.prefabObjects.Move(index, index + 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                    if (index >= GameData.Current.backgroundObjects.Count - 1)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.backgroundObjects.Move(index, index + 1);
                                     EditorTimeline.inst.UpdateTransformIndex();
                                     break;
                                 }
@@ -764,6 +810,19 @@ namespace BetterLegacy.Core.Helpers
                                     EditorTimeline.inst.UpdateTransformIndex();
                                     break;
                                 }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                    if (index <= 0)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.backgroundObjects.Move(index, 0);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
                         }
                     }),
                     new ButtonFunction("Move to Front", () =>
@@ -795,7 +854,20 @@ namespace BetterLegacy.Core.Helpers
                                         return;
                                     }
 
-                                    GameData.Current.prefabObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                                    GameData.Current.prefabObjects.Move(index, GameData.Current.prefabObjects.Count - 1);
+                                    EditorTimeline.inst.UpdateTransformIndex();
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                    if (index >= GameData.Current.backgroundObjects.Count - 1)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    GameData.Current.backgroundObjects.Move(index, GameData.Current.backgroundObjects.Count - 1);
                                     EditorTimeline.inst.UpdateTransformIndex();
                                     break;
                                 }

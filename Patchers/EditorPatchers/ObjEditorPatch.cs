@@ -318,6 +318,8 @@ namespace BetterLegacy.Patchers
                     timelineObject.GetData<BeatmapObject>().editorData.locked = !timelineObject.GetData<BeatmapObject>().editorData.locked;
                 if (timelineObject.isPrefabObject)
                     timelineObject.GetData<PrefabObject>().editorData.locked = !timelineObject.GetData<PrefabObject>().editorData.locked;
+                if (timelineObject.isBackgroundObject)
+                    timelineObject.GetData<BackgroundObject>().editorData.locked = !timelineObject.GetData<BackgroundObject>().editorData.locked;
 
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }

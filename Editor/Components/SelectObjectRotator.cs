@@ -54,7 +54,7 @@ namespace BetterLegacy.Editor.Components
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
             {
-                selectedKeyframe = (EventKeyframe)EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[2];
+                selectedKeyframe = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[2];
 
                 dragging = true;
 

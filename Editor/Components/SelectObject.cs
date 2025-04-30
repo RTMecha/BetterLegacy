@@ -180,7 +180,7 @@ namespace BetterLegacy.Editor.Components
 
                 prefabObjectToDrag = currentSelection.GetData<PrefabObject>();
 
-                selectedKeyframe = (EventKeyframe)prefabObjectToDrag.events[0];
+                selectedKeyframe = prefabObjectToDrag.events[0];
 
                 var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
                 var vector2 = Camera.main.ScreenToWorldPoint(vector);

@@ -2203,9 +2203,11 @@ namespace BetterLegacy.Editor.Managers
 
                             var prefab = new Prefab("deleted objects", 0, list.Min(x => x.Time),
                                 list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                                list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+                                list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList(),
+                                null,
+                                list.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>()).ToList());
 
-                            EditorManager.inst.history.Add(new History.Command("Delete Objects", Delete, () =>
+                            EditorManager.inst.history.Add(new History.Command("Delete Objects", EditorTimeline.inst.DeleteObjects, () =>
                             {
                                 EditorTimeline.inst.DeselectAllObjects();
                                 new PrefabExpander(prefab).Select().RetainID().Expand();

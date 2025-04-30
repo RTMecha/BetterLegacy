@@ -90,6 +90,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public ToggleButtonStorage FadeToggle { get; set; }
 
+        #region Editor Settings
+
+        public RectTransform EditorSettingsParent { get; set; }
+        public Slider BinSlider { get; set; }
+        public InputField EditorLayerField { get; set; }
+
+        public InputFieldStorage EditorIndexField { get; set; }
+
+        #endregion
+
+        #region Prefab
+
+        public GameObject CollapsePrefabLabel { get; set; }
+        public FunctionButtonStorage CollapsePrefabButton { get; set; }
+        public GameObject AssignPrefabLabel { get; set; }
+        public FunctionButtonStorage AssignPrefabButton { get; set; }
+        public FunctionButtonStorage RemovePrefabButton { get; set; }
+
+        #endregion
+
         #region Reactive
 
         public List<Toggle> ReactiveRanges { get; set; } = new List<Toggle>();
@@ -796,6 +816,70 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
                 for (int i = 0; i < CollapseToggle.transform.Find("dots").childCount; i++)
                     EditorThemeManager.AddGraphic(CollapseToggle.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+            }
+
+            // Editor Settings
+            {
+                RTEditor.GenerateLabels("editorlabel", LeftContent, 35, false,
+                    new LabelSettings("Editor Layer") { horizontalWrap = HorizontalWrapMode.Overflow },
+                    new LabelSettings("Editor Bin") { horizontalWrap = HorizontalWrapMode.Overflow }
+                    );
+
+                EditorSettingsParent = ObjectEditor.inst.Dialog.EditorSettingsParent.gameObject.Duplicate(LeftContent, "editor", 36).transform.AsRT();
+                try
+                {
+                    EditorLayerField = EditorSettingsParent.Find("layers")?.GetComponent<InputField>();
+                    EditorLayerField.image = EditorLayerField.GetComponent<Image>();
+                    BinSlider = EditorSettingsParent.Find("bin")?.GetComponent<Slider>();
+
+                    RTEditor.GenerateLabels("indexer_label", LeftContent, 37, false,
+                        new LabelSettings("Editor Index") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+                    var indexer = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "indexer", 38);
+                    EditorIndexField = indexer.GetComponent<InputFieldStorage>();
+                    EditorThemeManager.AddInputField(EditorIndexField.inputField);
+                    EditorThemeManager.AddSelectable(EditorIndexField.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(EditorIndexField.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(EditorIndexField.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(EditorIndexField.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                    if (EditorIndexField.middleButton)
+                        CoreHelper.Delete(EditorIndexField.middleButton.gameObject);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Had an error in generating editor settings UI for BG editor. Exception: {ex}");
+                }
+            }
+
+            // Prefab Reference
+            {
+                CollapsePrefabLabel = RTEditor.GenerateLabels("collapselabel", LeftContent, 39, false,
+                    new LabelSettings("Prefab Collapse / Apply to All") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+                var collapsePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "applyprefab", 40);
+                CollapsePrefabButton = collapsePrefab.GetComponent<FunctionButtonStorage>();
+                CollapsePrefabButton.label.text = "Apply";
+
+                EditorThemeManager.AddSelectable(CollapsePrefabButton.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(CollapsePrefabButton.label, ThemeGroup.Function_2_Text);
+
+                AssignPrefabLabel = RTEditor.GenerateLabels("assignlabel", LeftContent, 41, false,
+                    new LabelSettings("Assign Object to Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+                var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 42);
+                AssignPrefabButton = assignPrefab.GetComponent<FunctionButtonStorage>();
+                AssignPrefabButton.label.text = "Assign";
+
+                EditorThemeManager.AddSelectable(AssignPrefabButton.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(AssignPrefabButton.label, ThemeGroup.Function_2_Text);
+
+                var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "removeprefab", 43);
+                RemovePrefabButton = removePrefab.GetComponent<FunctionButtonStorage>();
+                RemovePrefabButton.label.text = "Remove";
+
+                EditorThemeManager.AddSelectable(RemovePrefabButton.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(RemovePrefabButton.label, ThemeGroup.Function_2_Text);
             }
 
             //// Depth

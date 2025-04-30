@@ -2978,11 +2978,11 @@ namespace BetterLegacy.Configs
                     RTEventEditor.inst.RenderEventsDialog();
             }
 
-            if (!RTPrefabEditor.inst)
-                return;
-
-            if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
+            if (RTPrefabEditor.inst && EditorTimeline.inst.CurrentSelection.isPrefabObject)
                 RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
+
+            if (RTBackgroundEditor.inst && EditorTimeline.inst.CurrentSelection.isBackgroundObject)
+                RTBackgroundEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
         }
 
         void DraggingChanged()

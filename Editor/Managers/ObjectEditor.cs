@@ -599,7 +599,7 @@ namespace BetterLegacy.Editor.Managers
                     CoreHelper.LogError($"Failed to set spacer active. Exception: {ex}");
                 }
 
-                Destroy(editor.Find("layer").gameObject);
+                editor.Find("layer").gameObject.SetActive(false);
 
                 var layers = objectView.Find("time/time").gameObject.Duplicate(editor, "layers", 0);
 
@@ -1104,13 +1104,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddSelectable(assignPrefabButton, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(assignPrefabText, ThemeGroup.Function_2_Text);
 
-                assignPrefabButton.onClick.ClearAll();
-                assignPrefabButton.onClick.AddListener(() =>
-                {
-                    RTEditor.inst.selectingMultiple = false;
-                    RTEditor.inst.prefabPickerEnabled = true;
-                });
-
                 var removePrefab = applyPrefab.gameObject.Duplicate(ObjEditor.inst.ObjectView.transform, "remove prefab", siblingIndex + 3);
                 var removePrefabText = removePrefab.transform.GetChild(0).GetComponent<Text>();
                 removePrefabText.text = "Remove";
@@ -1119,15 +1112,6 @@ namespace BetterLegacy.Editor.Managers
                 removePrefabButton.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(removePrefabButton, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(removePrefabText, ThemeGroup.Function_2_Text);
-
-                removePrefabButton.onClick.ClearAll();
-                removePrefabButton.onClick.AddListener(() =>
-                {
-                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    beatmapObject.RemovePrefabReference();
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
-                    OpenDialog(beatmapObject);
-                });
 
                 EditorHelper.SetComplexity(assignPrefabLabel, Complexity.Normal);
                 EditorHelper.SetComplexity(assignPrefab, Complexity.Normal);
@@ -2065,6 +2049,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var musicLength = SoundManager.inst.MusicLength;
+            var selectedObjects = EditorTimeline.inst.SelectedObjects;
 
             if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
             {
@@ -2072,28 +2057,25 @@ namespace BetterLegacy.Editor.Managers
 
                 bool hasChanged = false;
 
-                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                foreach (var timelineObject in selectedObjects)
                 {
                     if (timelineObject.Locked)
                         continue;
 
-                    int binCalc = EditorConfig.Instance.BinClampBehavior.Value switch
-                    {
-                        BinClamp.Clamp => Mathf.Clamp(binOffset + timelineObject.binOffset, 0, EditorTimeline.inst.BinCount),
-                        BinClamp.Loop => (int)Mathf.Repeat(binOffset + timelineObject.binOffset, EditorTimeline.inst.BinCount + 1),
-                        _ => binOffset + timelineObject.binOffset,
-                    };
+                    int binCalc = EditorTimeline.inst.CalculateMaxBin(binOffset + timelineObject.binOffset);
 
                     if (timelineObject.Bin != binCalc)
                         hasChanged = true;
 
                     timelineObject.Bin = binCalc;
                     timelineObject.RenderPosLength();
-                    if (timelineObject.isBeatmapObject && EditorTimeline.inst.SelectedObjects.Count == 1)
+                    if (timelineObject.isBeatmapObject && selectedObjects.Count == 1)
                         RenderBin(timelineObject.GetData<BeatmapObject>());
+                    if (timelineObject.isBackgroundObject && selectedObjects.Count == 1)
+                        RTBackgroundEditor.inst.RenderBin(timelineObject.GetData<BackgroundObject>());
                 }
 
-                if (RTEditor.inst.dragBinOffset != binOffset && !EditorTimeline.inst.SelectedObjects.All(x => x.Locked))
+                if (RTEditor.inst.dragBinOffset != binOffset && !selectedObjects.All(x => x.Locked))
                 {
                     if (hasChanged && RTEditor.DraggingPlaysSound)
                         SoundManager.inst.PlaySound(DefaultSounds.UpDown, 0.4f, 0.6f);
@@ -2122,7 +2104,7 @@ namespace BetterLegacy.Editor.Managers
 
             var spawner = RTLevel.Current.objectEngine.spawner;
 
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            foreach (var timelineObject in selectedObjects)
             {
                 if (timelineObject.Locked)
                     continue;
@@ -2134,44 +2116,66 @@ namespace BetterLegacy.Editor.Managers
                 timelineObject.Time = time;
 
                 timelineObject.RenderPosLength();
-
-                if (timelineObject.isPrefabObject)
+                
+                switch (timelineObject.TimelineReference)
                 {
-                    var prefabObject = timelineObject.GetData<PrefabObject>();
-                    RTPrefabEditor.inst.RenderPrefabObjectStartTime(prefabObject);
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TIME, false);
-                    continue;
-                }
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            var runtimeObject = beatmapObject.runtimeObject;
 
-                var levelObject = beatmapObject.runtimeObject;
+                            if (runtimeObject)
+                            {
+                                runtimeObject.StartTime = beatmapObject.StartTime;
+                                runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
-                if (levelObject)
-                {
-                    levelObject.StartTime = beatmapObject.StartTime;
-                    levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                                runtimeObject.SetActive(beatmapObject.Alive);
 
-                    levelObject.SetActive(beatmapObject.Alive);
+                                for (int i = 0; i < runtimeObject.parentObjects.Count; i++)
+                                {
+                                    var levelParent = runtimeObject.parentObjects[i];
+                                    var parent = levelParent.beatmapObject;
 
-                    for (int i = 0; i < levelObject.parentObjects.Count; i++)
-                    {
-                        var levelParent = levelObject.parentObjects[i];
-                        var parent = levelParent.beatmapObject;
+                                    levelParent.timeOffset = parent.StartTime;
+                                }
+                            }
 
-                        levelParent.timeOffset = parent.StartTime;
-                    }
-                }
+                            if (selectedObjects.Count == 1)
+                            {
+                                RenderStartTime(beatmapObject);
+                                ResizeKeyframeTimeline(beatmapObject);
+                                RenderMarkerPositions(beatmapObject);
+                            }
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            RTPrefabEditor.inst.RenderPrefabObjectStartTime(prefabObject);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TIME, false);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
 
-                if (EditorTimeline.inst.SelectedObjectCount == 1)
-                {
-                    RenderStartTime(beatmapObject);
-                    ResizeKeyframeTimeline(beatmapObject);
-                    RenderMarkerPositions(beatmapObject);
+                            var runtimeObject = backgroundObject.runtimeObject;
+
+                            if (runtimeObject)
+                            {
+                                runtimeObject.StartTime = backgroundObject.StartTime;
+                                runtimeObject.KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
+
+                                runtimeObject.SetActive(backgroundObject.Alive);
+                            }
+
+                            if (selectedObjects.Count == 1)
+                                RTBackgroundEditor.inst.RenderStartTime(backgroundObject);
+                            break;
+                        }
                 }
             }
 
             RTLevel.Current?.Sort();
+            RTLevel.Current?.backgroundEngine?.spawner?.RecalculateObjectStates();
 
             if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value && RTLevel.Current)
                 System.Threading.Tasks.Task.Run(RTLevel.Current.UpdateHomingKeyframes);
@@ -2296,23 +2300,6 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void DeleteKeyframe(BeatmapObject beatmapObject, TimelineObject timelineObject)
-        {
-            if (timelineObject.Index != 0)
-            {
-                Debug.Log($"{ObjEditor.inst.className}Deleting keyframe: ({timelineObject.Type}, {timelineObject.Index})");
-                beatmapObject.events[timelineObject.Type].RemoveAt(timelineObject.Index);
-
-                Destroy(timelineObject.GameObject);
-
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
-                return;
-            }
-            EditorManager.inst.DisplayNotification("Can't delete first Keyframe", 2f, EditorManager.NotificationType.Error, false);
-        }
-
         #endregion
 
         #region Copy / Paste
@@ -2348,7 +2335,9 @@ namespace BetterLegacy.Editor.Managers
 
             var copy = new Prefab("copied prefab", 0, start,
                 selected.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+                selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList(),
+                null,
+                selected.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>()).ToList());
 
             copy.description = "Take me wherever you go!";
             this.copy = copy;
@@ -3531,9 +3520,8 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
-            startTimeField.leftGreaterButton.onClick.ClearAll();
             startTimeField.leftGreaterButton.interactable = (beatmapObject.StartTime > 0f);
-            startTimeField.leftGreaterButton.onClick.AddListener(() =>
+            startTimeField.leftGreaterButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -3548,9 +3536,8 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkers(beatmapObject);
             });
 
-            startTimeField.leftButton.onClick.ClearAll();
             startTimeField.leftButton.interactable = (beatmapObject.StartTime > 0f);
-            startTimeField.leftButton.onClick.AddListener(() =>
+            startTimeField.leftButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 0.1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -3565,8 +3552,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkers(beatmapObject);
             });
 
-            startTimeField.middleButton.onClick.ClearAll();
-            startTimeField.middleButton.onClick.AddListener(() =>
+            startTimeField.middleButton.onClick.NewListener(() =>
             {
                 startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
 
@@ -3580,7 +3566,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             startTimeField.rightButton.onClick.ClearAll();
-            startTimeField.rightButton.onClick.AddListener(() =>
+            startTimeField.rightButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 0.1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -3595,8 +3581,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkers(beatmapObject);
             });
 
-            startTimeField.rightGreaterButton.onClick.ClearAll();
-            startTimeField.rightGreaterButton.onClick.AddListener(() =>
+            startTimeField.rightGreaterButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -3667,8 +3652,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 Dialog.AutokillSetButton.gameObject.SetActive(true);
-                Dialog.AutokillSetButton.onClick.ClearAll();
-                Dialog.AutokillSetButton.onClick.AddListener(() =>
+                Dialog.AutokillSetButton.onClick.NewListener(() =>
                 {
                     float num = 0f;
 
@@ -5027,22 +5011,35 @@ namespace BetterLegacy.Editor.Managers
                     {
                         RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
                         {
-                            RTPrefabEditor.inst.Collapse(beatmapObject);
+                            RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData);
                             RTEditor.inst.HideWarningPopup();
                         }, RTEditor.inst.HideWarningPopup);
 
                         return;
                     }
 
-                    RTPrefabEditor.inst.Collapse(beatmapObject);
+                    RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData);
                     return;
                 }
 
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(beatmapObject)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(beatmapObject))
+                    new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData)),
+                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(beatmapObject, beatmapObject.editorData))
                     );
             };
+
+            Dialog.AssignPrefabButton.button.onClick.NewListener(() =>
+            {
+                RTEditor.inst.selectingMultiple = false;
+                RTEditor.inst.prefabPickerEnabled = true;
+            });
+
+            Dialog.RemovePrefabButton.button.onClick.NewListener(() =>
+            {
+                beatmapObject.RemovePrefabReference();
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                OpenDialog(beatmapObject);
+            });
         }
 
         void KeyframeHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
@@ -6598,8 +6595,7 @@ namespace BetterLegacy.Editor.Managers
             var noParentText = noParent.transform.GetChild(0).GetComponent<Text>();
             noParentText.text = "No Parent";
             var noParentButton = noParent.GetComponent<Button>();
-            noParentButton.onClick.ClearAll();
-            noParentButton.onClick.AddListener(() =>
+            noParentButton.onClick.NewListener(() =>
             {
                 var list = EditorTimeline.inst.SelectedObjects;
                 foreach (var timelineObject in list)
@@ -6610,13 +6606,13 @@ namespace BetterLegacy.Editor.Managers
                         prefabObject.parent = "";
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT, false);
                         RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-
-                        continue;
                     }
-
-                    var bm = timelineObject.GetData<BeatmapObject>();
-                    bm.Parent = "";
-                    RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                    if (timelineObject.isBeatmapObject)
+                    {
+                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                        beatmapObject.Parent = "";
+                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN);
+                    }
                 }
 
                 RTLevel.Current?.RecalculateObjectStates();
@@ -6637,8 +6633,7 @@ namespace BetterLegacy.Editor.Managers
                 var camButton = cam.GetComponent<Button>();
 
                 camText.text = "Camera";
-                camButton.onClick.ClearAll();
-                camButton.onClick.AddListener(() =>
+                camButton.onClick.NewListener(() =>
                 {
                     var list = EditorTimeline.inst.SelectedObjects;
                     foreach (var timelineObject in list)
@@ -6648,13 +6643,13 @@ namespace BetterLegacy.Editor.Managers
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.parent = BeatmapObject.CAMERA_PARENT;
                             RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT, false);
-
-                            continue;
                         }
-
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.Parent = BeatmapObject.CAMERA_PARENT;
-                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                        if (timelineObject.isBeatmapObject)
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.Parent = BeatmapObject.CAMERA_PARENT;
+                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                        }
                     }
 
                     RTLevel.Current?.RecalculateObjectStates();
@@ -6699,11 +6694,9 @@ namespace BetterLegacy.Editor.Managers
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.parent = id;
                             RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT, false);
-
-                            continue;
                         }
-
-                        timelineObject.GetData<BeatmapObject>().SetParent(obj);
+                        if (timelineObject.isBeatmapObject)
+                            timelineObject.GetData<BeatmapObject>().SetParent(obj);
                     }
 
                     RTLevel.Current?.RecalculateObjectStates();

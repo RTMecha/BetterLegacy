@@ -28,6 +28,7 @@ namespace BetterLegacy.Editor.Data
             TimelineReference = GetTimelineReferenceType(data);
             isBeatmapObject = TimelineReference == TimelineReferenceType.BeatmapObject;
             isPrefabObject = TimelineReference == TimelineReferenceType.PrefabObject;
+            isBackgroundObject = TimelineReference == TimelineReferenceType.BackgroundObject;
 
             if (isBeatmapObject)
                 InternalTimelineObjects = new List<TimelineKeyframe>();
@@ -68,13 +69,20 @@ namespace BetterLegacy.Editor.Data
         {
             TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().id,
             TimelineReferenceType.PrefabObject => GetData<PrefabObject>().id,
+            TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().id,
             _ => string.Empty,
         };
 
         /// <summary>
-        /// The type of keyframe. Only used for keyframes.
+        /// Gets the name of the object.
         /// </summary>
-        public int Type { get; set; }
+        public string Name => TimelineReference switch
+        {
+            TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().name,
+            TimelineReferenceType.PrefabObject => GetData<PrefabObject>().GetPrefab()?.name,
+            TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().name,
+            _ => string.Empty,
+        };
 
         /// <summary>
         /// Gets the index of the object.
@@ -85,6 +93,7 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GameData.Current.beatmapObjects.IndexOf(GetData<BeatmapObject>()),
                 TimelineReferenceType.PrefabObject => GameData.Current.prefabObjects.IndexOf(GetData<PrefabObject>()),
+                TimelineReferenceType.BackgroundObject => GameData.Current.backgroundObjects.IndexOf(GetData<BackgroundObject>()),
                 _ => -1,
             };
             set => index = value;
@@ -99,6 +108,7 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().StartTime,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().StartTime,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().StartTime,
                 _ => 0f,
             };
             set
@@ -107,6 +117,8 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().StartTime = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().StartTime = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().StartTime = value;
             }
         }
 
@@ -119,6 +131,7 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.Bin,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.Bin,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().editorData.Bin,
                 _ => 0,
             };
             set
@@ -127,6 +140,8 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().editorData.Bin = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.Bin = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().editorData.Bin = value;
             }
         }
 
@@ -137,6 +152,7 @@ namespace BetterLegacy.Editor.Data
         {
             TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().GetObjectLifeLength(collapse: true),
             TimelineReferenceType.PrefabObject => GetData<PrefabObject>().GetPrefabLifeLength(true),
+            TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().GetObjectLifeLength(collapse: true),
             _ => 0f
         };
 
@@ -149,6 +165,7 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.Layer,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.Layer,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().editorData.Layer,
                 _ => 0,
             };
             set
@@ -157,6 +174,8 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().editorData.Layer = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.Layer = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().editorData.Layer = value;
 
                 RenderVisibleState();
             }
@@ -171,6 +190,7 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.locked,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.locked,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().editorData.locked,
                 _ => false,
             };
             set
@@ -179,6 +199,8 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().editorData.locked = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.locked = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().editorData.locked = value;
             }
         }
 
@@ -191,6 +213,7 @@ namespace BetterLegacy.Editor.Data
             {
                 TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.collapse,
                 TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.collapse,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().editorData.collapse,
                 _ => false,
             };
             set
@@ -199,6 +222,8 @@ namespace BetterLegacy.Editor.Data
                     GetData<BeatmapObject>().editorData.collapse = value;
                 if (isPrefabObject)
                     GetData<PrefabObject>().editorData.collapse = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().editorData.collapse = value;
             }
         }
 
@@ -209,6 +234,7 @@ namespace BetterLegacy.Editor.Data
         {
             TimelineReferenceType.BeatmapObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
             TimelineReferenceType.PrefabObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
+            TimelineReferenceType.BackgroundObject => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer,
             _ => false,
         };
 
@@ -245,6 +271,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public TimelineReferenceType TimelineReference { get; private set; }
 
+        /// <summary>
+        /// If the timeline object data is prefabable.
+        /// </summary>
+        public bool IsPrefabable => data is IPrefabable;
+
         #endregion
 
         #endregion
@@ -259,14 +290,19 @@ namespace BetterLegacy.Editor.Data
         public bool verified;
 
         /// <summary>
-        /// If the objects' data is of 'BeatmapObject' type.
+        /// If the objects' data is of <see cref="BeatmapObject"/> type.
         /// </summary>
         public bool isBeatmapObject;
 
         /// <summary>
-        /// If the objects' data is of 'PRefabObject' type.
+        /// If the objects' data is of <see cref="PrefabObject"/> type.
         /// </summary>
         public bool isPrefabObject;
+        
+        /// <summary>
+        /// If the objects' data is of <see cref="BackgroundObject"/> type.
+        /// </summary>
+        public bool isBackgroundObject;
 
         #endregion
 
@@ -321,6 +357,28 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
+        /// Casts the object data to <see cref="IPrefabable"/>.
+        /// </summary>
+        /// <returns>Casted data as <see cref="IPrefabable"/>.</returns>
+        public IPrefabable AsPrefabable() => data as IPrefabable;
+
+        /// <summary>
+        /// Tries to cast the object data into <see cref="IPrefabable"/> and outputs the result.
+        /// </summary>
+        /// <param name="result">The output prefabable object.</param>
+        /// <returns>Returns true if the object is prefabable, otherwise returns false.</returns>
+        public bool TryGetPrefabable(out IPrefabable result)
+        {
+            if (data is IPrefabable prefabable)
+            {
+                result = prefabable;
+                return true;
+            }
+            result = null;
+            return false;
+        }
+
+        /// <summary>
         /// Gets the <see cref="TimelineReferenceType"/> of an object.
         /// </summary>
         /// <param name="obj">Object to get the type of.</param>
@@ -331,6 +389,8 @@ namespace BetterLegacy.Editor.Data
                 return TimelineReferenceType.BeatmapObject;
             if (obj is PrefabObject)
                 return TimelineReferenceType.PrefabObject;
+            if (obj is BackgroundObject)
+                return TimelineReferenceType.BackgroundObject;
             return TimelineReferenceType.Null;
         }
 
@@ -375,10 +435,7 @@ namespace BetterLegacy.Editor.Data
             if (forceAdd || !verified && !EditorTimeline.inst.timelineObjects.Has(x => x.ID == ID))
             {
                 verified = true;
-                if (isPrefabObject || !EditorTimeline.inst.timelineObjects.TryFindIndex(x => x.isPrefabObject, out int index))
-                    EditorTimeline.inst.timelineObjects.Add(this);
-                else
-                    EditorTimeline.inst.timelineObjects.Insert(index, this);
+                EditorTimeline.inst.timelineObjects.Add(this);
             }
         }
 
@@ -395,10 +452,9 @@ namespace BetterLegacy.Editor.Data
 
             Prefab prefab = null;
 
-            if (TryGetData(out BeatmapObject beatmapObject))
+            if (isBeatmapObject && TryGetData(out BeatmapObject beatmapObject))
             {
                 prefab = beatmapObject.GetPrefab();
-                var prefabExists = prefab != null;
 
                 beatmapObject.timelineObject = this;
 
@@ -409,18 +465,39 @@ namespace BetterLegacy.Editor.Data
                 image.type = EditorTimeline.inst.GetObjectTypePattern(beatmapObject.objectType);
                 image.sprite = EditorTimeline.inst.GetObjectTypeSprite(beatmapObject.objectType);
 
-                if (!prefabExists)
+                if (!prefab)
                     beatmapObject.RemovePrefabReference();
             }
 
-            if (TryGetData(out PrefabObject prefabObject))
+            if (isPrefabObject && TryGetData(out PrefabObject prefabObject))
             {
                 prefab = prefabObject.GetPrefab();
+
+                prefabObject.timelineObject = this;
+
                 name = prefab.name;
                 startTime = prefabObject.StartTime + prefab.offset;
                 length = prefabObject.GetPrefabLifeLength(true);
+
                 image.type = Image.Type.Simple;
                 image.sprite = null;
+            }
+
+            if (isBackgroundObject && TryGetData(out BackgroundObject backgroundObject))
+            {
+                prefab = backgroundObject.GetPrefab();
+
+                backgroundObject.timelineObject = this;
+
+                name = backgroundObject.name;
+                startTime = backgroundObject.StartTime;
+                length = backgroundObject.GetObjectLifeLength(collapse: true);
+
+                image.type = Image.Type.Simple;
+                image.sprite = null;
+
+                if (!prefab)
+                    backgroundObject.RemovePrefabReference();
             }
 
             RenderText(name);
@@ -450,10 +527,8 @@ namespace BetterLegacy.Editor.Data
                             return;
 
                         var color = selected ?
-                            ObjEditor.inst.SelectedColor :
-                            !string.IsNullOrEmpty(GetData<BeatmapObject>().prefabID) ?
-                                GetData<BeatmapObject>().GetPrefab().GetPrefabType().color :
-                                ObjEditor.inst.NormalColor;
+                            ObjEditor.inst.SelectedColor : !string.IsNullOrEmpty(GetData<BeatmapObject>().prefabID) ?
+                                GetData<BeatmapObject>().GetPrefab().GetPrefabType().color : ObjEditor.inst.NormalColor;
 
                         if (Image.color != color)
                             Image.color = color;
@@ -467,12 +542,33 @@ namespace BetterLegacy.Editor.Data
                         bool isCurrentLayer = IsCurrentLayer;
 
                         if (setActive && GameObject.activeSelf != isCurrentLayer)
-                            GameObject.SetActive(IsCurrentLayer);
+                            GameObject.SetActive(isCurrentLayer);
 
                         if (!isCurrentLayer)
                             return;
 
                         var color = selected ? ObjEditor.inst.SelectedColor : GetData<PrefabObject>().GetPrefab().GetPrefabType().color;
+
+                        if (Image.color != color)
+                            Image.color = color;
+
+                        break;
+                    }
+                case TimelineReferenceType.BackgroundObject: {
+                        if (!GameObject || !Image)
+                            return;
+
+                        bool isCurrentLayer = IsCurrentLayer;
+
+                        if (setActive && GameObject.activeSelf != isCurrentLayer)
+                            GameObject.SetActive(isCurrentLayer);
+
+                        if (!isCurrentLayer)
+                            return;
+
+                        var color = selected ?
+                            ObjEditor.inst.SelectedColor : !string.IsNullOrEmpty(GetData<BackgroundObject>().prefabID) ?
+                                GetData<BackgroundObject>().GetPrefab().GetPrefabType().color : ObjEditor.inst.NormalColor;
 
                         if (Image.color != color)
                             Image.color = color;
@@ -560,13 +656,17 @@ namespace BetterLegacy.Editor.Data
             /// </summary>
             Null,
             /// <summary>
-            /// If <see cref="data"/> is <seealso cref="Core.Data.BeatmapObject"/>.
+            /// If <see cref="data"/> is <seealso cref="Core.Data.Beatmap.BeatmapObject"/>.
             /// </summary>
             BeatmapObject,
             /// <summary>
-            /// If <see cref="data"/> is <seealso cref="Core.Data.PrefabObject"/>.
+            /// If <see cref="data"/> is <seealso cref="Core.Data.Beatmap.PrefabObject"/>.
             /// </summary>
             PrefabObject,
+            /// <summary>
+            /// If <see cref="data"/> is <seealso cref="Core.Data.Beatmap.BackgroundObject"/>
+            /// </summary>
+            BackgroundObject,
         }
     }
 }
