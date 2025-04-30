@@ -7,15 +7,20 @@ using UnityEngine;
 
 using LSFunctions;
 
+using DG.Tweening;
+
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Core.Threading;
 using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Managers;
 
 using UnityObject = UnityEngine.Object;
 
@@ -30,7 +35,47 @@ namespace BetterLegacy.Core.Runtime
     {
         #region Core
 
-        public RTLevel() { }
+        public RTLevel()
+        {
+            Debug.Log($"{className}Loading level");
+
+            previousAudioTime = 0.0f;
+            audioTimeVelocity = 0.0f;
+
+            // Sets a new seed or uses the current one.
+            RandomHelper.UpdateSeed();
+
+            var gameData = GameData.Current;
+
+            eventEngine = new EventEngine();
+
+            // Removing and reinserting prefabs.
+            gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+                AddPrefabToLevel(GameData.Current.prefabObjects[i], false);
+
+            // Convert GameData to LevelObjects
+            converter = new ObjectConverter(gameData);
+            IEnumerable<IRTObject> runtimeObjects = converter.ToRuntimeObjects();
+
+            objects = runtimeObjects.ToList();
+            objectEngine = new ObjectEngine(Objects);
+
+            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers();
+
+            modifiers = runtimeModifiers.ToList();
+            objectModifiersEngine = new ObjectEngine(Modifiers);
+
+            Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
+
+            threadedTickRunner = new TickRunner(true);
+            threadedTickRunner.onTick = () =>
+            {
+                sampleLow = samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
+                sampleMid = samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
+                sampleHigh = samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
+            };
+        }
 
         /// <summary>
         /// Class name for logging.
@@ -56,11 +101,6 @@ namespace BetterLegacy.Core.Runtime
         public float CurrentTime { get; set; }
 
         /// <summary>
-        /// If the engine and converter were initialized.
-        /// </summary>
-        public bool Initialized => engine && converter;
-
-        /// <summary>
         /// Performs heavy calculations on a separate tick thread.
         /// </summary>
         public TickRunner threadedTickRunner;
@@ -72,47 +112,6 @@ namespace BetterLegacy.Core.Runtime
         {
             Current?.Clear();
             Current = new RTLevel();
-            Current.InternalInit();
-        }
-
-        void InternalInit()
-        {
-            Debug.Log($"{className}Loading level");
-
-            previousAudioTime = 0.0f;
-            audioTimeVelocity = 0.0f;
-
-            // Sets a new seed or uses the current one.
-            RandomHelper.UpdateSeed();
-
-            var gameData = GameData.Current;
-
-            // Removing and reinserting prefabs.
-            gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-                AddPrefabToLevel(GameData.Current.prefabObjects[i], false);
-
-            // Convert GameData to LevelObjects
-            converter = new ObjectConverter(gameData);
-            IEnumerable<IRTObject> runtimeObjects = converter.ToRuntimeObjects();
-
-            objects = runtimeObjects.ToList();
-            engine = new ObjectEngine(Objects);
-
-            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers();
-
-            modifiers = runtimeModifiers.ToList();
-            objectModifiersEngine = new ObjectEngine(Modifiers);
-
-            Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
-
-            threadedTickRunner = new TickRunner(true);
-            threadedTickRunner.onTick = () =>
-            {
-                sampleLow = samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
-                sampleMid = samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
-                sampleHigh = samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
-            };
         }
 
         /// <summary>
@@ -220,7 +219,8 @@ namespace BetterLegacy.Core.Runtime
         {
             Debug.Log($"{className}Cleaning up level");
 
-            engine = null;
+            eventEngine = null;
+            objectEngine = null;
             objectModifiersEngine = null;
 
             threadedTickRunner?.Dispose();
@@ -261,12 +261,94 @@ namespace BetterLegacy.Core.Runtime
 
         #endregion
 
-        // todo: move events tick to here and do some cleanup.
         #region Events
+
+        /// <summary>
+        /// Event time engine. Handles event interpolation.
+        /// </summary>
+        public EventEngine eventEngine;
 
         void OnEventsTick()
         {
-            Arcade.Managers.RTEventManager.OnLevelTick();
+            if (GameManager.inst.introMain && AudioManager.inst.CurrentAudioSource.time < 15f)
+                GameManager.inst.introMain.SetActive(EventsConfig.Instance.ShowIntro.Value);
+
+            if (EventManager.inst && (CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded))
+            {
+                if (CoreConfig.Instance.ControllerRumble.Value && EventsConfig.Instance.ShakeAffectsController.Value)
+                    InputDataManager.inst.SetAllControllerRumble(EventManager.inst.shakeMultiplier);
+
+                if (EventManager.inst.eventSequence == null)
+                    EventManager.inst.eventSequence = DOTween.Sequence();
+                if (EventManager.inst.themeSequence == null)
+                    EventManager.inst.themeSequence = DOTween.Sequence();
+                if (EventManager.inst.shakeSequence == null && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Original)
+                {
+                    EventManager.inst.shakeSequence = DOTween.Sequence();
+
+                    float strength = 3f;
+                    int vibrato = 10;
+                    float randomness = 90f;
+                    EventManager.inst.shakeSequence.Insert(0f, DOTween.Shake(() => Vector3.zero, delegate (Vector3 x)
+                    {
+                        EventManager.inst.shakeVector = x;
+                    }, AudioManager.inst.CurrentAudioSource.clip.length, strength, vibrato, randomness, true, false));
+                }
+            }
+
+            eventEngine?.UpdateEditorCamera();
+            eventEngine?.Update(CurrentTime);
+            eventEngine?.Render();
+        }
+
+        // todo: implement if I ever end up caching events via sequences
+        /// <summary>
+        /// Updates a specific event.
+        /// </summary>
+        /// <param name="currentEvent">Type of event to update.</param>
+        public void UpdateEvents(int currentEvent)
+        {
+            eventEngine?.SetupShake();
+            EventManager.inst.eventSequence.Kill();
+            EventManager.inst.shakeSequence.Kill();
+            EventManager.inst.themeSequence.Kill();
+            EventManager.inst.eventSequence = null;
+            EventManager.inst.shakeSequence = null;
+            EventManager.inst.themeSequence = null;
+
+            if (!GameData.Current)
+                return;
+
+            GameData.Current.events[currentEvent] = GameData.Current.events[currentEvent].OrderBy(x => x.time).ToList();
+
+            if (CoreHelper.InEditor)
+                GameData.Current.events[currentEvent].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
+        }
+
+        /// <summary>
+        /// Updates all events.
+        /// </summary>
+        public void UpdateEvents()
+        {
+            eventEngine?.SetupShake();
+            EventManager.inst.eventSequence.Kill();
+            EventManager.inst.shakeSequence.Kill();
+            EventManager.inst.themeSequence.Kill();
+            EventManager.inst.eventSequence = null;
+            EventManager.inst.shakeSequence = null;
+            EventManager.inst.themeSequence = null;
+            DOTween.Kill(false);
+
+            if (!GameData.Current)
+                return;
+
+            for (int i = 0; i < GameData.Current.events.Count; i++)
+            {
+                GameData.Current.events[i] = GameData.Current.events[i].OrderBy(x => x.time).ToList();
+
+                if (CoreHelper.InEditor)
+                    GameData.Current.events[i].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
+            }
         }
 
         #endregion
@@ -278,7 +360,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Recalculate object states.
         /// </summary>
-        public void RecalculateObjectStates() => engine?.objectSpawner?.RecalculateObjectStates();
+        public void RecalculateObjectStates() => objectEngine?.spawner?.RecalculateObjectStates();
 
         /// <summary>
         /// Sets the game's current seed and updates all animations accordingly.
@@ -412,7 +494,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Object time engine. Handles object spawning and interpolation.
         /// </summary>
-        public ObjectEngine engine;
+        public ObjectEngine objectEngine;
 
         /// <summary>
         /// Object conversion system. Handles converting data objects to runtime objects.
@@ -429,7 +511,7 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public List<IRTObject> objects;
 
-        void OnBeatmapObjectsTick() => engine?.Update(CurrentTime);
+        void OnBeatmapObjectsTick() => objectEngine?.Update(CurrentTime);
 
         /// <summary>
         /// Updates a Beatmap Object.
@@ -440,10 +522,10 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the runtime object should be reinserted.</param>
         public void UpdateObject(BeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true, bool recursive = true, bool recalculate = true)
         {
-            if (!engine)
+            if (!objectEngine)
                 return;
 
-            var objectSpawner = engine.objectSpawner;
+            var objectSpawner = objectEngine.spawner;
 
             if (objects == null || !converter)
                 return;
@@ -534,10 +616,10 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
 
-                        if (!engine || !engine.objectSpawner)
+                        if (!objectEngine || !objectEngine.spawner)
                             break;
 
-                        var spawner = engine.objectSpawner;
+                        var spawner = objectEngine.spawner;
 
                         levelObject.StartTime = beatmapObject.StartTime;
                         levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
@@ -553,7 +635,7 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     } // StartTime
                 case ObjectContext.AUTOKILL: {
-                        if (!levelObject || !engine || !engine.objectSpawner)
+                        if (!levelObject || !objectEngine || !objectEngine.spawner)
                             break;
 
                         levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
@@ -561,7 +643,7 @@ namespace BetterLegacy.Core.Runtime
                         if (!sort)
                             break;
 
-                        var spawner = engine.objectSpawner;
+                        var spawner = objectEngine.spawner;
 
                         spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
                         spawner.RecalculateObjectStates();
@@ -695,7 +777,7 @@ namespace BetterLegacy.Core.Runtime
 
                         if (runtimeModifiers)
                         {
-                            objectModifiersEngine?.objectSpawner?.RemoveObject(runtimeModifiers, false);
+                            objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
                             modifiers.Remove(runtimeModifiers);
 
                             runtimeModifiers = null;
@@ -710,7 +792,7 @@ namespace BetterLegacy.Core.Runtime
                             );
 
                         modifiers.Add(beatmapObject.runtimeModifiers);
-                        objectModifiersEngine?.objectSpawner?.InsertObject(beatmapObject.runtimeModifiers, false);
+                        objectModifiersEngine?.spawner?.InsertObject(beatmapObject.runtimeModifiers, false);
 
                         break;
                     }
@@ -757,7 +839,7 @@ namespace BetterLegacy.Core.Runtime
                 if (top)
                     UnityObject.Destroy(top.gameObject);
 
-                engine?.objectSpawner?.RemoveObject(runtimeObject, false);
+                objectEngine?.spawner?.RemoveObject(runtimeObject, false);
                 objects.Remove(runtimeObject);
 
                 runtimeObject.parentObjects.Clear();
@@ -771,7 +853,7 @@ namespace BetterLegacy.Core.Runtime
 
             if (runtimeModifiers)
             {
-                objectModifiersEngine?.objectSpawner?.RemoveObject(runtimeModifiers, false);
+                objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
                 modifiers.Remove(runtimeModifiers);
 
                 runtimeModifiers = null;
@@ -787,14 +869,14 @@ namespace BetterLegacy.Core.Runtime
             if (iRuntimeObject != null)
             {
                 objects.Add(iRuntimeObject);
-                engine?.objectSpawner?.InsertObject(iRuntimeObject, false);
+                objectEngine?.spawner?.InsertObject(iRuntimeObject, false);
             }
 
             var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
             if (iRuntimeModifiers != null)
             {
                 modifiers.Add(iRuntimeModifiers);
-                objectModifiersEngine?.objectSpawner?.InsertObject(iRuntimeModifiers, false);
+                objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
             }
         }
 
@@ -1385,10 +1467,10 @@ namespace BetterLegacy.Core.Runtime
                             timeToAdd += t;
                         }
 
-                        if (!sort || !Initialized)
+                        if (!sort || !objectEngine)
                             break;
 
-                        var spawner = engine.objectSpawner;
+                        var spawner = objectEngine.spawner;
 
                         if (!spawner)
                             break;
@@ -1588,10 +1670,10 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public void Sort()
         {
-            if (!Initialized)
+            if (!objectEngine)
                 return;
 
-            var spawner = engine.objectSpawner;
+            var spawner = objectEngine.spawner;
 
             if (!spawner)
                 return;
