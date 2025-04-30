@@ -786,6 +786,31 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current?.RecalculateObjectStates();
         }
 
+        public void OpenPrefabObjectDialog()
+        {
+            if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject)
+            {
+                OpenPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
+                return;
+            }
+
+            EditorManager.inst.DisplayNotification("Prefab Object was null, so cannot open the editor.", 3f, EditorManager.NotificationType.Error);
+            EditorDialog.CurrentDialog?.Close();
+        }
+        
+        public void OpenPrefabObjectDialog(PrefabObject prefabObject)
+        {
+            if (!prefabObject)
+            {
+                EditorManager.inst.DisplayNotification("Prefab Object was null, so cannot open the editor.", 3f, EditorManager.NotificationType.Error);
+                EditorDialog.CurrentDialog?.Close();
+                return;
+            }
+
+            PrefabObjectEditor.Open();
+            RenderPrefabObjectDialog(prefabObject);
+        }
+
         #region Render Dialog
 
         public void RenderPrefabObjectDialog(PrefabObject prefabObject)
@@ -1543,8 +1568,6 @@ namespace BetterLegacy.Editor.Managers
         public void Expand(PrefabObject prefabObject)
         {
             string id = prefabObject.id;
-
-            EditorDialog.CurrentDialog.Close();
 
             var sw = CoreHelper.StartNewStopwatch();
 

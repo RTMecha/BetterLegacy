@@ -241,7 +241,7 @@ namespace BetterLegacy.Editor.Data
             else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                PrefabEditor.inst.OpenPrefabDialog();
+                RTPrefabEditor.inst.OpenPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
             yield break;
         }
     }

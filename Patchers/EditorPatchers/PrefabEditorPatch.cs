@@ -192,17 +192,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenPrefabDialogPrefix()
         {
-            bool isPrefab = EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject;
-            if (!isPrefab)
-            {
-                Debug.LogError($"{Instance.className}Cannot select non-Prefab with this editor!");
-                ObjectEditor.inst.Dialog.Open();
-                return false;
-            }
-
-            RTPrefabEditor.inst.PrefabObjectEditor.Open();
-            RTPrefabEditor.inst.RenderPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
-
+            RTPrefabEditor.inst.OpenPrefabObjectDialog();
             return false;
         }
 
