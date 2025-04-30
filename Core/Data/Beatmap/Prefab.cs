@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     {
         public Prefab() : base() { }
 
-        public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects) : this()
+        public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null) : this()
         {
             this.name = name;
             this.type = type;
@@ -27,11 +27,23 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.beatmapObjects.AddRange(beatmapObjects.Select(x => x.Copy(false)));
             this.prefabObjects.AddRange(prefabObjects.Select(x => x.Copy(false)));
 
-            float num = prefabObjects.Select(x => x.StartTime).Union(beatmapObjects.Select(x => x.StartTime)).Min(x => x);
+            if (backgroundLayers != null)
+                this.backgroundLayers.AddRange(backgroundLayers.Select(x => x.Copy(false)));
+            
+            if (backgroundObjects != null)
+                this.backgroundObjects.AddRange(backgroundObjects.Select(x => x.Copy(false)));
+
+            var collection = prefabObjects.Select(x => x.StartTime).Union(beatmapObjects.Select(x => x.StartTime));
+            if (backgroundObjects != null)
+                collection = collection.Union(backgroundObjects.Select(x => x.StartTime));
+
+            float num = collection.Min(x => x);
             for (int i = 0; i < this.beatmapObjects.Count; i++)
                 this.beatmapObjects[i].StartTime -= num;
             for (int i = 0; i < prefabObjects.Count; i++)
                 this.prefabObjects[i].StartTime -= num;
+            for (int i = 0; i < this.backgroundObjects.Count; i++)
+                this.backgroundObjects[i].StartTime -= num;
         }
 
         #region Values
@@ -58,7 +70,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
 
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
-        
+
+        public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
+
+        public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
+
         #endregion
 
         #endregion
@@ -77,11 +93,19 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             beatmapObjects = new List<BeatmapObject>();
             if (!orig.beatmapObjects.IsEmpty())
-                beatmapObjects.AddRange(orig.beatmapObjects.Select(x => x.Copy(false)).ToList());
+                beatmapObjects.AddRange(orig.beatmapObjects.Select(x => x.Copy(false)));
 
             prefabObjects = new List<PrefabObject>();
             if (!orig.prefabObjects.IsEmpty())
-                prefabObjects.AddRange(orig.prefabObjects.Select(x => x.Copy(false)).ToList());
+                prefabObjects.AddRange(orig.prefabObjects.Select(x => x.Copy(false)));
+
+            backgroundLayers = new List<BackgroundLayer>();
+            if (!orig.backgroundLayers.IsEmpty())
+                backgroundLayers.AddRange(orig.backgroundLayers.Select(x => x.Copy(false)));
+
+            backgroundObjects = new List<BackgroundObject>();
+            if (!orig.backgroundObjects.IsEmpty())
+                backgroundObjects.AddRange(orig.backgroundObjects.Select(x => x.Copy(false)));
 
             foreach (var beatmapObject in beatmapObjects)
             {
@@ -114,6 +138,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabObjects.Clear();
             for (int k = 0; k < jn["prefab_objects"].Count; k++)
                 prefabObjects.Add(PrefabObject.Parse(jn["prefab_objects"][k]));
+
+            backgroundLayers.Clear();
+            if (jn["bg_layers"] != null)
+                for (int i = 0; i < jn["bg_layers"].Count; i++)
+                    backgroundLayers.Add(BackgroundLayer.Parse(jn["bg_layers"][i]));
+
+            backgroundObjects.Clear();
+            if (jn["bg_objects"] != null)
+                for (int i = 0; i < jn["bg_objects"].Count; i++)
+                    backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
 
             id = jn["id"];
             name = jn["name"];
@@ -171,6 +205,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (prefabObjects != null && !prefabObjects.IsEmpty())
                 for (int i = 0; i < prefabObjects.Count; i++)
                     jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
+
+            if (backgroundLayers != null && !backgroundLayers.IsEmpty())
+                for (int i = 0; i < backgroundLayers.Count; i++)
+                    jn["bg_layers"][i] = backgroundLayers[i].ToJSON();
+
+            if (backgroundObjects != null && !backgroundObjects.IsEmpty())
+                for (int i = 0; i < backgroundObjects.Count; i++)
+                    jn["bg_objects"][i] = backgroundObjects[i].ToJSON();
 
             if (GameData.Current)
                 foreach (var obj in beatmapObjects)
