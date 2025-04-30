@@ -446,8 +446,7 @@ namespace BetterLegacy.Core.Helpers
             else
             {
                 EventEditor.inst.eventDrag = false;
-                EventEditor.inst.UpdateEventOrder();
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents(timelineKeyframe.Type);
 
                 RTEventEditor.inst.OpenDialog();
             }
@@ -530,9 +529,8 @@ namespace BetterLegacy.Core.Helpers
                         for (int i = 0; i < selected.Count; i++)
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                        RTEventEditor.inst.UpdateEventOrder();
+                        RTLevel.Current?.UpdateEvents(timelineKeyframe.Type);
                         RTEventEditor.inst.RenderEventObjects();
-                        EventManager.inst.updateEvents();
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Reset", () =>

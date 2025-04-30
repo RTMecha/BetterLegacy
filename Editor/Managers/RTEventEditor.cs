@@ -18,6 +18,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
@@ -414,7 +415,7 @@ namespace BetterLegacy.Editor.Managers
                 string result = string.Format("Event [{0}][{1}]", _type, _event);
                 GameData.Current.events[_type].RemoveAt(_event);
                 CreateEventObjects();
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents(_type);
                 SetCurrentEvent(_type, _type - 1);
                 return result;
             }
@@ -428,9 +429,7 @@ namespace BetterLegacy.Editor.Managers
             var list = SelectedKeyframes;
             var count = list.Count;
             foreach (var timelineObject in list)
-            {
                 strs.Add(timelineObject.ID);
-            }
 
             var types = SelectedKeyframes.Select(x => x.Type);
 
@@ -454,12 +453,9 @@ namespace BetterLegacy.Editor.Managers
 
             var allEvents = GameData.Current.events;
             for (int i = 0; i < allEvents.Count; i++)
-            {
-                allEvents[i].RemoveAll(x => strs.Contains(((EventKeyframe)x).id));
-            }
+                allEvents[i].RemoveAll(x => strs.Contains(x.id));
 
-            UpdateEventOrder();
-            EventManager.inst.updateEvents();
+            RTLevel.Current?.UpdateEvents();
 
             SetCurrentEvent(num, index);
 
@@ -474,9 +470,7 @@ namespace BetterLegacy.Editor.Managers
             var list = kfs;
             var count = list.Count;
             foreach (var timelineObject in list)
-            {
                 strs.Add(timelineObject.ID);
-            }
 
             var types = SelectedKeyframes.Select(x => x.Type);
 
@@ -500,10 +494,9 @@ namespace BetterLegacy.Editor.Managers
 
             var allEvents = GameData.Current.events;
             for (int i = 0; i < allEvents.Count; i++)
-                allEvents[i].RemoveAll(x => strs.Contains(((EventKeyframe)x).id));
+                allEvents[i].RemoveAll(x => strs.Contains(x.id));
 
-            UpdateEventOrder();
-            EventManager.inst.updateEvents();
+            RTLevel.Current?.UpdateEvents();
 
             SetCurrentEvent(num, index);
 
@@ -629,9 +622,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.timelineKeyframes.Add(kf);
             }
 
-            UpdateEventOrder();
+            RTLevel.Current?.UpdateEvents();
             OpenDialog();
-            EventManager.inst.updateEvents();
         }
 
         #endregion
@@ -694,13 +686,11 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.events[type].Add(eventKeyframe);
 
-            UpdateEventOrder();
-
-            EventManager.inst.updateEvents();
-
             var kf = CreateEventObject(type, GameData.Current.events[type].IndexOf(eventKeyframe));
             kf.Render();
             EditorTimeline.inst.timelineKeyframes.Add(kf);
+
+            RTLevel.Current?.UpdateEvents();
             SetCurrentEvent(type, kf.Index);
         }
 
@@ -1724,7 +1714,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 RenderEventsDialog();
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents();
                 EditorManager.inst.DisplayNotification($"Snapped all keyframes time!", 2f, EditorManager.NotificationType.Success);
             });
 
@@ -1776,7 +1766,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 RenderEventsDialog();
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents();
                 EditorManager.inst.DisplayNotification($"Aligned all keyframes to the first keyframe!", 2f, EditorManager.NotificationType.Success);
             });
 
@@ -1832,7 +1822,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 RenderEventsDialog();
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents();
                 EditorManager.inst.DisplayNotification($"Pasted all keyframe data to current selected keyframes!", 2f, EditorManager.NotificationType.Success);
             });
 
@@ -1928,9 +1918,8 @@ namespace BetterLegacy.Editor.Managers
                         eventKeyframe.time = Mathf.Clamp(eventKeyframe.time - (num * 10f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
-                    UpdateEventOrder();
+                    RTLevel.Current?.UpdateEvents();
                     RenderEventObjects();
-                    EventManager.inst.updateEvents();
                 }
                 else
                     LogIncorrectFormat(time.text);
@@ -1949,9 +1938,8 @@ namespace BetterLegacy.Editor.Managers
                         eventKeyframe.time = Mathf.Clamp(eventKeyframe.time + num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
-                    UpdateEventOrder();
+                    RTLevel.Current?.UpdateEvents();
                     RenderEventObjects();
-                    EventManager.inst.updateEvents();
                 }
                 else
                     LogIncorrectFormat(time.text);
@@ -1967,9 +1955,8 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                         kf.eventKeyframe.time = num;
 
-                    UpdateEventOrder();
+                    RTLevel.Current?.UpdateEvents();
                     RenderEventObjects();
-                    EventManager.inst.updateEvents();
                 }
                 else
                     LogIncorrectFormat(time.text);
@@ -1988,9 +1975,8 @@ namespace BetterLegacy.Editor.Managers
                         eventKeyframe.time = Mathf.Clamp(eventKeyframe.time - num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
-                    UpdateEventOrder();
+                    RTLevel.Current?.UpdateEvents();
                     RenderEventObjects();
-                    EventManager.inst.updateEvents();
                 }
                 else
                     LogIncorrectFormat(time.text);
@@ -2009,9 +1995,8 @@ namespace BetterLegacy.Editor.Managers
                         eventKeyframe.time = Mathf.Clamp(eventKeyframe.time + (num * 10f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
 
-                    UpdateEventOrder();
+                    RTLevel.Current?.UpdateEvents();
                     RenderEventObjects();
-                    EventManager.inst.updateEvents();
                 }
                 else
                     LogIncorrectFormat(time.text);
@@ -2027,7 +2012,7 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                     kf.eventKeyframe.curve = anim;
 
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents();
             });
 
             var valueIndexStorage = dialog.Find("value index/value index").GetComponent<InputFieldStorage>();
@@ -2173,7 +2158,7 @@ namespace BetterLegacy.Editor.Managers
                         kf.eventKeyframe.curve = anim;
 
                     RenderEventObjects();
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents();
                 });
 
                 dialog.EventTimeField.inputField.onValueChanged.AddListener(_val =>
@@ -2188,8 +2173,7 @@ namespace BetterLegacy.Editor.Managers
                             kf.Render();
                         }
 
-                        UpdateEventOrder();
-                        EventManager.inst.updateEvents();
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                     }
                     else
                         LogIncorrectFormat(_val);
@@ -2205,7 +2189,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.JumpToStartButton.onClick.ClearAll();
             dialog.JumpToStartButton.onClick.AddListener(() =>
             {
-                EventEditor.inst.UpdateEventOrder(false);
+                RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
             });
 
@@ -2213,7 +2197,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.JumpToPrevButton.onClick.ClearAll();
             dialog.JumpToPrevButton.onClick.AddListener(() =>
             {
-                EventEditor.inst.UpdateEventOrder(false);
+                RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 int num = EventEditor.inst.currentEvent - 1;
                 if (num < 0)
                     num = 0;
@@ -2223,13 +2207,13 @@ namespace BetterLegacy.Editor.Managers
 
             var events = GameData.Current.events[EventEditor.inst.currentEventType];
 
-            dialog.KeyframeIndexer.text = !isNotFirst ? "S" : EventEditor.inst.currentEvent == events.Count ? "E" : EventEditor.inst.currentEvent.ToString();
+            dialog.KeyframeIndexer.text = !isNotFirst ? "S" : EventEditor.inst.currentEvent == events.Count - 1 ? "E" : EventEditor.inst.currentEvent.ToString();
 
             dialog.JumpToNextButton.interactable = EventEditor.inst.currentEvent != events.Count - 1;
             dialog.JumpToNextButton.onClick.ClearAll();
             dialog.JumpToNextButton.onClick.AddListener(() =>
             {
-                EventEditor.inst.UpdateEventOrder(false);
+                RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 int num = EventEditor.inst.currentEvent + 1;
                 if (num >= events.Count)
                     num = events.Count - 1;
@@ -2241,7 +2225,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.JumpToLastButton.onClick.ClearAll();
             dialog.JumpToLastButton.onClick.AddListener(() =>
             {
-                EventEditor.inst.UpdateEventOrder(false);
+                RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, events.IndexOf(events.Last()));
             });
 
@@ -2468,7 +2452,7 @@ namespace BetterLegacy.Editor.Managers
                             drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.values[5] = _val;
-                                EventManager.inst.updateEvents();
+                                RTLevel.Current?.UpdateEvents(11);
                             });
                         }
 
@@ -2495,7 +2479,7 @@ namespace BetterLegacy.Editor.Managers
                             drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.values[1] = _val;
-                                EventManager.inst.updateEvents();
+                                RTLevel.Current?.UpdateEvents(13);
                             });
                         }
 
@@ -2524,7 +2508,7 @@ namespace BetterLegacy.Editor.Managers
                             drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.values[4] = _val;
-                                EventManager.inst.updateEvents();
+                                RTLevel.Current?.UpdateEvents(15);
                             });
                         }
 
@@ -2554,7 +2538,7 @@ namespace BetterLegacy.Editor.Managers
                             drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.values[1] = _val;
-                                EventManager.inst.updateEvents();
+                                RTLevel.Current?.UpdateEvents(16);
                             });
                         }
 
@@ -2729,7 +2713,7 @@ namespace BetterLegacy.Editor.Managers
                             drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.values[9] = _val;
-                                EventManager.inst.updateEvents();
+                                RTLevel.Current?.UpdateEvents(27);
                             });
                         }
 
@@ -2751,7 +2735,7 @@ namespace BetterLegacy.Editor.Managers
                             drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.values[1] = _val;
-                                EventManager.inst.updateEvents();
+                                RTLevel.Current?.UpdateEvents(29);
                             });
                         }
 
@@ -2860,7 +2844,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 RenderEventsDialog();
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents(type);
                 EditorManager.inst.DisplayNotification($"Pasted {EventTypes[type]} keyframe data to current selected keyframe!", 2f, EditorManager.NotificationType.Success);
             }
             else if (copiedKeyframeDatas.Count > type)
@@ -2888,7 +2872,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[index] = tmpIndex;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
 
                     SetListColor(tmpIndex, index, toggles, defaultColor, secondaryDefaultColor);
                 });
@@ -2909,7 +2893,7 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
                     kf.eventKeyframe.values[index] = _val ? onValue : offValue;
 
-                EventManager.inst.updateEvents();
+                RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
             });
         }
 
@@ -2936,7 +2920,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
                         kf.eventKeyframe.values[index] = num;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
 
                     if (name == "zoom/x" && num < 0f)
                         AchievementManager.inst.UnlockAchievement("editor_zoom_break");
@@ -3037,7 +3021,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
                         kf.eventKeyframe.values[index] = num;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 }
                 else
                     LogIncorrectFormat(_val);
@@ -3125,7 +3109,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[xindex] = num;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 }
                 else
                     LogIncorrectFormat(_val);
@@ -3155,7 +3139,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[yindex] = num;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 }
                 else
                     LogIncorrectFormat(_val);
@@ -3312,7 +3296,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[xindex] = num;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 }
                 else
                     LogIncorrectFormat(_val);
@@ -3342,7 +3326,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[yindex] = num;
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 }
                 else
                     LogIncorrectFormat(_val);
@@ -3464,19 +3448,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Rendering
-
-        public void UpdateEventOrder()
-        {
-            for (int i = 0; i < GameData.Current.events.Count; i++)
-            {
-                GameData.Current.events[i] = GameData.Current.events[i].OrderBy(x => x.time).ToList();
-                foreach (var keyframe in EditorTimeline.inst.timelineKeyframes)
-                {
-                    if (GameData.Current.events[i].TryFindIndex(x => ((EventKeyframe)x).id == keyframe.ID, out int index))
-                        keyframe.Index = index;
-                }
-            }
-        }
 
         void RenderTitle(int i)
         {

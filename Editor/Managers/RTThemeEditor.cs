@@ -19,7 +19,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
@@ -656,7 +656,7 @@ namespace BetterLegacy.Editor.Managers
                     else if (GameData.Current.events[4].Count > 0)
                         GameData.Current.events[4].FindLast(x => x.time < AudioManager.inst.CurrentAudioSource.time).values[0] = Parser.TryParse(beatmapTheme.id, 0);
 
-                    EventManager.inst.updateEvents();
+                    RTLevel.Current?.UpdateEvents(4);
                 });
 
                 var convert = viewThemeStorage.convertButton;

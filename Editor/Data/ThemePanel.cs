@@ -18,6 +18,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
@@ -594,7 +595,7 @@ namespace BetterLegacy.Editor.Data
             else
                 RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
 
-            EventManager.inst.updateEvents();
+            RTLevel.Current?.UpdateEvents(4);
             RTThemeEditor.inst.RenderThemePreview();
 
             GameData.Current.UpdateUsedThemes();

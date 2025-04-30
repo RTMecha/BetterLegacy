@@ -2743,7 +2743,6 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Update Everything", () =>
                         {
                             BackgroundManager.inst.UpdateBackgrounds();
-                            EventManager.inst.updateEvents();
                             RTLevel.Reinit();
                         }),
                         new ButtonFunction(true),
@@ -3126,7 +3125,7 @@ namespace BetterLegacy.Editor.Managers
 
             var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
-                RTEventManager.inst?.SetResetOffsets();
+                RTLevel.Current?.eventEngine?.ResetOffsets();
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
@@ -4955,12 +4954,9 @@ namespace BetterLegacy.Editor.Managers
             RTMarkerEditor.inst.markerLoopBegin = null;
             RTMarkerEditor.inst.markerLoopEnd = null;
 
-            EventManager.inst.updateEvents();
             GameData.Current.UpdateUsedThemes();
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
-
-            RTEventManager.inst.SetResetOffsets();
 
             CoreHelper.Log("Creating timeline objects...");
             InfoPopup.SetInfo($"Setting first object of [ {name} ]");

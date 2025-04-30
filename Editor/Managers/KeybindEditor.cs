@@ -1018,7 +1018,6 @@ namespace BetterLegacy.Editor.Managers
         public static void UpdateEverything(Keybind keybind)
         {
             RandomHelper.UpdateSeed();
-            EventManager.inst.updateEvents();
             RTLevel.Reinit();
             BackgroundManager.inst.UpdateBackgrounds();
         }
@@ -1583,8 +1582,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static void AddPitch(Keybind keybind)
         {
-            if (RTEventManager.inst)
-                RTEventManager.inst.pitchOffset += 0.1f;
+            if (RTLevel.Current && RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset += 0.1f;
             else
                 AudioManager.inst.pitch += 0.1f;
 
@@ -1592,8 +1591,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SubPitch(Keybind keybind)
         {
-            if (RTEventManager.inst)
-                RTEventManager.inst.pitchOffset -= 0.1f;
+            if (RTLevel.Current && RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset -= 0.1f;
             else
                 AudioManager.inst.pitch -= 0.1f;
         }
