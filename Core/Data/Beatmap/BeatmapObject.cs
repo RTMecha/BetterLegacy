@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable
     {
         public BeatmapObject() : base() { }
 
@@ -444,6 +444,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string prefabInstanceID = string.Empty;
 
+        public string PrefabID { get => prefabID; set => prefabID = value; }
+
+        public string PrefabInstanceID { get => prefabInstanceID; set => prefabInstanceID = value; }
+
         #endregion
 
         #region References
@@ -526,8 +530,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             fromPrefab = orig.fromPrefab;
             objectType = orig.objectType;
             origin = orig.origin;
-            prefabID = orig.prefabID;
-            prefabInstanceID = orig.prefabInstanceID;
+
+            SetPrefabReference(orig);
+
             gradientType = orig.gradientType;
             gradientScale = orig.gradientScale;
             gradientRotation = orig.gradientRotation;
@@ -1427,9 +1432,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Prefab Reference
 
-        /// <summary>
-        /// Removes the Prefab and Prefab Object ID references.
-        /// </summary>
         public void RemovePrefabReference()
         {
             prefabID = "";
@@ -1446,14 +1448,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabInstanceID = prefabObject.id;
         }
 
-        /// <summary>
-        /// Sets the Prefab and Prefab Object ID references from another object.
-        /// </summary>
-        /// <param name="beatmapObject">Object reference.</param>
-        public void SetPrefabReference(BeatmapObject beatmapObject)
+        public void SetPrefabReference(IPrefabable prefabable)
         {
-            prefabID = beatmapObject.prefabID;
-            prefabInstanceID = beatmapObject.prefabInstanceID;
+            prefabID = prefabable.PrefabID;
+            prefabInstanceID = prefabable.PrefabInstanceID;
         }
 
         /// <summary>
