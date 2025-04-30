@@ -797,6 +797,8 @@ namespace BetterLegacy.Core.Runtime.Events
 
             RTPlayer.PlayerForce = new Vector2(playerForceX, playerForceY) * playerForceMultiplier;
 
+            ThemeManager.inst.UpdateThemes();
+
             #endregion
 
             GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && timelineActive && EventsConfig.Instance.ShowGUI.Value);
@@ -1041,7 +1043,6 @@ namespace BetterLegacy.Core.Runtime.Events
             themeLerp = x;
 
             ThemeManager.inst.Current.Lerp(ThemeManager.inst.GetTheme(prevTheme), ThemeManager.inst.GetTheme(nextTheme), x);
-            ThemeManager.inst.UpdateThemes();
         }
 
         #endregion
