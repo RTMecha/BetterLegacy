@@ -7,10 +7,12 @@
 
 ### Editor
 - Renamed "Gamma X" "Gamma Y" "Gamma Z" "Gamma W" to "Red" "Green" "Blue" "Global"
+- Reworked timeline object deleting.
 
 ## Fixes
 - Fixed Event Editor indexer not displaying "E" for end keyframes.
 - Finally fixed BG color delay.
+- Fixed some issues relating to the runtime modifier changes last prerelease.
 
 # 1.7.0-pre.2 > [Apr 29, 2025]
 
