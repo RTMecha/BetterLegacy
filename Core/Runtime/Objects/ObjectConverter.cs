@@ -518,6 +518,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
             runtimeObject.SetActive(false);
+            runtimeObject.UpdateShape(backgroundObject.shape, backgroundObject.shapeOption);
 
             backgroundObject.runtimeObject = runtimeObject;
 
