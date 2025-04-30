@@ -119,7 +119,6 @@
 ### Core
 - Change how modifiers are saved for better consistency.
 - Make Background Objects based on timeline objects instead of a list. This means they have start time, autokill and keyframe functionality much like Beatmap Objects.
-- Move events tick to RTLevel and cleanup the events code.
 - Merge all effect managers into single EffectsManager.
 - Summary and note as much as I can (or need to).
 
