@@ -2989,6 +2989,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                 StartCoroutine(RenderModifiers(beatmapObject));
                 EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
             });
 
             TooltipHelper.AssignTooltip(pasteModifier, "Paste Modifier");
@@ -3050,6 +3051,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, beatmapObject.modifiers.Count), modifier);
                     ObjectEditor.inst.RenderDialog(beatmapObject);
                     DefaultModifiersPopup.Close();
+                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
                 });
 
                 EditorThemeManager.ApplyLightText(modifierName);
