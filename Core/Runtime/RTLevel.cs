@@ -358,11 +358,6 @@ namespace BetterLegacy.Core.Runtime
         #region Sequences
 
         /// <summary>
-        /// Recalculate object states.
-        /// </summary>
-        public void RecalculateObjectStates() => objectEngine?.spawner?.RecalculateObjectStates();
-
-        /// <summary>
         /// Sets the game's current seed and updates all animations accordingly.
         /// </summary>
         /// <param name="seed">The seed to set.</param>
@@ -417,8 +412,6 @@ namespace BetterLegacy.Core.Runtime
         {
             if (!reinsert)
             {
-                beatmapObject.cachedSequences = null;
-
                 // Recursive recaching.
                 if (recursive)
                 {
@@ -514,6 +507,15 @@ namespace BetterLegacy.Core.Runtime
         void OnBeatmapObjectsTick() => objectEngine?.Update(CurrentTime);
 
         /// <summary>
+        /// Recalculate object states.
+        /// </summary>
+        public void RecalculateObjectStates()
+        {
+            objectEngine?.spawner?.RecalculateObjectStates();
+            objectModifiersEngine?.spawner?.RecalculateObjectStates();
+        }
+
+        /// <summary>
         /// Updates a Beatmap Object.
         /// </summary>
         /// <param name="beatmapObject">Beatmap Objec to update.</param>
@@ -522,14 +524,6 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the runtime object should be reinserted.</param>
         public void UpdateObject(BeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true, bool recursive = true, bool recalculate = true)
         {
-            if (!objectEngine)
-                return;
-
-            var objectSpawner = objectEngine.spawner;
-
-            if (objects == null || !converter)
-                return;
-
             if (!reinsert)
             {
                 recache = true;
@@ -543,7 +537,7 @@ namespace BetterLegacy.Core.Runtime
                 ReinitObject(beatmapObject, reinsert, recursive);
 
             if (recalculate)
-                objectSpawner.RecalculateObjectStates();
+                RecalculateObjectStates();
         }
 
         /// <summary>
@@ -643,10 +637,11 @@ namespace BetterLegacy.Core.Runtime
                         if (!sort)
                             break;
 
-                        var spawner = objectEngine.spawner;
-
-                        spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        spawner.RecalculateObjectStates();
+                        objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        objectEngine?.spawner?.RecalculateObjectStates();
+                        
+                        objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        objectModifiersEngine?.spawner?.RecalculateObjectStates();
 
                         break;
                     } // Autokill
@@ -1467,17 +1462,16 @@ namespace BetterLegacy.Core.Runtime
                             timeToAdd += t;
                         }
 
-                        if (!sort || !objectEngine)
+                        if (!sort)
                             break;
 
-                        var spawner = objectEngine.spawner;
+                        objectEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                        objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        objectEngine?.spawner?.RecalculateObjectStates();
 
-                        if (!spawner)
-                            break;
-
-                        spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                        spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        spawner.RecalculateObjectStates();
+                        objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                        objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        objectModifiersEngine?.spawner?.RecalculateObjectStates();
 
                         break;
                     }
