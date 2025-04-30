@@ -2208,7 +2208,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.history.Add(new History.Command("Delete Objects", Delete, () =>
                             {
                                 EditorTimeline.inst.DeselectAllObjects();
-                                new PrefabExpander(null, prefab, true, 0f, true, false, true, false).Expand();
+                                new PrefabExpander(prefab).Select().RetainID().Expand();
                             }));
 
                             EditorTimeline.inst.DeleteObjects();

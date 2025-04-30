@@ -2375,7 +2375,13 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.DeselectAllObjects();
             EditorManager.inst.DisplayNotification("Pasting objects.", 1f, EditorManager.NotificationType.Success);
 
-            new PrefabExpander(copy, true, offsetTime, regen, dup).Expand();
+            new PrefabExpander(copy)
+                .Select()
+                .Offset(offsetTime)
+                .OffsetToCurrentTime(!dup)
+                .Regen(regen)
+                .AddBin(dup)
+                .Expand();
         }
 
         public void CopyAllSelectedEvents(BeatmapObject beatmapObject)

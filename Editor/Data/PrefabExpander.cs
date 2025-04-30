@@ -22,39 +22,66 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public struct PrefabExpander
     {
-        public PrefabExpander(PrefabObject prefabObject, Prefab prefab, bool select, float offset, bool undone, bool regen, bool retainID, bool addBin)
+        public PrefabExpander(PrefabObject prefabObject, Prefab prefab, bool select, float offset, bool offsetToCurrentTime, bool regen, bool retainID, bool addBin)
         {
             this.prefabObject = prefabObject;
             this.prefab = prefab;
             this.select = select;
             this.offset = offset;
-            this.undone = undone;
+            this.offsetToCurrentTime = offsetToCurrentTime;
             this.regen = regen;
             this.retainID = retainID;
             this.addBin = addBin;
         }
 
-        public PrefabExpander(PrefabObject prefabObject, Prefab prefab, bool select, float offset, bool regen) : this(prefabObject, prefab, select, offset, false, regen, false, false) { }
-        
-        public PrefabExpander(Prefab prefab, bool select, float offset, bool regen, bool addBin) : this(null, prefab, select, offset, false, regen, false, addBin) { }
-
-        public PrefabExpander(PrefabObject prefabObject, Prefab prefab, bool select, bool retainID) : this(prefabObject, prefab, select, 0f, false, false, retainID, false) { }
-        
-        public PrefabExpander(Prefab prefab, bool select, bool retainID) : this(null, prefab, select, 0f, false, false, retainID, false) { }
-
         public PrefabExpander(PrefabObject prefabObject, Prefab prefab) : this(prefabObject, prefab, false, 0f, false, false, false, false) { }
-
-        public PrefabExpander(PrefabObject prefabObject, bool select) : this(prefabObject, prefabObject.GetPrefab(), select, false) { }
 
         public PrefabExpander(PrefabObject prefabObject) : this(prefabObject, prefabObject.GetPrefab()) { }
 
         public PrefabExpander(Prefab prefab) : this(null, prefab) { }
 
+        public PrefabExpander Select(bool select = true)
+        {
+            this.select = select;
+            return this;
+        }
+        
+        public PrefabExpander Offset(float offset = 0f)
+        {
+            this.offset = offset;
+            return this;
+        }
+
+        public PrefabExpander OffsetToCurrentTime(bool offsetToCurrentTime = true)
+        {
+            this.offsetToCurrentTime = offsetToCurrentTime;
+            return this;
+        }
+
+        public PrefabExpander Regen(bool regen = true)
+        {
+            this.regen = regen;
+            return this;
+        }
+        
+        public PrefabExpander RetainID(bool retainID = true)
+        {
+            this.retainID = retainID;
+            return this;
+        }
+        
+        public PrefabExpander AddBin(bool addBin = true)
+        {
+            this.addBin = addBin;
+            return this;
+        }
+
         public PrefabObject prefabObject;
         public Prefab prefab;
+
         public bool select;
         public float offset;
-        public bool undone;
+        public bool offsetToCurrentTime;
         public bool regen;
         public bool retainID;
         public bool addBin;
@@ -132,7 +159,7 @@ namespace BetterLegacy.Editor.Data
                 if (prefabObject)
                     beatmapObjectCopy.StartTime += prefabObject.StartTime + prefab.offset;
                 else
-                    beatmapObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.offset : audioTime + prefab.offset : offset;
+                    beatmapObjectCopy.StartTime += offsetToCurrentTime ? audioTime + prefab.offset : offset;
 
                 if (addBin)
                     ++beatmapObjectCopy.editorData.Bin;
@@ -182,7 +209,7 @@ namespace BetterLegacy.Editor.Data
                 if (this.prefabObject)
                     prefabObjectCopy.StartTime += this.prefabObject.StartTime + prefab.offset;
                 else
-                    prefabObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.offset : audioTime + prefab.offset : offset;
+                    prefabObjectCopy.StartTime += offsetToCurrentTime ? audioTime + prefab.offset : offset;
 
                 if (offset != 0.0)
                     ++prefabObjectCopy.editorData.Bin;

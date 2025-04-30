@@ -1580,7 +1580,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.DeselectAllObjects();
 
             Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
-            new PrefabExpander(prefabObject, true).Expand();
+            new PrefabExpander(prefabObject).Select().Expand();
 
             EditorTimeline.inst.RenderTimelineObjects();
 
