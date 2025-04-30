@@ -10,6 +10,7 @@
 
 ## Fixes
 - Fixed Event Editor indexer not displaying "E" for end keyframes.
+- Finally fixed BG color delay.
 
 # 1.7.0-pre.2 > [Apr 29, 2025]
 
