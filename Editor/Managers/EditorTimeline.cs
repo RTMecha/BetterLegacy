@@ -20,6 +20,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
@@ -274,50 +275,65 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public List<TimelineObject> TimelinePrefabObjects => timelineObjects.Where(x => x.isPrefabObject).ToList();
 
-        public IEnumerator GroupSelectObjects(bool _add = true)
+        /// <summary>
+        /// Selects a group of objects based on drag selection.
+        /// </summary>
+        /// <param name="add">If selection should be added to.</param>
+        public IEnumerator GroupSelectObjects(bool add, bool remove)
         {
-            if (!_add)
+            if (!add && !remove)
                 DeselectAllObjects();
 
             var list = timelineObjects;
             list.Where(x => x.Layer == Layer && RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform)
             .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList().ForEach(timelineObject =>
             {
-                timelineObject.Selected = true;
+                timelineObject.Selected = !remove;
                 timelineObject.timeOffset = 0f;
                 timelineObject.binOffset = 0;
             });
 
-            if (SelectedObjectCount > 1)
-            {
-                EditorManager.inst.ClearPopups();
+            var selectedObjects = SelectedObjects;
+            var selectedCount = selectedObjects.Count;
+            if (selectedCount > 1)
                 MultiObjectEditor.inst.Dialog.Open();
-            }
 
-            if (SelectedObjectCount <= 0)
+            if (selectedCount == 1)
+                SetCurrentObject(selectedObjects[0]);
+
+            if (selectedCount <= 0)
                 CheckpointEditor.inst.SetCurrentCheckpoint(0);
 
-            EditorManager.inst.DisplayNotification($"Selection includes {SelectedObjectCount} objects!", 1f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"Selection includes {selectedCount} objects!", 1f, EditorManager.NotificationType.Success);
             yield break;
         }
 
-        public void DeselectAllObjects()
+        /// <summary>
+        /// Deselects all timeline objects.
+        /// </summary>
+        /// <param name="closeDialog">If the current dialog should be closed.</param>
+        public void DeselectAllObjects(bool closeDialog = true)
         {
+            if (closeDialog)
+                EditorDialog.CurrentDialog?.Close();
             foreach (var timelineObject in SelectedObjects)
                 timelineObject.Selected = false;
         }
 
+        /// <summary>
+        /// Multi selects a timeline object.
+        /// </summary>
+        /// <param name="timelineObject">Timeline object to select.</param>
         public void AddSelectedObject(TimelineObject timelineObject)
         {
             if (SelectedObjectCount + 1 > 1)
             {
-                EditorManager.inst.ClearPopups();
-
                 var first = SelectedObjects[0];
                 timelineObject.Selected = !timelineObject.Selected;
-                if (SelectedObjectCount == 0 || SelectedObjectCount == 1)
+                int selectedCount = SelectedObjectCount;
+                if (selectedCount == 0 || selectedCount == 1)
                 {
-                    SetCurrentObject(SelectedObjectCount == 1 ? SelectedObjects[0] : first);
+                    SetCurrentObject(selectedCount == 1 ? SelectedObjects[0] : first);
                     return;
                 }
 
@@ -331,6 +347,12 @@ namespace BetterLegacy.Editor.Managers
             SetCurrentObject(timelineObject);
         }
 
+        /// <summary>
+        /// Sets the currently selected timeline object.
+        /// </summary>
+        /// <param name="timelineObject">Timeline object to select.</param>
+        /// <param name="bringTo">If audio, layer and bin position should be brought to this object.</param>
+        /// <param name="openDialog">If the dialog should be opened.</param>
         public void SetCurrentObject(TimelineObject timelineObject, bool bringTo = false, bool openDialog = true)
         {
             if (!timelineObject.verified && !timelineObjects.Has(x => x.ID == timelineObject.ID))
@@ -340,7 +362,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
                     LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
 
-            DeselectAllObjects();
+            DeselectAllObjects(false);
 
             timelineObject.Selected = true;
             CurrentSelection = timelineObject;
@@ -350,14 +372,122 @@ namespace BetterLegacy.Editor.Managers
                 if (timelineObject.isBeatmapObject)
                     ObjectEditor.inst.OpenDialog(timelineObject.GetData<BeatmapObject>());
                 if (timelineObject.isPrefabObject)
-                    PrefabEditor.inst.OpenPrefabDialog();
+                    RTPrefabEditor.inst.OpenPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
             }
 
             if (bringTo)
             {
                 AudioManager.inst.SetMusicTime(timelineObject.Time);
                 SetLayer(timelineObject.Layer, LayerType.Objects);
+                SetBinPosition(timelineObject.Bin);
             }
+        }
+
+        /// <summary>
+        /// Deletes all selected timeline objects.
+        /// </summary>
+        public void DeleteObjects()
+        {
+            var list = SelectedObjects;
+            var count = list.Count;
+            int minIndex = timelineObjects.ToIndexer().Where(x => x.obj && x.obj.Selected).Min(x => x.index) - 1;
+            var ids = list.Select(x => x.ID);
+
+            EditorDialog.CurrentDialog?.Close();
+            CoreHelper.Log($"Deleting count: {count}\nSelect index: {minIndex}");
+
+            list.ForLoopReverse(x => DeleteObject(x, false, false, false));
+            foreach (var bm in GameData.Current.beatmapObjects)
+            {
+                if (ids.Contains(bm.Parent))
+                {
+                    bm.Parent = "";
+
+                    RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                }
+            }
+
+            RTLevel.Current?.RecalculateObjectStates();
+
+            if (timelineObjects.IsEmpty())
+                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+            else
+                SetCurrentObject(timelineObjects.GetAt(minIndex));
+
+            EditorManager.inst.DisplayNotification($"Deleted {count} objects!", 1f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Deletes a timeline object.
+        /// </summary>
+        /// <param name="timelineObject">Timeline object to delete.</param>
+        /// <param name="recalculate">If the object engine should recalculate.</param>
+        /// <param name="select">If an earlier object should be selected.</param>
+        /// <param name="update">If objects parented to this object should be updated.</param>
+        public void DeleteObject(TimelineObject timelineObject, bool recalculate = true, bool select = true, bool update = true)
+        {
+            int index = 0;
+            if (select)
+                index = timelineObjects.IndexOf(timelineObject) - 1;
+
+            if (timelineObject.isBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                if (RTPrefabEditor.inst.quickPrefabTarget && RTPrefabEditor.inst.quickPrefabTarget.id == beatmapObject.id)
+                    RTPrefabEditor.inst.quickPrefabTarget = null;
+
+                for (int i = 0; i < beatmapObject.modifiers.Count; i++)
+                {
+                    var modifier = beatmapObject.modifiers[i];
+                    try
+                    {
+                        modifier.Inactive?.Invoke(modifier); // for cases where we want to clear data.
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    } // allow further objects to be deleted if a modifiers' inactive state throws an error
+                }
+
+                GameData.Current.beatmapObjects.Remove(beatmapObject);
+                //RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN);
+                RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recursive: false, recalculate: false);
+
+                if (update)
+                {
+                    foreach (var bm in GameData.Current.beatmapObjects)
+                    {
+                        if (bm.Parent == beatmapObject.id)
+                        {
+                            bm.Parent = "";
+
+                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                        }
+                    }
+                }
+            }
+            if (timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+
+                GameData.Current.prefabObjects.Remove(prefabObject);
+                RTLevel.Current?.UpdatePrefab(prefabObject, false, false);
+            }
+
+            CoreHelper.Delete(timelineObject.GameObject);
+            timelineObjects.Remove(timelineObject);
+
+            if (recalculate)
+                RTLevel.Current?.RecalculateObjectStates();
+
+            if (!select)
+                return;
+
+            if (timelineObjects.IsEmpty())
+                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+            else
+                SetCurrentObject(timelineObjects.GetAt(index));
         }
 
         /// <summary>

@@ -2234,124 +2234,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Deleting
 
-        public IEnumerator DeleteObjects()
-        {
-            var list = EditorTimeline.inst.SelectedObjects;
-            int count = EditorTimeline.inst.SelectedObjectCount;
-
-            var gameData = GameData.Current;
-            if (count == gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count + gameData.prefabObjects.Count)
-                yield break;
-
-            int min = list.Min(x => x.Index) - 1;
-
-            var beatmapObjects = list.FindAll(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList();
-            var beatmapObjectIDs = new List<string>();
-            var prefabObjectIDs = new List<string>();
-
-            beatmapObjectIDs.AddRange(list.FindAll(x => x.isBeatmapObject).Select(x => x.ID));
-            prefabObjectIDs.AddRange(list.FindAll(x => x.isPrefabObject).Select(x => x.ID));
-
-            if (beatmapObjectIDs.Count == gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count)
-                yield break;
-
-            if (prefabObjectIDs.Count > 0)
-                list.FindAll(x => x.isPrefabObject)
-                    .Select(x => x.GetData<PrefabObject>()).ToList()
-                    .ForEach(x => beatmapObjectIDs
-                        .AddRange(GameData.Current.beatmapObjects
-                            .Where(c => c.prefabInstanceID == x.id)
-                        .Select(c => c.id)));
-
-            gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x =>
-            {
-                if (RTPrefabEditor.inst.quickPrefabTarget && RTPrefabEditor.inst.quickPrefabTarget.id == x.id)
-                    RTPrefabEditor.inst.quickPrefabTarget = null;
-
-                for (int i = 0; i < x.modifiers.Count; i++)
-                {
-                    var modifier = x.modifiers[i];
-                    try
-                    {
-                        modifier.Inactive?.Invoke(modifier); // for cases where we want to clear data.
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreHelper.LogException(ex);
-                    } // allow further objects to be deleted if a modifiers' inactive state throws an error
-                }
-
-                RTLevel.Current?.UpdateObject(x, reinsert: false, recalculate: false);
-            });
-            gameData.beatmapObjects.FindAll(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => RTLevel.Current?.UpdateObject(x, reinsert: false, recalculate: false));
-
-            gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
-            gameData.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
-            gameData.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.id));
-
-            RTLevel.Current?.RecalculateObjectStates();
-
-            EditorTimeline.inst.timelineObjects.FindAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID)).ForEach(x => Destroy(x.GameObject));
-            EditorTimeline.inst.timelineObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID));
-
-            EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[Mathf.Clamp(min, 0, EditorTimeline.inst.timelineObjects.Count - 1)]);
-
-            EditorManager.inst.DisplayNotification($"Deleted Beatmap Objects [ {count} ]", 1f, EditorManager.NotificationType.Success);
-            yield break;
-        }
-
-        public IEnumerator DeleteObject(TimelineObject timelineObject, bool _set = true)
-        {
-            int index = timelineObject.Index;
-
-            EditorTimeline.inst.RemoveTimelineObject(timelineObject);
-
-            if (timelineObject.isBeatmapObject)
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                if (GameData.Current.beatmapObjects.Count > 1)
-                {
-                    RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recalculate: false);
-                    string id = beatmapObject.id;
-
-                    index = GameData.Current.beatmapObjects.FindIndex(x => x.id == id);
-
-                    GameData.Current.beatmapObjects.RemoveAt(index);
-
-                    foreach (var bm in GameData.Current.beatmapObjects)
-                    {
-                        if (bm.Parent == id)
-                        {
-                            bm.Parent = "";
-
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
-                        }
-                    }
-
-                    RTLevel.Current?.RecalculateObjectStates();
-                }
-                else
-                    EditorManager.inst.DisplayNotification("Can't delete only object", 2f, EditorManager.NotificationType.Error);
-            }
-            else if (timelineObject.isPrefabObject)
-            {
-                var prefabObject = timelineObject.GetData<PrefabObject>();
-
-                RTLevel.Current?.UpdatePrefab(prefabObject, false);
-
-                string id = prefabObject.id;
-
-                index = GameData.Current.prefabObjects.FindIndex(x => x.id == id);
-                GameData.Current.prefabObjects.RemoveAt(index);
-            }
-
-            if (_set && EditorTimeline.inst.timelineObjects.Count > 0)
-                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[Mathf.Clamp(index - 1, 0, EditorTimeline.inst.timelineObjects.Count - 1)]);
-
-            yield break;
-        }
-
         public IEnumerator DeleteKeyframes()
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
@@ -2456,21 +2338,17 @@ namespace BetterLegacy.Editor.Managers
             } // load global copy
         }
 
-        public void CopyObject()
+        public void CopyObjects()
         {
-            var a = new List<TimelineObject>(EditorTimeline.inst.SelectedObjects);
-
-            a = (from x in a
-                 orderby x.Time
-                 select x).ToList();
+            var selected = EditorTimeline.inst.SelectedObjects;
 
             float start = 0f;
             if (EditorConfig.Instance.PasteOffset.Value)
-                start = -AudioManager.inst.CurrentAudioSource.time + a[0].Time;
+                start = -AudioManager.inst.CurrentAudioSource.time + selected.Min(x => x.Time);
 
             var copy = new Prefab("copied prefab", 0, start,
-                a.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                a.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
+                selected.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
 
             copy.description = "Take me wherever you go!";
             this.copy = copy;
@@ -2495,7 +2373,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             EditorTimeline.inst.DeselectAllObjects();
-            EditorManager.inst.DisplayNotification("Pasting objects, please wait.", 1f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification("Pasting objects.", 1f, EditorManager.NotificationType.Success);
 
             new PrefabExpander(copy, true, offsetTime, regen, dup).Expand();
         }
@@ -2895,7 +2773,7 @@ namespace BetterLegacy.Editor.Managers
                 Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm, true));
 
             if (setHistory)
-                EditorManager.inst.history.Add(new History.Command("Create New Object", () => CreateNewObject(action, select, false), DeleteObject(timelineObject).Start));
+                EditorManager.inst.history.Add(new History.Command("Create New Object", () => CreateNewObject(action, select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewNormalObject(bool select = true, bool setHistory = true)
@@ -2920,7 +2798,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Object", () => CreateNewNormalObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Object", () => CreateNewNormalObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewCircleObject(bool select = true, bool setHistory = true)
@@ -2949,7 +2827,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", () => CreateNewCircleObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", () => CreateNewCircleObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewTriangleObject(bool select = true, bool setHistory = true)
@@ -2978,7 +2856,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", () => CreateNewTriangleObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", () => CreateNewTriangleObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewTextObject(bool select = true, bool setHistory = true)
@@ -3018,7 +2896,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", () => CreateNewTextObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", () => CreateNewTextObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewHexagonObject(bool select = true, bool setHistory = true)
@@ -3047,7 +2925,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", () => CreateNewHexagonObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", () => CreateNewHexagonObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewHelperObject(bool select = true, bool setHistory = true)
@@ -3077,7 +2955,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Helper Object", () => CreateNewHelperObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Helper Object", () => CreateNewHelperObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewDecorationObject(bool select = true, bool setHistory = true)
@@ -3106,7 +2984,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", () => CreateNewDecorationObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", () => CreateNewDecorationObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewEmptyObject(bool select = true, bool setHistory = true)
@@ -3135,7 +3013,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New Empty Object", () => CreateNewEmptyObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New Empty Object", () => CreateNewEmptyObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         public void CreateNewNoAutokillObject(bool select = true, bool setHistory = true)
@@ -3163,7 +3041,7 @@ namespace BetterLegacy.Editor.Managers
             if (!setHistory)
                 return;
 
-            EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", () => CreateNewNoAutokillObject(select, false), DeleteObject(timelineObject).Start));
+            EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", () => CreateNewNoAutokillObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
         /// <summary>

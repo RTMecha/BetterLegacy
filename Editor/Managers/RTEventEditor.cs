@@ -630,11 +630,11 @@ namespace BetterLegacy.Editor.Managers
 
         #region Selection
 
-        public IEnumerator GroupSelectKeyframes(bool _add)
+        public IEnumerator GroupSelectKeyframes(bool add, bool remove)
         {
             var list = EditorTimeline.inst.timelineKeyframes;
 
-            if (!_add)
+            if (!add && !remove)
                 DeselectAllKeyframes();
 
             list.Where(x => (x.Type / EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events &&

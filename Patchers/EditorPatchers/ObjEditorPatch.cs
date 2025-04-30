@@ -292,7 +292,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyObjectPrefix()
         {
-            ObjectEditor.inst.CopyObject();
+            ObjectEditor.inst.CopyObjects();
             return false;
         }
 

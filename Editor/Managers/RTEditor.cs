@@ -2032,12 +2032,12 @@ namespace BetterLegacy.Editor.Managers
                     case EditorTimeline.LayerType.Objects: {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                            ObjectEditor.inst.CopyObject();
+                            ObjectEditor.inst.CopyObjects();
                             if (!cut)
                                 EditorManager.inst.DisplayNotification("Copied Beatmap Object", 1f, EditorManager.NotificationType.Success);
                             else
                             {
-                                StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                                EditorTimeline.inst.DeleteObjects();
                                 EditorManager.inst.DisplayNotification("Cut Beatmap Object", 1f, EditorManager.NotificationType.Success);
                             }
 
@@ -2211,7 +2211,7 @@ namespace BetterLegacy.Editor.Managers
                                 new PrefabExpander(null, prefab, true, 0f, true, false, true, false).Expand();
                             }));
 
-                            StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                            EditorTimeline.inst.DeleteObjects();
 
                             break;
                         }
@@ -2748,16 +2748,16 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction(true),
                         new ButtonFunction("Cut", () =>
                         {
-                            ObjectEditor.inst.CopyObject();
-                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                            ObjectEditor.inst.CopyObjects();
+                            EditorTimeline.inst.DeleteObjects();
                         }),
-                        new ButtonFunction("Copy", ObjectEditor.inst.CopyObject),
+                        new ButtonFunction("Copy", ObjectEditor.inst.CopyObjects),
                         new ButtonFunction("Paste", () => ObjectEditor.inst.PasteObject()),
                         new ButtonFunction("Duplicate", () =>
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                            ObjectEditor.inst.CopyObject();
+                            ObjectEditor.inst.CopyObjects();
                             ObjectEditor.inst.PasteObject(offsetTime);
                         }),
                         new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
@@ -2765,10 +2765,10 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                            ObjectEditor.inst.CopyObject();
+                            ObjectEditor.inst.CopyObjects();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
-                        new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
+                        new ButtonFunction("Delete", EditorTimeline.inst.DeleteObjects),
                         new ButtonFunction(true),
                         new ButtonFunction("Add Bin", EditorTimeline.inst.AddBin),
                         new ButtonFunction("Remove Bin", EditorTimeline.inst.RemoveBin),
