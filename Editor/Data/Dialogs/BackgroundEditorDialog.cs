@@ -243,24 +243,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var pasteButtons = paste.GetComponent<Button>();
             pasteButtons.onClick.NewListener(() =>
             {
-                if (RTBackgroundEditor.inst.copiedBackgroundObjects == null || RTBackgroundEditor.inst.copiedBackgroundObjects.Count < 1)
-                    return;
-
-                var overwrite = EditorConfig.Instance.PasteBackgroundObjectsOverwrites.Value;
-                if (overwrite)
-                {
-                    foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false, false);
-                    GameData.Current.backgroundObjects.Clear();
-                }
-
-                for (int i = 0; i < RTBackgroundEditor.inst.copiedBackgroundObjects.Count; i++)
-                    GameData.Current.backgroundObjects.Add(RTBackgroundEditor.inst.copiedBackgroundObjects[i].Copy());
-
-                RTBackgroundEditor.inst.SetCurrentBackground(GameData.Current.backgroundObjects.Count > 0 ? GameData.Current.backgroundObjects[0] : null);
-
-                RTLevel.Current?.UpdateBackgroundObjects();
-                EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list" : "")}.", 2f, EditorManager.NotificationType.Success);
+                RTBackgroundEditor.inst.PasteBackgrounds();
             });
 
             var pasteTip = paste.GetComponent<HoverTooltip>();
