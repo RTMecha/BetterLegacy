@@ -1460,9 +1460,19 @@ namespace BetterLegacy.Editor.Managers
 
             var objects = GameData.Current.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
             var bgObjects = GameData.Current.backgroundObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
-            float startTime = objects.Min(x => x.StartTime);
 
-            if (bgObjects.Count > 0)
+            if (objects.IsEmpty() && bgObjects.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification("No objects were found for the prefab to collapse.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            float startTime = float.MaxValue;
+
+            if (!objects.IsEmpty())
+                startTime = objects.Min(x => x.StartTime);
+
+            if (!bgObjects.IsEmpty())
             {
                 var t = bgObjects.Min(x => x.StartTime);
                 if (t < startTime)
@@ -1540,9 +1550,19 @@ namespace BetterLegacy.Editor.Managers
 
             var objects = GameData.Current.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
             var bgObjects = GameData.Current.backgroundObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
-            float startTime = objects.Min(x => x.StartTime);
 
-            if (bgObjects.Count > 0)
+            if (objects.IsEmpty() && bgObjects.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification("No objects were found for the prefab to collapse.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            float startTime = float.MaxValue;
+
+            if (!objects.IsEmpty())
+                startTime = objects.Min(x => x.StartTime);
+
+            if (!bgObjects.IsEmpty())
             {
                 var t = bgObjects.Min(x => x.StartTime);
                 if (t < startTime)
