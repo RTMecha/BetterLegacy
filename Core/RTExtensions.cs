@@ -897,6 +897,34 @@ namespace BetterLegacy.Core
             return false;
         }
 
+        /// <summary>
+        /// Converts the collection into an indexed collection.
+        /// </summary>
+        /// <typeparam name="T">Type of the collection.</typeparam>
+        /// <returns>Returns a collection of indexed items.</returns>
+        public static IEnumerable<Indexer<T>> ToIndexer<T>(this IEnumerable<T> collection)
+        {
+            int index = 0;
+            foreach (var item in collection)
+            {
+                yield return new Indexer<T>(index, item);
+                index++;
+            }
+        }
+
+        /// <summary>
+        /// Converts the list into an indexed list.
+        /// </summary>
+        /// <typeparam name="T">Type of the list.</typeparam>
+        /// <returns>Returns a list of indexed items.</returns>
+        public static List<Indexer<T>> ToIndexerList<T>(this List<T> list)
+        {
+            var indexers = new List<Indexer<T>>();
+            for (int i = 0; i < list.Count; i++)
+                indexers.Add(new Indexer<T>(i, list[i]));
+            return indexers;
+        }
+
         #endregion
 
         #region JSON
