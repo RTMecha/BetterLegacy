@@ -117,7 +117,7 @@ namespace BetterLegacy.Editor.Data
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.beatmapObjects.Count > 0)
                     ObjectEditor.inst.ClearKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
 
-                if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
+                if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1 || prefab.backgroundObjects.Count > 1)
                     EditorManager.inst.ClearPopups();
             }
 
@@ -194,6 +194,60 @@ namespace BetterLegacy.Editor.Data
             pastedObjects.Clear();
             pastedObjects = null;
 
+            for (int i = 0; i < prefab.backgroundLayers.Count; i++)
+            {
+                var backgroundLayer = prefab.backgroundLayers[i];
+
+                var backgroundLayerCopy = backgroundLayer.Copy(!retainID);
+
+                GameData.Current.backgroundLayers.Add(backgroundLayerCopy);
+            }
+
+            for (int i = 0; i < prefab.backgroundObjects.Count; i++)
+            {
+                var backgroundObject = prefab.backgroundObjects[i];
+
+                var backgroundObjectCopy = backgroundObject.Copy(!retainID);
+
+                if (regen)
+                    backgroundObjectCopy.RemovePrefabReference();
+                else if (prefabObject)
+                    backgroundObjectCopy.SetPrefabReference(prefabObject);
+                else
+                {
+                    backgroundObjectCopy.prefabID = backgroundObject.prefabID;
+                    backgroundObjectCopy.prefabInstanceID = backgroundObject.prefabInstanceID;
+                }
+
+                backgroundObjectCopy.fromPrefab = false;
+
+                if (prefabObject)
+                    backgroundObjectCopy.StartTime += prefabObject.StartTime + prefab.offset;
+                else
+                    backgroundObjectCopy.StartTime += offsetToCurrentTime ? audioTime + prefab.offset : offset;
+
+                if (addBin)
+                    ++backgroundObjectCopy.editorData.Bin;
+
+                if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
+                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+
+                backgroundObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
+                GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
+
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObjectCopy, recalculate: false);
+
+                if (!CoreHelper.InEditor)
+                    continue;
+
+                var timelineObject = new TimelineObject(backgroundObjectCopy);
+
+                timelineObject.Selected = true;
+                EditorTimeline.inst.CurrentSelection = timelineObject;
+
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+
             var ids = new List<string>();
             for (int i = 0; i < prefab.prefabObjects.Count; i++)
                 ids.Add(LSText.randomString(16));
@@ -263,12 +317,14 @@ namespace BetterLegacy.Editor.Data
             if (!select)
                 yield break;
 
-            if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1)
+            if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1 || prefab.backgroundObjects.Count > 1)
                 MultiObjectEditor.inst.Dialog.Open();
             else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
                 RTPrefabEditor.inst.OpenPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
+            else if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
+                RTBackgroundEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
             yield break;
         }
     }

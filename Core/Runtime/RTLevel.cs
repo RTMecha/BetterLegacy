@@ -51,6 +51,7 @@ namespace BetterLegacy.Core.Runtime
 
             // Removing and reinserting prefabs.
             gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
+            gameData.backgroundObjects.RemoveAll(x => x.fromPrefab);
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
                 AddPrefabToLevel(GameData.Current.prefabObjects[i], false);
 
@@ -533,6 +534,7 @@ namespace BetterLegacy.Core.Runtime
         {
             objectEngine?.spawner?.RecalculateObjectStates();
             objectModifiersEngine?.spawner?.RecalculateObjectStates();
+            backgroundEngine?.spawner?.RecalculateObjectStates();
         }
 
         /// <summary>
@@ -571,24 +573,24 @@ namespace BetterLegacy.Core.Runtime
         public void UpdateObject(BeatmapObject beatmapObject, string context, bool sort = true)
         {
             context = context.ToLower().Replace(" ", "").Replace("_", "");
-            var levelObject = beatmapObject.runtimeObject;
+            var runtimeObject = beatmapObject.runtimeObject;
 
             switch (context)
             {
                 case ObjectContext.RENDERING: {
-                        if (!levelObject)
+                        if (!runtimeObject)
                             break;
 
-                        if (levelObject.visualObject is SolidObject solidObject)
+                        if (runtimeObject.visualObject is SolidObject solidObject)
                             solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, false, beatmapObject.gradientScale, beatmapObject.gradientRotation);
                         else
-                            levelObject.visualObject.SetRenderType((int)beatmapObject.renderLayerType);
+                            runtimeObject.visualObject.SetRenderType((int)beatmapObject.renderLayerType);
 
                         break;
                     } // Material
                 case ObjectContext.OBJECT_TYPE: {
                         // object was empty
-                        if (!levelObject)
+                        if (!runtimeObject)
                         {
                             if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty) // object is still empty
                                 break;
@@ -603,10 +605,10 @@ namespace BetterLegacy.Core.Runtime
                         // object is still non-empty
                         if (beatmapObject.objectType != BeatmapObject.ObjectType.Empty)
                         {
-                            if (levelObject.visualObject)
-                                levelObject.visualObject.opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? 0.35f : 1.0f;
+                            if (runtimeObject.visualObject)
+                                runtimeObject.visualObject.opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? 0.35f : 1.0f;
 
-                            if (levelObject.visualObject is SolidObject solidObject)
+                            if (runtimeObject.visualObject is SolidObject solidObject)
                             {
                                 bool deco = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ||
                                                     beatmapObject.objectType == BeatmapObject.ObjectType.Decoration;
@@ -633,36 +635,31 @@ namespace BetterLegacy.Core.Runtime
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
                         }
 
-                        if (!levelObject)
+                        if (!runtimeObject)
                         {
                             if (sort)
                                 Sort();
                             break;
                         }
 
-                        if (!objectEngine || !objectEngine.spawner)
-                            break;
-
-                        var spawner = objectEngine.spawner;
-
-                        levelObject.StartTime = beatmapObject.StartTime;
-                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        runtimeObject.StartTime = beatmapObject.StartTime;
+                        runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                         if (sort)
                             Sort();
 
-                        levelObject.SetActive(beatmapObject.Alive);
+                        runtimeObject.SetActive(beatmapObject.Alive);
 
-                        foreach (var levelParent in levelObject.parentObjects)
+                        foreach (var levelParent in runtimeObject.parentObjects)
                             levelParent.timeOffset = levelParent.beatmapObject.StartTime;
 
                         break;
                     } // StartTime
                 case ObjectContext.AUTOKILL: {
-                        if (!levelObject || !objectEngine || !objectEngine.spawner)
+                        if (!runtimeObject)
                             break;
 
-                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                         if (!sort)
                             break;
@@ -727,10 +724,10 @@ namespace BetterLegacy.Core.Runtime
                             }
                         }
 
-                        if (!levelObject)
+                        if (!runtimeObject)
                             break;
 
-                        foreach (var levelParent in levelObject.parentObjects)
+                        foreach (var levelParent in runtimeObject.parentObjects)
                         {
                             if (GameData.Current.beatmapObjects.TryFind(x => x.id == levelParent.id, out BeatmapObject parent))
                             {
@@ -747,37 +744,37 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case ObjectContext.PARENT_CHAIN: {
-                        UpdateParentChain(beatmapObject, levelObject);
+                        UpdateParentChain(beatmapObject, runtimeObject);
                         break;
                     }
                 case ObjectContext.VISUAL_OFFSET: {
-                        if (!levelObject)
+                        if (!runtimeObject)
                             break;
 
-                        levelObject.depth = beatmapObject.Depth;
-                        if (levelObject.visualObject)
-                            levelObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
+                        runtimeObject.depth = beatmapObject.Depth;
+                        if (runtimeObject.visualObject)
+                            runtimeObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
 
                         break;
                     } // Origin & Depth
                 case ObjectContext.SHAPE: {
-                        UpdateVisualObject(beatmapObject, levelObject);
+                        UpdateVisualObject(beatmapObject, runtimeObject);
 
                         break;
                     } // Shape
                 case ObjectContext.POLYGONS: {
-                        UpdateVisualObject(beatmapObject, levelObject);
+                        UpdateVisualObject(beatmapObject, runtimeObject);
 
                         break;
                     } // Polygons
                 case ObjectContext.IMAGE: {
-                        if (levelObject && levelObject.visualObject is ImageObject imageObject)
+                        if (runtimeObject && runtimeObject.visualObject is ImageObject imageObject)
                             imageObject.UpdateImage(beatmapObject.text, GameData.Current.assets.GetSprite(beatmapObject.text));
 
                         break;
                     } // Image
                 case ObjectContext.TEXT: {
-                        if (levelObject && levelObject.visualObject is TextObject textObject)
+                        if (runtimeObject && runtimeObject.visualObject is TextObject textObject)
                         {
                             textObject.text = beatmapObject.text;
                             textObject.SetText(textObject.text);
@@ -786,13 +783,13 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     } // Text
                 case ObjectContext.KEYFRAMES: {
-                        if (!levelObject)
+                        if (!runtimeObject)
                         {
                             RecacheSequences(beatmapObject);
                             break;
                         }
 
-                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
                         RecacheSequences(beatmapObject, true, true);
 
                         break;
@@ -1143,6 +1140,59 @@ namespace BetterLegacy.Core.Runtime
                 backgroundEngine?.spawner?.RecalculateObjectStates();
         }
 
+        public void UpdateBackgroundObject(BackgroundObject backgroundObject, string context, bool sort = true)
+        {
+            context = context.ToLower().Replace(" ", "").Replace("_", "");
+            var runtimeObject = backgroundObject.runtimeObject;
+
+            switch (context)
+            {
+                case BackgroundObjectContext.START_TIME: {
+                        //if (beatmapObject.runtimeModifiers)
+                        //{
+                        //    beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
+                        //    beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
+                        //    beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        //    beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
+                        //}
+
+                        if (!runtimeObject)
+                        {
+                            if (sort)
+                                Sort();
+                            break;
+                        }
+
+                        runtimeObject.StartTime = backgroundObject.StartTime;
+                        runtimeObject.KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
+
+                        if (sort)
+                            Sort();
+
+                        runtimeObject.SetActive(backgroundObject.Alive);
+
+                        break;
+                    }
+                case BackgroundObjectContext.AUTOKILL: {
+                        if (!runtimeObject)
+                            break;
+
+                        runtimeObject.KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
+
+                        if (!sort)
+                            break;
+
+                        backgroundEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        backgroundEngine?.spawner?.RecalculateObjectStates();
+
+                        //objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        //objectModifiersEngine?.spawner?.RecalculateObjectStates();
+
+                        break;
+                    }
+            }
+        }
+
         /// <summary>
         /// Removes and recreates the object if it still exists.
         /// </summary>
@@ -1198,6 +1248,15 @@ namespace BetterLegacy.Core.Runtime
             //}
         }
 
+        /// <summary>
+        /// Library of values to update a <see cref="BackgroundObject"/>.
+        /// </summary>
+        public static class BackgroundObjectContext
+        {
+            public const string START_TIME = "starttime";
+            public const string AUTOKILL = "autokill";
+        }
+
         #region Modifiers
 
         void OnBackgroundModifiersTick()
@@ -1247,8 +1306,16 @@ namespace BetterLegacy.Core.Runtime
                 if (string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.prefabInstanceID == prefabObject.id)
                     UpdateObject(beatmapObject, reinsert: false, recalculate: recalculate);
             }
+            
+            for (int i = 0; i < gameData.backgroundObjects.Count; i++)
+            {
+                var backgroundObject = gameData.backgroundObjects[i];
+                if (backgroundObject.prefabInstanceID == prefabObject.id)
+                    UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: recalculate);
+            }
 
             gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.id);
+            gameData.backgroundObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.id);
 
             if (reinsert)
                 AddPrefabToLevel(prefabObject, recalculate: recalculate);
@@ -1330,38 +1397,57 @@ namespace BetterLegacy.Core.Runtime
                         {
                             foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id))
                             {
-                                if (prefab.beatmapObjects.TryFind(x => x.id == beatmapObject.originalID, out BeatmapObject original))
+                                if (!prefab.beatmapObjects.TryFind(x => x.id == beatmapObject.originalID, out BeatmapObject original))
+                                    continue;
+
+                                beatmapObject.StartTime = prefabObject.StartTime + prefab.offset + ((original.StartTime + timeToAdd) / prefabObject.Speed);
+
+                                if (lower == PrefabContext.SPEED)
                                 {
-                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.offset + ((original.StartTime + timeToAdd) / prefabObject.Speed);
+                                    for (int j = 0; j < beatmapObject.events.Count; j++)
+                                        for (int k = 0; k < beatmapObject.events[j].Count; k++)
+                                            beatmapObject.events[i][k].time = original.events[i][k].time / prefabObject.Speed;
 
-                                    if (lower == PrefabContext.SPEED)
-                                    {
-                                        for (int j = 0; j < beatmapObject.events.Count; j++)
-                                            for (int k = 0; k < beatmapObject.events[j].Count; k++)
-                                                beatmapObject.events[i][k].time = original.events[i][k].time / prefabObject.Speed;
-
-                                        UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                    }
-
-                                    var levelObject = beatmapObject.runtimeObject;
-
-                                    // Update Start Time
-                                    if (levelObject)
-                                    {
-                                        levelObject.StartTime = beatmapObject.StartTime;
-                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-
-                                        levelObject.SetActive(beatmapObject.Alive);
-
-                                        for (int j = 0; j < levelObject.parentObjects.Count; j++)
-                                        {
-                                            var levelParent = levelObject.parentObjects[j];
-                                            var parent = levelParent.beatmapObject;
-
-                                            levelParent.timeOffset = parent.StartTime;
-                                        }
-                                    }
+                                    UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                 }
+
+                                var runtimeObject = beatmapObject.runtimeObject;
+
+                                // Update Start Time
+                                if (!runtimeObject)
+                                    continue;
+
+                                runtimeObject.StartTime = beatmapObject.StartTime;
+                                runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+
+                                runtimeObject.SetActive(beatmapObject.Alive);
+
+                                for (int j = 0; j < runtimeObject.parentObjects.Count; j++)
+                                {
+                                    var levelParent = runtimeObject.parentObjects[j];
+                                    var parent = levelParent.beatmapObject;
+
+                                    levelParent.timeOffset = parent.StartTime;
+                                }
+                            }
+
+                            foreach (var backgroundObject in GameData.Current.backgroundObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id))
+                            {
+                                if (!prefab.backgroundObjects.TryFind(x => x.id == backgroundObject.originalID, out BackgroundObject original))
+                                    continue;
+
+                                backgroundObject.StartTime = prefabObject.StartTime + prefab.offset + ((original.StartTime + timeToAdd) / prefabObject.Speed);
+
+                                var runtimeObject = backgroundObject.runtimeObject;
+
+                                // Update Start Time
+                                if (!runtimeObject)
+                                    continue;
+
+                                runtimeObject.StartTime = backgroundObject.StartTime;
+                                runtimeObject.KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
+
+                                runtimeObject.SetActive(backgroundObject.Alive);
                             }
 
                             timeToAdd += t;
@@ -1377,6 +1463,10 @@ namespace BetterLegacy.Core.Runtime
                         objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
                         objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
                         objectModifiersEngine?.spawner?.RecalculateObjectStates();
+                        
+                        backgroundEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                        backgroundEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        backgroundEngine?.spawner?.RecalculateObjectStates();
 
                         break;
                     }
@@ -1412,8 +1502,8 @@ namespace BetterLegacy.Core.Runtime
                 case PrefabContext.PARENT: {
                         for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
                         {
-                            var beatmapObject = prefabObject.expandedObjects[i];
-                            if (!beatmapObject.fromPrefabBase)
+                            var beatmapObject = prefabObject.expandedObjects[i] as BeatmapObject;
+                            if (!beatmapObject || !beatmapObject.fromPrefabBase)
                                 continue;
 
                             beatmapObject.Parent = prefabObject.parent;
@@ -1450,6 +1540,10 @@ namespace BetterLegacy.Core.Runtime
                 return;
             }
 
+            var prefab = prefabObject.GetPrefab();
+            if (prefab.beatmapObjects.IsEmpty() && prefab.backgroundObjects.IsEmpty())
+                return;
+
             float t = 1f;
 
             if (prefabObject.RepeatOffsetTime != 0f)
@@ -1457,91 +1551,115 @@ namespace BetterLegacy.Core.Runtime
 
             float timeToAdd = 0f;
 
-            var prefab = prefabObject.GetPrefab();
             if (prefabObject.expandedObjects == null)
-                prefabObject.expandedObjects = new List<BeatmapObject>();
+                prefabObject.expandedObjects = new List<IPrefabable>();
             prefabObject.expandedObjects.Clear();
             var notParented = new List<BeatmapObject>();
-            if (prefab.beatmapObjects.Count > 0)
-                for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
+            for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
+            {
+                var objectIDs = new List<IDPair>();
+                for (int j = 0; j < prefab.beatmapObjects.Count; j++)
+                    objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
+
+                int num = 0;
+                foreach (var beatmapObject in prefab.beatmapObjects)
                 {
-                    var objectIDs = new List<IDPair>();
-                    for (int j = 0; j < prefab.beatmapObjects.Count; j++)
-                        objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
-
-                    string prefabObjectID = prefabObject.id;
-                    int num = 0;
-                    foreach (var beatmapObject in prefab.beatmapObjects)
+                    var beatmapObjectCopy = beatmapObject.Copy(false);
+                    try
                     {
-                        var beatmapObjectCopy = beatmapObject.Copy(false);
-                        try
-                        {
-                            beatmapObjectCopy.id = objectIDs[num].newID;
+                        beatmapObjectCopy.id = objectIDs[num].newID;
 
-                            if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
-                                beatmapObjectCopy.Parent = idPair.newID;
-                            else if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObject.Parent != "CAMERA_PARENT")
-                                beatmapObjectCopy.Parent = "";
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError($"{className}Failed to set object ID.\n{ex}");
-                        }
-
-                        beatmapObjectCopy.fromPrefabBase = string.IsNullOrEmpty(beatmapObjectCopy.Parent);
-                        if (beatmapObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent))
-                        {
-                            beatmapObjectCopy.Parent = prefabObject.parent;
-                            beatmapObjectCopy.parentType = prefabObject.parentType;
-                            beatmapObjectCopy.parentOffsets = prefabObject.parentOffsets;
-                            beatmapObjectCopy.parentAdditive = prefabObject.parentAdditive;
-                            beatmapObjectCopy.parallaxSettings = prefabObject.parentParallax;
-                            beatmapObjectCopy.desync = prefabObject.desync;
-                        }
-
-                        beatmapObjectCopy.fromPrefab = true;
-                        beatmapObjectCopy.prefabInstanceID = prefabObjectID;
-
-                        beatmapObjectCopy.StartTime = prefabObject.StartTime + prefab.offset + ((beatmapObjectCopy.StartTime + timeToAdd) / prefabObject.Speed);
-
-                        try
-                        {
-                            if (beatmapObjectCopy.events.Count > 0 && prefabObject.Speed != 1f)
-                                for (int j = 0; j < beatmapObjectCopy.events.Count; j++)
-                                    beatmapObjectCopy.events[j].ForEach(x => x.time /= prefabObject.Speed);
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError($"{className}Failed to set event speed.\n{ex}");
-                        }
-
-                        if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.offset + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
-                        {
-                            beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
-                            beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
-                        }
-
-                        if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
-                            GameData.Current.assets.sprites.Add(spriteAsset.Copy());
-
-                        beatmapObjectCopy.prefabID = prefabObject.prefabID;
-
-                        beatmapObjectCopy.originalID = beatmapObject.id;
-                        GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                        prefabObject.expandedObjects.Add(beatmapObjectCopy);
-
-                        if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
-                            notParented.Add(beatmapObjectCopy);
-
-                        num++;
+                        if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
+                            beatmapObjectCopy.Parent = idPair.newID;
+                        else if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObject.Parent != "CAMERA_PARENT")
+                            beatmapObjectCopy.Parent = "";
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"{className}Failed to set object ID.\n{ex}");
                     }
 
-                    timeToAdd += t;
+                    beatmapObjectCopy.fromPrefabBase = string.IsNullOrEmpty(beatmapObjectCopy.Parent);
+                    if (beatmapObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent))
+                    {
+                        beatmapObjectCopy.Parent = prefabObject.parent;
+                        beatmapObjectCopy.parentType = prefabObject.parentType;
+                        beatmapObjectCopy.parentOffsets = prefabObject.parentOffsets;
+                        beatmapObjectCopy.parentAdditive = prefabObject.parentAdditive;
+                        beatmapObjectCopy.parallaxSettings = prefabObject.parentParallax;
+                        beatmapObjectCopy.desync = prefabObject.desync;
+                    }
+
+                    beatmapObjectCopy.fromPrefab = true;
+                    beatmapObjectCopy.SetPrefabReference(prefabObject);
+
+                    beatmapObjectCopy.StartTime = prefabObject.StartTime + prefab.offset + ((beatmapObjectCopy.StartTime + timeToAdd) / prefabObject.Speed);
+
+                    try
+                    {
+                        if (beatmapObjectCopy.events.Count > 0 && prefabObject.Speed != 1f)
+                            for (int j = 0; j < beatmapObjectCopy.events.Count; j++)
+                                beatmapObjectCopy.events[j].ForEach(x => x.time /= prefabObject.Speed);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"{className}Failed to set event speed.\n{ex}");
+                    }
+
+                    if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.offset + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
+                    {
+                        beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
+                        beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                    }
+
+                    if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
+                        GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+
+
+                    beatmapObjectCopy.originalID = beatmapObject.id;
+                    GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
+                    prefabObject.expandedObjects.Add(beatmapObjectCopy);
+
+                    if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
+                        notParented.Add(beatmapObjectCopy);
+
+                    num++;
                 }
 
+                foreach (var backgroundObject in prefab.backgroundObjects)
+                {
+                    var backgroundObjectCopy = backgroundObject.Copy(false);
+
+                    backgroundObjectCopy.fromPrefab = true;
+                    backgroundObjectCopy.SetPrefabReference(prefabObject);
+
+                    backgroundObjectCopy.StartTime = prefabObject.StartTime + prefab.offset + ((backgroundObjectCopy.StartTime + timeToAdd) / prefabObject.Speed);
+
+                    if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.offset + backgroundObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
+                    {
+                        backgroundObjectCopy.autoKillType = AutoKillType.SongTime;
+                        backgroundObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                    }
+
+                    if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
+                        GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+
+                    backgroundObjectCopy.originalID = backgroundObject.id;
+                    backgroundObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
+                    GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
+                    prefabObject.expandedObjects.Add(backgroundObjectCopy);
+                }
+
+                timeToAdd += t;
+            }
+
             if (update)
-                foreach (var bm in notParented.Count > 0 ? notParented : prefabObject.expandedObjects)
-                    UpdateObject(bm, recalculate: recalculate);
+            {
+                foreach (var beatmapObject in notParented.Count > 0 ? notParented : prefabObject.expandedObjects.Where(x => x is BeatmapObject).Select(x => x as BeatmapObject))
+                    UpdateObject(beatmapObject, recalculate: recalculate);
+                foreach (var backgroundObject in prefabObject.expandedObjects.Where(x => x is BackgroundObject).Select(x => x as BackgroundObject))
+                    UpdateBackgroundObject(backgroundObject, recalculate: recalculate);
+            }
 
             notParented.Clear();
             notParented = null;
@@ -1573,6 +1691,8 @@ namespace BetterLegacy.Core.Runtime
             objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
             objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+            backgroundEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            backgroundEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             RecalculateObjectStates();
         }
 

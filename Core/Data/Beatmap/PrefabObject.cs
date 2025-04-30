@@ -123,7 +123,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool fromModifier;
 
-        public List<BeatmapObject> expandedObjects = new List<BeatmapObject>();
+        public List<IPrefabable> expandedObjects = new List<IPrefabable>();
 
         public List<BeatmapObject> ExpandedObjects => GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == id);
 
@@ -138,20 +138,20 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(PrefabObject orig, bool newID = true)
         {
             id = newID ? LSText.randomString(16) : orig.id;
-                prefabID = orig.prefabID;
-                startTime = orig.StartTime;
-                repeatCount = orig.repeatCount;
-                repeatOffsetTime = orig.repeatOffsetTime;
-                editorData = ObjectEditorData.DeepCopy(orig.editorData);
-                speed = orig.Speed;
-                autoKillOffset = orig.autoKillOffset;
-                autoKillType = orig.autoKillType;
-                parent = orig.parent;
-                parentAdditive = orig.parentAdditive;
-                parentOffsets = orig.parentOffsets.Copy();
-                parentParallax = orig.parentParallax.Copy();
-                parentType = orig.parentType;
-                desync = orig.desync;
+            prefabID = orig.prefabID;
+            startTime = orig.StartTime;
+            repeatCount = orig.repeatCount;
+            repeatOffsetTime = orig.repeatOffsetTime;
+            editorData = ObjectEditorData.DeepCopy(orig.editorData);
+            speed = orig.Speed;
+            autoKillOffset = orig.autoKillOffset;
+            autoKillType = orig.autoKillType;
+            parent = orig.parent;
+            parentAdditive = orig.parentAdditive;
+            parentOffsets = orig.parentOffsets.Copy();
+            parentParallax = orig.parentParallax.Copy();
+            parentType = orig.parentType;
+            desync = orig.desync;
 
             if (events == null)
                 events = new List<EventKeyframe>();
@@ -462,12 +462,30 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns></returns>
         public float GetPrefabLifeLength(bool collapse = false)
         {
-            var prefab = GetPrefab();
-            if (collapse && editorData.collapse || !prefab)
+            if (collapse && editorData.collapse)
                 return 0.2f;
 
-            float time = prefab.beatmapObjects.Select(x => x.StartTime).Min(x => x);
-            return prefab.beatmapObjects.Max(x => x.StartTime + (x as BeatmapObject).GetObjectLifeLength(collapse: true) - time);
+            var prefab = GetPrefab();
+            if (!prefab)
+                return 0.2f;
+
+            float length = 0.2f;
+
+            if (!prefab.beatmapObjects.IsEmpty())
+            {
+                var time = prefab.beatmapObjects.Min(x => x.StartTime);
+                length = prefab.beatmapObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
+            }
+
+            if (!prefab.backgroundObjects.IsEmpty())
+            {
+                var time = prefab.backgroundObjects.Min(x => x.StartTime);
+                var l = prefab.backgroundObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
+                if (l > length)
+                    length = l;
+            }
+
+            return length;
         }
 
         #endregion

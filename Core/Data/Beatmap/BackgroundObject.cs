@@ -10,13 +10,14 @@ using SimpleJSON;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable
     {
         public BackgroundObject() : base() { }
 
@@ -28,6 +29,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         #region Values
+
+        /// <summary>
+        /// Used for objects spawned from a Prefab Object.
+        /// </summary>
+        public string originalID;
 
         public bool active = true;
         public string name = "Background";
@@ -180,11 +186,39 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        #region Prefab
+
+        /// <summary>
+        /// If the object is spawned from a prefab.
+        /// </summary>
+        public bool fromPrefab;
+
+        /// <summary>
+        /// Prefab reference ID.
+        /// </summary>
+        public string prefabID = string.Empty;
+
+        /// <summary>
+        /// Prefab Object reference ID.
+        /// </summary>
+        public string prefabInstanceID = string.Empty;
+
+        public string PrefabID { get => prefabID; set => prefabID = value; }
+
+        public string PrefabInstanceID { get => prefabInstanceID; set => prefabInstanceID = value; }
+
+        #endregion
+
         #region References
 
         public bool Enabled { get; set; } = true;
 
         public RTBackgroundObject runtimeObject;
+
+        /// <summary>
+        /// Used for editor.
+        /// </summary>
+        public TimelineObject timelineObject;
 
         #endregion
 
@@ -217,6 +251,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             zposition = orig.zposition;
             zscale = orig.zscale;
             rotation = orig.rotation;
+
+            SetPrefabReference(orig);
 
             color = orig.color;
             hue = orig.hue;
@@ -251,6 +287,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                     modifiers[i].Add(modifier);
                 }
             }
+
+            editorData = ObjectEditorData.DeepCopy(orig.editorData);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -275,6 +313,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             if (jn["id"] != null)
                 id = jn["id"];
+
+            if (jn["piid"] != null)
+                prefabInstanceID = jn["piid"];
+
+            if (jn["pid"] != null)
+                prefabID = jn["pid"];
 
             if (jn["active"] != null)
                 active = jn["active"].AsBool;
@@ -466,6 +510,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             var jn = JSON.Parse("{}");
 
             jn["id"] = id;
+            if (!string.IsNullOrEmpty(prefabID))
+                jn["pid"] = prefabID;
+
+            if (!string.IsNullOrEmpty(prefabInstanceID))
+                jn["piid"] = prefabInstanceID;
 
             if (!active)
                 jn["active"] = active;
@@ -689,11 +738,58 @@ namespace BetterLegacy.Core.Data.Beatmap
             rotationOffset = Vector3.zero;
         }
 
+        #region Prefab Reference
+
+        public void RemovePrefabReference()
+        {
+            prefabID = "";
+            prefabInstanceID = "";
+        }
+
+        /// <summary>
+        /// Sets the Prefab and Prefab Object ID references from a Prefab Object.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object reference.</param>
+        public void SetPrefabReference(PrefabObject prefabObject)
+        {
+            prefabID = prefabObject.prefabID;
+            prefabInstanceID = prefabObject.id;
+        }
+
+        public void SetPrefabReference(IPrefabable prefabable)
+        {
+            prefabID = prefabable.PrefabID;
+            prefabInstanceID = prefabable.PrefabInstanceID;
+        }
+
+        /// <summary>
+        /// Gets the prefab reference.
+        /// </summary>
+        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
+
+        /// <summary>
+        /// Tries to get the Prefab Object reference.
+        /// </summary>
+        /// <param name="result">Output object.</param>
+        /// <returns>Returns true if a Prefab Object was found, otherwise returns false.</returns>
+        public bool TryGetPrefabObject(out PrefabObject result)
+        {
+            result = GetPrefabObject();
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the prefab object reference.
+        /// </summary>
+        public PrefabObject GetPrefabObject() => GameData.Current.prefabObjects.Find(x => x.id == prefabInstanceID);
+
+        #endregion
+
         #endregion
 
         #region Operators
 
-        public override bool Equals(object obj) => obj is PrefabObject paObj && id == paObj.id;
+        public override bool Equals(object obj) => obj is BackgroundObject paObj && id == paObj.id;
 
         public override int GetHashCode() => base.GetHashCode();
 
