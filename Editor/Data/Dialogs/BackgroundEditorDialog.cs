@@ -47,6 +47,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         //public InputFieldStorage LayerField { get; set; }
 
+        #region Start Time / Autokill
+
+        public InputFieldStorage StartTimeField { get; set; }
+
+        public Dropdown AutokillDropdown { get; set; }
+        public InputField AutokillField { get; set; }
+        public Button AutokillSetButton { get; set; }
+        public Toggle CollapseToggle { get; set; }
+
+        #endregion
+
         #region Transforms
 
         public Vector2InputFieldStorage PositionFields { get; set; }
@@ -219,7 +230,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (overwrite)
                 {
                     foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                        RTLevel.Current?.DestroyBackgroundObject(backgroundObject);
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false, false);
                     GameData.Current.backgroundObjects.Clear();
                 }
 
@@ -228,7 +239,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 RTBackgroundEditor.inst.SetCurrentBackground(GameData.Current.backgroundObjects.Count > 0 ? GameData.Current.backgroundObjects[0] : null);
 
-                BackgroundManager.inst.UpdateBackgrounds();
+                RTLevel.Current?.UpdateBackgroundObjects();
                 EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list" : "")}.", 2f, EditorManager.NotificationType.Success);
             });
 
@@ -747,12 +758,52 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddInputFields(LeftContent.Find("block").gameObject, true, "Background Editor Reactive");
             }
 
+            // Start Time
+            {
+                RTEditor.GenerateLabels("label", LeftContent, 4, false,
+                    new LabelSettings("Start Time") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+                var time = ObjectEditor.inst.Dialog.StartTimeField.gameObject.Duplicate(LeftContent, "time", 5);
+                StartTimeField = time.GetComponent<InputFieldStorage>();
+
+                EditorThemeManager.AddInputField(StartTimeField.inputField);
+                EditorThemeManager.AddSelectable(StartTimeField.leftGreaterButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(StartTimeField.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(StartTimeField.middleButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(StartTimeField.rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(StartTimeField.rightGreaterButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddToggle(StartTimeField.lockToggle);
+            }
+
+            // Autokill
+            {
+                RTEditor.GenerateLabels("label", LeftContent, 6, false,
+                    new LabelSettings("Time of Death") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+                var autokill = ObjectEditor.inst.Dialog.AutokillDropdown.transform.parent.gameObject.Duplicate(LeftContent, "autokill", 7);
+
+                AutokillDropdown = autokill.transform.Find("tod-dropdown").GetComponent<Dropdown>();
+                AutokillField = autokill.transform.Find("tod-value").GetComponent<InputField>();
+                AutokillSetButton = autokill.transform.Find("|").GetComponent<Button>();
+                CollapseToggle = autokill.transform.Find("collapse").GetComponent<Toggle>();
+
+                CoreHelper.Destroy(AutokillSetButton.GetComponent<Animator>());
+                AutokillSetButton.transition = Selectable.Transition.ColorTint;
+
+                EditorThemeManager.AddDropdown(AutokillDropdown);
+                EditorThemeManager.AddInputField(AutokillField);
+                EditorThemeManager.AddSelectable(AutokillSetButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
+                for (int i = 0; i < CollapseToggle.transform.Find("dots").childCount; i++)
+                    EditorThemeManager.AddGraphic(CollapseToggle.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+            }
+
             //// Depth
             //{
-            //    RTEditor.GenerateLabels("label", LeftContent, 4, false,
+            //    RTEditor.GenerateLabels("label", LeftContent, 8, false,
             //               new LabelSettings("Background Layer") { horizontalWrap = HorizontalWrapMode.Overflow });
 
-            //    var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "layer", 5);
+            //    var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "layer", 9);
             //    CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
 
             //    LayerField = iterations.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();

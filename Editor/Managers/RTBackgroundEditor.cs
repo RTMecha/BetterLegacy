@@ -68,7 +68,7 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
-            RTLevel.Current?.CreateBackgroundObject(backgroundObject);
+            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             SetCurrentBackground(backgroundObject);
         }
 
@@ -92,7 +92,7 @@ namespace BetterLegacy.Editor.Managers
             var backgroundObject = backgroundObjCopy.Copy();
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
-            RTLevel.Current?.CreateBackgroundObject(backgroundObject);
+            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
             SetCurrentBackground(backgroundObject);
         }
 
@@ -106,7 +106,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            RTLevel.Current?.DestroyBackgroundObject(backgroundObject);
+            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false);
             var id = backgroundObject.id;
 
             if (GameData.Current.backgroundObjects.TryFindIndex(x => x.id == id, out int index))
@@ -160,7 +160,7 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.backgroundObjects.Add(backgroundObject);
             }
 
-            BackgroundManager.inst.UpdateBackgrounds();
+            RTLevel.Current?.UpdateBackgroundObjects();
             UpdateBackgroundList();
         }
 
@@ -168,7 +168,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var count = GameData.Current.backgroundObjects.Count;
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                RTLevel.Current?.DestroyBackgroundObject(backgroundObject);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false, false);
             GameData.Current.backgroundObjects.Clear();
             UpdateBackgroundList();
             SetCurrentBackground(null);
@@ -203,6 +203,10 @@ namespace BetterLegacy.Editor.Managers
             RenderActive(backgroundObject);
             RenderName(backgroundObject);
             RenderTags(backgroundObject);
+
+            RenderStartTime(backgroundObject);
+            RenderAutokill(backgroundObject);
+
             RenderDepth(backgroundObject);
             RenderIterations(backgroundObject);
             RenderPosition(backgroundObject);
@@ -315,6 +319,169 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
         }
 
+        public void RenderStartTime(BackgroundObject backgroundObject)
+        {
+            var startTimeField = Dialog.StartTimeField;
+
+            startTimeField.lockToggle.onValueChanged.ClearAll();
+            startTimeField.lockToggle.isOn = backgroundObject.editorData.locked;
+            startTimeField.lockToggle.onValueChanged.AddListener(_val =>
+            {
+                backgroundObject.editorData.locked = _val;
+
+                // Since locking has no effect on the physical object, we will only need to update the timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+            });
+
+            startTimeField.inputField.onValueChanged.ClearAll();
+            startTimeField.inputField.text = backgroundObject.StartTime.ToString();
+            startTimeField.inputField.onValueChanged.AddListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                {
+                    if (EditorConfig.Instance.ClampedTimelineDrag.Value)
+                        num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    backgroundObject.StartTime = num;
+
+                    // StartTime affects both physical object and timeline object.
+                    //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                }
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+
+            startTimeField.leftGreaterButton.interactable = (backgroundObject.StartTime > 0f);
+            startTimeField.leftGreaterButton.onClick.NewListener(() =>
+            {
+                float moveTime = backgroundObject.StartTime - 1f;
+                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                startTimeField.inputField.text = moveTime.ToString();
+
+                // StartTime affects both physical object and timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            });
+            startTimeField.leftButton.interactable = (backgroundObject.StartTime > 0f);
+            startTimeField.leftButton.onClick.NewListener(() =>
+            {
+                float moveTime = backgroundObject.StartTime - 0.1f;
+                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                startTimeField.inputField.text = moveTime.ToString();
+
+                // StartTime affects both physical object and timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            });
+            startTimeField.middleButton.onClick.NewListener(() =>
+            {
+                startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
+
+                // StartTime affects both physical object and timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            });
+            startTimeField.rightButton.onClick.NewListener(() =>
+            {
+                float moveTime = backgroundObject.StartTime + 0.1f;
+                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                startTimeField.inputField.text = moveTime.ToString();
+
+                // StartTime affects both physical object and timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            });
+            startTimeField.rightGreaterButton.onClick.NewListener(() =>
+            {
+                float moveTime = backgroundObject.StartTime + 1f;
+                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                startTimeField.inputField.text = moveTime.ToString();
+
+                // StartTime affects both physical object and timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            });
+        }
+
+        public void RenderAutokill(BackgroundObject backgroundObject)
+        {
+            Dialog.AutokillDropdown.onValueChanged.ClearAll();
+            Dialog.AutokillDropdown.value = (int)backgroundObject.autoKillType;
+            Dialog.AutokillDropdown.onValueChanged.AddListener(_val =>
+            {
+                backgroundObject.autoKillType = (AutoKillType)_val;
+                // AutoKillType affects both physical object and timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            });
+
+            if (backgroundObject.autoKillType == AutoKillType.FixedTime ||
+                backgroundObject.autoKillType == AutoKillType.SongTime ||
+                backgroundObject.autoKillType == AutoKillType.LastKeyframeOffset)
+            {
+                Dialog.AutokillField.gameObject.SetActive(true);
+
+                Dialog.AutokillField.onValueChanged.ClearAll();
+                Dialog.AutokillField.text = backgroundObject.autoKillOffset.ToString();
+                Dialog.AutokillField.onValueChanged.AddListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        if (backgroundObject.autoKillType == AutoKillType.SongTime)
+                        {
+                            float startTime = backgroundObject.StartTime;
+                            if (num < startTime)
+                                num = startTime + 0.1f;
+                        }
+
+                        if (num < 0f)
+                            num = 0f;
+
+                        backgroundObject.autoKillOffset = num;
+
+                        // AutoKillType affects both physical object and timeline object.
+                        //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                    }
+                });
+
+                Dialog.AutokillSetButton.gameObject.SetActive(true);
+                Dialog.AutokillSetButton.onClick.ClearAll();
+                Dialog.AutokillSetButton.onClick.AddListener(() =>
+                {
+                    float num = 0f;
+
+                    if (backgroundObject.autoKillType == AutoKillType.SongTime)
+                        num = AudioManager.inst.CurrentAudioSource.time;
+                    else num = AudioManager.inst.CurrentAudioSource.time - backgroundObject.StartTime;
+
+                    if (num < 0f)
+                        num = 0f;
+
+                    Dialog.AutokillField.text = num.ToString();
+                });
+
+                // Add Scrolling for easy changing of values.
+                TriggerHelper.AddEventTriggers(Dialog.AutokillField.gameObject, TriggerHelper.ScrollDelta(Dialog.AutokillField, 0.1f, 10f, 0f, float.PositiveInfinity));
+            }
+            else
+            {
+                Dialog.AutokillField.gameObject.SetActive(false);
+                Dialog.AutokillField.onValueChanged.ClearAll();
+                Dialog.AutokillSetButton.gameObject.SetActive(false);
+                Dialog.AutokillSetButton.onClick.ClearAll();
+            }
+
+            Dialog.CollapseToggle.onValueChanged.ClearAll();
+            Dialog.CollapseToggle.isOn = backgroundObject.editorData.collapse;
+            Dialog.CollapseToggle.onValueChanged.AddListener(_val =>
+            {
+                backgroundObject.editorData.collapse = _val;
+
+                // Since autokill collapse has no affect on the physical object, we will only need to update the timeline object.
+                //EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+            });
+        }
         public void RenderDepth(BackgroundObject backgroundObject)
         {
             Dialog.DepthField.inputField.onValueChanged.ClearAll();
@@ -1097,10 +1264,24 @@ namespace BetterLegacy.Editor.Managers
 
                 image.color = ThemeManager.inst.Current.GetBGColor(backgroundObject.color);
 
-                var button = gameObject.GetComponent<Button>();
-                button.onClick.AddListener(() => SetCurrentBackground(backgroundObject));
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                    {
+                        SetCurrentBackground(backgroundObject);
+                        return;
+                    }
 
-                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Select", () => SetCurrentBackground(backgroundObject)),
+                        new ButtonFunction("Delete", () => DeleteBackground(backgroundObject)),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Inspect", () => ModCompatibility.Inspect(backgroundObject))
+                        );
+                };
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
                 EditorThemeManager.ApplyGraphic(text, ThemeGroup.List_Button_2_Text);
@@ -1347,8 +1528,7 @@ namespace BetterLegacy.Editor.Managers
                     backgroundObject.scaleOffset = Vector3.zero;
                     backgroundObject.rotationOffset = Vector3.zero;
 
-                    Destroy(backgroundObject.BaseObject);
-                    RTLevel.Current?.CreateBackgroundObject(backgroundObject);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
 
                     StartCoroutine(RenderModifiers(backgroundObject));
                 });
@@ -1485,8 +1665,7 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.scaleOffset = Vector3.zero;
                             backgroundObject.rotationOffset = Vector3.zero;
 
-                            Destroy(backgroundObject.BaseObject);
-                            RTLevel.Current?.CreateBackgroundObject(backgroundObject);
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
 
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
