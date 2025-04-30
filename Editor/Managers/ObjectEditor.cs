@@ -2117,10 +2117,10 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.dragOffset = timeOffset;
             }
 
-            if (!RTLevel.Current || !RTLevel.Current?.engine || RTLevel.Current?.engine.objectSpawner == null)
+            if (!RTLevel.Current || !RTLevel.Current.objectEngine || !RTLevel.Current.objectEngine.spawner)
                 return;
 
-            var spawner = RTLevel.Current?.engine.objectSpawner;
+            var spawner = RTLevel.Current.objectEngine.spawner;
 
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
