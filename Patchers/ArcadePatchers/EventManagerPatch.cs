@@ -3,6 +3,8 @@
 using HarmonyLib;
 
 using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Patchers
 {
@@ -19,26 +21,21 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(EventManager.updateShake))]
         [HarmonyPrefix]
-        static bool updateShakePrefix()
-        {
-            RTEventManager.inst.UpdateShake();
-            return false;
-        }
+        static bool updateShakePrefix() => false;
 
         [HarmonyPatch(nameof(EventManager.updateEvents), new[] { typeof(int) })]
         [HarmonyPrefix]
         static bool EventManagerUpdateEventsPrefix1(int __0)
         {
-            RTEventManager.inst.UpdateEvents(__0);
+            RTLevel.Current?.UpdateEvents(__0);
             return false;
         }
 
         [HarmonyPatch(nameof(EventManager.updateEvents), new Type[] { })]
         [HarmonyPrefix]
-        static bool EventManagerUpdateEventsPrefix2(EventManager __instance)
+        static bool EventManagerUpdateEventsPrefix2()
         {
-            __instance.StartCoroutine(RTEventManager.inst.UpdateEvents());
-
+            RTLevel.Current?.UpdateEvents();
             return false;
         }
 

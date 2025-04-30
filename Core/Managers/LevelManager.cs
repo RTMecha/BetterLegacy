@@ -426,9 +426,6 @@ namespace BetterLegacy.Core.Managers
 
             RTPlayer.SetGameDataProperties();
 
-            EventManager.inst.updateEvents();
-            RTEventManager.inst.SetResetOffsets();
-
             yield return inst.StartCoroutine(RTLevel.IReinit());
             BackgroundManager.inst.UpdateBackgrounds();
 

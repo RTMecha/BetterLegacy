@@ -4,6 +4,7 @@ using HarmonyLib;
 
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Patchers
 {
@@ -16,7 +17,7 @@ namespace BetterLegacy.Patchers
         {
             __instance.masterVol = (float)DataManager.inst.GetSettingInt("MasterVolume", 9) / 9f;
 
-            __instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol * (RTEventManager.inst ? RTEventManager.inst.audioVolume : 1f) * SoundManager.musicVolume;
+            __instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol * (RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.audioVolume : 1f) * SoundManager.musicVolume;
             __instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
             if (!__instance.isFading)
                 __instance.CurrentAudioSource.volume = __instance.musicVol;
@@ -45,8 +46,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetPitchPrefix(AudioManager __instance, float __0)
         {
-            if (RTEventManager.inst)
-                RTEventManager.inst.pitchOffset = __0;
+            if (RTLevel.Current && RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset = __0;
             else
                 __instance.pitch = __0;
 

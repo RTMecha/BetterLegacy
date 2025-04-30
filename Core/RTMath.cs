@@ -113,7 +113,8 @@ namespace BetterLegacy.Core
                     context.RegisterVariable("deathCount", GameManager.inst.deaths.Count);
                     context.RegisterVariable("hitCount", GameManager.inst.hits.Count);
                     context.RegisterVariable("boostCount", LevelManager.BoostCount);
-                    context.RegisterVariable("smoothedTime", RTEventManager.inst.currentTime);
+                    if (RTLevel.Current)
+                        context.RegisterVariable("smoothedTime", RTLevel.Current.CurrentTime);
                     context.RegisterVariable("playerHealthTotal", InputDataManager.inst.players.IsEmpty() ? 0 : PlayerManager.Players.Sum(x => x.Health));
                     context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
                     context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
@@ -137,7 +138,8 @@ namespace BetterLegacy.Core
 
                     if (RTLevel.Current)
                         context.RegisterFunction("sampleAudio", parameters => RTLevel.Current.GetSample((int)parameters[0], (float)parameters[1]));
-                    context.RegisterFunction("copyEvent", parameters => RTEventManager.inst.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
+                    if (RTLevel.Current && RTLevel.Current.eventEngine)
+                        context.RegisterFunction("copyEvent", parameters => RTLevel.Current.eventEngine.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
                 }
 
                 context.RegisterVariable("actionMoveX", InputDataManager.inst.menuActions.Move.X);

@@ -10,6 +10,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -300,7 +301,7 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.Log($"Player {customPlayer.index} already exists!");
             }
 
-            if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
+            if (spawned && RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
         }
 
@@ -325,7 +326,7 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.Log($"Player {customPlayer.index} already exists!");
             }
 
-            if (spawned && RTEventManager.inst && RTEventManager.inst.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
+            if (spawned && RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
         }
 

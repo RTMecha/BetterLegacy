@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Configs
 {
@@ -157,11 +158,7 @@ namespace BetterLegacy.Configs
             SettingChanged += UpdateSettings;
         }
 
-        void UpdateSettings()
-        {
-            if (EventManager.inst)
-                EventManager.inst.updateEvents();
-        }
+        void UpdateSettings() => RTLevel.Current?.UpdateEvents();
 
         #endregion
 

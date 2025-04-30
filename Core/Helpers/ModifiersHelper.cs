@@ -1438,19 +1438,23 @@ namespace BetterLegacy.Core.Helpers
             // pitch
             "setPitch" => modifier =>
             {
-                RTEventManager.inst.pitchOffset = modifier.GetFloat(0, 0f);
+                if (RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.pitchOffset = modifier.GetFloat(0, 0f);
             },
             "addPitch" => modifier =>
             {
-                RTEventManager.inst.pitchOffset += modifier.GetFloat(0, 0f);
+                if (RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.pitchOffset += modifier.GetFloat(0, 0f);
             },
             "setPitchMath" => modifier =>
             {
-                RTEventManager.inst.pitchOffset = RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
+                if (RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.pitchOffset = RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
             },
             "addPitchMath" => modifier =>
             {
-                RTEventManager.inst.pitchOffset += RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
+                if (RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables());
             },
 
             // music time
@@ -3269,29 +3273,29 @@ namespace BetterLegacy.Core.Helpers
 
             "eventOffset" => modifier =>
             {
-                if (RTEventManager.inst && RTEventManager.inst.offsets != null)
-                    RTEventManager.inst.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetFloat(0, 1f));
+                if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
+                    RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetFloat(0, 1f));
             },
             "eventOffsetVariable" => modifier =>
             {
-                if (RTEventManager.inst && RTEventManager.inst.offsets != null)
-                    RTEventManager.inst.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.reference.integerVariable * modifier.GetFloat(0, 1f));
+                if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
+                    RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.reference.integerVariable * modifier.GetFloat(0, 1f));
             },
             "eventOffsetMath" => modifier =>
             {
-                if (RTEventManager.inst && RTEventManager.inst.offsets != null)
-                    RTEventManager.inst.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables()));
+                if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
+                    RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), RTMath.Parse(modifier.GetValue(0), modifier.reference.GetObjectVariables()));
             },
             "eventOffsetAnimate" => modifier =>
             {
-                if (modifier.constant || !RTEventManager.inst || RTEventManager.inst.offsets == null)
+                if (modifier.constant || !RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null)
                     return;
 
                 string easing = modifier.GetValue(4);
                 if (int.TryParse(modifier.GetValue(4), out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                     easing = DataManager.inst.AnimationList[e].Name;
 
-                var list = RTEventManager.inst.offsets;
+                var list = RTLevel.Current.eventEngine.offsets;
 
                 var eventType = modifier.GetInt(1, 0);
                 var indexValue = modifier.GetInt(2, 0);
@@ -3307,7 +3311,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             new FloatKeyframe(0f, list[eventType][indexValue], Ease.Linear),
                             new FloatKeyframe(modifier.GetFloat(3, 1f), value, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                        }, x => RTEventManager.inst.SetOffset(eventType, indexValue, x), interpolateOnComplete: true)
+                        }, x => RTLevel.Current.eventEngine.SetOffset(eventType, indexValue, x), interpolateOnComplete: true)
                     };
                     animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
                     AnimationManager.inst.Play(animation);
@@ -3315,7 +3319,7 @@ namespace BetterLegacy.Core.Helpers
             },
             "eventOffsetCopyAxis" => modifier =>
             {
-                if (!RTEventManager.inst || RTEventManager.inst.offsets == null)
+                if (!RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null)
                     return;
 
                 var fromType = modifier.GetInt(1, 0);
@@ -3334,11 +3338,11 @@ namespace BetterLegacy.Core.Helpers
 
                 fromType = Mathf.Clamp(fromType, 0, modifier.reference.events.Count - 1);
                 fromAxis = Mathf.Clamp(fromAxis, 0, modifier.reference.events[fromType][0].values.Length - 1);
-                toType = Mathf.Clamp(toType, 0, RTEventManager.inst.offsets.Count - 1);
-                toAxis = Mathf.Clamp(toAxis, 0, RTEventManager.inst.offsets[toType].Count - 1);
+                toType = Mathf.Clamp(toType, 0, RTLevel.Current.eventEngine.offsets.Count - 1);
+                toAxis = Mathf.Clamp(toAxis, 0, RTLevel.Current.eventEngine.offsets[toType].Count - 1);
 
                 if (!useVisual && modifier.reference.cachedSequences)
-                    RTEventManager.inst.SetOffset(toType, toAxis, fromType switch
+                    RTLevel.Current.eventEngine.SetOffset(toType, toAxis, fromType switch
                     {
                         0 => Mathf.Clamp((modifier.reference.cachedSequences.PositionSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                         1 => Mathf.Clamp((modifier.reference.cachedSequences.ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
@@ -3346,10 +3350,13 @@ namespace BetterLegacy.Core.Helpers
                         _ => 0f,
                     });
                 else if (modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-                    RTEventManager.inst.SetOffset(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+                    RTLevel.Current.eventEngine.SetOffset(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
             },
             "vignetteTracksPlayer" => modifier =>
             {
+                if (!RTLevel.Current.eventEngine)
+                    return;
+
                 var players = PlayerManager.Players;
                 if (players.IsEmpty())
                     return;
@@ -3360,11 +3367,14 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
-                RTEventManager.inst.SetOffset(7, 4, cameraToViewportPoint.x);
-                RTEventManager.inst.SetOffset(7, 5, cameraToViewportPoint.y);
+                RTLevel.Current.eventEngine.SetOffset(7, 4, cameraToViewportPoint.x);
+                RTLevel.Current.eventEngine.SetOffset(7, 5, cameraToViewportPoint.y);
             },
             "lensTracksPlayer" => modifier =>
             {
+                if (!RTLevel.Current.eventEngine)
+                    return;
+
                 var players = PlayerManager.Players;
                 if (players.IsEmpty())
                     return;
@@ -3375,8 +3385,8 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
-                RTEventManager.inst.SetOffset(8, 1, cameraToViewportPoint.x - 0.5f);
-                RTEventManager.inst.SetOffset(8, 2, cameraToViewportPoint.y - 0.5f);
+                RTLevel.Current.eventEngine.SetOffset(8, 1, cameraToViewportPoint.x - 0.5f);
+                RTLevel.Current.eventEngine.SetOffset(8, 2, cameraToViewportPoint.y - 0.5f);
             },
 
             #endregion
