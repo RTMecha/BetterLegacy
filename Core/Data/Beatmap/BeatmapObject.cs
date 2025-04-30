@@ -1295,7 +1295,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (origin.x != 0f || origin.y != 0f)
                 jn["o"] = origin.ToJSON();
 
-            jn["ed"] = editorData.ToJSON();
+            if (editorData.ShouldSerialize)
+                jn["ed"] = editorData.ToJSON();
 
             for (int i = 0; i < events[0].Count; i++)
                 jn["events"]["pos"][i] = events[0][i].ToJSON();

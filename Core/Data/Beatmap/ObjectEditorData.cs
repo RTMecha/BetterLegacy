@@ -20,6 +20,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         int bin;
+        /// <summary>
+        /// Row the timeline object is at.
+        /// </summary>
         public int Bin
         {
             get => bin;
@@ -27,15 +30,29 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         int layer;
+        /// <summary>
+        /// Layer the timeline object appears on.
+        /// </summary>
         public int Layer
         {
             get => Mathf.Clamp(layer, 0, int.MaxValue);
             set => layer = Mathf.Clamp(value, 0, int.MaxValue);
         }
 
+        /// <summary>
+        /// If the timeline object should be collapsed.
+        /// </summary>
         public bool collapse;
 
+        /// <summary>
+        /// If the start time should be locked.
+        /// </summary>
         public bool locked;
+
+        /// <summary>
+        /// If the editor data should serialize to JSON.
+        /// </summary>
+        public bool ShouldSerialize => Bin != 0 || Layer != 0 || collapse || locked;
 
         #region Methods
 
@@ -61,8 +78,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = JSON.Parse("{}");
 
-            jn["bin"] = Bin;
-            jn["layer"] = Layer;
+            if (Bin != 0)
+                jn["bin"] = Bin;
+            if (Layer != 0)
+                jn["layer"] = Layer;
             if (collapse)
                 jn["collapse"] = collapse;
             if (locked)
