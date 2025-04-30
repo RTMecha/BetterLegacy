@@ -13,6 +13,7 @@
 - Fixed Event Editor indexer not displaying "E" for end keyframes.
 - Finally fixed BG color delay.
 - Fixed some issues relating to the runtime modifier changes last prerelease.
+- Fixed object duplicating moving it to where the audio time is if the objects' start time is 0.
 
 # 1.7.0-pre.2 > [Apr 29, 2025]
 
