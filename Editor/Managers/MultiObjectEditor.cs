@@ -2794,17 +2794,30 @@ namespace BetterLegacy.Editor.Managers
                     {
                         multiShapeSelection = new Vector2Int(index, 0);
 
-                        foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                         {
-                            beatmapObject.shape = multiShapeSelection.x;
-                            beatmapObject.shapeOption = multiShapeSelection.y;
+                            if (timelineObject.isBeatmapObject)
+                            {
+                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                beatmapObject.shape = multiShapeSelection.x;
+                                beatmapObject.shapeOption = multiShapeSelection.y;
 
-                            if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
-                                beatmapObject.shape = 0;
+                                if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                    beatmapObject.shape = 0;
 
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+                                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+                            }
+                            if (timelineObject.isBackgroundObject)
+                            {
+                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                backgroundObject.shape = multiShapeSelection.x;
+                                backgroundObject.shapeOption = multiShapeSelection.y;
+
+                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                            }
                         }
 
+                        RTLevel.Current?.RecalculateObjectStates();
                         RenderMultiShape();
                     });
 
@@ -2829,12 +2842,24 @@ namespace BetterLegacy.Editor.Managers
                         }
                         textIF.onValueChanged.AddListener(_val =>
                         {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                             {
-                                beatmapObject.text = _val;
+                                if (timelineObject.isBeatmapObject)
+                                {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    beatmapObject.text = _val;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.TEXT);
+                                }
+                                if (timelineObject.isBackgroundObject)
+                                {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    backgroundObject.text = _val;
 
-                                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.TEXT);
+                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                }
                             }
+
+                            RTLevel.Current?.RecalculateObjectStates();
                         });
 
                         if (!textIF.transform.Find("edit"))
@@ -2861,8 +2886,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 case ShapeType.Image: {
                         var select = shapeSettings.Find("7/select").GetComponent<Button>();
-                        select.onClick.ClearAll();
-                        select.onClick.AddListener(() =>
+                        select.onClick.NewListener(() =>
                         {
                             var editorPath = RTEditor.inst.CurrentLevel.path;
                             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
@@ -2885,12 +2909,25 @@ namespace BetterLegacy.Editor.Managers
 
                                 CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
 
-                                foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                var _val = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), ""); ;
+                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                 {
-                                    beatmapObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.text = _val;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.TEXT);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.text = _val;
 
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.IMAGE);
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                    }
                                 }
+
+                                RTLevel.Current?.RecalculateObjectStates();
                                 RenderMultiShape();
                             }
                         });
@@ -2907,8 +2944,7 @@ namespace BetterLegacy.Editor.Managers
                         shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 164f);
 
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
-                        sides.inputField.onValueChanged.ClearAll();
-                        sides.inputField.onValueChanged.AddListener(_val =>
+                        sides.inputField.onValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int num))
                             {
@@ -2925,8 +2961,7 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
 
                         var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
-                        roundness.inputField.onValueChanged.ClearAll();
-                        roundness.inputField.onValueChanged.AddListener(_val =>
+                        roundness.inputField.onValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2943,8 +2978,7 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
 
                         var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
-                        thickness.inputField.onValueChanged.ClearAll();
-                        thickness.inputField.onValueChanged.AddListener(_val =>
+                        thickness.inputField.onValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2961,8 +2995,7 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
 
                         var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
-                        slices.inputField.onValueChanged.ClearAll();
-                        slices.inputField.onValueChanged.AddListener(_val =>
+                        slices.inputField.onValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int num))
                             {
@@ -2994,17 +3027,30 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     multiShapeSelection.y = index;
 
-                                    foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                     {
-                                        beatmapObject.shape = multiShapeSelection.x;
-                                        beatmapObject.shapeOption = multiShapeSelection.y;
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.shape = multiShapeSelection.x;
+                                            beatmapObject.shapeOption = multiShapeSelection.y;
 
-                                        if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
-                                            beatmapObject.shape = 0;
+                                            if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                                beatmapObject.shape = 0;
 
-                                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+                                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            backgroundObject.shape = multiShapeSelection.x;
+                                            backgroundObject.shapeOption = multiShapeSelection.y;
+
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                        }
                                     }
 
+                                    RTLevel.Current?.RecalculateObjectStates();
                                     RenderMultiShape();
                                 });
 
