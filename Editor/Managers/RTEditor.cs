@@ -2189,12 +2189,6 @@ namespace BetterLegacy.Editor.Managers
                 switch (EditorTimeline.inst.layerType)
                 {
                     case EditorTimeline.LayerType.Objects: {
-                            if (GameData.Current.beatmapObjects.Count <= 1 || EditorTimeline.inst.SelectedObjectCount == GameData.Current.beatmapObjects.Count)
-                            {
-                                EditorManager.inst.DisplayNotification("Can't delete only Beatmap Object", 1f, EditorManager.NotificationType.Error);
-                                break;
-                            }
-
                             var list = new List<TimelineObject>();
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                 list.Add(timelineObject);
@@ -2218,7 +2212,8 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case EditorTimeline.LayerType.Events: {
-                            if (RTEventEditor.inst.SelectedKeyframes.Count <= 0 || RTEventEditor.inst.SelectedKeyframes.Has(x => x.Index == 0))
+                            var selectedKeyframes = RTEventEditor.inst.SelectedKeyframes;
+                            if (selectedKeyframes.IsEmpty() || selectedKeyframes.Has(x => x.Index == 0))
                             {
                                 EditorManager.inst.DisplayNotification("Can't delete first Event Keyframe.", 1f, EditorManager.NotificationType.Error);
                                 break;
@@ -2227,7 +2222,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorDialog.CurrentDialog?.Close();
 
                             var list = new List<TimelineKeyframe>();
-                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                            foreach (var timelineObject in selectedKeyframes)
                                 list.Add(timelineObject);
 
                             EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", RTEventEditor.inst.DeleteKeyframes(list).Start, () => RTEventEditor.inst.PasteEvents(list, false)));
