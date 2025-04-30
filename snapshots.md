@@ -1,5 +1,13 @@
 ﻿# ???
 
+## Features
+### Core
+- Background Objects can now be prefabbed.
+
+### Editor
+- Background Objects are viewable as timeline objects now.
+- To go with this feature, BG objects now have editor settings (layer, bin, index).
+
 ## Changes
 ### Core
 - The Game Timeline no longer overlaps when opacity is less than 1.
