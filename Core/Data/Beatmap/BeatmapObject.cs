@@ -407,6 +407,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Vector3 rotationOffset = Vector3.zero;
 
+        /// <summary>
+        /// If the modifiers are currently active.
+        /// </summary>
+        public bool ModifiersActive
+        {
+            get
+            {
+                var startTime = ignoreLifespan ? 0f : StartTime;
+                var killTime = ignoreLifespan ? SoundManager.inst.MusicLength : StartTime + SpawnDuration;
+                return AudioManager.inst.CurrentAudioSource.time >= startTime && AudioManager.inst.CurrentAudioSource.time <= killTime;
+            }
+        }
+
         #endregion
 
         #region Prefab

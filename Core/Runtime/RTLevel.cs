@@ -603,6 +603,14 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     } // ObjectType
                 case ObjectContext.START_TIME: {
+                        if (beatmapObject.runtimeModifiers)
+                        {
+                            beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
+                            beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
+                            beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                            beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
+                        }
+
                         if (!levelObject)
                         {
                             if (sort)
@@ -776,18 +784,15 @@ namespace BetterLegacy.Core.Runtime
                             modifiers.Remove(runtimeModifiers);
 
                             runtimeModifiers = null;
+                            beatmapObject.runtimeModifiers = null;
                         }
 
-                        beatmapObject.runtimeModifiers = null;
-                        beatmapObject.runtimeModifiers =
-                            new RTModifiers<BeatmapObject>(
-                                beatmapObject.modifiers, beatmapObject.orderModifiers,
-                                beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime,
-                                beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration
-                            );
-
-                        modifiers.Add(beatmapObject.runtimeModifiers);
-                        objectModifiersEngine?.spawner?.InsertObject(beatmapObject.runtimeModifiers, false);
+                        var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
+                        if (iRuntimeModifiers != null)
+                        {
+                            modifiers.Add(iRuntimeModifiers);
+                            objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
+                        }
 
                         break;
                     }
@@ -1664,16 +1669,10 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public void Sort()
         {
-            if (!objectEngine)
-                return;
-
-            var spawner = objectEngine.spawner;
-
-            if (!spawner)
-                return;
-
-            spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+            objectEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+            objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             RecalculateObjectStates();
         }
 
