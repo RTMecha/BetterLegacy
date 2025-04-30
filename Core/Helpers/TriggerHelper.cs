@@ -363,9 +363,9 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-                RTEditor.inst.StartCoroutine(EditorTimeline.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift)));
+                CoroutineHelper.StartCoroutine(EditorTimeline.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift), Input.GetKey(KeyCode.LeftAlt)));
             else
-                RTEventEditor.inst.StartCoroutine(RTEventEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift)));
+                RTEventEditor.inst.StartCoroutine(RTEventEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift), Input.GetKey(KeyCode.LeftAlt)));
         });
 
         #endregion
@@ -383,8 +383,7 @@ namespace BetterLegacy.Core.Helpers
                 ObjectEditor.inst.SetCurrentKeyframe(timelineKeyframe.beatmapObject, timelineKeyframe.Type, timelineKeyframe.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
             else if (!EventEditor.inst.eventDrag)
                 (InputDataManager.inst.editorActions.MultiSelect.IsPressed ?
-                    (Action<int, int>)EventEditor.inst.AddedSelectedEvent :
-                    EventEditor.inst.SetCurrentEvent)(timelineKeyframe.Type, timelineKeyframe.Index);
+                    (Action<int, int>)RTEventEditor.inst.AddSelectedEvent : RTEventEditor.inst.SetCurrentEvent)(timelineKeyframe.Type, timelineKeyframe.Index);
         });
 
         public static EventTrigger.Entry CreateTimelineKeyframeStartDragTrigger(TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
@@ -640,16 +639,16 @@ namespace BetterLegacy.Core.Helpers
                     new ButtonFunction(true),
                     new ButtonFunction("Cut", () =>
                     {
-                        ObjectEditor.inst.CopyObject();
-                        CoroutineHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                        ObjectEditor.inst.CopyObjects();
+                        EditorTimeline.inst.DeleteObjects();
                     }),
-                    new ButtonFunction("Copy", ObjectEditor.inst.CopyObject),
-                    new ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
+                    new ButtonFunction("Copy", ObjectEditor.inst.CopyObjects),
+                    new ButtonFunction("Paste", ObjectEditor.inst.PasteObject),
                     new ButtonFunction("Duplicate", () =>
                     {
                         var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                        ObjectEditor.inst.CopyObject();
+                        ObjectEditor.inst.CopyObjects();
                         ObjectEditor.inst.PasteObject(offsetTime);
                     }),
                     new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
@@ -657,10 +656,10 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
-                        ObjectEditor.inst.CopyObject();
+                        ObjectEditor.inst.CopyObjects();
                         ObjectEditor.inst.PasteObject(offsetTime, false);
                     }),
-                    new ButtonFunction("Delete", ObjectEditor.inst.DeleteObjects().Start),
+                    new ButtonFunction("Delete", EditorTimeline.inst.DeleteObjects),
                     new ButtonFunction(true),
                     new ButtonFunction("Move Backwards", () =>
                     {
