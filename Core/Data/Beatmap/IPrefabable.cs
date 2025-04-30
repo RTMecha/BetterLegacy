@@ -22,6 +22,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string PrefabInstanceID { get; set; }
 
         /// <summary>
+        /// Sets the Prefab and Prefab Object ID references from a Prefab Object.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object reference.</param>
+        public void SetPrefabReference(PrefabObject prefabObject);
+
+        /// <summary>
         /// Sets the Prefab and Prefab Object ID references from a prefabable.
         /// </summary>
         /// <param name="prefabable">Prefabable object reference.</param>
