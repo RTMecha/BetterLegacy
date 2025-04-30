@@ -35,11 +35,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(BackgroundManager.UpdateBackgrounds))]
         [HarmonyPrefix]
-        static bool UpdateBackgrounds()
-        {
-            RTLevel.Current?.UpdateBackgroundObjects();
-            return false;
-        }
+        static bool UpdateBackgrounds() => false;
 
         [HarmonyPatch(nameof(BackgroundManager.LoadBackground))]
         [HarmonyPrefix]
@@ -51,17 +47,6 @@ namespace BetterLegacy.Patchers
 
         static IEnumerator LoadBackgrounds()
         {
-            while (!GameData.Current || GameManager.inst.gameState != GameManager.State.Playing)
-                yield return null;
-
-            Instance.audio = AudioManager.inst.CurrentAudioSource;
-            Instance.samples = new float[256];
-            if (Instance.audio.clip != null)
-                Instance.audio.clip.GetData(Instance.samples, 0);
-
-            foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                RTLevel.Current?.CreateBackgroundObject(backgroundObject);
-
             yield break;
         }
     }

@@ -427,7 +427,6 @@ namespace BetterLegacy.Core.Managers
             RTPlayer.SetGameDataProperties();
 
             yield return inst.StartCoroutine(RTLevel.IReinit());
-            BackgroundManager.inst.UpdateBackgrounds();
 
             CursorManager.inst.HideCursor();
 

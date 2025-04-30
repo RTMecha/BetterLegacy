@@ -577,11 +577,7 @@ namespace BetterLegacy.Configs
                 RTLevel.Current?.UpdateObject(list[i]);
         }
 
-        void ShowBackgroundObjectsChanged()
-        {
-            if (BackgroundManager.inst)
-                BackgroundManager.inst.UpdateBackgrounds();
-        }
+        void ShowBackgroundObjectsChanged() => RTLevel.Current?.UpdateBackgroundObjects();
 
         void DefaultSettingsChanged()
         {

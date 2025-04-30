@@ -2740,11 +2740,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
-                        new ButtonFunction("Update Everything", () =>
-                        {
-                            BackgroundManager.inst.UpdateBackgrounds();
-                            RTLevel.Reinit();
-                        }),
+                        new ButtonFunction("Update Everything", () => RTLevel.Reinit()),
                         new ButtonFunction(true),
                         new ButtonFunction("Cut", () =>
                         {
@@ -4754,26 +4750,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (GameData.Current)
             {
-                var bgs = GameData.Current.backgroundObjects;
-                for (int i = 0; i < bgs.Count; i++)
-                {
-                    var bg = bgs[i];
-                    for (int j = 0; j < bg.gameObjects.Count; j++)
-                    {
-                        if (bg.gameObjects[j])
-                            Destroy(bg.gameObjects[j]);
-                        bg.gameObjects[j] = null;
-                    }
-                    for (int j = 0; j < bg.renderers.Count; j++)
-                        bg.renderers[j] = null;
-                    for (int j = 0; j < bg.transforms.Count; j++)
-                        bg.transforms[j] = null;
-
-                    bg.gameObjects.Clear();
-                    bg.renderers.Clear();
-                    bg.transforms.Clear();
-                }
-
                 try
                 {
                     for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
@@ -4947,7 +4923,6 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Updating timeline objects...");
             EventEditor.inst.CreateEventObjects();
-            BackgroundManager.inst.UpdateBackgrounds();
 
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;

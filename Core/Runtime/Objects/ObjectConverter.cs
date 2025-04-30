@@ -81,18 +81,17 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             if (SkipRuntimeObject(beatmapObject))
             {
-                if (beatmapObject.runtimeObject != null && beatmapObject.runtimeObject.parentObjects != null)
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.parentObjects != null)
                     beatmapObject.runtimeObject.parentObjects.Clear();
-                if (beatmapObject.runtimeObject != null)
-                    beatmapObject.runtimeObject = null;
+                beatmapObject.runtimeObject = null;
                 return null;
             }
 
-            RTBeatmapObject levelObject = null;
+            RTBeatmapObject runtimeObject = null;
 
             try
             {
-                levelObject = ToRuntimeObject(beatmapObject);
+                runtimeObject = ToRuntimeObject(beatmapObject);
             }
             catch (Exception e)
             {
@@ -104,7 +103,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 Debug.LogError(stringBuilder.ToString());
             }
 
-            return levelObject ?? null;
+            return runtimeObject;
         }
 
         RTBeatmapObject ToRuntimeObject(BeatmapObject beatmapObject)
@@ -213,16 +212,16 @@ namespace BetterLegacy.Core.Runtime.Objects
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
-            var levelObject = new RTBeatmapObject(
+            var runtimeObject = new RTBeatmapObject(
                 beatmapObject,
                 parentObjects, visual,
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
-            levelObject.SetActive(false);
+            runtimeObject.SetActive(false);
 
-            beatmapObject.runtimeObject = levelObject;
+            beatmapObject.runtimeObject = runtimeObject;
 
-            return levelObject;
+            return runtimeObject;
         }
 
         public GameObject InitParentChain(BeatmapObject beatmapObject, List<ParentObject> parentObjects)
@@ -373,6 +372,119 @@ namespace BetterLegacy.Core.Runtime.Objects
                 );
             beatmapObject.runtimeModifiers = runtimeModifiers;
             return runtimeModifiers;
+        }
+
+        #endregion
+
+        #region Runtime BG Objects
+
+        public bool SkipRuntimeBGObject(BackgroundObject backgroundObject) => !CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active;
+
+        public IEnumerable<IRTObject> ToRuntimeBGObjects()
+        {
+            foreach (var backgroundObject in gameData.backgroundObjects)
+            {
+                if (SkipRuntimeBGObject(backgroundObject))
+                {
+                    backgroundObject.runtimeObject = null;
+                    continue;
+                }
+
+                RTBackgroundObject runtimeObject = null;
+
+                try
+                {
+                    runtimeObject = ToRuntimeBGObject(backgroundObject);
+                }
+                catch (Exception e)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{backgroundObject.id}' to {nameof(RTBackgroundObject)}.");
+                    stringBuilder.AppendLine($"Exception: {e.Message}");
+                    stringBuilder.AppendLine(e.StackTrace);
+
+                    Debug.LogError(stringBuilder.ToString());
+                }
+
+                if (runtimeObject)
+                    yield return runtimeObject;
+            }
+        }
+
+        public IRTObject ToIRuntimeBGObject(BackgroundObject backgroundObject)
+        {
+            if (SkipRuntimeBGObject(backgroundObject))
+            {
+                backgroundObject.runtimeObject = null;
+                return null;
+            }
+
+            RTBackgroundObject runtimeObject = null;
+
+            try
+            {
+                runtimeObject = ToRuntimeBGObject(backgroundObject);
+            }
+            catch (Exception e)
+            {
+                var stringBuilder = new StringBuilder();
+                stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{backgroundObject.id}' to {nameof(RTBackgroundObject)}.");
+                stringBuilder.AppendLine($"Exception: {e.Message}");
+                stringBuilder.AppendLine(e.StackTrace);
+
+                Debug.LogError(stringBuilder.ToString());
+            }
+
+            return runtimeObject;
+        }
+
+        RTBackgroundObject ToRuntimeBGObject(BackgroundObject backgroundObject)
+        {
+            var renderers = new List<Renderer>();
+
+            var baseObject = Creator.NewGameObject(backgroundObject.name, BackgroundManager.inst.backgroundParent);
+
+            var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(baseObject.transform, backgroundObject.name);
+            gameObject.layer = 9;
+            gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f);
+            gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
+            gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
+
+            var renderer = gameObject.GetComponent<Renderer>();
+            renderer.material = LegacyResources.objectMaterial;
+
+            CoreHelper.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
+            CoreHelper.Destroy(gameObject.GetComponent<BoxCollider>());
+
+            renderers.Add(renderer);
+
+            if (backgroundObject.drawFade)
+            {
+                int depth = backgroundObject.iterations;
+
+                for (int i = 1; i < depth - backgroundObject.depth; i++)
+                {
+                    var gameObject2 = BackgroundManager.inst.backgroundFadePrefab.Duplicate(gameObject.transform, $"{backgroundObject.name} Fade [{i}]");
+
+                    gameObject2.transform.localPosition = new Vector3(0f, 0f, i);
+                    gameObject2.transform.localScale = Vector3.one;
+                    gameObject2.transform.localRotation = Quaternion.Euler(Vector3.zero);
+                    gameObject2.layer = 9;
+
+                    var renderer2 = gameObject2.GetComponent<Renderer>();
+                    renderer2.material = LegacyResources.objectMaterial;
+
+                    renderers.Add(renderer2);
+                }
+            }
+
+            var runtimeObject = new RTBackgroundObject(backgroundObject, renderers);
+
+            runtimeObject.SetActive(false);
+
+            backgroundObject.runtimeObject = runtimeObject;
+
+            return runtimeObject;
         }
 
         #endregion

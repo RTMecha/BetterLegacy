@@ -66,6 +66,11 @@ namespace BetterLegacy.Core.Runtime
             modifiers = runtimeModifiers.ToList();
             objectModifiersEngine = new ObjectEngine(Modifiers);
 
+            IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects();
+
+            bgObjects = runtimeBGObjects.ToList();
+            backgroundEngine = new ObjectEngine(BGObjects);
+
             Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
 
             threadedTickRunner = new TickRunner(true);
@@ -134,8 +139,15 @@ namespace BetterLegacy.Core.Runtime
             {
                 for (int i = 0; i < Current.objects.Count; i++)
                     Current.objects[i].Clear();
-
                 Current.objects.Clear();
+
+                for (int i = 0; i < Current.bgObjects.Count; i++)
+                    Current.bgObjects[i].Clear();
+                Current.bgObjects.Clear();
+
+                for (int i = 0; i < Current.modifiers.Count; i++)
+                    Current.modifiers[i].Clear();
+                Current.modifiers.Clear();
             }
 
             // Delete all the "GameObjects" children.
@@ -169,8 +181,15 @@ namespace BetterLegacy.Core.Runtime
             {
                 for (int i = 0; i < Current.objects.Count; i++)
                     Current.objects[i].Clear();
-
                 Current.objects.Clear();
+
+                for (int i = 0; i < Current.bgObjects.Count; i++)
+                    Current.bgObjects[i].Clear();
+                Current.bgObjects.Clear();
+
+                for (int i = 0; i < Current.modifiers.Count; i++)
+                    Current.modifiers[i].Clear();
+                Current.modifiers.Clear();
             }
 
             // Delete all the "GameObjects" children.
@@ -222,6 +241,7 @@ namespace BetterLegacy.Core.Runtime
             eventEngine = null;
             objectEngine = null;
             objectModifiersEngine = null;
+            backgroundEngine = null;
 
             threadedTickRunner?.Dispose();
             threadedTickRunner = null;
@@ -497,7 +517,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Readonly collection of runtime objects.
         /// </summary>
-        public IReadOnlyList<IRTObject> Objects => objects.AsReadOnly();
+        public IReadOnlyList<IRTObject> Objects => objects?.AsReadOnly();
 
         /// <summary>
         /// List of runtime objects.
@@ -522,6 +542,8 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recache">If sequences should be recached.</param>
         /// <param name="update">If the object itself should be updated.</param>
         /// <param name="reinsert">If the runtime object should be reinserted.</param>
+        /// <param name="recursive">If updating should be recursive.</param>
+        /// <param name="recalculate">If the engine should recalculate.</param>
         public void UpdateObject(BeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true, bool recursive = true, bool recalculate = true)
         {
             if (!reinsert)
@@ -1035,7 +1057,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Readonly collection of runtime modifiers.
         /// </summary>
-        public IReadOnlyList<IRTObject> Modifiers => modifiers.AsReadOnly();
+        public IReadOnlyList<IRTObject> Modifiers => modifiers?.AsReadOnly();
 
         /// <summary>
         /// List of runtime modifiers.
@@ -1082,128 +1104,20 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public ObjectEngine backgroundEngine;
 
+        /// <summary>
+        /// Readonly collection of runtime BG objects.
+        /// </summary>
+        public IReadOnlyList<IRTObject> BGObjects => bgObjects?.AsReadOnly();
+
+        /// <summary>
+        /// List of runtime BG objects.
+        /// </summary>
+        public List<IRTObject> bgObjects;
+
         void OnBackgroundObjectsTick()
         {
-            var ldm = CoreConfig.Instance.LDM.Value;
             if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
-            {
-                var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
-
-                for (int bg = 0; bg < GameData.Current.backgroundObjects.Count; bg++)
-                {
-                    var backgroundObject = GameData.Current.backgroundObjects[bg];
-
-                    var gameObject = backgroundObject.BaseObject;
-
-                    if (backgroundObject.active && gameObject && gameObject.activeSelf != backgroundObject.Enabled)
-                        gameObject.SetActive(backgroundObject.Enabled);
-
-                    if (!backgroundObject.active || !backgroundObject.Enabled || !gameObject)
-                        continue;
-
-                    Color mainColor =
-                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.color), backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
-
-                    var reactive = backgroundObject.IsReactive;
-
-                    if (reactive)
-                        mainColor =
-                            RTMath.Lerp(mainColor,
-                                CoreHelper.ChangeColorHSV(
-                                    beatmapTheme.GetBGColor(backgroundObject.reactiveCol),
-                                    backgroundObject.hue,
-                                    backgroundObject.saturation,
-                                    backgroundObject.value),
-                                GetSample(backgroundObject.reactiveColSample, backgroundObject.reactiveColIntensity));
-
-                    mainColor.a = 1f;
-
-                    var fadeColor =
-                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.fadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
-
-                    if (CoreHelper.ColorMatch(fadeColor, beatmapTheme.backgroundColor, 0.05f))
-                        fadeColor = ThemeManager.inst.bgColorToLerp;
-                    fadeColor.a = 1f;
-
-                    int layer = backgroundObject.iterations - backgroundObject.depth;
-                    if (ldm && backgroundObject.renderers.Count > 0)
-                    {
-                        backgroundObject.renderers[0].material.color = mainColor;
-                        if (backgroundObject.renderers.Count > 1 && backgroundObject.renderers[1].gameObject.activeSelf)
-                        {
-                            for (int i = 1; i < backgroundObject.renderers.Count; i++)
-                                backgroundObject.renderers[i].gameObject.SetActive(false);
-                        }
-                    }
-                    else
-                        backgroundObject.renderers.ForLoop((renderer, i) =>
-                        {
-                            if (i == 0)
-                            {
-                                renderer.material.color = mainColor;
-                                return;
-                            }
-
-                            if (!renderer.gameObject.activeSelf)
-                                renderer.gameObject.SetActive(true);
-
-                            float t = 1f / layer * i;
-
-                            renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
-                        });
-
-                    if (!reactive)
-                    {
-                        backgroundObject.reactiveSize = Vector2.zero;
-
-                        gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
-                        gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
-                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
-                        continue;
-                    }
-
-                    backgroundObject.reactiveSize = backgroundObject.reactiveType switch
-                    {
-                        BackgroundObject.ReactiveType.Bass => new Vector2(sampleLow, sampleLow) * backgroundObject.reactiveScale,
-                        BackgroundObject.ReactiveType.Mids => new Vector2(sampleMid, sampleMid) * backgroundObject.reactiveScale,
-                        BackgroundObject.ReactiveType.Treble => new Vector2(sampleHigh, sampleHigh) * backgroundObject.reactiveScale,
-                        BackgroundObject.ReactiveType.Custom => new Vector2(GetSample(backgroundObject.reactiveScaSamples.x, backgroundObject.reactiveScaIntensity.x), GetSample(backgroundObject.reactiveScaSamples.y, backgroundObject.reactiveScaIntensity.y)) * backgroundObject.reactiveScale,
-                        _ => Vector2.zero,
-                    };
-
-                    if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
-                    {
-                        gameObject.transform.localPosition =
-                            new Vector3(backgroundObject.pos.x,
-                            backgroundObject.pos.y,
-                            32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
-                        gameObject.transform.localScale =
-                            new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
-                            new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
-                        gameObject.transform.localRotation =
-                            Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
-
-                        continue;
-                    }
-
-                    float x = GetSample(backgroundObject.reactivePosSamples.x, backgroundObject.reactivePosIntensity.x);
-                    float y = GetSample(backgroundObject.reactivePosSamples.y, backgroundObject.reactivePosIntensity.y);
-                    float z = GetSample(backgroundObject.reactiveZSample, backgroundObject.reactiveZIntensity);
-
-                    float rot = GetSample(backgroundObject.reactiveRotSample, backgroundObject.reactiveRotIntensity);
-
-                    gameObject.transform.localPosition =
-                        new Vector3(backgroundObject.pos.x + x,
-                        backgroundObject.pos.y + y,
-                        32f + backgroundObject.depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
-                    gameObject.transform.localScale =
-                        new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
-                        new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
-                    gameObject.transform.localRotation = Quaternion.Euler(
-                        new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
-                        backgroundObject.rot + rot) + backgroundObject.rotationOffset);
-                }
-            }
+                backgroundEngine?.Update(CurrentTime);
         }
 
         /// <summary>
@@ -1212,90 +1126,76 @@ namespace BetterLegacy.Core.Runtime
         public void UpdateBackgroundObjects()
         {
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-                CreateBackgroundObject(backgroundObject);
+                UpdateBackgroundObject(backgroundObject);
         }
 
         /// <summary>
-        /// Creates the GameObjects for the BackgroundObject.
+        /// Updates a Background Object.
         /// </summary>
-        /// <param name="backgroundObject">BG Object to create.</param>
-        /// <returns>The generated Background Object.</returns>
-        public GameObject CreateBackgroundObject(BackgroundObject backgroundObject)
+        /// <param name="backgroundObject">Beatmap Objec to update.</param>
+        /// <param name="reinsert">If the runtime object should be reinserted.</param>
+        /// <param name="recalculate">If the engine should recalculate.</param>
+        public void UpdateBackgroundObject(BackgroundObject backgroundObject, bool reinsert = true, bool recalculate = true)
         {
-            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active)
-                return null;
+            ReinitObject(backgroundObject, reinsert);
 
-            DestroyBackgroundObject(backgroundObject);
+            if (recalculate)
+                backgroundEngine?.spawner?.RecalculateObjectStates();
+        }
 
-            var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(BackgroundManager.inst.backgroundParent, backgroundObject.name);
-            gameObject.layer = 9;
-            gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f);
-            gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
-            gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
+        /// <summary>
+        /// Removes and recreates the object if it still exists.
+        /// </summary>
+        /// <param name="backgroundObject">Background Object to update.</param>
+        /// <param name="reinsert">If the object should be reinserted.</param>
+        /// <param name="recursive">If the updating should be recursive.</param>
+        public void ReinitObject(BackgroundObject backgroundObject, bool reinsert = true)
+        {
+            backgroundObject.positionOffset = Vector3.zero;
+            backgroundObject.scaleOffset = Vector3.zero;
+            backgroundObject.rotationOffset = Vector3.zero;
 
-            var renderer = gameObject.GetComponent<Renderer>();
-            renderer.material = LegacyResources.objectMaterial;
+            var runtimeObject = backgroundObject.runtimeObject;
 
-            CoreHelper.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
-            CoreHelper.Destroy(gameObject.GetComponent<BoxCollider>());
-
-            backgroundObject.gameObjects.Clear();
-            backgroundObject.transforms.Clear();
-            backgroundObject.renderers.Clear();
-
-            backgroundObject.gameObjects.Add(gameObject);
-            backgroundObject.transforms.Add(gameObject.transform);
-            backgroundObject.renderers.Add(renderer);
-
-            if (backgroundObject.drawFade)
+            if (runtimeObject)
             {
-                int depth = backgroundObject.iterations;
+                runtimeObject.Clear();
+                backgroundEngine?.spawner?.RemoveObject(runtimeObject, false);
+                bgObjects.Remove(runtimeObject);
 
-                for (int i = 1; i < depth - backgroundObject.depth; i++)
-                {
-                    var gameObject2 = BackgroundManager.inst.backgroundFadePrefab.Duplicate(gameObject.transform, $"{backgroundObject.name} Fade [{i}]");
-
-                    gameObject2.transform.localPosition = new Vector3(0f, 0f, i);
-                    gameObject2.transform.localScale = Vector3.one;
-                    gameObject2.transform.localRotation = Quaternion.Euler(Vector3.zero);
-                    gameObject2.layer = 9;
-
-                    var renderer2 = gameObject2.GetComponent<Renderer>();
-                    renderer2.material = LegacyResources.objectMaterial;
-
-                    backgroundObject.gameObjects.Add(gameObject2);
-                    backgroundObject.transforms.Add(gameObject2.transform);
-                    backgroundObject.renderers.Add(renderer2);
-                }
+                runtimeObject = null;
+                backgroundObject.runtimeObject = null;
             }
 
-            backgroundObject.UpdateShape();
+            //var runtimeModifiers = backgroundObject.runtimeModifiers;
 
-            return gameObject;
-        }
+            //if (runtimeModifiers)
+            //{
+            //    objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+            //    modifiers.Remove(runtimeModifiers);
 
-        /// <summary>
-        /// Updates the GameObjects for the BackgroundObject.
-        /// </summary>
-        /// <param name="backgroundObject">BG Object to update.</param>
-        public void UpdateBackgroundObject(BackgroundObject backgroundObject)
-        {
-            DestroyBackgroundObject(backgroundObject);
-            CreateBackgroundObject(backgroundObject);
-        }
+            //    runtimeModifiers = null;
+            //    backgroundObject.runtimeModifiers = null;
+            //}
 
-        /// <summary>
-        /// Destroys and clears the BackgroundObject.
-        /// </summary>
-        /// <param name="backgroundObject">BG Object to clear.</param>
-        public void DestroyBackgroundObject(BackgroundObject backgroundObject)
-        {
-            var gameObject = backgroundObject.BaseObject;
-            if (gameObject)
-                CoreHelper.Destroy(gameObject);
-            backgroundObject.gameObjects.Clear();
-            backgroundObject.transforms.Clear();
-            backgroundObject.renderers.Clear();
+            // If the object should be reinserted and it is not null then we reinsert the object.
+            if (!reinsert || !backgroundObject)
+                return;
+
+            // Convert object to ILevelObject.
+            var iRuntimeBGObject = converter.ToIRuntimeBGObject(backgroundObject);
+            if (iRuntimeBGObject != null)
+            {
+                bgObjects.Add(iRuntimeBGObject);
+                backgroundEngine?.spawner?.InsertObject(iRuntimeBGObject, false);
+            }
+
+            //var iRuntimeBGModifiers = converter.ToIRuntimeBGModifiers(backgroundObject);
+            //if (iRuntimeBGModifiers != null)
+            //{
+            //    bgModifiers.Add(iRuntimeBGModifiers);
+            //    bgObjectModifiersEngine?.spawner?.InsertObject(iRuntimeBGModifiers, false);
+            //}
         }
 
         #region Modifiers

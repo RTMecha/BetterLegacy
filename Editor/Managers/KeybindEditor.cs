@@ -1019,7 +1019,6 @@ namespace BetterLegacy.Editor.Managers
         {
             RandomHelper.UpdateSeed();
             RTLevel.Reinit();
-            BackgroundManager.inst.UpdateBackgrounds();
         }
 
         public static void UpdateObject(Keybind keybind)
@@ -1038,7 +1037,7 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current?.RecalculateObjectStates();
 
             if (RTBackgroundEditor.inst.Dialog.IsCurrent && RTBackgroundEditor.inst.CurrentSelectedBG)
-                RTLevel.Current?.CreateBackgroundObject(RTBackgroundEditor.inst.CurrentSelectedBG);
+                RTLevel.Current?.UpdateBackgroundObject(RTBackgroundEditor.inst.CurrentSelectedBG);
         }
 
         public static void OpenPrefabDialog(Keybind keybind)
