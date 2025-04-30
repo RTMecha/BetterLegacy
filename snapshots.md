@@ -1,4 +1,13 @@
-﻿# snapshot-2025.5.1 - (pre-1.7.0) > [May 1, 2025]
+﻿# snapshot-2025.5.2 - (pre-1.7.0) > [May 1, 2025]
+
+## Changes
+### Editor
+- Removed the "Can't delete only object" warning. This means you can technically have an entirely empty level now.
+
+### Fixes
+- Fixed Background Object prefabbing start time offset not working in some cases.
+
+# snapshot-2025.5.1 - (pre-1.7.0) > [May 1, 2025]
 Snapshots are still a thing.
 
 ## Features
