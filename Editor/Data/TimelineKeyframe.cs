@@ -22,11 +22,11 @@ namespace BetterLegacy.Editor.Data
         public TimelineKeyframe(EventKeyframe eventKeyframe)
         {
             this.eventKeyframe = eventKeyframe;
+            this.eventKeyframe.timelineKeyframe = this;
         }
 
-        public TimelineKeyframe(EventKeyframe eventKeyframe, BeatmapObject beatmapObject)
+        public TimelineKeyframe(EventKeyframe eventKeyframe, BeatmapObject beatmapObject) : this(eventKeyframe)
         {
-            this.eventKeyframe = eventKeyframe;
             this.beatmapObject = beatmapObject;
             isObjectKeyframe = true;
         }
