@@ -42,11 +42,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime Objects
 
+        public bool SkipRuntimeObject(BeatmapObject beatmapObject) => ShowDamagable && beatmapObject.objectType != ObjectType.Normal || !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
+
         public IEnumerable<IRTObject> ToRuntimeObjects()
         {
             foreach (var beatmapObject in gameData.beatmapObjects)
             {
-                if (VerifyObject(beatmapObject))
+                if (SkipRuntimeObject(beatmapObject))
                 {
                     if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.parentObjects != null)
                         beatmapObject.runtimeObject.parentObjects.Clear();
@@ -75,11 +77,9 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
         }
 
-        public bool VerifyObject(BeatmapObject beatmapObject) => ShowDamagable && beatmapObject.objectType != ObjectType.Normal || !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
-
         public IRTObject ToIRuntimeObject(BeatmapObject beatmapObject)
         {
-            if (VerifyObject(beatmapObject))
+            if (SkipRuntimeObject(beatmapObject))
             {
                 if (beatmapObject.runtimeObject != null && beatmapObject.runtimeObject.parentObjects != null)
                     beatmapObject.runtimeObject.parentObjects.Clear();
@@ -343,11 +343,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime Modifiers
 
+        public bool SkipRuntimeModifiers(BeatmapObject beatmapObject) => beatmapObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value && beatmapObject.LDM;
+
         public IEnumerable<IRTObject> ToRuntimeModifiers()
         {
             foreach (var beatmapObject in gameData.beatmapObjects)
             {
-                if (beatmapObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value && beatmapObject.LDM)
+                if (SkipRuntimeModifiers(beatmapObject))
                 {
                     beatmapObject.runtimeModifiers = null;
                     continue;
@@ -360,10 +362,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
         }
 
-        public IRTObject ToIRuntimeModifiers(BeatmapObject beatmapObject)
-        {
-            return ToRuntimeModifiers(beatmapObject);
-        }
+        public IRTObject ToIRuntimeModifiers(BeatmapObject beatmapObject) => SkipRuntimeModifiers(beatmapObject) ? null : ToRuntimeModifiers(beatmapObject);
 
         RTModifiers<BeatmapObject> ToRuntimeModifiers(BeatmapObject beatmapObject)
         {
