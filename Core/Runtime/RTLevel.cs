@@ -1332,54 +1332,61 @@ namespace BetterLegacy.Core.Runtime
             switch (lower)
             {
                 case PrefabContext.TRANSFORM_OFFSET: {
+                        bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].values.Length > 0;
+                        bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].values.Length > 1;
+
+                        bool hasScaX = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].values.Length > 0;
+                        bool hasScaY = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].values.Length > 1;
+
+                        bool hasRot = prefabObject.events.Count > 2 && prefabObject.events[2] != null && prefabObject.events[2].values.Length > 0;
+
+                        var pos = new Vector3(hasPosX ? prefabObject.events[0].values[0] : 0f, hasPosY ? prefabObject.events[0].values[1] : 0f, 0f);
+                        var sca = new Vector3(hasScaX ? prefabObject.events[1].values[0] : 1f, hasScaY ? prefabObject.events[1].values[1] : 1f, 1f);
+                        var rot = Quaternion.Euler(0f, 0f, hasRot ? prefabObject.events[2].values[0] : 0f);
+
+                        try
+                        {
+                            if (prefabObject.events[0].random != 0)
+                                pos = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(prefabObject.events[0]);
+                            if (prefabObject.events[1].random != 0)
+                                sca = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(prefabObject.events[1]);
+                            if (prefabObject.events[2].random != 0)
+                                rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(prefabObject.events[2]));
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogError($"{className}Prefab Randomization error.\n{ex}");
+                        }
+
                         foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id))
                         {
-                            if (!beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject || !beatmapObject.runtimeObject.top)
+                            if (!beatmapObject.runtimeObject)
                                 continue;
-
-                            var top = beatmapObject.runtimeObject.top;
-
-                            bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].values.Length > 0;
-                            bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].values.Length > 1;
-
-                            bool hasScaX = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].values.Length > 0;
-                            bool hasScaY = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].values.Length > 1;
-
-                            bool hasRot = prefabObject.events.Count > 2 && prefabObject.events[2] != null && prefabObject.events[2].values.Length > 0;
-
-                            var pos = new Vector3(hasPosX ? prefabObject.events[0].values[0] : 0f, hasPosY ? prefabObject.events[0].values[1] : 0f, 0f);
-                            var sca = new Vector3(hasScaX ? prefabObject.events[1].values[0] : 1f, hasScaY ? prefabObject.events[1].values[1] : 1f, 1f);
-                            var rot = Quaternion.Euler(0f, 0f, hasRot ? prefabObject.events[2].values[0] : 0f);
-
-                            try
-                            {
-                                if (prefabObject.events[0].random != 0)
-                                    pos = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(prefabObject.events[0]);
-                                if (prefabObject.events[1].random != 0)
-                                    sca = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(prefabObject.events[1]);
-                                if (prefabObject.events[2].random != 0)
-                                    rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(prefabObject.events[2]));
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.LogError($"{className}Prefab Randomization error.\n{ex}");
-                            }
 
                             beatmapObject.runtimeObject.prefabOffsetPosition = pos;
                             beatmapObject.runtimeObject.prefabOffsetScale = sca.x != 0f && sca.y != 0f ? sca : Vector3.one;
                             beatmapObject.runtimeObject.prefabOffsetRotation = rot.eulerAngles;
-
-                            if (!hasPosX)
-                                Debug.LogError($"{className}PrefabObject does not have Postion X in its' eventValues.\nPossible causes:");
-                            if (!hasPosY)
-                                Debug.LogError($"{className}PrefabObject does not have Postion Y in its' eventValues.");
-                            if (!hasScaX)
-                                Debug.LogError($"{className}PrefabObject does not have Scale X in its' eventValues.");
-                            if (!hasScaY)
-                                Debug.LogError($"{className}PrefabObject does not have Scale Y in its' eventValues.");
-                            if (!hasRot)
-                                Debug.LogError($"{className}PrefabObject does not have Rotation in its' eventValues.");
                         }
+                        foreach (var backgroundObject in GameData.Current.backgroundObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id))
+                        {
+                            if (!backgroundObject.runtimeObject)
+                                continue;
+
+                            backgroundObject.runtimeObject.prefabOffsetPosition = pos;
+                            backgroundObject.runtimeObject.prefabOffsetScale = sca.x != 0f && sca.y != 0f ? sca : Vector3.one;
+                            backgroundObject.runtimeObject.prefabOffsetRotation = rot.eulerAngles;
+                        }
+
+                        if (!hasPosX)
+                            Debug.LogError($"{className}PrefabObject does not have Postion X in its' eventValues.\nPossible causes:");
+                        if (!hasPosY)
+                            Debug.LogError($"{className}PrefabObject does not have Postion Y in its' eventValues.");
+                        if (!hasScaX)
+                            Debug.LogError($"{className}PrefabObject does not have Scale X in its' eventValues.");
+                        if (!hasScaY)
+                            Debug.LogError($"{className}PrefabObject does not have Scale Y in its' eventValues.");
+                        if (!hasRot)
+                            Debug.LogError($"{className}PrefabObject does not have Rotation in its' eventValues.");
                         break;
                     }
                 case PrefabContext.TIME:

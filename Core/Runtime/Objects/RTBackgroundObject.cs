@@ -12,12 +12,17 @@ namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTBackgroundObject : Exists, IRTObject
     {
-        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers)
+        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers,
+            Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
         {
             this.backgroundObject = backgroundObject;
 
             StartTime = backgroundObject.StartTime;
             KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
+
+            this.prefabOffsetPosition = prefabOffsetPosition;
+            this.prefabOffsetScale = prefabOffsetScale;
+            this.prefabOffsetRotation = prefabOffsetRotation;
 
             this.renderers = renderers;
 
@@ -30,6 +35,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float KillTime { get; set; }
 
         public BackgroundObject backgroundObject;
+
+        public Vector3 prefabOffsetPosition;
+        public Vector3 prefabOffsetScale;
+        public Vector3 prefabOffsetRotation;
 
         public Transform top;
 
@@ -70,6 +79,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (!backgroundObject.active || !backgroundObject.Enabled || !gameObject)
                 return;
+
+            if (top)
+            {
+                top.localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y);
+                top.localScale = prefabOffsetScale;
+                top.localRotation = Quaternion.Euler(prefabOffsetRotation);
+            }
 
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
