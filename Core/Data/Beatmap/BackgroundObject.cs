@@ -9,6 +9,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -23,17 +24,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             this.shape = shape;
             this.shapeOption = shapeOption;
-            UpdateShape();
-        }
-
-        public void UpdateShape()
-        {
-            var paShape = ShapeManager.inst.GetShape3D(shape, shapeOption);
-            foreach (var gameObject in gameObjects)
-            {
-                if (gameObject.TryGetComponent(out MeshFilter meshFilter) && paShape.mesh)
-                    meshFilter.mesh = paShape.mesh;
-            }
+            runtimeObject?.UpdateShape(shape, shapeOption);
         }
 
         #region Values
@@ -44,7 +35,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string layer = string.Empty;
 
         // todo: change background objects to be in the main editor timeline and have the same start time system as beatmap objects.
-        public ObjectEditorData editorData;
+        public ObjectEditorData editorData = new ObjectEditorData();
 
         #region Timing
 
@@ -193,11 +184,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool Enabled { get; set; } = true;
 
-        public GameObject BaseObject => !gameObjects.IsEmpty() ? gameObjects[0] : null;
-
-        public List<GameObject> gameObjects = new List<GameObject>();
-        public List<Transform> transforms = new List<Transform>();
-        public List<Renderer> renderers = new List<Renderer>();
+        public RTBackgroundObject runtimeObject;
 
         #endregion
 
@@ -613,7 +600,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int j = 0; j < modifiers[i].Count; j++)
                     jn["modifiers"][i][j] = modifiers[i][j].ToJSON();
 
-            if (editorData)
+            if (editorData.ShouldSerialize)
                 jn["ed"] = editorData.ToJSON();
 
             return jn;
