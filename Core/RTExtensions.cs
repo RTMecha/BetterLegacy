@@ -15,6 +15,7 @@ using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
@@ -1331,6 +1332,60 @@ namespace BetterLegacy.Core
             MenuMusicLoadMode.GlobalFolder => MenuConfig.Instance.MusicGlobalPath.Value,
             _ => RTFile.ApplicationDirectory + "settings/menus",
         };
+
+        #endregion
+
+        #region Interfaces
+
+        /// <summary>
+        /// Removes the prefab references.
+        /// </summary>
+        public static void RemovePrefabReference(this IPrefabable instance)
+        {
+            instance.PrefabID = string.Empty;
+            instance.PrefabInstanceID = string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the Prefab and Prefab Object ID references from a Prefab Object.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object reference.</param>
+        public static void SetPrefabReference(this IPrefabable instance, PrefabObject prefabObject)
+        {
+            instance.PrefabID = prefabObject.prefabID;
+            instance.PrefabInstanceID = prefabObject.id;
+        }
+
+        /// <summary>
+        /// Sets the Prefab and Prefab Object ID references from a prefabable.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        public static void SetPrefabReference(this IPrefabable instance, IPrefabable prefabable)
+        {
+            instance.PrefabID = prefabable.PrefabID;
+            instance.PrefabInstanceID = prefabable.PrefabInstanceID;
+        }
+
+        /// <summary>
+        /// Gets the prefab reference.
+        /// </summary>
+        public static Prefab GetPrefab(this IPrefabable instance) => GameData.Current.prefabs.Find(x => x.id == instance.PrefabID);
+
+        /// <summary>
+        /// Tries to get the Prefab Object reference.
+        /// </summary>
+        /// <param name="result">Output object.</param>
+        /// <returns>Returns true if a Prefab Object was found, otherwise returns false.</returns>
+        public static bool TryGetPrefabObject(this IPrefabable instance, out PrefabObject result)
+        {
+            result = instance.GetPrefabObject();
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the prefab object reference.
+        /// </summary>
+        public static PrefabObject GetPrefabObject(this IPrefabable instance) => GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
 
         #endregion
 

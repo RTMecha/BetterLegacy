@@ -32,40 +32,5 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <returns>Returns the runtime object of the object.</returns>
         public IRTObject GetRuntimeObject();
-
-        /// <summary>
-        /// Sets the Prefab and Prefab Object ID references from a Prefab Object.
-        /// </summary>
-        /// <param name="prefabObject">Prefab Object reference.</param>
-        public void SetPrefabReference(PrefabObject prefabObject);
-
-        /// <summary>
-        /// Sets the Prefab and Prefab Object ID references from a prefabable.
-        /// </summary>
-        /// <param name="prefabable">Prefabable object reference.</param>
-        public void SetPrefabReference(IPrefabable prefabable);
-
-        /// <summary>
-        /// Removes the prefab references.
-        /// </summary>
-        public void RemovePrefabReference();
-
-        /// <summary>
-        /// Gets the prefab reference.
-        /// </summary>
-        public Prefab GetPrefab();
-
-        /// <summary>
-        /// Tries to get the Prefab Object reference.
-        /// </summary>
-        /// <param name="result">Output object.</param>
-        /// <returns>Returns true if a Prefab Object was found, otherwise returns false.</returns>
-        public bool TryGetPrefabObject(out PrefabObject result);
-
-        /// <summary>
-        /// Gets the prefab object reference.
-        /// </summary>
-        public PrefabObject GetPrefabObject();
-
     }
 }

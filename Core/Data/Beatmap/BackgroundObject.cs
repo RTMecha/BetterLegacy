@@ -276,7 +276,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             zscale = orig.zscale;
             rotation = orig.rotation;
 
-            SetPrefabReference(orig);
+            this.SetPrefabReference(orig);
 
             color = orig.color;
             hue = orig.hue;
@@ -773,39 +773,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             rotationOffset = Vector3.zero;
         }
 
-        #region Prefabable
-
         public IRTObject GetRuntimeObject() => runtimeObject;
-
-        public void RemovePrefabReference()
-        {
-            prefabID = "";
-            prefabInstanceID = "";
-        }
-
-        public void SetPrefabReference(PrefabObject prefabObject)
-        {
-            prefabID = prefabObject.prefabID;
-            prefabInstanceID = prefabObject.id;
-        }
-
-        public void SetPrefabReference(IPrefabable prefabable)
-        {
-            prefabID = prefabable.PrefabID;
-            prefabInstanceID = prefabable.PrefabInstanceID;
-        }
-
-        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
-
-        public bool TryGetPrefabObject(out PrefabObject result)
-        {
-            result = GetPrefabObject();
-            return result;
-        }
-
-        public PrefabObject GetPrefabObject() => GameData.Current.prefabObjects.Find(x => x.id == prefabInstanceID);
-
-        #endregion
 
         #endregion
 
