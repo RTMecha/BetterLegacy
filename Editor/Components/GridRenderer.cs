@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-using BetterLegacy.Editor.Managers;
-
 namespace BetterLegacy.Editor.Components
 {
     /// <summary>

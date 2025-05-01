@@ -11,7 +11,6 @@ using LSFunctions;
 
 using SimpleJSON;
 
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -19,10 +18,8 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Patchers;
 
 using Version = BetterLegacy.Core.Data.Version;
 

@@ -6,7 +6,6 @@ using UnityEngine;
 
 using LSFunctions;
 
-using BetterLegacy.Companion.Data;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;

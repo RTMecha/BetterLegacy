@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,10 +7,8 @@ using UnityEngine.EventSystems;
 using HarmonyLib;
 
 using BetterLegacy.Configs;
-using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers

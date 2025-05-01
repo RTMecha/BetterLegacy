@@ -2,8 +2,6 @@
 
 using HarmonyLib;
 
-using BetterLegacy.Arcade.Managers;
-using BetterLegacy.Core;
 using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Patchers

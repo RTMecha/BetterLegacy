@@ -24,8 +24,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Editor.Components;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers

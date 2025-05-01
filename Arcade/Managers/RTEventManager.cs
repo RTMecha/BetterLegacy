@@ -1,28 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using UnityEngine;
 
-using UnityEngine;
-
-using LSFunctions;
-
-using DG.Tweening;
-
-using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Components.Player;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor;
-
-using Ease = BetterLegacy.Core.Animation.Ease;
-using Random = UnityEngine.Random;
 
 namespace BetterLegacy.Arcade.Managers
 {

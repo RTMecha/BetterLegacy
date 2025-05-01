@@ -4,7 +4,6 @@ using UnityEngine;
 
 using SimpleJSON;
 
-using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
@@ -13,8 +12,6 @@ namespace BetterLegacy.Core.Managers
 {
     public class ModifiersManager : MonoBehaviour
     {
-        static System.Diagnostics.Stopwatch sw;
-
         public const string SOUNDLIBRARY_PATH = "beatmaps/soundlibrary";
 
         public static ModifiersManager inst;

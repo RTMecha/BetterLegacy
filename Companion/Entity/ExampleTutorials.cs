@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using BetterLegacy.Companion.Data;
-using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Companion.Entity

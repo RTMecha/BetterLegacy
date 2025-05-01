@@ -2,8 +2,6 @@
 
 using UnityEngine;
 
-using LSFunctions;
-
 using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;

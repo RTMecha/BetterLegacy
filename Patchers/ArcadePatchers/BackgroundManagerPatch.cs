@@ -1,16 +1,8 @@
 ﻿using System.Collections;
-using System.Linq;
 
 using UnityEngine;
 
 using HarmonyLib;
-
-using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Patchers
 {

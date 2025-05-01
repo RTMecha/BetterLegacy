@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using BetterLegacy.Core.Prefabs;
+﻿using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {

@@ -9,7 +9,6 @@ using LSFunctions;
 
 using DG.Tweening;
 
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -1112,7 +1111,6 @@ namespace BetterLegacy.Core.Runtime
 
         #endregion
 
-        // todo: implement start and autokill values to BG objects
         #region Background Objects
 
         /// <summary>

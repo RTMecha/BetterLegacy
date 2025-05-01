@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;

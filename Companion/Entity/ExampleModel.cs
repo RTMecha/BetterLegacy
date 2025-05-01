@@ -7,7 +7,6 @@ using UnityEngine.EventSystems;
 
 using SimpleJSON;
 
-using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Configs;
