@@ -8,6 +8,9 @@
 ### Editor
 - Fixed the both timeline's position being set a frame later.
 
+### Fixes
+- Fixed pasting prefabs with only BG objects not pasting.
+
 # snapshot-2025.5.2 - (pre-1.7.0) > [May 1, 2025]
 
 ## Changes
