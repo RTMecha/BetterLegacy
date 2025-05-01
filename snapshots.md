@@ -1,4 +1,14 @@
-﻿# snapshot-2025.5.3 - (pre-1.7.0) > [May 2, 2025]
+﻿# snapshot-2025.5.4 - (pre-1.7.0) > [May 2, 2025]
+Hotfix snapshot
+
+## Features
+### Editor
+- Actually implemented mutli selection level combining.
+
+### Fixes
+- Fixed objects not being removed from the level data when being deleted.
+
+# snapshot-2025.5.3 - (pre-1.7.0) > [May 2, 2025]
 
 ## Features
 ### Editor
