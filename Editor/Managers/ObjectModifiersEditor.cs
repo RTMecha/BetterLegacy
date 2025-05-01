@@ -279,7 +279,11 @@ namespace BetterLegacy.Editor.Managers
 
             orderToggle.onValueChanged.ClearAll();
             orderToggle.isOn = beatmapObject.orderModifiers;
-            orderToggle.onValueChanged.AddListener(_val => beatmapObject.orderModifiers = _val);
+            orderToggle.onValueChanged.AddListener(_val =>
+            {
+                beatmapObject.orderModifiers = _val;
+                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+            });
 
             if (!showModifiers)
                 yield break;
@@ -2637,8 +2641,7 @@ namespace BetterLegacy.Editor.Managers
                 TooltipHelper.AssignTooltip(gameObject, "Add Modifier");
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     DefaultModifiersPopup.Open();
                     RefreshDefaultModifiersList(beatmapObject);
@@ -2962,8 +2965,7 @@ namespace BetterLegacy.Editor.Managers
             RectValues.Default.AnchoredPosition(-6f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(add.transform.AsRT());
 
             var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() => onAdd?.Invoke());
+            addButton.onClick.NewListener(() => onAdd?.Invoke());
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
@@ -2983,8 +2985,7 @@ namespace BetterLegacy.Editor.Managers
             pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
             var buttonStorage = pasteModifier.GetComponent<FunctionButtonStorage>();
             buttonStorage.label.text = "Paste";
-            buttonStorage.button.onClick.ClearAll();
-            buttonStorage.button.onClick.AddListener(() =>
+            buttonStorage.button.onClick.NewListener(() =>
             {
                 beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                 StartCoroutine(RenderModifiers(beatmapObject));
@@ -3028,8 +3029,7 @@ namespace BetterLegacy.Editor.Managers
                 modifierName.text = name;
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     var cmd = defaultModifier.Name;
                     if (cmd.Contains("Text") && !cmd.Contains("Other") && beatmapObject.shape != 4)
