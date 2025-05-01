@@ -41,13 +41,22 @@ namespace BetterLegacy.Patchers
                 var beginDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
-                    __instance.SelectionBoxImage.gameObject.SetActive(true);
                     __instance.DragStartPos = pointerEventData.position * EditorManager.inst.ScreenScaleInverse;
+                    if (pointerEventData.button == PointerEventData.InputButton.Middle)
+                    {
+                        ObjectEditor.inst.StartTimelineDrag();
+                        return;
+                    }
+
+                    __instance.SelectionBoxImage.gameObject.SetActive(true);
                     __instance.SelectionRect = default;
                 });
 
                 var dragTrigger = TriggerHelper.CreateEntry(EventTriggerType.Drag, eventData =>
                 {
+                    if (ObjectEditor.inst.movingTimeline)
+                        return;
+
                     var vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
 
                     __instance.SelectionRect.xMin = vector.x < __instance.DragStartPos.x ? vector.x : __instance.DragStartPos.x;
@@ -64,6 +73,12 @@ namespace BetterLegacy.Patchers
                     var pointerEventData = (PointerEventData)eventData;
                     __instance.DragEndPos = pointerEventData.position;
                     __instance.SelectionBoxImage.gameObject.SetActive(false);
+
+                    if (ObjectEditor.inst.movingTimeline)
+                    {
+                        ObjectEditor.inst.movingTimeline = false;
+                        return;
+                    }
 
                     CoroutineHelper.StartCoroutine(ObjectEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)));
                 });
@@ -440,7 +455,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(ref float value)
         {
-            ObjectEditor.inst.SetTimeline(value);
+            ObjectEditor.inst.SetTimelineZoom(value);
             return false;
         }
     }

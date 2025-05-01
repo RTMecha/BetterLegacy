@@ -336,10 +336,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry DragTrigger() => CreateEntry(EventTriggerType.Drag, eventData =>
         {
-            var vector = ((PointerEventData)eventData).position * CoreHelper.ScreenScaleInverse;
-
             if (EditorTimeline.inst.movingTimeline)
                 return;
+
+            var vector = ((PointerEventData)eventData).position * CoreHelper.ScreenScaleInverse;
 
             EditorManager.inst.SelectionRect.xMin = vector.x < EditorManager.inst.DragStartPos.x ? vector.x : EditorManager.inst.DragStartPos.x;
             EditorManager.inst.SelectionRect.xMax = vector.x < EditorManager.inst.DragStartPos.x ? EditorManager.inst.DragStartPos.x : vector.x;
@@ -396,6 +396,14 @@ namespace BetterLegacy.Core.Helpers
 
             if (timelineKeyframe.isObjectKeyframe)
             {
+                var pointerEventData = (PointerEventData)eventData;
+                if (pointerEventData.button == PointerEventData.InputButton.Middle)
+                {
+                    EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+                    ObjectEditor.inst.StartTimelineDrag();
+                    return;
+                }
+
                 var beatmapObject = timelineKeyframe.beatmapObject;
                 ObjEditor.inst.currentKeyframeKind = timelineKeyframe.Type;
                 ObjEditor.inst.currentKeyframe = timelineKeyframe.Index;
@@ -431,6 +439,12 @@ namespace BetterLegacy.Core.Helpers
         {
             if (timelineKeyframe.isObjectKeyframe)
             {
+                if (EditorTimeline.inst.movingTimeline)
+                {
+                    EditorTimeline.inst.movingTimeline = false;
+                    return;
+                }
+
                 var beatmapObject = timelineKeyframe.beatmapObject;
                 ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
 
