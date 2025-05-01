@@ -527,6 +527,42 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #endregion
 
+        #region Runtime BG Modifiers
+
+        public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value;
+
+        public IEnumerable<IRTObject> ToBGRuntimeModifiers()
+        {
+            foreach (var backgroundObject in gameData.backgroundObjects)
+            {
+                if (SkipRuntimeModifiers(backgroundObject))
+                {
+                    backgroundObject.runtimeModifiers = null;
+                    continue;
+                }
+
+                var runtimeModifiers = ToRuntimeModifiers(backgroundObject);
+
+                if (runtimeModifiers)
+                    yield return runtimeModifiers;
+            }
+        }
+
+        public IRTObject ToIRuntimeModifiers(BackgroundObject backgroundObject) => SkipRuntimeModifiers(backgroundObject) ? null : ToRuntimeModifiers(backgroundObject);
+
+        RTModifiers<BackgroundObject> ToRuntimeModifiers(BackgroundObject backgroundObject)
+        {
+            var runtimeModifiers = new RTModifiers<BackgroundObject>(
+                    backgroundObject.modifiers, backgroundObject.orderModifiers,
+                    backgroundObject.ignoreLifespan ? 0f : backgroundObject.StartTime,
+                    backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration
+                );
+            backgroundObject.runtimeModifiers = runtimeModifiers;
+            return runtimeModifiers;
+        }
+
+        #endregion
+
         #region Sequences
 
         public static Vector3Keyframe DefaultVector3Keyframe => new Vector3Keyframe(0f, Vector3.zero, Ease.Linear);
