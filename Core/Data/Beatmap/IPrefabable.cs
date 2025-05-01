@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -30,6 +26,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// If the object was spawned from a prefab.
         /// </summary>
         public bool FromPrefab { get; set; }
+
+        /// <summary>
+        /// Gets the runtime object for the prefabbed object.
+        /// </summary>
+        /// <returns>Returns the runtime object of the object.</returns>
+        public IRTObject GetRuntimeObject();
 
         /// <summary>
         /// Sets the Prefab and Prefab Object ID references from a Prefab Object.

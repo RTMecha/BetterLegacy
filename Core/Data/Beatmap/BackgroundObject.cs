@@ -775,6 +775,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Prefabable
 
+        public IRTObject GetRuntimeObject() => runtimeObject;
+
         public void RemovePrefabReference()
         {
             prefabID = "";

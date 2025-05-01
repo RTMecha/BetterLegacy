@@ -10,7 +10,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
-    public class RTBackgroundObject : Exists, IRTObject
+    public class RTBackgroundObject : Exists, IRTObject, IPrefabOffset
     {
         public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers,
             Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
@@ -39,6 +39,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         public Vector3 prefabOffsetPosition;
         public Vector3 prefabOffsetScale;
         public Vector3 prefabOffsetRotation;
+
+        public Vector3 PrefabOffsetPosition { get => prefabOffsetPosition; set => prefabOffsetPosition = value; }
+        public Vector3 PrefabOffsetScale { get => prefabOffsetScale; set => prefabOffsetScale = value; }
+        public Vector3 PrefabOffsetRotation { get => prefabOffsetRotation; set => prefabOffsetRotation = value; }
 
         public Transform top;
 

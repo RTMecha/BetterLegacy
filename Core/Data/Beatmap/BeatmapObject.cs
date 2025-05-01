@@ -1436,6 +1436,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Prefabable
 
+        public IRTObject GetRuntimeObject() => runtimeObject;
+
         public void RemovePrefabReference()
         {
             prefabID = "";
@@ -1781,11 +1783,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public ObjectAnimationResult InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(RTLevel.Current.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(RTLevel.Current.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
 
-        public ObjectAnimationResult InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
+        public ObjectTransform InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
-            var result = ObjectAnimationResult.Default;
+            var result = ObjectTransform.Default;
 
             var parents = GetParentChain();
 
@@ -1832,22 +1834,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             result.position.z += includeDepth ? Depth : 0f;
 
             return result;
-        }
-
-        public struct ObjectAnimationResult
-        {
-            public static ObjectAnimationResult Default => new ObjectAnimationResult(Vector3.zero, Vector2.one, 0f);
-
-            public ObjectAnimationResult(Vector3 position, Vector2 scale, float rotation)
-            {
-                this.position = position;
-                this.scale = scale;
-                this.rotation = rotation;
-            }
-
-            public Vector3 position;
-            public Vector2 scale;
-            public float rotation;
         }
 
         #endregion
