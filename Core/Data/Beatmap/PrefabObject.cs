@@ -488,6 +488,46 @@ namespace BetterLegacy.Core.Data.Beatmap
             return length;
         }
 
+        /// <summary>
+        /// Gets the transform offsets from the Prefab Object.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to get the transform offsets from.</param>
+        /// <returns>Returns a struct representing the objects' transform values.</returns>
+        public ObjectTransform GetTransformOffset()
+        {
+            var transform = ObjectTransform.Default;
+
+            bool hasPosX = events.Count > 0 && events[0] && events[0].values.Length > 0;
+            bool hasPosY = events.Count > 0 && events[0] && events[0].values.Length > 1;
+
+            bool hasScaX = events.Count > 1 && events[1] && events[1].values.Length > 0;
+            bool hasScaY = events.Count > 1 && events[1] && events[1].values.Length > 1;
+
+            bool hasRot = events.Count > 2 && events[2] && events[2].values.Length > 0;
+
+            transform.position = new Vector3(hasPosX ? events[0].values[0] : 0f, hasPosY ? events[0].values[1] : 0f, 0f);
+            transform.scale = new Vector2(hasScaX ? events[1].values[0] : 1f, hasScaY ? events[1].values[1] : 1f);
+            transform.rotation = hasRot ? events[2].values[0] : 0f;
+
+            try
+            {
+                if (events[0].random != 0)
+                    transform.position = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(events[0]);
+                if (events[1].random != 0)
+                    transform.scale = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(events[1]);
+                if (events[2].random != 0)
+                    transform.rotation = RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(events[2]);
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogError($"Prefab Randomization error.\nException: {ex}");
+            }
+
+            transform.scale = transform.scale.x != 0f && transform.scale.y != 0f ? transform.scale : Vector3.one;
+
+            return transform;
+        }
+
         #endregion
 
         #region Operators
