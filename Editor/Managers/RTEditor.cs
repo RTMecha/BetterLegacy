@@ -5418,8 +5418,7 @@ namespace BetterLegacy.Editor.Managers
             folderCreatorNameLabel.text = nameLabel;
             folderCreatorSubmitText.text = submitText;
 
-            folderCreatorSubmit.onClick.ClearAll();
-            folderCreatorSubmit.onClick.AddListener(() => onSubmit?.Invoke());
+            folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
         }
 
         #endregion
