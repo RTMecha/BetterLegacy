@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
@@ -71,6 +72,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public DeleteButtonStorage DeleteButton { get; set; }
 
+        /// <summary>
+        /// The UI that displays that the level is selected.
+        /// </summary>
+        public GameObject SelectedUI { get; set; }
+
         #endregion
 
         #region Data
@@ -90,6 +96,9 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public string FolderPath { get; set; }
 
+        /// <summary>
+        /// Formats the name to display.
+        /// </summary>
         public string NameFormat
         {
             get
@@ -105,6 +114,20 @@ namespace BetterLegacy.Editor.Data
                     LSText.ClampString(metadata.beatmap.date_edited, EditorConfig.Instance.OpenLevelDateMax.Value),
                     LSText.ClampString(metadata.beatmap.date_created, EditorConfig.Instance.OpenLevelDateMax.Value),
                     LSText.ClampString(metadata.beatmap.date_published, EditorConfig.Instance.OpenLevelDateMax.Value));
+            }
+        }
+
+        bool selected;
+        /// <summary>
+        /// If the level is selected.
+        /// </summary>
+        public bool Selected
+        {
+            get => selected;
+            set
+            {
+                selected = value;
+                RenderSelected(value);
             }
         }
 
@@ -234,6 +257,13 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
             EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, true, roundedSide: SpriteHelper.RoundedSide.W);
             delete.SetActive(EditorConfig.Instance.OpenLevelShowDeleteButton.Value);
+
+            SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
+            SelectedUI.SetActive(false);
+            var selectedImage = SelectedUI.AddComponent<Image>();
+            selectedImage.color = LSColors.HexToColorAlpha("0088FF25");
+
+            RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
 
             Render();
         }
@@ -569,95 +599,132 @@ namespace BetterLegacy.Editor.Data
                     return;
                 }
 
+                var selectedLevels = RTEditor.inst.SelectedLevels;
+
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Open", () =>
-                        {
-                            CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
-                            RTEditor.inst.OpenLevelPopup.Close();
-                        }, "Level Panel Open"),
-                        new ButtonFunction("Show Autosaves", () =>
-                        {
-                            RTEditor.inst.AutosavePopup.Open();
-                            RTEditor.inst.RefreshAutosaveList(this);
-                        }, "Level Panel Show Autosaves"),
-                        new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName), "Convert Level VG"),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
-                        new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path), "Level Panel Create Template"),
-                        new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
-                        new ButtonFunction("Create backup", () => RTEditor.inst.SaveBackup(this), "Level Panel Create Backup"),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
-                        {
-                            var destination = RTFile.ReplaceSlash(Level.path.Replace(Level.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
-                            RTFile.MoveDirectory(Level.path, destination);
-                            Level.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
-                            RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Level.metadata.ToJSON().ToString());
+                    var list = new List<ButtonFunction>();
 
-                            RTEditor.inst.UpdateEditorPath(true);
-                            RTEditor.inst.HideNameEditor();
-                        }), "Level Panel Rename Level"),
-                        new ButtonFunction("Cut", () =>
+                    if (!selectedLevels.IsEmpty())
+                        list = new List<ButtonFunction>()
                         {
-                            RTEditor.inst.shouldCutLevel = true;
-                            RTEditor.inst.copiedLevelPath = Level.path;
-                            EditorManager.inst.DisplayNotification($"Cut {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
-                            CoreHelper.Log($"Cut level: {RTEditor.inst.copiedLevelPath}");
-                        }, "Level Panel Cut"),
-                        new ButtonFunction("Copy", () =>
-                        {
-                            RTEditor.inst.shouldCutLevel = false;
-                            RTEditor.inst.copiedLevelPath = Level.path;
-                            EditorManager.inst.DisplayNotification($"Copied {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
-                            CoreHelper.Log($"Copied level: {RTEditor.inst.copiedLevelPath}");
-                        }, "Level Panel Copy"),
-                        new ButtonFunction("Paste", RTEditor.inst.PasteLevel, "Level Panel Paste"),
-                        new ButtonFunction("Delete", () =>
-                        {
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
+                            new ButtonFunction("Combine", () =>
                             {
-                                RTFile.DeleteDirectory(Level.path);
+                                EditorManager.inst.DisplayNotification($"Not implemented yet. Use the Level Combiner dialog for now.", 2f, EditorManager.NotificationType.Warning);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Create Collection", () =>
+                            {
+                                EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
+                            }),
+                            new ButtonFunction("Add to Collection", () =>
+                            {
+                                EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
+                            }),
+                        };
+                    else
+                        list = new List<ButtonFunction>()
+                        {
+                            new ButtonFunction("Open", () =>
+                            {
+                                CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
+                                RTEditor.inst.OpenLevelPopup.Close();
+                            }, "Level Panel Open"),
+                            new ButtonFunction("Show Autosaves", () =>
+                            {
+                                RTEditor.inst.AutosavePopup.Open();
+                                RTEditor.inst.RefreshAutosaveList(this);
+                            }, "Level Panel Show Autosaves"),
+                            new ButtonFunction("Convert to VG", () => RTEditor.inst.ConvertLevel(Level.path, Level.FolderName), "Convert Level VG"),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
+                            new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path), "Level Panel Create Template"),
+                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
+                            new ButtonFunction("Create backup", () => RTEditor.inst.SaveBackup(this), "Level Panel Create Backup"),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
+                            {
+                                var destination = RTFile.ReplaceSlash(Level.path.Replace(Level.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
+                                RTFile.MoveDirectory(Level.path, destination);
+                                Level.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
+                                RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Level.metadata.ToJSON().ToString());
+
                                 RTEditor.inst.UpdateEditorPath(true);
-                                EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy Arcade ID", () =>
-                        {
-                            var metadata = Level.metadata;
-                            if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
+                                RTEditor.inst.HideNameEditor();
+                            }), "Level Panel Rename Level"),
+                            new ButtonFunction("Cut", () =>
                             {
-                                EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            LSText.CopyToClipboard(metadata.arcadeID);
-                            EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                        }, "Copy Arcade ID"),
-                        new ButtonFunction("Copy Server ID", () =>
-                        {
-                            var metadata = Level.metadata;
-                            if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
+                                RTEditor.inst.shouldCutLevel = true;
+                                RTEditor.inst.copiedLevelPath = Level.path;
+                                EditorManager.inst.DisplayNotification($"Cut {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Cut level: {RTEditor.inst.copiedLevelPath}");
+                            }, "Level Panel Cut"),
+                            new ButtonFunction("Copy", () =>
                             {
-                                EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
+                                RTEditor.inst.shouldCutLevel = false;
+                                RTEditor.inst.copiedLevelPath = Level.path;
+                                EditorManager.inst.DisplayNotification($"Copied {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Copied level: {RTEditor.inst.copiedLevelPath}");
+                            }, "Level Panel Copy"),
+                            new ButtonFunction("Paste", RTEditor.inst.PasteLevel, "Level Panel Paste"),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
+                                {
+                                    RTFile.DeleteDirectory(Level.path);
+                                    RTEditor.inst.UpdateEditorPath(true);
+                                    EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Copy Arcade ID", () =>
+                            {
+                                var metadata = Level.metadata;
+                                if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
+                                {
+                                    EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
 
-                            LSText.CopyToClipboard(metadata.serverID);
-                            EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                        }, "Copy Server ID"),
-                        new ButtonFunction(true),
-                        new ButtonFunction("ZIP Level", () => RTEditor.inst.ZIPLevel(Level.path), "Level Panel ZIP"),
-                        new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Level.path), "Level Panel Copy Folder"),
-                        new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Level.path), "Level Panel Open Explorer"),
-                        new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer")
-                    );
+                                LSText.CopyToClipboard(metadata.arcadeID);
+                                EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
+                            }, "Copy Arcade ID"),
+                            new ButtonFunction("Copy Server ID", () =>
+                            {
+                                var metadata = Level.metadata;
+                                if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
+                                {
+                                    EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                LSText.CopyToClipboard(metadata.serverID);
+                                EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
+                            }, "Copy Server ID"),
+                            new ButtonFunction(true),
+                            new ButtonFunction("ZIP Level", () => RTEditor.inst.ZIPLevel(Level.path), "Level Panel ZIP"),
+                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Level.path), "Level Panel Copy Folder"),
+                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Level.path), "Level Panel Open Explorer"),
+                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
+                        };
+
+                    EditorContextMenu.inst.ShowContextMenu(list);
 
                     return;
                 }
+
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                {
+                    Selected = !Selected;
+                    return;
+                }
+
+                if (!selectedLevels.IsEmpty())
+                {
+                    Selected = false;
+                    return;
+                }    
 
                 CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(Level));
                 RTEditor.inst.OpenLevelPopup.Close();
@@ -704,6 +771,16 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
+        /// Renders the selected state of the level panel.
+        /// </summary>
+        /// <param name="selected">If the level panel is selected.</param>
+        public void RenderSelected(bool selected)
+        {
+            if (SelectedUI)
+                SelectedUI.SetActive(selected);
+        }
+
+        /// <summary>
         /// Sets the level panel active state.
         /// </summary>
         /// <param name="active">Active state to set.</param>
@@ -746,6 +823,9 @@ namespace BetterLegacy.Editor.Data
             onLoad?.Invoke(this);
         }));
 
+        /// <summary>
+        /// Sets the default icon.
+        /// </summary>
         public void SetDefaultIcon() => SetIcon(isFolder ? EditorSprites.OpenSprite : SteamWorkshop.inst.defaultSteamImageSprite);
 
         void EndFolderCreation()
