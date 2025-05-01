@@ -1,4 +1,14 @@
-﻿# snapshot-2025.5.2 - (pre-1.7.0) > [May 1, 2025]
+﻿# ???
+
+## Features
+### Editor
+- You can now click the scroll wheel on the Object Keyframe timeline to drag it around, just like with the Main timeline.
+
+## Changes
+### Editor
+- Fixed the both timeline's position being set a frame later.
+
+# snapshot-2025.5.2 - (pre-1.7.0) > [May 1, 2025]
 
 ## Changes
 ### Editor
