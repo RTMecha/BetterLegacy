@@ -1,11 +1,21 @@
-﻿# snapshot-2025.5.4 - (pre-1.7.0) > [May 2, 2025]
+﻿# ???
+
+## Features
+### Editor
+- Added Config Manager > Editor > Data > Overwrite Imported Images setting. With it on, imported images overwrite existing image files.
+
+## Fixes
+- Fixed theme updating not updating the stored theme.
+- Fixed file drag and drop not checking for singular images.
+
+# snapshot-2025.5.4 - (pre-1.7.0) > [May 2, 2025]
 Hotfix snapshot
 
 ## Features
 ### Editor
 - Actually implemented mutli selection level combining.
 
-### Fixes
+## Fixes
 - Fixed objects not being removed from the level data when being deleted.
 
 # snapshot-2025.5.3 - (pre-1.7.0) > [May 2, 2025]
