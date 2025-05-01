@@ -30,11 +30,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
-        /// <summary>
-        /// Used for objects spawned from a Prefab Object.
-        /// </summary>
-        public string originalID;
-
         public bool active = true;
         public string name = "Background";
 
@@ -207,6 +202,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Prefab
 
         /// <summary>
+        /// Used for objects spawned from a Prefab Object.
+        /// </summary>
+        public string originalID;
+
+        /// <summary>
         /// If the object is spawned from a prefab.
         /// </summary>
         public bool fromPrefab;
@@ -221,9 +221,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string prefabInstanceID = string.Empty;
 
+        public string OriginalID { get => originalID; set => originalID = value; }
+
         public string PrefabID { get => prefabID; set => prefabID = value; }
 
         public string PrefabInstanceID { get => prefabInstanceID; set => prefabInstanceID = value; }
+
+        public bool FromPrefab { get => fromPrefab; set => fromPrefab = value; }
 
         #endregion
 
@@ -769,7 +773,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             rotationOffset = Vector3.zero;
         }
 
-        #region Prefab Reference
+        #region Prefabable
 
         public void RemovePrefabReference()
         {
@@ -777,10 +781,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabInstanceID = "";
         }
 
-        /// <summary>
-        /// Sets the Prefab and Prefab Object ID references from a Prefab Object.
-        /// </summary>
-        /// <param name="prefabObject">Prefab Object reference.</param>
         public void SetPrefabReference(PrefabObject prefabObject)
         {
             prefabID = prefabObject.prefabID;
@@ -793,25 +793,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabInstanceID = prefabable.PrefabInstanceID;
         }
 
-        /// <summary>
-        /// Gets the prefab reference.
-        /// </summary>
         public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
 
-        /// <summary>
-        /// Tries to get the Prefab Object reference.
-        /// </summary>
-        /// <param name="result">Output object.</param>
-        /// <returns>Returns true if a Prefab Object was found, otherwise returns false.</returns>
         public bool TryGetPrefabObject(out PrefabObject result)
         {
             result = GetPrefabObject();
             return result;
         }
 
-        /// <summary>
-        /// Gets the prefab object reference.
-        /// </summary>
         public PrefabObject GetPrefabObject() => GameData.Current.prefabObjects.Find(x => x.id == prefabInstanceID);
 
         #endregion
