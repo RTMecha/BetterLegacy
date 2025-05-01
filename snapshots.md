@@ -5,6 +5,9 @@
 - You can now click the scroll wheel on the Object Keyframe timeline to drag it around, just like with the Main timeline.
 
 ## Changes
+### Core
+- BG Object Modifiers no longer use the "Block" / "Page" system. This is to be consistent with other objects with modifiers.
+
 ### Editor
 - Fixed the both timeline's position being set a frame later.
 
