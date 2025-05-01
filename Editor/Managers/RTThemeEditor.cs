@@ -881,7 +881,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.Editor.SetActive(true);
             EventEditor.inst.showTheme = true;
 
-            if (!Seasons.AprilFools)
+            if (!Seasons.IsAprilFools)
             {
                 theme.Find("theme").localRotation = Quaternion.Euler(Vector3.zero);
                 foreach (Transform child in Dialog.EditorContent)
@@ -1084,7 +1084,7 @@ namespace BetterLegacy.Editor.Managers
                 var p = themeContent.Find($"{name}{i}");
 
                 // We have to rotate the element due to the rotation being off in unmodded.
-                if (!Seasons.AprilFools)
+                if (!Seasons.IsAprilFools)
                     p.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
                 bool active = RTEditor.ShowModdedUI || !name.Contains("effect") && i < 9;

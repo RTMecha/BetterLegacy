@@ -334,7 +334,7 @@ namespace BetterLegacy.Patchers
                 GameManager.inst.UpdateTimeline();
                 CoreHelper.Log($"EDITOR START -> {nameof(CheckpointEditor.SetCurrentCheckpoint)}");
                 CheckpointEditor.inst.SetCurrentCheckpoint(0);
-                if (!Seasons.AprilFools)
+                if (!Seasons.IsAprilFools)
                     Instance.TogglePlayingSong();
                 else
                     Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
@@ -451,7 +451,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool TogglePlayingSongPrefix()
         {
-            if (Seasons.AprilFools || Instance.hasLoadedLevel)
+            if (Seasons.IsAprilFools || Instance.hasLoadedLevel)
             {
                 if (AudioManager.inst.CurrentAudioSource.isPlaying)
                     AudioManager.inst.CurrentAudioSource.Pause();
@@ -541,7 +541,7 @@ namespace BetterLegacy.Patchers
         static bool LoadBaseLevelPrefix()
         {
             RTGameManager.inst.ResetCheckpoint();
-            if (!Seasons.AprilFools)
+            if (!Seasons.IsAprilFools)
             {
                 AssignGameData();
                 return false;

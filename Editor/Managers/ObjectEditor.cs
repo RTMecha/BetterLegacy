@@ -2769,7 +2769,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var beatmapObject = new BeatmapObject(time);
 
-            if (!Seasons.AprilFools)
+            if (!Seasons.IsAprilFools)
                 beatmapObject.editorData.Layer = EditorTimeline.inst.Layer;
 
             beatmapObject.events[0].Add(EventKeyframe.DefaultPositionKeyframe);
@@ -2845,7 +2845,7 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 1;
             bm.shapeOption = 0;
-            bm.name = Seasons.AprilFools ? "<font=Arrhythmia>bro" : "circle";
+            bm.name = Seasons.IsAprilFools ? "<font=Arrhythmia>bro" : "circle";
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
@@ -2874,7 +2874,7 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 2;
             bm.shapeOption = 0;
-            bm.name = Seasons.AprilFools ? "baracuda <i>beat plays</i>" : "triangle";
+            bm.name = Seasons.IsAprilFools ? "baracuda <i>beat plays</i>" : "triangle";
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
@@ -2903,15 +2903,15 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 4;
             bm.shapeOption = 0;
-            bm.text = Seasons.AprilFools ? "Never gonna give you up<br>" +
+            bm.text = Seasons.IsAprilFools ? "Never gonna give you up<br>" +
                                             "Never gonna let you down<br>" +
                                             "Never gonna run around and desert you<br>" +
                                             "Never gonna make you cry<br>" +
                                             "Never gonna say goodbye<br>" +
                                             "Never gonna tell a lie and hurt you" : "text";
-            bm.name = Seasons.AprilFools ? "Don't look at my text" : "text";
+            bm.name = Seasons.IsAprilFools ? "Don't look at my text" : "text";
             bm.objectType = BeatmapObject.ObjectType.Decoration;
-            if (Seasons.AprilFools)
+            if (Seasons.IsAprilFools)
                 bm.StartTime += 1f;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
@@ -2925,7 +2925,7 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
-            if (!Seasons.AprilFools)
+            if (!Seasons.IsAprilFools)
                 OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -2943,7 +2943,7 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.shape = 5;
             bm.shapeOption = 0;
-            bm.name = Seasons.AprilFools ? "super" : "hexagon";
+            bm.name = Seasons.IsAprilFools ? "super" : "hexagon";
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {
@@ -2970,9 +2970,9 @@ namespace BetterLegacy.Editor.Managers
             var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
-            bm.name = Seasons.AprilFools ? "totally not deprecated object" : "helper";
-            bm.objectType = Seasons.AprilFools ? BeatmapObject.ObjectType.Decoration : BeatmapObject.ObjectType.Helper;
-            if (Seasons.AprilFools)
+            bm.name = Seasons.IsAprilFools ? "totally not deprecated object" : "helper";
+            bm.objectType = Seasons.IsAprilFools ? BeatmapObject.ObjectType.Decoration : BeatmapObject.ObjectType.Helper;
+            if (Seasons.IsAprilFools)
                 bm.events[3][0].values[1] = 0.65f;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
@@ -3001,7 +3001,7 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = "decoration";
-            if (!Seasons.AprilFools)
+            if (!Seasons.IsAprilFools)
                 bm.objectType = BeatmapObject.ObjectType.Decoration;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
@@ -3030,7 +3030,7 @@ namespace BetterLegacy.Editor.Managers
 
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = "empty";
-            if (!Seasons.AprilFools)
+            if (!Seasons.IsAprilFools)
                 bm.objectType = BeatmapObject.ObjectType.Empty;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
@@ -3038,7 +3038,7 @@ namespace BetterLegacy.Editor.Managers
                 var pos = EventManager.inst.cam.transform.position;
 
                 bm.events[0][0].values[0] = pos.x;
-                bm.events[0][0].values[1] = pos.y + (Seasons.AprilFools ? 999f : 0f);
+                bm.events[0][0].values[1] = pos.y + (Seasons.IsAprilFools ? 999f : 0f);
             }
 
             RTLevel.Current?.UpdateObject(bm);
@@ -3058,7 +3058,7 @@ namespace BetterLegacy.Editor.Managers
             var timelineObject = CreateNewDefaultObject(select);
 
             var bm = timelineObject.GetData<BeatmapObject>();
-            bm.name = Seasons.AprilFools ? "dead" : "no autokill";
+            bm.name = Seasons.IsAprilFools ? "dead" : "no autokill";
             bm.autoKillType = AutoKillType.NoAutokill;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
