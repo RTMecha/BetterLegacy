@@ -171,7 +171,7 @@ namespace BetterLegacy.Companion.Entity
             onPostTick?.Invoke(this);
 
             if (canvasGroup)
-                canvasGroup.alpha = ExampleConfig.Instance.IsTransparent.Value ? ExampleConfig.Instance.TransparencyOpacity.Value : 1f;
+                canvasGroup.alpha = (ExampleConfig.Instance.IsTransparent.Value ? ExampleConfig.Instance.TransparencyOpacity.Value : 1f) * opacity;
         }
 
         /// <summary>
@@ -283,6 +283,11 @@ namespace BetterLegacy.Companion.Entity
         /// Offset of the pupils when looking around.
         /// </summary>
         public Vector2 pupilsOffset;
+
+        /// <summary>
+        /// Opacity of the canvas.
+        /// </summary>
+        public float opacity = 1f;
 
         #endregion
 
@@ -1514,7 +1519,7 @@ namespace BetterLegacy.Companion.Entity
 
                 var pose = parameters is RandomPoseParameters randomPose && randomPose.poseSelection != null ?
                     randomPose.poseSelection() :
-                    UnityEngine.Random.Range(0, 2);
+                    UnityEngine.Random.Range(0, 3);
 
                 var animation = new RTAnimation("Hiii");
                 switch (pose)
@@ -1559,6 +1564,31 @@ namespace BetterLegacy.Companion.Entity
 
                             break;
                         }
+                    case 2: {
+                            ExceptionHelper.NullReference(handLeft, "Example Hand Left");
+                            ExceptionHelper.NullReference(handRight, "Example Hand Right");
+
+                            animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 750f, Ease.Linear),
+                                    new FloatKeyframe(1f, 750f, Ease.Linear),
+                                }, x => model.position.x = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, -410f, Ease.Linear),
+                                    new FloatKeyframe(1f, -410f, Ease.Linear),
+                                }, x => model.position.y = x, interpolateOnComplete: true),
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                                    new FloatKeyframe(1f, 1, Ease.Linear),
+                                }, x => model.opacity = x, interpolateOnComplete: true),
+                            };
+
+                            break;
+                        }
                     default: {
                             ExceptionHelper.NullReference(handLeft, "Example Hand Left");
 
@@ -1597,7 +1627,7 @@ namespace BetterLegacy.Companion.Entity
             {
                 var pose = parameters is RandomPoseParameters randomPose && randomPose.poseSelection != null ?
                     randomPose.poseSelection() :
-                    UnityEngine.Random.Range(0, 2);
+                    UnityEngine.Random.Range(0, 3);
 
                 var animation = new RTAnimation("Cya");
                 switch (pose)
@@ -1610,6 +1640,18 @@ namespace BetterLegacy.Companion.Entity
                                     new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
                                     new Vector2Keyframe(1.5f, Vector2.zero, Ease.BackIn),
                                 }, vector2 => model.scale = vector2, interpolateOnComplete: true),
+                            };
+
+                            break;
+                        }
+                    case 2: {
+                            animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, 1f, Ease.Linear),
+                                    new FloatKeyframe(1.5f, 0f, Ease.Linear),
+                                }, x => model.opacity = x, interpolateOnComplete: true),
                             };
 
                             break;
