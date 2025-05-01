@@ -873,7 +873,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Editing Theme: {beatmapThemeEdit}");
 
             var newTheme = !beatmapThemeEdit;
-            PreviewTheme = !newTheme ? beatmapThemeEdit.Copy() : new BeatmapTheme();
+            PreviewTheme = !newTheme ? beatmapThemeEdit.Copy(false) : new BeatmapTheme();
             if (newTheme)
                 PreviewTheme.Reset();
 
@@ -892,24 +892,21 @@ namespace BetterLegacy.Editor.Managers
 
             var isDefaultTheme = beatmapThemeEdit && beatmapThemeEdit.isDefault;
 
-            Dialog.EditorShuffleID.onClick.ClearAll();
             Dialog.EditorShuffleID.gameObject.SetActive(!newTheme && !isDefaultTheme);
             if (!newTheme && !isDefaultTheme)
-                Dialog.EditorShuffleID.onClick.AddListener(() => ShuffleThemeID(PreviewTheme));
+                Dialog.EditorShuffleID.onClick.NewListener(() => ShuffleThemeID(PreviewTheme));
 
             Dialog.EditorNameField.onValueChanged.ClearAll();
             Dialog.EditorNameField.text = PreviewTheme.name;
             Dialog.EditorNameField.onValueChanged.AddListener(_val => PreviewTheme.name = _val);
-            Dialog.EditorCancel.onClick.ClearAll();
-            Dialog.EditorCancel.onClick.AddListener(() =>
+            Dialog.EditorCancel.onClick.NewListener(() =>
             {
                 EventEditor.inst.showTheme = false;
                 theme.gameObject.SetActive(false);
             });
 
-            Dialog.EditorCreateNew.onClick.ClearAll();
             Dialog.EditorCreateNew.gameObject.SetActive(true);
-            Dialog.EditorCreateNew.onClick.AddListener(() =>
+            Dialog.EditorCreateNew.onClick.NewListener(() =>
             {
                 PreviewTheme.id = null;
                 SaveTheme(PreviewTheme.Copy());
@@ -920,13 +917,12 @@ namespace BetterLegacy.Editor.Managers
                 theme.gameObject.SetActive(false);
             });
 
-            Dialog.EditorUpdate.onClick.ClearAll();
             Dialog.EditorUpdate.gameObject.SetActive(!isDefaultTheme);
-            Dialog.EditorUpdate.onClick.AddListener(() =>
+            Dialog.EditorUpdate.onClick.NewListener(() =>
             {
                 var beatmapTheme = PreviewTheme.Copy(false);
 
-                if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.FilePath))
+                if (ThemePanels.TryFind(x => x.Theme && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.FilePath))
                 {
                     CoreHelper.Log($"Deleting original theme...");
                     RTFile.DeleteFile(themePanel.FilePath);
@@ -935,6 +931,8 @@ namespace BetterLegacy.Editor.Managers
                 SaveTheme(beatmapTheme);
                 if (ThemeManager.inst.CustomThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int themeIndex))
                     ThemeManager.inst.CustomThemes[themeIndex] = beatmapTheme;
+
+                ThemeManager.inst.UpdateAllThemes();
 
                 if (themePanel)
                 {
@@ -949,8 +947,7 @@ namespace BetterLegacy.Editor.Managers
                 theme.gameObject.SetActive(false);
             });
 
-            Dialog.EditorSaveUse.onClick.ClearAll();
-            Dialog.EditorSaveUse.onClick.AddListener(() =>
+            Dialog.EditorSaveUse.onClick.NewListener(() =>
             {
                 BeatmapTheme beatmapTheme;
                 if (beatmapThemeEdit && beatmapThemeEdit.isDefault)
@@ -962,7 +959,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapTheme = PreviewTheme.Copy(false);
 
-                    if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.FilePath))
+                    if (ThemePanels.TryFind(x => x.Theme && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.FilePath))
                     {
                         CoreHelper.Log($"Deleting original theme...");
                         RTFile.DeleteFile(themePanel1.FilePath);
@@ -976,7 +973,9 @@ namespace BetterLegacy.Editor.Managers
                 if (ThemeManager.inst.CustomThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int themeIndex))
                     ThemeManager.inst.CustomThemes[themeIndex] = beatmapTheme;
 
-                if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel))
+                ThemeManager.inst.UpdateAllThemes();
+
+                if (ThemePanels.TryFind(x => x.Theme && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel))
                 {
                     if (!isDefaultTheme)
                     {
