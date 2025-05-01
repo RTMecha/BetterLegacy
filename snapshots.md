@@ -1,8 +1,9 @@
-﻿# ???
+﻿# snapshot-2025.5.3 - (pre-1.7.0) > [May 2, 2025]
 
 ## Features
 ### Editor
 - You can now click the scroll wheel on the Object Keyframe timeline to drag it around, just like with the Main timeline.
+- Multiple levels can be selected by holding down the Shift key. This will be used for creating collections in 1.8.0 and combining levels.
 
 ## Changes
 ### Core
