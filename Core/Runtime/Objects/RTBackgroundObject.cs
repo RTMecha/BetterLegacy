@@ -33,6 +33,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }
+        public int Room { get; set; }
 
         public BackgroundObject backgroundObject;
 

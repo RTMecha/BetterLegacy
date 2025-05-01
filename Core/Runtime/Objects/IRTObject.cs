@@ -16,6 +16,11 @@
         public float KillTime { get; set; }
 
         /// <summary>
+        /// Room number the object renders under. If the level's room number is 0, then this is ignored.
+        /// </summary>
+        public int Room { get; set; }
+
+        /// <summary>
         /// Clears the data of the object.
         /// </summary>
         public void Clear();
