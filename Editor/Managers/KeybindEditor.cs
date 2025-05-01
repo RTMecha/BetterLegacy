@@ -1111,7 +1111,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
             RTLevel.Current?.RecalculateObjectStates();
-            RTLevel.Current?.backgroundEngine?.spawner?.RecalculateObjectStates();
         }
 
         public static void OpenDialog(Keybind keybind)
