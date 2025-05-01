@@ -565,7 +565,7 @@ namespace BetterLegacy.Core
         /// <param name="a">First value.</param>
         /// <param name="b">Second value.</param>
         /// <returns>Returns the distance between the two values.</returns>
-        public static float Distance(int a, int b) => a > b ? -(-a + b) : (-a + b);
+        public static int Distance(int a, int b) => a > b ? -(-a + b) : (-a + b);
         
         /// <summary>
         /// Gets the distance between <paramref name="a"/> and <paramref name="b"/>.
