@@ -2397,7 +2397,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void PasteObject(float offsetTime, bool dup, bool regen)
         {
-            if (!ObjEditor.inst.hasCopiedObject || !copy || (copy.prefabObjects.Count <= 0 && copy.beatmapObjects.Count <= 0))
+            if (!ObjEditor.inst.hasCopiedObject || !copy || (copy.prefabObjects.IsEmpty() && copy.beatmapObjects.IsEmpty() && copy.backgroundObjects.IsEmpty()))
             {
                 EditorManager.inst.DisplayNotification("No copied object yet!", 1f, EditorManager.NotificationType.Error, false);
                 return;
