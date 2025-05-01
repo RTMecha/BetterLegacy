@@ -116,6 +116,11 @@ namespace BetterLegacy.Core.Runtime
         public float FixedTime => AudioManager.inst.CurrentAudioSource.time;
 
         /// <summary>
+        /// The current room to render. If the room number is 0, all objects are active regardless of room number.
+        /// </summary>
+        public int CurrentRoom { get; set; }
+
+        /// <summary>
         /// Performs heavy calculations on a separate tick thread.
         /// </summary>
         public TickRunner threadedTickRunner;
