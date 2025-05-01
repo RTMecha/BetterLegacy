@@ -1002,14 +1002,36 @@ namespace BetterLegacy.Editor.Managers
 
         #region Levels
 
+        /// <summary>
+        /// The currently loaded level.
+        /// </summary>
         public Level CurrentLevel { get; set; }
+
+        /// <summary>
+        /// Loaded editor levels.
+        /// </summary>
         public List<LevelPanel> LevelPanels { get; set; } = new List<LevelPanel>();
 
+        /// <summary>
+        /// Selected editor levels.
+        /// </summary>
+        public List<LevelPanel> SelectedLevels => LevelPanels.FindAll(x => x.Selected);
+
+        /// <summary>
+        /// If the current level is a newly created one.
+        /// </summary>
         public bool fromNewLevel;
 
         public string newLevelSongTitle = "Inertia";
 
+        /// <summary>
+        /// If the level should cut.
+        /// </summary>
         public bool shouldCutLevel;
+
+        /// <summary>
+        /// Path to the copied level.
+        /// </summary>
         public string copiedLevelPath;
 
         #endregion
