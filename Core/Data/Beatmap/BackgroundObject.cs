@@ -173,7 +173,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<string> tags = new List<string>();
 
-        public List<List<Modifier<BackgroundObject>>> modifiers = new List<List<Modifier<BackgroundObject>>>();
+        public List<Modifier<BackgroundObject>> modifiers = new List<Modifier<BackgroundObject>>();
+
+        /// <summary>
+        /// If modifiers ignore the lifespan restriction.
+        /// </summary>
+        public bool ignoreLifespan = false;
 
         /// <summary>
         /// If the order of triggers and actions matter.
@@ -183,6 +188,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector3 positionOffset;
         public Vector3 scaleOffset;
         public Vector3 rotationOffset;
+
+        /// <summary>
+        /// If the modifiers are currently active.
+        /// </summary>
+        public bool ModifiersActive
+        {
+            get
+            {
+                var startTime = ignoreLifespan ? 0f : StartTime;
+                var killTime = ignoreLifespan ? SoundManager.inst.MusicLength : StartTime + SpawnDuration;
+                return AudioManager.inst.CurrentAudioSource.time >= startTime && AudioManager.inst.CurrentAudioSource.time <= killTime;
+            }
+        }
 
         #endregion
 
@@ -214,6 +232,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool Enabled { get; set; } = true;
 
         public RTBackgroundObject runtimeObject;
+
+        public RTModifiers<BackgroundObject> runtimeModifiers;
 
         /// <summary>
         /// Used for editor.
@@ -277,16 +297,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             reactiveZSample = orig.reactiveZSample;
 
             tags = orig.tags.Clone();
+            ignoreLifespan = orig.ignoreLifespan;
             orderModifiers = orig.orderModifiers;
+            modifiers.Clear();
             for (int i = 0; i < orig.modifiers.Count; i++)
-            {
-                modifiers.Add(new List<Modifier<BackgroundObject>>());
-                for (int j = 0; j < orig.modifiers[i].Count; j++)
-                {
-                    var modifier = Modifier<BackgroundObject>.DeepCopy(orig.modifiers[i][j], this);
-                    modifiers[i].Add(modifier);
-                }
-            }
+                modifiers.Add(Modifier<BackgroundObject>.DeepCopy(orig.modifiers[i], this));
 
             editorData = ObjectEditorData.DeepCopy(orig.editorData);
         }
@@ -459,21 +474,36 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
+            tags.Clear();
             if (jn["tags"] != null)
                 for (int i = 0; i < jn["tags"].Count; i++)
                     tags.Add(jn["tags"][i]);
 
+            if (jn["iglif"] != null)
+                ignoreLifespan = jn["iglif"].AsBool;
+
             if (jn["ordmod"] != null)
                 orderModifiers = jn["ordmod"].AsBool;
 
+            modifiers.Clear();
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
-                modifiers.Add(new List<Modifier<BackgroundObject>>());
-                for (int j = 0; j < jn["modifiers"][i].Count; j++)
+                var modifierJN = jn["modifiers"][i];
+                if (modifierJN.IsArray)
                 {
-                    var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], this);
+                    orderModifiers = true;
+                    for (int j = 0; j < jn["modifiers"][i].Count; j++)
+                    {
+                        var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], this);
+                        if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
+                            modifiers.Add(modifier);
+                    }
+                }
+                else
+                {
+                    var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i], this);
                     if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
-                        modifiers[i].Add(modifier);
+                        modifiers.Add(modifier);
                 }
             }
 
@@ -642,12 +672,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
+            if (ignoreLifespan)
+                jn["iglif"] = ignoreLifespan;
             if (orderModifiers)
                 jn["ordmod"] = orderModifiers;
 
             for (int i = 0; i < modifiers.Count; i++)
-                for (int j = 0; j < modifiers[i].Count; j++)
-                    jn["modifiers"][i][j] = modifiers[i][j].ToJSON();
+                jn["modifiers"][i] = modifiers[i].ToJSON();
 
             if (editorData.ShouldSerialize)
                 jn["ed"] = editorData.ToJSON();

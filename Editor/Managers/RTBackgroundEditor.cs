@@ -1621,11 +1621,21 @@ namespace BetterLegacy.Editor.Managers
         public GameObject modifierCardPrefab;
         public GameObject modifierAddPrefab;
 
+        public Toggle modifiersIgnoreToggle;
         public Toggle modifiersOrderToggle;
         public Toggle modifiersActiveToggle;
 
         public void CreateModifiersOnAwake()
         {
+            var ignoreLifespan = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Dialog.LeftContent, "ignore life");
+            var ignoreLifespanToggleButton = ignoreLifespan.GetComponent<ToggleButtonStorage>();
+            ignoreLifespanToggleButton.label.text = "Ignore Lifespan";
+
+            modifiersIgnoreToggle = ignoreLifespanToggleButton.toggle;
+
+            EditorThemeManager.AddToggle(modifiersIgnoreToggle, graphic: ignoreLifespanToggleButton.label);
+            TooltipHelper.AssignTooltip(ignoreLifespan, "Modifiers Ignore Lifespan");
+
             var orderMatters = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Dialog.LeftContent, "order");
             var orderMattersToggleButton = orderMatters.GetComponent<ToggleButtonStorage>();
             orderMattersToggleButton.label.text = "Order Matters";
@@ -1746,76 +1756,29 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(content);
 
+            modifiersIgnoreToggle.onValueChanged.ClearAll();
+            modifiersIgnoreToggle.isOn = backgroundObject.ignoreLifespan;
+            modifiersIgnoreToggle.onValueChanged.AddListener(_val =>
+            {
+                backgroundObject.ignoreLifespan = _val;
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
+            });
+
             modifiersOrderToggle.onValueChanged.ClearAll();
             modifiersOrderToggle.isOn = backgroundObject.orderModifiers;
-            modifiersOrderToggle.onValueChanged.AddListener(_val => backgroundObject.orderModifiers = _val);
-
-            var x = Dialog.LeftContent.Find("block/x");
-            var xif = x.GetComponent<InputField>();
-            var left = x.Find("<").GetComponent<Button>();
-            var right = x.Find(">").GetComponent<Button>();
-
-            xif.onValueChanged.ClearAll();
-            xif.text = currentPage.ToString();
-            xif.onValueChanged.AddListener(_val =>
+            modifiersOrderToggle.onValueChanged.AddListener(_val =>
             {
-                if (int.TryParse(_val, out int page))
-                {
-                    currentPage = Mathf.Clamp(page, 0, backgroundObject.modifiers.Count - 1);
-                    StartCoroutine(RenderModifiers(backgroundObject));
-                }
+                backgroundObject.orderModifiers = _val;
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
             });
 
-            left.onClick.ClearAll();
-            left.onClick.AddListener(() =>
-            {
-                if (int.TryParse(xif.text, out int page))
-                    xif.text = Mathf.Clamp(page - 1, 0, backgroundObject.modifiers.Count - 1).ToString();
-            });
-
-            right.onClick.ClearAll();
-            right.onClick.AddListener(() =>
-            {
-                if (int.TryParse(xif.text, out int page))
-                    xif.text = Mathf.Clamp(page + 1, 0, backgroundObject.modifiers.Count - 1).ToString();
-            });
-
-            TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDeltaInt(xif, max: backgroundObject.modifiers.Count - 1));
-
-            var addBlockButton = x.Find("add").GetComponent<Button>();
-            addBlockButton.onClick.ClearAll();
-            addBlockButton.onClick.AddListener(() =>
-            {
-                if (backgroundObject.modifiers.Count > 0 && backgroundObject.modifiers[backgroundObject.modifiers.Count - 1].Count < 1)
-                {
-                    EditorManager.inst.DisplayNotification($"Modifier Block {currentPage} requires modifiers before adding a new block!", 2f, EditorManager.NotificationType.Warning);
-                    return;
-                }
-
-                AddBlock(backgroundObject);
-            });
-
-            var removeBlockButton = x.Find("del").GetComponent<Button>();
-            removeBlockButton.onClick.ClearAll();
-            removeBlockButton.onClick.AddListener(() =>
-            {
-                if (backgroundObject.modifiers.Count < 1)
-                    return;
-
-                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this modifier block?", () =>
-                {
-                    DelBlock(backgroundObject);
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup);
-            });
-
-            if (!showModifiers || backgroundObject.modifiers.Count <= currentPage)
+            if (!showModifiers)
                 yield break;
 
             content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 500f);
 
             int num = 0;
-            foreach (var modifier in backgroundObject.modifiers[currentPage])
+            foreach (var modifier in backgroundObject.modifiers)
             {
                 int index = num;
                 var gameObject = modifierCardPrefab.Duplicate(content, modifier.Name);
@@ -1841,10 +1804,9 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
                 var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
-                delete.button.onClick.ClearAll();
-                delete.button.onClick.AddListener(() =>
+                delete.button.onClick.NewListener(() =>
                 {
-                    backgroundObject.modifiers[currentPage].RemoveAt(index);
+                    backgroundObject.modifiers.RemoveAt(index);
                     backgroundObject.positionOffset = Vector3.zero;
                     backgroundObject.scaleOffset = Vector3.zero;
                     backgroundObject.rotationOffset = Vector3.zero;
@@ -1859,8 +1821,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
                 var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
-                copy.button.onClick.ClearAll();
-                copy.button.onClick.AddListener(() =>
+                copy.button.onClick.NewListener(() =>
                 {
                     copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
                     StartCoroutine(RenderModifiers(backgroundObject));
@@ -1981,7 +1942,7 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Delete", () =>
                         {
-                            backgroundObject.modifiers[currentPage].RemoveAt(index);
+                            backgroundObject.modifiers.RemoveAt(index);
                             backgroundObject.positionOffset = Vector3.zero;
                             backgroundObject.scaleOffset = Vector3.zero;
                             backgroundObject.rotationOffset = Vector3.zero;
@@ -2002,7 +1963,7 @@ namespace BetterLegacy.Editor.Managers
                             if (copiedModifier == null)
                                 return;
 
-                            backgroundObject.modifiers[currentPage].Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                            backgroundObject.modifiers.Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
@@ -2011,7 +1972,7 @@ namespace BetterLegacy.Editor.Managers
                             if (copiedModifier == null)
                                 return;
 
-                            backgroundObject.modifiers[currentPage].Insert(index, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                            backgroundObject.modifiers.Insert(index, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
@@ -2020,14 +1981,14 @@ namespace BetterLegacy.Editor.Managers
                             if (copiedModifier == null)
                                 return;
 
-                            backgroundObject.modifiers[currentPage].Insert(index + 1, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                            backgroundObject.modifiers.Insert(index + 1, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
                             StartCoroutine(RenderModifiers(backgroundObject));
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                         }),
                         new ButtonFunction(true),
                         new ButtonFunction("Sort Modifiers", () =>
                         {
-                            backgroundObject.modifiers[currentPage] = backgroundObject.modifiers[currentPage].OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
+                            backgroundObject.modifiers = backgroundObject.modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
                         new ButtonFunction("Move Up", () =>
@@ -2038,28 +1999,28 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            backgroundObject.modifiers[currentPage].Move(index, index - 1);
+                            backgroundObject.modifiers.Move(index, index - 1);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
                         new ButtonFunction("Move Down", () =>
                         {
-                            if (index >= backgroundObject.modifiers[currentPage].Count - 1)
+                            if (index >= backgroundObject.modifiers.Count - 1)
                             {
                                 EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
                                 return;
                             }
 
-                            backgroundObject.modifiers[currentPage].Move(index, index + 1);
+                            backgroundObject.modifiers.Move(index, index + 1);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
                         new ButtonFunction("Move to Start", () =>
                         {
-                            backgroundObject.modifiers[currentPage].Move(index, 0);
+                            backgroundObject.modifiers.Move(index, 0);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
                         new ButtonFunction("Move to End", () =>
                         {
-                            backgroundObject.modifiers[currentPage].Move(index, backgroundObject.modifiers[currentPage].Count - 1);
+                            backgroundObject.modifiers.Move(index, backgroundObject.modifiers.Count - 1);
                             StartCoroutine(RenderModifiers(backgroundObject));
                         }),
                         new ButtonFunction(true),
@@ -2162,20 +2123,6 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void AddBlock(BackgroundObject backgroundObject)
-        {
-            backgroundObject.modifiers.Add(new List<Modifier<BackgroundObject>>());
-            currentPage = backgroundObject.modifiers.Count - 1;
-            StartCoroutine(RenderModifiers(backgroundObject));
-        }
-
-        public void DelBlock(BackgroundObject backgroundObject)
-        {
-            backgroundObject.modifiers.RemoveAt(currentPage);
-            currentPage = Mathf.Clamp(currentPage - 1, 0, backgroundObject.modifiers.Count - 1);
-            StartCoroutine(RenderModifiers(backgroundObject));
-        }
-
         public void SetObjectColors(Toggle[] toggles, int index, int i, Modifier<BackgroundObject> modifier)
         {
             modifier.commands[index] = i.ToString();
@@ -2214,12 +2161,12 @@ namespace BetterLegacy.Editor.Managers
             pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
             var buttonStorage = pasteModifier.GetComponent<FunctionButtonStorage>();
             buttonStorage.label.text = "Paste";
-            buttonStorage.button.onClick.ClearAll();
-            buttonStorage.button.onClick.AddListener(() =>
+            buttonStorage.button.onClick.NewListener(() =>
             {
-                backgroundObject.modifiers[currentPage].Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                backgroundObject.modifiers.Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
                 StartCoroutine(RenderModifiers(backgroundObject));
                 EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
             });
 
             TooltipHelper.AssignTooltip(pasteModifier, "Paste Modifier");
@@ -2230,8 +2177,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Default Modifiers
-
-        public int currentPage;
 
         public ContentPopup DefaultModifiersPopup { get; set; }
 
@@ -2258,16 +2203,16 @@ namespace BetterLegacy.Editor.Managers
                 modifierName.text = name;
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifier, backgroundObject);
                     if (addIndex == -1)
-                        backgroundObject.modifiers[currentPage].Add(modifier);
+                        backgroundObject.modifiers.Add(modifier);
                     else
-                        backgroundObject.modifiers[currentPage].Insert(Mathf.Clamp(addIndex, 0, backgroundObject.modifiers[currentPage].Count), modifier);
+                        backgroundObject.modifiers.Insert(Mathf.Clamp(addIndex, 0, backgroundObject.modifiers.Count), modifier);
                     StartCoroutine(RenderModifiers(backgroundObject));
                     DefaultModifiersPopup.Close();
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
                 });
 
                 EditorThemeManager.ApplyLightText(modifierName);

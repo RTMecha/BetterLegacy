@@ -726,29 +726,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Modifiers
             {
                 var iLabel = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label");
-                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Modifier Blocks";
-
-                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "block");
-                CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
-
-                var addBlock = EditorPrefabHolder.Instance.Function1Button.Duplicate(iterations.transform.Find("x"), "add");
-                addBlock.transform.localScale = Vector3.one;
-                addBlock.transform.AsRT().sizeDelta = new Vector2(80f, 32f);
-
-                var addBlockText = addBlock.transform.GetChild(0).GetComponent<Text>();
-                addBlockText.text = "Add";
-
-                var removeBlock = EditorPrefabHolder.Instance.Function1Button.Duplicate(iterations.transform.Find("x"), "del");
-                removeBlock.transform.localScale = Vector3.one;
-                removeBlock.transform.AsRT().sizeDelta = new Vector2(80f, 32f);
-
-                var removeBlockText = removeBlock.transform.GetChild(0).GetComponent<Text>();
-                removeBlockText.text = "Del";
-
-                EditorThemeManager.AddGraphic(addBlock.GetComponent<Image>(), ThemeGroup.Add, true);
-                EditorThemeManager.AddGraphic(addBlockText, ThemeGroup.Add_Text);
-                EditorThemeManager.AddGraphic(removeBlock.GetComponent<Image>(), ThemeGroup.Delete, true);
-                EditorThemeManager.AddGraphic(removeBlockText, ThemeGroup.Delete_Text);
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Modifiers";
 
                 RTBackgroundEditor.inst.CreateModifiersOnAwake();
                 RTBackgroundEditor.inst.DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_BACKGROUND_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
@@ -757,8 +735,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (RTBackgroundEditor.inst.CurrentSelectedBG)
                         RTBackgroundEditor.inst.RefreshDefaultModifiersList(RTBackgroundEditor.inst.CurrentSelectedBG, RTBackgroundEditor.inst.addIndex);
                 }, placeholderText: "Search for default Modifier...");
-
-                EditorThemeManager.AddInputFields(LeftContent.Find("block").gameObject, true, "Background Editor Reactive");
             }
 
             // Start Time
