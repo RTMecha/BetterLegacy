@@ -405,15 +405,22 @@ namespace BetterLegacy.Editor.Managers
             var list = SelectedObjects;
             var count = list.Count;
             int minIndex = timelineObjects.ToIndexer().Where(x => x.obj && x.obj.Selected).Min(x => x.index) - 1;
-            var ids = list.Select(x => x.ID);
+            var objectIDs = list.Where(x => x.isBeatmapObject).Select(x => x.ID);
+            var prefabIDs = list.Where(x => x.isPrefabObject).Select(x => x.ID);
+            var bgIDs = list.Where(x => x.isBackgroundObject).Select(x => x.ID);
 
             EditorDialog.CurrentDialog?.Close();
             CoreHelper.Log($"Deleting count: {count}\nSelect index: {minIndex}");
 
-            list.ForLoopReverse(x => DeleteObject(x, false, false, false));
+            list.ForLoopReverse(x => DeleteObject(x, false, false, false, false));
+
+            GameData.Current.beatmapObjects.RemoveAll(x => objectIDs.Contains(x.id));
+            GameData.Current.prefabObjects.RemoveAll(x => prefabIDs.Contains(x.id));
+            GameData.Current.backgroundObjects.RemoveAll(x => bgIDs.Contains(x.id));
+
             foreach (var bm in GameData.Current.beatmapObjects)
             {
-                if (ids.Contains(bm.Parent))
+                if (objectIDs.Contains(bm.Parent))
                 {
                     bm.Parent = "";
 
@@ -438,7 +445,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="recalculate">If the object engine should recalculate.</param>
         /// <param name="select">If an earlier object should be selected.</param>
         /// <param name="update">If objects parented to this object should be updated.</param>
-        public void DeleteObject(TimelineObject timelineObject, bool recalculate = true, bool select = true, bool update = true)
+        public void DeleteObject(TimelineObject timelineObject, bool recalculate = true, bool select = true, bool update = true, bool remove = true)
         {
             int index = 0;
             if (select)
@@ -464,7 +471,8 @@ namespace BetterLegacy.Editor.Managers
                     } // allow further objects to be deleted if a modifiers' inactive state throws an error
                 }
 
-                GameData.Current.beatmapObjects.Remove(beatmapObject);
+                if (remove)
+                    GameData.Current.beatmapObjects.Remove(x => x.id == beatmapObject.id);
                 //RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN);
                 RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recursive: false, recalculate: false);
 
@@ -485,14 +493,16 @@ namespace BetterLegacy.Editor.Managers
             {
                 var prefabObject = timelineObject.GetData<PrefabObject>();
 
-                GameData.Current.prefabObjects.Remove(prefabObject);
+                if (remove)
+                    GameData.Current.prefabObjects.Remove(x => x.id == prefabObject.id);
                 RTLevel.Current?.UpdatePrefab(prefabObject, false, false);
             }
             if (timelineObject.isBackgroundObject)
             {
                 var backgroundObject = timelineObject.GetData<BackgroundObject>();
 
-                GameData.Current.backgroundObjects.Remove(backgroundObject);
+                if (remove)
+                    GameData.Current.backgroundObjects.Remove(x => x.id == backgroundObject.id);
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false);
                 if (RTBackgroundEditor.inst.Dialog.IsCurrent)
                     RTBackgroundEditor.inst.UpdateBackgroundList();
