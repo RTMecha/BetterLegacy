@@ -610,7 +610,10 @@ namespace BetterLegacy.Editor.Data
                         {
                             new ButtonFunction("Combine", () =>
                             {
-                                EditorManager.inst.DisplayNotification($"Not implemented yet. Use the Level Combiner dialog for now.", 2f, EditorManager.NotificationType.Warning);
+                                RTEditor.inst.ShowNameEditor("Combiner", "Combined Level name", "Combine", () =>
+                                {
+                                    LevelCombiner.inst.Combine(RTEditor.inst.folderCreatorName.text, RTEditor.inst.SelectedLevels, () => RTEditor.inst.UpdateEditorPath(true));
+                                });
                             }),
                             new ButtonFunction(true),
                             new ButtonFunction("Create Collection", () =>

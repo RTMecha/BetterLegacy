@@ -217,26 +217,31 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Combines all selected editor levels into one.
         /// </summary>
-        public void Combine() => Combine(savePath);
+        public void Combine() => Combine(savePath, null);
+        
+        /// <summary>
+        /// Combines all selected editor levels into one.
+        /// </summary>
+        public void Combine(Action onCombined) => Combine(savePath, onCombined);
 
         /// <summary>
         /// Combines all selected editor levels into one.
         /// </summary>
         /// <param name="savePath">Path to save the level to.</param>
-        public void Combine(string savePath) => Combine(savePath, RTEditor.inst.LevelPanels.Where(x => x.combinerSelected && x.Level && RTFile.FileExists(x.Level.GetFile(x.Level.CurrentFile))));
+        public void Combine(string savePath, Action onCombined = null) => Combine(savePath, RTEditor.inst.LevelPanels.Where(x => x.combinerSelected && x.Level && RTFile.FileExists(x.Level.GetFile(x.Level.CurrentFile))), onCombined);
 
         /// <summary>
         /// Combines editor levels into one.
         /// </summary>
         /// <param name="selected">Editor levels to combine.</param>
-        public void Combine(IEnumerable<LevelPanel> selected) => Combine(savePath, selected);
+        public void Combine(IEnumerable<LevelPanel> selected, Action onCombined = null) => Combine(savePath, selected, onCombined);
 
         /// <summary>
         /// Combines editor levels into one.
         /// </summary>
         /// <param name="savePath">Path to save the level to.</param>
         /// <param name="selected">Editor levels to combine.</param>
-        public void Combine(string savePath, IEnumerable<LevelPanel> selected)
+        public void Combine(string savePath, IEnumerable<LevelPanel> selected, Action onCombined = null)
         {
             var combineList = new List<GameData>();
 
@@ -323,6 +328,7 @@ namespace BetterLegacy.Editor.Managers
                 combinedGameData.SaveData(save, () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the LS format!", 3f, EditorManager.NotificationType.Success);
+                    onCombined?.Invoke();
                 }, true);
             }
             else
@@ -332,6 +338,7 @@ namespace BetterLegacy.Editor.Managers
                 combinedGameData.SaveDataVG(save.Replace(FileFormat.LSB.Dot(), FileFormat.VGD.Dot()), () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the VG format!", 3f, EditorManager.NotificationType.Success);
+                    onCombined?.Invoke();
                 });
             }
         }
