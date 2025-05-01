@@ -2010,6 +2010,20 @@ namespace BetterLegacy.Core.Data.Beatmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameData operator +(GameData a, GameData b) => Combiner.Combine(a, b);
 
+        // todo: rework this to be more consistent with other modifier sets.
+        // theory:
+        // when converting to VG, a singular action and trigger are saved per modifier block.
+        // the first trigger in a range is saved.
+        // the first action in a range is saved.
+        // example:
+        // modifier (trigger) 0 = saved because it's the first trigger
+        // modifier (trigger) 1 = not saved
+        // modifier (trigger) 2 = not saved
+        // modifier (action) 3 = saved because it's the first action
+        // modifier (action) 4 = not saved
+        // modifier (trigger) 5 = saved because it's the first trigger
+        // modifier (action) 6 = saved because it's the first action
+        // modifier (trigger) 7 = not saved because there are no accompanying actions
         /// <summary>
         /// Class for alpha EventTrigger support.
         /// </summary>
